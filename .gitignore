@@ -1,0 +1,15 @@
+.metadata*
+.classpath
+.project
+testgraphs
+build/*
+target/*
+data
+make.sh
+sdhu.xml
+*partition*.sh
+*clean*.sh
+*parse*.sh
+stats
+*.swp
+largegit.sh
