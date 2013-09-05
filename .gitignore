@@ -2,8 +2,8 @@
 .classpath
 .project
 testgraphs
-build/*
-target/*
+build
+target
 data
 make.sh
 sdhu.xml
