@@ -13,3 +13,5 @@ sdhu.xml
 stats
 *.swp
 largegit.sh
+*/.idea/workspace.xml
+*/.idea/tasks.xml
