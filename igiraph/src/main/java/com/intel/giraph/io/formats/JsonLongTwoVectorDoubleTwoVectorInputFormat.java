@@ -30,26 +30,26 @@ import org.json.JSONException;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
 import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
+import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 import org.apache.giraph.io.formats.TextVertexInputFormat;
 import java.io.IOException;
 import java.util.List;
 
 /**
   * VertexInputFormat that features <code>long</code> vertex ID's,
-  * <code>double vectors</code> vertex values: one for prior and
-  * one for posterior, and <code>double</code> out-edge weights,
-  * and <code>double vector </code> message types, specified in
+  * <code>TwoVector</code> vertex values: one for prior and
+  * one for posterior, and <code>DoubleWithTwoVector</code> edge
+  * weights and bi-directional edge messages, specified in
   * JSON format.
   */
-public class JsonLongTwoVectorDoubleVectorInputFormat extends
+public class JsonLongTwoVectorDoubleTwoVectorInputFormat extends
   TextVertexInputFormat<LongWritable, TwoVectorWritable,
-  DoubleWithVectorWritable> {
+  DoubleWithTwoVectorWritable> {
 
   @Override
   public TextVertexReader createVertexReader(InputSplit split,
       TaskAttemptContext context) {
-    return new JsonLongTwoVectorDoubleVectorReader();
+    return new JsonLongTwoVectorDoubleTwoVectorReader();
   }
 
  /**
@@ -63,10 +63,10 @@ public class JsonLongTwoVectorDoubleVectorInputFormat extends
   * Second edge has a destination vertex 3, edge value 0.7.
   * [1,[4,3],[[2,2.1],[3,0.7]]]
   */
-  class JsonLongTwoVectorDoubleVectorReader extends
+  class JsonLongTwoVectorDoubleTwoVectorReader extends
     TextVertexReaderFromEachLineProcessedHandlingExceptions<JSONArray,
     JSONException> {
-    /** The length of value vector */
+    /** The length of vertex value vector */
     private int cardinality = 0;
     /** Data vector */
     private Vector vector = null;
@@ -100,21 +100,24 @@ public class JsonLongTwoVectorDoubleVectorInputFormat extends
     }
 
     @Override
-    protected Iterable<Edge<LongWritable, DoubleWithVectorWritable>> getEdges(
-        JSONArray jsonVertex) throws JSONException, IOException {
+    protected Iterable<Edge<LongWritable, DoubleWithTwoVectorWritable>>
+    getEdges(JSONArray jsonVertex)
+      throws JSONException, IOException {
       JSONArray jsonEdgeArray = jsonVertex.getJSONArray(2);
-      List<Edge<LongWritable, DoubleWithVectorWritable>> edges =
+      List<Edge<LongWritable, DoubleWithTwoVectorWritable>> edges =
           Lists.newArrayListWithCapacity(jsonEdgeArray.length());
       for (int i = 0; i < jsonEdgeArray.length(); ++i) {
         JSONArray jsonEdge = jsonEdgeArray.getJSONArray(i);
         edges.add(EdgeFactory.create(new LongWritable(jsonEdge.getLong(0)),
-          new DoubleWithVectorWritable(jsonEdge.getDouble(1), vector.clone())));
+          new DoubleWithTwoVectorWritable(jsonEdge.getDouble(1), vector.clone(),
+              vector.clone())));
       }
       return edges;
     }
 
     @Override
-    protected Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable>
+    protected Vertex<LongWritable, TwoVectorWritable,
+    DoubleWithTwoVectorWritable>
     handleException(Text line, JSONArray jsonVertex, JSONException e) {
       throw new IllegalArgumentException(
           "Couldn't get vertex from line " + line, e);

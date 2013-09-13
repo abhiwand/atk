@@ -28,29 +28,33 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * Writable to handle serialization of a vector and the associated value
+ * Writable to handle serialization of a two vectors and the associated value
  */
-public final class DoubleWithVectorWritable implements Writable {
+public final class DoubleWithTwoVectorWritable implements Writable {
   /** Data of type double */
   private double data = 0d;
-  /** Data of type vector */
-  private final VectorWritable vectorWritable = new VectorWritable();
-
+  /** Data of type vector on out edge */
+  private final VectorWritable vectorOutWritable = new VectorWritable();
+  /** Data of type vector on in edge */
+  private final VectorWritable vectorInWritable = new VectorWritable();
   /**
    * Default constructor
    */
-  public DoubleWithVectorWritable() {
+  public DoubleWithTwoVectorWritable() {
   }
 
   /**
    * Constructor
    *
    * @param data of type double
-   * @param vector of type Vector
+   * @param vectorOut of type Vector
+   * @param vectorIn of type Vector
    */
-  public DoubleWithVectorWritable(double data, Vector vector) {
+  public DoubleWithTwoVectorWritable(double data, Vector vectorOut,
+      Vector vectorIn) {
     this.data = data;
-    this.vectorWritable.set(vector);
+    this.vectorOutWritable.set(vectorOut);
+    this.vectorInWritable.set(vectorIn);
   }
 
   /**
@@ -74,10 +78,10 @@ public final class DoubleWithVectorWritable implements Writable {
   /**
    * Getter
    *
-   * @return vector of type Vector
+   * @return vectorOut of type Vector
    */
-  public Vector getVector() {
-    return vectorWritable.get();
+  public Vector getVectorOut() {
+    return vectorOutWritable.get();
   }
 
   /**
@@ -85,20 +89,40 @@ public final class DoubleWithVectorWritable implements Writable {
    *
    * @param vector of type Vector
    */
-  public void setVector(Vector vector) {
-    vectorWritable.set(vector);
+  public void setVectorOut(Vector vector) {
+    vectorOutWritable.set(vector);
+  }
+
+  /**
+   * Getter
+   *
+   * @return vectorIn of type Vector
+   */
+  public Vector getVectorIn() {
+    return vectorInWritable.get();
+  }
+
+  /**
+   * Setter
+   *
+   * @param vector of type Vector
+   */
+  public void setVectorIn(Vector vector) {
+    vectorInWritable.set(vector);
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
     data = in.readDouble();
-    vectorWritable.readFields(in);
+    vectorOutWritable.readFields(in);
+    vectorInWritable.readFields(in);
   }
 
   @Override
   public void write(DataOutput out) throws IOException {
     out.writeDouble(data);
-    vectorWritable.write(out);
+    vectorOutWritable.write(out);
+    vectorInWritable.write(out);
   }
 
   /**
@@ -108,8 +132,9 @@ public final class DoubleWithVectorWritable implements Writable {
    * @return DoubleWithVectorWritable
    * @throws IOException
    */
-  public static DoubleWithVectorWritable read(DataInput in) throws IOException {
-    DoubleWithVectorWritable writable = new DoubleWithVectorWritable();
+  public static DoubleWithTwoVectorWritable read(DataInput in)
+    throws IOException {
+    DoubleWithTwoVectorWritable writable = new DoubleWithTwoVectorWritable();
     writable.readFields(in);
     return writable;
   }
@@ -119,12 +144,14 @@ public final class DoubleWithVectorWritable implements Writable {
    *
    * @param out of type DataOutput
    * @param data of type double
-   * @param ssv of type SequentialAccessSparseVector
+   * @param ssvOut of type SequentialAccessSparseVector
+   * @param ssvIn of type SequentialAccessSparseVector
    * @throws IOException
    */
   public static void write(DataOutput out, double data,
-    SequentialAccessSparseVector ssv) throws IOException {
-    new DoubleWithVectorWritable(data, ssv).write(out);
+    SequentialAccessSparseVector ssvOut,
+    SequentialAccessSparseVector ssvIn) throws IOException {
+    new DoubleWithTwoVectorWritable(data, ssvOut, ssvIn).write(out);
   }
 
 }
