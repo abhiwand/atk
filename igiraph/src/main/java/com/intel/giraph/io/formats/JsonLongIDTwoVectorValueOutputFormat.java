@@ -19,12 +19,13 @@
 package com.intel.giraph.io.formats;
 
 import org.apache.giraph.graph.Vertex;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.Vector;
 import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
+//import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,11 +35,11 @@ import java.io.IOException;
 /**
  * VertexOutputFormat that supports JSON encoded vertices featuring
  * <code>TwoVector</code> values and <code>DoubleWithVector</code>
- * out-edge weight/message
+ * out-edge weight and message data
  */
 public class JsonLongIDTwoVectorValueOutputFormat extends
   TextVertexOutputFormat<LongWritable, TwoVectorWritable,
-  DoubleWithVectorWritable> {
+  Writable> {
 
   @Override
   public TextVertexWriter createVertexWriter(
@@ -48,14 +49,15 @@ public class JsonLongIDTwoVectorValueOutputFormat extends
 
  /**
   * VertexWriter that supports vertices with <code>TwoVector</code>
-  * values and <code>DoubleWithVector</code> out-edge weight/message.
+  * values and <code>DoubleWithVector</code> out-edge weight and
+  * message data.
   */
-  private class JsonLongIDTwoVectorValueWriter extends
+  protected class JsonLongIDTwoVectorValueWriter extends
     TextVertexWriterToEachLine {
     @Override
     public Text convertVertexToLine(
-      Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> vertex)
-      throws IOException {
+      Vertex<LongWritable, TwoVectorWritable, Writable>
+      vertex) throws IOException {
       JSONArray jsonVertex = new JSONArray();
       try {
         jsonVertex.put(vertex.getId().get());

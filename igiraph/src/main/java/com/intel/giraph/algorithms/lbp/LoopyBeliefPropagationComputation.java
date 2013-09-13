@@ -19,6 +19,7 @@
 package com.intel.giraph.algorithms.lbp;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.giraph.Algorithm;
@@ -27,9 +28,10 @@ import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.log4j.Logger;
 import org.apache.mahout.math.Vector;
+
 import com.intel.mahout.math.TwoVectorWritable;
 import com.intel.mahout.math.IdWithVectorWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
+import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 
 /**
  * Loopy belief propagation on MRF
@@ -38,7 +40,7 @@ import com.intel.mahout.math.DoubleWithVectorWritable;
     name = "Loopy belief propagation"
 )
 public class LoopyBeliefPropagationComputation extends BasicComputation
-  <LongWritable, TwoVectorWritable, DoubleWithVectorWritable,
+  <LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable,
   IdWithVectorWritable> {
   /** Custom argument for number of super steps */
   public static final String MAX_SUPERSTEPS = "lbp.maxSupersteps";
@@ -46,7 +48,14 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
   public static final String SMOOTHING = "lbp.smoothing";
   /** Custom argument for the convergence threshold */
   public static final String THRESHOLD = "lbp.threshold";
-  /** Logger */
+  /**
+   * Custom argument for the anchor threshold [0, 1]
+   * the vertices whose normalized prior values are greater than
+   * this threshold will not be updated.
+   * */
+  public static final String ANCHOR_THRESHOLD = "lbp.anchorThreshold";
+
+  /** Class logger */
   private static final Logger LOG =
     Logger.getLogger(LoopyBeliefPropagationComputation.class);
   /** Number of super steps */
@@ -55,15 +64,27 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
   private float smoothing = 2f;
   /** The convergence threshold controlling if sending message */
   private float threshold = 0.001f;
+  /** The anchor threshold controlling if updating a vertex */
+  private float anchorThreshold = 1f;
+
+  @Override
+  public void preSuperstep() {
+    // Set custom parameters
+    maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
+    smoothing = getConf().getFloat(SMOOTHING, 2f);
+    threshold = getConf().getFloat(THRESHOLD, 0.001f);
+    anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, 1f);
+    anchorThreshold = (float) Math.log(anchorThreshold);
+  }
 
   /**
    * initialize vertex and edges
-   * @param vertex
-   *        vertex of the graph
+   *
+   * @param vertex of the graph
    */
   private void initializeVertexEdges(Vertex<LongWritable, TwoVectorWritable,
-    DoubleWithVectorWritable> vertex) {
-    /* normalize prior and posterior */
+    DoubleWithTwoVectorWritable> vertex) {
+    // normalize prior and posterior
     Vector prior = vertex.getValue().getPriorVector();
     Vector posterior = vertex.getValue().getPosteriorVector();
     double sum = 0d;
@@ -84,30 +105,41 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
       prior.setQuick(i, Math.log(posterior.getQuick(i)));
     }
     /* initialize belief */
-    for (Edge<LongWritable, DoubleWithVectorWritable> edge :
+    for (Edge<LongWritable, DoubleWithTwoVectorWritable> edge :
       vertex.getEdges()) {
-      edge.getValue().getVector().assign(0d);
+      edge.getValue().getVectorOut().assign(0d);
+      edge.getValue().getVectorIn().assign(0d);
     }
   }
 
   @Override
   public void compute(Vertex<LongWritable, TwoVectorWritable,
-    DoubleWithVectorWritable> vertex, Iterable<IdWithVectorWritable>
+    DoubleWithTwoVectorWritable> vertex, Iterable<IdWithVectorWritable>
     messages) throws IOException {
     long step = getSuperstep();
     if (step == 0) {
-      // Set custom parameters
-      maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
-      smoothing = getConf().getFloat(SMOOTHING, 2f);
-      threshold = getConf().getFloat(THRESHOLD, 0.001f);
-      // Initialize vertex and edges
       initializeVertexEdges(vertex);
       return;
     }
-    // update posterior
-    Vector posterior = vertex.getValue().getPriorVector();
+    // Update vectorIn from message
+    HashMap<Long, Vector> map = new HashMap<Long, Vector>();
     for (IdWithVectorWritable message : messages) {
-      posterior = posterior.plus(message.getVector());
+      map.put(message.getId(), message.getVector());
+    }
+    if (map.size() > 0) {
+      for (Edge<LongWritable, DoubleWithTwoVectorWritable> edge :
+        vertex.getMutableEdges()) {
+        long id = edge.getTargetVertexId().get();
+        if (map.containsKey(id)) {
+          edge.getValue().setVectorIn(map.get(id));
+        }
+      }
+    }
+    // Update posterior
+    Vector posterior = vertex.getValue().getPriorVector();
+    for (Edge<LongWritable, DoubleWithTwoVectorWritable> edge :
+      vertex.getEdges()) {
+      posterior = posterior.plus(edge.getValue().getVectorIn());
     }
     posterior = posterior.plus(-posterior.maxValue());
 
@@ -117,16 +149,11 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
       // update belief
       Vector belief = vertex.getValue().getPriorVector().clone();
       Vector tempVector = posterior;
-      for (Edge<LongWritable, DoubleWithVectorWritable> edge :
-        vertex.getEdges()) {
+      for (Edge<LongWritable, DoubleWithTwoVectorWritable> edge :
+        vertex.getMutableEdges()) {
         double weight = edge.getValue().getData();
-        Vector oldBelief = edge.getValue().getVector();
-        for (IdWithVectorWritable message : messages) {
-          if (edge.getTargetVertexId().get() == message.getId()) {
-            tempVector = posterior.minus(message.getVector());
-            break;
-          }
-        }
+        Vector oldBelief = edge.getValue().getVectorOut();
+        tempVector = posterior.minus(edge.getValue().getVectorIn());
         for (int i = 0; i < tempVector.size(); i++) {
           double sum = 0d;
           for (int j = 0; j < tempVector.size(); j++) {
@@ -138,19 +165,22 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
         belief = belief.plus(-belief.maxValue());
         double delta = belief.minus(oldBelief).norm(1d) / belief.size();
         if (delta > threshold) {
-          edge.getValue().setVector(belief);
+          edge.getValue().setVectorOut(belief);
           newMessage.setVector(belief);
           sendMessage(edge.getTargetVertexId(), newMessage);
         }
       }
     }
-    // normalize posterior
-    for (int i = 0; i < posterior.size(); i++) {
-      posterior.setQuick(i, Math.exp(posterior.getQuick(i)));
+    // update posterior if this isn't an anchor vertex
+    if (vertex.getValue().getPriorVector().maxValue() < anchorThreshold) {
+      // normalize posterior
+      for (int i = 0; i < posterior.size(); i++) {
+        posterior.setQuick(i, Math.exp(posterior.getQuick(i)));
+      }
+      posterior = posterior.normalize(1d);
+      TwoVectorWritable vertexValue = vertex.getValue();
+      vertexValue.setPosteriorVector(posterior);
     }
-    posterior = posterior.normalize(1d);
-    TwoVectorWritable vertexValue = vertex.getValue();
-    vertexValue.setPosteriorVector(posterior);
 
     vertex.voteToHalt();
   }
