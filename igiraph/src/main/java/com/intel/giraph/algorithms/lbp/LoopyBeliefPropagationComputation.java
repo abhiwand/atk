@@ -26,7 +26,6 @@ import org.apache.giraph.Algorithm;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
-import org.apache.log4j.Logger;
 import org.apache.mahout.math.Vector;
 
 import com.intel.mahout.math.TwoVectorWritable;
@@ -54,10 +53,9 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
    * this threshold will not be updated.
    * */
   public static final String ANCHOR_THRESHOLD = "lbp.anchorThreshold";
+  /** Constant value for minimum prior value */
+  public static final double MIN_PRIOR_VALUE = 0.001d;
 
-  /** Class logger */
-  private static final Logger LOG =
-    Logger.getLogger(LoopyBeliefPropagationComputation.class);
   /** Number of super steps */
   private int maxSupersteps = 10;
   /** The Ising smoothing parameter */
@@ -91,11 +89,10 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
     for (int i = 0; i < prior.size(); i++) {
       double v = prior.getQuick(i);
       if (v < 0d) {
-        LOG.error("Vertex ID: " + vertex.getId() +
+        throw new IllegalArgumentException("Vertex ID: " + vertex.getId() +
             " has a negative prior value.");
-        System.exit(-1);
-      } else if (v < 0.001d) {
-        v = 0.001d;
+      } else if (v < MIN_PRIOR_VALUE) {
+        v = MIN_PRIOR_VALUE;
         prior.setQuick(i, v);
       }
       sum += v;
@@ -104,7 +101,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
       posterior.setQuick(i, prior.getQuick(i) / sum);
       prior.setQuick(i, Math.log(posterior.getQuick(i)));
     }
-    /* initialize belief */
+    // initialize belief
     for (Edge<LongWritable, DoubleWithTwoVectorWritable> edge :
       vertex.getEdges()) {
       edge.getValue().getVectorOut().assign(0d);

@@ -25,7 +25,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.Vector;
 import com.intel.mahout.math.TwoVectorWritable;
-//import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.json.JSONArray;
 import org.json.JSONException;

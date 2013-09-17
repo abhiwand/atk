@@ -78,7 +78,7 @@ public class JsonLongTwoVectorDoubleTwoVectorInputFormat extends
 
     @Override
     protected LongWritable getId(JSONArray jsonVertex) throws JSONException,
-              IOException {
+    IOException {
       return new LongWritable(jsonVertex.getLong(0));
     }
 
@@ -92,8 +92,8 @@ public class JsonLongTwoVectorDoubleTwoVectorInputFormat extends
           double[] data = new double[cardinality];
           vector = new DenseVector(data);
         } else {
-          System.err.println("Error in input data: different cardinality!");
-          System.exit(-1);
+          throw new IllegalArgumentException("Error in input data:" +
+            "different cardinality!");
         }
       }
       return new TwoVectorWritable(priorVector, vector.clone());
