@@ -127,18 +127,18 @@ public class AveragePathLengthComputation extends BasicComputation
           Vertex<LongWritable, DistanceMapWritable, NullWritable> vertex)
         throws IOException, InterruptedException {
 
-        String vertex_id_str = vertex.getId().toString();
+        String destination_vid_str = vertex.getId().toString();
         HashMap<Long, Integer> distance_map = vertex.getValue().getDistanceMap();
 
-        long num_destinations = 0;
+        long num_sources = 0;
         long sum_hop_counts = 0;
         for (Map.Entry<Long, Integer> entry : distance_map.entrySet()) {
-          num_destinations++;
+          num_sources++;
           sum_hop_counts += entry.getValue();
         } 
         getRecordWriter().write(
-            new Text(vertex_id_str),
-            new Text(num_destinations + "\t" + sum_hop_counts));
+            new Text(destination_vid_str),
+            new Text(num_sources + "\t" + sum_hop_counts));
       }
     }
   }
