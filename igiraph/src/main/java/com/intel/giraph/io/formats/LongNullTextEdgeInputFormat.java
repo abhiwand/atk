@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.giraph.io.formats;
+package com.intel.giraph.io.formats;
 
 import org.apache.giraph.io.EdgeReader;
 import org.apache.giraph.utils.LongPair;
@@ -25,6 +25,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.giraph.io.formats.TextEdgeInputFormat;
 
 import java.io.IOException;
 import java.util.regex.Pattern;
