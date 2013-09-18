@@ -18,8 +18,9 @@
 
 package com.intel.giraph.io.formats;
 
+import com.intel.giraph.utils.LongPair;
+
 import org.apache.giraph.io.EdgeReader;
-import org.apache.giraph.utils.LongPair;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;

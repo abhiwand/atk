@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.giraph.utils;
+package com.intel.giraph.utils;
 
 /**
  * A pair of long.
