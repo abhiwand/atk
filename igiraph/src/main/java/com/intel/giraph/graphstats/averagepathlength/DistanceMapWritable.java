@@ -49,7 +49,7 @@ public class DistanceMapWritable implements Writable, Configurable {
   }
 
   /**
-   * @brief Getter that returns distance map.
+   * Getter that returns distance map.
    *
    * @return Distance map (HashMap).
    */
@@ -58,7 +58,7 @@ public class DistanceMapWritable implements Writable, Configurable {
   }
 
   /**
-   * @brief Check if the source vertex has been observed.
+   * Check if the source vertex has been observed.
    *
    * @param source Source vertex id.
    *
@@ -69,7 +69,7 @@ public class DistanceMapWritable implements Writable, Configurable {
   }
 
   /**
-   * @brief Returns the distance from source to current vertex.
+   * Returns the distance from source to current vertex.
    *
    * @param source Source vertex id.
    *
@@ -80,12 +80,11 @@ public class DistanceMapWritable implements Writable, Configurable {
   }
 
   /**
-   * @brief Add source vertex id and associated distance to the HashMap.
+   * Add source vertex id and associated distance to the HashMap.
    *
    * @param source Source vertex id.
    * @param distance Distance from source to current vertex.
    *
-   * @return 
    */
   public void distanceMapPut(long source, int distance) {
     distance_map_.put(source, distance);

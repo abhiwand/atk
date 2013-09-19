@@ -54,7 +54,7 @@ public class AveragePathLengthComputation extends BasicComputation
   private static final Logger LOG = Logger.getLogger(AveragePathLengthComputation.class);
 
   /**
-   * @brief Flood message to all its direct neighbors with a new distance value.
+   * Flood message to all its direct neighbors with a new distance value.
    *
    * @param vertex Vertex
    * @param source Source vertex ID.
@@ -84,11 +84,15 @@ public class AveragePathLengthComputation extends BasicComputation
 
     // Process every message received from its direct neighbors
     for (HopCountWritable message : messages) {
-      long source = message.getSource();    // source vertex id
-      int distance = message.getDistance(); // distnace between source and current verte
+      // source vertex id
+      long source = message.getSource();    
+
+      // distnace between source and current vertex
+      int distance = message.getDistance(); 
 
       if (source == vertex.getId().get()) {
-        continue; // packet returned to the original sender
+        // packet returned to the original sender
+        continue; 
       } 
 
       if (vertex.getValue().distanceMapContainsKey(source)) {

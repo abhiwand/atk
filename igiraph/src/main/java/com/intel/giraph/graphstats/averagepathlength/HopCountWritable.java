@@ -42,7 +42,7 @@ public class HopCountWritable implements Writable, Configurable {
     private int distance_;
 
     /**
-     * @brief Default constructor.
+     * Default constructor.
      */
     public HopCountWritable() {
         this.source_ = 0;
@@ -50,7 +50,7 @@ public class HopCountWritable implements Writable, Configurable {
     }
 
     /**
-     * @brief Constructor.
+     * Constructor.
      *
      * @param source Source vertex id.
      * @param distance Distance from source vertex id to the next vertex.
@@ -61,7 +61,7 @@ public class HopCountWritable implements Writable, Configurable {
     }
 
     /**
-     * @brief Returns source vertex id.
+     * Returns source vertex id.
      *
      * @return Source vertex id.
      */
@@ -70,7 +70,7 @@ public class HopCountWritable implements Writable, Configurable {
     }
 
     /**
-     * @brief Returns the distance value.
+     * Returns the distance value.
      *
      * @return Distance.
      */
