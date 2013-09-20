@@ -103,7 +103,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
     }
     // initialize belief
     for (Edge<LongWritable, DoubleWithTwoVectorWritable> edge :
-      vertex.getEdges()) {
+      vertex.getMutableEdges()) {
       edge.getValue().getVectorOut().assign(0d);
       edge.getValue().getVectorIn().assign(0d);
     }
