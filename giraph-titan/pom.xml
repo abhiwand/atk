@@ -28,7 +28,7 @@ under the License.
   <description>Giraph Titan input/output classes</description>
 
   <properties>
-    <top.dir>${project.basedir}/..</top.dir>
+    <top.dir>${project.basedir}</top.dir>
     <aurelius.version>0.3.1</aurelius.version>
   </properties>
 

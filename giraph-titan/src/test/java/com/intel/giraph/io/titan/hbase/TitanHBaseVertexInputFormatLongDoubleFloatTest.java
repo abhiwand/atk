@@ -1,19 +1,3 @@
-/* Copyright (C) 2013 Intel Corporation.
- *     All rights reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- */
 package com.intel.giraph.io.titan.hbase;
 
 import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
@@ -114,116 +98,106 @@ import org.apache.giraph.utils.InternalVertexRunner;
  * TitanHBaseVertexInputFormat. No special preparation needed before the test.
  */
 public class TitanHBaseVertexInputFormatLongDoubleFloatTest extends
-		TitanHBaseVertexInputFormatLongDoubleFloat {
-	static final byte[] EDGE_STORE_FAMILY = Bytes
-			.toBytes(Backend.EDGESTORE_NAME);
-	public TitanTestGraph graph;
-	public StandardTitanTx tx;
-	protected String[] EXPECT_JSON_OUTPUT;
-	private ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, DoubleWritable> conf;
+        TitanHBaseVertexInputFormatLongDoubleFloat {
+    static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
+    public TitanTestGraph graph;
+    public StandardTitanTx tx;
+    protected String[] EXPECT_JSON_OUTPUT;
+    private ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, DoubleWritable> conf;
 
-	@Before
-	@SuppressWarnings("unchecked")
-	public void setUp() throws Exception {
-		GiraphConfiguration giraphConf = new GiraphConfiguration();
-		giraphConf.setComputationClass(EmptyComputation.class);
-		giraphConf
-				.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleFloat.class);
-		giraphConf
-				.setVertexOutputFormatClass(JsonLongDoubleFloatDoubleVertexOutputFormat.class);
-		GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
-		GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
-		GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan");
-		GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
-		VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "age");
-		EDGE_PROPERTY_KEY_LIST.set(giraphConf, "time");
-		EDGE_LABEL_LIST.set(giraphConf, "battled");
-		STORAGE_READ_ONLY.set(giraphConf, "false");
-		AUTOTYPE.set(giraphConf, "none");
-		
-	    HBaseAdmin hbaseAdmin=new HBaseAdmin(giraphConf);
-	    if (hbaseAdmin.isTableAvailable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf))) {
-	        hbaseAdmin.disableTable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf));
-	        hbaseAdmin.deleteTable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf));
-	    }
+    @Before
+    @SuppressWarnings("unchecked")
+    public void setUp() throws Exception {
+        GiraphConfiguration giraphConf = new GiraphConfiguration();
+        giraphConf.setComputationClass(EmptyComputation.class);
+        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleFloat.class);
+        giraphConf.setVertexOutputFormatClass(JsonLongDoubleFloatDoubleVertexOutputFormat.class);
+        GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
+        GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
+        GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan");
+        GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
+        VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "age");
+        EDGE_PROPERTY_KEY_LIST.set(giraphConf, "time");
+        EDGE_LABEL_LIST.set(giraphConf, "battled");
+        STORAGE_READ_ONLY.set(giraphConf, "false");
+        AUTOTYPE.set(giraphConf, "none");
 
-		conf = new ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, DoubleWritable>(
-				giraphConf);
+        HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
+        if (hbaseAdmin.isTableAvailable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf))) {
+            hbaseAdmin.disableTable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf));
+            hbaseAdmin.deleteTable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf));
+        }
 
-		BaseConfiguration baseConfig = GiraphToTitanGraphFactory
-				.generateTitanConfiguration(conf, "giraph.titan.input");
-		GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(
-				baseConfig);
-		graph = new TitanTestGraph(titanConfig);
-		tx = graph.newTransaction(new TransactionConfig(titanConfig, false));
+        conf = new ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, DoubleWritable>(
+                giraphConf);
 
-	}
+        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
+                "giraph.titan.input");
+        GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(baseConfig);
+        graph = new TitanTestGraph(titanConfig);
+        tx = graph.newTransaction(new TransactionConfig(titanConfig, false));
 
-	@Test
-	public void TitanHBaseVertexInputLongDoubleFloatTest() throws Exception {
+    }
 
-		TitanKey age = tx.makeType().name("age").unique(Direction.OUT)
-				.dataType(Long.class).makePropertyKey();
-		TitanKey time = tx.makeType().name("time").dataType(Integer.class)
-				.unique(Direction.OUT).makePropertyKey();
-		TitanLabel battled = tx.makeType().name("battled").makeEdgeLabel();
+    @Test
+    public void TitanHBaseVertexInputLongDoubleFloatTest() throws Exception {
 
-		TitanVertex n1 = tx.addVertex();
-		TitanProperty p1 = n1.addProperty(age, 1000L);
-		TitanVertex n2 = tx.addVertex();
-		TitanProperty p2 = n2.addProperty(age, 2000L);
-		TitanEdge e1 = n1.addEdge(battled, n2);
-		e1.setProperty(time, 333);
+        TitanKey age = tx.makeType().name("age").unique(Direction.OUT).dataType(Long.class).makePropertyKey();
+        TitanKey time = tx.makeType().name("time").dataType(Integer.class).unique(Direction.OUT)
+                .makePropertyKey();
+        TitanLabel battled = tx.makeType().name("battled").makeEdgeLabel();
 
-		tx.commit();
+        TitanVertex n1 = tx.addVertex();
+        TitanProperty p1 = n1.addProperty(age, 1000L);
+        TitanVertex n2 = tx.addVertex();
+        TitanProperty p2 = n2.addProperty(age, 2000L);
+        TitanEdge e1 = n1.addEdge(battled, n2);
+        e1.setProperty(time, 333);
 
-		EXPECT_JSON_OUTPUT = new String[] { "[8,2000,[]]", "[4,1000,[[8,333]]]" };
+        tx.commit();
 
-		Iterable<String> results = InternalVertexRunner.run(conf,
-				new String[0], new String[0]);
-		Assert.assertNotNull(results);
+        EXPECT_JSON_OUTPUT = new String[] { "[8,2000,[]]", "[4,1000,[[8,333]]]" };
 
-		Iterator<String> result = results.iterator();
-		int i = 0;
-		while (i < EXPECT_JSON_OUTPUT.length && result.hasNext()) {
-			String expectedLine = EXPECT_JSON_OUTPUT[i];
-			String resultLine = (String) result.next();
-			System.out.println("expected: " + expectedLine + ", got: "
-					+ resultLine);
-			assertEquals(resultLine, expectedLine);
-			i++;
-		}
+        Iterable<String> results = InternalVertexRunner.run(conf, new String[0], new String[0]);
+        Assert.assertNotNull(results);
 
-	}
+        Iterator<String> result = results.iterator();
+        int i = 0;
+        while (i < EXPECT_JSON_OUTPUT.length && result.hasNext()) {
+            String expectedLine = EXPECT_JSON_OUTPUT[i];
+            String resultLine = result.next();
+            System.out.println("expected: " + expectedLine + ", got: " + resultLine);
+            assertEquals(resultLine, expectedLine);
+            i++;
+        }
 
-	@After
-	public void done() throws IOException {
-		close();
-		System.out
-				.println("***Done with TitanHBaseVertexInputLongDoubleFloatTest****");
-	}
+    }
 
-	public void close() {
-		if (null != tx && tx.isOpen())
-			tx.rollback();
+    @After
+    public void done() throws IOException {
+        close();
+        System.out.println("***Done with TitanHBaseVertexInputLongDoubleFloatTest****");
+    }
 
-		if (null != graph)
-			graph.shutdown();
-	}
+    public void close() {
+        if (null != tx && tx.isOpen())
+            tx.rollback();
 
-	/*
-	 * Test compute method that sends each edge a notification of its parents.
-	 * The test set only has a 1-1 parent-to-child ratio for this unit test.
-	 */
-	public static class EmptyComputation
-			extends
-			BasicComputation<LongWritable, DoubleWritable, FloatWritable, DoubleWritable> {
+        if (null != graph)
+            graph.shutdown();
+    }
 
-		@Override
-		public void compute(
-				Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
-				Iterable<DoubleWritable> messages) throws IOException {
-			vertex.voteToHalt();
-		}
-	}
+    /*
+     * Test compute method that sends each edge a notification of its parents.
+     * The test set only has a 1-1 parent-to-child ratio for this unit test.
+     */
+    public static class EmptyComputation extends
+            BasicComputation<LongWritable, DoubleWritable, FloatWritable, DoubleWritable> {
+
+        @Override
+        public void compute(Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
+                Iterable<DoubleWritable> messages) throws IOException {
+            vertex.voteToHalt();
+        }
+    }
 }
