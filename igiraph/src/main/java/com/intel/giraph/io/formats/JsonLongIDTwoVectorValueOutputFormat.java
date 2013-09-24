@@ -33,8 +33,7 @@ import java.io.IOException;
 
 /**
  * VertexOutputFormat that supports JSON encoded vertices featuring
- * <code>TwoVector</code> values and <code>DoubleWithVector</code>
- * out-edge weight and message data
+ * <code>Long</code> id and <code>TwoVector</code> values.
  */
 public class JsonLongIDTwoVectorValueOutputFormat extends
   TextVertexOutputFormat<LongWritable, TwoVectorWritable,
@@ -47,9 +46,8 @@ public class JsonLongIDTwoVectorValueOutputFormat extends
   }
 
  /**
-  * VertexWriter that supports vertices with <code>TwoVector</code>
-  * values and <code>DoubleWithVector</code> out-edge weight and
-  * message data.
+  * VertexWriter that supports vertices with <code>Long</code> id
+  * and <code>TwoVector</code> values.
   */
   protected class JsonLongIDTwoVectorValueWriter extends
     TextVertexWriterToEachLine {
