@@ -15,25 +15,8 @@ CFG_DIR=`pwd`/../cfg
 echo "install hbase prerequisites - maven"
 HAS_MAVEN=`which mvn | wc -l`
 if [ $HAS_MAVEN = 0 ]; then
-    cd ~/Downloads
-    wget $MAVEN_URL/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz
-    tar xvfz apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME
-    if [ ! -d $MAVEN_REPO_DIR ]; then
-          mkdir $MAVEN_REPO_DIR
-    fi
-    sudo chmod -R 775 $MAVEN_REPO_DIR
-    SETTING="<localRepository>$MAVEN_REPO_DIR</localRepository>"
-    sed -i '50d' $CFG_DIR/settings.xml
-    sed -i "50i$SETTING" $CFG_DIR/settings.xml
-
-    if [ $LAB_MACHINE = "yes" ]; then
-       cp $CFG_DIR/settings.xml $MAVEN_HOME/apache-maven-$MAVEN_VERSION/conf/
-    fi
-    sudo tee -a /etc/profile.d/gaousr.sh> /dev/null <<EOF
-export PATH=$PATH:$MAVEN_HOME/apache-maven-$MAVEN_VERSION/bin
-EOF
-    source /etc/profile
-#    sudo chown -R  root:root $MAVEN_HOME/apache-maven-$MAVEN_VERSION/bin
+   echo "install giraph prerequisites - maven"
+   source install_maven.sh $MAVEN_HOME $MAVEN_URL $MAVEN_VERSION $CFG_DIR
 fi
 
 
@@ -76,7 +59,7 @@ cd $HBASE_HOME/hbase-$HBASE_VERSION/lib
 ZK=`ls zookeeper*jar`
 HADOOP_CLASSPATH=$HADOOP_CLASSPATH:"$HBASE_HOME/hbase-$HBASE_VERSION/lib/$ZK"
 PB=`ls protobuf*jar`
-HADOOP_CLASSPATH=$HADOOP_CLASSPATH:"$HBASE_HOME/hbase-$HBASE_VERSION/lib/$BP"
+HADOOP_CLASSPATH=$HADOOP_CLASSPATH:"$HBASE_HOME/hbase-$HBASE_VERSION/lib/$PB"
 GUAVA=`ls guava*jar`
 HADOOP_CLASSPATH=$HADOOP_CLASSPATH:"$HBASE_HOME/hbase-$HBASE_VERSION/lib/$GUAVA"
 

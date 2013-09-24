@@ -3,7 +3,7 @@
 MONGODB_HOME=$1
 MONGODB_VERION=$2
 TEST_DIR=`pwd`/../test
-CURRENT_DIR=`pwd`
+pushd
 
 cd  $MONGODB_HOME/mongodb-linux-x86_64-$MONGODB_VERION/bin
 ./bsondump $TEST_DIR/zips.bson > $TEST_DIR/new-zips.json
@@ -16,4 +16,4 @@ else
 fi
 
 echo " "
-cd $CURRENT_DIR
+popd

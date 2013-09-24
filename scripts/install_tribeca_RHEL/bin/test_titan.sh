@@ -1,8 +1,7 @@
 #!/bin/bash
 
 TITAN_HOME=$1
-CURRENT_DIR=`pwd`
-
+pushd
 
 echo "test titan"
 cd $TITAN_HOME/titan
@@ -15,4 +14,4 @@ else
 fi
 
 echo " "
-cd $CURRENT_DIR
+popd

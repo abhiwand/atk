@@ -1,8 +1,7 @@
 #!/bin/bash
 
 MAHOUT_HOME=$1
-CURRENT_DIR=`pwd`
-
+pushd
 
 #mahout test case
 cd ../test
@@ -43,5 +42,4 @@ if [ $NOT_STARTED ]; then
    stop-all.sh
 fi
 echo " "
-cd $CURRENT_DIR
-#https://cwiki.apache.org/confluence/display/MAHOUT/Clustering+of+synthetic+control+data
+popd

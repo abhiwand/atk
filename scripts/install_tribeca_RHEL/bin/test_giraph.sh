@@ -2,8 +2,7 @@
 
 GIRAPH_HOME=$1
 GIRAPH_JAR_VERSION=$2
-CURRENT_DIR=`pwd`
-
+pushd
 
 #giraph test case
 cd ../test
@@ -55,4 +54,5 @@ if [ $NOT_STARTED ]; then
    stop-all.sh
 fi
 echo " "
-cd $CURRENT_DIR
+
+popd

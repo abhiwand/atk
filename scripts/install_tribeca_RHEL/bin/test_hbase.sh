@@ -3,8 +3,7 @@
 
 HBASE_HOME=$1
 HBASE_VERSION=$2
-CURRENT_DIR=`pwd`
-
+pushd
 
 echo "test hbase"
 cd $HBASE_HOME/hbase-$HBASE_VERSION
@@ -26,4 +25,4 @@ fi
 
 echo " "
 
-cd $CURRENT_DIR
+popd

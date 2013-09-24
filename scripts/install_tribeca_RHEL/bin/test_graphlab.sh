@@ -3,7 +3,7 @@
 GRAPHLAB_HOME=$1
 HADOOP_HOME=$2
 HADOOP_VERSION=$3
-CURRENT_DIR=`pwd`
+pushd
 
 cd ../test
 echo `hostname` > hostfile
@@ -50,4 +50,4 @@ if [ $NOT_STARTED ]; then
 fi
 
 echo " "
-cd $CURRENT_DIR
+popd

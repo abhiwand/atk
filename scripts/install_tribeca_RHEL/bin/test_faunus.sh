@@ -1,9 +1,8 @@
 #!/bin/bash
 
 FAUNUS_HOME=$1
-CURRENT_DIR=`pwd`
 
-
+pushd
 echo "test faunus"
 cd $FAUNUS_HOME/faunus
 mvn test >& faunus.log
@@ -15,4 +14,4 @@ else
 fi
 
 echo " "
-cd $CURRENT_DIR
+popd

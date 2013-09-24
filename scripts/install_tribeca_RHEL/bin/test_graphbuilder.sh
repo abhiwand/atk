@@ -1,8 +1,7 @@
 #!/bin/bash
 
 GRAPHBUILDER_HOME=$1
-CURRENT_DIR=`pwd`
-
+pushd
 
 cd $GRAPHBUILDER_HOME/graphbuilder
 mvn package >& gb.log
@@ -14,4 +13,4 @@ else
 fi
 
 echo " "
-cd $CURRENT_DIR
+popd
