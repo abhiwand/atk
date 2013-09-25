@@ -18,10 +18,8 @@
 
 package com.intel.mahout.math;
 
-import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
-import org.apache.mahout.math.VectorWritable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,16 +28,14 @@ import java.io.IOException;
 /**
  * Writable to handle serialization of a vector and an associated Id
  */
-public final class IdWithVectorWritable implements Writable {
-  /** Data of type long */
-  private long id = 0L;
-  /** Data of type Vector */
-  private final VectorWritable vectorWritable = new VectorWritable();
+public final class IdWithVectorWritable extends
+  NumberWithVectorWritable<Long> {
 
   /**
    * Default constructor
    */
   public IdWithVectorWritable() {
+    super();
   }
 
   /**
@@ -49,56 +45,19 @@ public final class IdWithVectorWritable implements Writable {
    * @param vector of type Vector
    */
   public IdWithVectorWritable(long id, Vector vector) {
-    this.id = id;
-    this.vectorWritable.set(vector);
-  }
-
-  /**
-   * Setter
-   *
-   * @param id of type long
-   */
-  public void setId(long id) {
-    this.id = id;
-  }
-
-  /**
-   * Getter
-   *
-   * @return id of type long
-   */
-  public long getId() {
-    return id;
-  }
-
-  /**
-   * Getter
-   *
-   * @return vector of type Vector
-   */
-  public Vector getVector() {
-    return vectorWritable.get();
-  }
-
-  /**
-   * Setter
-   *
-   * @param vector of type Vector
-   */
-  public void setVector(Vector vector) {
-    vectorWritable.set(vector);
+    super(id, vector);
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    id = in.readLong();
-    vectorWritable.readFields(in);
+    setData(in.readLong());
+    super.readFields(in);
   }
 
   @Override
   public void write(DataOutput out) throws IOException {
-    out.writeLong(id);
-    vectorWritable.write(out);
+    out.writeLong(getData());
+    super.write(out);
   }
 
   /**
@@ -118,7 +77,7 @@ public final class IdWithVectorWritable implements Writable {
    * Write id and vector to DataOutput
    *
    * @param out of type DataOutput
-   * @param id of type long
+   * @param id of type Long
    * @param ssv of type SequentailAccessSparseVector
    * @throws IOException
    */

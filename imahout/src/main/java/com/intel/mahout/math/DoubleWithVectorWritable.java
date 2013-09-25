@@ -18,10 +18,8 @@
 
 package com.intel.mahout.math;
 
-import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
-import org.apache.mahout.math.VectorWritable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,16 +28,14 @@ import java.io.IOException;
 /**
  * Writable to handle serialization of a vector and an associated data
  */
-public final class DoubleWithVectorWritable implements Writable {
-  /** Data of type double */
-  private double data = 0d;
-  /** Data of type Vector */
-  private final VectorWritable vectorWritable = new VectorWritable();
+public final class DoubleWithVectorWritable extends
+  NumberWithVectorWritable<Double> {
 
   /**
    * Default constructor
    */
   public DoubleWithVectorWritable() {
+    super();
   }
 
   /**
@@ -49,56 +45,19 @@ public final class DoubleWithVectorWritable implements Writable {
    * @param vector of type Vector
    */
   public DoubleWithVectorWritable(double data, Vector vector) {
-    this.data = data;
-    this.vectorWritable.set(vector);
-  }
-
-  /**
-   * Setter
-   *
-   * @param data of type double
-   */
-  public void setData(double data) {
-    this.data = data;
-  }
-
-  /**
-   * Getter
-   *
-   * @return data of type double
-   */
-  public double getData() {
-    return data;
-  }
-
-  /**
-   * Getter
-   *
-   * @return vector of type Vector
-   */
-  public Vector getVector() {
-    return vectorWritable.get();
-  }
-
-  /**
-   * Setter
-   *
-   * @param vector of type Vector
-   */
-  public void setVector(Vector vector) {
-    vectorWritable.set(vector);
+    super(data, vector);
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
-    data = in.readDouble();
-    vectorWritable.readFields(in);
+    setData(in.readDouble());
+    super.readFields(in);
   }
 
   @Override
   public void write(DataOutput out) throws IOException {
-    out.writeDouble(data);
-    vectorWritable.write(out);
+    out.writeDouble(getData());
+    super.write(out);
   }
 
   /**
@@ -118,7 +77,7 @@ public final class DoubleWithVectorWritable implements Writable {
    * Write data and vector to DataOutput
    *
    * @param out of type DataOutput
-   * @param data of type double
+   * @param data of type Double
    * @param ssv of type SequentailAccessSparseVector
    * @throws IOException
    */

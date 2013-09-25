@@ -100,8 +100,7 @@ public class JsonLongTwoVectorDoubleVectorInputFormat extends
 
     @Override
     protected Iterable<Edge<LongWritable, DoubleWithVectorWritable>>
-    getEdges(JSONArray jsonVertex)
-      throws JSONException, IOException {
+    getEdges(JSONArray jsonVertex) throws JSONException, IOException {
       JSONArray jsonEdgeArray = jsonVertex.getJSONArray(2);
       List<Edge<LongWritable, DoubleWithVectorWritable>> edges =
           Lists.newArrayListWithCapacity(jsonEdgeArray.length());
@@ -114,8 +113,7 @@ public class JsonLongTwoVectorDoubleVectorInputFormat extends
     }
 
     @Override
-    protected Vertex<LongWritable, TwoVectorWritable,
-    DoubleWithVectorWritable>
+    protected Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable>
     handleException(Text line, JSONArray jsonVertex, JSONException e) {
       throw new IllegalArgumentException(
           "Couldn't get vertex from line " + line, e);

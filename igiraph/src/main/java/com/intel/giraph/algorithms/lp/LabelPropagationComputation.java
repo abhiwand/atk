@@ -115,7 +115,7 @@ public class LabelPropagationComputation extends BasicComputation
     }
     // send out messages
     IdWithVectorWritable newMessage = new IdWithVectorWritable();
-    newMessage.setId(vertex.getId().get());
+    newMessage.setData(vertex.getId().get());
     newMessage.setVector(vertex.getValue().getPriorVector());
     sendMessageToAllEdges(vertex, newMessage);
   }
@@ -141,7 +141,7 @@ public class LabelPropagationComputation extends BasicComputation
       // Update edge vector value from message
       HashMap<Long, Vector> map = new HashMap<Long, Vector>();
       for (IdWithVectorWritable message : messages) {
-        map.put(message.getId(), message.getVector());
+        map.put(message.getData(), message.getVector());
       }
       if (map.size() > 0) {
         for (Edge<LongWritable, DoubleWithVectorWritable> edge :
@@ -167,7 +167,7 @@ public class LabelPropagationComputation extends BasicComputation
       if (delta > convergenceThreshold) {
         vertex.getValue().setPosteriorVector(belief);
         IdWithVectorWritable newMessage = new IdWithVectorWritable();
-        newMessage.setId(vertex.getId().get());
+        newMessage.setData(vertex.getId().get());
         newMessage.setVector(belief);
         sendMessageToAllEdges(vertex, newMessage);
       }

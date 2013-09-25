@@ -1,21 +1,20 @@
 package com.intel.giraph.algorithms.lbp;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.Map;
 
-import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.junit.Test;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.intel.giraph.io.formats.JsonLongTwoVectorDoubleTwoVectorInputFormat;
 import com.intel.giraph.io.formats.JsonLongIDTwoVectorValueOutputFormat;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import com.intel.giraph.io.formats.JsonLongTwoVectorDoubleTwoVectorInputFormat;
 
 
 public class LoopyBeliefPropagationComputationTest {

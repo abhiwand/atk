@@ -1,21 +1,21 @@
 package com.intel.giraph.algorithms.lp;
 
-import org.junit.Test;
-import java.util.Map;
-
-import org.apache.giraph.utils.InternalVertexRunner;
-import org.apache.giraph.conf.GiraphConfiguration;
-import org.json.JSONArray;
-import org.json.JSONException;
-
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.intel.giraph.io.formats.JsonLongTwoVectorDoubleVectorInputFormat;
-import com.intel.giraph.io.formats.JsonLongIDTwoVectorValueOutputFormat;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
+
+import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.utils.InternalVertexRunner;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.junit.Test;
+
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.intel.giraph.io.formats.JsonLongIDTwoVectorValueOutputFormat;
+import com.intel.giraph.io.formats.JsonLongTwoVectorDoubleVectorInputFormat;
 
 public class LabelPropagationComputationTest {
 

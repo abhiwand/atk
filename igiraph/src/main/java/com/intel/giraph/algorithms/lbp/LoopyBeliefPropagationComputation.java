@@ -121,7 +121,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
     // Update vectorIn from message
     HashMap<Long, Vector> map = new HashMap<Long, Vector>();
     for (IdWithVectorWritable message : messages) {
-      map.put(message.getId(), message.getVector());
+      map.put(message.getData(), message.getVector());
     }
     if (map.size() > 0) {
       for (Edge<LongWritable, DoubleWithTwoVectorWritable> edge :
@@ -142,7 +142,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation
 
     if (step < maxSupersteps) {
       IdWithVectorWritable newMessage = new IdWithVectorWritable();
-      newMessage.setId(vertex.getId().get());
+      newMessage.setData(vertex.getId().get());
       // update belief
       Vector belief = vertex.getValue().getPriorVector().clone();
       Vector tempVector = posterior;
