@@ -54,7 +54,7 @@ import java.util.Set;
  * Load Giraph Vertex with Long type Vertex Id Double type vertex value Float
  * type edge value
  */
-@SuppressWarnings("unchecked")
+//@SuppressWarnings("unchecked")
 public class GiraphVertexLoaderLongDoubleFloat {
 
     /** Class logger. */

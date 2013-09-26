@@ -14,7 +14,6 @@ import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.utils.NoOpComputation;
 import org.apache.giraph.io.formats.JsonLongDoubleFloatDoubleVertexOutputFormat;
 import org.apache.giraph.utils.InternalVertexRunner;
 
@@ -33,15 +32,11 @@ import org.apache.commons.configuration.BaseConfiguration;
 import com.thinkaurelius.titan.diskstorage.Backend;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
 import com.thinkaurelius.titan.graphdb.transaction.TransactionConfig;
 import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
 import com.tinkerpop.blueprints.Direction;
-import com.google.common.collect.Iterables;
-import com.google.common.base.Charsets;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Iterator;
 
 import org.junit.Before;

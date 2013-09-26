@@ -12,7 +12,6 @@ import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_A
 
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.utils.InternalVertexRunner;
 
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector;
@@ -21,28 +20,21 @@ import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.formats.JsonLongIDTwoVectorValueOutputFormat;
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation;
 
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.DenseVector;
-
 import com.intel.mahout.math.TwoVectorWritable;
 import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.commons.configuration.BaseConfiguration;
 
 import com.thinkaurelius.titan.diskstorage.Backend;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
 import com.thinkaurelius.titan.graphdb.transaction.TransactionConfig;
 import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
 import com.tinkerpop.blueprints.Direction;
 import com.google.common.collect.Iterables;
-import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
 
 import org.json.JSONException;
@@ -127,25 +119,25 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
         TitanLabel friend = tx.makeType().name("friend").makeEdgeLabel();
 
         TitanVertex n0 = tx.addVertex();
-        TitanProperty p0 = n0.addProperty(red, 1d);
-        TitanProperty p1 = n0.addProperty(blue, 0.1d);
-        TitanProperty p2 = n0.addProperty(yellow, 0.1d);
+        n0.addProperty(red, 1d);
+        n0.addProperty(blue, 0.1d);
+        n0.addProperty(yellow, 0.1d);
         TitanVertex n1 = tx.addVertex();
-        TitanProperty p3 = n1.addProperty(red, 0.2d);
-        TitanProperty p4 = n1.addProperty(blue, 2d);
-        TitanProperty p5 = n1.addProperty(yellow, 2d);
+        n1.addProperty(red, 0.2d);
+        n1.addProperty(blue, 2d);
+        n1.addProperty(yellow, 2d);
         TitanVertex n2 = tx.addVertex();
-        TitanProperty p6 = n2.addProperty(red, 0.3d);
-        TitanProperty p7 = n2.addProperty(blue, 0.3d);
-        TitanProperty p8 = n2.addProperty(yellow, 3d);
+        n2.addProperty(red, 0.3d);
+        n2.addProperty(blue, 0.3d);
+        n2.addProperty(yellow, 3d);
         TitanVertex n3 = tx.addVertex();
-        TitanProperty p9 = n3.addProperty(red, 0.4d);
-        TitanProperty p10 = n3.addProperty(blue, 4d);
-        TitanProperty p11 = n3.addProperty(yellow, 0.4d);
+        n3.addProperty(red, 0.4d);
+        n3.addProperty(blue, 4d);
+        n3.addProperty(yellow, 0.4d);
         TitanVertex n4 = tx.addVertex();
-        TitanProperty p12 = n4.addProperty(red, 5d);
-        TitanProperty p13 = n4.addProperty(blue, 5d);
-        TitanProperty p14 = n4.addProperty(yellow, 0.5d);
+        n4.addProperty(red, 5d);
+        n4.addProperty(blue, 5d);
+        n4.addProperty(yellow, 0.5d);
 
         TitanEdge e0 = n0.addEdge(friend, n1);
         e0.setProperty(weight, 1.0d);

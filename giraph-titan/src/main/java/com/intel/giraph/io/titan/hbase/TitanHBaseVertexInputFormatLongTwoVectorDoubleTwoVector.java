@@ -208,7 +208,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          */
         @Override
         public Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> getCurrentVertex()
-               throws IOException, InterruptedException {
+            throws IOException, InterruptedException {
             return vertex;
         }
 
