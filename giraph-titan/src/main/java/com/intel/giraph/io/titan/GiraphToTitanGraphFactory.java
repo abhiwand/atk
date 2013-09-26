@@ -49,7 +49,7 @@ public class GiraphToTitanGraphFactory {
     /**
      * generateTitanConfiguration from Giraph configuration
      *
-     * @param config : giraph configuration
+     * @param config : Giraph configuration
      * @param prefix : prefix to remove for Titan
      * @return BaseConfiguration
      */

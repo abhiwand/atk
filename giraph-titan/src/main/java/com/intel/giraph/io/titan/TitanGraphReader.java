@@ -63,7 +63,7 @@ public class TitanGraphReader extends StandardTitanGraph {
     /**
      * readGiraphVertexLongDoubleFloat
      *
-     * @param conf : giraph configuration
+     * @param conf : Giraph configuration
      * @param key : key value of HBase
      * @param entries : columnValues from HBase
      * @return Giraph Vertex
@@ -75,6 +75,33 @@ public class TitanGraphReader extends StandardTitanGraph {
         for (final Entry data : entries) {
             try {
                 final GiraphVertexLoaderLongDoubleFloat.RelationFactory factory = loader.getFactory();
+                super.edgeSerializer.readRelation(factory, data, tx);
+                factory.build();
+            } catch (NullPointerException e) {
+                LOG.info("Skip this entry because no valid property for Giraph to read");
+                e.printStackTrace();
+            }
+        }
+        return loader.getVertex();
+    }
+
+    /**
+     * readGiraphVertexLongDoubleFloat
+     *
+     * @param conf : Giraph configuration
+     * @param key : key value of HBase
+     * @param entries : columnValues from HBase
+     * @return Giraph Vertex
+     */
+    protected Vertex readGiraphVertexLoaderLongTwoVectorDoubleTwoVector(
+            final ImmutableClassesGiraphConfiguration conf, final ByteBuffer key, Iterable<Entry> entries) {
+        final GiraphVertexLoaderLongTwoVectorDoubleTwoVector
+                  loader = new GiraphVertexLoaderLongTwoVectorDoubleTwoVector(
+                      conf, new StaticByteBuffer(key));
+        for (final Entry data : entries) {
+            try {
+                final GiraphVertexLoaderLongTwoVectorDoubleTwoVector.RelationFactory factory = loader
+                        .getFactory();
                 super.edgeSerializer.readRelation(factory, data, tx);
                 factory.build();
             } catch (NullPointerException e) {

@@ -60,9 +60,10 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
     }
 
     /**
-     * readGiraphVertexLongDoubleFloat
+     * readGiraphVertexLongDoubleFloat to read Giraph Vertex with long vertex id
+     * double vertex value float edge value
      *
-     * @param conf : of giraph
+     * @param conf : Giraph configuration
      * @param key : key from HBase input data
      * @param columnMap : columnMap from HBase input data, in
      *            Map<qualifier,Map<timestamp,value>> format
@@ -73,6 +74,24 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
 
         return super.readGiraphVertexLongDoubleFloat(conf, ByteBuffer.wrap(key), new HBaseMapIterable(
                 columnMap));
+    }
+
+    /**
+     * readGiraphVertexLongVectorDouble to read Giraph Vertex with long vertex
+     * id doublevector vertex value double edge value
+     *
+     * @param conf : Giraph configuration
+     * @param key : key from HBase input data
+     * @param columnMap : columnMap from HBase input data, in
+     *            Map<qualifier,Map<timestamp,value>> format
+     * @return Vertex : Giraph Vertex
+     */
+    public Vertex readGiraphVertexLoaderLongTwoVectorDoubleTwoVector(
+            ImmutableClassesGiraphConfiguration conf, byte[] key,
+            final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap) {
+
+        return super.readGiraphVertexLoaderLongTwoVectorDoubleTwoVector(conf, ByteBuffer.wrap(key),
+                new HBaseMapIterable(columnMap));
     }
 
     /**

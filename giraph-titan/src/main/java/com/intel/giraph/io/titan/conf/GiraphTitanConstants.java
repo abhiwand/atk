@@ -47,10 +47,11 @@ public class GiraphTitanConstants {
     public static final StrConfOption GIRAPH_TITAN = new StrConfOption("giraph.titan", "giraph.titan.input",
             "Giraph/Titan prefix");
     /** Storage backend */
-    public static final StrConfOption STORAGE_READ_ONLY = new StrConfOption("storage.read-only", "false",
-            "read only or not");
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_READ_ONLY = new StrConfOption(
+            "giraph.titan.input.storage.read-only", "false", "read only or not");
     /** backend autotype */
-    public static final StrConfOption AUTOTYPE = new StrConfOption("autotype", "none", "autotype");
+    public static final StrConfOption GIRAPH_TITAN_AUTOTYPE = new StrConfOption(
+            "giraph.titan.input.autotype", "none", "autotype");
     /** the list of vertex properties to filter during data loading from Titan */
     public static final StrConfOption VERTEX_PROPERTY_KEY_LIST = new StrConfOption(
             "vertex.property.key.list", "age", "the vertex property keys which Giraph needs");

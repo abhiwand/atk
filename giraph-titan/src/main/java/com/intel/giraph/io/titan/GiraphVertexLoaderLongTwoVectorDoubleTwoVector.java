@@ -26,16 +26,16 @@ import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_LABEL_LIS
 import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.VERTEX_PROPERTY_KEY_LIST;
 
-import com.google.common.base.Preconditions;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.FloatWritable;
+import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.DenseVector;
 
+import com.intel.mahout.math.TwoVectorWritable;
+import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.diskstorage.StaticBuffer;
 import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
@@ -43,68 +43,102 @@ import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
+import com.google.common.base.Preconditions;
+
 import org.apache.log4j.Logger;
-import java.util.Arrays;
+
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
- * Load Giraph Vertex with Long type Vertex Id Double type vertex value Float
- * type edge value
+ * Load Giraph Vertex with Long type Vertex Id Double vector type vertex value
+ * Double type edge value
  */
 @SuppressWarnings("unchecked")
-public class GiraphVertexLoaderLongDoubleFloat {
+public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
 
     /** Class logger. */
-    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleFloat.class);
+    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongTwoVectorDoubleTwoVector.class);
     /** whether it is Titan sytem type */
     private boolean isSystemType = false;
     /** Long type vertex id */
     private long vertexId = 0;
     /** Giraph Vertex */
-    private Vertex<LongWritable, DoubleWritable, FloatWritable> vertex = null;
+    private Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> vertex = null;
     /** Vertex properties to filter */
-    private String[] vertexPropertyKeyList;
+    private final String[] vertexPropertyKeyList;
     /** Edge properties to filter */
-    private String[] edgePropertyKeyList;
+    private final String[] edgePropertyKeyList;
     /** Edge labels to filter */
-    private String[] edgeLabelList;
-    /** HashSet of configured vertex properties */
-    private Set<String> vertexPropertyKeyValues = null;
-    /** HashSet of configured edge properties */
-    private Set<String> edgePropertyKeyValues = null;
+    private final String[] edgeLabelList;
+    /** HashMap of configured vertex properties */
+    private final Map<String, Integer> vertexPropertyKeyValues = new HashMap<String, Integer>();
+    /** HashMap of configured edge properties */
+    private final Map<String, Integer> edgePropertyKeyValues = new HashMap<String, Integer>();
     /** HashSet of configured edge labels */
-    private Set<String> edgeLabelValues = null;
+    private final Map<String, Integer> edgeLabelValues = new HashMap<String, Integer>();
+    /** vertex value vector */
+    private TwoVectorWritable vertexValueVector = null;
+    /** Data vector */
+    private Vector vector = null;
 
     /**
-     * GiraphVertexLoaderLongDoubleFloat constructor
+     * GiraphVertexLoaderLongVectorVector Constructor with key
      *
-     * @param conf : Giraph configuration
-     * @param key input from HBase
+     * @param conf Giraph configuration
+     * @param key StaticBuffer from HBase
      */
-    public GiraphVertexLoaderLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf,
+    public GiraphVertexLoaderLongTwoVectorDoubleTwoVector(final ImmutableClassesGiraphConfiguration conf,
             final StaticBuffer key) {
         this(conf, IDHandler.getKeyID(key));
     }
 
     /**
-     * GiraphVertexLoaderLongDoubleFloat constructor
+     * GiraphVertexLoaderLongVectorVector Constructor with ID
      *
-     * @param conf : Giraph configuration
+     * @param conf Giraph configuration
      * @param id vertex id
      */
-    public GiraphVertexLoaderLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf, final long id) {
-        vertex = conf.createVertex();
-        vertex.initialize(new LongWritable(id), new DoubleWritable(0));
-        vertexId = id;
+    public GiraphVertexLoaderLongTwoVectorDoubleTwoVector(final ImmutableClassesGiraphConfiguration conf,
+            final long id) {
         vertexPropertyKeyList = VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
         edgePropertyKeyList = EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
         edgeLabelList = EDGE_LABEL_LIST.get(conf).split(",");
-        vertexPropertyKeyValues = new HashSet<String>(Arrays.asList(vertexPropertyKeyList));
-        edgePropertyKeyValues = new HashSet<String>(Arrays.asList(edgePropertyKeyList));
-        edgeLabelValues = new HashSet<String>(Arrays.asList(edgeLabelList));
+        int size = vertexPropertyKeyList.length;
+        for (int i = 0; i < size; i++) {
+            vertexPropertyKeyValues.put(vertexPropertyKeyList[i], i);
+        }
+        for (int i = 0; i < edgePropertyKeyList.length; i++) {
+            edgePropertyKeyValues.put(edgePropertyKeyList[i], i);
+        }
+        for (int i = 0; i < edgeLabelList.length; i++) {
+            edgeLabelValues.put(edgeLabelList[i], i);
+        }
+
+        // set up vertex Value
+        vertex = conf.createVertex();
+        double[] data = new double[size];
+        vector = new DenseVector(data);
+        vertexValueVector = new TwoVectorWritable(vector.clone(), vector.clone());
+        vertex.initialize(new LongWritable(id), vertexValueVector);
+        vertexId = id;
+
+    }
+
+    /**
+     * get DenseVector from Vertex value array
+     *
+     * @param valueVector the vertex value vector to use
+     * @return denseVector the generated DenseVector
+     * @throws IOException
+     */
+    protected DenseVector getDenseVector(Vector valueVector) throws IOException {
+        double[] values = new double[valueVector.size()];
+        for (int i = 0; i < valueVector.size(); i++) {
+            values[i] = valueVector.get(i);
+        }
+        return new DenseVector(values);
     }
 
     /**
@@ -233,30 +267,32 @@ public class GiraphVertexLoaderLongDoubleFloat {
             if (this.type.isPropertyKey()) {
                 Preconditions.checkNotNull(value);
                 // filter vertex property key name
-                if (vertexPropertyKeyValues.contains(this.type.getName())) {
+                String propertyName = this.type.getName();
+                if (vertexPropertyKeyValues.containsKey(propertyName)) {
                     final Object vertexValueObject = this.value;
                     final double vertexValue = ((Number) vertexValueObject).doubleValue();
-                    vertex.setValue(new DoubleWritable(vertexValue));
+                    Vector priorVector = vertexValueVector.getPriorVector();
+                    priorVector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
+                    vertex.setValue(new TwoVectorWritable(priorVector, vector.clone()));
                 }
             } else {
                 Preconditions.checkArgument(this.type.isEdgeLabel());
                 // filter Edge Label
                 if (this.relationID > 0) {
-                    if (edgeLabelValues.contains(this.type.getName())) {
+                    if (edgeLabelValues.containsKey(this.type.getName())) {
+                        double edgeValue = 0.0d;
                         if (this.direction.equals(Direction.OUT)) {
-                            float edgeValue = 0;
                             for (final Map.Entry<String, Object> entry : this.properties.entrySet()) {
-                                // filter Edge Property
-                                if ((entry.getValue() != null) &&
-                                        edgePropertyKeyValues.contains(entry.getKey())) {
+                                if (entry.getValue() != null &&
+                                        edgePropertyKeyValues.containsKey(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
-                                    edgeValue = ((Number) edgeValueObject).floatValue();
+                                    edgeValue = ((Number) edgeValueObject).doubleValue();
                                 }
                             }
-                            Edge<LongWritable, FloatWritable> edge = EdgeFactory.create(new LongWritable(
-                                    this.otherVertexID), new FloatWritable(edgeValue));
+                            Edge<LongWritable, DoubleWithTwoVectorWritable> edge = EdgeFactory.create(
+                                    new LongWritable(this.otherVertexID), new DoubleWithTwoVectorWritable(
+                                            edgeValue, vector.clone(), vector.clone()));
                             vertex.addEdge(edge);
-
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();
                         }

@@ -7,15 +7,16 @@ import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_S
 import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.STORAGE_READ_ONLY;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.AUTOTYPE;
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
 
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.utils.NoOpComputation;
-import org.apache.giraph.io.VertexReader;
+import org.apache.giraph.io.formats.JsonLongDoubleFloatDoubleVertexOutputFormat;
+import org.apache.giraph.utils.InternalVertexRunner;
 
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleFloat;
 import com.intel.giraph.io.titan.TitanTestGraph;
@@ -24,61 +25,24 @@ import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.commons.configuration.BaseConfiguration;
 
 import com.thinkaurelius.titan.diskstorage.Backend;
-import com.thinkaurelius.titan.diskstorage.StaticBuffer;
-import com.thinkaurelius.titan.diskstorage.hbase.HBaseKeyColumnValueStore;
-import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
 import com.thinkaurelius.titan.graphdb.transaction.TransactionConfig;
 import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.thinkaurelius.titan.graphdb.transaction.addedrelations.AddedRelationsContainer;
-import com.thinkaurelius.titan.graphdb.transaction.addedrelations.SimpleBufferAddedRelations;
-import com.thinkaurelius.titan.graphdb.internal.InternalRelation;
-import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
-import com.thinkaurelius.titan.graphdb.types.system.SystemTypeManager;
-import com.thinkaurelius.titan.graphdb.internal.InternalType;
-import com.thinkaurelius.titan.graphdb.internal.InternalVertex;
-import com.thinkaurelius.titan.graphdb.relations.AttributeUtil;
-import com.thinkaurelius.titan.graphdb.relations.EdgeDirection;
-import com.thinkaurelius.titan.graphdb.relations.StandardEdge;
-import com.thinkaurelius.titan.graphdb.relations.StandardProperty;
-import com.thinkaurelius.titan.graphdb.internal.ElementLifeCycle;
 import com.tinkerpop.blueprints.Direction;
-//import com.tinkerpop.blueprints.Vertex;
 import com.google.common.collect.Iterables;
 import com.google.common.base.Charsets;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.lang.reflect.Method;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -87,18 +51,15 @@ import org.junit.Assert;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import org.apache.giraph.io.formats.JsonLongDoubleFloatDoubleVertexOutputFormat;
-import org.apache.giraph.utils.InternalVertexRunner;
+
+
 
 /**
  * This test firstly load a graph to Titan/HBase, then read out the graph from
  * TitanHBaseVertexInputFormat. No special preparation needed before the test.
  */
-public class TitanHBaseVertexInputFormatLongDoubleFloatTest extends
-        TitanHBaseVertexInputFormatLongDoubleFloat {
+public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
     static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
     public TitanTestGraph graph;
     public StandardTitanTx tx;
@@ -116,11 +77,11 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest extends
         GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
         GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan");
         GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
+        GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
+        GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
         VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "age");
         EDGE_PROPERTY_KEY_LIST.set(giraphConf, "time");
         EDGE_LABEL_LIST.set(giraphConf, "battled");
-        STORAGE_READ_ONLY.set(giraphConf, "false");
-        AUTOTYPE.set(giraphConf, "none");
 
         HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
         if (hbaseAdmin.isTableAvailable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf))) {
