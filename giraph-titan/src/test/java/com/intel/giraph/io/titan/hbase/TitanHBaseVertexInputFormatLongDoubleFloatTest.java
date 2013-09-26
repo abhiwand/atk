@@ -62,7 +62,6 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
     private ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, DoubleWritable> conf;
 
     @Before
-//    @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         GiraphConfiguration giraphConf = new GiraphConfiguration();
         giraphConf.setComputationClass(EmptyComputation.class);

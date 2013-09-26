@@ -55,7 +55,7 @@ import static junit.framework.Assert.assertTrue;
 
 /**
  * This test firstly load a graph to Titan/HBase, then read out the graph from
- * TitanHBaseVertexInputFormat. No special preparation needed before the test.
+ * TitanHBaseVertexInputFormat. Then run algorithm with input data.
  */
 public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
     static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
@@ -66,7 +66,6 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
     private ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> conf;
 
     @Before
-    @SuppressWarnings("unchecked")
     public void setUp() throws Exception {
         giraphConf = new GiraphConfiguration();
         giraphConf.setComputationClass(LoopyBeliefPropagationComputation.class);
