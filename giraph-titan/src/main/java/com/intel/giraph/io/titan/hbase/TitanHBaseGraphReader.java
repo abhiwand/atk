@@ -115,11 +115,11 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
         public HBaseMapIterable(final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap) {
             Preconditions.checkNotNull(columnMap);
             this.columnMap = columnMap;
-
+/*
             for (java.util.Map.Entry<byte[], NavigableMap<Long, byte[]>> columnEntry : columnMap.entrySet()) {
                 NavigableMap<Long, byte[]> cellMap = columnEntry.getValue();
-
             }
+            */
         }
 
         /**

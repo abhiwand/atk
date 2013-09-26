@@ -55,7 +55,6 @@ import java.util.Map;
  * Load Giraph Vertex with Long type Vertex Id Double vector type vertex value
  * Double type edge value
  */
-@SuppressWarnings("unchecked")
 public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
 
     /** Class logger. */

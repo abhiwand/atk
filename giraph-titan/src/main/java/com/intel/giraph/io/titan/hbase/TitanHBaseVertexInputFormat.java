@@ -35,7 +35,6 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.log4j.Logger;
 
 /**
  *
@@ -48,18 +47,13 @@ import org.apache.log4j.Logger;
  * @param <V> Vertex value
  * @param <E> Edge value
  */
-@SuppressWarnings("rawtypes")
 public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, V extends Writable, E extends Writable>
         extends VertexInputFormat<I, V, E> {
 
     /**
-     * delegate HBase table input format
+     * use HBase table input format
      */
     protected static final TableInputFormat INPUT_FORMAT = new TableInputFormat();
-    /**
-     * logger
-     */
-    private static final Logger LOG = Logger.getLogger(TitanHBaseVertexInputFormat.class);
 
     /**
      * Takes an instance of RecordReader that supports HBase row-key, result
