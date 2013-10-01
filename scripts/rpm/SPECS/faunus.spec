@@ -1,6 +1,6 @@
 Summary: Faunus graph analytics library
 
-Version: 0.4.0
+Version: 0.3.2
 
 License: Apache
 
@@ -16,8 +16,6 @@ Provides: gremlin
 
 Release: 1
 
-Source: faunus-%{version}.tar.gz
-
 URL: <TODO>
 
 Buildroot: /tmp/faunusrpm
@@ -28,9 +26,11 @@ The Faunus distributed graph database. Packaged by Intel as part of the Tribeca 
 
 %prep
 
-%setup -q
+tar xf ../SOURCES/faunus-$FAUNUS_VERSION.tar.gz
 
 %build
+
+cd faunus-$FAUNUS_VERSION
 
 mvn clean compile -DskipTests
 
@@ -38,24 +38,24 @@ mvn clean compile -DskipTests
 
 rm -fr $RPM_BUILD_ROOT
 
+cd faunus-$FAUNUS_VERSION
+
 mvn install -DskipTests
 
-mkdir -p $RPM_BUILD_ROOT/usr/lib/faunus
-mkdir -p $RPM_BUILD_ROOT/usr/bin
-cp target/faunus-0.4.0*.jar $RPM_BUILD_ROOT/usr/lib/faunus
-echo "(cd /usr/lib/faunus && bin/gremlin.sh)" > $RPM_BUILD_ROOT/usr/bin/faunus-gremlin
+mkdir -p $RPM_BUILD_ROOT/usr/lib/titan/ext/faunus
 
-chmod 755 $RPM_BUILD_ROOT/usr/bin/faunus-gremlin
+cp target/faunus-*.jar $RPM_BUILD_ROOT/usr/lib/titan/ext/faunus
 
 %clean
 
 rm -rf $RPM_BUILD_ROOT
 
+cd faunus-$FAUNUS_VERSION
+
 mvn clean
 
 %files
 
-%{_bindir}/faunus-gremlin
-%{_exec_prefix}/lib/faunus
+%{_exec_prefix}/lib/titan/ext/faunus
 
 

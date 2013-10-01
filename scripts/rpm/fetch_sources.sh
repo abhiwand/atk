@@ -13,7 +13,7 @@ fi
 
 if [ ! -f faunus-$FAUNUS_VERSION.tar.gz ]
   then 
-    wget https://github.com/thinkaurelius/faunus/archive/$FAUNUS_VERSION.tar.gz -O faunus-$TITAN_VERSION.tar.gz
+    wget https://github.com/thinkaurelius/faunus/archive/$FAUNUS_VERSION.tar.gz -O faunus-$FAUNUS_VERSION.tar.gz
 fi
 
 if [ ! -f giraph-$GIRAPH_VERSION.tar.gz ]
