@@ -1,10 +1,9 @@
 #!/bin/bash
 
 TITAN_HOME=$1
-pushd
 
 echo "test titan"
-cd $TITAN_HOME/titan
+pushd $TITAN_HOME/titan
 mvn test >& titan.log
 REAL=`grep Failures titan.log | tail -n 1 | sed 's/,/ /g' | awk '{print $5+$7}'` 
 if [ $REAL = 0 ]; then

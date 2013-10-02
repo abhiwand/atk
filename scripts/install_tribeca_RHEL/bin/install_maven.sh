@@ -5,9 +5,7 @@ MAVEN_URL=$2
 MAVEN_VERSION=$3
 CFG_DIR=$4
 
-pushd
-
-cd ~/Downloads
+pushd ~/Downloads
 wget $MAVEN_URL/$MAVEN_VERSION/binaries/apache-maven-$MAVEN_VERSION-bin.tar.gz
 tar xvfz apache-maven-$MAVEN_VERSION-bin.tar.gz -C $MAVEN_HOME
 if [ ! -d $MAVEN_REPO_DIR ]; then

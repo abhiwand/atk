@@ -1,10 +1,9 @@
 #!/bin/bash
 
 MAHOUT_HOME=$1
-pushd
 
 #mahout test case
-cd ../test
+pushd ../test
 NOT_STARTED=`jps |grep DataNode | wc -l`
 if [ $NOT_STARTED = 0 ]; then
    echo "start hadoop"

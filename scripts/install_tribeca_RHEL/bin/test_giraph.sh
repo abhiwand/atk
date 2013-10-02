@@ -2,10 +2,9 @@
 
 GIRAPH_HOME=$1
 GIRAPH_JAR_VERSION=$2
-pushd
 
 #giraph test case
-cd ../test
+pushd ../test
 NOT_STARTED=`jps |grep DataNode | wc -l`
 if [ $NOT_STARTED = 0 ]; then
    echo "start hadoop"

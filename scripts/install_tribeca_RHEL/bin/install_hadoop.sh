@@ -19,6 +19,12 @@ GROUP_NAME=`id -g -n $USER_NAME`
    echo "check whether disks are mounted"
 #   disk_array=( $(sudo fdisk -l | grep "Disk /dev" | sed 's/://g'| awk '{print $2}') )
 #   disk_array=( $(lsscsi | grep -v SSD | awk -F"/" '{print $3}') )
+HAS_LSSCSI=`which lsscsi | wc -l`
+if [ $HAS_LSSCSI = 0 ]; then
+   echo "install lsscsi"
+   sudo yum install -y lsscsi
+fi
+
    disk_array=( $(lsscsi | grep -v SSD | awk  '{print $6}') )
    
    #set up hadoop data drives
@@ -32,7 +38,7 @@ GROUP_NAME=`id -g -n $USER_NAME`
 
    for (( i=$HDFS_START_IDX; i<=$END_IDX; i++ ))
    do
-      formatted=`blkid ${disk_array[$i]} | wc -l`
+      formatted=`sudo blkid ${disk_array[$i]} | wc -l`
       DISK=$HDFS_DIR_PREFIX$i
       if [ $formatted = 0  ]; then
          echo "data disk ${disk_array[$i]} is not formatted"

@@ -3,9 +3,8 @@
 GRAPHLAB_HOME=$1
 HADOOP_HOME=$2
 HADOOP_VERSION=$3
-pushd
 
-cd ../test
+pushd ../test
 echo `hostname` > hostfile
 
 NOT_STARTED=`jps |grep DataNode | wc -l`

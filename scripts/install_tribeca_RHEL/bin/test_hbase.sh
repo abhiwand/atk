@@ -3,10 +3,9 @@
 
 HBASE_HOME=$1
 HBASE_VERSION=$2
-pushd
 
 echo "test hbase"
-cd $HBASE_HOME/hbase-$HBASE_VERSION
+pushd $HBASE_HOME/hbase-$HBASE_VERSION
 mvn test  >& hbase.log
 REAL=`grep Failures hbase.log | tail -n 1 | sed 's/,/ /g' | awk '{print $5}'` 
 
