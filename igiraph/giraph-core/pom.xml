@@ -323,7 +323,7 @@
     <dependency>
       <groupId>com.intel.mahout</groupId>
       <artifactId>imahout</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.giraph</groupId>
