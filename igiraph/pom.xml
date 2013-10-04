@@ -28,11 +28,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.intel.igiraph</groupId>
-  <artifactId>tribeca</artifactId>
+  <artifactId>tribeca-igiraph</artifactId>
   <packaging>pom</packaging>
 	<version>0.5</version>
-  <name>Intel Tribeca Parent</name>
-  <description>Tribeca : Large Scale Graph Analytics</description>
+  <name>Intel Tribeca iGiraph Parent</name>
+  <description>Tribeca iGiraph : Large Scale Graph Processing on Hadoop</description>
   <inceptionYear>2013</inceptionYear>
 
   <properties>
@@ -416,14 +416,20 @@
     </dependency>
     <dependency>
        <groupId>com.intel.giraph</groupId>
-       <artifactId>igiraph</artifactId>
+       <artifactId>giraph-core</artifactId>
        <version>${project.version}</version>
     </dependency>
-       <dependency>
-       <groupId>com.intel.mahout</groupId>
-       <artifactId>imahout</artifactId>
+    <dependency>
+       <groupId>com.intel.giraph</groupId>
+       <artifactId>giraph-algorithms</artifactId>
        <version>${project.version}</version>
     </dependency>
+    <dependency>
+       <groupId>com.intel.giraph</groupId>
+       <artifactId>giraph-titan</artifactId>
+       <version>${project.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
@@ -500,8 +506,9 @@
   </dependencies>
 
   <modules>
-    <module>imahout</module>
-    <module>igiraph</module>
+    <module>giraph-core</module>
+    <module>giraph-algorithms</module>
+    <module>giraph-titan</module>
   </modules>
 
 </project>
