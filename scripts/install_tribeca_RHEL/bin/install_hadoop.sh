@@ -249,6 +249,9 @@ THIRD
    hadoop fs -chmod -R 777 $TMPDIR/mapred/staging
    echo "chmod 777 $TMPDIR"
    sudo chmod 777 $TMPDIR
+   # everyone can write to /tmp in hdfs
+   hadoop fs -mkdir /tmp
+   hadoop fs -chmod -R 777 /tmp
 
    
    cd $TMPDIR
@@ -258,10 +261,12 @@ THIRD
    for (( i=0; i<${#USER_ARRAY[@]}; i++ ))
    do
         echo "set up hadoop for  ${USER_ARRAY[$i]}"
-  #     sudo mkdir  ${USER_ARRAY[$i]}
-  #     sudo chown -R ${USER_ARRAY[$i]}:$GROUP_NAME ${USER_ARRAY[$i]}/
         echo "mkdir /user/${USER_ARRAY[$i]}"
-        hadoop dfs -mkdir /user/${USER_ARRAY[$i]}
+        hadoop fs -mkdir /user/${USER_ARRAY[$i]}
         echo "change owner  of /user/${USER_ARRAY[$i]} to  ${USER_ARRAY[$i]}"
-        hadoop dfs -chown -R ${USER_ARRAY[$i]}:supergroup /user/${USER_ARRAY[$i]}
+        hadoop fs -chown -R ${USER_ARRAY[$i]}:supergroup /user/${USER_ARRAY[$i]}
+        #everyone owns his/her staging
+        hadoop fs -mkdir $TMPDIR/mapred/staging/${USER_ARRAY[$i]}
+        hadoop fs -chown -R ${USER_ARRAY[$i]}:supergroup  $TMPDIR/mapred/staging/${USER_ARRAY[$i]}
+        hadoop fs -chmod -R 700 $TMPDIR/mapred/staging/${USER_ARRAY[$i]}
    done
