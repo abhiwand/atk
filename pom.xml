@@ -27,10 +27,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.intel.igiraph</groupId>
+  <groupId>com.intel.hadoop</groupId>
   <artifactId>tribeca</artifactId>
   <packaging>pom</packaging>
-	<version>0.5</version>
+	<version>0.5-SNAPSHOT</version>
   <name>Intel Tribeca Parent</name>
   <description>Tribeca : Large Scale Graph Analytics</description>
   <inceptionYear>2013</inceptionYear>
@@ -399,7 +399,7 @@
         <groupId>com.github.koraktor</groupId>
         <artifactId>mavanagaiata</artifactId>
       </plugin>
-    </plugins>
+   </plugins>
   </build>
 
   <dependencies>
@@ -501,7 +501,8 @@
 
   <modules>
     <module>imahout</module>
-    <module>igiraph</module>
+    <module>igiraph</module> 
+    <module>tribeca</module>
   </modules>
 
 </project>
