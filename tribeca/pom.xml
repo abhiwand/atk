@@ -37,6 +37,13 @@
     <top.dir>${project.basedir}</top.dir>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
+  <repositories>
+     <repository>
+      <id>gaomaven</id>
+      <name>GAO Maven repository</name>
+      <url>http://gaomaven.jf.intel.com:8081/nexus/content/groups/public</url>
+   </repository>
+  </repositories>
   <build>
     <plugins>
       <plugin>
@@ -286,6 +293,11 @@
   </build>
 
   <dependencies>
+    <dependency>
+	<groupId>org.apache.hbase</groupId>
+	<artifactId>hbase</artifactId>
+	<version>0.94.7</version>
+    </dependency>
 <!--
     <dependency>
 	<groupId>com.intel.mahout</groupId>
