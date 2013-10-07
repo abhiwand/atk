@@ -1,5 +1,10 @@
 . ./versions.sh
 
+if [ ! -d SOURCES ]
+  then
+    mkdir SOURCES
+fi
+
 pushd SOURCES
 if [ ! -f hbase-$HBASE_VERSION.tar.gz ] 
   then
