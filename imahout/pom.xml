@@ -39,6 +39,16 @@
   </parent>
 
   <dependencies>
+     <dependency>
+          <groupId>org.apache.mahout</groupId>
+          <artifactId>mahout-core</artifactId>
+          <version>${dep.mahout.version}</version>
+     </dependency>
+     <dependency>
+          <groupId>org.apache.mahout</groupId>
+          <artifactId>mahout-math</artifactId>
+          <version>${dep.mahout.version}</version>
+     </dependency>
   </dependencies>
 
 </project>

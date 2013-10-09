@@ -410,7 +410,8 @@
    </plugins>
   </build>
 
-  <dependencies>
+  <dependencyManagement>
+    <dependencies>
     <!-- compile dependencies. sorted lexicographically. -->
     <dependency>
       <groupId>org.apache.giraph</groupId>
@@ -482,7 +483,8 @@
       <version>${dep.mockito-all.version}</version>
       <scope>test</scope>
     </dependency>
-  </dependencies>
+    </dependencies>
+  </dependencyManagement>
   <modules>
     <module>imahout</module>
     <module>igiraph/giraph-core</module> 
