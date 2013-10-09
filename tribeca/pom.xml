@@ -37,24 +37,40 @@
 	<relativePath>../pom.xml</relativePath>  
 	<version>0.5-SNAPSHOT</version>
   </parent>
+<build>
+  <plugins>
+	<plugin>
+              <artifactId>maven-assembly-plugin</artifactId>
+	      <configuration>
+	        <descriptors>
+                  <descriptor>src/main/assembly/compile.xml</descriptor>
+                </descriptors>
+	      </configuration>
+              <executions>
+                  <execution>
+                      <id>jar-with-dependencies</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>single</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
+  </plugins>
+</build>
   <dependencies>
     <dependency>
 	<groupId>org.apache.hbase</groupId>
 	<artifactId>hbase</artifactId>
-	<version>0.94.7</version>
-    </dependency>
-     <dependency>
-	<groupId>${project.groupId}</groupId>
-  	<artifactId>tribeca-giraph</artifactId>
-  	<version>${project.version}</version>
-	<type>pom</type>
+	<version>${dep.hbase.version}</version>
     </dependency>
     <dependency>
 	<groupId>${project.groupId}</groupId>
   	<artifactId>imahout</artifactId>
   	<version>${project.version}</version>
     </dependency>
-    <dependency>
+    <!--
+     <dependency>
        <groupId>${project.groupId}</groupId>
        <artifactId>giraph-core</artifactId>
        <version>${project.version}</version>
@@ -69,10 +85,7 @@
        <artifactId>giraph-titan</artifactId>
        <version>${project.version}</version>
     </dependency>
-
+-->
 
   </dependencies>
-  <modules>
-	<module>../igiraph</module>
-  </modules>
 </project>

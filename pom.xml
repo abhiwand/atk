@@ -485,7 +485,9 @@
   </dependencies>
   <modules>
     <module>imahout</module>
-    <module>igiraph</module> 
+    <module>igiraph/giraph-core</module> 
+    <module>igiraph/giraph-algorithms</module> 
+    <module>igiraph/giraph-titan</module> 
     <module>tribeca</module>
   </modules>
 </project>

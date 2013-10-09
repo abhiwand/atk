@@ -32,8 +32,8 @@
   <description>iGiraph Titan input/output classes</description>
   <parent>
 	<groupId>com.intel.hadoop</groupId>
-	<artifactId>tribeca-igiraph</artifactId>
-	<relativePath>../pom.xml</relativePath>  
+	<artifactId>tribeca</artifactId>
+	<relativePath>../../pom.xml</relativePath>  
 	<version>0.5-SNAPSHOT</version>
   </parent>
  
