@@ -69,23 +69,21 @@
   	<artifactId>imahout</artifactId>
   	<version>${project.version}</version>
     </dependency>
-    <!--
      <dependency>
        <groupId>${project.groupId}</groupId>
-       <artifactId>giraph-core</artifactId>
+       <artifactId>igiraph-core</artifactId>
        <version>${project.version}</version>
     </dependency>
     <dependency>
        <groupId>${project.groupId}</groupId>
-       <artifactId>giraph-algorithms</artifactId>
+       <artifactId>igiraph-algorithms</artifactId>
        <version>${project.version}</version>
     </dependency>
     <dependency>
        <groupId>${project.groupId}</groupId>
-       <artifactId>giraph-titan</artifactId>
+       <artifactId>igiraph-titan</artifactId>
        <version>${project.version}</version>
     </dependency>
--->
 
   </dependencies>
 </project>
