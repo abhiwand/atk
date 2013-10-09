@@ -42,6 +42,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/lib/tribeca
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/etc/tribeca
 
+cp * $RPM_BUILD_ROOT/usr/lib/tribeca
 #cp -R tribeca-dist/tribeca-dist-all/target/tribeca-all-standalone $RPM_BUILD_ROOT/usr/lib/tribeca
 #mv $RPM_BUILD_ROOT/usr/lib/tribeca/conf $RPM_BUILD_ROOT/etc/tribeca
 
@@ -53,9 +54,12 @@ mkdir -p $RPM_BUILD_ROOT/etc/tribeca
 
 #chmod 755 %{buildroot}/usr/bin/tribeca-gremlin
 
-#ln -sf %{_sysconfdir}/tribeca/conf %{buildroot}/usr/lib/tribeca/conf
-#ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-env.sh %{buildroot}/etc/tribeca/conf/hbase-env.sh
-#ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/etc/tribeca/conf/hbase-site.xml
+ln -sf %{_sysconfdir}/tribeca %{buildroot}/usr/lib/tribeca/conf
+ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-env.sh %{buildroot}/etc/tribeca/hbase-env.sh
+ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/etc/tribeca/hbase-site.xml
+ln -sf %{_sysconfdir}/hadoop/conf/hadoop-env.sh %{buildroot}/etc/tribeca/hadoop-env.sh
+ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}/etc/tribeca/hadoop-site.xml
+
 
 %clean
 

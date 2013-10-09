@@ -56,6 +56,43 @@
                   </execution>
               </executions>
           </plugin>
+	<plugin>
+	  <artifactId>exec-maven-plugin</artifactId>
+	  <groupId>org.codehaus.mojo</groupId>
+	  <version>1.2.1</version>
+	  <executions>
+	    <execution>
+	      <id>chmod-shellscripts</id>
+	      <phase>package</phase>
+	      <goals>
+		<goal>exec</goal>
+	      </goals>
+	  <configuration>
+	    <executable>/bin/chmod</executable>
+	    <arguments>
+	      <argument>+x</argument>
+	      <argument>${basedir}/../scripts/rpm/package.sh</argument>
+	      <argument>${basedir}/../scripts/rpm/fetch_sources.sh</argument>
+	      <argument>${basedir}/../scripts/rpm/build_rpms.sh</argument>
+	    </arguments>
+	  </configuration>
+	    </execution>
+	    <execution>
+	      <id>build-rpm</id>
+	      <phase>package</phase>
+	      <goals>
+		<goal>exec</goal>
+	      </goals>
+  	      <configuration>
+	        <executable>bash</executable>
+	        <workingDirectory>../scripts/rpm</workingDirectory>
+	        <arguments>
+		  <argument>package.sh</argument>
+	        </arguments>
+	      </configuration>
+            </execution>
+          </executions>
+	</plugin>
   </plugins>
 </build>
   <dependencies>
@@ -63,6 +100,7 @@
 	<groupId>org.apache.hbase</groupId>
 	<artifactId>hbase</artifactId>
 	<version>${dep.hbase.version}</version>
+	<classifier>security</classifier>
     </dependency>
     <dependency>
 	<groupId>${project.groupId}</groupId>

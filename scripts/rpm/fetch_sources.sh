@@ -16,14 +16,13 @@ if [ ! -f titan-$TITAN_VERSION.tar.gz ]
     wget https://github.com/thinkaurelius/titan/archive/$TITAN_VERSION.tar.gz -O titan-$TITAN_VERSION.tar.gz
 fi
 
-if [ ! -f faunus-$FAUNUS_VERSION.tar.gz ]
-  then 
-    wget https://github.com/thinkaurelius/faunus/archive/$FAUNUS_VERSION.tar.gz -O faunus-$FAUNUS_VERSION.tar.gz
-fi
+trib=tribeca-$TRIBECA_VERSION
+src=../../..
+rm -rf $trib 
 
-if [ ! -f giraph-$GIRAPH_VERSION.tar.gz ]
-  then
-    wget https://github.com/apache/giraph/archive/$GIRAPH_VERSION.tar.gz -O giraph-$GIRAPH_VERSION.tar.gz
-fi
+mkdir $trib
+cp -R $src/tribeca/target/*.jar $trib
+cp -R $src/tribeca/dist/* $trib
+tar czvf $trib.tar.gz $trib
 
 popd
