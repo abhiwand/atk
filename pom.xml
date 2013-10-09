@@ -465,9 +465,14 @@
            <artifactId>faunus</artifactId>
            <version>${dep.aurelius.version}</version>
      </dependency>
-     <dependency>
+      <dependency>
           <groupId>org.apache.mahout</groupId>
           <artifactId>mahout-core</artifactId>
+          <version>${dep.mahout.version}</version>
+     </dependency>
+     <dependency>
+          <groupId>org.apache.mahout</groupId>
+          <artifactId>mahout-math</artifactId>
           <version>${dep.mahout.version}</version>
      </dependency>
     <!-- test dependencies. sorted lexicographically. -->
@@ -487,9 +492,7 @@
   </dependencyManagement>
   <modules>
     <module>imahout</module>
-    <module>igiraph/giraph-core</module> 
-    <module>igiraph/giraph-algorithms</module> 
-    <module>igiraph/giraph-titan</module> 
+    <module>igiraph</module> 
     <module>tribeca</module>
   </modules>
 </project>
