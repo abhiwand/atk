@@ -79,15 +79,7 @@
     <forHadoop>for-hadoop-${hadoop.version}</forHadoop>
   </properties>
 
-   <repositories>
-     <repository>
-      <id>gaomaven</id>
-      <name>GAO Maven repository</name>
-      <url>http://gaomaven.jf.intel.com:8081/nexus/content/groups/public</url>
-   </repository>
-  </repositories>
- 
- <build>
+<build>
     <pluginManagement>
       <plugins>
         <plugin>
