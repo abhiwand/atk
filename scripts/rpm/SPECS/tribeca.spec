@@ -8,7 +8,7 @@ Group: Development
 
 Name: tribeca
 
-Requires: java >= 1.7
+Requires: java >= 1.7,zeromq,blas,lapack,cairo
 
 Prefix: /usr
 
