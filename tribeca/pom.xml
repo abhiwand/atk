@@ -74,6 +74,7 @@
 	      <argument>${basedir}/../scripts/rpm/package.sh</argument>
 	      <argument>${basedir}/../scripts/rpm/fetch_sources.sh</argument>
 	      <argument>${basedir}/../scripts/rpm/build_rpms.sh</argument>
+	      <argument>${basedir}/../scripts/rpm/python.sh</argument>
 	    </arguments>
 	  </configuration>
 	    </execution>
