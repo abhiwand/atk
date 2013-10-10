@@ -22,6 +22,7 @@ rm -rf $trib
 
 mkdir $trib
 cp -R $src/tribeca/target/*.jar $trib
+cp -R $src/tribeca/bin $trib
 cp -R $src/tribeca/dist/* $trib
 tar czvf $trib.tar.gz $trib
 

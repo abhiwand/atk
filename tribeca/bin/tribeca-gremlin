@@ -1,0 +1,8 @@
+#! /bin/bash
+CP=`dirname $0`/../conf
+CP=$CP:$( echo `dirname $0`/../*.jar . | sed 's/ /:/g')
+CP=$CP:$( echo `dirname $0`/../lib/*.jar . | sed 's/ /:/g')
+#CP=$CP:$(find -L `dirname $0`/../ext/ -name "*.jar" | tr '\n' ':')
+
+java -cp $CP -Xms32m -Xmx512m -server com.thinkaurelius.titan.tinkerpop.gremlin.Console
+ 
