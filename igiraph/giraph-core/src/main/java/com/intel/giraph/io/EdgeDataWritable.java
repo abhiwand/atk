@@ -30,18 +30,18 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 /**
- * Writable to handle serialization of a vector and an associated data
+ * Writable to handle serialization of the fields associated with edge data
  */
 public class EdgeDataWritable implements Writable {
 
-    /** the vertex type supported by this vertex */
-    public enum EdgeType { TRAIN, VALIDATE, TEST };
+    /** the edge type supported by this vertex */
+    public enum EdgeType { TRAIN, VALIDATE, TEST, NONE };
 
-    /** the value at this vertex */
-    private double weight;
+    /** the weight value at this edge */
+    private double weight = 0d;
 
     /** the type of this vertex */
-    private EdgeType type;
+    private EdgeType type = EdgeType.NONE;
 
     /**
      * Default constructor
@@ -52,8 +52,8 @@ public class EdgeDataWritable implements Writable {
     /**
      * Constructor
      *
-     * @param type from VertexType
-     * @param weight of type Vector
+     * @param type from EdgeType
+     * @param weight of type double
      */
     public EdgeDataWritable(EdgeType type, double weight) {
         this.type = type;
@@ -63,7 +63,7 @@ public class EdgeDataWritable implements Writable {
     /**
      * Setter
      *
-     * @param type of type VertexType
+     * @param type of type EdgeType
      */
     public void setType(EdgeType type) {
         this.type = type;
@@ -72,7 +72,7 @@ public class EdgeDataWritable implements Writable {
     /**
      * Getter
      *
-     * @return data of type double
+     * @return type of type EdgeType
      */
     public EdgeType getType() {
         return type;
@@ -81,7 +81,7 @@ public class EdgeDataWritable implements Writable {
     /**
      * Getter
      *
-     * @return vector of type Vector
+     * @return weight of type double
      */
     public double getWeight() {
         return weight;
@@ -90,7 +90,7 @@ public class EdgeDataWritable implements Writable {
     /**
      * Setter
      *
-     * @param weight of type Vector
+     * @param weight of type double
      */
     public void setWeight(double weight) {
         this.weight = weight;
@@ -112,10 +112,10 @@ public class EdgeDataWritable implements Writable {
     }
 
     /**
-     * Read data and vector to DataInput
+     * Read edge data from DataInput
      *
      * @param in of type DataInput
-     * @return DoubleWithVectorWritable
+     * @return EdgeDataWritable
      * @throws IOException
      */
     public static EdgeDataWritable read(DataInput in) throws IOException {
@@ -125,10 +125,10 @@ public class EdgeDataWritable implements Writable {
     }
 
     /**
-     * Write data and vector to DataOutput
+     * Write edge data to DataOutput
      *
      * @param out of type DataOutput
-     * @param type of type Double
+     * @param type of type EdgeType
      * @param weight of type double
      * @throws IOException
      */

@@ -47,9 +47,8 @@ import java.util.List;
 
 /**
   * VertexInputFormat that features <code>long</code> vertex ID's,
-  * <code>TwoVector</code> vertex values: one for prior and
-  * one for posterior, and <code>DoubleWithVector</code> edge
-  * weights and edge messages, specified in JSON format.
+  * <code>VertexData</code> vertex values, and <code>EdgeData</code> edge
+  * values, specified in JSON format.
   */
 public class JsonPropertyGraph4CFInputFormat extends TextVertexInputFormat<LongWritable,
     VertexDataWritable, EdgeDataWritable> {
@@ -60,15 +59,15 @@ public class JsonPropertyGraph4CFInputFormat extends TextVertexInputFormat<LongW
     }
 
     /**
-     * VertexReader that features <code>Vector</code> vertex
-     * values and <code>double</code> out-edge weights. The
-     * files should be in the following JSON format:
-     * JSONArray(<vertex id>, <vertex valueVector>,
-     * JSONArray(JSONArray(<dest vertex id>, <edge value>), ...))
-     * Here is an example with vertex id 1, vertex value 4,3, and two edges.
-     * First edge has a destination vertex 2, edge value 2.1.
-     * Second edge has a destination vertex 3, edge value 0.7.
-     * [1,[],[[2,2.1],[3,0.7]]]
+     * VertexReader that features <code>VertexData</code> vertex values and
+     * <code>EdgeData</code> out-edge info. The files should be in the following
+     * JSON format:
+     * JSONArray(<vertex id>, <vertex valueVector>, <vertex property>
+     * JSONArray(JSONArray(<dest vertex id>, <edge value>, <edge property>), ...))
+     * Here is an example with vertex id 1, vertex value 4,3 marked as "l",
+     * and two edges. First edge has a destination vertex 2, edge value 2.1,
+     * marked as "tr". Second edge has a destination vertex 3, edge value 0.7,
+     * marked as "va". [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
      */
     class JsonPropertyGraph4CFReader extends
         TextVertexReaderFromEachLineProcessedHandlingExceptions<JSONArray, JSONException> {

@@ -26,6 +26,7 @@ package com.intel.giraph.algorithms.als;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -83,22 +84,22 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     /** Custom argument for the convergence threshold */
     public static final String CONVERGENCE_THRESHOLD = "als.convergenceThreshold";
     /** Aggregator name for sum of cost on training data */
-    private static String SUM_TRAIN_COST = "train_cost";
+    private static String SUM_TRAIN_COST = "cost_train";
     /** Aggregator name for sum of L2 error on validate data */
-    private static String SUM_VALIDATE_ERROR = "rmse_validate";
+    private static String SUM_VALIDATE_ERROR = "validate_rmse";
     /** Aggregator name for sum of L2 error on test data */
-    private static String SUM_TEST_ERROR = "rmse_test";
+    private static String SUM_TEST_ERROR = "test_rmse";
     /** Aggregator name for number of left vertices */
     private static String SUM_LEFT_VERTICES = "num_left_vertices";
     /** Aggregator name for number of right vertices */
     private static String SUM_RIGHT_VERTICES = "num_right_vertices";
-    /** Aggregator name for number of validate edges */
+    /** Aggregator name for number of training edges */
     private static String SUM_TRAIN_EDGES = "num_train_edges";
     /** Aggregator name for number of validate edges */
     private static String SUM_VALIDATE_EDGES = "num_validate_edges";
     /** Aggregator name for number of test edges */
     private static String SUM_TEST_EDGES = "num_test_edges";
-    /** RMSE value of previous iteration for ALS convergence monitoring */
+    /** RMSE value of previous iteration for convergence monitoring */
     private static String PREV_RMSE = "prev_rmse";
 
     /** Number of super steps */
@@ -106,9 +107,9 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     /** Feature dimension */
     private int featureDimension = 20;
     /** Maximum edge weight value */
-    private float maxVal = Float.MAX_VALUE;
+    private float maxVal = Float.POSITIVE_INFINITY;
     /** Minimum edge weight value */
-    private float minVal = Float.MIN_VALUE;
+    private float minVal = Float.NEGATIVE_INFINITY;
     /** The regularization parameter */
     private float lambda = 0f;
 
@@ -118,7 +119,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
         featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
         if (featureDimension < 1) {
-            throw new IllegalArgumentException("Feature dimension should be greater than 0.");
+            throw new IllegalArgumentException("Feature dimension should be > 0.");
         }
         maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
         minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
@@ -147,10 +148,11 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 sum += weight;
             }
         }
+        Random rand = new Random(vertex.getId().get());
         double[] values = new double[featureDimension];
         values[0] = sum / vertex.getNumEdges();
         for (int i = 1; i < featureDimension; i++) {
-            double sample = Math.random() * values[0];
+            double sample = rand.nextDouble() * values[0];
             values[i] = sample;
         }
         vertex.getValue().setVector(new DenseVector(values));
@@ -179,12 +181,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 default:
                     throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
                 }
-                double weight = edge.getValue().getWeight();
-                Vector vertexValue = vertex.getValue().getVector();
-                MessageDataWritable newMessage = new MessageDataWritable();
-                newMessage.setType(et);
-                newMessage.setWeight(weight);
-                newMessage.setVector(vertexValue);
+                MessageDataWritable newMessage = new MessageDataWritable(vertex.getValue(), edge.getValue());
                 sendMessage(edge.getTargetVertexId(), newMessage);
             }
             break;
@@ -204,7 +201,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         }
 
         Vector preValue = vertex.getValue().getVector();
-        // aggregate the cost at every 2 super steps
+        // update aggregators every 2 super steps
         if ((step % 2) == 0) {
             double errorOnTrain = 0d;
             double errorOnValidate = 0d;
@@ -229,7 +226,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                     throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
                 }
             }
-            double costOnTrain = errorOnTrain + lambda * vertex.getNumEdges() * preValue.dot(preValue);
+            double costOnTrain = errorOnTrain / vertex.getNumEdges() + lambda * preValue.dot(preValue);
             aggregate(SUM_TRAIN_COST, new DoubleWritable(costOnTrain));
             aggregate(SUM_VALIDATE_ERROR, new DoubleWritable(errorOnValidate));
             aggregate(SUM_TEST_ERROR, new DoubleWritable(errorOnTest));
@@ -252,17 +249,11 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             xxt = xxt.plus(new DiagonalMatrix(lambda * vertex.getNumEdges(), featureDimension));
             Matrix bMatrix = new DenseMatrix(featureDimension, 1).assignColumn(0, xr);
             Vector value = new QRDecomposition(xxt).solve(bMatrix).viewColumn(0);
-
             vertex.getValue().setVector(value);
+
             // send out messages
             for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
-                EdgeType et = edge.getValue().getType();
-                double weight = edge.getValue().getWeight();
-                Vector vertexValue = vertex.getValue().getVector();
-                MessageDataWritable newMessage = new MessageDataWritable();
-                newMessage.setType(et);
-                newMessage.setWeight(weight);
-                newMessage.setVector(vertexValue);
+                MessageDataWritable newMessage = new MessageDataWritable(vertex.getValue(), edge.getValue());
                 sendMessage(edge.getTargetVertexId(), newMessage);
             }
         }
@@ -296,37 +287,36 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             // calculate rmse on validate data
             DoubleWritable sumValidateError = getAggregatedValue(SUM_VALIDATE_ERROR);
             LongWritable numValidateEdges = getAggregatedValue(SUM_VALIDATE_EDGES);
-            double rmseValidate = 0d;
+            double validateRmse = 0d;
             if (numValidateEdges.get() > 0) {
-                rmseValidate = sumValidateError.get() / numValidateEdges.get();
-                rmseValidate = Math.sqrt(rmseValidate);
+                validateRmse = sumValidateError.get() / numValidateEdges.get();
+                validateRmse = Math.sqrt(validateRmse);
             }
-            sumValidateError.set(rmseValidate);
+            sumValidateError.set(validateRmse);
             // calculate rmse on test data
             DoubleWritable sumTestError = getAggregatedValue(SUM_TEST_ERROR);
             LongWritable numTestEdges = getAggregatedValue(SUM_TEST_EDGES);
-            double rmseTest = 0d;
+            double testRmse = 0d;
             if (numTestEdges.get() > 0) {
-                rmseTest = sumTestError.get() / numTestEdges.get();
-                rmseTest = Math.sqrt(rmseTest);
+                testRmse = sumTestError.get() / numTestEdges.get();
+                testRmse = Math.sqrt(testRmse);
             }
-            sumTestError.set(rmseTest);
+            sumTestError.set(testRmse);
             // evaluate convergence condition
             if (step >= 5) {
-                float prevRMSE = getConf().getFloat(PREV_RMSE, 0f);
+                float prevRmse = getConf().getFloat(PREV_RMSE, 0f);
                 float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
-                if (Math.abs(prevRMSE - rmseValidate) < threshold) {
+                if (Math.abs(prevRmse - validateRmse) < threshold) {
                     haltComputation();
                 }
             }
-            getConf().setFloat(PREV_RMSE, (float) rmseValidate);
+            getConf().setFloat(PREV_RMSE, (float) validateRmse);
         }
     }
 
     /**
-     * This is a simple example for an aggregator writer. After each superstep the writer will persist the
-     * aggregator values to disk, by use of the Writable interface. The file will be created on the current
-     * working directory.
+     * This is an aggregator writer, which after each superstep will persist the
+     * aggregator values to disk, by use of the Writable interface.
      */
     public static class SimpleAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
         implements AggregatorWriter {
@@ -365,7 +355,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
             throws IOException {
-            // collect aggregated data
+            // collect aggregator data
             HashMap<String, String> map = new HashMap<String, String>();
             for (Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
@@ -384,7 +374,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 output.writeUTF(String.format("Number of edges: %d (train: %d, validate: %d, test: %d)%n",
                     trainEdges + validateEdges + testEdges, trainEdges, validateEdges, testEdges));
                 output.writeUTF("\n");
-                // output als configuration
+                // output ALS configuration
                 int featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
                 float lambda = getConf().getFloat(LAMBDA, 0f);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);

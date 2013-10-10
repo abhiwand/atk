@@ -34,12 +34,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import com.intel.giraph.io.VertexDataWritable;
+import com.intel.giraph.io.VertexDataWritable.VertexType;
 
 import java.io.IOException;
 
 /**
  * VertexOutputFormat that supports JSON encoded vertices featuring
- * <code>Long</code> id and <code>TwoVector</code> values.
+ * <code>Long</code> id and <code>VertexData</code> values.
  */
 public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<LongWritable,
     VertexDataWritable, Writable> {
@@ -51,7 +52,7 @@ public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<Lon
 
     /**
      * VertexWriter that supports vertices with <code>Long</code> id
-     * and <code>TwoVector</code> values.
+     * and <code>VertexData</code> values.
      */
     protected class JsonLongIDVertexDataWriter extends TextVertexWriterToEachLine {
 
@@ -59,17 +60,39 @@ public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<Lon
         public Text convertVertexToLine(Vertex<LongWritable, VertexDataWritable, Writable> vertex) throws IOException {
             JSONArray jsonVertex = new JSONArray();
             try {
+                // add vertex id
                 jsonVertex.put(vertex.getId().get());
+                // add bias
+                JSONArray jsonBiasArray = new JSONArray();
+                jsonBiasArray.put(vertex.getValue().getBias());
+                jsonVertex.put(jsonBiasArray);
+                // add vertex value
                 JSONArray jsonValueArray = new JSONArray();
                 Vector vector = vertex.getValue().getVector();
                 for (int i = 0; i < vector.size(); i++) {
                     jsonValueArray.put(vector.getQuick(i));
                 }
                 jsonVertex.put(jsonValueArray);
+                // add vertex type
+                JSONArray jsonTypeArray = new JSONArray();
+                VertexType vt = vertex.getValue().getType();
+                String vs = null;
+                switch (vt) {
+                case LEFT:
+                    vs = "l";
+                    break;
+                case RIGHT:
+                    vs = "r";
+                    break;
+                default:
+                    throw new IllegalArgumentException(String.format("Unrecognized vertex type: %s", vt.toString()));
+                }
+                jsonTypeArray.put(vs);
+                jsonVertex.put(jsonTypeArray);
             } catch (JSONException e) {
                 throw new IllegalArgumentException("writeVertex: Couldn't write vertex " + vertex);
             }
-            return new Text(jsonVertex.toString());
+            return new Text(jsonVertex.toString().replaceAll("\"", ""));
         }
     }
 

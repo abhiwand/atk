@@ -25,7 +25,6 @@ package com.intel.giraph.io;
 
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
-import org.apache.mahout.math.VectorWritable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -36,15 +35,15 @@ import org.apache.hadoop.io.Writable;
 import com.intel.giraph.io.EdgeDataWritable.EdgeType;
 
 /**
- * Writable to handle serialization of a vector and an associated data
+ * Writable to handle serialization of the fields associated with message data
  */
 public class MessageDataWritable implements Writable {
 
+    /** the vertex data for this message */
+    private final VertexDataWritable vertexDataWritable = new VertexDataWritable();
+
     /** the edge data for this message */
     private final EdgeDataWritable edgeDataWritable = new EdgeDataWritable();
-
-    /** the value at this vertex */
-    private final VectorWritable vectorWritable = new VectorWritable();
 
     /**
      * Default constructor
@@ -55,20 +54,35 @@ public class MessageDataWritable implements Writable {
     /**
      * Constructor
      *
-     * @param type from VertexType
-     * @param weight of type double
      * @param vector of type Vector
+     * @param bias of type double
+     * @param type of type EdgeType
+     * @param weight of type double
      */
-    public MessageDataWritable(EdgeType type, double weight, Vector vector) {
+    public MessageDataWritable(Vector vector, double bias, EdgeType type, double weight) {
+        vertexDataWritable.setVector(vector);
+        vertexDataWritable.setBias(bias);
         edgeDataWritable.setType(type);
         edgeDataWritable.setWeight(weight);
-        vectorWritable.set(vector);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param vertex of type VertexDataWritable
+     * @param edge of type EdgeDataWritable
+     */
+    public MessageDataWritable(VertexDataWritable vertex, EdgeDataWritable edge) {
+        vertexDataWritable.setVector(vertex.getVector());
+        vertexDataWritable.setBias(vertex.getBias());
+        edgeDataWritable.setType(edge.getType());
+        edgeDataWritable.setWeight(edge.getWeight());
     }
 
     /**
      * Setter
      *
-     * @param weight of type VertexType
+     * @param weight of type double
      */
     public void setWeight(double weight) {
         edgeDataWritable.setWeight(weight);
@@ -77,7 +91,7 @@ public class MessageDataWritable implements Writable {
     /**
      * Getter
      *
-     * @return weight of type of double
+     * @return weight of type double
      */
     public double getWeight() {
         return edgeDataWritable.getWeight();
@@ -86,7 +100,7 @@ public class MessageDataWritable implements Writable {
     /**
      * Setter
      *
-     * @param type of type VertexType
+     * @param type of type EdgeType
      */
     public void setType(EdgeType type) {
         edgeDataWritable.setType(type);
@@ -95,7 +109,7 @@ public class MessageDataWritable implements Writable {
     /**
      * Getter
      *
-     * @return data of type double
+     * @return type of type EdgeType
      */
     public EdgeType getType() {
         return edgeDataWritable.getType();
@@ -107,7 +121,7 @@ public class MessageDataWritable implements Writable {
      * @return vector of type Vector
      */
     public Vector getVector() {
-        return vectorWritable.get();
+        return vertexDataWritable.getVector();
     }
 
     /**
@@ -116,26 +130,44 @@ public class MessageDataWritable implements Writable {
      * @param vector of type Vector
      */
     public void setVector(Vector vector) {
-        vectorWritable.set(vector);
+        vertexDataWritable.setVector(vector);
+    }
+
+    /**
+     * Setter
+     *
+     * @param bias of type double
+     */
+    public void setBias(double bias) {
+        vertexDataWritable.setBias(bias);
+    }
+
+    /**
+     * Getter
+     *
+     * @return bias of type double
+     */
+    public double getBias() {
+        return vertexDataWritable.getBias();
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
         edgeDataWritable.readFields(in);
-        vectorWritable.readFields(in);
+        vertexDataWritable.readFields(in);
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
         edgeDataWritable.write(out);
-        vectorWritable.write(out);
+        vertexDataWritable.write(out);
     }
 
     /**
-     * Read data and vector to DataInput
+     * Read message data from DataInput
      *
      * @param in of type DataInput
-     * @return DoubleWithVectorWritable
+     * @return MessageDataWritable
      * @throws IOException
      */
     public static MessageDataWritable read(DataInput in) throws IOException {
@@ -145,17 +177,18 @@ public class MessageDataWritable implements Writable {
     }
 
     /**
-     * Write data and vector to DataOutput
+     * Write message data to DataOutput
      *
      * @param out of type DataOutput
-     * @param type of type Double
+     * @param type of type EdgeType
      * @param weight of type Double
      * @param ssv of type SequentailAccessSparseVector
+     * @param bias of type double
      * @throws IOException
      */
-    public static void write(DataOutput out, EdgeType type, double weight, SequentialAccessSparseVector ssv)
-        throws IOException {
-        new MessageDataWritable(type, weight, ssv).write(out);
+    public static void write(DataOutput out, SequentialAccessSparseVector ssv, double bias,
+        EdgeType type, double weight) throws IOException {
+        new MessageDataWritable(ssv, bias, type, weight).write(out);
     }
 
 }

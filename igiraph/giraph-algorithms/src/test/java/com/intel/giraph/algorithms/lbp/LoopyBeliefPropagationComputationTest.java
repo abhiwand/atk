@@ -82,14 +82,12 @@ public class LoopyBeliefPropagationComputationTest {
             try {
                 JSONArray jsonVertex = new JSONArray(line);
                 if (jsonVertex.length() != 2) {
-                    System.err.println("Wrong vertex output format!");
-                    System.exit(-1);
+                    throw new IllegalArgumentException("Wrong vertex output format!");
                 }
                 long id = jsonVertex.getLong(0);
                 JSONArray valueArray = jsonVertex.getJSONArray(1);
                 if (valueArray.length() != 3) {
-                    System.err.println("Wrong vertex output value format!");
-                    System.exit(-1);
+                    throw new IllegalArgumentException("Wrong vertex output value format!");
                 }
                 Double[] values = new Double[3];
                 for (int i = 0; i < 3; i++) {

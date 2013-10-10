@@ -34,19 +34,21 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 /**
- * Writable to handle serialization of a vector and an associated data
+ * Writable to handle serialization of the fields associated with vertex data
  */
 public class VertexDataWritable implements Writable {
 
     /** the vertex type supported by this vertex */
-    public enum VertexType { LEFT, RIGHT };
-
-    /** the value at this vertex */
-    private final VectorWritable vectorWritable = new VectorWritable();
+    public enum VertexType { LEFT, RIGHT, NONE };
 
     /** the type of this vertex */
-    private VertexType type;
+    private VertexType type = VertexType.NONE;
 
+    /** the vector value at this vertex */
+    private final VectorWritable vectorWritable = new VectorWritable();
+
+    /** the bias value at this vertex */
+    private double bias = 0d;
 
     /**
      * Default constructor
@@ -57,12 +59,25 @@ public class VertexDataWritable implements Writable {
     /**
      * Constructor
      *
-     * @param type from VertexType
+     * @param type of type VertexType
      * @param vector of type Vector
      */
     public VertexDataWritable(VertexType type, Vector vector) {
         this.type = type;
         vectorWritable.set(vector);
+    }
+
+    /**
+     * Constructor
+     *
+     * @param type of type VertexType
+     * @param vector of type Vector
+     * @param bias of type double
+     */
+    public VertexDataWritable(VertexType type, Vector vector, double bias) {
+        this.type = type;
+        vectorWritable.set(vector);
+        this.bias = bias;
     }
 
     /**
@@ -77,7 +92,7 @@ public class VertexDataWritable implements Writable {
     /**
      * Getter
      *
-     * @return data of type double
+     * @return type of type VertexType
      */
     public VertexType getType() {
         return type;
@@ -101,12 +116,31 @@ public class VertexDataWritable implements Writable {
         vectorWritable.set(vector);
     }
 
+    /**
+     * Getter
+     *
+     * @return bias of type double
+     */
+    public double getBias() {
+        return bias;
+    }
+
+    /**
+     * Setter
+     *
+     * @param bias of type double
+     */
+    public void setBias(double bias) {
+        this.bias = bias;
+    }
+
     @Override
     public void readFields(DataInput in) throws IOException {
         int idx = in.readInt();
         VertexType vt = VertexType.values()[idx];
         setType(vt);
         vectorWritable.readFields(in);
+        bias = in.readDouble();
     }
 
     @Override
@@ -114,13 +148,14 @@ public class VertexDataWritable implements Writable {
         VertexType vt = getType();
         out.writeInt(vt.ordinal());
         vectorWritable.write(out);
+        out.writeDouble(bias);
     }
 
     /**
-     * Read data and vector to DataInput
+     * Read vertex data from DataInput
      *
      * @param in of type DataInput
-     * @return DoubleWithVectorWritable
+     * @return VertexDataWritable
      * @throws IOException
      */
     public static VertexDataWritable read(DataInput in) throws IOException {
@@ -130,15 +165,29 @@ public class VertexDataWritable implements Writable {
     }
 
     /**
-     * Write data and vector to DataOutput
+     * Write vertex data to DataOutput
      *
      * @param out of type DataOutput
-     * @param type of type Double
+     * @param type of type VertexType
      * @param ssv of type SequentailAccessSparseVector
      * @throws IOException
      */
     public static void write(DataOutput out, VertexType type, SequentialAccessSparseVector ssv) throws IOException {
         new VertexDataWritable(type, ssv).write(out);
+    }
+
+    /**
+     * Write vertex data to DataOutput
+     *
+     * @param out of type DataOutput
+     * @param type of type VertexType
+     * @param ssv of type SequentailAccessSparseVector
+     * @param bias of type double
+     * @throws IOException
+     */
+    public static void write(DataOutput out, VertexType type, SequentialAccessSparseVector ssv, double bias)
+        throws IOException {
+        new VertexDataWritable(type, ssv, bias).write(out);
     }
 
 }
