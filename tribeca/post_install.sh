@@ -1,4 +1,10 @@
+pip install numpy
+pip install scipy
+pip install matplotlib
+pip install sympy
+pip install nltk
 pip install ipython
 pip install pyzmq
 pip install jinja2
 pip install tornado
+pip install mrjob
