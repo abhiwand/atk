@@ -9,3 +9,5 @@ pip install tornado
 pip install mrjob
 pip install matplotlib
 pip install ipython
+pip install pandas
+pip install bulbs
