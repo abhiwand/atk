@@ -22,4 +22,6 @@ BUILD
 download
 *.zip
 *.pyc
-
+*.swo
+*.swp
+dist

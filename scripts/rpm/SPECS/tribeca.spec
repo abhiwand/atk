@@ -8,13 +8,13 @@ Group: Development
 
 Name: tribeca
 
-Requires: java >= 1.7,zeromq,blas,lapack,cairo
+Requires: java >= 1.7
 
 Prefix: /usr
 
 Provides: tribeca-gremlin
 
-Release: 1
+Release: 2
 
 Source: tribeca-%{version}.tar.gz
 
