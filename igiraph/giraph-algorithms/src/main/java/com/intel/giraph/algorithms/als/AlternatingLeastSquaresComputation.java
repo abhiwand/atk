@@ -137,6 +137,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     private void initialize(Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex) {
         // initialize vertex vector
         double sum = 0d;
+        int numTrain = 0;
         for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
             EdgeType et = edge.getValue().getType();
             if (et == EdgeType.TRAIN) {
@@ -146,11 +147,15 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                         "out of the range of [%f, %f].", vertex.getId().get(), minVal, maxVal));
                 }
                 sum += weight;
+                numTrain++;
             }
         }
         Random rand = new Random(vertex.getId().get());
         double[] values = new double[featureDimension];
-        values[0] = sum / vertex.getNumEdges();
+        values[0] = 0d;
+        if (numTrain > 0) {
+            values[0] = sum / numTrain;
+        }
         for (int i = 1; i < featureDimension; i++) {
             double sample = rand.nextDouble() * values[0];
             values[i] = sample;
@@ -206,6 +211,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             double errorOnTrain = 0d;
             double errorOnValidate = 0d;
             double errorOnTest = 0d;
+            int numTrain = 0;
             for (MessageDataWritable message : messages) {
                 EdgeType et = message.getType();
                 double weight = message.getWeight();
@@ -215,6 +221,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 switch (et) {
                 case TRAIN:
                     errorOnTrain += e * e;
+                    numTrain++;
                     break;
                 case VALIDATE:
                     errorOnValidate += e * e;
@@ -226,7 +233,10 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                     throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
                 }
             }
-            double costOnTrain = errorOnTrain / vertex.getNumEdges() + lambda * preValue.dot(preValue);
+            double costOnTrain = 0d;
+            if (numTrain > 0) {
+                costOnTrain = errorOnTrain / numTrain + lambda * preValue.dot(preValue);
+            }
             aggregate(SUM_TRAIN_COST, new DoubleWritable(costOnTrain));
             aggregate(SUM_VALIDATE_ERROR, new DoubleWritable(errorOnValidate));
             aggregate(SUM_TEST_ERROR, new DoubleWritable(errorOnTest));
@@ -237,6 +247,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             Matrix xxt = new DenseMatrix(featureDimension, featureDimension);
             xxt = xxt.assign(0d);
             Vector xr = preValue.clone().assign(0d);
+            int numTrain = 0;
             for (MessageDataWritable message : messages) {
                 EdgeType et = message.getType();
                 if (et == EdgeType.TRAIN) {
@@ -244,9 +255,10 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                     Vector vector = message.getVector();
                     xxt = xxt.plus(vector.cross(vector));
                     xr = xr.plus(vector.times(weight));
+                    numTrain++;
                 }
             }
-            xxt = xxt.plus(new DiagonalMatrix(lambda * vertex.getNumEdges(), featureDimension));
+            xxt = xxt.plus(new DiagonalMatrix(lambda * numTrain, featureDimension));
             Matrix bMatrix = new DenseMatrix(featureDimension, 1).assignColumn(0, xr);
             Vector value = new QRDecomposition(xxt).solve(bMatrix).viewColumn(0);
             vertex.getValue().setVector(value);
