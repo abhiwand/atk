@@ -1,3 +1,4 @@
+easy_install -U distribute
 pip install numpy
 pip install scipy
 pip install matplotlib
