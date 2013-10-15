@@ -30,13 +30,13 @@ import org.apache.hadoop.io.LongWritable;
  * Aggregator for getting max integer value.
  */
 public class LongWritableOverwriteAggregator extends BasicAggregator<LongWritable> {
-  @Override
-  public void aggregate(LongWritable value) {
-    getAggregatedValue().set(value.get());
-  }
+    @Override
+    public void aggregate(LongWritable value) {
+        getAggregatedValue().set(value.get());
+    }
 
-  @Override
-  public LongWritable createInitialValue() {
-    return new LongWritable(0);
-  }
+    @Override
+    public LongWritable createInitialValue() {
+        return new LongWritable(0);
+    }
 }

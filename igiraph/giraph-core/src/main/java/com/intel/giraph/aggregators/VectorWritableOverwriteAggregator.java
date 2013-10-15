@@ -31,15 +31,15 @@ import org.apache.mahout.math.DenseVector;
  * Aggregator for getting max integer value.
  */
 public class VectorWritableOverwriteAggregator extends BasicAggregator<VectorWritable> {
-  @Override
-  public void aggregate(VectorWritable value) {
-    if (value.get().size() > 0) {
-      getAggregatedValue().set(value.get());
+    @Override
+    public void aggregate(VectorWritable value) {
+        if (value.get().size() > 0) {
+            getAggregatedValue().set(value.get());
+        }
     }
-  }
 
-  @Override
-  public VectorWritable createInitialValue() {
-    return new VectorWritable(new DenseVector());
-  }
+    @Override
+    public VectorWritable createInitialValue() {
+        return new VectorWritable(new DenseVector());
+    }
 }
