@@ -218,8 +218,8 @@ public class KMeansPlusPlusComputation extends BasicComputation<LongWritable, Ve
           sendMessage(edge.getTargetVertexId(), 
                       new IdWithVectorWritable(vid, vertex.getValue().get()));
         }
-        return;
       }
+      return;
     }
 
     /** centeroid only */
@@ -252,15 +252,13 @@ public class KMeansPlusPlusComputation extends BasicComputation<LongWritable, Ve
           idx++;
         }
         vertex.voteToHalt();
-        return;
       }
+      return;
     }
 
     if (phase == PHASE_FINDING_COMPLETE) {
-      /** all centeroids found */
       vertex.voteToHalt();
     }
-
   }
 
   /**
@@ -291,7 +289,6 @@ public class KMeansPlusPlusComputation extends BasicComputation<LongWritable, Ve
         /** selects initial centroid uniformly at random */
         Random rand = new Random();
         long init_centeroid = Math.abs(rand.nextLong());
-
         LOG.info("KMeans++: random centeroid vid = " + init_centeroid);
 
         /** initialize aggregators with initial values */
@@ -300,12 +297,16 @@ public class KMeansPlusPlusComputation extends BasicComputation<LongWritable, Ve
         setAggregatedValue(KMEANSPP_PHASE, new LongWritable(-1));
       }
 
-      long centeroid_count;
-      if (step > 0) {
+      /** KMeans++ phase */
+      long current_phase = ((LongWritable) getAggregatedValue(KMEANSPP_PHASE)).get();
+
+      /** KMeans++ finding initial centeroids */
+      if (current_phase < PHASE_FINDING_COMPLETE) {
         /** update the aggregators with current centeroids */
+        long centeroid_count;
         for (centeroid_count = 0; centeroid_count < numCenteroids; centeroid_count++) {
           Vector centeroid = ((VectorWritable) 
-              getAggregatedValue(KMEANSPP_CENTEROID + centeroid_count)).get();
+            getAggregatedValue(KMEANSPP_CENTEROID + centeroid_count)).get();
           if (centeroid.size() > 0) {
             LOG.info("KMeans++: centeroid " + centeroid_count + " at " + centeroid);
             setAggregatedValue(KMEANSPP_CENTEROID + centeroid_count, 
@@ -321,7 +322,6 @@ public class KMeansPlusPlusComputation extends BasicComputation<LongWritable, Ve
         /** update the next centeroid-finding-phase based on the number of
          *  already found centeroids.
          */
-        long current_phase = ((LongWritable) getAggregatedValue(KMEANSPP_PHASE)).get();
         long next_phase = getNextPhase(current_phase, centeroid_count);
         setAggregatedValue(KMEANSPP_PHASE, new LongWritable(next_phase));
       }
@@ -331,7 +331,7 @@ public class KMeansPlusPlusComputation extends BasicComputation<LongWritable, Ve
     public void initialize() throws InstantiationException, IllegalAccessException {
         
       /** Get the user specified number of of centeroids. At the command line,
-       * specify argument using -ca option, for example, -ca kmeans.numCenteroids=3.
+       * specify argument using -ca option, for example, -ca kmeanspp.numCenteroids=3.
        */
       numCenteroids = getConf().getInt(NUM_CENTEROIDS, 2);
 
