@@ -147,7 +147,7 @@ public class KMeansPlusPlusComputation extends BasicComputation<LongWritable, Ve
    * @return shortest distance.
    */
   private double computeShortestDistance(List<Vector> vec_list, Vector vec2) {
-    double current_distance = Double.MAX_VALUE;
+    double current_distance = Double.POSITIVE_INFINITY;
     for (Vector vec1 : vec_list) {
       double distance = computeSquaredEucledianDistance(vec1, vec2);
       LOG.debug("vec1=" + vec1 + ", vec2=" + vec2 + ", dist=" + distance);
