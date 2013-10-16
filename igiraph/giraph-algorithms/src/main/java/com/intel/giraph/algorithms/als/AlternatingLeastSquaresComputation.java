@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2012 Intel Corporation All Rights Reserved.
+// Copyright 2013 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -72,10 +72,6 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     public static final String MAX_SUPERSTEPS = "als.maxSupersteps";
     /** Custom argument for feature dimension */
     public static final String FEATURE_DIMENSION = "als.featureDimension";
-    /** Custom argument for maximum edge weight value */
-    public static final String MAX_VAL = "als.maxVal";
-    /** Custom argument for minimum edge weight value */
-    public static final String MIN_VAL = "als.minVal";
     /**
      * Custom argument for regularization parameter: lambda
      * f = L2_error + lambda*Tikhonov_regularization
@@ -83,6 +79,17 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     public static final String LAMBDA = "als.lambda";
     /** Custom argument for the convergence threshold */
     public static final String CONVERGENCE_THRESHOLD = "als.convergenceThreshold";
+    /** Custom argument for maximum edge weight value */
+    public static final String MAX_VAL = "als.maxVal";
+    /** Custom argument for minimum edge weight value */
+    public static final String MIN_VAL = "als.minVal";
+    /**
+     * Custom argument for learning curve output interval (default: every iteration)
+     * Since each ALS iteration is composed by 2 super steps, one iteration
+     * means two super steps.
+     * */
+    public static final String LEARNING_CURVE_OUTPUT_INTERVAL = "als.learningCurveOutputInterval";
+
     /** Aggregator name for sum of cost on training data */
     private static String SUM_TRAIN_COST = "cost_train";
     /** Aggregator name for sum of L2 error on validate data */
@@ -106,12 +113,14 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     private int maxSupersteps = 20;
     /** Feature dimension */
     private int featureDimension = 20;
+    /** The regularization parameter */
+    private float lambda = 0f;
     /** Maximum edge weight value */
     private float maxVal = Float.POSITIVE_INFINITY;
     /** Minimum edge weight value */
     private float minVal = Float.NEGATIVE_INFINITY;
-    /** The regularization parameter */
-    private float lambda = 0f;
+    /** Iteration interval to output learning curve */
+    private int learningCurveOutputInterval = 1;
 
     @Override
     public void preSuperstep() {
@@ -121,11 +130,15 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         if (featureDimension < 1) {
             throw new IllegalArgumentException("Feature dimension should be > 0.");
         }
-        maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
-        minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
         lambda = getConf().getFloat(LAMBDA, 0f);
         if (lambda < 0) {
             throw new IllegalArgumentException("Regularization parameter lambda should be >= 0.");
+        }
+        maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
+        minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
+        learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
+        if (learningCurveOutputInterval < 1) {
+            throw new IllegalArgumentException("Learning curve output interval should be >= 1.");
         }
     }
 
@@ -206,8 +219,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         }
 
         Vector preValue = vertex.getValue().getVector();
-        // update aggregators every 2 super steps
-        if ((step % 2) == 0) {
+        // update aggregators every (2 * interval) super steps
+        if ((step % (2 * learningCurveOutputInterval)) == 0) {
             double errorOnTrain = 0d;
             double errorOnValidate = 0d;
             double errorOnTest = 0d;
@@ -244,8 +257,10 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
 
         // update vertex value
         if (step < maxSupersteps) {
+            // xxt records the result of x times x transpose
             Matrix xxt = new DenseMatrix(featureDimension, featureDimension);
             xxt = xxt.assign(0d);
+            // xr records the result of x times rating
             Vector xr = preValue.clone().assign(0d);
             int numTrain = 0;
             for (MessageDataWritable message : messages) {
@@ -291,9 +306,10 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
 
         @Override
         public void compute() {
-            // check convergence at every 2 super steps
+            // check convergence at every (2 * interval) super steps
+            int learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
             long step = getSuperstep();
-            if (step < 3 || (step % 2) == 0) {
+            if (step < 3 || (step % (2 * learningCurveOutputInterval)) == 0) {
                 return;
             }
             // calculate rmse on validate data
@@ -315,7 +331,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             }
             sumTestError.set(testRmse);
             // evaluate convergence condition
-            if (step >= 5) {
+            if (step >= 3 + (2 * learningCurveOutputInterval)) {
                 float prevRmse = getConf().getFloat(PREV_RMSE, 0f);
                 float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 if (Math.abs(prevRmse - validateRmse) < threshold) {
@@ -373,6 +389,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 map.put(entry.getKey(), entry.getValue().toString());
             }
 
+            int learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
             if (superstep == 1) {
                 // output graph statistics
                 long leftVertices = Long.parseLong(map.get(SUM_LEFT_VERTICES));
@@ -400,9 +417,10 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 output.writeUTF(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeUTF(String.format("maxVal: %f%n", maxVal));
                 output.writeUTF(String.format("minVal: %f%n", minVal));
+                output.writeUTF(String.format("learningCurveOutputInterval: %d%n", learningCurveOutputInterval));
                 output.writeUTF("\n");
                 output.writeUTF("Learning Progress:\n");
-            } else if ((superstep >= 3 && (superstep % 2) == 1) || superstep == -1) {
+            } else if ((superstep >= 3 && (superstep % (2 * learningCurveOutputInterval)) == 1) || superstep == -1) {
                 // output learning progress
                 double trainCost = Double.parseDouble(map.get(SUM_TRAIN_COST));
                 double validateRmse = Double.parseDouble(map.get(SUM_VALIDATE_ERROR));

@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2012 Intel Corporation All Rights Reserved.
+// Copyright 2013 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -63,11 +63,6 @@ public class TestJsonPropertyGraph4CFOutputFormat extends JsonPropertyGraph4CFOu
     public void testOuputFormat() throws IOException, InterruptedException {
         Text expected = new Text("[1,[0],[4,5],[l]]");
 
-        JsonPropertyGraph4CFOutputFormatTestWorker(expected);
-    }
-  
-    private void JsonPropertyGraph4CFOutputFormatTestWorker(Text expected) throws IOException,
-        InterruptedException {
         TaskAttemptContext tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);
 
@@ -94,6 +89,7 @@ public class TestJsonPropertyGraph4CFOutputFormat extends JsonPropertyGraph4CFOu
 
         verify(tw).write(expected, null);
         verify(vertex, times(0)).getEdges();
+
     }
 
 }
