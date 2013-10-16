@@ -188,9 +188,8 @@ public class KMeansPlusPlusComputation extends
     }
 
     /**
-     * 
+     * Broadcast centeroid vector to datapoints.
      *
-     * @return 
      */
     private void broadcastCenteroid(long vid, Vector vec, Iterable<Edge<LongWritable, NullWritable>> edges) {
         //for (Edge<LongWritable, NullWritable> edge : vertex.getEdges()) {
@@ -202,6 +201,14 @@ public class KMeansPlusPlusComputation extends
     }
 
 
+    /**
+     * Returns the sum of two vectors.
+     *
+     * @param v1 first vector.
+     * @param v2 second vector.
+     *
+     * @return Resulting vector.
+     */
     private Vector addTwoVector(Vector v1, Vector v2) {
         int len = v1.size();
         double[] vec = new double[len];
@@ -212,9 +219,9 @@ public class KMeansPlusPlusComputation extends
     }
 
     /**
-     * 
+     * Computes the new centeroid vector based on received datapoints.
      *
-     * @return 
+     * @return The new centeroid vector.
      */
     private Vector computeCenteroid(Iterable<IdWithVectorWritable> messages) {
         boolean init = false;
