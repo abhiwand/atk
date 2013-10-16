@@ -42,24 +42,30 @@ import java.io.IOException;
  * VertexOutputFormat that supports JSON encoded vertices featuring
  * <code>Long</code> id and <code>VectorWritable</code> values.
  */
-public class JsonLongIDDoubleVectorOutputFormat extends TextVertexOutputFormat<LongWritable,
+public class JsonKMeansPPLongVectorOutputFormat extends TextVertexOutputFormat<LongWritable,
     IdWithVectorWritable, NullWritable> {
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new JsonLongIDDoubleVectorWriter();
+        return new JsonKMeansPPLongVectorWriter();
     }
 
     /**
      * VertexWriter that supports vertices with <code>Long</code> id
      * and <code>VectorWritable</code> values.
      */
-    protected class JsonLongIDDoubleVectorWriter extends TextVertexWriterToEachLine {
+    protected class JsonKMeansPPLongVectorWriter extends TextVertexWriterToEachLine {
 
         @Override
-        public Text convertVertexToLine(Vertex<LongWritable, IdWithVectorWritable, NullWritable> vertex) throws IOException {
+        public Text convertVertexToLine(Vertex<LongWritable, IdWithVectorWritable, NullWritable> vertex) throws 
+            IOException {
             JSONArray jsonVertex = new JSONArray();
             try {
+                long vertex_value_id = vertex.getValue().getData();
+                System.out.println("vid=" + vertex.getId().get() + ", vertex_value_id=" + vertex_value_id);
+                if (vertex_value_id >= 0) {
+                    return null;
+                }
                 jsonVertex.put(vertex.getId().get());
                 JSONArray jsonValueArray = new JSONArray();
                 Vector vector = vertex.getValue().getVector();
