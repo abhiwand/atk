@@ -23,6 +23,8 @@
 
 package com.intel.giraph.io.formats;
 
+import com.intel.mahout.math.IdWithVectorWritable;
+
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.NullWritable;
@@ -30,7 +32,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.VectorWritable;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,7 +43,7 @@ import java.io.IOException;
  * <code>Long</code> id and <code>VectorWritable</code> values.
  */
 public class JsonLongIDDoubleVectorOutputFormat extends TextVertexOutputFormat<LongWritable,
-    VectorWritable, NullWritable> {
+    IdWithVectorWritable, NullWritable> {
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
@@ -56,12 +57,12 @@ public class JsonLongIDDoubleVectorOutputFormat extends TextVertexOutputFormat<L
     protected class JsonLongIDDoubleVectorWriter extends TextVertexWriterToEachLine {
 
         @Override
-        public Text convertVertexToLine(Vertex<LongWritable, VectorWritable, NullWritable> vertex) throws IOException {
+        public Text convertVertexToLine(Vertex<LongWritable, IdWithVectorWritable, NullWritable> vertex) throws IOException {
             JSONArray jsonVertex = new JSONArray();
             try {
                 jsonVertex.put(vertex.getId().get());
                 JSONArray jsonValueArray = new JSONArray();
-                Vector vector = vertex.getValue().get();
+                Vector vector = vertex.getValue().getVector();
                 for (int i = 0; i < vector.size(); i++) {
                     jsonValueArray.put(vector.getQuick(i));
                 }

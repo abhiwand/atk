@@ -37,7 +37,7 @@ import org.json.JSONException;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.VectorWritable;
-//import com.intel.mahout.math.DoubleWithVectorWritable;
+import com.intel.mahout.math.IdWithVectorWritable;
 import org.apache.giraph.io.formats.TextVertexInputFormat;
 import java.io.IOException;
 import java.util.List;
@@ -47,7 +47,7 @@ import java.util.List;
   * <code>double Vector</code> vertex values specified in JSON format.
   */
 public class JsonLongIDDoubleVectorInputFormat extends
-    TextVertexInputFormat<LongWritable, VectorWritable, NullWritable> {
+    TextVertexInputFormat<LongWritable, IdWithVectorWritable, NullWritable> {
 
     @Override
     public TextVertexReader createVertexReader(InputSplit split, TaskAttemptContext context) {
@@ -78,9 +78,9 @@ public class JsonLongIDDoubleVectorInputFormat extends
         }
 
         @Override
-        protected VectorWritable getValue(JSONArray jsonVertex) throws JSONException, IOException {
+        protected IdWithVectorWritable getValue(JSONArray jsonVertex) throws JSONException, IOException {
             Vector vec = getDenseVector(jsonVertex.getJSONArray(1));
-            return new VectorWritable(vec);
+            return new IdWithVectorWritable(Long.MAX_VALUE, vec);
         }
 
         @Override
@@ -91,7 +91,7 @@ public class JsonLongIDDoubleVectorInputFormat extends
         }
 
         @Override
-        protected Vertex<LongWritable, VectorWritable, NullWritable> handleException(Text line,
+        protected Vertex<LongWritable, IdWithVectorWritable, NullWritable> handleException(Text line,
             JSONArray jsonVertex, JSONException e) {
             throw new IllegalArgumentException("Couldn't get vertex from line " + line, e);
         }
