@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.BooleanWritable;
 
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.graph.BasicComputation;
@@ -38,6 +39,11 @@ import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.master.DefaultMasterCompute;
+import org.apache.giraph.aggregators.LongSumAggregator;
+
+import com.intel.giraph.aggregators.VectorWritableOverwriteAggregator;
+import com.intel.giraph.aggregators.LongWritableOverwriteAggregator;
+
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.DenseVector;
@@ -45,8 +51,6 @@ import org.apache.mahout.math.DenseVector;
 import org.apache.log4j.Logger;
 
 import com.intel.mahout.math.IdWithVectorWritable;
-import com.intel.giraph.aggregators.VectorWritableOverwriteAggregator;
-import com.intel.giraph.aggregators.LongWritableOverwriteAggregator;
 
 /**
  * KMeans++ algorithm.
@@ -77,6 +81,7 @@ public class KMeansPlusPlusComputation extends
     private static final long PHASE_DISTRIBUTE_POSITION = 0;
     private static final long PHASE_COMPUTE_DISTANCE = 1;
     private static final long PHASE_FINDING_COMPLETE = 2;
+    private static final long PHASE_RUN_KMEANS = 3;
 
     /** Aggregator to exchange values between the MasterCompute and workers. */
     public static final String KMEANSPP_INIT_CENTEROID_ID = "kmeanspp.agg.init_centeroid_id";
@@ -84,6 +89,8 @@ public class KMeansPlusPlusComputation extends
     public static final String KMEANSPP_CENTEROID = "centeroid";
     public static final String KMEANSPP_SUM_DISTANCE = "kmeanspp.agg.sum_distance";
     public static final String KMEANSPP_PHASE = "kmeanspp.agg.phase";
+    public static final String KMEANSPP_CONVERGED = "kmeanspp.agg.converged";
+    public static final String KMEANSPP_CLOSEST_CENTEROID = "kmeanspp.agg.closest_centeroid";
 
     /** Random number generator.
     * TODO: we might need fixed seed for QA purpose. */
@@ -96,6 +103,7 @@ public class KMeansPlusPlusComputation extends
     public void preSuperstep() {
         maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
         convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
+        numCenteroids = getConf().getInt(NUM_CENTEROIDS, 2);
 
         if (getSuperstep() == 0) {
             numDatapoints = getTotalNumVertices();
@@ -180,6 +188,77 @@ public class KMeansPlusPlusComputation extends
         return (my_vid < numDatapoints);
     }
 
+    /**
+     * 
+     *
+     * @return 
+     */
+    private void broadcastCenteroid(long vid, Vector vec, Iterable<Edge<LongWritable, NullWritable>> edges) {
+        //for (Edge<LongWritable, NullWritable> edge : vertex.getEdges()) {
+        for (Edge<LongWritable, NullWritable> edge : edges) {
+            LOG.debug("KMeans++: the centeroid " + vid + " sends its vector to datapoints.");
+            //sendMessage(edge.getTargetVertexId(), new IdWithVectorWritable(vid, vertex.getValue().get()));
+            sendMessage(edge.getTargetVertexId(), new IdWithVectorWritable(vid, vec));
+        }
+    }
+
+
+    private Vector addTwoVector(Vector v1, Vector v2) {
+        int len = v1.size();
+        double[] vec = new double[len];
+        for (int i = 0; i < len; i++) {
+            vec[i] = v1.get(i) + v2.get(i);
+        }
+        return new DenseVector(vec);
+    }
+
+    /**
+     * 
+     *
+     * @return 
+     */
+    private Vector computeCenteroid(Iterable<IdWithVectorWritable> messages) {
+        boolean init = false;
+        Vector result_vec = new DenseVector();
+        long num_messages = 0;
+        for (IdWithVectorWritable message : messages) {
+            num_messages++;
+            Vector v = message.getVector();
+            LOG.debug("KMeans++: computeCenteroid v = " + v);
+            if (!init) {
+               result_vec = v.clone(); 
+                LOG.debug("KMeans++: computeCenteroid result_vec + v = " + result_vec);
+               init = true;
+               continue;
+            }
+            result_vec = addTwoVector(result_vec, v);
+            LOG.debug("KMeans++: computeCenteroid result_vec + v = " + result_vec);
+        }
+
+        int dimension = result_vec.size();
+        for (int i = 0; i < dimension; i++) {
+            result_vec.set(i, result_vec.get(i) / (double)num_messages);
+        }
+        return result_vec;
+    }
+
+    /**
+     * Returns the array of centeroid vectors.
+     *
+     * @return Centeroid vectors in array.
+     */
+    private Vector[] getCenteroidVectorArray() {
+        Vector[] centeroid_vec = new Vector[numCenteroids];
+        for (int i = 0; i < numCenteroids; i++) {
+            centeroid_vec[i] = (((VectorWritable) getAggregatedValue(KMEANSPP_CENTEROID + i)).get());
+        }
+        return centeroid_vec;
+    }
+
+    private Vector getCenteroidVector(long centeroid_id) {
+        return ((VectorWritable) getAggregatedValue(KMEANSPP_CENTEROID + centeroid_id)).get();
+    }
+
     @Override
     public void compute(Vertex<LongWritable, VectorWritable, NullWritable> vertex, 
                         Iterable<IdWithVectorWritable> messages) throws IOException {
@@ -220,7 +299,7 @@ public class KMeansPlusPlusComputation extends
             return;
         }
 
-        /** centeroid computes distanc */
+        /** centeroid computes distance */
         if (phase == PHASE_COMPUTE_DISTANCE) {
             if (isDatapoint(vid)) {
                 /** Datapoints has nothing to do in this phase. */
@@ -254,14 +333,85 @@ public class KMeansPlusPlusComputation extends
                 }
                 idx++;
             }
-            vertex.voteToHalt();
+            return;
         } 
 
-        /** At this point, KMeans++'s initial centeroids finding is done */
+        /** KMeans++ initial centeroids finding is done - now performing preparation for running KMeans algorithm */
         if (phase == PHASE_FINDING_COMPLETE) {
-            /** RUN KMeans here */
+            if (isDatapoint(vid)) {
+                /** put datapoints into sleep and wake them when all the centeroids are getting active
+                 *  in the next phase (PHASE_RUN_KMEANS).
+                 */
+                vertex.voteToHalt();
+                return;
+            }
+
+            /** master centeroid preparing for the KMeans by creating new centeroids found in the previous steps. */
+            for (long centeroid_id = numDatapoints; centeroid_id < (numDatapoints + numCenteroids); centeroid_id++) {
+                Vector centeroid_vec = getCenteroidVector(centeroid_id - numDatapoints);
+                LOG.info("KMeans++: new centeroid " + centeroid_id + " with vector " + centeroid_vec);
+                if (centeroid_id == numDatapoints) {
+                    /** master centeroid is setting itself with a centeroid vector */ 
+                    vertex.setValue(new VectorWritable(centeroid_vec));
+                } else {
+                    /** master centeroid creates the reset of (k-1) centeroids and set them with centeroid vectors */
+                    addCenteroid(centeroid_id, centeroid_vec);
+                }
+            }
+            return;
         }
-        vertex.voteToHalt();
+
+        if (phase == PHASE_RUN_KMEANS) {
+            if (isCenteroid(vid)) {
+                LOG.info("KMeans++: the centeroid " + vid + " calculates the new centeroid.");
+                Vector new_centeroid_vec = computeCenteroid(messages);
+
+                if (new_centeroid_vec.size() > 0) {
+                    /** the new centeroid has been calculated - broadcast the new centeroid! */
+                    LOG.info ("KMeans++: broadcast the new centeroid " + new_centeroid_vec);
+
+                    vertex.setValue(new VectorWritable(new_centeroid_vec));
+
+                    aggregate(KMEANSPP_CENTEROID + (vid - numDatapoints), new VectorWritable(new_centeroid_vec));
+
+                    broadcastCenteroid(vid, new_centeroid_vec, vertex.getEdges());
+                } else {
+                    /** centeroid starts KMeans with broadcasting its location to datapoints */
+                    LOG.info ("KMeans++: broadcast the initial centeroid " + vertex.getValue().get());
+                    broadcastCenteroid(vid, vertex.getValue().get(), vertex.getEdges());
+                }
+                vertex.voteToHalt();
+                return;
+            }
+
+            if (isDatapoint(vid)) {
+                Vector[] vector_array = new Vector[numCenteroids];
+                long closest_centeroid = ((LongWritable) getAggregatedValue(KMEANSPP_CLOSEST_CENTEROID + vid)).get();
+                long new_centeroid = Long.MAX_VALUE;
+                double shortest_distance = Double.POSITIVE_INFINITY;
+
+                for (IdWithVectorWritable message : messages) {
+                    double distance = computeSquaredEucledianDistance(vertex.getValue().get(), message.getVector());
+                    if (distance < shortest_distance) {
+                        shortest_distance = distance;
+                        new_centeroid = message.getData();
+                    }
+                }
+
+                LOG.debug("KMeans++: old_centeroid=" + closest_centeroid + ", new_centeroid=" + new_centeroid);
+                if (closest_centeroid != new_centeroid) {
+                    LOG.debug("KMeans++: I got a new centeroid!");
+                    closest_centeroid = new_centeroid;
+                } else {
+                    LOG.debug("KMeans++: I have the same centeroid");
+                    aggregate(KMEANSPP_CONVERGED, new LongWritable(1));
+                }
+                aggregate(KMEANSPP_CLOSEST_CENTEROID + vid, new LongWritable(closest_centeroid));
+                sendMessage(new LongWritable(closest_centeroid), new IdWithVectorWritable(vid, vertex.getValue().get()));
+                vertex.voteToHalt();
+                return;
+            }
+        }
     }
 
     /**
@@ -296,6 +446,15 @@ public class KMeansPlusPlusComputation extends
                 setAggregatedValue(KMEANSPP_INIT_CENTEROID_ID, new LongWritable(init_centeroid));
                 setAggregatedValue(KMEANSPP_CENTEROID_COUNT, new LongWritable(0));
                 setAggregatedValue(KMEANSPP_PHASE, new LongWritable(-1));
+                setAggregatedValue(KMEANSPP_CONVERGED , new LongWritable(0));
+
+                return;
+            }
+
+            if (step == 1) {
+                for (int i = 0; i < numDatapoints; i++) {
+                    setAggregatedValue(KMEANSPP_CLOSEST_CENTEROID + i, new LongWritable(-1));
+                }
             }
 
             /** KMeans++ phase */
@@ -318,18 +477,36 @@ public class KMeansPlusPlusComputation extends
                 /** update the number of found centeroids */
                 setAggregatedValue(KMEANSPP_CENTEROID_COUNT, new LongWritable(centeroid_count));
 
-                /** update the next centeroid-finding-phase based on the number of
-                 *  already found centeroids.
-                 */
+                /** update the next centeroid-finding-phase based on the number of already found centeroids. */
                 long next_phase = getNextPhase(current_phase, centeroid_count);
                 setAggregatedValue(KMEANSPP_PHASE, new LongWritable(next_phase));
+                return;
+            }
+
+            /** KMeans */
+            if (current_phase == PHASE_FINDING_COMPLETE) {
+                setAggregatedValue(KMEANSPP_PHASE, new LongWritable(PHASE_RUN_KMEANS));
+                return;
+            }
+
+            if (current_phase == PHASE_RUN_KMEANS) {
+                long num_converged = ((LongWritable)getAggregatedValue(KMEANSPP_CONVERGED)).get();
+                LOG.info("KMeans++: KMEANSPP_CONVERGED  = " + num_converged);
+                if (num_converged == 10) {
+                    for (int i = 0; i < numCenteroids; i++) {
+                        Vector centeroid = ((VectorWritable) getAggregatedValue(KMEANSPP_CENTEROID + i)).get();
+                        LOG.info("KMeans++: final centeroid " + i + " at " + centeroid);
+                    }
+                    haltComputation();
+                }
+                return;
             }
         }
 
         @Override
         public void initialize() throws InstantiationException, IllegalAccessException { 
-            /** Get the user specified number of of centeroids. At the command line, specify argument using -ca option, 
-             * for example, -ca kmeanspp.numCenteroids=3. 
+            /** Get the user specified number of of centeroids. 
+             * At the command line, specify argument using -ca option, for example, -ca kmeanspp.numCenteroids=3. 
              */
             numCenteroids = getConf().getInt(NUM_CENTEROIDS, 2);
 
@@ -337,11 +514,18 @@ public class KMeansPlusPlusComputation extends
             registerAggregator(KMEANSPP_INIT_CENTEROID_ID, LongWritableOverwriteAggregator.class);
             registerPersistentAggregator(KMEANSPP_CENTEROID_COUNT, LongWritableOverwriteAggregator.class);
             registerPersistentAggregator(KMEANSPP_PHASE, LongWritableOverwriteAggregator.class);
+            registerAggregator(KMEANSPP_CONVERGED, LongSumAggregator.class);
 
             /** register k aggregators for k centeroids */
             for (int i = 0; i < numCenteroids; i++) {
                 LOG.info("KMeans++: Registering aggregator for " + KMEANSPP_CENTEROID + i);
                 registerPersistentAggregator(KMEANSPP_CENTEROID + i, VectorWritableOverwriteAggregator.class);
+            }
+
+            numDatapoints = getTotalNumVertices();
+            LOG.info("KMeans++: MasterCompute initialize numDatapoints = " + numDatapoints);
+            for (int i = 0; i < numDatapoints; i++) {
+                registerPersistentAggregator(KMEANSPP_CLOSEST_CENTEROID + i, LongWritableOverwriteAggregator.class);
             }
         }
     }
