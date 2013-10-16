@@ -450,7 +450,6 @@ public class KMeansPlusPlusComputation extends
         private void updateCenteroidAggregator() {
             for (int i = 0; i < numCenteroids; i++) {
                 Vector centeroid = ((VectorWritable)getAggregatedValue(KMEANSPP_CENTEROID + i)).get();
-                LOG.info("KMeans++: Aggregated KMENASPP_CENTEROID" + i + " = " + centeroid);
                 setAggregatedValue(KMEANSPP_CENTEROID + i, new VectorWritable(centeroid));
             }
         }
