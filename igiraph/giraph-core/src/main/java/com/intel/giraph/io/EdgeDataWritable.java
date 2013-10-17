@@ -21,115 +21,119 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.mahout.math;
-
-import org.apache.hadoop.io.Writable;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.SequentialAccessSparseVector;
-import org.apache.mahout.math.VectorWritable;
+package com.intel.giraph.io;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.hadoop.io.Writable;
+
 /**
- * Writable to handle serialization of two vectors: prior and posterior
+ * Writable to handle serialization of the fields associated with edge data
  */
-public final class TwoVectorWritable implements Writable {
-    /** prior vector */
-    private final VectorWritable priorWritable = new VectorWritable();
-    /** posterior vector */
-    private final VectorWritable posteriorWritable = new VectorWritable();
+public class EdgeDataWritable implements Writable {
+
+    /** the edge type supported by this vertex */
+    public enum EdgeType { TRAIN, VALIDATE, TEST, NONE };
+
+    /** the weight value at this edge */
+    private double weight = 0d;
+
+    /** the type of this vertex */
+    private EdgeType type = EdgeType.NONE;
 
     /**
      * Default constructor
      */
-    public TwoVectorWritable() {
+    public EdgeDataWritable() {
     }
 
     /**
      * Constructor
      *
-     * @param prior of type vector
-     * @param posterior of type vector
+     * @param type from EdgeType
+     * @param weight of type double
      */
-    public TwoVectorWritable(Vector prior, Vector posterior) {
-        this.priorWritable.set(prior);
-        this.posteriorWritable.set(posterior);
-    }
-
-    /**
-     * Getter
-     *
-     * @return prior vector
-     */
-    public Vector getPriorVector() {
-        return priorWritable.get();
+    public EdgeDataWritable(EdgeType type, double weight) {
+        this.type = type;
+        this.weight = weight;
     }
 
     /**
      * Setter
      *
-     * @param vector for prior
+     * @param type of type EdgeType
      */
-    public void setPriorVector(Vector vector) {
-        priorWritable.set(vector);
+    public void setType(EdgeType type) {
+        this.type = type;
     }
 
     /**
      * Getter
      *
-     * @return posterior vector
+     * @return type of type EdgeType
      */
-    public Vector getPosteriorVector() {
-        return posteriorWritable.get();
+    public EdgeType getType() {
+        return type;
+    }
+
+    /**
+     * Getter
+     *
+     * @return weight of type double
+     */
+    public double getWeight() {
+        return weight;
     }
 
     /**
      * Setter
      *
-     * @param vector for posterior
+     * @param weight of type double
      */
-    public void setPosteriorVector(Vector vector) {
-        posteriorWritable.set(vector);
+    public void setWeight(double weight) {
+        this.weight = weight;
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        priorWritable.readFields(in);
-        posteriorWritable.readFields(in);
+        int idx = in.readInt();
+        EdgeType et = EdgeType.values()[idx];
+        setType(et);
+        setWeight(in.readDouble());
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        priorWritable.write(out);
-        posteriorWritable.write(out);
+        EdgeType et = getType();
+        out.writeInt(et.ordinal());
+        out.writeDouble(getWeight());
     }
 
     /**
-     * Read prior and posterior to DataInput
+     * Read edge data from DataInput
      *
      * @param in of type DataInput
-     * @return TwoVectorWritable
+     * @return EdgeDataWritable
      * @throws IOException
      */
-    public static TwoVectorWritable read(DataInput in) throws IOException {
-        TwoVectorWritable writable = new TwoVectorWritable();
+    public static EdgeDataWritable read(DataInput in) throws IOException {
+        EdgeDataWritable writable = new EdgeDataWritable();
         writable.readFields(in);
         return writable;
     }
 
     /**
-     * Write prior and posterior to DataOutput
+     * Write edge data to DataOutput
      *
      * @param out of type DataOutput
-     * @param ssv1 of type SequentialAccessSparseVector
-     * @param ssv2 of type SequentialAccessSparseVector
+     * @param type of type EdgeType
+     * @param weight of type double
      * @throws IOException
      */
-    public static void write(DataOutput out, SequentialAccessSparseVector ssv1,
-        SequentialAccessSparseVector ssv2) throws IOException {
-        new TwoVectorWritable(ssv1, ssv2).write(out);
+    public static void write(DataOutput out, EdgeType type, double weight) throws IOException {
+        new EdgeDataWritable(type, weight).write(out);
     }
 
 }

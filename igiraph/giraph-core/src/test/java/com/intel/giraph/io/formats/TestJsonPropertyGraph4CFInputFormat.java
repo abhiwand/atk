@@ -28,7 +28,10 @@ import java.io.IOException;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
-import com.intel.giraph.io.formats.JsonLongTwoVectorDoubleVectorInputFormat;
+import com.intel.giraph.io.EdgeDataWritable;
+import com.intel.giraph.io.EdgeDataWritable.EdgeType;
+import com.intel.giraph.io.VertexDataWritable;
+import com.intel.giraph.io.VertexDataWritable.VertexType;
 import org.apache.giraph.utils.NoOpComputation;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.LongWritable;
@@ -36,8 +39,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,10 +46,10 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TestJsonLongTwoVectorDoubleVectorInputFormat extends JsonLongTwoVectorDoubleVectorInputFormat {
+public class TestJsonPropertyGraph4CFInputFormat extends JsonPropertyGraph4CFInputFormat {
 
     private RecordReader<LongWritable, Text> rr;
-    private ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> conf;
+    private ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable> conf;
     private TaskAttemptContext tac;
 
     @Before
@@ -57,14 +58,13 @@ public class TestJsonLongTwoVectorDoubleVectorInputFormat extends JsonLongTwoVec
         when(rr.nextKeyValue()).thenReturn(true);
         GiraphConfiguration giraphConf = new GiraphConfiguration();
         giraphConf.setComputationClass(DummyComputation.class);
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable,
-            DoubleWithVectorWritable>(giraphConf);
+        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable>(giraphConf);
         tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);
     }
 
     protected TextVertexReader createVertexReader(final RecordReader<LongWritable, Text> rr) {
-        return new JsonLongTwoVectorDoubleVectorReader() {
+        return new JsonPropertyGraph4CFReader() {
         @Override
         protected RecordReader<LongWritable, Text> createLineRecordReader(InputSplit inputSplit,
             TaskAttemptContext context) throws IOException, InterruptedException {
@@ -75,7 +75,7 @@ public class TestJsonLongTwoVectorDoubleVectorInputFormat extends JsonLongTwoVec
 
     @Test
     public void testReadVertex() throws Exception {
-        String input = "[1,[0.2,2,2],[[0,1],[2,2],[3,1]]]";
+        String input = "[1,[],[l],[[0,1,[tr]],[2,2,[va]],[3,1,[te]]]]";
 
         when(rr.getCurrentValue()).thenReturn(new Text(input));
         TextVertexReader vr = createVertexReader(rr);
@@ -83,16 +83,20 @@ public class TestJsonLongTwoVectorDoubleVectorInputFormat extends JsonLongTwoVec
         vr.initialize(null, tac);
 
         assertTrue("Should have been able to read vertex", vr.nextVertex());
-        Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> vertex = vr.getCurrentVertex();
+        Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex = vr.getCurrentVertex();
         assertEquals(vertex.getNumEdges(), 3);
         assertEquals(1L, vertex.getId().get());
-        assertEquals(3, vertex.getValue().getPriorVector().size());
-        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).getData(), 0d);
-        assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).getData(), 0d);
-        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).getData(), 0d);
+        assertTrue(vertex.getValue().getVector().size() == 0);
+        assertTrue(vertex.getValue().getType() == VertexType.LEFT);
+        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).getWeight(), 0d);
+        assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).getWeight(), 0d);
+        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).getWeight(), 0d);
+        assertTrue(vertex.getEdgeValue(new LongWritable(0L)).getType() == EdgeType.TRAIN);
+        assertTrue(vertex.getEdgeValue(new LongWritable(2L)).getType() == EdgeType.VALIDATE);
+        assertTrue(vertex.getEdgeValue(new LongWritable(3L)).getType() == EdgeType.TEST);
     }
 
-    public static class DummyComputation extends NoOpComputation<LongWritable, TwoVectorWritable,
-        DoubleWithVectorWritable, Writable> { }
+    public static class DummyComputation extends NoOpComputation<LongWritable, VertexDataWritable,
+        EdgeDataWritable, Writable> { }
 
 }

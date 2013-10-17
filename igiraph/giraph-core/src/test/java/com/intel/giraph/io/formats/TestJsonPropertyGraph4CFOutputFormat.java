@@ -25,7 +25,6 @@ package com.intel.giraph.io.formats;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
@@ -36,54 +35,48 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.DenseVector;
-import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.giraph.io.formats.JsonLongIDVectorValueOutputFormat;
-
+import com.intel.giraph.io.VertexDataWritable;
+import com.intel.giraph.io.VertexDataWritable.VertexType;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;
 
-public class TestJsonLongIDVectorValueOutputFormat extends JsonLongIDVectorValueOutputFormat {
+public class TestJsonPropertyGraph4CFOutputFormat extends JsonPropertyGraph4CFOutputFormat {
     /** Test configuration */
-    private ImmutableClassesGiraphConfiguration<LongWritable,
-    TwoVectorWritable, Writable> conf;
+    private ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, Writable> conf;
     /**
      * Dummy class to allow ImmutableClassesGiraphConfiguration to be created.
      */
-    public static class DummyComputation extends NoOpComputation<LongWritable,TwoVectorWritable, Writable,
+    public static class DummyComputation extends NoOpComputation<LongWritable, VertexDataWritable, Writable,
         Writable> { }
 
     @Before
     public void setUp() {
         GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
         giraphConfiguration.setComputationClass(DummyComputation.class);
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable,
+        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable,
             Writable>(giraphConfiguration);
     }
 
     @Test
     public void testOuputFormat() throws IOException, InterruptedException {
-        Text expected = new Text("[1,[4,5]]");
+        Text expected = new Text("[1,[0],[4,5],[l]]");
 
-        JsonLongIDVectorValueOutputFormatTestWorker(expected);
-    }
-  
-    private void JsonLongIDVectorValueOutputFormatTestWorker(Text expected) throws IOException,
-        InterruptedException {
         TaskAttemptContext tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);
 
         Vertex vertex = mock(Vertex.class);
         when(vertex.getId()).thenReturn(new LongWritable(1L));
-        when(vertex.getValue()).thenReturn(new TwoVectorWritable(new DenseVector(new double[]{2.0, 3.0}),
+        
+        when(vertex.getValue()).thenReturn(new VertexDataWritable(VertexType.LEFT,
             new DenseVector(new double[]{4.0, 5.0})));
 
         // Create empty iterator == no edges
         when(vertex.getEdges()).thenReturn(new ArrayList<Text>());
 
         final RecordWriter<Text, Text> tw = mock(RecordWriter.class);
-        JsonLongIDTwoVectorValueWriter writer = new JsonLongIDTwoVectorValueWriter() {
+        JsonLongIDVertexDataWriter writer = new JsonLongIDVertexDataWriter() {
             @Override
             protected RecordWriter<Text, Text> createLineRecordWriter(TaskAttemptContext context)
                 throws IOException, InterruptedException {
@@ -96,6 +89,7 @@ public class TestJsonLongIDVectorValueOutputFormat extends JsonLongIDVectorValue
 
         verify(tw).write(expected, null);
         verify(vertex, times(0)).getEdges();
+
     }
 
 }

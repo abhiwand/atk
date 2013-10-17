@@ -20,3 +20,8 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Package of igiraph algorithms.
+ */
+package com.intel.giraph.algorithms.als;
