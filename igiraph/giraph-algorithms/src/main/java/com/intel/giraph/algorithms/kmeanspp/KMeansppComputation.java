@@ -408,7 +408,6 @@ public class KMeansppComputation extends
             }
 
             if (isDatapoint(vid)) {
-                Vector[] vectorArray = new Vector[NUM_CENTEROIDS];
                 long newCenteroid = Long.MAX_VALUE;
                 double shortestDistance = Double.POSITIVE_INFINITY;
 
