@@ -45,6 +45,8 @@ import java.io.IOException;
 public class JsonKMeansPPLongVectorOutputFormat extends TextVertexOutputFormat<LongWritable,
     IdWithVectorWritable, NullWritable> {
 
+    private static final long CENTEROID = -1;
+
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
         return new JsonKMeansPPLongVectorWriter();
@@ -61,9 +63,8 @@ public class JsonKMeansPPLongVectorOutputFormat extends TextVertexOutputFormat<L
             IOException {
             JSONArray jsonVertex = new JSONArray();
             try {
-                long vertex_value_id = vertex.getValue().getData();
-                System.out.println("vid=" + vertex.getId().get() + ", vertex_value_id=" + vertex_value_id);
-                if (vertex_value_id >= 0) {
+                long vertex_type = vertex.getValue().getData();
+                if (vertex_type != CENTEROID) {
                     return null;
                 }
                 jsonVertex.put(vertex.getId().get());
