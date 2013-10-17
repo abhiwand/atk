@@ -36,7 +36,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
-import org.apache.mahout.math.VectorWritable;
 import com.intel.mahout.math.IdWithVectorWritable;
 import org.apache.giraph.io.formats.TextVertexInputFormat;
 import java.io.IOException;

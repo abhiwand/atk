@@ -44,6 +44,7 @@ import java.io.IOException;
 public class JsonKMeansppLongVectorOutputFormat extends TextVertexOutputFormat<LongWritable,
     IdWithVectorWritable, NullWritable> {
 
+    /** vertex yype for centeroid. */
     private static final long CENTEROID = -1;
 
     @Override
@@ -58,12 +59,12 @@ public class JsonKMeansppLongVectorOutputFormat extends TextVertexOutputFormat<L
     protected class JsonKMeansppLongVectorWriter extends TextVertexWriterToEachLine {
 
         @Override
-        public Text convertVertexToLine(Vertex<LongWritable, IdWithVectorWritable, NullWritable> vertex) throws 
+        public Text convertVertexToLine(Vertex<LongWritable, IdWithVectorWritable, NullWritable> vertex) throws
             IOException {
             JSONArray jsonVertex = new JSONArray();
             try {
-                long vertex_type = vertex.getValue().getData();
-                if (vertex_type != CENTEROID) {
+                long vertexType = vertex.getValue().getData();
+                if (vertexType != CENTEROID) {
                     return null;
                 }
                 jsonVertex.put(vertex.getId().get());
