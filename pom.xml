@@ -27,10 +27,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>com.intel.igiraph</groupId>
+  <groupId>com.intel.hadoop</groupId>
   <artifactId>tribeca</artifactId>
   <packaging>pom</packaging>
-	<version>0.5</version>
+	<version>0.5-SNAPSHOT</version>
   <name>Intel Tribeca Parent</name>
   <description>Tribeca : Large Scale Graph Analytics</description>
   <inceptionYear>2013</inceptionYear>
@@ -57,7 +57,7 @@
     <dep.facebook-hadoop.version>0.20.0</dep.facebook-hadoop.version>
     <dep.fasterxml-jackson.version>2.1.0</dep.fasterxml-jackson.version>
     <dep.fastutil.version>6.5.3</dep.fastutil.version>
-    <dep.hbase.version>0.94.1</dep.hbase.version>
+    <dep.hbase.version>0.94.7</dep.hbase.version>
     <dep.giraph-core.version>1.1.0-SNAPSHOT</dep.giraph-core.version>
     <dep.giraph-hbase.version>1.1.0-SNAPSHOT</dep.giraph-hbase.version>
     <dep.guava.version>12.0</dep.guava.version>
@@ -67,7 +67,7 @@
     <dep.json.version>20090211</dep.json.version>
     <dep.junit.version>4.8</dep.junit.version>
     <dep.jython.version>2.5.3</dep.jython.version>
-    <dep.mahout.version>0.8.0</dep.mahout.version>
+    <dep.mahout.version>0.8</dep.mahout.version>
     <dep.mockito-all.version>1.8.5</dep.mockito-all.version>
     <dep.netty.version>3.5.3.Final</dep.netty.version>
     <dep.slf4j.version>1.7.2</dep.slf4j.version>
@@ -79,7 +79,7 @@
     <forHadoop>for-hadoop-${hadoop.version}</forHadoop>
   </properties>
 
-  <build>
+<build>
     <pluginManagement>
       <plugins>
         <plugin>
@@ -101,42 +101,7 @@
             </execution>
           </executions>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.4</version>
-          <executions>
-            <execution>
-              <id>build-fat-jar</id>
-              <!-- this is used for inheritance merges -->
-              <phase>compile</phase>
-              <!-- append to the packaging phase. -->
-              <configuration>
-                <descriptor>src/main/assembly/compile.xml</descriptor>
-                <archive>
-                  <manifest>
-                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                    <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                  </manifest>
-                  <manifestEntries>
-                    <Build-Jdk>${java.version}</Build-Jdk>
-                    <Build-Time>${maven.build.timestamp}</Build-Time>
-                    <Git-Commit-Branch>${mvngit.branch}</Git-Commit-Branch>
-                    <Git-Commit-Hash>${mvngit.commit.id}</Git-Commit-Hash>
-                    <Git-Commit-Date>${mvngit.commit.committer.date}</Git-Commit-Date>
-                    <Git-Committer-Email>${mvngit.commit.committer.email}</Git-Committer-Email>
-                    <Git-Committer-Name>${mvngit.commit.committer.name}</Git-Committer-Name>
-                  </manifestEntries>
-                </archive>
-                <outputDirectory>target</outputDirectory>
-              </configuration>
-              <goals>
-                <goal>single</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
+       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
           <version>2.10</version>
@@ -399,10 +364,11 @@
         <groupId>com.github.koraktor</groupId>
         <artifactId>mavanagaiata</artifactId>
       </plugin>
-    </plugins>
+   </plugins>
   </build>
 
-  <dependencies>
+  <dependencyManagement>
+    <dependencies>
     <!-- compile dependencies. sorted lexicographically. -->
     <dependency>
       <groupId>org.apache.giraph</groupId>
@@ -414,17 +380,7 @@
        <artifactId>giraph-hbase</artifactId>
        <version>${dep.giraph-hbase.version}</version>
     </dependency>
-    <dependency>
-       <groupId>com.intel.giraph</groupId>
-       <artifactId>igiraph</artifactId>
-       <version>${project.version}</version>
-    </dependency>
-       <dependency>
-       <groupId>com.intel.mahout</groupId>
-       <artifactId>imahout</artifactId>
-       <version>${project.version}</version>
-    </dependency>
-    <dependency>
+   <dependency>
       <groupId>commons-configuration</groupId>
       <artifactId>commons-configuration</artifactId>
       <version>${dep.commons-configuration.version}</version>
@@ -460,30 +416,23 @@
              <groupId>org.apache.hbase</groupId>
              <artifactId>hbase</artifactId>
              <version>${dep.hbase.version}</version>
+ 	     <classifier>security</classifier>
      </dependency>
      <dependency>
            <groupId>com.thinkaurelius.faunus</groupId>
            <artifactId>faunus</artifactId>
            <version>${dep.aurelius.version}</version>
      </dependency>
-     <dependency>
+      <dependency>
           <groupId>org.apache.mahout</groupId>
           <artifactId>mahout-core</artifactId>
           <version>${dep.mahout.version}</version>
      </dependency>
-    <dependency>
-      <groupId>org.apache.giraph</groupId>
-      <artifactId>giraph-core</artifactId>
-      <version>${dep.giraph-core.version}</version>
-      <type>test-jar</type>
-    </dependency>
-    <dependency>
-       <groupId>org.apache.giraph</groupId>
-       <artifactId>giraph-hbase</artifactId>
-       <version>${dep.giraph-hbase.version}</version>
-       <type>test-jar</type>
+     <dependency>
+          <groupId>org.apache.mahout</groupId>
+          <artifactId>mahout-math</artifactId>
+          <version>${dep.mahout.version}</version>
      </dependency>
-
     <!-- test dependencies. sorted lexicographically. -->
     <dependency>
       <groupId>junit</groupId>
@@ -497,11 +446,11 @@
       <version>${dep.mockito-all.version}</version>
       <scope>test</scope>
     </dependency>
-  </dependencies>
-
+    </dependencies>
+  </dependencyManagement>
   <modules>
     <module>imahout</module>
-    <module>igiraph</module>
+    <module>igiraph</module> 
+    <module>tribeca</module>
   </modules>
-
 </project>
