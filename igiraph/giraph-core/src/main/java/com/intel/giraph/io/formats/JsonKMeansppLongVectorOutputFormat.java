@@ -26,7 +26,6 @@ package com.intel.giraph.io.formats;
 import com.intel.mahout.math.IdWithVectorWritable;
 
 import org.apache.giraph.graph.Vertex;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -42,21 +41,21 @@ import java.io.IOException;
  * VertexOutputFormat that supports JSON encoded vertices featuring
  * <code>Long</code> id and <code>VectorWritable</code> values.
  */
-public class JsonKMeansPPLongVectorOutputFormat extends TextVertexOutputFormat<LongWritable,
+public class JsonKMeansppLongVectorOutputFormat extends TextVertexOutputFormat<LongWritable,
     IdWithVectorWritable, NullWritable> {
 
     private static final long CENTEROID = -1;
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new JsonKMeansPPLongVectorWriter();
+        return new JsonKMeansppLongVectorWriter();
     }
 
     /**
      * VertexWriter that supports vertices with <code>Long</code> id
      * and <code>VectorWritable</code> values.
      */
-    protected class JsonKMeansPPLongVectorWriter extends TextVertexWriterToEachLine {
+    protected class JsonKMeansppLongVectorWriter extends TextVertexWriterToEachLine {
 
         @Override
         public Text convertVertexToLine(Vertex<LongWritable, IdWithVectorWritable, NullWritable> vertex) throws 

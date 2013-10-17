@@ -58,7 +58,7 @@ import com.intel.mahout.math.IdWithVectorWritable;
 @Algorithm(
     name = "KMeans++"
 )
-public class KMeansPlusPlusComputation extends 
+public class KMeansppComputation extends 
     BasicComputation<LongWritable, IdWithVectorWritable, NullWritable, IdWithVectorWritable> {
 
     /** Custom argument for the max number of super steps */
@@ -96,7 +96,7 @@ public class KMeansPlusPlusComputation extends
     Random rand_gen = new Random();
 
     /** Class logger */
-    private static Logger LOG = Logger.getLogger(KMeansPlusPlusComputation.class);
+    private static Logger LOG = Logger.getLogger(KMeansppComputation.class);
 
     @Override
     public void preSuperstep() {
@@ -437,9 +437,9 @@ public class KMeansPlusPlusComputation extends
 
 
     /**
-     * MasterCompute used with {@link KMeansPlusPlusComputation}.
+     * MasterCompute used with {@link KMeansppComputation}.
      */
-    public static class KMeansPlusPlusMasterCompute extends DefaultMasterCompute {
+    public static class KMeansppMasterCompute extends DefaultMasterCompute {
         /** 
         * KMeans++ - phase transition for finding initial k centeroids.
         */
