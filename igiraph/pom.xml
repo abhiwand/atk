@@ -508,7 +508,7 @@
   <modules>
     <module>giraph-core</module>
     <module>giraph-algorithms</module>
-    <!--module>giraph-titan</module -->
+    <module>giraph-titan</module>
   </modules>
 
 </project>
