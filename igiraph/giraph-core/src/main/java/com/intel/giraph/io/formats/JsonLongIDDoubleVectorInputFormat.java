@@ -48,6 +48,9 @@ import java.util.List;
 public class JsonLongIDDoubleVectorInputFormat extends
     TextVertexInputFormat<LongWritable, IdWithVectorWritable, NullWritable> {
 
+    /** The length of a vector */
+    private int cardinality = 0;
+
     @Override
     public TextVertexReader createVertexReader(InputSplit split, TaskAttemptContext context) {
         return new JsonLongIDDoubleVectorReader();
@@ -58,10 +61,8 @@ public class JsonLongIDDoubleVectorInputFormat extends
      * Input files should be in the following JSON format:
      * JSONArray(<vertex id>, JSONArray(<vertex valueVector>)).
      *
-     * Example: [1, [1.2, 0.5, -0.01, 3.5, 5.1]]
-     * \li Vertex id: 1
-     * \li Vertex values: 1.2, 0.5, -0.01, 3.5, and 5.1.
-     *
+     * Example: for input string, [1, [1.2, 0.5, -0.01, 3.5, 5.1]], vertex id is 1, and vertex values are
+     * 1.2, 0.5, -0.01, 3.5, and 5.1.
      */
     class JsonLongIDDoubleVectorReader extends
         TextVertexReaderFromEachLineProcessedHandlingExceptions<JSONArray, JSONException> {
@@ -79,6 +80,13 @@ public class JsonLongIDDoubleVectorInputFormat extends
         @Override
         protected IdWithVectorWritable getValue(JSONArray jsonVertex) throws JSONException, IOException {
             Vector vec = getDenseVector(jsonVertex.getJSONArray(1));
+            if (vec.size() != cardinality) {
+                if (cardinality == 0) {
+                    cardinality = vec.size();
+                } else {
+                    throw new IllegalArgumentException("Error in input data: different cardinality!");
+                }
+            }
             return new IdWithVectorWritable(Long.MAX_VALUE, vec);
         }
 

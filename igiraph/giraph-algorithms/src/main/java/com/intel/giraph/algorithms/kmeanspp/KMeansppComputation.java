@@ -60,13 +60,14 @@ public class KMeansppComputation extends
     BasicComputation<LongWritable, IdWithVectorWritable, NullWritable, IdWithVectorWritable> {
 
     /** Custom argument for the number of clusters */
-    public static final String KMEANS_NUM_CENTEROIDS = "kmeanspp.num_centeroids";
+    public static final String KMEANSPP_NUM_CENTEROIDS = "kmeanspp.num_centeroids";
+
     /** aggregator - initial centeriod */
     public static final String KMEANSPP_INIT_CENTEROID_ID = "kmeanspp.agg.init_centeroid_id";
     /** aggregator - number of found centeriods */
     public static final String KMEANSPP_CENTEROID_COUNT = "kmeanspp.agg.centeroid_count";
     /** aggregator - centeriod[0:k-1] */
-    public static final String KMEANSPP_CENTEROID = "kmeans.agg.centeroid";
+    public static final String KMEANSPP_CENTEROID = "kmeanspp.agg.centeroid";
     /** aggregator - phases of running KMeans and KMeans++ */
     public static final String KMEANSPP_PHASE = "kmeanspp.agg.phase";
     /** aggregator - total number of not converged datapoints */
@@ -84,7 +85,7 @@ public class KMeansppComputation extends
     private static final int MAX_SUPERSTEPS = 1600;
 
     /** Number of centeroids */
-    private static int NUM_CENTEROIDS;
+    private static int NUM_CENTEROIDS = 2;
     /** Number of datapoints */
     private static long NUM_DATAPOINTS = 0;
 
@@ -98,7 +99,7 @@ public class KMeansppComputation extends
 
     @Override
     public void preSuperstep() {
-        NUM_CENTEROIDS = getConf().getInt(KMEANS_NUM_CENTEROIDS, 2);
+        NUM_CENTEROIDS = getConf().getInt(KMEANSPP_NUM_CENTEROIDS, 2);
 
         if (getSuperstep() == 0) {
             NUM_DATAPOINTS = getTotalNumVertices();
@@ -125,7 +126,7 @@ public class KMeansppComputation extends
     }
 
     /**
-     * Computes the "squred" eucledian distance between two vectors for KMeans++.
+     * Computes the "squared" eucledian distance between two vectors for KMeans++.
      *
      * @param v1 first vector.
      * @param v2 second vector.
@@ -134,6 +135,7 @@ public class KMeansppComputation extends
      */
     private double computeSquaredEucledianDistance(Vector v1, Vector v2) {
         double distance = 0.0;
+
         for (int i = 0; i < v1.size(); i++) {
             distance += Math.pow(v1.get(i) - v2.get(i), 2);
         }
@@ -209,6 +211,9 @@ public class KMeansppComputation extends
      * @return Resulting vector.
      */
     private Vector addTwoVector(Vector v1, Vector v2) {
+        if (v1.size() != v2.size()) {
+            throw new IllegalArgumentException("addTwoVector: sizes of two vectors are different.");
+        }
         int len = v1.size();
         double[] vec = new double[len];
         for (int i = 0; i < len; i++) {
@@ -540,7 +545,7 @@ public class KMeansppComputation extends
             /** Get the user specified number of of centeroids.
              * At the command line, specify argument using -ca option, for example, -ca kmeanspp.num_centeroids=3.
              */
-            NUM_CENTEROIDS = getConf().getInt(KMEANS_NUM_CENTEROIDS, 2);
+            NUM_CENTEROIDS = getConf().getInt(KMEANSPP_NUM_CENTEROIDS, 2);
 
             /** register aggregators for master - nodes communication. */
             registerAggregator(KMEANSPP_INIT_CENTEROID_ID, LongWritableOverwriteAggregator.class);
