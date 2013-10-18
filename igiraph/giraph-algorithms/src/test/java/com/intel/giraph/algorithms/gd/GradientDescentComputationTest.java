@@ -86,11 +86,11 @@ public class GradientDescentComputationTest {
         // verify results
         assertNotNull(vertexValues);
         assertEquals(5, vertexValues.size());
-        for (long i = 0; i < 5; i++) {
-            assertEquals(4, vertexValues.get(i).length);
-            assertEquals(0.0, vertexValues.get(i)[0], 0d);
+        for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
+            assertEquals(4, entry.getValue().length);
+            assertEquals(0.0, entry.getValue()[0], 0d);
             for (int j = 0; j < 3; j++) {
-                assertEquals(expectedValues[(int)i][j], vertexValues.get(i)[j+1], 0.01d);    
+                assertEquals(expectedValues[entry.getKey().intValue()][j], entry.getValue()[j+1], 0.01d);    
             }
         }
     }
