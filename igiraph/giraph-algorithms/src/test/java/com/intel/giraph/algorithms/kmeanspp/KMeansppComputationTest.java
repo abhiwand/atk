@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Arrays;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.DenseVector;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.io.formats.JsonLongIDDoubleVectorInputFormat;
@@ -29,12 +31,8 @@ public class KMeansppComputationTest {
      *
      * @return Eucledian distance.
      */
-    private double computeCost(double[] truth, double[] calculatedCenteroid) {
-        double cost = 0.0;
-        for (int i = 0; i < 5; i++) {
-            cost += Math.pow(truth[i] - calculatedCenteroid[i], 2.0);
-        }
-        return Math.pow(cost, 0.5);
+    private double computeCost(Vector truth, Vector calculatedCenteroid) {
+        return Math.pow(truth.getDistanceSquared(calculatedCenteroid), 0.5);
     }
 
     /**
@@ -118,12 +116,13 @@ public class KMeansppComputationTest {
             assertTrue(centeroidMap.containsKey(Long.valueOf(idx)));
             double[] centeroid = getPrimitiveDoubleArray(centeroidMap.get(Long.valueOf(idx)));
 
+            Vector centeroidVec = new DenseVector(centeroid);
             if (centeroid[1] < -5) {
-                cost += computeCost(truth[0], centeroid);
+                cost += computeCost(new DenseVector(truth[0]), centeroidVec);
             } else if ((-6 < centeroid[4]) && (centeroid[4] < 3)) {
-                cost += computeCost(truth[1], centeroid);
+                cost += computeCost(new DenseVector(truth[1]), centeroidVec);
             } else if (centeroid[2] > 6) {
-                cost += computeCost(truth[2], centeroid);
+                cost += computeCost(new DenseVector(truth[2]), centeroidVec);
             } else {
                 fail("The calculated centeroid is not found from the ground truth.");
             }

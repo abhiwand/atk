@@ -61,6 +61,8 @@ public class KMeansppComputation extends
 
     /** Custom argument for the number of clusters */
     public static final String KMEANSPP_NUM_CENTEROIDS = "kmeanspp.num_centeroids";
+    /** Custom argument for the number of maximum supersteps */
+    public static final String KMEANSPP_MAX_SUPERSTEPS = "kmeanspp.max_supersteps";
 
     /** aggregator - initial centeriod */
     public static final String KMEANSPP_INIT_CENTEROID_ID = "kmeanspp.agg.init_centeroid_id";
@@ -81,9 +83,9 @@ public class KMeansppComputation extends
     private static final long PHASE_FINDING_COMPLETE = 2;
     /** KMeans++ - phase for running KMeans algorithm. */
     private static final long PHASE_RUN_KMEANS = 3;
-    /** Number of super steps */
-    private static final int MAX_SUPERSTEPS = 1600;
 
+    /** Number of super steps */
+    private static int MAX_SUPERSTEPS = 1600;
     /** Number of centeroids */
     private static int NUM_CENTEROIDS = 2;
     /** Number of datapoints */
@@ -99,6 +101,7 @@ public class KMeansppComputation extends
     @Override
     public void preSuperstep() {
         NUM_CENTEROIDS = getConf().getInt(KMEANSPP_NUM_CENTEROIDS, 2);
+        MAX_SUPERSTEPS = getConf().getInt(KMEANSPP_MAX_SUPERSTEPS, 1600);
 
         if (getSuperstep() == 0) {
             NUM_DATAPOINTS = getTotalNumVertices();
@@ -432,6 +435,10 @@ public class KMeansppComputation extends
         @Override
         public void compute() {
             long step = getSuperstep();
+
+            if (step >=  MAX_SUPERSTEPS) {
+                haltComputation();
+            }
 
             if (step == 0) {
                 /** selects initial centroid uniformly at random */
