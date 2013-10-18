@@ -61,8 +61,7 @@ public class KMeansppComputationTest {
     @Test
     public void testToyData() throws Exception {
 
-        /* 
-         * Datapoints generated from the following centeroids.
+        /** Datapoints generated from the following centeroids.
          *
          * centeroid 0: -0.446673  -8.48793  0.378735   0.75713   -7.90668
          * centeroid 1: -4.6875    -1.4584   1.58041    0.741229  -0.535909
@@ -91,9 +90,7 @@ public class KMeansppComputationTest {
             "[19,[0.55175,-9.25044,0.720086,1.08582,-6.69295]]" 
         }; 
 
-        /**
-         * Ground truth.
-         */
+        /** Ground truth. */
         double[][] truth = new double[][] {
             {-0.446673, -8.48793, 0.378735, 0.75713, -7.90668},
             {-4.6875, -1.4584, 1.58041, 0.741229, -0.535909},

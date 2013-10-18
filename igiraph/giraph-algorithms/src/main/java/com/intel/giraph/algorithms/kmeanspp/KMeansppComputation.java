@@ -181,27 +181,6 @@ public class KMeansppComputation extends
         }
     }
 
-
-    /**
-     * Returns the sum of two vectors.
-     *
-     * @param v1 first vector.
-     * @param v2 second vector.
-     *
-     * @return Resulting vector.
-     */
-    private Vector addTwoVector(Vector v1, Vector v2) {
-        if (v1.size() != v2.size()) {
-            throw new IllegalArgumentException("addTwoVector: sizes of two vectors are different.");
-        }
-        int len = v1.size();
-        double[] vec = new double[len];
-        for (int i = 0; i < len; i++) {
-            vec[i] = v1.get(i) + v2.get(i);
-        }
-        return new DenseVector(vec);
-    }
-
     /**
      * Computes the new centeroid vector based on received datapoints.
      *
@@ -223,7 +202,6 @@ public class KMeansppComputation extends
                 init = true;
                 continue;
             }
-            //resultVec = addTwoVector(resultVec, v);
             resultVec = resultVec.plus(v);
             LOG.debug("KMeans++: computeCenteroid resultVec + v = " + resultVec);
         }
