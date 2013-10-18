@@ -91,6 +91,9 @@ public class KMeansppComputationTest {
             "[19,[0.55175,-9.25044,0.720086,1.08582,-6.69295]]" 
         }; 
 
+        /**
+         * Ground truth.
+         */
         double[][] truth = new double[][] {
             {-0.446673, -8.48793, 0.378735, 0.75713, -7.90668},
             {-4.6875, -1.4584, 1.58041, 0.741229, -0.535909},
@@ -99,17 +102,17 @@ public class KMeansppComputationTest {
       
         GiraphConfiguration conf = new GiraphConfiguration(); 
 
-        /** Configuration */
+        // configuration
         conf.setComputationClass(KMeansppComputation.class);
         conf.setVertexInputFormatClass(JsonLongIDDoubleVectorInputFormat.class);
         conf.setVertexOutputFormatClass(JsonKMeansppLongVectorOutputFormat.class);
         conf.setMasterComputeClass(KMeansppComputation.KMeansppMasterCompute.class);
         conf.setInt(KMEANSPP_NUM_CENTEROIDS, 3);
 
-        /** run internally */
+        // run internally
         Iterable<String> results = InternalVertexRunner.run(conf, datapoints);
 
-        /** Pase the results */
+        // parse the results
         Map<Long, Double[]> centeroidMap = parseResults(results);
 
         /** check the results with the expected results */
@@ -144,7 +147,7 @@ public class KMeansppComputationTest {
         int numResults = 0;
         for (String line : results) {
 
-            /** make sure there are only three centeroids */
+            // make sure there are only three centeroids
             assertTrue(numResults < 3);
 
             try {
@@ -159,7 +162,7 @@ public class KMeansppComputationTest {
                     throw new IllegalArgumentException("Wrong centeroid vector format!");
                 }
 
-                /** make sure key the centeroid IDs are unique */
+                // make sure key the centeroid IDs are unique
                 assertFalse(centeroidMap.containsKey(centeroidId));
 
                 /** parse out centeroid id and centeroid vector */
@@ -168,7 +171,7 @@ public class KMeansppComputationTest {
                     centeroidVector[i] = vector.getDouble(i);
                 }
 
-                /** add the centeroid ID and vector to the map */
+                //add the centeroid ID and vector to the map
                 centeroidMap.put(centeroidId, centeroidVector);
 
             } catch (JSONException e) {
