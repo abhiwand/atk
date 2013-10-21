@@ -235,7 +235,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
                 // filter vertex property key name
                 if (vertexPropertyKeyValues.contains(this.type.getName())) {
                     final Object vertexValueObject = this.value;
-                    final double vertexValue = ((Number) vertexValueObject).doubleValue();
+                    final double vertexValue = Double.parseDouble(vertexValueObject.toString());
                     vertex.setValue(new DoubleWritable(vertexValue));
                 }
             } else {
@@ -250,7 +250,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
                                 if ((entry.getValue() != null) &&
                                         edgePropertyKeyValues.contains(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
-                                    edgeValue = ((Number) edgeValueObject).floatValue();
+                                    edgeValue = Float.parseFloat(edgeValueObject.toString());
                                 }
                             }
                             Edge<LongWritable, FloatWritable> edge = EdgeFactory.create(new LongWritable(

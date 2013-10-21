@@ -97,17 +97,17 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
     @Test
     public void TitanHBaseVertexInputLongDoubleFloatTest() throws Exception {
 
-        TitanKey age = tx.makeType().name("age").unique(Direction.OUT).dataType(Long.class).makePropertyKey();
-        TitanKey time = tx.makeType().name("time").dataType(Integer.class).unique(Direction.OUT)
+        TitanKey age = tx.makeType().name("age").unique(Direction.OUT).dataType(String.class).makePropertyKey();
+        TitanKey time = tx.makeType().name("time").dataType(String.class).unique(Direction.OUT)
                 .makePropertyKey();
         TitanLabel battled = tx.makeType().name("battled").makeEdgeLabel();
 
         TitanVertex n1 = tx.addVertex();
-        TitanProperty p1 = n1.addProperty(age, 1000L);
+        TitanProperty p1 = n1.addProperty(age, "1000");
         TitanVertex n2 = tx.addVertex();
-        TitanProperty p2 = n2.addProperty(age, 2000L);
+        TitanProperty p2 = n2.addProperty(age, "2000");
         TitanEdge e1 = n1.addEdge(battled, n2);
-        e1.setProperty(time, 333);
+        e1.setProperty(time, "333");
 
         tx.commit();
 

@@ -269,7 +269,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
                 String propertyName = this.type.getName();
                 if (vertexPropertyKeyValues.containsKey(propertyName)) {
                     final Object vertexValueObject = this.value;
-                    final double vertexValue = ((Number) vertexValueObject).doubleValue();
+                    final double vertexValue = Double.parseDouble(vertexValueObject.toString());
                     Vector priorVector = vertexValueVector.getPriorVector();
                     priorVector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
                     vertex.setValue(new TwoVectorWritable(priorVector, vector.clone()));
@@ -285,7 +285,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
                                 if (entry.getValue() != null &&
                                         edgePropertyKeyValues.containsKey(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
-                                    edgeValue = ((Number) edgeValueObject).doubleValue();
+                                    edgeValue = Double.parseDouble(edgeValueObject.toString());
                                 }
                             }
                             Edge<LongWritable, DoubleWithTwoVectorWritable> edge = EdgeFactory.create(

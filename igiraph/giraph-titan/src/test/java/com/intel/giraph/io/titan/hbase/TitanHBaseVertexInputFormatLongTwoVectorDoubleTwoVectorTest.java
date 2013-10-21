@@ -107,61 +107,61 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
                 "[2,[0.3,0.3,3],[[1,2],[4,4]]]", "[3,[0.4,4,0.4],[[0,3],[1,1],[4,4]]]",
                 "[4,[5,5,0.5],[[3,4],[2,4]]]" };
 
-        TitanKey red = tx.makeType().name("red").unique(Direction.OUT).dataType(Double.class)
+        TitanKey red = tx.makeType().name("red").unique(Direction.OUT).dataType(String.class)
                 .makePropertyKey();
-        TitanKey blue = tx.makeType().name("blue").unique(Direction.OUT).dataType(Double.class)
+        TitanKey blue = tx.makeType().name("blue").unique(Direction.OUT).dataType(String.class)
                 .makePropertyKey();
-        TitanKey yellow = tx.makeType().name("yellow").unique(Direction.OUT).dataType(Double.class)
+        TitanKey yellow = tx.makeType().name("yellow").unique(Direction.OUT).dataType(String.class)
                 .makePropertyKey();
-        TitanKey weight = tx.makeType().name("weight").dataType(Double.class).unique(Direction.OUT)
+        TitanKey weight = tx.makeType().name("weight").dataType(String.class).unique(Direction.OUT)
                 .makePropertyKey();
         TitanLabel friend = tx.makeType().name("friend").makeEdgeLabel();
 
         TitanVertex n0 = tx.addVertex();
-        n0.addProperty(red, 1d);
-        n0.addProperty(blue, 0.1d);
-        n0.addProperty(yellow, 0.1d);
+        n0.addProperty(red, "1");
+        n0.addProperty(blue, "0.1");
+        n0.addProperty(yellow, "0.1");
         TitanVertex n1 = tx.addVertex();
-        n1.addProperty(red, 0.2d);
-        n1.addProperty(blue, 2d);
-        n1.addProperty(yellow, 2d);
+        n1.addProperty(red, "0.2");
+        n1.addProperty(blue, "2");
+        n1.addProperty(yellow, "2");
         TitanVertex n2 = tx.addVertex();
-        n2.addProperty(red, 0.3d);
-        n2.addProperty(blue, 0.3d);
-        n2.addProperty(yellow, 3d);
+        n2.addProperty(red, "0.3");
+        n2.addProperty(blue, "0.3");
+        n2.addProperty(yellow, "3");
         TitanVertex n3 = tx.addVertex();
-        n3.addProperty(red, 0.4d);
-        n3.addProperty(blue, 4d);
-        n3.addProperty(yellow, 0.4d);
+        n3.addProperty(red, "0.4");
+        n3.addProperty(blue, "4");
+        n3.addProperty(yellow, "0.4");
         TitanVertex n4 = tx.addVertex();
-        n4.addProperty(red, 5d);
-        n4.addProperty(blue, 5d);
-        n4.addProperty(yellow, 0.5d);
+        n4.addProperty(red, "5");
+        n4.addProperty(blue, "5");
+        n4.addProperty(yellow, "0.5");
 
         TitanEdge e0 = n0.addEdge(friend, n1);
-        e0.setProperty(weight, 1.0d);
+        e0.setProperty(weight, "1.0");
         TitanEdge e1 = n0.addEdge(friend, n3);
-        e1.setProperty(weight, 3.0d);
+        e1.setProperty(weight, "3.0");
         TitanEdge e2 = n1.addEdge(friend, n0);
-        e2.setProperty(weight, 1.0d);
+        e2.setProperty(weight, "1.0");
         TitanEdge e3 = n1.addEdge(friend, n2);
-        e3.setProperty(weight, 2.0d);
+        e3.setProperty(weight, "2.0");
         TitanEdge e4 = n1.addEdge(friend, n3);
-        e4.setProperty(weight, 1.0d);
+        e4.setProperty(weight, "1.0");
         TitanEdge e5 = n2.addEdge(friend, n1);
-        e5.setProperty(weight, 2.0d);
+        e5.setProperty(weight, "2.0");
         TitanEdge e6 = n2.addEdge(friend, n4);
-        e6.setProperty(weight, 4.0d);
+        e6.setProperty(weight, "4.0");
         TitanEdge e7 = n3.addEdge(friend, n0);
-        e7.setProperty(weight, 3.0d);
+        e7.setProperty(weight, "3.0");
         TitanEdge e8 = n3.addEdge(friend, n1);
-        e8.setProperty(weight, 1.0d);
+        e8.setProperty(weight, "1.0");
         TitanEdge e9 = n3.addEdge(friend, n4);
-        e9.setProperty(weight, 4.0d);
+        e9.setProperty(weight, "4.0");
         TitanEdge e10 = n4.addEdge(friend, n3);
-        e10.setProperty(weight, 4.0d);
+        e10.setProperty(weight, "4.0");
         TitanEdge e11 = n4.addEdge(friend, n2);
-        e11.setProperty(weight, 4.0d);
+        e11.setProperty(weight, "4.0");
 
         tx.commit();
 
