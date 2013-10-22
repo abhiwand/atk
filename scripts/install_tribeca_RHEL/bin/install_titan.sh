@@ -11,7 +11,6 @@ ES_URL=$8
 ES_HOME=$9
 ES_VERSION=${10}
 LAB_MACHINE=${11}
-MAVEN_REPO_DIR=${12}
 CFG_DIR=`pwd`/../cfg
 
 HAS_MAVEN=`which mvn | wc -l`

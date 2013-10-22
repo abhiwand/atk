@@ -46,10 +46,6 @@ under the License.
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" 
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
-
-<localRepository>/disk1/.m2</localRepository>
-
-
   <!-- localRepository
    | The path to the local repository maven will use to store artifacts.
    |
@@ -92,27 +88,17 @@ under the License.
    | specification in this list marked as active will be used.
    |-->
   <proxies>
-      <proxy>
-          <active>true</active>
-          <protocol>http</protocol>
-          <host>proxy.jf.intel.com</host>
-          <port>911</port>
-      </proxy>
-
     <!-- proxy
      | Specification for one proxy, to be used in connecting to the network.
      |
+-->
     <proxy>
-      <id>optional</id>
       <active>true</active>
       <protocol>http</protocol>
-      <username>proxyuser</username>
-      <password>proxypass</password>
-      <host>proxy.host.net</host>
-      <port>80</port>
-      <nonProxyHosts>local.net|some.host.com</nonProxyHosts>
+      <host>proxy-chain.intel.com</host>
+      <port>911</port>
+      <nonProxyHosts>*.intel.com</nonProxyHosts>
     </proxy>
-    -->
   </proxies>
 
   <!-- servers
@@ -160,15 +146,15 @@ under the License.
      | this mirror serves has an ID that matches the mirrorOf element of this mirror. IDs are used
      | for inheritance and direct lookup purposes, and must be unique across the set of mirrors.
      |
+-->
     <mirror>
-      <id>mirrorId</id>
-      <mirrorOf>repositoryId</mirrorOf>
-      <name>Human Readable Name for this Mirror.</name>
-      <url>http://my.repository.com/repo/path</url>
+      <id>gaomaven</id>
+      <mirrorOf>*</mirrorOf>
+      <name>GAO Maven Mirror</name>
+      <url>http://gaomaven.jf.intel.com:8081/nexus/content/groups/public</url>
     </mirror>
-     -->
   </mirrors>
-  
+
   <!-- profiles
    | This is a list of profiles which can be activated in a variety of ways, and which can modify
    | the build process. Profiles provided in the settings.xml are intended to provide local machine-
@@ -266,3 +252,4 @@ under the License.
   </activeProfiles>
   -->
 </settings>
+

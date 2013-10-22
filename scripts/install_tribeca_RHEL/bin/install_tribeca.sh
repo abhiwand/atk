@@ -73,7 +73,7 @@ if [ $INSTALL_HBASE = "yes" ]; then
        if [ ! -d $MAVEN_HOME ]; then
           mkdir $MAVEN_HOME
        fi
-       source install_hbase.sh  $HBASE_URL $HBASE_HOME $HBASE_VERSION $HADOOP_HOME $HADOOP_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $LAB_MACHINE $MAVEN_REPO_DIR
+       source install_hbase.sh  $HBASE_URL $HBASE_HOME $HBASE_VERSION $HADOOP_HOME $HADOOP_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $LAB_MACHINE
 
        if [ $TEST_HBASE = "yes" ]; then
            cd $INSTALL_DIR
@@ -122,7 +122,7 @@ if [ $INSTALL_TITAN = "yes" ]; then
        if [ ! -d $MAVEN_HOME ]; then
           mkdir $MAVEN_HOME
        fi
-       source install_titan.sh  $TITAN_URL $TITAN_HOME $TITAN_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $USE_INTERNAL $ES_URL $ES_HOME $ES_VERSION $LAB_MACHINE $MAVEN_REPO_DIR
+       source install_titan.sh  $TITAN_URL $TITAN_HOME $TITAN_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $USE_INTERNAL $ES_URL $ES_HOME $ES_VERSION $LAB_MACHINE
 
        if [ $TEST_TITAN = "yes" ]; then
           cd $INSTALL_DIR
@@ -146,7 +146,7 @@ if [ $INSTALL_FAUNUS = "yes" ]; then
        if [ ! -d $MAVEN_HOME ]; then
           mkdir $MAVEN_HOME
        fi
-       source install_faunus.sh  $FAUNUS_URL $FAUNUS_HOME $FAUNUS_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $USE_INTERNAL $LAB_MACHINE $MAVEN_REPO_DIR
+       source install_faunus.sh  $FAUNUS_URL $FAUNUS_HOME $FAUNUS_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $USE_INTERNAL $LAB_MACHINE
 
        if [ $TEST_FAUNUS = "yes" ]; then
           cd $INSTALL_DIR
@@ -170,7 +170,7 @@ if [ $INSTALL_GRAPHBUILDER = "yes" ]; then
        if [ ! -d $MAVEN_HOME ]; then
           mkdir $MAVEN_HOME
        fi
-       source install_graphbuilder.sh  $GRAPHBUILDER_URL $GRAPHBUILDER_HOME $GRAPHBUILDER_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $LAB_MACHINE $MAVEN_REPO_DIR
+       source install_graphbuilder.sh  $GRAPHBUILDER_URL $GRAPHBUILDER_HOME $GRAPHBUILDER_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $LAB_MACHINE
 
        if [ $TEST_GRAPHBUILDER = "yes" ]; then
           cd $INSTALL_DIR
@@ -194,7 +194,7 @@ if [ $INSTALL_GIRAPH = "yes" ]; then
        if [ ! -d $MAVEN_HOME ]; then
           mkdir $MAVEN_HOME
        fi
-       source install_giraph.sh  $GIRAPH_URL $GIRAPH_HOME $GIRAPH_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $USE_INTERNAL $LAB_MACHINE $MAVEN_REPO_DIR
+       source install_giraph.sh  $GIRAPH_URL $GIRAPH_HOME $GIRAPH_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $USE_INTERNAL $LAB_MACHINE
        
        if [ $TEST_GIRAPH = "yes" ]; then
           cd $INSTALL_DIR
@@ -219,7 +219,7 @@ if [ $INSTALL_MAHOUT = "yes" ]; then
        if [ ! -d $MAHOUT_HOME ]; then
           mkdir $MAHOUT_HOME
        fi
-       source install_mahout.sh  $MAHOUT_URL $MAHOUT_HOME $MAHOUT_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $USE_INTERNAL $LAB_MACHINE $MAVEN_REPO_DIR
+       source install_mahout.sh  $MAHOUT_URL $MAHOUT_HOME $MAHOUT_VERSION $MAVEN_URL $MAVEN_HOME $MAVEN_VERSION $USE_INTERNAL $LAB_MACHINE
 
        if [ $TEST_MAHOUT = "yes" ]; then
            cd $INSTALL_DIR

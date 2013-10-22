@@ -7,7 +7,6 @@ MAVEN_URL=$4
 MAVEN_HOME=$5
 MAVEN_VERSION=$6
 LAB_MACHINE=$7
-MAVEN_REPO_DIR=$8
 CFG_DIR=`pwd`/../cfg
 
 echo "install graphbuilder prerequisites - maven"

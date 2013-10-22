@@ -9,7 +9,6 @@ MAVEN_URL=$6
 MAVEN_HOME=$7
 MAVEN_VERSION=$8
 LAB_MACHINE=$9
-MAVEN_REPO_DIR=${10}
 CFG_DIR=`pwd`/../cfg
 
 echo "install hbase prerequisites - maven"

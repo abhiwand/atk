@@ -8,7 +8,6 @@ MAVEN_HOME=$5
 MAVEN_VERSION=$6
 USE_INTERNAL=$7
 LAB_MACHINE=$8
-MAVEN_REPO_DIR=$9
 CFG_DIR=`pwd`/../cfg
 
 HAS_MAVEN=`which mvn | wc -l`
