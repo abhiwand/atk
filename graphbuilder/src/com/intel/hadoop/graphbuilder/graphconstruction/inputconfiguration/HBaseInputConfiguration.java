@@ -73,14 +73,31 @@ public class HBaseInputConfiguration implements InputConfiguration {
         configuration.set(GBHTableConfig.config.getProperty("VCN_CONF_NAME"), vertexConfigString);
 
         String[] edgeColumnNames  = cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"));
-        String   edgeConfigString = edgeColumnNames[0];
 
-        for (int i = 1; i < edgeColumnNames.length; i++) {
-            edgeConfigString += GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR") + edgeColumnNames[i];
+        if (edgeColumnNames != null) {
+            String   edgeConfigString = edgeColumnNames[0];
+
+            for (int i = 1; i < edgeColumnNames.length; i++) {
+                edgeConfigString += GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR") + edgeColumnNames[i];
+            }
+
+            configuration.set(GBHTableConfig.config.getProperty("ECN_CONF_NAME"), edgeConfigString);
         }
 
-        configuration.set(GBHTableConfig.config.getProperty("ECN_CONF_NAME"), edgeConfigString);
+        String[] directedEdgeColumnNames  = cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"));
+
+        if (directedEdgeColumnNames != null) {
+            String   directedEdgeConfigString = directedEdgeColumnNames[0];
+
+            for (int i = 1; i < directedEdgeColumnNames.length; i++) {
+                directedEdgeConfigString += GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR") + directedEdgeColumnNames[i];
+            }
+
+            configuration.set(GBHTableConfig.config.getProperty("DECN_CONF_NAME"), directedEdgeConfigString);
+        }
+
         configuration.set("SRCTABLENAME", srcTableName);
+
 
         scan.setCaching(GBHTableConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);

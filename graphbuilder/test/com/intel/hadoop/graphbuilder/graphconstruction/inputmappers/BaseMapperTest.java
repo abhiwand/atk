@@ -61,8 +61,8 @@ public class BaseMapperTest {
         conf.set("GraphTokenizer", BasicHBaseTokenizer.class.getName());
         conf.set("KeyFunction", SourceVertexKeyFunction.class.getName());
         //sample command line paramaters
-        //-e
-        conf.set(GBHTableConfig.ECN_CONF_NAME, "cf:name,cf:dept,worksAt");
+        //-d
+        conf.set(GBHTableConfig.DECN_CONF_NAME, "cf:name,cf:dept,worksAt");
         //-v
         conf.set(GBHTableConfig.VCN_CONF_NAME, "cf:name=cf:age,cf:dept");
 

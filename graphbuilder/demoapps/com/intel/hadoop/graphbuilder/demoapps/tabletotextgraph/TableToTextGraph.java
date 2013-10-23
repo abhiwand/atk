@@ -36,14 +36,20 @@ public class TableToTextGraph {
                 .create("v"));
 
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))
-                .withDescription("Specify the columns which are edge tokens; " +
+                .withDescription("Specify the columns which are undirected edge tokens; " +
                         "Example: --" + GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
                         "Note: Edge labels must be unique")
                 .hasArgs()
-                .isRequired()
                 .withArgName("Edge-Column-Name")
                 .create("e"));
 
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
+                .withDescription("Specify the columns which are directed edge tokens; " +
+                        "Example: --" + GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
+                        "Note: Edge labels must be unique")
+                .hasArgs()
+                .withArgName("Edge-Column-Name")
+                .create("d"));
         return options;
     }
 
@@ -101,8 +107,17 @@ public class TableToTextGraph {
                 for (String e : cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))) {
                     LOG.info("Edges: " + e);
                 }
-            } else {
-                LOG.fatal("Please add column family and names for edges and edge properties");
+            }
+
+            if (cmd.hasOption(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))) {
+                for (String e : cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))) {
+                    LOG.info("Edges: " + e);
+                }
+            }
+
+            if (!(cmd.hasOption(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))) &&
+                    !(cmd.hasOption(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME")))) {
+                LOG.fatal("Please add column family and names for (directed) edges and (directed) edge properties");
                 showHelp(options);
                 System.exit(1);
             }
@@ -145,7 +160,7 @@ public class TableToTextGraph {
         Job                                   job                 = new TableToTextGraph().new Job();
         HBaseInputConfiguration               inputConfiguration  = new HBaseInputConfiguration();
         BasicHBaseTokenizer                   tokenizer           = new BasicHBaseTokenizer();
-        TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
+        TextGraphOutputConfiguration          outputConfiguration = new TextGraphOutputConfiguration();
 
 
         LOG.info("============= Creating graph from hbase ==================");

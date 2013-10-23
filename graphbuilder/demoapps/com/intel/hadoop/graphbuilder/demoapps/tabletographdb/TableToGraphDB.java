@@ -44,13 +44,21 @@ public class TableToGraphDB {
                 .create("v"));
 
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))
-                .withDescription("Specify the HTable columns which are edge tokens; " +
+                .withDescription("Specify the HTable columns which are undirected edge tokens; " +
                         "Example: --" + GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
                         "Note: Edge labels must be unique")
                 .hasArgs()
-                .isRequired()
                 .withArgName("Edge-Column-Name")
                 .create("e"));
+
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
+                .withDescription("Specify the columns which are directed edge tokens; " +
+                        "Example: --" + GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
+                        "Note: Edge labels must be unique")
+                .hasArgs()
+                .withArgName("Edge-Column-Name")
+                .create("d"));
+
 
         commandLineInterface.setOptions(options);
     }
