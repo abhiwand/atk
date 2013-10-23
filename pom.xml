@@ -449,8 +449,11 @@
     </dependencies>
   </dependencyManagement>
   <modules>
+    <module>event</module>
+    <module>graphbuilder</module>
     <module>imahout</module>
     <module>igiraph</module> 
     <module>tribeca</module>
+
   </modules>
 </project>
