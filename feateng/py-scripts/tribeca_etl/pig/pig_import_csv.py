@@ -21,7 +21,6 @@ def main(argv):
     
     pig_statements = []
     pig_statements.append("REGISTER %s/contrib/piggybank/java/piggybank.jar;" % (os.environ.get('PIG_HOME')))#Pig binary sets the PIG_HOME env. variable when we run the script
-    pig_statements.append("REGISTER %s/contrib/piggybank/java/piggybank.jar;" % (os.environ.get('PIG_HOME')))#Pig binary sets the PIG_HOME env. variable when we run the script
     if cmd_line_args.skip_header:
         pig_statements.append("logs = LOAD '%s' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',', 'NO_MULTILINE', 'NOCHANGE', 'SKIP_INPUT_HEADER') AS (%s);" % (cmd_line_args.input, pig_schema_info))
     else:
