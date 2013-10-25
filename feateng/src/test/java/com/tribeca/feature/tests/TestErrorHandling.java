@@ -73,7 +73,7 @@ public class TestErrorHandling {
 		String[] script = {
 				"REGISTER target/TRIB-FeatureEngineering-0.0.1-SNAPSHOT.jar",
 				"parsed_val = LOAD 'hbase://shaw_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:timestamp etl-cf:item_id etl-cf:method etl-cf:src_tms etl-cf:event_type etl-cf:dst_tms etl-cf:duration', '-loadKey true') as (key:chararray, timestamp:chararray, item_id:chararray, method:chararray, src_tms:chararray, event_type:chararray, dst_tms:chararray, duration:chararray);",
-				"squared_duration = FOREACH parsed_val GENERATE com.tribeca.etl.ErroneousEvalFunc(duration);" };
+				"squared_duration = FOREACH parsed_val GENERATE com.intel.pig.udf.ErroneousEvalFunc(duration);" };
 
 		PigTest test = new PigTest(script);
 		// the final field (duration) is empty, which will make the java udf

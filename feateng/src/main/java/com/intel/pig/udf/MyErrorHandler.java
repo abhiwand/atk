@@ -20,37 +20,16 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.tribeca.etl;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+package com.intel.pig.udf;
 
 import org.apache.pig.EvalFunc;
-import org.apache.pig.data.DataBag;
-import org.apache.pig.data.DataType;
-import org.apache.pig.data.Tuple;
-import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.apache.pig.backend.hadoop.executionengine.physicalLayer.util.MonitoredUDFExecutor.ErrorCallback;
 
-public class BagToMap extends EvalFunc<Map> {
+public class MyErrorHandler extends ErrorCallback {
 
-	@Override
-	public Map exec(Tuple t) throws IOException {
-		Map<String, Object> output = new HashMap<String, Object>();
-		DataBag bag = (DataBag) t.get(0);
-		Iterator<Tuple> it = bag.iterator();
-		while (it.hasNext()) {
-			Tuple tuple = it.next();
-			String key = (String) tuple.get(0);
-			Object value = tuple.get(1);
-			output.put(key, value);
-		}
-		return output;
-	}
-
-	@Override
-	public Schema outputSchema(Schema input) {
-		return new Schema(new Schema.FieldSchema("values", DataType.MAP));
+	@SuppressWarnings("unchecked")
+	public static void handleError(EvalFunc evalFunc, Exception e) {
+		System.out.println("gotcha, skipping exception");
+//		e.printStackTrace();
 	}
 }
