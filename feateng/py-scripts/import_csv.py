@@ -9,6 +9,7 @@ def main(argv):
     parser = ArgumentParser(description='import.py imports a big dataset from HDFS to HBase')
     parser.add_argument('-i', '--input', dest='input', help='the input file path (on HDFS)', required=True)
     parser.add_argument('-o', '--output', dest='output', help='the output able name', required=True)
+    parser.add_argument('-d', '--delimeter', dest='input_delimeter_char', help='delimeter to use while parsing the input file. Default value is comma')
     parser.add_argument('-s', '--schema', dest='schema_information', help='schema information', required=True)
     parser.add_argument('-k', '--skip_header', dest='skip_header', help='skip the header line (first line) of the CSV file while loading', action='store_true', default=False)
 
@@ -31,6 +32,9 @@ def main(argv):
     
     if cmd_line_args.skip_header:  
         args += ['-k']  
+        
+    if cmd_line_args.input_delimeter_char:  
+        args += ['-d', cmd_line_args.input_delimeter_char]          
     
     subprocess.call(args)
 

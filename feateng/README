@@ -26,6 +26,7 @@ Import some datasets:
 	python py-scripts/import.py -i /tmp/sample_shaw.log -o shaw_table -l '\n' -c custom-parsers/shaw_udfs.py -s 'timestamp:chararray,event_type:chararray,method:chararray,duration:double,item_id:chararray,src_tms:chararray,dst_tms:chararray'
 	python py-scripts/import_csv.py -i /tmp/test.csv -o dummy_table -s 'f1:chararray,f2:chararray,f3:double,f4:long' (If your CSV contains a header line as the first line you can skip loading that line with the -k flag)
 	python py-scripts/import_csv.py -i /tmp/us_states.csv -o us_states -s 'state_name:chararray' -k
+	python py-scripts/import_csv.py -i /tmp/test.tsv -o dummy_table -d '\t' -s 'f1:chararray,f2:chararray,f3:double,f4:long' -k # To run a tab separated file specify the delimeter as \t
 	python py-scripts/import_json.py -i /tmp/test.json -o test_json_import
 	
 Then clean the dataset:
