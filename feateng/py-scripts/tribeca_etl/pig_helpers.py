@@ -1,14 +1,33 @@
 from tribeca_etl.config import CONFIG_PARAMS
 
-def generate_pig_schema(features):
-    feature_types={}
-    pig_schema_info = ''
-    hbase_constructor_args = ''
-    for i, f in enumerate(features):
-        hbase_constructor_args += (CONFIG_PARAMS['etl-column-family']+f)#will be like etl-cf:timestamp etl-cf:duration etl-cf:event_type etl-cf:method etl-cf:src_tms etl-cf:dst_tms
-        pig_schema_info += (f+":chararray") # load all stuff as chararray, it is OK as we are importing the dataset
-        feature_types[f]='chararray'
-        if i != len(features) - 1:
-            hbase_constructor_args += ' '
-            pig_schema_info += ', '
-    return hbase_constructor_args, pig_schema_info, feature_types
+'''
+Returns a schema string in Pig's format given a comma separated feature names and types string
+'''    
+def get_pig_schema_string( feature_names_as_str, feature_types_as_str):
+    feature_names = feature_names_as_str.split(',')
+    feature_types = feature_types_as_str.split(',')
+    
+    pig_schema = ''
+    for i,feature_name in enumerate(feature_names):
+        feature_type = feature_types[i] 
+        pig_schema += feature_name
+        pig_schema += ':'
+        pig_schema += feature_type
+        if i != len(feature_names)-1:
+            pig_schema+=','
+    return pig_schema
+
+'''
+Returns the schema string in HBaseStorage's format given a comma separated feature names and types string
+'''                
+def get_hbase_storage_schema_string(feature_names_as_str, feature_types_as_str):
+    feature_names = feature_names_as_str.split(',')
+    feature_types = feature_types_as_str.split(',')
+            
+    hbase_storage_schema = ''
+    for i,feature_name in enumerate(feature_names):
+        feature_type = feature_types[i] 
+        hbase_storage_schema += (CONFIG_PARAMS['etl-column-family'] + feature_name)
+        if i != len(feature_names)-1:
+            hbase_storage_schema+=' '
+    return hbase_storage_schema

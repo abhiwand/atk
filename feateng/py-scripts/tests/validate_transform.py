@@ -3,10 +3,11 @@ import sys
 import argparse
 import getopt
 import math
-
-sys.path.append("py-scripts/") #etl_hbase_client and config modules are in the upper directory
-from etl_hbase_client import ETLHBaseClient
-from config import CONFIG_PARAMS
+import os
+base_script_path = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(base_script_path+"/..") #etl_hbase_client and config modules are in the upper directory
+from tribeca_etl.hbase_client import ETLHBaseClient
+from tribeca_etl.config import CONFIG_PARAMS
 
 DIFF_EPSILON = 0.01#diff used for floating point comparisons
 
@@ -20,14 +21,11 @@ def main(argv):
     cmd_line_args = parser.parse_args()
     print cmd_line_args
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        scanner = hbase_client.client.scannerOpen(cmd_line_args.input,'',[CONFIG_PARAMS['etl-column-family']],{})
-        row = hbase_client.client.scannerGet(scanner)
-        i = 0
-        #scan all rows & validate the transformation result
-        while row:
-            col_dict = row[0].columns
-            feature_val = col_dict[CONFIG_PARAMS['etl-column-family'] + cmd_line_args.feature].value
-            new_feature_val = col_dict[CONFIG_PARAMS['etl-column-family'] + cmd_line_args.new_feature_name].value
+        t = hbase_client.connection.table(cmd_line_args.input)
+        i=0
+        for key, data in t.scan():
+            feature_val = data[CONFIG_PARAMS['etl-column-family'] + cmd_line_args.feature]
+            new_feature_val = data[CONFIG_PARAMS['etl-column-family'] + cmd_line_args.new_feature_name]
             if feature_val == '':
                 assert feature_val == new_feature_val
             else:
@@ -69,7 +67,6 @@ def main(argv):
                     print "Currently we do not support transformation %s, for the available transformations see pig_transform.py" % (cmd_line_args.transformation_function)
             print '{0}\r'.format("validated row %d" % (i)),
             i+=1
-            row = hbase_client.client.scannerGet(scanner)
     print
     print "Done validating all rows"
 if __name__ == "__main__":

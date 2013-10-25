@@ -3,7 +3,6 @@ import os
 from org.apache.pig.scripting import Pig
 from tribeca_etl.config import CONFIG_PARAMS
 from tribeca_etl.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
-from tribeca_etl.pig_helpers import generate_pig_schema
 
 """
 Currently we don't get any schema info from the user. We just load the whole json as a possibly nested map and dump it as is to HBase.
@@ -12,7 +11,6 @@ def main(argv):
     parser = ArgumentParser(description='imports a big CSV dataset from HDFS to HBase')
     parser.add_argument('-i', '--input', dest='input', help='the input file path (on HDFS)', required=True)
     parser.add_argument('-o', '--output', dest='output', help='the output able name', required=True)
-    parser.add_argument('-p', '--parallelism', dest='degree_of_parallelism', help='degree of parallelism (number of reducers in MR jobs)', required=True, type=int)
 
     cmd_line_args = parser.parse_args()
     print cmd_line_args

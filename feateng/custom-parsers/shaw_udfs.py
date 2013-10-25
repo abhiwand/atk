@@ -1,6 +1,6 @@
 import re
 
-@outputSchema("timestamp:chararray, event_type:chararray, method:chararray, duration:chararray, item_id:chararray, src_tms:chararray, dst_tms: chararray")
+@outputSchema("tuple(timestamp:chararray, event_type:chararray, method:chararray, duration:double, item_id:chararray, src_tms:chararray, dst_tms:chararray)")
 def parseRecord(line):
     #TODO: may need to do some type checks here with the schema that the user specifies and the parsed values
     #otherwise we get class cast exceptions from pig with type mismatches
@@ -205,8 +205,8 @@ def parseRawRecord(line):
     if duration == None:
         output.append(None)
     else:
-        #output.append(float(duration))
-        output.append(duration)
+        output.append(float(duration))
+#         output.append(duration)
     
     if event_type=='stop':
         output.append(parsed.get('itemid', None))#stop event has itemid field, not item_id like the other event types

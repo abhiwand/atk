@@ -25,3 +25,4 @@ download
 *.swo
 *.swp
 dist
+/bin

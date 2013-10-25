@@ -18,6 +18,15 @@ class ETLHBaseClient:
             return self.connection.is_table_enabled(table_name)
         except:
             return False
+
+    def put(self, table_name, row_key, data_dict):
+        table = self.connection.table(table_name)
+        table.put(row_key, data_dict)
+        
+    def get(self, table_name, row_key):
+        table = self.connection.table(table_name)
+        return table.row(row_key)
+    
     """
     first drops the table with the given name and then creates a new table with the given name and column families
     table_name: table name to drop & create
@@ -40,10 +49,9 @@ class ETLHBaseClient:
     """
     def get_column_names(self, table_name, column_family_descriptors):
         table = self.connection.table(table_name)
-        scanner = table.scan()
-        single_row = scanner.next()
-        data_dictionary = single_row[1]
-        return data_dictionary.keys()
+        for key, data in table.scan():
+            return data.keys()
+        return None    
   
     def __enter__(self):
         self.connection = happybase.Connection(self.hbase_host)        
