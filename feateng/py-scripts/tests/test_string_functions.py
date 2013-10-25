@@ -262,7 +262,7 @@ subprocess.call(args)
 validate_regexp()
 print 'Validated REGEX_EXTRACT'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'regex_extract_all', '-f', 'state_name', '-n', 'regex_extract_all', '-t', 'REGEX_EXTRACT_ALL', '-a', '[r"(\\\S*onn\\\S*)",0]', '-k']
+args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'regex_extract_all', '-f', 'state_name', '-n', 'regex_extract_all', '-t', 'REGEX_EXTRACT_ALL', '-a', '[r"(\\\S*onn\\\S*)"]', '-k']
 subprocess.call(args)
 validate_regextract_all()
 print 'Validated REGEX_EXTRACT_ALL'
