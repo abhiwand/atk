@@ -96,3 +96,4 @@ OTHER NOTES
 	in the tested pig script. So you need to first skip tests during mvn packaging with 'mvn clean package -DskipTests -P tribeca-one', and then run the tests with 'mvn test -P tribeca-one -Dsurefire.useFile=false'.
 	To run individual tests: mvn -Dtest=TestShawETL test
 	To show stack traces use -Dsurefire.useFile=false 
+	To get rid of jython logging: export PIG_OPTS="-Dpython.verbose=error"
