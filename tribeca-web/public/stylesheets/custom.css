@@ -394,3 +394,16 @@
     border-radius:2px;
 }
 
+body.error-page .message {
+    color: #0071C5;
+}
+
+.circle {
+    position: relative;
+    margin: 4em auto;
+    width: 16em; height: 16em;
+    border-radius: 50%;
+    background: lightblue;
+    border: 20px solid white;
+    border-top-color: darkblue;
+}

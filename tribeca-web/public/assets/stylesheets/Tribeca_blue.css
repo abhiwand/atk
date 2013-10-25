@@ -8964,11 +8964,11 @@ body.error-page {
     body.error-page .code [class^="fa-icon-"], body.error-page .code [class*=" fa-icon-"] {
       color: #0071c5; }
   body.error-page .message {
-    font-size: 18px;
+    font-size: 24px;
     line-height: 24px;
     margin-top: 50px;
     margin-bottom: 0;
-    font-weight: 300;
+    font-weight: 100;
     color: white; }
     @media (min-width: 768px) {
       body.error-page .message {
@@ -8976,7 +8976,7 @@ body.error-page {
         line-height: 34px; } }
   body.error-page .btn {
     margin-top: 50px;
-    font-weight: 300; }
+    font-weight: 100; }
   body.error-page .logo {
     margin-top: 50px;
     display: inline-block; }
