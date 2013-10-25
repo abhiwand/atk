@@ -22,10 +22,14 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.Outpu
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
+import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.log4j.Logger;
 
 import java.util.HashMap;
+import java.io.IOException;
 
 /**
  * An abstract class that connects the input configuration, tokenizer and output configuration
@@ -46,6 +50,8 @@ import java.util.HashMap;
 
 public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<VidType>> {
 
+    private static final Logger LOG = Logger.getLogger(AbstractCreateGraphJob.class);
+
     private HashMap<String, String> userOpts;
 
     public AbstractCreateGraphJob() {
@@ -63,8 +69,7 @@ public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<
     public boolean run(InputConfiguration  inputConfiguration,
                        GraphTokenizer      tokenizer,
                        OutputConfiguration outputConfiguration,
-                       CommandLine         cmd)
-            throws Exception {
+                       CommandLine         cmd) {
 
 
         GraphGenerationMRJob graphGenerationMRJob = outputConfiguration.getGraphGenerationMRJob();
@@ -91,9 +96,15 @@ public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<
 
         try {
             graphGenerationMRJob.run(cmd);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+        } catch (IOException e) {
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "IO Exception during map-reduce job execution.", LOG, e);
+        }  catch (ClassNotFoundException e) {
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Class not found exception during map-reduce job execution.", LOG, e);
+        }  catch (InterruptedException e) {
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
+                    "Interruption during map-reduce job execution.", LOG, e);
         }
 
         return true;

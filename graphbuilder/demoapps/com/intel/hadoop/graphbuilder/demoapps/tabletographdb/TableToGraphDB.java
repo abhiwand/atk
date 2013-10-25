@@ -8,6 +8,8 @@ import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.HBaseI
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
+import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
@@ -74,14 +76,15 @@ public class TableToGraphDB {
      * @throws Exception
      */
 
-    public static void main(String[] args) throws  Exception {
+    public static void main(String[] args)  {
 
         Timer timer = new Timer();
 
         commandLineInterface.checkCli(args);
         if (null == commandLineInterface.getCmd()) {
             commandLineInterface.showHelp("Error parsing command line options");
-            System.exit(1);
+            GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                    "Error parsing command line options", LOG);
         }
 
         Job                      job                 = new TableToGraphDB().new Job();

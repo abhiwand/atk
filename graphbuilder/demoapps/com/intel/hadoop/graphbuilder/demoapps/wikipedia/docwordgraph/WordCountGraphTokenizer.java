@@ -39,6 +39,8 @@ import javax.xml.xpath.XPathFactory;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.IntType;
+import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -87,7 +89,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
     // tags used to mark each vertex name as either a "document" or a "word"
     // documents are prefixed by 0, words are prefixed by 1...
-    // nls todo:  investigate eliminating this legacy functionality
+    // todo:  investigate eliminating this legacy functionality
+    //        ie. dropping the DOCUMENT_TAG and WORD_TAG and prefixes
 
     private final char DOCUMENT_TAG = '0';
     private final char WORD_TAG     = '1';
@@ -107,7 +110,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
             try {
                 loadDictionary(dictPath);
             } catch (IOException e) {
-                e.printStackTrace();
+                GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
+                        "Could not load dictionary file, path=" + dictPath, LOG, e);
             }
         }
 
@@ -117,7 +121,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
             try {
                 loadStopWords(stopWordsPath);
             } catch (IOException e) {
-                e.printStackTrace();
+                GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
+                        "Could not load stopwords file, path=" + stopWordsPath, LOG, e);
             }
         }
     }
@@ -187,13 +192,17 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
                 }
             } // end of if (!(input_title.startsWith("Wikipedia:") || ...   block
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "Parser configuration error.", LOG, e);
         } catch (SAXException e) {
-            e.printStackTrace();
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "SAXException", LOG, e);
         } catch (IOException e) {
-            e.printStackTrace();
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "IO Exception", LOG, e);
         } catch (XPathExpressionException e) {
-            e.printStackTrace();
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "XPathExpressionException", LOG, e);
         }
     }
 

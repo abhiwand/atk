@@ -36,14 +36,19 @@ import java.util.Objects;
  * @param <VidType>
  *          the type of vertex id.
  */
+
 public class Edge<VidType extends WritableComparable<VidType>> implements Writable{
 
-    private VidType src;
-    private VidType dst;
-    private StringType label;
+    private VidType     src;
+    private VidType     dst;
+    private StringType  label;
     private PropertyMap properties;
 
-  /** Default constructor. Creates an empty edge. */
+  /**
+   *  Default constructor. Creates an empty edge.
+   *
+   */
+
     public Edge() {
         this.properties = new PropertyMap();
     }
@@ -55,6 +60,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     * @param dst
     * @param label
     */
+
     public Edge(VidType src, VidType dst, StringType label) {
         this.src = src;
         this.dst = dst;
@@ -62,9 +68,6 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
         this.properties = new PropertyMap();
     }
 
-    /**
-     *
-     */
     public void configure(VidType src, VidType dst, StringType label, PropertyMap properties)
     {
         this.src = src;
@@ -137,16 +140,16 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
         }
     }
 
-  @Override
-  public final int hashCode() {
-    return HashUtil.hashtriple(src, dst, label);
-  }
+      @Override
+      public final int hashCode() {
+        return HashUtil.hashTriple(src, dst, label);
+      }
 
-  @Override
-  public final String toString() {
-    return src.toString() + "\t" + dst.toString() + "\t"
-           + label.toString() + "\t" + properties.toString();
-  }
+      @Override
+      public final String toString() {
+        return src.toString() + "\t" + dst.toString() + "\t"
+               + label.toString() + "\t" + properties.toString();
+      }
 
 
 
@@ -160,7 +163,6 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
 
     @Override
     public void write(DataOutput output) throws IOException {
-
             src.write(output);
             dst.write(output);
             label.write(output);

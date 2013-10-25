@@ -9,15 +9,16 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A very simple util class to remove some of the command line parsing from the mapper class to make it easier to test
+ * A simple util class to remove some of the command line parsing from the mapper class to make it easier to test
  */
 public class CommandLineInterface {
-    private static final Logger LOG = Logger.getLogger(CommandLineInterface.class);
-    private static final String GENERIC_ERROR = "Error parsing options";
-    private Options options = new Options();
-    private CommandLine cmd = null;
+
+    private static final Logger  LOG           = Logger.getLogger(CommandLineInterface.class);
+    private static final String  GENERIC_ERROR = "Error parsing options";
+    private Options              options       = new Options();
+    private CommandLine          cmd           = null;
+    private RuntimeConfig        runtimeConfig = RuntimeConfig.getInstance();
     private GenericOptionsParser genericOptionsParser;
-    private RuntimeConfig runtimeConfig = RuntimeConfig.getInstance();
 
     public boolean hasOption(String option) {
         return cmd.hasOption(option);
@@ -28,16 +29,24 @@ public class CommandLineInterface {
     }
 
     public CommandLine parseArgs(String[] args) {
+
         //send the command line options to hadoop parse args to get runtime config options first
+
         try {
             genericOptionsParser = new GenericOptionsParser(args);
         } catch (IOException e) {
+            // show help and terminate the process
             showHelp("Error parsing hadoop generic options.");
         }
+
         //load all the grahpbuilder configs into the runtime class
+
         runtimeConfig.loadConfig(genericOptionsParser.getConfiguration());
+
         //parse the remaining args
+
         CommandLineParser parser = new PosixParser();
+
         try {
 
             cmd = parser.parse(options, genericOptionsParser.getRemainingArgs());
@@ -50,12 +59,14 @@ public class CommandLineInterface {
                 showHelpOption(getFirstMissingOptionFromException(e));
             }else if(e instanceof MissingArgumentException){
                 showHelpMissingArgument(getMissingArgumentFromException(e));
+            } else {
+                showHelp("Error parsing option string.");
             }
         }
         return cmd;
     }
 
-    public void checkCli(String[] args) throws IOException, ParseException {
+    public void checkCli(String[] args) {
         parseArgs(args);
         options.getRequiredOptions().iterator();
         List<String> opts = options.getRequiredOptions();
@@ -123,7 +134,8 @@ public class CommandLineInterface {
         }
         HelpFormatter h = new HelpFormatter();
         h.printHelp(error, options);
-        System.exit(1);
+        GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                "Unable to process command line.", LOG);
     }
 
     public void setOptions(Options options) {
@@ -163,6 +175,7 @@ public class CommandLineInterface {
         }
         return false;
     }
+
     public static String getMissingArgumentFromException(ParseException ex){
         MissingArgumentException missingArgumentException;
 

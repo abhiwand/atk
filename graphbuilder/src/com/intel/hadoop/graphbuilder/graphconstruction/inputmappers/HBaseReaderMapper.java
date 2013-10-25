@@ -44,12 +44,14 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, PropertyGraphEle
      *
      * @param context mapper context
      */
+
     @Override
     protected void setup(Context context) {
 
         Configuration conf = context.getConfiguration();
 
         //this will initialize the tokenizer key function and map key and map values
+
         setBaseMapper(new BaseMapper(context, conf, LOG));
     }
 
@@ -61,6 +63,7 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, PropertyGraphEle
      * @param columns The columns of the row.
      * @param context The task context.
      */
+
     @Override
     public void map(ImmutableBytesWritable row, Result columns, Context context) {
 
@@ -71,6 +74,7 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, PropertyGraphEle
         baseMapper.getTokenizer().parse(record, context);
 
         //the base mapper class will handle writing edges and vertices as well as exception handling
+
         baseMapper.writeEdges(context);
 
         baseMapper.writeVertices(context);

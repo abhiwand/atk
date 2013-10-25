@@ -1,6 +1,8 @@
 
 package com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat;
 
+import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -32,6 +34,8 @@ import java.io.IOException;
 
 public class XMLInputFormat extends TextInputFormat {
 
+    private static final Logger LOG = Logger.getLogger(XMLInputFormat.class);
+
     /**
      * Define start tag of a complete input entry.
      */
@@ -54,7 +58,8 @@ public class XMLInputFormat extends TextInputFormat {
             xmlRecordReader.initialize(inputSplit, context);
         }
         catch (IOException e) {
-            System.exit(1);
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "Unable to create xml record reader.", LOG, e);
         }
 
         return xmlRecordReader;

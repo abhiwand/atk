@@ -30,23 +30,19 @@ public class HBaseUtils {
     /**
      *  return the unique instance of HBaseUtils, create one if there isn't one already
      *
+     *  @throws IOException
+     *
      */
 
-    public static synchronized HBaseUtils getInstance() {
+    public static synchronized HBaseUtils getInstance() throws IOException {
 
         if (uniqueInstanceOfHBaseUtils == null) {
-            try {
                 uniqueInstanceOfHBaseUtils = new HBaseUtils();
-            } catch (IOException e) {
-                LOG.fatal("Cannot allocate the HBaseUtils object. Check hbase connection.");
-                e.printStackTrace();
-                System.exit(1);
-            }
-        } else {
         }
 
         return uniqueInstanceOfHBaseUtils;
     }
+
     /**
      * Return a new configuration
      */
@@ -175,8 +171,9 @@ public class HBaseUtils {
             if (admin.isTableDisabled(this.hTableName)) {
                 admin.deleteTable(this.hTableName);
             } else {
-                LOG.fatal("GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it");
-                System.exit(1);
+                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                        "GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it",
+                        LOG);
             }
         }
 
@@ -216,8 +213,9 @@ public class HBaseUtils {
             if (admin.isTableDisabled(this.hTableName)) {
                 admin.deleteTable(this.hTableName);
             } else {
-                LOG.fatal("GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it");
-                System.exit(1);
+                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                        "GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it",
+                        LOG);
             }
         }
 

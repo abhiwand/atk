@@ -23,6 +23,8 @@ import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFi
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
 
+import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
@@ -31,6 +33,7 @@ import org.apache.commons.cli.PosixParser;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat.WikiPageInputFormat;
 import com.intel.hadoop.graphbuilder.demoapps.wikipedia.linkgraph.LinkGraphTokenizer;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.log4j.Logger;
 
 /**
  * Test runnable for creating a link graph from wikipedia xml file.
@@ -39,6 +42,8 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
  */
 
 public class CreateGraphJobTest {
+
+    private static final Logger LOG = Logger.getLogger(CreateGraphJobTest.class);
 
     public class Job extends AbstractCreateGraphJob {
 
@@ -76,7 +81,8 @@ public class CreateGraphJobTest {
         CommandLine       cmd     = parser.parse(options, args);
 
         if (null == cmd) {
-            System.exit(1);
+            GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                    "Unable to parse command line.", LOG);
         }
 
         TextInputFormat            format             = new WikiPageInputFormat();

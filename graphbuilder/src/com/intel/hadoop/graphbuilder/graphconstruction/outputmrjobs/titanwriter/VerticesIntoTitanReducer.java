@@ -8,6 +8,8 @@ import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
+import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.thinkaurelius.titan.core.TitanElement;
 import com.thinkaurelius.titan.core.TitanGraph;
 
@@ -31,6 +33,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 
 import com.intel.hadoop.graphbuilder.types.LongType;
+import org.apache.log4j.Logger;
 
 /**
  * This reducer performs the following tasks:
@@ -42,6 +45,8 @@ import com.intel.hadoop.graphbuilder.types.LongType;
  */
 
 public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphElement, IntWritable, PropertyGraphElement> {
+
+    private static final Logger LOG = Logger.getLogger(VerticesIntoTitanReducer.class);
 
     private boolean    noBiDir;
     private Functional edgeReducerFunction;
@@ -82,9 +87,12 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
         try {
             outValue   = (PropertyGraphElement) outClass.newInstance();
         } catch (InstantiationException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Cannot instantiate new reducer output value ( " + outClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when instantiating reducer output value ( " + outClass.getName() + ")",
+                    LOG, e);
         }
 
 
@@ -110,13 +118,17 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                 this.vertexReducerFunction.configure(conf);
             }
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Could not instantiate reducer functions", LOG, e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when instantiating reducer functions", LOG, e);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Class not found exception when instantiating reducer functions", LOG, e);
+        } catch (Functional.FunctionalConfigurationError e) {
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Functional error configuring reducer function", LOG, e);
         }
     }
 
@@ -145,7 +157,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                     if (vertexReducerFunction != null) {
                         vertexSet.put(vid,
                                 vertexReducerFunction.reduce(next.vertex().getProperties(),
-                                        vertexSet.get(vid)));
+                                vertexSet.get(vid)));
                     } else {
 
                         /**

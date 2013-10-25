@@ -32,6 +32,9 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.text.ParseException;
+
 public class CreateLinkGraph {
 
     private static final Logger LOG = Logger.getLogger(CreateLinkGraph.class);
@@ -101,7 +104,7 @@ public class CreateLinkGraph {
      * @throws Exception
      */
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         commandLineInterface.checkCli(args);
         checkCli(args);
 
@@ -114,9 +117,9 @@ public class CreateLinkGraph {
         Job job = new CreateLinkGraph().new Job();
         job = (Job) commandLineInterface.getRuntimeConfig().addConfig(job);
 
-        WikiPageInputFormat format = new WikiPageInputFormat();
+        WikiPageInputFormat        format             = new WikiPageInputFormat();
         TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
-        GraphTokenizer tokenizer = new LinkGraphTokenizer();
+        GraphTokenizer             tokenizer          = new LinkGraphTokenizer();
 
         OutputConfiguration outputConfiguration = null;
 

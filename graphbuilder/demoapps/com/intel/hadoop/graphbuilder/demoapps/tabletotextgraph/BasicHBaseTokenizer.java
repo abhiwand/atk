@@ -16,7 +16,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
-import javax.xml.parsers.ParserConfigurationException;
 import java.util.*;
 
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
     private ArrayList<Edge<StringType>>   edgeList;
 
 
-    public BasicHBaseTokenizer() throws ParserConfigurationException {
+    public BasicHBaseTokenizer()  {
 
         vertexPropColMap   = new HashMap<String, String[]>();
         vertexIdColumnList = new ArrayList<String>();
@@ -143,103 +142,96 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
         vertexList.clear();
         edgeList.clear();
 
-        try {
+        // check row for vertices
 
-            // check row for vertices
+        for (String columnName : vertexIdColumnList) {
 
-            for (String columnName : vertexIdColumnList) {
+            String vertexId = getColumnData(columns, columnName, context);
 
-                String vertexId = getColumnData(columns, columnName, context);
+            if (null != vertexId) {
 
-                if (null != vertexId) {
+                // create vertex
 
-                    // create vertex
+                Vertex<StringType> vertex = new Vertex<StringType>(new StringType(vertexId));
 
-                    Vertex<StringType> vertex = new Vertex<StringType>(new StringType(vertexId));
+                // add the vertex properties
 
-                    // add the vertex properties
+                String[] vpColNames = vertexPropColMap.get(columnName);
 
-                    String[] vpColNames = vertexPropColMap.get(columnName);
+                if (null != vpColNames) {
 
-                    if (null != vpColNames) {
+                    String value = null;
 
-                        String value = null;
-
-                        if (vpColNames.length > 0) {
-                            for (String vertexPropertyColumnName : vpColNames) {
-                                value =  getColumnData(columns, vertexPropertyColumnName, context);
-                                if (value != null) {
-                                    vertex.setProperty(vertexPropertyColumnName, new StringType(value));
-                                }
+                    if (vpColNames.length > 0) {
+                        for (String vertexPropertyColumnName : vpColNames) {
+                            value =  getColumnData(columns, vertexPropertyColumnName, context);
+                            if (value != null) {
+                                vertex.setProperty(vertexPropertyColumnName, new StringType(value));
                             }
                         }
                     }
-
-                    vertexList.add(vertex);
-                } else {
-
-                    LOG.warn("TRIBECA_WARN: Null vertex in " + columnName + ", row " + row.toString());
-                    context.getCounter(GBHTableConfig.Counters.HTABLE_COLS_IGNORED).increment(1l);
                 }
-            }   // End of vertex block
 
-            // check row for edges
+                vertexList.add(vertex);
+            } else {
 
-            String propertyValue;
-            String property;
-            String srcVertexColName;
-            String tgtVertexColName;
+                LOG.warn("TRIBECA_WARN: Null vertex in " + columnName + ", row " + row.toString());
+                context.getCounter(GBHTableConfig.Counters.HTABLE_COLS_IGNORED).increment(1l);
+            }
+        }   // End of vertex block
 
-            for (String eLabel : edgeLabelList) {
+        // check row for edges
 
-                int          countEdgeAttr  = 0;
-                List<String> list           = edgeLabelToColumnList.get(eLabel);
-                String[]     edgeAttributes = list.toArray(new String[list.size()]);
+        String propertyValue;
+        String property;
+        String srcVertexColName;
+        String tgtVertexColName;
 
-                // Get the src and tgt vertex ID's from GB_VidMap
+        for (String eLabel : edgeLabelList) {
 
-                srcVertexColName     = edgeAttributes[0];
-                String srcVertexName = getColumnData(columns, srcVertexColName, context);
+            int          countEdgeAttr  = 0;
+            List<String> list           = edgeLabelToColumnList.get(eLabel);
+            String[]     edgeAttributes = list.toArray(new String[list.size()]);
 
-                tgtVertexColName     = edgeAttributes[1];
-                String tgtVertexName = getColumnData(columns, tgtVertexColName, context);
+            // Get the src and tgt vertex ID's from GB_VidMap
 
-                if (srcVertexColName != null && tgtVertexColName != null && eLabel != null) {
-                    Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
-                                                                 new StringType(tgtVertexName),
-                                                                 new StringType(eLabel));
+            srcVertexColName     = edgeAttributes[0];
+            String srcVertexName = getColumnData(columns, srcVertexColName, context);
 
-                    // now add the edge properties
+            tgtVertexColName     = edgeAttributes[1];
+            String tgtVertexName = getColumnData(columns, tgtVertexColName, context);
 
-                    for (countEdgeAttr = 2; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-                        propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
+            if (srcVertexColName != null && tgtVertexColName != null && eLabel != null) {
+                Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
+                                                             new StringType(tgtVertexName),
+                                                             new StringType(eLabel));
+
+                // now add the edge properties
+
+                for (countEdgeAttr = 2; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
+                    propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
 
 
-                        property = edgeAttributes[countEdgeAttr].replaceAll(GBHTableConfig.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                GBHTableConfig.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                    property = edgeAttributes[countEdgeAttr].replaceAll(GBHTableConfig.config.getProperty("HBASE_COLUMN_SEPARATOR"),
+                            GBHTableConfig.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
 
-                        if (property != null) {
-                        edge.setProperty(property, new StringType(propertyValue));
-                        }
+                    if (property != null) {
+                    edge.setProperty(property, new StringType(propertyValue));
                     }
-
-                    edgeList.add(edge);
-
-                    // need to make sure both ends of the edge are proper vertices!
-
-                    Vertex<StringType> srcVertex = new Vertex<StringType>(new StringType(srcVertexName));
-                    Vertex<StringType> tgtVertex = new Vertex<StringType>(new StringType(tgtVertexName));
-                    vertexList.add(srcVertex);
-                    vertexList.add(tgtVertex);
                 }
 
-            }   // End of edge block
+                edgeList.add(edge);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOG.fatal("GRAPHBUILDER ERROR: " + e.toString());
-            context.getCounter(GBHTableConfig.Counters.ERROR).increment(1);
-        }
+                // need to make sure both ends of the edge are proper vertices!
+
+                Vertex<StringType> srcVertex = new Vertex<StringType>(new StringType(srcVertexName));
+                Vertex<StringType> tgtVertex = new Vertex<StringType>(new StringType(tgtVertexName));
+                vertexList.add(srcVertex);
+                vertexList.add(tgtVertex);
+            }
+
+        }   // End of edge block
+
     }
 
     public Iterator<Vertex<StringType>> getVertices() {

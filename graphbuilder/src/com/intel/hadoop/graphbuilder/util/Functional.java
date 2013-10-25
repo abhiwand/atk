@@ -31,7 +31,15 @@ import org.apache.hadoop.io.Writable;
 
 public interface Functional<T1, T2 extends Writable> {
 
-  void configure(Configuration configuration) throws Exception;
+  public class FunctionalConfigurationError extends RuntimeException {
+        public FunctionalConfigurationError() {}
+
+        public FunctionalConfigurationError(String message)
+        {
+            super(message);
+        }
+  }
+  void configure(Configuration configuration) throws FunctionalConfigurationError;
 
   T2 reduce(T1 a, T2 b);
 

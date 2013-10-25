@@ -111,7 +111,7 @@ public class CreateWordCountGraph {
      * @throws Exception
      */
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)  {
         commandLineInterface.checkCli(args);
         checkCli(args);
 

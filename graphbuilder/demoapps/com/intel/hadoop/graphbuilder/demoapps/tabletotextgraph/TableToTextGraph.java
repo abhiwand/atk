@@ -6,6 +6,8 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextG
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
+import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
@@ -75,7 +77,8 @@ public class TableToTextGraph {
             } else {
                 LOG.fatal("A table name is required");
                 showHelp(options);
-                System.exit(1);
+                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "A table name is required", LOG);
             }
 
             if (cmd.hasOption("o")) {
@@ -84,7 +87,8 @@ public class TableToTextGraph {
             } else {
                 LOG.fatal("An output path is required");
                 showHelp(options);
-                System.exit(1);
+                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "An output path is required", LOG);
             }
 
             if (cmd.hasOption(GBHTableConfig.config.getProperty("CMD_VERTICES_OPTNAME"))) {
@@ -94,7 +98,8 @@ public class TableToTextGraph {
             } else {
                 LOG.fatal("Please add column family and names for vertices and vertex properties");
                 showHelp(options);
-                System.exit(1);
+                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "Please add column family and names for vertices and vertex properties", LOG);
             }
 
             if (cmd.hasOption(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))) {
@@ -104,13 +109,15 @@ public class TableToTextGraph {
             } else {
                 LOG.fatal("Please add column family and names for edges and edge properties");
                 showHelp(options);
-                System.exit(1);
+                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "Please add column family and names for edges and edge properties", LOG);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ParseException e) {
+            LOG.fatal("Parsing exception when parsing command line.");
             showHelp(options);
-            System.exit(1);
+            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.BAD_COMMAND_LINE,
+                    "Parsing exception when parsing command line.", LOG, e);
         }
 
         assert(cmd != null);
@@ -145,7 +152,7 @@ public class TableToTextGraph {
         Job                                   job                 = new TableToTextGraph().new Job();
         HBaseInputConfiguration               inputConfiguration  = new HBaseInputConfiguration();
         BasicHBaseTokenizer                   tokenizer           = new BasicHBaseTokenizer();
-        TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
+        TextGraphOutputConfiguration          outputConfiguration = new TextGraphOutputConfiguration();
 
 
         LOG.info("============= Creating graph from hbase ==================");

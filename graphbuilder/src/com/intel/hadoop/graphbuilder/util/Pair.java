@@ -85,7 +85,7 @@ public class Pair<L, R> {
 
   @Override
   public int hashCode() {
-    return HashUtil.hashpair(l, r);
+    return HashUtil.hashPair(l, r);
   }
 
   @Override
