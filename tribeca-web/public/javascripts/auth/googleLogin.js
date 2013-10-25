@@ -54,7 +54,7 @@ var authAjax =  function(authResult, url){
             //data: authResult,
             success: function () {
 
-                alert("Thanks!");
+                console.log("success")
             }
         })
     } else if (authResult['error']) {
