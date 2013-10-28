@@ -20,16 +20,35 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.tribeca.etl;
+package com.intel.pig.udf;
+
+import java.io.IOException;
 
 import org.apache.pig.EvalFunc;
-import org.apache.pig.backend.hadoop.executionengine.physicalLayer.util.MonitoredUDFExecutor.ErrorCallback;
+import org.apache.pig.builtin.MonitoredUDF;
+import org.apache.pig.data.DataType;
+import org.apache.pig.data.Tuple;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-public class MyErrorHandler extends ErrorCallback {
+/**
+ * Demonstrates how to handle errors in UDFs. We need to specify an error handler when we define the UDF.
+ */
+@MonitoredUDF(errorCallback = MyErrorHandler.class)
+public class ErroneousEvalFunc extends EvalFunc<Double> {
 
-	@SuppressWarnings("unchecked")
-	public static void handleError(EvalFunc evalFunc, Exception e) {
-		System.out.println("gotcha, skipping exception");
-//		e.printStackTrace();
+	@Override
+	public Double exec(Tuple t) throws IOException {
+		String in = (String) t.get(0);
+		System.out.println(in);
+		if (in.length() == 0) {
+			throw new IOException("throwing some meaningless exception");
+		}
+		Double d = Double.parseDouble(in);
+		return d * d;
+	}
+
+	@Override
+	public Schema outputSchema(Schema input) {
+		return new Schema(new Schema.FieldSchema("value", DataType.DOUBLE));
 	}
 }

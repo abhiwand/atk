@@ -26,6 +26,20 @@ TEMP_TABLES=['endswith','equalsIgnoreCase', 'indexof', 'lastindexof',
              'replace', 'rtrim', 'startswith', 'strsplit', 'substring',
              'trim', 'upper', 'tokenize','length']
 
+print 'Cleaning up all the temp tables & their schema definitions'
+with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+    for temp in TEMP_TABLES:
+        try:
+            hbase_client.connection.delete_table(temp, disable=True)
+            print 'deleted table',temp
+        except:
+            pass
+        try:
+            table = hbase_client.connection.table(CONFIG_PARAMS['etl-schema-table'])
+            table.delete(temp)#also remove the schema info
+        except:
+            pass
+        
 ############################################################
 # FUNCTIONS TO VALIDATE THE OUTPUT OF THE STRING FUNCTIONS
 ############################################################
@@ -205,7 +219,7 @@ if SHOULD_IMPORT:
     print "Uploaded /tmp/us_states.csv to HDFS:/tmp/us_states.csv"
       
     subprocess.call(['python', 'py-scripts/import_csv.py', '-i', '/tmp/us_states.csv',
-                     '-o', TEST_TABLE, '-s', 'state_name', '-k'])
+                     '-o', TEST_TABLE, '-s', 'state_name:chararray', '-k'])
           
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         data_dict = hbase_client.get(TEST_TABLE,'1')#get the first row
@@ -248,7 +262,7 @@ subprocess.call(args)
 validate_regexp()
 print 'Validated REGEX_EXTRACT'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'regex_extract_all', '-f', 'state_name', '-n', 'regex_extract_all', '-t', 'REGEX_EXTRACT_ALL', '-a', '[r"(\\\S*onn\\\S*)",0]', '-k']
+args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'regex_extract_all', '-f', 'state_name', '-n', 'regex_extract_all', '-t', 'REGEX_EXTRACT_ALL', '-a', '[r"(\\\S*onn\\\S*)"]', '-k']
 subprocess.call(args)
 validate_regextract_all()
 print 'Validated REGEX_EXTRACT_ALL'

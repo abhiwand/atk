@@ -2,6 +2,6 @@ parsed_val = LOAD 'hbase://shaw_table' USING org.apache.pig.backend.hadoop.hbase
 	as (key:chararray, timestamp:chararray, item_id:chararray, method:chararray, src_tms:chararray, event_type:chararray, dst_tms:chararray, duration:chararray);
 
 REGISTER ../target/TRIB-FeatureEngineering-0.0.1-SNAPSHOT.jar
-squared_duration = FOREACH parsed_val GENERATE com.tribeca.etl.ErroneousEvalFunc(duration);
+squared_duration = FOREACH parsed_val GENERATE com.intel.pig.udf.ErroneousEvalFunc(duration);
 dump squared_duration;
 

@@ -46,7 +46,10 @@ def main(argv):
     elif cmd_line_args.should_clean_any:
         any_clean_statement=''
         for i, feature in enumerate(features):
-          any_clean_statement += "(%s != '')" % (feature)#chararray checks are done using empty strings instead of NULLs
+          if feature_type_dict[feature] == 'chararray':
+              any_clean_statement += "(%s != '')" % (feature)#chararray checks are done using empty strings instead of NULLs
+          else:
+              any_clean_statement += "(%s is not NULL)" % (feature)
           if i != len(features) - 1:
             any_clean_statement += ' and '    
         pig_statements.append("cleaned_data = FILTER parsed_val BY %s;" % any_clean_statement)

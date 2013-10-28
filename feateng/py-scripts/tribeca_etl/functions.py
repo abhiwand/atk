@@ -81,4 +81,4 @@ for key,val in EvalFunctions.Math.__dict__.items():
 # print math_functions
 AVAILABLE_FUNCTIONS.extend(string_functions)
 AVAILABLE_FUNCTIONS.extend(math_functions)
-print AVAILABLE_FUNCTIONS
+# print AVAILABLE_FUNCTIONS

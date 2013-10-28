@@ -8,76 +8,47 @@ import os
 import re
 import string
 import random
+import sys
 
 from config import CONFIG_PARAMS
 from hbase_client import ETLHBaseClient
+from functions import EvalFunctions
+from schema import ETLSchema
 
 __all__ = [
-    'EvalFunctions',
     'ETLOperationFailedException',
     'BigDataFrame'
 ]
 
-"""
-Available functions that can be applied with the apply method on big data frames
-"""
-class EvalFunctions:
-    """String functions
-    """
-    class String:
-        LENGTH=1
-        LOWER=2
-        LTRIM=2
+
+base_script_path = os.path.dirname(os.path.abspath(__file__))
+pig_log4j_path = os.path.join(base_script_path,'..','..', 'conf','pig_log4j.properties')
+print 'Using',pig_log4j_path
+
+dry_run=False
+local_run=True
+
+class ETLFunctionContext:
+    def __init__(self, args, etl_schema, feature_to_transform, keep_source_feature):
+        self.args=args#command line args as a list
+        self.etl_schema=etl_schema#the schema object, required after the transformation is applied to update the ETL_SCHEMA table
+        self.feature_to_transform=feature_to_transform
+        self.keep_source_feature=keep_source_feature
         
-    """Math functions
-    """        
-    class Math:
-        ABS=1000
-        LOG=1001
-        LOG10=1002
-        POW=1003
-        EXP=1004
-
-    @staticmethod
-    def to_string(x):
-        return {
-            EvalFunctions.String.LENGTH: 'org.apache.pig.piggybank.evaluation.string.LENGTH',
-            EvalFunctions.String.LOWER: 'LOWER',
-            EvalFunctions.String.LTRIM: 'LTRIM',
-            EvalFunctions.Math.ABS: 'ABS',
-            EvalFunctions.Math.LOG: 'LOG',
-            EvalFunctions.Math.LOG10: 'LOG10',
-            EvalFunctions.Math.POW: 'org.apache.pig.piggybank.evaluation.math.POW',
-            EvalFunctions.Math.EXP: 'EXP'            
-        }[x]
-
-    
 class ETLOperationFailedException(Exception):
     pass
 
 class BigDataFrame:
     def __init__(self, ):
-        self.base_script_path = os.path.dirname(os.path.abspath(__file__))
         self.DATAFRAME_NAME_PREFIX_LENGTH=5
-        self.feature_names=[]
-#         self.feature_types=[]
-        
-        #keys for etl operations used in table names
-        self.TRANSFORM_OPS_KEY='t'
-        self.FILTER_OPS_KEY='f'
-        self.ETL_OPS_COUNT={}
-        self.ETL_OPS_COUNT[self.TRANSFORM_OPS_KEY]=0
-        self.ETL_OPS_COUNT[self.FILTER_OPS_KEY]=0
-        
-        self.__last_etl_operation=None
-        
+        self.__pending_ETL_operations = []
         #current directory of this script, needed for locating & running the pig scripts
+        self.feature_names=[]
+        self.base_script_path = os.path.dirname(os.path.abspath(__file__))
         self.__dataframe_prefix = ''.join(random.choice(string.lowercase) for i in xrange(self.DATAFRAME_NAME_PREFIX_LENGTH))
         self.__dataframe_name=None#set during import
-        self.__pig_statements = []
-        self.__pig_statements.append("REGISTER %s/contrib/piggybank/java/piggybank.jar; -- POW is in piggybank.jar" % (os.environ.get('PIG_HOME')))
-        self.__pig_statements.append("REGISTER %s; -- Tribeca ETL helper UDFs" % (CONFIG_PARAMS['tribeca-etl-jar']))
-    
+        self.lineage=[]
+        
     """
     Can apply ETL operations to individual features: big_frame['duration'].dropna()
     """
@@ -86,16 +57,36 @@ class BigDataFrame:
         return self
 
     """
-    Can apply ETL operations to individual features with assignments: big_frame['log_duration'] = big_frame['duration'].apply(Transformations.LOG)
+    Can apply ETL operations to individual features with assignments: big_frame['log_duration'] = big_frame['duration'].apply(EvalFunctions.LOG)
     """    
     def __setitem__(self, new_feature_name, value):
-        #When the user calls: big_frame['log_duration'] = big_frame['duration'].apply(Transformations.LOG)
+        #When the user calls: big_frame['log_duration'] = big_frame['duration'].apply(EvalFunctions.LOG)
         #we first create the transformation operation arguments except for the name of the new_feature, which is specified on the lhs
         #when we get the lhs in this method, we just execute the transformation operation
         #currently only transformation operations are executed this way
-#         args = value.__pending_ETL_operations.pop()
-        self.__pig_statements.append(self.__generate_transform_statement(new_feature_name))
-        pass
+        transformation_context = value.__pending_ETL_operations.pop()
+        etl_schema = transformation_context.etl_schema
+        
+        transformation_context.args += ['-n', str(new_feature_name)]
+  
+        if dry_run:
+            print args
+            return_code = 0             
+        else:
+            return_code = subprocess.call(transformation_context.args)
+
+        if return_code:
+            raise ETLOperationFailedException('Could not apply transformation')  
+        else:
+            #need to update schema here as it's difficult to pass the updated schema info from jython to python
+            if not transformation_context.keep_source_feature:
+                etl_schema.feature_names.remove(transformation_context.feature_to_transform)
+            etl_schema.feature_names.append(new_feature_name)
+            #for now make the new feature bytearray, because all UDF's have different return types
+            #and we cannot know their return types
+            etl_schema.feature_types.append('bytearray')
+            etl_schema.save_schema(self.table_name)
+            print "updated schema of table",self.table_name
     
     def __str__(self):
         buf = 'BigDataFrame{ '
@@ -103,143 +94,218 @@ class BigDataFrame:
             if not key.startswith('_'):
                 buf+='%s:%s ' % (key, self.__dict__[key])
         buf += '}'
-        buf+="\n"
-        buf+="\n"
-        pig_script = "\n".join(self.__pig_statements)
-        buf+=pig_script
         return buf
-    
+
     def __parse_schema(self, schema_definition):
-        schema_definition = schema_definition[1:]#get rid of '('
-        schema_definition = schema_definition[:len(schema_definition)-1]#get rid of ')'
         splitted = schema_definition.split(',')
         for s in splitted:
             feature_name_type = s.split(':')
             self.feature_names.append(feature_name_type[0])
-#             self.feature_types.append(feature_name_type[1])
-        
     """
-    Import a CSV file with the given schema_definition.
+    Import a CSV file with the given schema_definition. 
     """  
-    def import_csv(self, csv_file, schema_definition, skip_header=True):
+    def import_csv(self, csv_file, schema_definition, skip_header=False):
         df_name = csv_file.replace("/", "_")
         df_name = df_name.replace(".", "_")
         df_name = self.__dataframe_prefix + df_name
         self.__dataframe_name = df_name       
         self.table_name = self.__dataframe_name   
         self.origin_table_name = self.__dataframe_name #this holds the original table that we imported the data, will be used for understanding which features are derived or not             
-        self.__parse_schema(schema_definition)
-        if skip_header:
-            self.__pig_statements.append("%s = LOAD '%s' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',', 'NO_MULTILINE', 'NOCHANGE', 'SKIP_INPUT_HEADER') AS %s;" % (self.__dataframe_name, csv_file, schema_definition))
+        self.__parse_schema(schema_definition)    
+        self.lineage.append(self.table_name)    
+        
+        etl_schema = ETLSchema()
+        etl_schema.populate_schema(schema_definition)
+        etl_schema.save_schema(df_name)
+        
+        feature_names_as_str = ",".join(etl_schema.feature_names)
+        feature_types_as_str = ",".join(etl_schema.feature_types)
+        
+        script_path = os.path.join(base_script_path,'pig','pig_import_csv.py')
+        
+        args = ['pig', '-4', pig_log4j_path, script_path, '-i', csv_file, '-o', df_name, 
+                '-f', feature_names_as_str, '-t', feature_types_as_str]
+                
+        if skip_header:  
+            args += ['-k']  
+        
+        if dry_run:
+            print args
         else:
-            self.__pig_statements.append("%s = LOAD '%s' USING org.apache.pig.piggybank.storage.CSVExcelStorage() AS %s;" % (self.__dataframe_name, csv_file, schema_definition))
-    
+            # need to delete/create output table so that we can write the transformed features
+            with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+                hbase_client.drop_create_table(df_name , [CONFIG_PARAMS['etl-column-family']])   
+            return_code = subprocess.call(args)
+            if return_code:
+                raise ETLOperationFailedException('Could not import CSV file')            
     """
     Drop the missing values for a particular feature. If replace_with is specified, the missing values are replaced with that value.
-    """      
-    def dropna(self, replace_with=None):
-        #TODO not implemented yet
-        table_name = self.table_name + "_dropped_na"
-        self.table_name = table_name # only update the table_name field
+    """ 
+    def __drop(self, replace_with=None, in_place=False):
+        if in_place:
+            table_name = self.table_name#output table is the same as input
+        else:
+            table_name = self.table_name + "_dropped_na"
+            
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        
+        feature_names_as_str = ",".join(etl_schema.feature_names)
+        feature_types_as_str = ",".join(etl_schema.feature_types)   
+        
+        if hasattr(self, 'source_feature') and self.source_feature and (self.source_feature not in etl_schema.feature_names):
+                raise Exception("Feature %s does not exist" % (self.source_feature))
+       
+        script_path = os.path.join(base_script_path,'pig','pig_clean.py')
+        
+        args = ['pig']
+        
+        if local_run:
+            args += ['-x', 'local']
+        
+        args += [script_path, '-i', self.table_name, 
+                         '-o', table_name, '-n', feature_names_as_str,
+                         '-t', feature_types_as_str]
+        
+        if replace_with:
+            args += [ '-r' , replace_with]
+             
+        if hasattr(self, 'source_feature'):
+            args += ['-f', self.source_feature]      
+            delattr(self, 'source_feature')#remove source feature attr.   
+        else:
+            args += ['-a', 'True']#drop any for all features
+          
+        if dry_run:
+            print args
+            return_code = 0             
+        else:
+            if not in_place:#if clean is performed NOT in place, then need to create output table, otherwise we are fine
+                # need to delete/create output table so that we can write the transformed features
+                with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+                    hbase_client.drop_create_table(table_name , [CONFIG_PARAMS['etl-column-family']])#create output table
+            
+            print args
+            return_code = subprocess.call(args)
+ 
+        if return_code:
+            raise ETLOperationFailedException('Could not drop NAs')            
+         
+        self.table_name = table_name # update the table_name
+        etl_schema.save_schema(self.table_name) # save the schema for the new table
         return self
-    
+
+    """
+    drop missing values
+    """
+    def dropna(self):
+        return self.__drop(replace_with=None, in_place=False)
+                
     """
     Replace the missing values of a feature with the given replacement_value
     """
-    def fillna(self, replacement_value):
-        #TODO not implemented yet
-        return self.dropna(replacement_value)
+    def fillna(self, replacement_value, in_place=False):
+        return self.__drop(replace_with=replacement_value, in_place=in_place)
     
     """
-    Apply a transformation to a particular feature.
-    Parameters
-    ----------
-    transformation : enum (available functions in the EvalFunctions class)
-        `transformation` specifies which transformation to apply to this dataframe
-    keep_base_feature : boolean
-        `keep_base_feature` specifies whether the transformed feature should be kept in the resulting dataframe
-    transformation_args : variable number of arguments passed to the `transformation` function
+    Apply a transformation to a particular field. transformation_args is a list of arguments to the function.
     """
-    def apply(self, transformation, keep_base_feature=True, *transformation_args):
-         
+    def apply(self, transformation, keep_source_feature=False, transformation_args=None):
         transformation_to_apply = EvalFunctions.to_string(transformation)
-        print "Will apply",transformation_to_apply
         
-        self.ETL_OPS_COUNT[self.TRANSFORM_OPS_KEY] += 1
-        table_name = self.table_name + "_%s_%s_%d" % (self.source_feature, self.TRANSFORM_OPS_KEY, self.ETL_OPS_COUNT[self.TRANSFORM_OPS_KEY])
-
-        #wrap arguments in a tuple        
-        source_relation = self.__dataframe_name
-        dest_relation = table_name
-        source_feature = self.source_feature
-        self.__last_etl_operation = (source_relation, source_feature, dest_relation, transformation_to_apply, keep_base_feature, transformation_args)
-        self.__dataframe_name = table_name#update current relation name used in pig
+        #load schema info
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        feature_names_as_str = ",".join(etl_schema.feature_names)
+        feature_types_as_str = ",".join(etl_schema.feature_types)
+        
+        #generate some table name for transformation output
+        table_name = self.table_name + "-%s" % (transformation_to_apply)
+        
+        if not dry_run:
+            with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+                hbase_client.drop_create_table(table_name , [CONFIG_PARAMS['etl-column-family']])#create output table
+        
+        script_path = os.path.join(base_script_path,'pig','pig_transform.py')
+        
+        args = ['pig', '-4', pig_log4j_path, script_path, 
+                '-f', self.source_feature, '-i', self.table_name,
+                '-o', table_name, '-t', transformation_to_apply,
+                '-u', feature_names_as_str, '-r', feature_types_as_str]
+        
+        if transformation_args:  # we have some args that we need to pass to the transformation function
+            args += ['-a', str(transformation_args)]
+        
+        if keep_source_feature:
+            args += ['-k']   
+            
+        transformation_context = ETLFunctionContext(args, etl_schema, self.source_feature, keep_source_feature)
+        self.__pending_ETL_operations.append(transformation_context)
+        self.table_name = table_name # only update the table_name field   
+        self.lineage.append(self.table_name) #keep track of history so that we can collect that garbage later
         return self
     
-    
-    """Generates a Pig transformation statement and updates the list of features in this BigDataFrame
     """
-    def __generate_transform_statement(self, new_feature_name):
-        #unwrap transformation-related arguments
-        
-        source_relation = self.__last_etl_operation[0]
-        source_feature = self.__last_etl_operation[1]
-        dest_relation = self.__last_etl_operation[2]
-        transformation_to_apply = self.__last_etl_operation[3]
-        keep_base_feature = self.__last_etl_operation[4]
-        transformation_args = self.__last_etl_operation[5]
-        
-        transform_statement = ''
-        for i, f in enumerate(self.feature_names):
-            if source_feature == f:
-                if keep_base_feature:#should also write the original feature to output
-                    transform_statement += f 
-                    transform_statement += ', ' 
-            else:
-                transform_statement += f
-                transform_statement += ', ' 
-    
-        if len(transformation_args)>0:#we have some args to pass to the transformation_function
-            #TODO: currently we have only 1 argument in transformation_args, need to handle more ...
-            transform_statement += "%s(%s,%s) as %s" % (transformation_to_apply, source_feature, str(transformation_args[0]), new_feature_name)
-        else:#PIG builtin functions without args
-            transform_statement += "%s(%s) as %s" % (transformation_to_apply, source_feature, new_feature_name)
-        
-        self.feature_names.append(new_feature_name)#add the new feature
-        
-        return '%s = FOREACH %s GENERATE %s;' % (dest_relation, source_relation, transform_statement)
+    Print the first N rows of the dataframe
+    """
+    def head(self, nRows=10):
+     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+        print "will read ", self.table_name
+        table = hbase_client.connection.table(self.table_name)
+        header_printed = False
+        nrows_read = 0
+        for key, data in table.scan():
+            columns = data.keys()
+            items = data.items()
+            if not header_printed:
+                sys.stdout.write("--------------------------------------------------------------------\n")
+                for i, column in enumerate(columns):
+                    sys.stdout.write("%s"%(re.sub(CONFIG_PARAMS['etl-column-family'],'',column)))
+                    if i != len(columns)-1:
+                        sys.stdout.write("\t")
+                sys.stdout.write("\n--------------------------------------------------------------------\n")
+                header_printed = True
 
+            for i,(column,value) in enumerate(items):
+                if value == '' or value==None:
+                    sys.stdout.write("NA")
+                else:
+                    sys.stdout.write("%s"%(value))
+                if i != len(items)-1:
+                    sys.stdout.write("\t")
+            sys.stdout.write("\n")
+            nrows_read+=1
+            if nrows_read >= nRows:
+                break
+            
     """
     Returns the list of features in this big frame.
     """
     def features(self):
-        with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-#             print "will read ", self.table_name
-            columns = hbase_client.get_column_names(self.table_name, [CONFIG_PARAMS['etl-column-family']])
-            stripped_column_names = []
-            for c in columns:
-                stripped_column_names.append(re.sub(CONFIG_PARAMS['etl-column-family'],'',c))#remove the col. family identifier
-            #print "Available columns under the '%s' column family: %s" % (CONFIG_PARAMS['etl-column-family'], stripped_column_names)
-            stripped_column_names.sort()
-            return stripped_column_names#return sorted list of available features
+        features=[]
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        for i, feature_name in enumerate(etl_schema.feature_names):
+            features.append('%s:%s' % (feature_name, etl_schema.feature_types[i]))
+        return features
 
     """
     Returns the list of the features that are derived from the existing features by applying transformations.
     For example, if the initial features are [x,y] and then a LOG transform is applied to create a new feature log_X (the new set of features becomes [x,y,log_X])
     calling this method returns the only derived feature [log_X]
     """
-    def derived_features(self):
-        with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-            columns = hbase_client.get_column_names(self.origin_table_name, [CONFIG_PARAMS['etl-column-family']])
-            original_columns = set()
-            for c in columns:
-                original_columns.add(re.sub(CONFIG_PARAMS['etl-column-family'],'',c))
-                
-            columns = hbase_client.get_column_names(self.table_name, [CONFIG_PARAMS['etl-column-family']])
-            current_columns = set()
-            for c in columns:
-                current_columns.add(re.sub(CONFIG_PARAMS['etl-column-family'],'',c))                
-                
-            diff_columns = list(current_columns - original_columns)
-            diff_columns.sort()
-            return diff_columns#return sorted list of diff features
+#     def derived_features(self):
+#         with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+#             columns = hbase_client.get_column_names(self.origin_table_name, [CONFIG_PARAMS['etl-column-family']])
+#             original_columns = set()
+#             for c in columns:
+#                 original_columns.add(re.sub(CONFIG_PARAMS['etl-column-family'],'',c))
+#                 
+#             columns = hbase_client.get_column_names(self.table_name, [CONFIG_PARAMS['etl-column-family']])
+#             current_columns = set()
+#             for c in columns:
+#                 current_columns.add(re.sub(CONFIG_PARAMS['etl-column-family'],'',c))                
+#                 
+#             diff_columns = list(current_columns - original_columns)
+#             diff_columns.sort()
+#             return diff_columns#return sorted list of diff features
