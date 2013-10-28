@@ -64,7 +64,7 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
             return this.dstColumnName;
         }
 
-        void setPropertyColumnName(String columnName) {
+        void addPropertyColumnName(String columnName) {
             propertyColumnNames.add(columnName);
         }
 
@@ -143,7 +143,7 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
                 edgeRule.setDstColumnName(tgtVertexColName);
 
                 for (int i = 3; i < columnNames.length; i++) {
-                    edgeRule.setPropertyColumnName(columnNames[i]);
+                    edgeRule.addPropertyColumnName(columnNames[i]);
                 }
 
                 edgeLabelToEdgeRules.put(label, edgeRule);
@@ -169,7 +169,7 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
                 edgeRule.setDstColumnName(tgtVertexColName);
 
                 for (int i = 3; i < columnNames.length; i++) {
-                    edgeRule.setPropertyColumnName(columnNames[i]);
+                    edgeRule.addPropertyColumnName(columnNames[i]);
                 }
 
                 edgeLabelToEdgeRules.put(label, edgeRule);
