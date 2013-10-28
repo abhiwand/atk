@@ -16,11 +16,36 @@ from tribeca_etl.core import *
 os.environ["PIG_OPTS"] = "-Dpython.verbose=error"
 
 big_frame = BigDataFrame() # create an empty data frame
-commands.getoutput("hadoop fs -rmr /tmp/us_states.csv")
-commands.getoutput("hadoop fs -put test-data/us_states.csv /tmp/us_states.csv")
-schema_definition = 'f_1:chararray,f_2:long,f_3:long,f_4:double'
-big_frame.import_csv('/tmp/test.csv', schema_definition, True)
+commands.getoutput("hadoop fs -rmr /tmp/worldbank.csv")
+commands.getoutput("hadoop fs -put ../test-data/worldbank.csv /tmp/worldbank.csv")
+schema_definition = 'country:chararray,year:chararray,'+\
+                    'co2_emission:double,electric_consumption:double,'+\
+                    'energy_use:double,fertility:double,gni:double,'+\
+                    'internet_users:double,life_expectancy:double,military_expenses:double,'+\
+                    'population: double,hiv_prevelence:double'
+print schema_definition
+big_frame.import_csv('/tmp/worldbank.csv', schema_definition, True)
+big_frame.head(100)
 
+big_frame.features()
+
+big_frame['country'].fillna('MISSING_COUNTRY')
+big_frame.head(100)
+ 
+big_frame['country'].dropna()
+big_frame.head(100)
+
+big_frame.dropna()#drop any
+big_frame.head(100)
+
+big_frame['internet_users'].fillna('avg')#fill with average
+big_frame.head(100)
+
+big_frame['country'].dropna()
+big_frame.head(100)
+
+big_frame['internet_users'].fillna('avg', in_place=True)#fill with average
+big_frame.head(100)
 
 # commands.getoutput("hadoop fs -rmr /tmp/us_states.csv")
 # commands.getoutput("hadoop fs -put test-data/us_states.csv /tmp/us_states.csv")
@@ -75,7 +100,10 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
             table.delete(temp)#also remove the schema info
         except:
             pass
-        
+
+commands.getoutput("hadoop fs -rmr /tmp/worldbank.csv")
+commands.getoutput("hadoop fs -rmr /tmp/us_states.csv")
+ 
 #import some data
 # shaw_header = 'timestamp,event_type,method,duration,item_id,src_tms,dst_tms'
 # big_frame.import_data('/tmp/sample_shaw.log', '../custom-parsers/shaw_udfs.py', 'shaw_table', shaw_header)
