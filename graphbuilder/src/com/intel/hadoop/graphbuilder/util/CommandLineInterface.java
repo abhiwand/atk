@@ -4,6 +4,7 @@ import org.apache.commons.cli.*;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -28,6 +29,19 @@ public class CommandLineInterface {
     }
 
     public CommandLine parseArgs(String[] args) {
+
+        for (int i = 0; i < args.length;i++) {
+            if (args[i].equals("-conf")) {
+                if (i + 1 == args.length) {
+                    LOG.fatal("-conf argument given but no file path specified!");
+                    System.exit(1);  // nls todo: when integrating with TRIB-834 use new exit framework
+                } else if (!new File(args[i+1]).exists()) {
+                    LOG.fatal("Configuration file " + args[i+1] + " cannot be found.");
+                    System.exit(1);  // nls todo: when integrating with TRIB-834 use new exit framework
+                }
+            }
+        }
+
         //send the command line options to hadoop parse args to get runtime config options first
         try {
             genericOptionsParser = new GenericOptionsParser(args);

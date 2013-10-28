@@ -89,12 +89,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         this.inputConfiguration = inputConfiguration;
         this.usingHBase         = inputConfiguration.usesHBase();
 
-        if (usingHBase) {
-            this.hbaseUtils = HBaseUtils.getInstance();
-            this.conf       = hbaseUtils.getConfiguration();
-        } else {
-            this.conf = new Configuration();
-        }
+        this.hbaseUtils = HBaseUtils.getInstance();
+        this.conf       = hbaseUtils.getConfiguration();
     }
 
     /**
@@ -189,6 +185,14 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
 
+        // warn the user if the Titan table already exists in Hbase
+
+        String titanTableName = TitanConfig.config.getProperty("TITAN_STORAGE_TABLENAME");
+
+        if (hbaseUtils.tableExists(titanTableName)) {
+            LOG.info("WARNING:  hbase table " + titanTableName +
+                     " already exists. Titan will append new graph to existing data.");
+        }
 
         String intermediateDataFileName = "graphbuilder_temp_file-" + random().toString();
         Path   intermediateDataFilePath = new Path("/tmp/" + intermediateDataFileName);
