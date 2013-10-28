@@ -1,21 +1,11 @@
 package controllers
 
-/*import play.api._
-import play.api.data._
-import play.api.db.slick._
-import play.api.Play.current*/
 import play.api.mvc._
+
 import play.api.libs.json._
-/*import com.fasterxml.jackson.databind.JsonNode
-import play.api.libs.functional.syntax._
-import play.api.libs.ws.WS
-import scala.concurrent.Await*/
 import services.authorize.{Providers, Authorize}
-//import play.api.libs.concurrent.Execution.Implicits._
 import models._
 import models.database.User
-//import play.api.libs.json
-
 
 object Register extends Controller{
 
@@ -30,7 +20,7 @@ object Register extends Controller{
               //create user session
              Ok(Json.toJson("AlreadyRegistered"))
            }else{
-            val u = User(None,userInfo.givenName,userInfo.familyName,userInfo.email,"Phone","company","companyemail","picture url",true,None)
+            val u = User(None,userInfo.givenName,userInfo.familyName,userInfo.email,"Phone","company","companyemail",true,None)
             uid = Users.insert(u)
              //create user session
             Ok(Json.toJson("Registered"))
@@ -42,13 +32,8 @@ object Register extends Controller{
        } else{
          BadRequest("Couldn't validate auth response data")
        }
-     }
+  }
 
-  /*def insert = DBAction{ implicit rs =>
 
-    val us = Query(Users).list
-    Ok("")
-
-  }*/
 
 }
