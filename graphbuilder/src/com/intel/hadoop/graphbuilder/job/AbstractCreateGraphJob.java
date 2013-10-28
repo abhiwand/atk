@@ -22,7 +22,7 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.Outpu
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.io.WritableComparable;
@@ -66,7 +66,7 @@ public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<
         userOpts.put(key, value);
     }
 
-    public boolean run(InputConfiguration  inputConfiguration,
+    public void run(InputConfiguration  inputConfiguration,
                        GraphTokenizer      tokenizer,
                        OutputConfiguration outputConfiguration,
                        CommandLine         cmd) {
@@ -97,16 +97,14 @@ public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<
         try {
             graphGenerationMRJob.run(cmd);
         } catch (IOException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
                     "IO Exception during map-reduce job execution.", LOG, e);
         }  catch (ClassNotFoundException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Class not found exception during map-reduce job execution.", LOG, e);
         }  catch (InterruptedException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
                     "Interruption during map-reduce job execution.", LOG, e);
         }
-
-        return true;
     }
 }

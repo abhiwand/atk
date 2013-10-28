@@ -39,7 +39,7 @@ import javax.xml.xpath.XPathFactory;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.IntType;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
@@ -110,7 +110,7 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
             try {
                 loadDictionary(dictPath);
             } catch (IOException e) {
-                GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
                         "Could not load dictionary file, path=" + dictPath, LOG, e);
             }
         }
@@ -121,7 +121,7 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
             try {
                 loadStopWords(stopWordsPath);
             } catch (IOException e) {
-                GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
                         "Could not load stopwords file, path=" + stopWordsPath, LOG, e);
             }
         }
@@ -192,16 +192,16 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
                 }
             } // end of if (!(input_title.startsWith("Wikipedia:") || ...   block
         } catch (ParserConfigurationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
                     "Parser configuration error.", LOG, e);
         } catch (SAXException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
                     "SAXException", LOG, e);
         } catch (IOException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
                     "IO Exception", LOG, e);
         } catch (XPathExpressionException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
                     "XPathExpressionException", LOG, e);
         }
     }
@@ -260,12 +260,20 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
         for (FileStatus stat : stats) {
 
             LOG.debug(("Load dictionary: " + stat.getPath().getName()));
+            Scanner scanner = null;
+            try {
+                scanner = new Scanner(new BufferedReader(new InputStreamReader(fileSystem.open(stat.getPath()))));
 
-            Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(fileSystem.open(stat.getPath()))));
-
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                dictionary.add(line);
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    dictionary.add(line);
+                }
+            }  catch (IOException e) {
+                throw e;
+            } finally {
+                if (scanner != null) {
+                    scanner.close();
+                }
             }
         }
     }
@@ -278,11 +286,20 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
         for (FileStatus stat : stats) {
             LOG.debug(("Load stop words: " + stat.getPath().getName()));
 
-            Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(fileSystem.open(stat.getPath()))));
+            Scanner scanner = null;
+            try {
+                scanner = new Scanner(new BufferedReader(new InputStreamReader(fileSystem.open(stat.getPath()))));
 
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                stopWordsList.add(line);
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    stopWordsList.add(line);
+                }
+            } catch (IOException e) {
+                throw e;
+            } finally {
+                if (scanner != null) {
+                    scanner.close();
+                }
             }
         }
     }

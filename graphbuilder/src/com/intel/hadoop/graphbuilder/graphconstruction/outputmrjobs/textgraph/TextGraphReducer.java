@@ -29,7 +29,7 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
@@ -95,16 +95,16 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
                 this.vertexReducerFunction.configure(conf);
             }
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Could not instantiate reducer functions", LOG, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating reducer functions", LOG, e);
         } catch (ClassNotFoundException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Class not found exception when instantiating reducer functions", LOG, e);
         } catch (Functional.FunctionalConfigurationError e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Configuration error when configuring reducer functionals.", LOG, e);
         }
     }
@@ -154,7 +154,7 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
 
                     if (vertexReducerFunction != null) {
                         vertexPropertiesMap.put(vertexId,
-                                vertexReducerFunction.reduce(vertex.getProperties(), vertexReducerFunction.base()));
+                                vertexReducerFunction.reduce(vertex.getProperties(), vertexReducerFunction.identityValue()));
                     } else {
                         vertexPropertiesMap.put(vertexId, vertex.getProperties());
                     }
@@ -204,7 +204,7 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
 
                         if (edgeReducerFunction != null) {
                             edgePropertiesMap.put(edgeKey, edgeReducerFunction.reduce(edge.getProperties(),
-                                                                                      edgeReducerFunction.base()));
+                                                                                      edgeReducerFunction.identityValue()));
                         } else {
                             edgePropertiesMap.put(edgeKey, edge.getProperties());
                         }

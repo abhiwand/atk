@@ -3,7 +3,7 @@
 package com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.TextParsingMapper;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
@@ -56,7 +56,7 @@ public class TextFileInputConfiguration implements InputConfiguration {
         try {
             FileInputFormat.addInputPath(job, new Path(inputPath));
         } catch (IOException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
                     "Unable to set input path " + inputPath, LOG, e);
         }
     }

@@ -7,8 +7,8 @@ import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.thinkaurelius.titan.core.TitanElement;
 import com.thinkaurelius.titan.core.TitanGraph;
@@ -87,10 +87,10 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
         try {
             outValue   = (PropertyGraphElement) outClass.newInstance();
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Cannot instantiate new reducer output value ( " + outClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating reducer output value ( " + outClass.getName() + ")",
                     LOG, e);
         }
@@ -118,16 +118,16 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                 this.vertexReducerFunction.configure(conf);
             }
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Could not instantiate reducer functions", LOG, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating reducer functions", LOG, e);
         } catch (ClassNotFoundException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Class not found exception when instantiating reducer functions", LOG, e);
         } catch (Functional.FunctionalConfigurationError e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Functional error configuring reducer function", LOG, e);
         }
     }
@@ -176,7 +176,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                     if (vertexReducerFunction != null) {
                         vertexSet.put(vid,
                                 vertexReducerFunction.reduce(next.vertex().getProperties(),
-                                        vertexReducerFunction.base()));
+                                        vertexReducerFunction.identityValue()));
                     } else {
                         vertexSet.put(vid, next.vertex().getProperties());
                     }
@@ -224,7 +224,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                         if (edgeReducerFunction != null) {
                             edgeSet.put(edgeKey,
                                     edgeReducerFunction.reduce(edge.getProperties(),
-                                            edgeReducerFunction.base()));
+                                            edgeReducerFunction.identityValue()));
                         } else {
                             edgeSet.put(edgeKey, edge.getProperties());
                         }

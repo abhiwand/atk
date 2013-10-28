@@ -6,7 +6,7 @@ public enum StatusCode {
     UNABLE_TO_LOAD_INPUT_FILE(2,  "GRAPHBUILDER: unable to load input file"),
     UNHANDLED_IO_EXCEPTION(3,     "GRAPHBUILDER: unhandled IO exception"),
     MISSING_HBASE_TABLE(4,        "GRAPHBUILDER: missing hbase table"),
-    HADOOP_REPORTED_ERROR(5,      "GRAPHBUILDER: hadoop reported exeption"),
+    HADOOP_REPORTED_ERROR(5,      "GRAPHBUILDER: hadoop reported exception"),
     INTERNAL_PARSER_ERROR(6,      "GRAPHBUILDER: internal parser error"),
     UNABLE_TO_CONNECT_TO_HBASE(7, "GRAPHBUILDER: unable to connect to hbase"),
     CLASS_INSTANTIATION_ERROR(8,  "GRAPHBUILDER: class instantiation error"),

@@ -34,7 +34,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
@@ -82,7 +82,7 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         try {
             builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
                     "Cannot configure XML parser for Link Graph tokenization", LOG, e);
         }
 

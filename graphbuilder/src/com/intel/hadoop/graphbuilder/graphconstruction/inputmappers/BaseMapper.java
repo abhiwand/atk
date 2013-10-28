@@ -5,7 +5,7 @@ import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
@@ -74,10 +74,10 @@ public class BaseMapper {
         try {
             setMapVal((PropertyGraphElement) valClass.newInstance());
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Cannot instantiate map value class (" + PropertyGraphElement.class.getName() + " )", log, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating map value class ("
                             + PropertyGraphElement.class.getName() + " )", log, e);
         }
@@ -95,13 +95,13 @@ public class BaseMapper {
         try {
             this.keyFunction = (KeyFunction) Class.forName(conf.get("KeyFunction")).newInstance();
         } catch (ClassNotFoundException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Could not find class named for key function.", log, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating key function.", log, e);
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Instantiation exception when instantiating key function.", log, e);
         }
     }
@@ -116,13 +116,13 @@ public class BaseMapper {
         try {
             this.tokenizer = (GraphTokenizer) Class.forName(conf.get("GraphTokenizer")).newInstance();
         } catch (ClassNotFoundException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Could not find class named for tokenizer.", log, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating tokenizer.", log, e);
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Instantiation exception when instantiating tokenizer.", log, e);
         }
         this.tokenizer.configure(conf);

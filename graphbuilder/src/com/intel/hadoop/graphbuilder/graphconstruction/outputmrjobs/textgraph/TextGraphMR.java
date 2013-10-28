@@ -27,7 +27,7 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.GraphGenerat
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
@@ -111,7 +111,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
             try {
                 this.hbaseUtils = HBaseUtils.getInstance();
             } catch (IOException e) {
-                GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
                         "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
             }
             this.conf       = hbaseUtils.getConfiguration();
@@ -137,10 +137,10 @@ public class TextGraphMR extends GraphGenerationMRJob {
                 this.edgeReducerFunction = (Functional) edgeReducerFunction.newInstance();
             }
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Cannot instantiate reducer functions.", LOG, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating reducer functions.", LOG, e);
         }
     }
@@ -167,10 +167,10 @@ public class TextGraphMR extends GraphGenerationMRJob {
         try {
             this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
         }
     }

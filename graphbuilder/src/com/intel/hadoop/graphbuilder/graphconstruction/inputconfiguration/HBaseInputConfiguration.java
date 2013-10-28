@@ -5,7 +5,7 @@ package com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.HBaseReaderMapper;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
@@ -46,7 +46,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
         try {
             this.hBaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
                     "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
     }
@@ -63,11 +63,11 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
         try {
             if (!hBaseUtils.tableExists(srcTableName)) {
-                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.MISSING_HBASE_TABLE,
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.MISSING_HBASE_TABLE,
                         "GRAPHBUILDER ERROR: " + srcTableName + " table does not exist", LOG);
             }
         } catch (IOException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
                     "Could not read input HBase Table named: " + srcTableName, LOG, e);
         }
 
@@ -98,7 +98,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
         try {
             TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, PropertyGraphElement.class, job);
         } catch (IOException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
                     "Could not initialize table mapper job", LOG, e);
         }
     }

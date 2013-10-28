@@ -23,7 +23,7 @@ import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFi
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
 
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -81,7 +81,7 @@ public class CreateGraphJobTest {
         CommandLine       cmd     = parser.parse(options, args);
 
         if (null == cmd) {
-            GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                     "Unable to parse command line.", LOG);
         }
 

@@ -1,7 +1,7 @@
 
 package com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat;
 
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -58,7 +58,7 @@ public class XMLInputFormat extends TextInputFormat {
             xmlRecordReader.initialize(inputSplit, context);
         }
         catch (IOException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
                     "Unable to create xml record reader.", LOG, e);
         }
 

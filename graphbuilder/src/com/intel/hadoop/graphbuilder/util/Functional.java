@@ -47,5 +47,5 @@ public interface Functional<T1, T2 extends Writable> {
 
   Class<T2> getOutType();
 
-  T2 base();
+  T2 identityValue();
 }

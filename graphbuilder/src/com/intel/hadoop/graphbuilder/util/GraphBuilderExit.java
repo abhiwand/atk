@@ -1,10 +1,8 @@
 package com.intel.hadoop.graphbuilder.util;
 
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
-public class GraphbuilderExit {
+public class GraphBuilderExit {
 
     public static void graphbuilderFatalExitException(StatusCode statusCode, String message, Logger log, Exception e) {
         log.fatal(message);

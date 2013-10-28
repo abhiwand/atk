@@ -171,7 +171,7 @@ public class HBaseUtils {
             if (admin.isTableDisabled(this.hTableName)) {
                 admin.deleteTable(this.hTableName);
             } else {
-                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
                         "GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it",
                         LOG);
             }
@@ -213,7 +213,7 @@ public class HBaseUtils {
             if (admin.isTableDisabled(this.hTableName)) {
                 admin.deleteTable(this.hTableName);
             } else {
-                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
                         "GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it",
                         LOG);
             }

@@ -90,7 +90,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             try {
                 this.hbaseUtils = HBaseUtils.getInstance();
             } catch (IOException e) {
-                GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
                         "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
             }
                 this.conf = hbaseUtils.getConfiguration();
@@ -116,10 +116,10 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                 this.edgeReducerFunction = (Functional) edgeReducerFunction.newInstance();
             }
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Unable to instantiate reducer functions.", LOG, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating reducer functions.", LOG, e);
         }
     }
@@ -146,10 +146,10 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         try {
             this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
         }
     }
@@ -305,7 +305,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         try {
             FileInputFormat.addInputPath(writeEdgesJob, intermediateDataFilePath);
         } catch (IOException e) {
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
                     "Cannot access temporary edge file.", LOG, e);
         }
 

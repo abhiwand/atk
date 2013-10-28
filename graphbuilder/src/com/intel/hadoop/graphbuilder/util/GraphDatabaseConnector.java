@@ -24,8 +24,6 @@ import com.tinkerpop.blueprints.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
-
 /**
  *  Class for handling graph database connections:
  *   right now only Titan is supported
@@ -72,7 +70,7 @@ public class GraphDatabaseConnector {
             throw new UnsupportedOperationException();
         }else if (null == graphDB) {
             LOG.fatal("GRAPHBUILDER ERROR: Cannot create a null graph. Please specify titan | allegrograph | neo4j");
-            throw new NullPointerException();
+            throw new IllegalArgumentException();
         }
         return null;
     }

@@ -43,7 +43,7 @@ public class ValueClassFactory {
         } else if (vidClassName.equals(LongType.class.getName())) {
             return PropertyGraphElementLongTypeVids.class;
         } else {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Illegal vertex ID class " + vidClassName);
         }
     }
 }

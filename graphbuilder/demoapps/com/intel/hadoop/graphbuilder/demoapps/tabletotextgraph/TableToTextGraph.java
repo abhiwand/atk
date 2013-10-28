@@ -6,7 +6,7 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextG
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
-import com.intel.hadoop.graphbuilder.util.GraphbuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import org.apache.commons.cli.*;
@@ -77,7 +77,7 @@ public class TableToTextGraph {
             } else {
                 LOG.fatal("A table name is required");
                 showHelp(options);
-                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "A table name is required", LOG);
             }
 
@@ -87,7 +87,7 @@ public class TableToTextGraph {
             } else {
                 LOG.fatal("An output path is required");
                 showHelp(options);
-                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "An output path is required", LOG);
             }
 
@@ -98,7 +98,7 @@ public class TableToTextGraph {
             } else {
                 LOG.fatal("Please add column family and names for vertices and vertex properties");
                 showHelp(options);
-                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "Please add column family and names for vertices and vertex properties", LOG);
             }
 
@@ -109,14 +109,14 @@ public class TableToTextGraph {
             } else {
                 LOG.fatal("Please add column family and names for edges and edge properties");
                 showHelp(options);
-                GraphbuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "Please add column family and names for edges and edge properties", LOG);
             }
 
         } catch (ParseException e) {
             LOG.fatal("Parsing exception when parsing command line.");
             showHelp(options);
-            GraphbuilderExit.graphbuilderFatalExitException(StatusCode.BAD_COMMAND_LINE,
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.BAD_COMMAND_LINE,
                     "Parsing exception when parsing command line.", LOG, e);
         }
 
