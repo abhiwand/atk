@@ -1,7 +1,7 @@
 * { margin: 0; padding: 0; outline: 0; }
 
 
-input, select, textarea { font-family:Arial, Helvetica, sans-serif; } 
+input, select, textarea { font-family:inherit; } 
 input[type='submit']
 {
    -webkit-appearance: none;
@@ -92,7 +92,7 @@ h3.green{ background:#07c8b3; border:solid 1px #07c8b3; text-shadow: #008d7e 0px
 /********************* text fields frames styles **********************/
 
 .DA_custom_form{ margin:0 auto 30px auto; padding-bottom:15px; max-width:700px; padding:0 10px; position: relative; z-index: 1}
-.DA_custom_form .DA_field_container{ display: block; width:100%; height:25px; padding:10px 0;  border:solid 1px #ccc; }
+.DA_custom_form .DA_field_container{ display: block; width:100%; height:40px; padding:10px 0;  border:solid 1px #ccc; }
 .DA_custom_form .DA_field_container{ -webkit-border-radius: 3px; border-radius: 3px; }
 .DA_custom_form .DA_field_container{ position: relative; z-index: 1;}
 
@@ -116,11 +116,9 @@ h3.green{ background:#07c8b3; border:solid 1px #07c8b3; text-shadow: #008d7e 0px
 
 /********************* submit buttons styles *********************/
 
-.DA_custom_form .btnp input{ background:#393939; font-size: 20px; color:#fff; height:50px; line-height:50px; width:30%; }
-.DA_custom_form .btnp input{ cursor:pointer; text-shadow: #202020 0px 2px 0px; font-family: 'Bitter',Arial,  sans-serif;  }
-.DA_custom_form .btnp input{ webkit-box-shadow: 0px 3px 0px 0px #202020; box-shadow: 0px 3px 0px 0px #202020; }
-.DA_custom_form .btnp input{ -webkit-border-radius: 10px; border-radius: 10px;}
-.DA_custom_form .btnp input{ border:solid 1px #202020; text-align: center; margin:25px auto; display: block;}
+.DA_custom_form .btnp input{ border-radius: 5px 5px 5px 5px; width: 100%; background:#0071C5; font-size: 14px; font-weight: 200; color:#fff; height:50px; line-height:50px; }
+.DA_custom_form .btnp input{ cursor:pointer; text-shadow: #202020 1px 1px 1px rgba(0, 0, 0, 0,4);   }
+.DA_custom_form .btnp input{ border:none; text-align: center; margin:25px auto; display: block;}
 
 .DA_custom_form .btnp .blue{ background:#2fb0d7; webkit-box-shadow: 0px 3px 0px 0px #2188a7; box-shadow: 0px 3px 0px 0px #2188a7;}
 .DA_custom_form .btnp .blue{ border:solid 1px #2188a7; color:#fff; text-shadow: #2188a7 0px 2px 0px;}
@@ -128,16 +126,13 @@ h3.green{ background:#07c8b3; border:solid 1px #07c8b3; text-shadow: #008d7e 0px
 .DA_custom_form .btnp .red{ background:#e14f49; webkit-box-shadow: 0px 3px 0px 0px #b2332d; box-shadow: 0px 3px 0px 0px #b2332d; }
 .DA_custom_form .btnp .red{ border:solid 1px #b2332d; text-shadow: #b2332d 0px 2px 0px;}
 
-.DA_custom_form input[type="submit"]:hover{ background: #696969; webkit-box-shadow: 0px 3px 0px 0px #464646;  }
-.DA_custom_form input[type="submit"]:hover{ box-shadow: 0px 3px 0px 0px #464646; border:solid 1px #464646; }
-.DA_custom_form input[type="submit"]:hover{ text-shadow: #464646 0px 2px 0px;   }
+.DA_custom_form input[type="submit"]:hover{ border-radius: 5px 5px 5px 5px; background: #00Aeef;  }
+.DA_custom_form input[type="submit"]:hover{ text-shadow: #202020 1px 1px 1px rgba(0, 0, 0, 0,4);   }
 
-.DA_custom_form input.blue[type="submit"]:hover{ background: #2188a7; webkit-box-shadow: 0px 3px 0px 0px #15647c; }
-.DA_custom_form input.blue[type="submit"]:hover{ box-shadow: 0px 3px 0px 0px #15647c; border:solid 1px #2188a7; }
+.DA_custom_form input.blue[type="submit"]:hover{ background: #2188a7; }
 .DA_custom_form input.blue[type="submit"]:hover{ text-shadow: #15647c 0px 2px 0px; }
 
-.DA_custom_form input.red[type="submit"]:hover{ background: #b2332d; webkit-box-shadow: 0px 3px 0px 0px #8f2722; }
-.DA_custom_form input.red[type="submit"]:hover{ box-shadow: 0px 3px 0px 0px #8f2722; border:solid 1px #8f2722;  }
+.DA_custom_form input.red[type="submit"]:hover{ background: #b2332d; }
 .DA_custom_form input.red[type="submit"]:hover{ text-shadow: #8f2722 0px 2px 0px; }
 
 /********************** end of submit buttons styles *****************/
