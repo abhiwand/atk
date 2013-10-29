@@ -1,39 +1,37 @@
 package controllers
 
 import play.api.mvc._
-
 import play.api.libs.json._
 import services.authorize.{Providers, Authorize}
+
 import models._
 import models.database.User
 
-object Register extends Controller{
+object Register extends Controller {
 
-  var register = Action(parse.json){ request =>
-       var auth = new Authorize(request.body, Providers.GooglePlus)
-       if(auth.valdiateTokenResponseData()&& auth.validateToken()){
-         val userInfo = auth.getUserInfo()
-         if(userInfo != null){
-           //the entire session is valid and we have the user data
-           var uid = Users.findByEmail(userInfo.email)
-           if( uid > 0){
-              //create user session
-             Ok(Json.toJson("AlreadyRegistered"))
-           }else{
-            val u = User(None,userInfo.givenName,userInfo.familyName,userInfo.email,"Phone","company","companyemail",true,None)
-            uid = Users.insert(u)
-             //create user session
-            Ok(Json.toJson("Registered"))
-           }
-           //BadRequest("could not create user")
-          } else{
-           BadRequest("Couldn't validate auth response data")
-         }
-       } else{
-         BadRequest("Couldn't validate auth response data")
-       }
-  }
+    var register = Action(parse.json) {
+        request =>
+            val auth = new Authorize(request.body, Providers.GooglePlus)
+            getResponse(auth)
+    }
 
+    def getResponse(auth: Authorize): SimpleResult = {
 
+        if (!(auth.valdiateTokenResponseData() && auth.validateToken()))
+            return BadRequest("Couldn't validate auth response data")
 
+        val userInfo = auth.getUserInfo()
+        if (userInfo == null)
+            return BadRequest("Couldn't validate auth response data")
+
+        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None)
+        var result = Users.register(u)
+
+        result.errorCode match {
+
+            case ErrorCodes.AlreadyRegister => Ok(Json.toJson("AlreadyRegistered"))
+            case ErrorCodes.ApprovalPendingForRegistration => Ok(Json.toJson("The user has registered and is in the waiting for approval."))
+            case _ => Ok(Json.toJson("Registered"))
+        }
+    }
 }
