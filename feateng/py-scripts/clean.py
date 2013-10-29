@@ -1,10 +1,13 @@
 import sys
 import re
 import subprocess
+import os
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.argparse_lib import ArgumentParser
 from intel_analytics.etl.config import CONFIG_PARAMS
 from intel_analytics.etl.schema import ETLSchema
+
+base_script_path = os.path.dirname(os.path.abspath(__file__))
 
 def validate_args(cmd_line_args):
     errors=[]
@@ -45,8 +48,10 @@ def main(argv):
         
     if cmd_line_args.feature_to_clean and cmd_line_args.feature_to_clean not in etl_schema.feature_names:
         raise Exception("Feature %s does not exist in table %s " % (cmd_line_args.feature_to_clean, cmd_line_args.input))
-       
-    args = ['pig', 'py-scripts/intel_analytics/etl/pig/pig_clean.py', '-i', cmd_line_args.input, 
+    
+    clean_script_path = os.path.join(base_script_path, 'intel_analytics', 'etl', 'pig', 'pig_clean.py')
+    
+    args = ['pig', clean_script_path, '-i', cmd_line_args.input, 
                      '-o', cmd_line_args.output, '-n', feature_names_as_str,
                      '-t', feature_types_as_str]
     

@@ -1,10 +1,13 @@
 import sys
 import re
 import subprocess
+import os
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.argparse_lib import ArgumentParser
 from intel_analytics.etl.config import CONFIG_PARAMS
 from intel_analytics.etl.schema import ETLSchema
+
+base_script_path = os.path.dirname(os.path.abspath(__file__))
 
 def validate_args(cmd_line_args):
     errors = []
@@ -69,7 +72,6 @@ def main(argv):
                 
             dest_etl_schema = ETLSchema()
             dest_etl_schema.load_schema(cmd_line_args.output)           
-                             
             input_columns = set(etl_schema.feature_names)
             output_columns = set(dest_etl_schema.feature_names)
             diff_columns = list(output_columns - input_columns)
@@ -86,12 +88,13 @@ def main(argv):
         #create if output table doesn't exist
         if not hbase_client.is_table_readable(cmd_line_args.output):          
             hbase_client.drop_create_table(cmd_line_args.output , [CONFIG_PARAMS['etl-column-family']])
-                        
-    args = ['pig', 'py-scripts/intel_analytics/etl/pig/pig_transform.py', '-f', cmd_line_args.feature_to_transform, 
-                        '-i', cmd_line_args.input, '-o', cmd_line_args.output, 
-                        '-t', cmd_line_args.transformation_function, '-n', cmd_line_args.new_feature_name, 
-                         '-u', feature_names_as_str, '-r', feature_types_as_str]
-        
+    
+    transform_script_path = os.path.join(base_script_path, 'intel_analytics', 'etl', 'pig', 'pig_transform.py')
+                       
+    args = ['pig', transform_script_path, '-f', cmd_line_args.feature_to_transform, 
+                '-i', cmd_line_args.input, '-o', cmd_line_args.output, 
+                '-t', cmd_line_args.transformation_function, '-n', cmd_line_args.new_feature_name, 
+                '-u', feature_names_as_str, '-r', feature_types_as_str]
     
     if cmd_line_args.transformation_function_args:  
         args += ['-a', cmd_line_args.transformation_function_args]

@@ -1,10 +1,13 @@
 import sys
 import subprocess
 import commands
+import os
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.argparse_lib import ArgumentParser
 from intel_analytics.etl.config import CONFIG_PARAMS
 from intel_analytics.etl.schema import ETLSchema
+
+base_script_path = os.path.dirname(os.path.abspath(__file__))
 
 #hadoop fs count returns DIR_COUNT FILE_COUNT CONTENT_SIZE FILE_NAME
 N_COLS=4
@@ -43,8 +46,10 @@ def main(argv):
     # need to delete/create output table so that we can write the transformed features
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         hbase_client.drop_create_table(cmd_line_args.output , [CONFIG_PARAMS['etl-column-family']])        
-        
-    args = ['pig', 'py-scripts/intel_analytics/etl/pig/pig_import_csv.py','-i', cmd_line_args.input, 
+    
+    import_csv_script_path = os.path.join(base_script_path, 'intel_analytics', 'etl', 'pig', 'pig_import_csv.py')
+    
+    args = ['pig', import_csv_script_path,'-i', cmd_line_args.input, 
             '-o', cmd_line_args.output, '-f', feature_names_as_str, '-t', feature_types_as_str]
     
     if cmd_line_args.skip_header:  
