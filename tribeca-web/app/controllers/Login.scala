@@ -25,7 +25,7 @@ object Login extends Controller {
             return BadRequest("Couldn't validate auth response data")
 
         val userInfo = auth.getUserInfo()
-        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None)
+        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None, None)
         val result = Users.login(u, MySQLStatementGenerator)
         val sessionId = Sessions.createSession(result.uid)
 

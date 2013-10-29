@@ -1,0 +1,69 @@
+   @()
+   <!-- Dataset Modal -->
+  <div class="modal fade" id="datasetModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Datasets Add/Review</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+                  <div class='col-sm-12'>
+                  <div class="modal-header">  
+                    <h5>Current Dataset</h5>
+                  </div>
+                    <div class='table-responsive'>
+                        <table class='table table-condensed'>
+                          <thead>
+                            <tr>
+                              <th>
+                              Name 
+                              </th>
+                              <th>
+                              Size 
+                              </th>                             
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr class=''>
+                              <td> users.csv </td>
+                              <td> 3456k </td>
+                            </tr>
+                            <tr class=''>
+                              <td> ratings.csv </td>
+                              <td> 800k </td>
+                            </tr> 
+                            <tr class=''>
+                              <td> movie-titles.csv </td>
+                              <td> 679k </td>
+                            </tr>   
+                          </tbody>
+                        </table>  
+                    </div>
+                  </div>
+          </div>
+        <div class="modal-header">  
+          <h5>Add Files to Existing Dataset</h5>  
+        </div> 
+          <div class='row'>
+                  <div class='col-sm-12'>
+                    <div id="dropzone">
+                        <form class="dropzone dz-clickable" action="http://www.torrentplease.com/dropzone.php">
+                          <div>
+                            <h2>Drop files or click here to add to Notebook</h2>
+                            <p>We currently support .csv files up to 500MB</p>
+                          </div>
+                        </form>
+                        
+                 <!--       <button type="button" class="btn btn-primary btn-lg btn-block" data-dismiss="modal">Add Files to Notebook</button> -->
+                         
+                      </div>
+                  </div>
+                </div>
+        
+        </div>
+        
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->
