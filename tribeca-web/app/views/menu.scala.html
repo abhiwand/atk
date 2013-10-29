@@ -1,9 +1,45 @@
-@()
+@(user: models.database.User)
 
 <div class='collapse navbar-collapse navbar-header-collapse'>
     <ul class='nav navbar-nav navbar-right'>
+        @if(user != null && user.uid.get > 0 ){
+            <li class='dropdown'>
+                <a href='faq.html'>
+                    <span>
+                        FAQ
+                    </span>
+                </a>
+            </li>
+            <li class='dropdown'>
+                <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='dropdown' href='#'>
+                    <span>
+                        Examples
+                    </span>
+                </a>
+            </li>
+            <li class='dropdown'>
+                <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='dropdown' href='#'>
+                    <span>
+                        API Documentation
+                    </span>
+                </a>
+            </li>
+            <li class='dropdown'>
+                <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href='#datasetModal'>
+                    <span>
+                        View/Add Datasets
+                    </span>
+                </a>
+            </li>
+            <li class='dropdown'>
+                <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href='#myModal'>
+                    <span>
+                        Sign Out
+                    </span>
+                </a>
+            </li>
 
-
+        } else {
         <li class='dropdown'>
             <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='dropdown' href='#'>
                 <span>
@@ -27,5 +63,6 @@
                 </span>
             </a>
         </li>
+        }
     </ul>
 </div>
