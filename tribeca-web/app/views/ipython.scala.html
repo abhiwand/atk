@@ -1,0 +1,28 @@
+@(message: String, user: models.database.User)
+
+@main(message, user) {
+
+    <div id='main-content'>
+
+        <div id='main-content-upload'>
+            <div class='container'>
+                <div class="row">
+                    <div class='col-sm-12'>
+
+                        <div class="row-fluid">
+                            <iframe class="container well well-small span6" style="position: relative; height: 2700px; width: 100%; background-color: #fff;" src="http://nbviewer.ipython.org/urls/raw.github.com/swcarpentry/2012-11-scripps/master/python/testing-with-nose.ipynb" >
+                            </iframe>
+                        </div>
+                        <a href ='#'>
+                            <button type="button" class="btn btn-primary btn-lg btn-block">That was awesome. Export it!</button>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='fade' id='scroll-to-top'>
+        <i class='fa-icon-chevron-up'></i>
+    </div>
+}

@@ -31,7 +31,7 @@ object GooglePlus {
     authData.validate[ValidateTokenResponseData](validateTokenResponseData).map{
       case(validResponse) =>
         if(validResponse.client_id == https_clientId || validResponse.client_id == http_clientId){
-          return new GoogleTokenResponse(validResponse._aa, validResponse.access_token, validResponse.authuser, validResponse.client_id)
+          return new GoogleTokenResponse(validResponse.access_token, validResponse.authuser, validResponse.client_id)
         }
     }.recoverTotal{
       return null
