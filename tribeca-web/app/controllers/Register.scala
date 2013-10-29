@@ -10,9 +10,9 @@ import controllers.Session._
 
 object Register extends Controller {
 
-    var register = Action(parse.json) {
+    var register = Authenticated(parse.json) {
         request =>
-
+            //Registration.validate(request.body \ "form")
             val auth = new Authorize(request.body \ "auth", Providers.GooglePlus)
             getResponse(request, auth)
     }
@@ -23,7 +23,7 @@ object Register extends Controller {
             return BadRequest("Couldn't validate auth response data")
 
         val userInfo = auth.getUserInfo()
-        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None)
+        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None, None)
         val result = Users.register(u, MySQLStatementGenerator)
         val sessionId = Sessions.createSession(result.uid)
         //Sessions.removeSession(sessionId)
