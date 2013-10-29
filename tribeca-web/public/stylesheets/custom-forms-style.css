@@ -71,7 +71,7 @@ h1#logo img{ width:100%; }
 .DA_custom_form p{ display:none;}
 .DA_custom_form span{ color:#e4e4e4; float: right; text-align: left; width:5%; font-size: 21px; line-height:26px; }
 .DA_custom_form  span.error, .DA_custom_form a.error{ color:#f27669;}
-.DA_custom_form span.ok{ color:#3abf9d;}
+.DA_custom_form span.ok{ color:#a6c339;}
 
 .DA_custom_form .field{ float: left; display: inline; width:93%;  font-size: 14px; line-height:14px; border:0; color:#676F7A; }
 .DA_custom_form .field{ height:100%; padding:0 0 0 2%; overflow:auto; resize: none; position: relative; z-index: 1}
