@@ -45,12 +45,9 @@ Then run some transforms:
 	python py-scripts/transform.py -i input_table_transformed -s
 	python py-scripts/transform.py -i input_table -o input_table_transformed -d
 	
-Validate the transformation result:
-	First run a transformation with -k to keep the original feature in the output table:
-		python py-scripts/transform.py -i input_table -o input_table_transformed -f feature_to_transform -t LOG10 -n transformed_feature_name -k
-	Then validate the output:
-		python py-scripts/tests/validate_transform.py -f feature_to_transform -i input_table_transformed -t LOG10 -n transformed_feature_name
-	Similarly for other transformations.
+To run the validation tests:
+	cd source_code/feateng
+	python feateng/py-scripts/tests/validate_etl.py
 		
 For a demo of the Python API usage see py-scripts/demo.py [This is experimental, we still work on our API design]
 
@@ -88,9 +85,5 @@ To run the scripts at the top level directory:
 OTHER NOTES
 ==========================
 	Tested on Hadoop 1.0.1 and pig-0.12.0
-	We depend on datafu-0.0.10.jar (https://github.com/linkedin/datafu). We have already put datafu-0.0.10.jar under feature_engineering/lib
-	If you run 'mvn clean package' directly TestErrorHandling.testErroneousJavaUDF() will fail since that test case registers the 'target/Intel-FeatureEngineering-0.0.1-SNAPSHOT.jar'
-	in the tested pig script. So you need to first skip tests during mvn packaging with 'mvn clean package -DskipTests -P IntelAnalytics-one', and then run the tests with 'mvn test -P IntelAnalytics-one -Dsurefire.useFile=false'.
-	To run individual tests: mvn -Dtest=TestClass test
-	To show stack traces use -Dsurefire.useFile=false 
+	We depend on datafu-0.0.10.jar (https://github.com/linkedin/datafu). We have already put datafu-0.0.10.jar under feateng/lib
 	To get rid of jython logging: export PIG_OPTS="-Dpython.verbose=error"
