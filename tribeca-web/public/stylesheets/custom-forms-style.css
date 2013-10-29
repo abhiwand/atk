@@ -69,7 +69,7 @@ h1#logo img{ width:100%; }
 
 /**** Here you can change the color of the validation signs in the end of the fields ****/
 .DA_custom_form p{ display:none;}
-.DA_custom_form span{ color:#e4e4e4; float: right; text-align: left; width:5%; font-size: 21px; line-height:26px; }
+.DA_custom_form span{ color:#e4e4e4; float: right; text-align: left; width:5%; font-size: 21px; line-height:26px; margin: -20px 7px 0px; }
 .DA_custom_form  span.error, .DA_custom_form a.error{ color:#f27669;}
 .DA_custom_form span.ok{ color:#a6c339;}
 
@@ -85,7 +85,7 @@ h1#logo img{ width:100%; }
 
 .DA_custom_form .btnp input{ border-radius: 5px 5px 5px 5px; width: 100%; background:#0071C5; font-size: 14px; font-weight: 200; color:#fff; height:50px; line-height:50px; }
 .DA_custom_form .btnp input{ cursor:pointer; text-shadow: #202020 1px 1px 1px rgba(0, 0, 0, 0,4);   }
-.DA_custom_form .btnp input{ border:none; text-align: center; margin:25px auto; display: block;}
+.DA_custom_form .btnp input{ border:none; text-align: center; margin:5px auto; display: block;}
 
 .DA_custom_form .btnp .blue{ background:#2fb0d7; webkit-box-shadow: 0px 3px 0px 0px #2188a7; box-shadow: 0px 3px 0px 0px #2188a7;}
 .DA_custom_form .btnp .blue{ border:solid 1px #2188a7; color:#fff; text-shadow: #2188a7 0px 2px 0px;}
@@ -115,7 +115,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 .DA_custom_form span.cust_checkbox_on{ }
 .DA_custom_form span.cust_checkbox .fa-icon-ok{ float: left; display: inline;  line-height:20px;  color:#fff; height:20px; width:20px; }
 .DA_custom_form span.cust_checkbox .fa-icon-ok{ border:solid 1px #ccc;}
-.DA_custom_form span.cust_checkbox_on .fa-icon-ok{ color:#0071C5;}
+.DA_custom_form span.cust_checkbox_on .fa-icon-ok{ color:#A6C339;}
 
 .DA_custom_form .check{ float: left; display: inline; }
 
@@ -324,7 +324,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 
 /*************************************** HORIZONTAL FORM STYLE *****************************************/
 
-.DA_custom_form .horizontal{  width:90%; float: left; display: inline; margin:17px 5%;}
+.DA_custom_form .horizontal{  width:90%; float: left; display: inline; margin:10px 5%;}
 .DA_custom_form .horizontal label{ float: left; display: inline; width:35%; padding:0; line-height: 45px}
 .DA_custom_form .horizontal  label.fl{ width:80%; line-height: 23px; padding-bottom:8px; }
 .DA_custom_form .horizontal label.error{ display: block; float: none; width:auto; line-height: 22px; padding:0 5px;}
