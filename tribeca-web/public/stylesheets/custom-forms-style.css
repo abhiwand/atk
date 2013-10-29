@@ -113,17 +113,17 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 .DA_custom_form span.checkbox{ line-height:0px; padding:0; width:auto; float: left; display: inline; cursor:default; }
 .DA_custom_form span.checkbox{ margin:0px 8px 0 0;  width:auto; height:23px;}
 .DA_custom_form span.cust_checkbox_on{ }
-.DA_custom_form span.cust_checkbox .icon-ok{ float: left; display: inline;  line-height:20px;  color:#fff; height:20px; width:20px; }
-.DA_custom_form span.cust_checkbox .icon-ok{ border:solid 1px #ccc;}
-.DA_custom_form span.cust_checkbox_on .icon-ok{ color:#f27669;}
+.DA_custom_form span.cust_checkbox .fa-icon-ok{ float: left; display: inline;  line-height:20px;  color:#fff; height:20px; width:20px; }
+.DA_custom_form span.cust_checkbox .fa-icon-ok{ border:solid 1px #ccc;}
+.DA_custom_form span.cust_checkbox_on .fa-icon-ok{ color:#0071C5;}
 
 .DA_custom_form .check{ float: left; display: inline; }
 
 .DA_custom_form span.radio {  line-height:0px; padding:0; width:auto; float: left; display: inline; cursor:default; }
 .DA_custom_form span.radio {  margin:0px 8px 0 0;    width:auto; height:21px; padding-bottom:6px}
-.DA_custom_form span.cust_checkbox .icon-circle{ float: left; display: inline;  line-height:22px; width:21px; height:21px; color:#fff;  }
-.DA_custom_form span.cust_checkbox .icon-circle{ border-radius:20px; -webkit-border-radius:20px;  border:solid 1px #ccc; }
-.DA_custom_form span.cust_radio_on .icon-circle{ color:#3abf9d; border:solid 1px #ccc; font-size: 17px; text-align: center; }
+.DA_custom_form span.cust_checkbox .fa-icon-circle{ float: left; display: inline;  line-height:22px; width:21px; height:21px; color:#fff;  }
+.DA_custom_form span.cust_checkbox .fa-icon-circle{ border-radius:20px; -webkit-border-radius:20px;  border:solid 1px #ccc; }
+.DA_custom_form span.cust_radio_on .fa-icon-circle{ color:#3abf9d; border:solid 1px #ccc; font-size: 17px; text-align: center; }
 
 .DA_custom_form .select_field{ border:0; visibility:hidden; font-size: 0; line-height:0; text-indent: -4000px; height:0!important; }
 .DA_custom_form .select_field{ padding:0; float: left;}
