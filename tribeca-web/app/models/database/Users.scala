@@ -3,7 +3,7 @@ package models.database
 import play.api.db.slick.Config.driver.simple._
 
 case class User(uid: Option[Long], givenName:String, familyName:String, email:String, phone:String,
-                company:String, companyEmail:String, registered:Boolean, clusterId:Option[String])
+                organization_name:String, organization_email:String, registered:Boolean, clusterId:Option[String])
 
 class Users extends Table[User]("user_info") {
   def uid = column[Long]("uid", O.PrimaryKey, O.AutoInc)
