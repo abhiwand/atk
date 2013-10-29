@@ -6,16 +6,18 @@ import services.authorize.{Providers, Authorize}
 
 import models._
 import models.database.User
+import controllers.Session._
 
 object Register extends Controller {
 
     var register = Action(parse.json) {
         request =>
             val auth = new Authorize(request.body, Providers.GooglePlus)
-            getResponse(auth)
+            getResponse(request, auth)
+
     }
 
-    def getResponse(auth: Authorize): SimpleResult = {
+    def getResponse(req: Request[JsValue] , auth: Authorize): SimpleResult = {
 
         if (!(auth.valdiateTokenResponseData() && auth.validateToken()))
             return BadRequest("Couldn't validate auth response data")
@@ -26,12 +28,20 @@ object Register extends Controller {
 
         val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None)
         var result = Users.register(u)
-
+        val uid = Users.insert(u)
+        val sessionId = Sessions.createSession(uid)
+        //Sessions.removeSession(sessionId)
         result.errorCode match {
 
-            case ErrorCodes.AlreadyRegister => Ok(Json.toJson("AlreadyRegistered"))
-            case ErrorCodes.ApprovalPendingForRegistration => Ok(Json.toJson("The user has registered and is in the waiting for approval."))
-            case _ => Ok(Json.toJson("Registered"))
+            case ErrorCodes.AlreadyRegister => Ok(Json.toJson("AlreadyRegistered")).withNewSession.withSession(SessionValName -> sessionId)
+            case ErrorCodes.ApprovalPendingForRegistration => Ok(Json.toJson("The user has registered and is in the waiting for approval.")).withNewSession.withSession(SessionValName -> sessionId)
+            case _ => Ok(Json.toJson("Registered")).withNewSession.withSession(SessionValName -> sessionId)
         }
+
     }
+
+  def currentUser = Authenticated{request =>
+    request.user
+   Ok("sdklaskla;")
+  }
 }
