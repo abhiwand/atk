@@ -59,12 +59,12 @@ h1#logo img{ width:100%; }
 /********************* text fields frames styles **********************/
 
 .DA_custom_form{ margin:0 auto 30px auto; padding-bottom:15px; max-width:700px; padding:0 10px; position: relative; z-index: 1}
-.DA_custom_form .DA_field_container{ display: block; width:100%; height:40px; padding:10px 0;  border:solid 1px #ccc; }
-.DA_custom_form .DA_field_container{ -webkit-border-radius: 3px; border-radius: 3px; }
+.DA_custom_form .DA_field_container{ display: block; width:100%; height:45px; padding:10px 0;  border:solid 1px #ccc; }
+.DA_custom_form .DA_field_container{ -webkit-border-radius: 3px; border-radius: 5px; }
 .DA_custom_form .DA_field_container{ position: relative; z-index: 1;}
 
 .DA_custom_form .textarea-frame{ display: block; width:100%; height:160px; padding:10px 0;  border:solid 1px #ccc; }
-.DA_custom_form .textarea-frame{ -webkit-border-radius: 3px; border-radius: 3px;}
+.DA_custom_form .textarea-frame{ -webkit-border-radius: 5px; border-radius: 3px;}
 .DA_custom_form .textarea-frame{ position: relative; z-index: 1;}
 
 /**** Here you can change the color of the validation signs in the end of the fields ****/
@@ -157,7 +157,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 .DA_check_holder label.error em{ left:5px; right:auto;}
  
 
-.DA_custom_form label{ font-size: 14px; color:#898989; display: block; font-family:Arial, Helvetica, sans-serif; font-weight: normal;}
+.DA_custom_form label{ font-size: 14px; color:#898989; display: block; font-family:Neo Sans Intel, Verdana, sans-serif; font-weight: normal;}
 .DA_custom_form label{ padding-bottom:8px}
 .DA_custom_form label.valid{ display:none!important;}
 .DA_custom_form label.error{ height:21px; font-size: 12px; position:absolute;  bottom:-31px; right:0; z-index: 100; float: right;}
