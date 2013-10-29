@@ -116,6 +116,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 .DA_custom_form span.cust_checkbox .icon-ok{ float: left; display: inline;  line-height:20px;  color:#fff; height:20px; width:20px; }
 .DA_custom_form span.cust_checkbox .icon-ok{ border:solid 1px #ccc;}
 .DA_custom_form span.cust_checkbox_on .icon-ok{ color:#f27669;}
+
 .DA_custom_form .check{ float: left; display: inline; }
 
 .DA_custom_form span.radio {  line-height:0px; padding:0; width:auto; float: left; display: inline; cursor:default; }
