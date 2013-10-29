@@ -124,20 +124,20 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 	   			$(element).parent().find('span').removeClass().addClass('error');
 				$(element).addClass(errorClass);
 				/*** here you can change the color code if you want different border color when the field is not valid ***/
-	    		$(element).parent().css('border','solid 1px #f27669');
+	    		$(element).parent().css('border','solid 1px #0071C5');
 			}
 			if($(element).is('select')){
 				$(element).parent().find('.sbToggle').addClass('error');
 				/*** here you can change the color code if you want different border color when the select box is not valid ***/
-				$(element).parent().find('.sbHolder').css('border','solid 1px #f27669');
+				$(element).parent().find('.sbHolder').css('border','solid 1px #0071C5');
 			}
 			if($(element).is(':checkbox')){
 				/*** here you can change the color code if you want different border color when the checkbox is not valid ***/
-				$(element).parent().find('.fa-icon-ok').css('border','solid 1px #f27669');
+				$(element).parent().find('.fa-icon-ok').css('border','solid 1px #0071C5');
 			}
 			if($(element).is(':radio')){
 				/*** here you can change the color code if you want different border color when the radio button is not valid ***/
-				$(element).parent().find('.fa-icon-circle').css('border','solid 1px #f27669');
+				$(element).parent().find('.fa-icon-circle').css('border','solid 1px #0071C5');
 			}
 		},
 		/********** messages shown if error in validation happen ************/
@@ -225,18 +225,18 @@ function all_events(){
 				if(!$(this).hasClass('error')){
 						$(this).parent().animate({
 							/*** here you can change the box shadow color of the field on focus  when it's not valid***/
-							boxShadow: '0px 0px 10px 2px #84cede'
+							boxShadow: '0px 0px 10px 2px #0071C5'
 						},90);
 						/*** here you can change the border color of the field on focus when it's not valid***/
-						$(this).parent().css('border','solid 1px #84cede')
+						$(this).parent().css('border','solid 1px #0071C5')
 				}
 				else{
 					$(this).parent().animate({
 						/*** here you can change the box shadow color of the field on focus when it's valid***/
-						boxShadow: '0px 0px 10px 2px #f27669'
+						boxShadow: '0px 0px 10px 2px #0071C5'
 					},90);
 					/*** here you can change the border color of the field on focus when it's valid***/
-					$(this).parent().css('border','solid 1px #f27669')
+					$(this).parent().css('border','solid 1px #0071C5')
 				}
 				if($(this).parent().find('span').hasClass('ok')){
 					$(this).parent().find('span').removeClass();
@@ -248,7 +248,7 @@ function all_events(){
 				if($(this).hasClass('valid') && this.value != '' ){
 						$(this).parent().animate({
 							/*** here you can change the box shadow color of the field on blur when it's valid***/
-							boxShadow: '0px 0px 0px 0px #f27669'},90);
+							boxShadow: '0px 0px 0px 0px #0071C5'},90);
 						/*** here you can change the border color of the field on blur when it's valid***/
 						$(this).parent().css('border','solid 1px #ccc');
 						$(this).parent().find('i').removeClass('fa-icon-remove').addClass('fa-icon-ok');
@@ -257,10 +257,10 @@ function all_events(){
 				if($(this).hasClass('error')){
 						$(this).parent().animate({
 							/*** here you can change the box shadow color of the field on blur when it's not valid***/
-							boxShadow: '0px 0px 0px 0px #f27669'		
+							boxShadow: '0px 0px 0px 0px #0071C5'		
 						},90);
 						/*** here you can change the border color of the field on blur when it's not valid***/
-						$(this).parent().css('border','solid 1px #f27669');
+						$(this).parent().css('border','solid 1px #0071C5');
 						$(this).parent().find('i').removeClass('fa-icon-ok').addClass('fa-icon-remove');
 						$(this).parent().find('span').removeClass('ok').addClass('error');
 				}
@@ -268,7 +268,7 @@ function all_events(){
 					
 					$(this).parent().animate({
 						/*** here you can change the box shadow color of the field on blur when it's empty ***/
-						boxShadow: '0px 0px 0px 0px #f27669'
+						boxShadow: '0px 0px 0px 0px #0071C5'
 					},90);
 					/*** here you can change the border color of the field on blur when it's empty***/
 					$(this).parent().css('border','solid 1px #ccc');
