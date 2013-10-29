@@ -1,0 +1,19 @@
+IntelAnalytics_env.sh
+- global variables'
+
+Steps:
+1. IntelAnalytics_setup_system.sh: setup basic system config
+
+2. IntelAnalytics_setup_user.sh: setup a given user account w/ passwordless ssh
+- 1) use the account name as password
+- 2) default user name is 'hadoop'
+
+3. IntelAnalytics_setup_disks.sh: prepare the disks for data mount points of hadoop
+- Assumes hard-coded device name, must match when launch intance from IS
+- Takes a while for this to finish the mkfs
+
+4. IntelAnalytics_setup_fstab_node.sh, IntelAnalytics_setup_fstab.sh: setup mount for the diesks
+
+5. IntelAnalytics_setup_deploy.sh: deploy the package
+- all configs are already updated
+- should be able to just run 
