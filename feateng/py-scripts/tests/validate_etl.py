@@ -1,6 +1,5 @@
 """
 Runs all the ETL scripts and validates the output of them.
-This is actually a superset of validate_transform.py
 """
 
 import os
@@ -24,12 +23,19 @@ print 'Built jar'
 #to get rid of jython logging
 os.environ["PIG_OPTS"] = "-Dpython.verbose=error"
 
+#to run pig as local mode
+os.environ["INTEL_ANALYTICS_ETL_RUN_LOCAL"] = "true"
+
 test_scripts_path = os.path.join(base_script_path)
 
 print '###########################'
 print 'Validating ETL scripts'
 print '###########################'
-#first test import & cleaning scripts
+
+# test transform functionality
+subprocess.call(['python', os.path.join(test_scripts_path, 'test_transform_API.py')])
+
+#test cleaning functionality
 subprocess.call(['python', os.path.join(test_scripts_path, 'test_cleaning_API.py')])
  
 #test string functions
@@ -38,8 +44,7 @@ subprocess.call(['python', os.path.join(test_scripts_path, 'test_string_function
 #test math functions
 subprocess.call(['python', os.path.join(test_scripts_path, 'test_math_functions.py')])
 
-# test transform functions
-subprocess.call(['python', os.path.join(test_scripts_path, 'test_transform_API.py')])
+
  
 print '#################################'
 print 'Done validating ETL scripts'
