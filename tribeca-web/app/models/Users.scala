@@ -44,4 +44,42 @@ object Users {
 
             return output
     }
+
+  def getUser(uid: Long): Query[Users, User] = DB.withSession{implicit session: scala.slick.session.Session =>
+    return for { u <- table if u.uid === uid} yield u
+  }
+  //crud
+  def readUser(uid: Long): database.User = DB.withSession{implicit session: scala.slick.session.Session =>
+    val users = getUser(uid).list
+    if(users.length > 0){
+      return users.last
+    }else{
+      return null
+    }
+  }
+
+
+  def insert(user: User): Long = DB.withSession{ implicit session: scala.slick.session.Session =>
+
+    var uid = findByEmail(user.email)
+    if(uid == 0){
+      uid = table.insert(user)
+    }
+    return uid
+  }
+
+  val emailExist =for{
+    email <- Parameters[String]
+    u <- table if u.email === email
+  }yield u
+
+  def findByEmail(email: String): Long = DB.withSession {  implicit session: scala.slick.session.Session =>
+
+    val test2 = emailExist(email).list
+    if(test2.length > 0){
+      return test2.last.uid.get
+    }else{
+      return 0
+    }
+  }
 }
