@@ -3,11 +3,14 @@
 # ~~~~
 
 # Home page
-GET        /                    controllers.Application.index
-POST        /register               controllers.Register.register
+GET         /                    controllers.Application.index
+GET         /ipython             controllers.Python.ipython
+POST        /register            controllers.Register.register
+GET         /auth                controllers.Register.currentUser
+
 #GET        /logout               controllers.Application.logout
 #GET        /logout               controllers.Application.register
 
 
 # Map static resources from the /public folder to the /assets URL path
-GET        /assets/*file        controllers.Assets.at(path="/public", file)
+GET         /assets/*file        controllers.Assets.at(path="/public", file)
