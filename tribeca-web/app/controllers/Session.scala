@@ -3,7 +3,6 @@ package controllers
 import play.api.mvc._
 import scala.concurrent.Future
 import models.database.User
-import models.database.Session
 import models.Users
 
 

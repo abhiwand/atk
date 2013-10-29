@@ -35,13 +35,39 @@ object Users {
             val errorCode = cStmt.getInt("errorCode")
             val errorMessage = cStmt.getString("errorMessage")
 
-            val output = new RegistrationOutput(errorCode, errorMessage, loginAfterRegister, 0)
 
+            var uid = 0
             if(hadResults) {
                 val rs = cStmt.getResultSet();
-                if(rs.next()) output.uid = rs.getInt("uid")
+                if(rs.next()) uid = rs.getInt("uid")
             }
 
+            val output = new RegistrationOutput(errorCode, errorMessage, loginAfterRegister, uid)
+            return output
+    }
+
+    def login(user: User) : LoginOutput   = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+
+
+            val cStmt: CallableStatement = session.conn.prepareCall("{call sp_login(?, ?, ?, ?)}")
+            cStmt.setString("email", user.email)
+            cStmt.registerOutParameter("loginSuccessful", Types.BIGINT)
+            cStmt.registerOutParameter("errorCode", Types.BIGINT)
+            cStmt.registerOutParameter("errorMessage", Types.VARCHAR)
+            val hadResults = cStmt.execute()
+
+            val loginSuccessful = cStmt.getInt("loginSuccessful")
+            val errorCode = cStmt.getInt("errorCode")
+            val errorMessage = cStmt.getString("errorMessage")
+
+            var uid = 0
+            if(hadResults) {
+                val rs = cStmt.getResultSet();
+                if(rs.next()) uid = rs.getInt("uid")
+            }
+
+            val output = new LoginOutput(errorCode, errorMessage, loginSuccessful, uid)
             return output
     }
 

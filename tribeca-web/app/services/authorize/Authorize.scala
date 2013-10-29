@@ -41,5 +41,7 @@ class Authorize(var authData: JsValue, var provider:Providers.Providers ) {
     }
   }
 
-
+    def isAuthResponseDataValid(): Boolean = {
+        (valdiateTokenResponseData() && validateToken() && getUserInfo() != null)
+    }
 }
