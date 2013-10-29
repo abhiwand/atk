@@ -11,7 +11,8 @@ public enum StatusCode {
     UNABLE_TO_CONNECT_TO_HBASE(7, "GRAPHBUILDER: unable to connect to hbase"),
     CLASS_INSTANTIATION_ERROR(8,  "GRAPHBUILDER: class instantiation error"),
     INDESCRIBABLE_FAILURE(9,      "GRAPHBUILDER: failure"),
-    HBASE_ERROR(10,               "GRAPHBUILDER: hbase error");
+    HBASE_ERROR(10,               "GRAPHBUILDER: hbase error"),
+    TITAN_ERROR(11,               "GRAPHBUILDER: Titan error");
 
     private final int    status;
     private final String message;

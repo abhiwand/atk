@@ -49,10 +49,16 @@ public class TableToTextGraph {
         return options;
     }
 
-    private static void showHelp(Options options) {
+    private static void exitWithHelp(Options options, String message, StatusCode statusCode) {
+
+        LOG.fatal(message);
+
         HelpFormatter h = new HelpFormatter();
         h.printHelp("TableToTextGraph", options);
+
+        GraphBuilderExit.graphbuilderFatalExitNoException(statusCode, message, LOG);
     }
+
 
     /**
      * This function checks whether required tablename, vertices, vertex properties
@@ -75,20 +81,14 @@ public class TableToTextGraph {
                 srcTableName = cmd.getOptionValue(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"));
                 LOG.info("Table Name: " + srcTableName);
             } else {
-                LOG.fatal("A table name is required");
-                showHelp(options);
-                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "A table name is required", LOG);
+                exitWithHelp(options, "A table name is required.", StatusCode.BAD_COMMAND_LINE);
             }
 
             if (cmd.hasOption("o")) {
                 outTableName = cmd.getOptionValue("o");
                 LOG.info("Output path: " + outTableName);
             } else {
-                LOG.fatal("An output path is required");
-                showHelp(options);
-                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "An output path is required", LOG);
+                exitWithHelp(options, "An output path is required", StatusCode.BAD_COMMAND_LINE);
             }
 
             if (cmd.hasOption(GBHTableConfig.config.getProperty("CMD_VERTICES_OPTNAME"))) {
@@ -96,10 +96,8 @@ public class TableToTextGraph {
                     LOG.info("Vertices: " + v);
                 }
             } else {
-                LOG.fatal("Please add column family and names for vertices and vertex properties");
-                showHelp(options);
-                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "Please add column family and names for vertices and vertex properties", LOG);
+                exitWithHelp(options, "Please add column family and names for vertices and vertex properties",
+                        StatusCode.BAD_COMMAND_LINE);
             }
 
             if (cmd.hasOption(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))) {
@@ -107,17 +105,12 @@ public class TableToTextGraph {
                     LOG.info("Edges: " + e);
                 }
             } else {
-                LOG.fatal("Please add column family and names for edges and edge properties");
-                showHelp(options);
-                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "Please add column family and names for edges and edge properties", LOG);
+                exitWithHelp(options, "Please add column family and names for edges and edge properties",
+                        StatusCode.BAD_COMMAND_LINE);
             }
 
         } catch (ParseException e) {
-            LOG.fatal("Parsing exception when parsing command line.");
-            showHelp(options);
-            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.BAD_COMMAND_LINE,
-                    "Parsing exception when parsing command line.", LOG, e);
+            exitWithHelp(options, "Parsing exception when parsing command line.", StatusCode.BAD_COMMAND_LINE);
         }
 
         assert(cmd != null);

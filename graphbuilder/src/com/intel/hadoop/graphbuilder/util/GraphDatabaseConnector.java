@@ -81,7 +81,10 @@ public class GraphDatabaseConnector {
 
         try {
             g = GraphDatabaseConnector.open("titan", c, null);
-            assert (null != g);
+            if (g == null) {
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.TITAN_ERROR,
+                        "Unable to connect to Titan", LOG);
+            }
         } catch (UnsupportedOperationException e) {
             LOG.fatal("GRAPHBUILDER ERROR: Unable to open graph database");
         } catch (NullPointerException e) {

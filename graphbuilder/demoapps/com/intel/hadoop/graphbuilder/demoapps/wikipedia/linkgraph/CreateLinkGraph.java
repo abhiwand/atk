@@ -110,10 +110,6 @@ public class CreateLinkGraph {
 
         Timer timer = new Timer();
 
-        if (null == commandLineInterface.getCmd()) {
-            commandLineInterface.showHelp("Error parsing command line options");
-        }
-
         Job job = new CreateLinkGraph().new Job();
         job = (Job) commandLineInterface.getRuntimeConfig().addConfig(job);
 
