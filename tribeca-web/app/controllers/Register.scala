@@ -12,9 +12,9 @@ object Register extends Controller {
 
     var register = Action(parse.json) {
         request =>
-            val auth = new Authorize(request.body, Providers.GooglePlus)
-            getResponse(request, auth)
 
+            val auth = new Authorize(request.body \ "auth", Providers.GooglePlus)
+            getResponse(request, auth)
     }
 
     def getResponse(req: Request[JsValue] , auth: Authorize): SimpleResult = {

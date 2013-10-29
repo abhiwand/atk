@@ -14,7 +14,7 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
         phone_number.match(/^(1-?)?(\([2-9]\d{2}\)|[2-9]\d{2})-?[2-9]\d{2}-?\d{4}$/);
 }, 'Please enter a valid phone number.');
 
-	$( form ).validate({
+	registrationForm = $( form ).validate({
 		/*** here are the validation rules. the elements are get by name attribute ( <input type="field" name="firstname" /> ) ***/
 		/********************HERE YOU CAN CUSTOMIZE THE STOCK VALIDATION RULES*******************/
 		rules: {
@@ -107,8 +107,8 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 		onkeyup: false, 
 		submitHandler: function(form) {
 			var dataString = $(form).serialize();
-			
-                    $(form).ajaxSubmit({
+            googleAuth.registerRender()
+            /*        $(form).ajaxSubmit({
                     		url:'email.php',
                             type:"post",
 							data: dataString,
@@ -116,7 +116,7 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 							success: function(){
 								 
 							}
-                    }); 
+                    }); */
             },	
 		/***** Highlight effects on validation error *****/
 		highlight: function(element, errorClass) {

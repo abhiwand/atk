@@ -1,43 +1,59 @@
 (function() {
     var po = document.createElement('script');
     po.type = 'text/javascript'; po.async = true;
-    po.src = 'https://apis.google.com/js/client:plusone.js?onload=render';
+    po.src = 'https://apis.google.com/js/client:plusone.js';
     var s = document.getElementsByTagName('script')[0];
     s.parentNode.insertBefore(po, s);
     })();
 
-function render() {
-    var clientId ={
-        "http:":"141308260505-d7utft9orcofca75fkspuit96ordo8dm.apps.googleusercontent.com",
-        "https:":"141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
-    }
-
+$(window).load(function(){
+    /*$("#googleRegisterButton").click(function(){
+        googleAuth.registerRender()
+    })*/
+})
+var googleAuth = {
+    clientId:{
+    "http:":"141308260505-d7utft9orcofca75fkspuit96ordo8dm.apps.googleusercontent.com",
+    "https:":"141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
+    },
+    loginRender: function(){
+        gapi.signin.render('googleLoginButton', {
+            'callback': 'loginCallback',
+            'clientid': this.clientId[window.location.protocol],
+            'cookiepolicy': 'single_host_origin',
+            'requestvisibleactions': 'http://schemas.google.com/AddActivity',
+            'scope': 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
+        });
+    },
+    registerRender: function(form){
     gapi.signin.render('googleRegisterButton', {
         'callback': 'registerCallback',
-        'clientid': clientId[window.location.protocol],
+        'clientid': this.clientId[window.location.protocol],
         'cookiepolicy': 'single_host_origin',
         'requestvisibleactions': 'http://schemas.google.com/AddActivity',
         'scope': 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
     });
-    gapi.signin.render('googleLoginButton', {
-        'callback': 'loginCallback',
-        'clientid': clientId[window.location.protocol],
-        'cookiepolicy': 'single_host_origin',
-        'requestvisibleactions': 'http://schemas.google.com/AddActivity',
-        'scope': 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
-    });
+    }
 }
+
 var registerCallback = function(authResult) {
-    authAjax(authResult, "register")
+    authAjax(authResult,"registration-form","ipython", "register")
 }
 
 var loginCallback = function(authResult){
-    authAjax(authResult, "login")
+    authAjax(authResult,null, "login")
 }
 
-var authAjax =  function(authResult, url){
+var authAjax =  function(authResult, formId,redirectUrl, url){
     console.log('signinCallback');
     console.log(authResult);
+    var obj = {};
+    obj.auth = authResult;
+    obj.form = {};
+    if(formId != undefined){
+        obj.form = $("#"+formId).serializeArray()
+    }
+
     if (authResult['access_token']) {
         // Successfully authorized
         // Hide the sign-in button now that the user is authorized, for example:
@@ -50,11 +66,12 @@ var authAjax =  function(authResult, url){
             contentType: "application/json",
             async: false,
             //json object to sent to the authentication url
-            data: JSON.stringify(authResult),
+            data: JSON.stringify(obj),
             //data: authResult,
             success: function () {
-
-                console.log("success")
+                if(redirectUrl != undefined){
+                    window.location.replace( window.location.protocol + "//" + window.location.host+ "/" + redirectUrl)
+                }
             }
         })
     } else if (authResult['error']) {
