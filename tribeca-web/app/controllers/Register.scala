@@ -10,7 +10,7 @@ import controllers.Session._
 
 object Register extends Controller {
 
-    var register = Authenticated(parse.json) {
+    var register = Action(parse.json) {
         request =>
             //Registration.validate(request.body \ "form")
             val auth = new Authorize(request.body \ "auth", Providers.GooglePlus)
