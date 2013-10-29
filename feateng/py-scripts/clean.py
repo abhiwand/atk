@@ -20,6 +20,7 @@ try:
 except:
     pass
 
+SUPPORTED_CLEAN_STRATEGIES = ['any', 'all']
 
 def validate_args(cmd_line_args):
     errors=[]
@@ -33,7 +34,7 @@ def main(argv):
     parser.add_argument('-i', '--input', dest='input', help='the input HBase table', required=True)
     parser.add_argument('-o', '--output', dest='output', help='the output HBase table', required=True)
     parser.add_argument('-r', '--replace', dest='replacement_value', help='value to replace the missing values for the given feature (available special constants: avg)')
-    parser.add_argument('-a', '--any', dest='should_clean_any', help='clean all rows with a missing value for any of the features', action='store_true', default=False)
+    parser.add_argument('-s', '--strategy', dest='clean_strategy', help='any: if any missing values are present drop that record, all: if all values are missing, drop that record')
 
     cmd_line_args = parser.parse_args()
     print cmd_line_args
@@ -76,12 +77,14 @@ def main(argv):
     if cmd_line_args.feature_to_clean:  
         args += ['-f', cmd_line_args.feature_to_clean]
         
-    if cmd_line_args.should_clean_any:  
-        args += ['-a',  str(cmd_line_args.should_clean_any)]
+    if cmd_line_args.clean_strategy:  
+        if not cmd_line_args.clean_strategy in SUPPORTED_CLEAN_STRATEGIES:
+            raise Exception("%s is not a supported clean strategy. Supported strategies are %s" % (cmd_line_args.clean_strategy, SUPPORTED_CLEAN_STRATEGIES))
+        args += ['-s',  str(cmd_line_args.clean_strategy)]
         
     if cmd_line_args.replacement_value:  
         args += [ '-r' , cmd_line_args.replacement_value]
-                
+    
     #start the pig process
     subprocess.call(args)
 

@@ -199,7 +199,9 @@ def validate_length():
         for key, data in t.scan():
             assert int(data['etl-cf:length']) == len(data['etl-cf:state_name'])    
 #############################################################################
-
+print '###########################'
+print 'Validating String Functions'
+print '###########################'
 #cleanup test table
 with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
     hbase_client.drop_create_table(TEST_TABLE, [CONFIG_PARAMS['etl-column-family']])
@@ -316,6 +318,9 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         except:
             pass
    
+print '###########################'
+print 'DONE Validating String Functions'
+print '###########################'
 
 # python py-scripts/transform.py -i us_states -o endswith -f state_name  -n endswith -t ENDSWITH -a '["icut"]'
 # python py-scripts/transform.py -i us_states -o equalsIgnoreCase -f state_name  -n equalsIgnoreCase -t EqualsIgnoreCase -a '["connecticut"]'

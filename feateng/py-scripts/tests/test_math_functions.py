@@ -44,7 +44,10 @@ def validate_abs():
             except OverflowError:
                 assert data['etl-cf:abs_f3'] == 'Infinity', "%s should have been Infinity" % (data['etl-cf:abs_f3'])
 #############################################################################
-    
+print '###########################'
+print 'Validating Math Functions'
+print '###########################'
+
 #cleanup test tables
 with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
     hbase_client.drop_create_table(TEST_TABLE, [CONFIG_PARAMS['etl-column-family']])
@@ -80,3 +83,6 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
             table.delete(temp)#also remove the schema info
         except:
             pass
+print '###########################'
+print 'DONE Validating Math Functions'
+print '###########################'        

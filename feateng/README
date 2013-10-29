@@ -26,7 +26,9 @@ Import some datasets:
 	python py-scripts/import_json.py -i /tmp/test.json -o test_json_import
 	
 Then clean the dataset:
-w	python py-scripts/clean.py -f feature_to_clean -i input_table -o output_table [drops all missing values, to replace them use -r [VALUE | avg]] 
+	python py-scripts/clean.py -f feature_to_clean -i input_table -o output_table [drops all missing values, to replace them use -r [VALUE | avg]]
+	python py-scripts/clean.py  -i dummy_table -o dummy_table_cleaned -s all [drop a record if all features are missing/drop empty records]
+	python py-scripts/clean.py  -i dummy_table -o dummy_table_cleaned -s any [drop a record if any of its features is missing/drop empty records]
 
 Then run some transforms:
 	python py-scripts/transform.py -i input_table -o input_table_transformed -f feature_to_transform -t EXP -n transformed_feature_name

@@ -31,12 +31,20 @@ class ETLSchema:
 #         print "LOADED",self.feature_names,self.feature_types
     
     '''
-    Saves schema to HBase for the given table
+    Saves schema to HBase for the given table. If an entry already exists in ETL_SCHEMA for the
+    given table, than that entry is overwritten.
     ''' 
     def save_schema(self, table_name):
         with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
             if not hbase_client.is_table_readable(CONFIG_PARAMS['etl-schema-table']):#create if etl schema table doesn't exist
-                hbase_client.drop_create_table(CONFIG_PARAMS['etl-schema-table'] , [CONFIG_PARAMS['etl-column-family']]) 
+                hbase_client.drop_create_table(CONFIG_PARAMS['etl-schema-table'] , [CONFIG_PARAMS['etl-column-family']])
+                
+            #check if an entry already exists in ETL_SCHEMA
+            row = hbase_client.get(CONFIG_PARAMS['etl-schema-table'], table_name)
+            if len(row) > 0:#there is an entry for this table in ETL_SCHEMA, overwrite it
+#                 print "An entry already exists in %s for table %s, overwriting it" % (CONFIG_PARAMS['etl-schema-table'], table_name)
+                hbase_client.delete(CONFIG_PARAMS['etl-schema-table'], table_name)
+                
             data_dict = {}
             for i,feature_name in enumerate(self.feature_names):
                 feature_type = self.feature_types[i]

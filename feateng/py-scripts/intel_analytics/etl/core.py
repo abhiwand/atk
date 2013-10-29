@@ -146,7 +146,7 @@ class BigDataFrame:
     """
     Drop the missing values for a particular feature. If replace_with is specified, the missing values are replaced with that value.
     """ 
-    def __drop(self, replace_with=None, in_place=False):
+    def __drop(self, how=None, replace_with=None, in_place=False):
         if in_place:
             table_name = self.table_name#output table is the same as input
         else:
@@ -179,7 +179,8 @@ class BigDataFrame:
             args += ['-f', self.source_feature]      
             delattr(self, 'source_feature')#remove source feature attr.   
         else:
-            args += ['-a', 'True']#drop any for all features
+            assert how != None, 'Please specify a cleaning strategy with the how argument'
+            args += ['-s', how]#pass clean strategy
           
         if dry_run:
             print args
@@ -201,16 +202,17 @@ class BigDataFrame:
         return self
 
     """
-    drop missing values
+    drop missing values.
+        how : 'any': if any missing values are present drop that record, 'all': if all values are missing, drop that record
     """
-    def dropna(self):
-        return self.__drop(replace_with=None, in_place=False)
+    def dropna(self, how=None):
+        return self.__drop(how=how, replace_with=None, in_place=False)
                 
     """
     Replace the missing values of a feature with the given replacement_value
     """
     def fillna(self, replacement_value, in_place=False):
-        return self.__drop(replace_with=replacement_value, in_place=in_place)
+        return self.__drop(how=None, replace_with=replacement_value, in_place=in_place)
     
     """
     Apply a transformation to a particular field. transformation_args is a list of arguments to the function.

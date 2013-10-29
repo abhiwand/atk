@@ -22,6 +22,10 @@ TEST_TRANSFORM_TABLE='worldbank_csv_transformed'
 TEST_STND_TABLE='test_standardization_dataset_csv'
 TEST_STND_TRANSFORM_TABLE='test_standardization_dataset_csv_transformed'
 
+print '###########################'
+print 'Validating Transform Functions'
+print '###########################'
+
 print "Importing %s for testing transform scripts"%(worldbank_data_csv_path)                                                            
 commands.getoutput("cp %s /tmp/worldbank.csv" % (worldbank_data_csv_path))# WE ARE IN LOCAL MODE, DON'T FORGET!
   
@@ -176,3 +180,6 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         hbase_client.connection.delete_table(TEST_STND_TRANSFORM_TABLE, disable=True)
     except:
         pass
+print '###########################'
+print 'DONE Validating Transform Functions'
+print '###########################'    

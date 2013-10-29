@@ -123,6 +123,22 @@ def validate_dropna_any(big_frame):
                 assert data[col] != ''    
             nRecords+=1
     assert nRecords == 49, 'nRecords=%d should be 49'%nRecords
+    
+def validate_dropna_all(big_frame):
+    print 'validate_dropna_all, table_name: %s' % (big_frame.table_name)
+    nRecords = 0
+    with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+        t = hbase_client.connection.table(big_frame.table_name)
+        for key, data in t.scan():
+            all_features_missing = True
+            for col in cols:
+                if data[col] != '':
+                    all_features_missing = False
+                    break
+            assert not all_features_missing, 'Found a record with all features null %s' % (data)
+            nRecords+=1
+    assert nRecords == 1356, 'nRecords=%d should be 1356'%nRecords
+        
 
 def validate_internet_fillna_avg(big_frame):
     print 'validate_internet_fillna_avg, table_name: %s' % (big_frame.table_name)
@@ -135,6 +151,12 @@ def validate_internet_fillna_avg(big_frame):
     assert nRecords == 1362, 'nRecords=%d should be 1362'%nRecords
 
 ##############################################################################
+print '###########################'
+print 'Validating Clean API'
+print '###########################'
+
+intermediate_tables=[]
+
 big_frame = BigDataFrame() # create an empty data frame
 commands.getoutput("cp %s /tmp/worldbank.csv" % (worldbank_data_csv_path))
 schema_definition = 'country:chararray,year:chararray,'+\
@@ -147,33 +169,45 @@ initial_table = big_frame.table_name
 validate_imported(big_frame)
 print "DONE validate_imported"
 
+intermediate_tables.append(big_frame.table_name)
 big_frame['country'].fillna('MISSING_COUNTRY')
 validate_country_fillna(big_frame)
 print "DONE validate_country_fillna"
 
+intermediate_tables.append(big_frame.table_name)
 big_frame.table_name=initial_table#point to the initial table
 big_frame['country'].dropna()
 validate_country_dropna(big_frame)
 print "DONE validate_country_dropna"
  
+intermediate_tables.append(big_frame.table_name)
 big_frame.table_name=initial_table#point to the initial table
-big_frame.dropna()#drop any
+big_frame.dropna('any')#drop if any of the features is missing
 validate_dropna_any(big_frame)
 print "DONE validate_dropna_any"
 
+intermediate_tables.append(big_frame.table_name)
+big_frame.table_name=initial_table#point to the initial table
+big_frame.dropna('all')#drop if all features are missing
+validate_dropna_all(big_frame)
+print "DONE validate_dropna_all"
+
+intermediate_tables.append(big_frame.table_name)
 big_frame.table_name=initial_table#point to the initial table
 big_frame['internet_users'].fillna('avg')#fill with average
 validate_internet_fillna_avg(big_frame)
 print "DONE validate_internet_fillna_avg"
  
+intermediate_tables.append(big_frame.table_name)
 big_frame.table_name=initial_table#point to the initial table
 big_frame['internet_users'].fillna('avg', in_place=True)#fill with average
 validate_internet_fillna_avg(big_frame)
 print "DONE validate_internet_fillna_avg, in_place=True"
  
-print 'Cleaning up the temp tables %s & their schema definitions' % (big_frame.lineage)
+intermediate_tables.append(big_frame.table_name)
+print 'Cleaning up the temp tables %s & their schema definitions' % (intermediate_tables)
 with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-    for temp in big_frame.lineage:
+    for temp in intermediate_tables:
         try:
             hbase_client.connection.delete_table(temp, disable=True)
             print 'deleted table',temp
@@ -184,3 +218,6 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
             table.delete(temp)#also remove the schema info
         except:
             pass
+print '###########################'
+print 'DONE Validating Clean API'
+print '###########################'        
