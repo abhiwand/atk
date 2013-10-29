@@ -2,11 +2,7 @@
 SETTING UP THE ENVIRONMENT
 ==========================
 	Set the environment variables:
-		export FEATURE_ENG_HOME=/home/user/nezih/workspace/feature_engineering
-		export PIG_HOME=/home/user/pig-0.12.0
-		export PATH=$PIG_HOME/bin:$PATH
-		export JYTHONPATH=$FEATURE_ENG_HOME/py-scripts/                         
-		(REQUIRED TO SHIP THE argparse_lib.py module to the worker nodes)
+		source feateng/feateng-env.sh
 	
 	Link $PIG_HOME/lib/jython-standalone-2.5.3.jar from $HADOOP_HOME/lib & restart Hadoop
 		Go to $HADOOP_HOME/lib and run: ln -s $PIG_HOME/lib/jython-standalone-2.5.3.jar
@@ -24,7 +20,7 @@ RUNNING THE SCRIPTS
 ==========================
 Import some datasets:
 	python py-scripts/import.py -i /tmp/sample_shaw.log -o shaw_table -l '\n' -c custom-parsers/shaw_udfs.py -s 'timestamp:chararray,event_type:chararray,method:chararray,duration:double,item_id:chararray,src_tms:chararray,dst_tms:chararray'
-	python py-scripts/import_csv.py -i /tmp/test.csv -o dummy_table -s 'f1:chararray,f2:chararray,f3:double,f4:long' (If your CSV contains a header line as the first line you can skip loading that line with the -k flag)
+	python py-scripts/import_csv.py -i /tmp/test.csv -o dummy_table -s 'f1:chararray,f2:chararray,f3:double,f4:long' -k (-k flag is used to skip the header of the CSV file)
 	python py-scripts/import_csv.py -i /tmp/us_states.csv -o us_states -s 'state_name:chararray' -k
 	python py-scripts/import_csv.py -i /tmp/test.tsv -o dummy_table -d '\t' -s 'f1:chararray,f2:chararray,f3:double,f4:long' -k # To run a tab separated file specify the delimeter as \t
 	python py-scripts/import_json.py -i /tmp/test.json -o test_json_import
@@ -93,8 +89,8 @@ OTHER NOTES
 ==========================
 	Tested on Hadoop 1.0.1 and pig-0.12.0
 	We depend on datafu-0.0.10.jar (https://github.com/linkedin/datafu). We have already put datafu-0.0.10.jar under feature_engineering/lib
-	If you run 'mvn clean package' directly TestErrorHandling.testErroneousJavaUDF() will fail since that test case registers the 'target/TRIB-FeatureEngineering-0.0.1-SNAPSHOT.jar'
-	in the tested pig script. So you need to first skip tests during mvn packaging with 'mvn clean package -DskipTests -P tribeca-one', and then run the tests with 'mvn test -P tribeca-one -Dsurefire.useFile=false'.
+	If you run 'mvn clean package' directly TestErrorHandling.testErroneousJavaUDF() will fail since that test case registers the 'target/Intel-FeatureEngineering-0.0.1-SNAPSHOT.jar'
+	in the tested pig script. So you need to first skip tests during mvn packaging with 'mvn clean package -DskipTests -P IntelAnalytics-one', and then run the tests with 'mvn test -P IntelAnalytics-one -Dsurefire.useFile=false'.
 	To run individual tests: mvn -Dtest=TestShawETL test
 	To show stack traces use -Dsurefire.useFile=false 
 	To get rid of jython logging: export PIG_OPTS="-Dpython.verbose=error"

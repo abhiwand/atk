@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>TRIB-FeatureEngineering</groupId>
-	<artifactId>TRIB-FeatureEngineering</artifactId>
+	<groupId>Intel-FeatureEngineering</groupId>
+	<artifactId>Intel-FeatureEngineering</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<build>
 		<plugins>
@@ -20,7 +20,7 @@
 	<!-- build properties -->
 	<profiles>
 		<profile>
-			<id>tribeca-one</id>
+			<id>IntelAnalytics-one</id>
 			<activation>
 				<activeByDefault>false</activeByDefault>
 			</activation>
@@ -30,7 +30,7 @@
 			</properties>
 		</profile>
 		<profile>
-			<id>tribeca-two</id>
+			<id>IntelAnalytics-two</id>
 			<activation>
 				<activeByDefault>true</activeByDefault>
 			</activation>
@@ -50,9 +50,9 @@
 
 	<!-- global properties -->
 	<properties>
-		<pig.version>0.11.1</pig.version>
-		<pigunit.version>0.11.1</pigunit.version>
-		<hbase.version>0.94.0</hbase.version>
+		<pig.version>0.12.0</pig.version>
+		<pigunit.version>0.12.0</pigunit.version>
+		<hbase.version>0.94.12</hbase.version>
 	</properties>
 
 	<dependencies>

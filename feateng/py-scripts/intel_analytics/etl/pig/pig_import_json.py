@@ -1,8 +1,8 @@
 import sys
 import os
 from org.apache.pig.scripting import Pig
-from tribeca_etl.config import CONFIG_PARAMS
-from tribeca_etl.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
+from intel_analytics.etl.config import CONFIG_PARAMS
+from intel_analytics.etl.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
 
 """
 Currently we don't get any schema info from the user. We just load the whole json as a possibly nested map and dump it as is to HBase.

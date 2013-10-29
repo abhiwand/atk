@@ -7,10 +7,10 @@ import sys
 import subprocess
 from time import sleep
 import commands
-from tribeca_etl.functions import EvalFunctions
-from tribeca_etl.hbase_client import ETLHBaseClient
-from tribeca_etl.config import CONFIG_PARAMS
-from tribeca_etl.core import *
+from intel_analytics.etl.functions import EvalFunctions
+from intel_analytics.etl.hbase_client import ETLHBaseClient
+from intel_analytics.etl.config import CONFIG_PARAMS
+from intel_analytics.etl.core import *
 
 #to get rid of jython logging
 os.environ["PIG_OPTS"] = "-Dpython.verbose=error"

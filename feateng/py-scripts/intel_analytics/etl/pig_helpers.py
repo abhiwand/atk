@@ -1,4 +1,4 @@
-from tribeca_etl.config import CONFIG_PARAMS
+from intel_analytics.etl.config import CONFIG_PARAMS
 
 '''
 Returns a schema string in Pig's format given a comma separated feature names and types string

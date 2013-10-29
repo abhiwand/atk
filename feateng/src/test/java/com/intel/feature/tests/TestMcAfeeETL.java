@@ -20,7 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.tribeca.feature.tests;
+package com.intel.feature.tests;
 
 import java.io.IOException;
 

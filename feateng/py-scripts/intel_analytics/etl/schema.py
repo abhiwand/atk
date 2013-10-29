@@ -1,5 +1,5 @@
-from tribeca_etl.config import CONFIG_PARAMS
-from tribeca_etl.hbase_client import ETLHBaseClient
+from intel_analytics.etl.config import CONFIG_PARAMS
+from intel_analytics.etl.hbase_client import ETLHBaseClient
 import re
 
 class ETLSchema:

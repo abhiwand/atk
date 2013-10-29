@@ -1,7 +1,7 @@
 import sys
 from org.apache.pig.scripting import Pig
-from tribeca_etl.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
-from tribeca_etl import pig_helpers
+from intel_analytics.etl.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
+from intel_analytics.etl import pig_helpers
 
 def main(argv):
     parser = ArgumentParser(description='imports a big dataset from HDFS to HBase')

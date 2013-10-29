@@ -20,7 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.tribeca.feature.tests;
+package com.intel.feature.tests;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,16 +62,16 @@ public class TestErrorHandling {
 
 	@Test
 	public void testErroneousJavaUDF() throws IOException, ParseException {
-		File f = new File("target/TRIB-FeatureEngineering-0.0.1-SNAPSHOT.jar");
+		File f = new File("target/Intel-FeatureEngineering-0.0.1-SNAPSHOT.jar");
 		if (!f.exists()) {
-			String errorMessage = "target/TRIB-FeatureEngineering-0.0.1-SNAPSHOT.jar doesn't exist. We need that jar to run this test case. So if you are running the tests "
+			String errorMessage = "target/Intel-FeatureEngineering-0.0.1-SNAPSHOT.jar doesn't exist. We need that jar to run this test case. So if you are running the tests "
 					+ "with maven, first please run maven with -DskipTests to package the jar and then run the tests.";
 			throw new RuntimeException(errorMessage);
 		}
 		System.out.println("Testing erroneous java udf");
 
 		String[] script = {
-				"REGISTER target/TRIB-FeatureEngineering-0.0.1-SNAPSHOT.jar",
+				"REGISTER target/Intel-FeatureEngineering-0.0.1-SNAPSHOT.jar",
 				"parsed_val = LOAD 'hbase://shaw_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:timestamp etl-cf:item_id etl-cf:method etl-cf:src_tms etl-cf:event_type etl-cf:dst_tms etl-cf:duration', '-loadKey true') as (key:chararray, timestamp:chararray, item_id:chararray, method:chararray, src_tms:chararray, event_type:chararray, dst_tms:chararray, duration:chararray);",
 				"squared_duration = FOREACH parsed_val GENERATE com.intel.pig.udf.ErroneousEvalFunc(duration);" };
 

@@ -1,4 +1,4 @@
-export FEATURE_ENG_HOME=/home/user/nezih/workspace/feature_engineering
+export FEATURE_ENG_HOME=/home/user/nezih/workspace/source_code/feateng
 export PIG_HOME=/home/user/pig-0.12.0
 export PATH=$PIG_HOME/bin:$PATH
 export JYTHONPATH=$FEATURE_ENG_HOME/py-scripts/

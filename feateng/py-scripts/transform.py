@@ -1,10 +1,10 @@
 import sys
 import re
 import subprocess
-from tribeca_etl.hbase_client import ETLHBaseClient
-from tribeca_etl.argparse_lib import ArgumentParser
-from tribeca_etl.config import CONFIG_PARAMS
-from tribeca_etl.schema import ETLSchema
+from intel_analytics.etl.hbase_client import ETLHBaseClient
+from intel_analytics.etl.argparse_lib import ArgumentParser
+from intel_analytics.etl.config import CONFIG_PARAMS
+from intel_analytics.etl.schema import ETLSchema
 
 def validate_args(cmd_line_args):
     errors = []
@@ -87,7 +87,7 @@ def main(argv):
         if not hbase_client.is_table_readable(cmd_line_args.output):          
             hbase_client.drop_create_table(cmd_line_args.output , [CONFIG_PARAMS['etl-column-family']])
                         
-    args = ['pig', 'py-scripts/tribeca_etl/pig/pig_transform.py', '-f', cmd_line_args.feature_to_transform, 
+    args = ['pig', 'py-scripts/intel_analytics/etl/pig/pig_transform.py', '-f', cmd_line_args.feature_to_transform, 
                         '-i', cmd_line_args.input, '-o', cmd_line_args.output, 
                         '-t', cmd_line_args.transformation_function, '-n', cmd_line_args.new_feature_name, 
                          '-u', feature_names_as_str, '-r', feature_types_as_str]

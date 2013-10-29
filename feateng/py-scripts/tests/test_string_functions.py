@@ -5,8 +5,8 @@ import commands
 import math
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(base_script_path + '/..')
-from tribeca_etl.hbase_client import ETLHBaseClient
-from tribeca_etl.config import CONFIG_PARAMS
+from intel_analytics.etl.hbase_client import ETLHBaseClient
+from intel_analytics.etl.config import CONFIG_PARAMS
 
 print "Using", CONFIG_PARAMS
 print 'Starting ...'
