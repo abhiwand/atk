@@ -1,5 +1,5 @@
 """
-Runs all the ETL scripts and validates the output of them.
+Validates all the ETL functionality.
 """
 
 import os
@@ -43,8 +43,6 @@ subprocess.call(['python', os.path.join(test_scripts_path, 'test_string_function
 
 #test math functions
 subprocess.call(['python', os.path.join(test_scripts_path, 'test_math_functions.py')])
-
-
  
 print '#################################'
 print 'Done validating ETL scripts'

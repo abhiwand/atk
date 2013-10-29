@@ -8,7 +8,7 @@ sys.path.append(os.path.join(base_script_path, '..'))
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.config import CONFIG_PARAMS
 
-us_states_csv_path = os.path.join(base_script_path, '..', '..', 'test-data/us_states.csv')
+us_states_csv_path = os.path.join(base_script_path, '..', '..', 'test-data', 'us_states.csv')
 py_scripts_path = os.path.join(base_script_path, '..')
 
 TEST_TABLE='us_states'
@@ -205,9 +205,8 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
     hbase_client.drop_create_table(TEST_TABLE, [CONFIG_PARAMS['etl-column-family']])
              
 print "------------------------------------TESTING IMPORT SCRIPTS------------------------------------"
-commands.getoutput('hadoop fs -rmr /tmp/us_states.csv')
-commands.getoutput('hadoop fs -put %s /tmp/us_states.csv' % (us_states_csv_path))
-print "Uploaded %s to HDFS:/tmp/us_states.csv" % (us_states_csv_path)
+commands.getoutput('cp %s /tmp/us_states.csv' % (us_states_csv_path))
+print "Copied %s to /tmp/us_states.csv" % (us_states_csv_path)
   
 subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/us_states.csv',
                  '-o', TEST_TABLE, '-s', 'state_name:chararray', '-k'])

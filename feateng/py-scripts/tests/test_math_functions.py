@@ -8,8 +8,10 @@ sys.path.append(os.path.join(base_script_path, '..'))
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.config import CONFIG_PARAMS
 
+test_csv_path = os.path.join(base_script_path, '..', '..', 'test-data', 'test.csv')
+py_scripts_path = os.path.join(base_script_path, '..')
+
 TEST_TABLE='test_math'
-SHOULD_IMPORT=True
 TEMP_TABLES=['test_math', 'abs_table']
 
 print 'Cleaning up all the temp tables & their schema definitions'
@@ -43,26 +45,24 @@ def validate_abs():
                 assert data['etl-cf:abs_f3'] == 'Infinity', "%s should have been Infinity" % (data['etl-cf:abs_f3'])
 #############################################################################
     
-if SHOULD_IMPORT:
-    #cleanup test tables
-    with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        hbase_client.drop_create_table(TEST_TABLE, [CONFIG_PARAMS['etl-column-family']])
-                 
-    print "------------------------------------TESTING IMPORT SCRIPTS------------------------------------"
-    commands.getoutput('hadoop fs -rmr /tmp/test.csv')
-    commands.getoutput('hadoop fs -put test-data/test.csv /tmp/test.csv')
-    print "Uploaded /tmp/test.csv to HDFS:/tmp/test.csv"
+#cleanup test tables
+with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+    hbase_client.drop_create_table(TEST_TABLE, [CONFIG_PARAMS['etl-column-family']])
+             
+print "------------------------------------TESTING IMPORT SCRIPTS------------------------------------"
+commands.getoutput('cp %s /tmp/test.csv' % (test_csv_path))
+print "Copied %s to /tmp/test.csv" % (test_csv_path)
+  
+subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/test.csv',
+                 '-o', TEST_TABLE, '-s', 'f1:chararray,f2:chararray,f3:double,f4:long', '-k'])
       
-    subprocess.call(['python', 'py-scripts/import_csv.py', '-i', '/tmp/test.csv',
-                     '-o', TEST_TABLE, '-s', 'f1:chararray,f2:chararray,f3:double,f4:long', '-k'])
-          
-    with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        data_dict = hbase_client.get(TEST_TABLE,'1')#get the first row
-        print "got", data_dict
-        assert data_dict[CONFIG_PARAMS['etl-column-family']+'f1'] == 'test'
+with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+    data_dict = hbase_client.get(TEST_TABLE,'1')#get the first row
+    print "got", data_dict
+    assert data_dict[CONFIG_PARAMS['etl-column-family']+'f1'] == 'test'
   
             
-args = ['python', 'py-scripts/transform.py', '-i', TEST_TABLE , '-o', 'abs_table', '-f', 'f3', '-n', 'abs_f3', '-t', 'ABS', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE , '-o', 'abs_table', '-f', 'f3', '-n', 'abs_f3', '-t', 'ABS', '-k']
 subprocess.call(args)
 validate_abs()
 print 'Validated ABS'

@@ -23,8 +23,7 @@ TEST_STND_TABLE='test_standardization_dataset_csv'
 TEST_STND_TRANSFORM_TABLE='test_standardization_dataset_csv_transformed'
 
 print "Importing %s for testing transform scripts"%(worldbank_data_csv_path)                                                            
-commands.getoutput("hadoop fs -rmr /tmp/worldbank.csv")
-commands.getoutput("hadoop fs -put %s /tmp/worldbank.csv" % (worldbank_data_csv_path))
+commands.getoutput("cp %s /tmp/worldbank.csv" % (worldbank_data_csv_path))# WE ARE IN LOCAL MODE, DON'T FORGET!
   
 schema_definition = 'country:chararray,year:chararray,'+\
                     'co2_emission:double,electric_consumption:double,'+\
@@ -126,8 +125,7 @@ print "Validated the org.apache.pig.piggybank.evaluation.math.POW transform"
 
 print "Importing %s for testing STND transform"%(test_standardization_dataset_csv_path)  
 
-commands.getoutput("hadoop fs -rmr /tmp/test_standardization_dataset.csv")
-commands.getoutput("hadoop fs -put %s /tmp/test_standardization_dataset.csv" % (test_standardization_dataset_csv_path))
+commands.getoutput("cp %s /tmp/test_standardization_dataset.csv" % (test_standardization_dataset_csv_path))
 schema_definition = 'value:double'
                        
 subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/test_standardization_dataset.csv',
@@ -148,15 +146,15 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
     t = hbase_client.connection.table(TEST_STND_TRANSFORM_TABLE)
     for key, data in t.scan():
         if data['etl-cf:value'] == '-5.0':
-            assert data['etl-cf:value'] == '-1.7419230835145583', "data['etl-cf:value']=%s must have been -1.7419230835145583" % (data['etl-cf:value'])
+            assert data['etl-cf:stnd_value'] == '-1.7419230835145583', "data['etl-cf:stnd_value']=%s must have been -1.7419230835145583" % (data['etl-cf:stnd_value'])
         if data['etl-cf:value'] == '6.0':
-            assert data['etl-cf:value'] == '0.5948030041269223', "data['etl-cf:value']=%s must have been 0.5948030041269223" % (data['etl-cf:value'])
+            assert data['etl-cf:stnd_value'] == '0.5948030041269223', "data['etl-cf:stnd_value']=%s must have been 0.5948030041269223" % (data['etl-cf:stnd_value'])
         if data['etl-cf:value'] == '9.0':
-            assert data['etl-cf:value'] == '1.2320919371200534', "data['etl-cf:value']=%s must have been 1.2320919371200534" % (data['etl-cf:value'])
+            assert data['etl-cf:stnd_value'] == '1.2320919371200534', "data['etl-cf:stnd_value']=%s must have been 1.2320919371200534" % (data['etl-cf:stnd_value'])
         if data['etl-cf:value'] == '2.0':
-            assert data['etl-cf:value'] == '-0.2549155731972525', "data['etl-cf:value']=%s must have been -0.2549155731972525" % (data['etl-cf:value'])
+            assert data['etl-cf:stnd_value'] == '-0.2549155731972525', "data['etl-cf:stnd_value']=%s must have been -0.2549155731972525" % (data['etl-cf:stnd_value'])
         if data['etl-cf:value'] == '4.0':
-            assert data['etl-cf:value'] == '0.16994371546483492', "data['etl-cf:value']=%s must have been 0.16994371546483492" % (data['etl-cf:value'])
+            assert data['etl-cf:stnd_value'] == '0.16994371546483492', "data['etl-cf:stnd_value']=%s must have been 0.16994371546483492" % (data['etl-cf:stnd_value'])
             
 print "Validated the STND transform"  
                         

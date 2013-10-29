@@ -136,8 +136,7 @@ def validate_internet_fillna_avg(big_frame):
 
 ##############################################################################
 big_frame = BigDataFrame() # create an empty data frame
-commands.getoutput("hadoop fs -rmr /tmp/worldbank.csv")
-commands.getoutput("hadoop fs -put %s /tmp/worldbank.csv" % (worldbank_data_csv_path))
+commands.getoutput("cp %s /tmp/worldbank.csv" % (worldbank_data_csv_path))
 schema_definition = 'country:chararray,year:chararray,'+\
                     'co2_emission:double,electric_consumption:double,'+\
                     'energy_use:double,fertility:double,gni:double,'+\
@@ -185,5 +184,3 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
             table.delete(temp)#also remove the schema info
         except:
             pass
- 
-commands.getoutput("hadoop fs -rmr /tmp/worldbank.csv")

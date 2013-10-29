@@ -123,9 +123,14 @@ class BigDataFrame:
         
         script_path = os.path.join(base_script_path,'pig','pig_import_csv.py')
         
-        args = ['pig', '-4', pig_log4j_path, script_path, '-i', csv_file, '-o', df_name, 
+        args = ['pig']
+
+        if local_run:
+            args += ['-x', 'local']
+        
+        args += ['-4', pig_log4j_path, script_path, '-i', csv_file, '-o', df_name, 
                 '-f', feature_names_as_str, '-t', feature_types_as_str]
-                
+                       
         if skip_header:  
             args += ['-k']  
         
