@@ -27,20 +27,20 @@ os.environ["PIG_OPTS"] = "-Dpython.verbose=error"
 test_scripts_path = os.path.join(base_script_path)
 
 print '###########################'
-print 'Validating the ETL scripts'
+print 'Validating ETL scripts'
 print '###########################'
-# #first test import & cleaning scripts
-# subprocess.call(['python', os.path.join(test_scripts_path, 'test_cleaning_API.py')])
-# 
-# #test string functions
+#first test import & cleaning scripts
+subprocess.call(['python', os.path.join(test_scripts_path, 'test_cleaning_API.py')])
+ 
+#test string functions
 subprocess.call(['python', os.path.join(test_scripts_path, 'test_string_functions.py')])
 
-# #test math functions
-# subprocess.call(['python', os.path.join(test_scripts_path, 'test_math_functions.py')])
+#test math functions
+subprocess.call(['python', os.path.join(test_scripts_path, 'test_math_functions.py')])
 
-#test transform functions
-# subprocess.call(['python', os.path.join(test_scripts_path, 'test_transform_API.py')])
+# test transform functions
+subprocess.call(['python', os.path.join(test_scripts_path, 'test_transform_API.py')])
  
 print '#################################'
-print 'Done validating the ETL scripts'
+print 'Done validating ETL scripts'
 print '#################################'
