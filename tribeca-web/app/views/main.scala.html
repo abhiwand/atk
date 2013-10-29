@@ -1,11 +1,11 @@
-@(title: String)(content: Html)
+@(title: String, user: models.database.User)(content: Html)
 <!DOCTYPE html>
 <html>
     @head(title)
 
     <body class='homepage'>
         <div id='wrapper'>
-            @header()
+            @header(user)
             <div id='main' role='main'>
             @content
             </div>

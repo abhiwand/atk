@@ -1,4 +1,4 @@
-@()
+@(user: models.database.User)
 
 <header id='header'>
     <div class='container'>
@@ -14,7 +14,7 @@
                     <img alt="Tribeca" width="117" height="39" src="assets/images/tribeca_logo_10-2.png" />
                 </a>
             </div>
-            @menu()
+            @menu(user)
         </nav>
     </div>
 </header>
