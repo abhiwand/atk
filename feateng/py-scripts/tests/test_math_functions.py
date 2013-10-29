@@ -4,18 +4,9 @@ import subprocess
 import commands
 import math
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(base_script_path + '/..')
+sys.path.append(os.path.join(base_script_path, '..'))
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.config import CONFIG_PARAMS
-
-print "Using", CONFIG_PARAMS
-print 'Starting ...'
-
-#first set up the environment variables
-os.environ["PATH"] = '/home/user/pig-0.12.0/bin' + ':' + os.environ["PATH"]
-os.environ["JYTHONPATH"]  = os.getcwd() + '/py-scripts/' # need for shipping the scripts that we depend on to worker nodes
-
-print ">> JYTHONPATH",os.environ["JYTHONPATH"]
 
 TEST_TABLE='test_math'
 SHOULD_IMPORT=True

@@ -4,22 +4,14 @@ import subprocess
 import commands
 import math
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(base_script_path + '/..')
+sys.path.append(os.path.join(base_script_path, '..'))
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.config import CONFIG_PARAMS
 
-print "Using", CONFIG_PARAMS
-print 'Starting ...'
-
-#first set up the environment variables
-os.environ["PATH"] = '/home/user/pig-0.12.0/bin' + ':' + os.environ["PATH"]
-os.environ["JYTHONPATH"]  = os.getcwd() + '/py-scripts/' # need for shipping the scripts that we depend on to worker nodes
-
-print ">> JYTHONPATH",os.environ["JYTHONPATH"]
+us_states_csv_path = os.path.join(base_script_path, '..', '..', 'test-data/us_states.csv')
+py_scripts_path = os.path.join(base_script_path, '..')
 
 TEST_TABLE='us_states'
-SHOULD_IMPORT=False
-
 SUBSTR_LENGTH=3
 TEMP_TABLES=['endswith','equalsIgnoreCase', 'indexof', 'lastindexof',
              'lower', 'ltrim', 'regex', 'extract', 'regex_extract_all',
@@ -207,107 +199,106 @@ def validate_length():
         for key, data in t.scan():
             assert int(data['etl-cf:length']) == len(data['etl-cf:state_name'])    
 #############################################################################
-    
-if SHOULD_IMPORT:
-    #cleanup test tables
-    with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        hbase_client.drop_create_table(TEST_TABLE, [CONFIG_PARAMS['etl-column-family']])
-                 
-    print "------------------------------------TESTING IMPORT SCRIPTS------------------------------------"
-    commands.getoutput('hadoop fs -rmr /tmp/us_states.csv')
-    commands.getoutput('hadoop fs -put test-data/us_states.csv /tmp/us_states.csv')
-    print "Uploaded /tmp/us_states.csv to HDFS:/tmp/us_states.csv"
+
+#cleanup test table
+with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+    hbase_client.drop_create_table(TEST_TABLE, [CONFIG_PARAMS['etl-column-family']])
+             
+print "------------------------------------TESTING IMPORT SCRIPTS------------------------------------"
+commands.getoutput('hadoop fs -rmr /tmp/us_states.csv')
+commands.getoutput('hadoop fs -put %s /tmp/us_states.csv' % (us_states_csv_path))
+print "Uploaded %s to HDFS:/tmp/us_states.csv" % (us_states_csv_path)
+  
+subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/us_states.csv',
+                 '-o', TEST_TABLE, '-s', 'state_name:chararray', '-k'])
       
-    subprocess.call(['python', 'py-scripts/import_csv.py', '-i', '/tmp/us_states.csv',
-                     '-o', TEST_TABLE, '-s', 'state_name:chararray', '-k'])
-          
-    with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        data_dict = hbase_client.get(TEST_TABLE,'1')#get the first row
-        print "got", data_dict
-        assert data_dict[CONFIG_PARAMS['etl-column-family']+'state_name'] == 'Alabama'
+with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
+    data_dict = hbase_client.get(TEST_TABLE,'1')#get the first row
+    print "got", data_dict
+    assert data_dict[CONFIG_PARAMS['etl-column-family']+'state_name'] == 'Alabama'
   
             
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'endswith', '-f', 'state_name', '-n', 'endswith', '-t', 'ENDSWITH', '-a', '["icut"]', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'endswith', '-f', 'state_name', '-n', 'endswith', '-t', 'ENDSWITH', '-a', '["icut"]', '-k']
 subprocess.call(args)
 validate_endswith()
 print 'Validated ENDSWITH'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'equalsIgnoreCase', '-f', 'state_name', '-n', 'equalsIgnoreCase', '-t', 'EqualsIgnoreCase', '-a', '["connecticut"]', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'equalsIgnoreCase', '-f', 'state_name', '-n', 'equalsIgnoreCase', '-t', 'EqualsIgnoreCase', '-a', '["connecticut"]', '-k']
 subprocess.call(args)
 validate_equalsignorecase()
 print 'Validated EqualsIgnoreCase'
  
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'indexof', '-f', 'state_name', '-n', 'indexof', '-t', 'INDEXOF', '-a', '["Connecticut",0]', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'indexof', '-f', 'state_name', '-n', 'indexof', '-t', 'INDEXOF', '-a', '["Connecticut",0]', '-k']
 subprocess.call(args)
 validate_indexof()
 print 'Validated INDEXOF'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'lastindexof', '-f', 'state_name', '-n', 'lastindexof', '-t', 'LAST_INDEX_OF', '-a', '["onnec"]', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'lastindexof', '-f', 'state_name', '-n', 'lastindexof', '-t', 'LAST_INDEX_OF', '-a', '["onnec"]', '-k']
 subprocess.call(args)
 validate_lastindexof()
 print 'Validated LAST_INDEX_OF'
  
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'lower', '-f', 'state_name', '-n', 'lower', '-t', 'LOWER', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'lower', '-f', 'state_name', '-n', 'lower', '-t', 'LOWER', '-k']
 subprocess.call(args)
 validate_lower()
 print 'Validated LOWER'
  
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'ltrim', '-f', 'state_name', '-n', 'ltrim', '-t', 'LTRIM', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'ltrim', '-f', 'state_name', '-n', 'ltrim', '-t', 'LTRIM', '-k']
 subprocess.call(args)
 validate_identical('ltrim')
 print 'Validated LTRIM'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'regex_extract', '-f', 'state_name', '-n', 'regex_extract', '-t', 'REGEX_EXTRACT', '-a', '[r"\\\S*onnec\\\S*",0]', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'regex_extract', '-f', 'state_name', '-n', 'regex_extract', '-t', 'REGEX_EXTRACT', '-a', '[r"\\\S*onnec\\\S*",0]', '-k']
 subprocess.call(args)
 validate_regexp()
 print 'Validated REGEX_EXTRACT'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'regex_extract_all', '-f', 'state_name', '-n', 'regex_extract_all', '-t', 'REGEX_EXTRACT_ALL', '-a', '[r"(\\\S*onn\\\S*)"]', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'regex_extract_all', '-f', 'state_name', '-n', 'regex_extract_all', '-t', 'REGEX_EXTRACT_ALL', '-a', '[r"(\\\S*onn\\\S*)"]', '-k']
 subprocess.call(args)
 validate_regextract_all()
 print 'Validated REGEX_EXTRACT_ALL'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'replace', '-f', 'state_name', '-n', 'replace', '-t', 'REPLACE', '-a', '["onnec","xxx"]' , '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'replace', '-f', 'state_name', '-n', 'replace', '-t', 'REPLACE', '-a', '["onnec","xxx"]' , '-k']
 subprocess.call(args)
 validate_replace()
 print 'Validated REPLACE'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'rtrim', '-f', 'state_name', '-n', 'rtrim', '-t', 'RTRIM', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'rtrim', '-f', 'state_name', '-n', 'rtrim', '-t', 'RTRIM', '-k']
 subprocess.call(args)
 validate_identical('rtrim')
 print 'Validated RTRIM'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'startswith', '-f', 'state_name', '-n', 'startswith', '-t', 'STARTSWITH', '-a', '["Connec"]' , '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'startswith', '-f', 'state_name', '-n', 'startswith', '-t', 'STARTSWITH', '-a', '["Connec"]' , '-k']
 subprocess.call(args)
 validate_startswith()
 print 'Validated STARTSWITH'
  
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'strsplit', '-f', 'state_name', '-n', 'strsplit', '-t', 'STRSPLIT', '-a', '[" ",2]' , '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'strsplit', '-f', 'state_name', '-n', 'strsplit', '-t', 'STRSPLIT', '-a', '[" ",2]' , '-k']
 subprocess.call(args)
 validate_strsplit()
 print 'Validated STRSPLIT'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'substring', '-f', 'state_name', '-n', 'substring', '-t', 'SUBSTRING', '-a', '[0,3]' , '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'substring', '-f', 'state_name', '-n', 'substring', '-t', 'SUBSTRING', '-a', '[0,3]' , '-k']
 subprocess.call(args)
 validate_substring()
 print 'Validated SUBSTRING'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'trim', '-f', 'state_name', '-n', 'trim', '-t', 'TRIM', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'trim', '-f', 'state_name', '-n', 'trim', '-t', 'TRIM', '-k']
 subprocess.call(args)
 validate_identical('trim')
 print 'Validated TRIM'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'upper', '-f', 'state_name', '-n', 'upper', '-t', 'UPPER', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'upper', '-f', 'state_name', '-n', 'upper', '-t', 'UPPER', '-k']
 subprocess.call(args)
 validate_upper()
 print 'Validated UPPER'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'tokenize', '-f', 'state_name', '-n', 'tokenize', '-t', 'TOKENIZE', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'tokenize', '-f', 'state_name', '-n', 'tokenize', '-t', 'TOKENIZE', '-k']
 subprocess.call(args)
 validate_tokenize()
 print 'Validated TOKENIZE'
 
-args = ['python', 'py-scripts/transform.py', '-i', 'us_states', '-o', 'length', '-f', 'state_name', '-n', 'length', '-t', 'org.apache.pig.piggybank.evaluation.string.LENGTH', '-k']
+args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'length', '-f', 'state_name', '-n', 'length', '-t', 'org.apache.pig.piggybank.evaluation.string.LENGTH', '-k']
 subprocess.call(args)
 validate_length()
 print 'Validated LENGTH'

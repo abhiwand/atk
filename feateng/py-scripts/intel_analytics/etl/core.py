@@ -50,17 +50,17 @@ class BigDataFrame:
         self.lineage=[]
         
     """
-    Can apply ETL operations to individual features: big_frame['duration'].dropna()
+    Can apply ETL operations to individual features: big_frame['feature_name'].dropna()
     """
     def __getitem__(self, source_feature_name):
         self.source_feature = source_feature_name
         return self
 
     """
-    Can apply ETL operations to individual features with assignments: big_frame['log_duration'] = big_frame['duration'].apply(EvalFunctions.LOG)
+    Can apply ETL operations to individual features with assignments: big_frame['new_feature_name'] = big_frame['feature_name'].apply(EvalFunctions.LOG)
     """    
     def __setitem__(self, new_feature_name, value):
-        #When the user calls: big_frame['log_duration'] = big_frame['duration'].apply(EvalFunctions.LOG)
+        #When the user calls: big_frame['new_feature_name'] = big_frame['feature_name'].apply(EvalFunctions.LOG)
         #we first create the transformation operation arguments except for the name of the new_feature, which is specified on the lhs
         #when we get the lhs in this method, we just execute the transformation operation
         #currently only transformation operations are executed this way

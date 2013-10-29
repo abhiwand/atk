@@ -1,34 +1,17 @@
-"""
-This is just some experimental code written for performing tests from a dummy dataframe API
-"""
-
 import os
 import sys
 import subprocess
-from time import sleep
 import commands
+import math
 import csv
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(base_script_path + '/..')
-
-from intel_analytics.etl.functions import EvalFunctions
+sys.path.append(os.path.join(base_script_path, '..'))
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.config import CONFIG_PARAMS
+from intel_analytics.etl.functions import EvalFunctions
 from intel_analytics.etl.core import *
 
-print "Using", CONFIG_PARAMS
-print 'Starting ...'
-
-#first set up the environment variables
-os.environ["PATH"] = '/home/user/pig-0.12.0/bin' + ':' + os.environ["PATH"]
-os.environ["JYTHONPATH"]  = os.getcwd() + '/py-scripts/' # need for shipping the scripts that we depend on to worker nodes
-
-print ">> JYTHONPATH",os.environ["JYTHONPATH"]
-
-#to get rid of jython logging
-os.environ["PIG_OPTS"] = "-Dpython.verbose=error"
-
-worldbak_data_csv_path = os.path.join(base_script_path, '..', '..', 'test-data/worldbank.csv')
+worldbank_data_csv_path = os.path.join(base_script_path, '..', '..', 'test-data/worldbank.csv')
 cols = ['etl-cf:country', 'etl-cf:year', 'etl-cf:co2_emission', 'etl-cf:co2_emission', 
         'etl-cf:electric_consumption','etl-cf:energy_use','etl-cf:fertility','etl-cf:gni',
         'etl-cf:internet_users','etl-cf:life_expectancy','etl-cf:military_expenses','etl-cf:population','etl-cf:hiv_prevelence']
@@ -38,7 +21,7 @@ cols = ['etl-cf:country', 'etl-cf:year', 'etl-cf:co2_emission', 'etl-cf:co2_emis
 def validate_imported(big_frame):
     print 'validate_imported, table_name: %s' % (big_frame.table_name)
     csv_records = []
-    with open(worldbak_data_csv_path, 'rb') as f:
+    with open(worldbank_data_csv_path, 'rb') as f:
         reader = csv.reader(f)
         header_read = False
         for row in reader:
@@ -47,7 +30,7 @@ def validate_imported(big_frame):
             else:
                 csv_records.append(row)
                 
-    print 'Read %d records from %s' % (len(csv_records), worldbak_data_csv_path)
+    print 'Read %d records from %s' % (len(csv_records), worldbank_data_csv_path)
        
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         i = 0
@@ -154,7 +137,7 @@ def validate_internet_fillna_avg(big_frame):
 ##############################################################################
 big_frame = BigDataFrame() # create an empty data frame
 commands.getoutput("hadoop fs -rmr /tmp/worldbank.csv")
-commands.getoutput("hadoop fs -put %s /tmp/worldbank.csv" % (worldbak_data_csv_path))
+commands.getoutput("hadoop fs -put %s /tmp/worldbank.csv" % (worldbank_data_csv_path))
 schema_definition = 'country:chararray,year:chararray,'+\
                     'co2_emission:double,electric_consumption:double,'+\
                     'energy_use:double,fertility:double,gni:double,'+\
