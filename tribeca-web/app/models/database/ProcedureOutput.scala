@@ -8,6 +8,6 @@ package models.database
  * To change this template use File | Settings | File Templates.
  */
 trait ProcedureOutput {
-    def errorCode : Int
-    def errorMessage : String
+    val errorCode : Int
+    val errorMessage : String
 }

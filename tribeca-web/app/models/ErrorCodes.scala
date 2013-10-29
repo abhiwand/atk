@@ -8,6 +8,7 @@ package models
  * To change this template use File | Settings | File Templates.
  */
 object ErrorCodes {
-    val AlreadyRegister = 1002
-    val ApprovalPendingForRegistration = 1003
+    val ALREADY_REGISTER = 1002
+    val REGISTRATION_APPROVAL_PENDING = 1003
+    val NOT_YET_REGISTERED = 1004
 }

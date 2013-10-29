@@ -19,7 +19,7 @@ object Register extends Controller {
 
     def getResponse(req: Request[JsValue] , auth: Authorize): SimpleResult = {
 
-        if (!(auth.valdiateTokenResponseData() && auth.validateToken()))
+        if (!auth.isAuthResponseDataValid())
             return BadRequest("Couldn't validate auth response data")
 
         val userInfo = auth.getUserInfo()
@@ -27,21 +27,14 @@ object Register extends Controller {
             return BadRequest("Couldn't validate auth response data")
 
         val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None)
-        var result = Users.register(u)
-        val uid = Users.insert(u)
-        val sessionId = Sessions.createSession(uid)
+        val result = Users.register(u)
+        val sessionId = Sessions.createSession(result.uid)
         //Sessions.removeSession(sessionId)
         result.errorCode match {
 
-            case ErrorCodes.AlreadyRegister => Ok(Json.toJson("AlreadyRegistered")).withNewSession.withSession(SessionValName -> sessionId)
-            case ErrorCodes.ApprovalPendingForRegistration => Ok(Json.toJson("The user has registered and is in the waiting for approval.")).withNewSession.withSession(SessionValName -> sessionId)
+            case ErrorCodes.ALREADY_REGISTER => Ok(Json.toJson("AlreadyRegistered")).withSession(SessionValName -> sessionId)
+            case ErrorCodes.REGISTRATION_APPROVAL_PENDING => Ok(Json.toJson("The user has registered and is in the waiting for approval.")).withNewSession.withSession(SessionValName -> sessionId)
             case _ => Ok(Json.toJson("Registered")).withNewSession.withSession(SessionValName -> sessionId)
         }
-
     }
-
-  def currentUser = Authenticated{request =>
-    request.user
-   Ok("sdklaskla;")
-  }
 }
