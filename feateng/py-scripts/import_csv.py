@@ -1,9 +1,15 @@
 import sys
 import subprocess
+import commands
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.argparse_lib import ArgumentParser
 from intel_analytics.etl.config import CONFIG_PARAMS
 from intel_analytics.etl.schema import ETLSchema
+
+#hadoop fs count returns DIR_COUNT FILE_COUNT CONTENT_SIZE FILE_NAME
+N_COLS=4
+CONTENT_SIZE_COL=2
+FILE_NAME_COL=3
 
 def main(argv):
     parser = ArgumentParser(description='import.py imports a big dataset from HDFS to HBase')
@@ -15,7 +21,18 @@ def main(argv):
 
     cmd_line_args = parser.parse_args()
     print cmd_line_args
-
+    
+    #check whether the file is empty or not
+    out = commands.getoutput('hadoop fs -count %s' % (cmd_line_args.input))
+    lines = out.split('\n')#split to lines
+    for line in lines:
+        splitted = line.split()
+        if len(splitted)==N_COLS:
+            if cmd_line_args.input in splitted[FILE_NAME_COL]:#got the file name
+                file_size = long(splitted[CONTENT_SIZE_COL])#get the file size
+                if file_size == 0:
+                    raise Exception('The input CSV file is empty')
+        
     etl_schema = ETLSchema()
     etl_schema.populate_schema(cmd_line_args.schema_information)
     etl_schema.save_schema(cmd_line_args.output)
