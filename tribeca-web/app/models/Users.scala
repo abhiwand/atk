@@ -43,11 +43,6 @@ object Users {
             return output
     }
 
-
-    private def getCallStatement(session: Session, callString: String): CallableStatement = {
-        return session.conn.prepareCall(callString)
-    }
-
     private def getUidFromResultSet(rs: ResultSet): Int = {
         var uid = 0
         if (rs.next()) uid = rs.getInt("uid")
