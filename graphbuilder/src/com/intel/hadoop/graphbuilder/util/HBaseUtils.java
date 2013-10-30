@@ -3,6 +3,7 @@ package com.intel.hadoop.graphbuilder.util;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.Text;
@@ -10,11 +11,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.HColumnDescriptor;
-import org.apache.hadoop.hbase.KeyValue;
 
 public class HBaseUtils {
 
@@ -126,6 +122,17 @@ public class HBaseUtils {
      */
     public boolean tableExists(String hTableName) throws IOException {
         return admin.tableExists(hTableName);
+    }
+
+    /**
+     * Check if the given table contains the given column family
+     *
+     * @param hTableName HBase table name
+     * @param columnFamilyName
+     */
+    public boolean tableContainsColumnFamily(String hTableName, String columnFamilyName) throws IOException {
+        HTableDescriptor htd = admin.getTableDescriptor(hTableName.getBytes());
+        return htd.hasFamily(columnFamilyName.getBytes());
     }
 
     /**
