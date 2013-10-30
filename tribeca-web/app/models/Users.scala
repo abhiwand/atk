@@ -13,7 +13,8 @@ import play.api.db.slick.DB
 import java.sql.{ResultSet, Types, CallableStatement}
 
 object Users {
-    var table = new database.Users
+    var userTable = new database.Users
+    var whitelistTable = new database.WhiteLists
 
     def register(user: User, statementGenerator : StatementGenerator): RegistrationOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
@@ -55,12 +56,12 @@ object Users {
         return uid
     }
 
-    def login(user: User, statementGenerator : StatementGenerator) : LoginOutput   = DB.withSession {
+    def login(email:String, statementGenerator : StatementGenerator) : LoginOutput   = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
             var callString =  "{call sp_login(?, ?, ?, ?)}";
             var cStmt = statementGenerator.getCallStatement(session, callString)
-            cStmt.setString("email", user.email)
+            cStmt.setString("email", email)
             cStmt.registerOutParameter("loginSuccessful", Types.BIGINT)
             cStmt.registerOutParameter("errorCode", Types.BIGINT)
             cStmt.registerOutParameter("errorMessage", Types.VARCHAR)
@@ -79,11 +80,15 @@ object Users {
             return output
     }
 
-  def getUser(uid: Long): Query[Users, User] = DB.withSession{implicit session: scala.slick.session.Session =>
-    return for { u <- table if u.uid === uid} yield u
+  def getUser(uid: Long): Query[(Users, WhiteLists),(User,WhiteList)] = DB.withSession{implicit session: scala.slick.session.Session =>
+    return for { (u,w) <- userTable leftJoin whitelistTable on (_.uid === _.uid) if u.uid === uid} yield (u,w)
   }
+  def anonymousUser(): User = {
+    User(Some(0),"","","","","","",false,None,None)
+  }
+
   //crud
-  def readUser(uid: Long): database.User = DB.withSession{implicit session: scala.slick.session.Session =>
+  def readUser(uid: Long): (database.User, database.WhiteList) = DB.withSession{implicit session: scala.slick.session.Session =>
     val users = getUser(uid).list
     if(users.length > 0){
       return users.last

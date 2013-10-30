@@ -3,35 +3,59 @@ package controllers
 import play.api.mvc._
 import play.api.libs.json._
 import services.authorize.{Providers, Authorize}
-
+import play.api.data._
+import play.api.data.Forms._
 import models._
 import models.database.{MySQLStatementGenerator, User}
 import controllers.Session._
+//import r.writeable
 
 object Register extends Controller {
 
-    var register = Authenticated(parse.json) {
-        request =>
-            //Registration.validate(request.body \ "form")
-            val auth = new Authorize(request.body \ "auth", Providers.GooglePlus)
-            getResponse(request, auth)
+  var simpleResult: SimpleResult = Ok;
+  var json: JsValue = _;
+  var auth: Authorize = _;
+  var response: (Int, String) = (0,"");
+    var register = Action {
+      request => {
+          Registration.RegistrationForm.bindFromRequest()(request).fold(
+            formWithErrors => {
+              BadRequest("couldn't validate form vals")
+            },
+            registrationForm =>{
+              //make sure the terms are set to on since we couldnt' validate with a boolean
+              if(registrationForm.terms == "on"){
+                json = Json.parse(registrationForm.authResult)
+                auth = new Authorize(json, Providers.GooglePlus)
+                response = getResponse(json, registrationForm, auth)
+                response
+              }
+            }
+          )
+      }
+      response._1 match{
+        case  StatusCodes.ALREADY_REGISTER => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
+        case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("approvalpending").withNewSession.withSession(SessionValName -> response._2)
+        case  1 => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
+        case  _ => Redirect("/")
+      }
     }
 
-    def getResponse(req: Request[JsValue], auth: Authorize): SimpleResult = {
+    def getResponse(req: JsValue, registrationForm: Registration, auth: Authorize): (Int,String) = {
 
         if (!auth.isAuthResponseDataValid())
-            return BadRequest("Couldn't validate auth response data")
+            return (0,null)
 
         val userInfo = auth.getUserInfo()
-        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None, None)
+        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email,
+          registrationForm.name,registrationForm.phone_us,registrationForm.email , true, None, None)
         val result = Users.register(u, MySQLStatementGenerator)
         val sessionId = Sessions.createSession(result.uid)
         //Sessions.removeSession(sessionId)
         result.errorCode match {
-
-            case ErrorCodes.ALREADY_REGISTER => Ok(Json.toJson("AlreadyRegistered")).withNewSession.withSession(SessionValName -> sessionId)
-            case ErrorCodes.REGISTRATION_APPROVAL_PENDING => Ok(Json.toJson("The user has registered and is in the waiting for approval.")).withNewSession.withSession(SessionValName -> sessionId)
-            case _ => Ok(Json.toJson("Registered")).withNewSession.withSession(SessionValName -> sessionId)
+          case StatusCodes.ALREADY_REGISTER => return (StatusCodes.ALREADY_REGISTER,sessionId)
+          case StatusCodes.REGISTRATION_APPROVAL_PENDING => return (StatusCodes.REGISTRATION_APPROVAL_PENDING,sessionId)
+          case _ => return (1,sessionId)
         }
     }
 }

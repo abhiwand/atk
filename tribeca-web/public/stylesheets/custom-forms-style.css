@@ -59,18 +59,18 @@ h1#logo img{ width:100%; }
 /********************* text fields frames styles **********************/
 
 .DA_custom_form{ margin:0 auto 30px auto; padding-bottom:15px; max-width:700px; padding:0 10px; position: relative; z-index: 1}
-.DA_custom_form .DA_field_container{ display: block; width:100%; height:40px; padding:10px 0;  border:solid 1px #ccc; }
-.DA_custom_form .DA_field_container{ -webkit-border-radius: 3px; border-radius: 3px; }
+.DA_custom_form .DA_field_container{ display: block; width:100%; height:45px; padding:10px 0;  border:solid 1px #ccc; }
+.DA_custom_form .DA_field_container{ -webkit-border-radius: 3px; border-radius: 5px; }
 .DA_custom_form .DA_field_container{ position: relative; z-index: 1;}
 
 .DA_custom_form .textarea-frame{ display: block; width:100%; height:160px; padding:10px 0;  border:solid 1px #ccc; }
-.DA_custom_form .textarea-frame{ -webkit-border-radius: 3px; border-radius: 3px;}
+.DA_custom_form .textarea-frame{ -webkit-border-radius: 5px; border-radius: 3px;}
 .DA_custom_form .textarea-frame{ position: relative; z-index: 1;}
 
 /**** Here you can change the color of the validation signs in the end of the fields ****/
 .DA_custom_form p{ display:none;}
-.DA_custom_form span{ color:#e4e4e4; float: right; text-align: left; width:5%; font-size: 21px; line-height:26px; }
-.DA_custom_form  span.error, .DA_custom_form a.error{ color:#f27669;}
+.DA_custom_form span{ color:#e4e4e4; float: right; text-align: left; width:5%; font-size: 21px; line-height:26px; margin: -23px 7px 0px; }
+.DA_custom_form  span.error, .DA_custom_form a.error{ color:#ed1c24;}
 .DA_custom_form span.ok{ color:#a6c339;}
 
 .DA_custom_form .field{ float: left; display: inline; width:93%;  font-size: 14px; line-height:14px; border:0; color:#676F7A; }
@@ -85,7 +85,7 @@ h1#logo img{ width:100%; }
 
 .DA_custom_form .btnp input{ border-radius: 5px 5px 5px 5px; width: 100%; background:#0071C5; font-size: 14px; font-weight: 200; color:#fff; height:50px; line-height:50px; }
 .DA_custom_form .btnp input{ cursor:pointer; text-shadow: #202020 1px 1px 1px rgba(0, 0, 0, 0,4);   }
-.DA_custom_form .btnp input{ border:none; text-align: center; margin:25px auto; display: block;}
+.DA_custom_form .btnp input{ border:none; text-align: center; margin:5px auto; display: block;}
 
 .DA_custom_form .btnp .blue{ background:#2fb0d7; webkit-box-shadow: 0px 3px 0px 0px #2188a7; box-shadow: 0px 3px 0px 0px #2188a7;}
 .DA_custom_form .btnp .blue{ border:solid 1px #2188a7; color:#fff; text-shadow: #2188a7 0px 2px 0px;}
@@ -115,7 +115,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 .DA_custom_form span.cust_checkbox_on{ }
 .DA_custom_form span.cust_checkbox .fa-icon-ok{ float: left; display: inline;  line-height:20px;  color:#fff; height:20px; width:20px; }
 .DA_custom_form span.cust_checkbox .fa-icon-ok{ border:solid 1px #ccc;}
-.DA_custom_form span.cust_checkbox_on .fa-icon-ok{ color:#0071C5;}
+.DA_custom_form span.cust_checkbox_on .fa-icon-ok{ color:#A6C339;}
 
 .DA_custom_form .check{ float: left; display: inline; }
 
@@ -157,18 +157,18 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 .DA_check_holder label.error em{ left:5px; right:auto;}
  
 
-.DA_custom_form label{ font-size: 14px; color:#898989; display: block; font-family:Arial, Helvetica, sans-serif; font-weight: normal;}
+.DA_custom_form label{ font-size: 14px; color:#898989; display: block; font-family:Neo Sans Intel, Verdana, sans-serif; font-weight: normal;}
 .DA_custom_form label{ padding-bottom:8px}
 .DA_custom_form label.valid{ display:none!important;}
 .DA_custom_form label.error{ height:21px; font-size: 12px; position:absolute;  bottom:-31px; right:0; z-index: 100; float: right;}
 .DA_custom_form label.error{ font-weight: normal;  }
-.DA_custom_form label.error{  background:#f27669; color:#fff; padding:0 5px; }
-.DA_custom_form label.error{ border:solid 1px #f27669; -webkit-border-radius: 4px; border-radius: 4px; line-height:21px; }
+.DA_custom_form label.error{  background:#ed1c24; color:#fff; padding:0 5px; }
+.DA_custom_form label.error{ border:solid 1px #ed1c24; -webkit-border-radius: 4px; border-radius: 4px; line-height:21px; }
 .DA_custom_form label.error{ -webkit-box-shadow: 0px 1px 0px 0px #b65a44; box-shadow: 0px 1px 0px 0px #b65a44;}
 .DA_custom_form label.error:after{
 	border: solid;
     border-color: #111 transparent;
-    border-color: rgba(242,118,105,1) transparent;
+    border-color: #ed1c24 transparent;
     border-width: 0 7px 7px 7px;
     top: -7px;
     content: "";
@@ -194,7 +194,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
     height:0px; 
     border-left:7px solid transparent;  /* left arrow slant */
     border-right:7px solid transparent; /* right arrow slant */
-    border-bottom:7px solid #f27669; /* bottom, add background color here */
+    border-bottom:7px solid #ed1c24; /* bottom, add background color here */
     font-size:0px;
     line-height:0px;
     position:absolute;
@@ -207,7 +207,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 	height:0px; 
 	border-left:7px solid transparent;  /* left arrow slant */
 	border-right:7px solid transparent; /* right arrow slant */
-	border-bottom:7px solid #f27669; /* bottom, add background color here */
+	border-bottom:7px solid #ed1c24; /* bottom, add background color here */
 	font-size:0px;
 	line-height:0px;
 	position:absolute;
@@ -324,7 +324,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 
 /*************************************** HORIZONTAL FORM STYLE *****************************************/
 
-.DA_custom_form .horizontal{  width:90%; float: left; display: inline; margin:17px 5%;}
+.DA_custom_form .horizontal{  width:90%; float: left; display: inline; margin:10px 5%;}
 .DA_custom_form .horizontal label{ float: left; display: inline; width:35%; padding:0; line-height: 45px}
 .DA_custom_form .horizontal  label.fl{ width:80%; line-height: 23px; padding-bottom:8px; }
 .DA_custom_form .horizontal label.error{ display: block; float: none; width:auto; line-height: 22px; padding:0 5px;}
