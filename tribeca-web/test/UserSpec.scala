@@ -74,6 +74,58 @@ class UserSpec extends Specification with Mockito {
                 }
 
             }
+
+            "log in success" in {
+
+                running(FakeApplication()) {
+
+                    val dummyStatementGenerator = new StatementGenerator {
+                        def getCallStatement(session: Session, callString: String): CallableStatement = {
+                            val statement: CallableStatement = mock[CallableStatement]
+                            statement.getInt("loginSuccessful") returns 1
+                            statement.getInt("errorCode") returns 0
+
+                            val rs = mock[ResultSet]
+                            rs.next() returns true
+                            rs.getInt("uid") returns 100
+                            statement.execute() returns true
+                            statement.getResultSet() returns rs
+                            return statement
+                        }
+                    }
+
+                    val u = User(None, "first name", "last name", "abcd@intel.com", "1234567890", "Intel", "abcd@intel.com", true, None, None)
+                    val result = Users.login(u.email, dummyStatementGenerator)
+                    (result.uid == 100 && result.errorCode == 0 && result.success == 1) must beEqualTo(true)
+                }
+
+            }
+
+            "log in failed" in {
+
+                running(FakeApplication()) {
+
+                    val dummyStatementGenerator = new StatementGenerator {
+                        def getCallStatement(session: Session, callString: String): CallableStatement = {
+                            val statement: CallableStatement = mock[CallableStatement]
+                            statement.getInt("loginSuccessful") returns 0
+                            statement.getInt("errorCode") returns StatusCodes.NOT_YET_REGISTERED
+
+                            val rs = mock[ResultSet]
+                            rs.next() returns false
+                            rs.getInt("uid") returns 100
+                            statement.execute() returns true
+                            statement.getResultSet() returns rs
+                            return statement
+                        }
+                    }
+
+                    val u = User(None, "first name", "last name", "abcd@intel.com", "1234567890", "Intel", "abcd@intel.com", true, None, None)
+                    val result = Users.login(u.email, dummyStatementGenerator)
+                    (result.uid == 0 && result.errorCode == StatusCodes.NOT_YET_REGISTERED && result.success == 0) must beEqualTo(true)
+                }
+
+            }
         }
     }
 }
