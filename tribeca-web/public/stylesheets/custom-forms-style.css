@@ -69,8 +69,8 @@ h1#logo img{ width:100%; }
 
 /**** Here you can change the color of the validation signs in the end of the fields ****/
 .DA_custom_form p{ display:none;}
-.DA_custom_form span{ color:#e4e4e4; float: right; text-align: left; width:5%; font-size: 21px; line-height:26px; margin: -20px 7px 0px; }
-.DA_custom_form  span.error, .DA_custom_form a.error{ color:#f27669;}
+.DA_custom_form span{ color:#e4e4e4; float: right; text-align: left; width:5%; font-size: 21px; line-height:26px; margin: -23px 7px 0px; }
+.DA_custom_form  span.error, .DA_custom_form a.error{ color:#ed1c24;}
 .DA_custom_form span.ok{ color:#a6c339;}
 
 .DA_custom_form .field{ float: left; display: inline; width:93%;  font-size: 14px; line-height:14px; border:0; color:#676F7A; }
@@ -162,13 +162,13 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 .DA_custom_form label.valid{ display:none!important;}
 .DA_custom_form label.error{ height:21px; font-size: 12px; position:absolute;  bottom:-31px; right:0; z-index: 100; float: right;}
 .DA_custom_form label.error{ font-weight: normal;  }
-.DA_custom_form label.error{  background:#f27669; color:#fff; padding:0 5px; }
-.DA_custom_form label.error{ border:solid 1px #f27669; -webkit-border-radius: 4px; border-radius: 4px; line-height:21px; }
+.DA_custom_form label.error{  background:#ed1c24; color:#fff; padding:0 5px; }
+.DA_custom_form label.error{ border:solid 1px #ed1c24; -webkit-border-radius: 4px; border-radius: 4px; line-height:21px; }
 .DA_custom_form label.error{ -webkit-box-shadow: 0px 1px 0px 0px #b65a44; box-shadow: 0px 1px 0px 0px #b65a44;}
 .DA_custom_form label.error:after{
 	border: solid;
     border-color: #111 transparent;
-    border-color: rgba(242,118,105,1) transparent;
+    border-color: #ed1c24 transparent;
     border-width: 0 7px 7px 7px;
     top: -7px;
     content: "";
@@ -194,7 +194,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
     height:0px; 
     border-left:7px solid transparent;  /* left arrow slant */
     border-right:7px solid transparent; /* right arrow slant */
-    border-bottom:7px solid #f27669; /* bottom, add background color here */
+    border-bottom:7px solid #ed1c24; /* bottom, add background color here */
     font-size:0px;
     line-height:0px;
     position:absolute;
@@ -207,7 +207,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 	height:0px; 
 	border-left:7px solid transparent;  /* left arrow slant */
 	border-right:7px solid transparent; /* right arrow slant */
-	border-bottom:7px solid #f27669; /* bottom, add background color here */
+	border-bottom:7px solid #ed1c24; /* bottom, add background color here */
 	font-size:0px;
 	line-height:0px;
 	position:absolute;
