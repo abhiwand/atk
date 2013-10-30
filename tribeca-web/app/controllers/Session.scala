@@ -36,7 +36,7 @@ object Session extends Controller{
         val validatedSession = validateSessionId(sessionId)
         if(validatedSession._1){
           //get user info
-          val u = Users.readUser(validatedSession._2.uid)
+          val u = Users.readUser(validatedSession._2.uid, models.database.Users, models.database.WhiteLists)
           //continue with the request
           block(new ActionWithSession(u, request))
         } else{
@@ -55,7 +55,7 @@ object Session extends Controller{
         val validatedSession = validateSessionId(sessionId)
         if(validatedSession._1){
           //get user info
-          val u = Users.readUser(validatedSession._2.uid)
+          val u = Users.readUser(validatedSession._2.uid, models.database.Users, models.database.WhiteLists)
           //continue with the request
           if(u._2.email.isEmpty || u._2.uid.get == 0){
             Future.successful(Redirect("approvalpending"))

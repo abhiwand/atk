@@ -11,9 +11,9 @@ import play.api.db.slick.DB
 import models.database.Session
 
 object Sessions {
-  var table = new database.Sessions
+  var table = database.Sessions
 
-  def getSession(sessionId: String): Query[Sessions, database.Session] = DB.withSession{implicit session: scala.slick.session.Session =>
+  def getSession(sessionId: String): Query[database.Sessions.type , database.Session] = DB.withSession{implicit session: scala.slick.session.Session =>
       return for { se <- table if se.Id === sessionId} yield se
   }
 

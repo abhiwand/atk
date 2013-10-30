@@ -13,8 +13,6 @@ import play.api.db.slick.DB
 import java.sql.{ResultSet, Types, CallableStatement}
 
 object Users {
-    var userTable = new database.Users
-    var whitelistTable = new database.WhiteLists
 
     def register(user: User, statementGenerator : StatementGenerator): RegistrationOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
@@ -43,11 +41,6 @@ object Users {
 
             val output = new RegistrationOutput(errorCode, errorMessage, loginAfterRegister, uid)
             return output
-    }
-
-
-    private def getCallStatement(session: Session, callString: String): CallableStatement = {
-        return session.conn.prepareCall(callString)
     }
 
     private def getUidFromResultSet(rs: ResultSet): Int = {
@@ -80,16 +73,16 @@ object Users {
             return output
     }
 
-  def getUser(uid: Long): Query[(Users, WhiteLists),(User,WhiteList)] = DB.withSession{implicit session: scala.slick.session.Session =>
-    return for { (u,w) <- userTable leftJoin whitelistTable on (_.uid === _.uid) if u.uid === uid} yield (u,w)
+  def getUser(uid: Long, userInfoTable: database.Users.type, whiteListTable: database.WhiteLists.type): Query[(database.Users.type , database.WhiteLists.type),(User,WhiteList)] = DB.withSession{implicit session: scala.slick.session.Session =>
+    return for { (u,w) <- userInfoTable leftJoin whiteListTable on (_.uid === _.uid) if u.uid === uid} yield (u,w)
   }
   def anonymousUser(): User = {
     User(Some(0),"","","","","","",false,None,None)
   }
 
   //crud
-  def readUser(uid: Long): (database.User, database.WhiteList) = DB.withSession{implicit session: scala.slick.session.Session =>
-    val users = getUser(uid).list
+  def readUser(uid: Long, userInfoTable: database.Users.type, whiteListTable: database.WhiteLists.type): (database.User, database.WhiteList) = DB.withSession{implicit session: scala.slick.session.Session =>
+    val users = getUser(uid, userInfoTable, whiteListTable).list
     if(users.length > 0){
       return users.last
     }else{
