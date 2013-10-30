@@ -50,11 +50,14 @@ var authRedirect = function(data){
 var registerCallback = function(authResult) {
     $("#registerAuthResult").attr("value", JSON.stringify(authResult))
     googleAuth.registerSubmit()
-    //authAjax(authResult,"registration-form","ipython", googleAuth.registerSubmit, "register")
 }
 
 var loginCallback = function(authResult){
-    authAjax(authResult,null, "login")
+    if(authResult == undefined || authResult.access_token == undefined || authResult.access_token === ""){
+        $("#loginError").removeClass("hidden");
+    }else{
+        authAjax(authResult,null, "login")
+    }
 }
 
 var authAjax =  function(authResult, redirectUrl, url){
