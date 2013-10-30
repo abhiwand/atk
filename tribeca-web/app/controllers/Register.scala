@@ -28,16 +28,16 @@ object Register extends Controller {
                 json = Json.parse(registrationForm.authResult)
                 auth = new Authorize(json, Providers.GooglePlus)
                 response = getResponse(json, registrationForm, auth)
-                response
               }
             }
           )
       }
       response._1 match{
         case  StatusCodes.ALREADY_REGISTER => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
-        case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("approvalpending").withNewSession.withSession(SessionValName -> response._2)
-        case  1 => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
-        case  _ => Redirect("/")
+        case  StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
+
+        case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/").withCookies(Cookie("approvalPending","true", Some(3600),
+          "/", None, true, false ))
       }
     }
 
@@ -55,7 +55,7 @@ object Register extends Controller {
         result.errorCode match {
           case StatusCodes.ALREADY_REGISTER => return (StatusCodes.ALREADY_REGISTER,sessionId)
           case StatusCodes.REGISTRATION_APPROVAL_PENDING => return (StatusCodes.REGISTRATION_APPROVAL_PENDING,sessionId)
-          case _ => return (1,sessionId)
+          case _ => return (StatusCodes.LOGIN,sessionId)
         }
     }
 }

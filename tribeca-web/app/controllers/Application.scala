@@ -8,7 +8,7 @@ import controllers.Session.ActionWithSession
 
 object Application extends Controller {
 
-  def index = ActionWithSession { request =>
+  def index() = ActionWithSession { request =>
     Ok(views.html.index("Index", request.user._1))
   }
 
