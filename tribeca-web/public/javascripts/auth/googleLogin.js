@@ -48,13 +48,30 @@ var authRedirect = function(data){
 }
 
 var registerCallback = function(authResult) {
-    $("#registerAuthResult").attr("value", JSON.stringify(authResult))
-    googleAuth.registerSubmit()
-    //authAjax(authResult,"registration-form","ipython", googleAuth.registerSubmit, "register")
+    if(isValidAuthResult(authResult)){
+        $("#registerAuthResult").attr("value", JSON.stringify(authResult))
+        googleAuth.registerSubmit()
+    }else{
+        showSignInError()
+    }
 }
 
+var showSignInError = function(){
+    $("#loginError").removeClass("hidden");
+}
+var isValidAuthResult = function(authResult){
+    if(authResult == undefined || authResult.access_token == undefined || authResult.access_token === ""){
+        return false;
+    }else{
+        return true;
+    }
+}
 var loginCallback = function(authResult){
-    authAjax(authResult,null, "login")
+    if(isValidAuthResult(authResult)){
+        authAjax(authResult,null, "login")
+    }else{
+        showSignInError()
+    }
 }
 
 var authAjax =  function(authResult, redirectUrl, url){

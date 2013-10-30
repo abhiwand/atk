@@ -21,7 +21,7 @@ object Login extends Controller {
         }
           response._1 match {
             case StatusCodes.NOT_YET_REGISTERED => Ok(StatusCodes.getJsonStatusCode(StatusCodes.NOT_YET_REGISTERED))
-            case _ => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2)
+            case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2)
             case StatusCodes.REGISTRATION_APPROVAL_PENDING =>
               Ok(StatusCodes.getJsonStatusCode(StatusCodes.REGISTRATION_APPROVAL_PENDING)).withCookies(Cookie("approvalPending","true", Some(3600),"/", None, true, false ))
           }
