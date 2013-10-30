@@ -9,14 +9,14 @@
             <div class="modal-body">
                 <div class='row'>
                     <div class='col-sm-12'>
-                        <form class='DA_custom_form' method="post" id="registration-form" onsubmit="">
+                        @*<form class='DA_custom_form' method="post" action="register" id="registration-form" onsubmit="">*@
                             <fieldset class='row'>
                                 <div class='col-sm-12 mg-b-md'>
 
                                     <div class='lead'>Intelanalytics Beta Registration</div>
                                     <small class='text-muted'>Thank you for signing up for our invite-only beta test group. After you fill out the simple form below, we can verify your identity as a human being and analyze your request. You will receive a response with your approval which is based on availability!</small>
                                     </div>
-                                    <form method="post" class="DA_custom_form" id="registration-form">
+                                    <form method="post" class="DA_custom_form" id="registration-form" action="register">
             <div class="DA_holder horizontal">
 
                 <label>Company Name</label>
@@ -58,13 +58,13 @@
             <div class="modal-footer">
                      <div id='googleRegisterButton' class="btnp"><input type="submit"  value="Sign Up With Google +" /></div>
 
-            </div>
+                        </div>
+                        <input id="registerAuthResult" type="hidden" name="authResult" value="" />
                         </form>
-                           </fieldset>                        
+                     </fieldset>
                     </div>
                 </div>
             </div>
-            
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->

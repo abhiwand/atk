@@ -3,7 +3,7 @@ package controllers
 import play.api.mvc._
 import services.authorize.{Providers, Authorize}
 import models.database.{MySQLStatementGenerator, User}
-import models.{Sessions, ErrorCodes, Users}
+import models.{StatusCodes, Sessions, Users}
 import play.api.libs.json.Json
 import controllers.Session._
 import models.database.User
@@ -20,20 +20,16 @@ object Login extends Controller {
 
 
     def getResponse(auth: Authorize): SimpleResult = {
-
-        if (!auth.isAuthResponseDataValid())
+        if (!(auth.valdiateTokenResponseData() && auth.validateToken() != null))
             return BadRequest("Couldn't validate auth response data")
 
-        val userInfo = auth.getUserInfo()
-        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, "Phone", "company", "companyemail", true, None, None)
-        val result = Users.login(u, MySQLStatementGenerator)
+        val result = Users.login(auth.userInfo.email, MySQLStatementGenerator)
         val sessionId = Sessions.createSession(result.uid)
 
         result.errorCode match {
-
-            case ErrorCodes.NOT_YET_REGISTERED => Ok(Json.toJson("not yet register")).withNewSession.withSession(SessionValName -> sessionId)
-            case ErrorCodes.REGISTRATION_APPROVAL_PENDING => Ok(Json.toJson("The user has registered and is in the waiting for approval.")).withNewSession.withSession(SessionValName -> sessionId)
-            case _ => Ok(Json.toJson("logged in.")).withNewSession.withSession(SessionValName -> sessionId)
+            case StatusCodes.NOT_YET_REGISTERED => BadRequest(StatusCodes.getJsonStatusCode(StatusCodes.NOT_YET_REGISTERED))
+            case StatusCodes.REGISTRATION_APPROVAL_PENDING => Ok(StatusCodes.getJsonStatusCode(StatusCodes.REGISTRATION_APPROVAL_PENDING)).withNewSession.withSession(SessionValName -> sessionId)
+            case _ => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> sessionId)
         }
     }
 

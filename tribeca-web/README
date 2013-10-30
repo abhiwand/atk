@@ -1,5 +1,5 @@
 This is your new Play application
 =====================================
 run the play server with this
--Dhttps.port=9443 -Dhttps.keyStore=conf/graphtrial.com.keystore.jks -Dhttps.keyStorePassword=sewerroots -Dhttp.proxyHost=proxy.jf.intel.com -Dhttp.proxyPort=911 -Dhttps.proxyHost=proxy.jf.intel.com -Dhttps.proxyPort=911 -DsocksProxyHost=proxy-socks.jf.intel.com -DsocksProxyPort=1080
+-Dhttps.port=80 -Dhttps.keyStore=conf/graphtrial.com.keystore.jks -Dhttps.keyStorePassword=sewerroots -Dhttp.proxyHost=proxy.jf.intel.com -Dhttp.proxyPort=911 -Dhttps.proxyHost=proxy.jf.intel.com -Dhttps.proxyPort=911 -DsocksProxyHost=proxy-socks.jf.intel.com -DsocksProxyPort=1080
 This file will be packaged with your application, when using `play dist`.

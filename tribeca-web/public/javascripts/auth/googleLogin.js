@@ -7,53 +7,60 @@
     })();
 
 $(window).load(function(){
-    /*$("#googleRegisterButton").click(function(){
-        googleAuth.registerRender()
-    })*/
+    $("#googleLoginButton").click(function(){
+        googleAuth.loginRender()
+    })
 })
 var googleAuth = {
-    clientId:{
-    "http:":"141308260505-d7utft9orcofca75fkspuit96ordo8dm.apps.googleusercontent.com",
-    "https:":"141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
+    clientId:{ "http:" : {"9000":"141308260505-d7utft9orcofca75fkspuit96ordo8dm.apps.googleusercontent.com"},
+    "https:" : { "9443":"141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com",
+                "": "141308260505-3qf2ofckirolrkajt3ansibkuk5qug5t.apps.googleusercontent.com"}
     },
     loginRender: function(){
         gapi.signin.render('googleLoginButton', {
             'callback': 'loginCallback',
-            'clientid': this.clientId[window.location.protocol],
+            'clientid': this.clientId[window.location.protocol][window.location.port],
             'cookiepolicy': 'single_host_origin',
             'requestvisibleactions': 'http://schemas.google.com/AddActivity',
             'scope': 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
         });
     },
-    registerRender: function(form){
+    registerRender: function(){
     gapi.signin.render('googleRegisterButton', {
         'callback': 'registerCallback',
-        'clientid': this.clientId[window.location.protocol],
+        'clientid': this.clientId[window.location.protocol][window.location.port],
         'cookiepolicy': 'single_host_origin',
+
         'requestvisibleactions': 'http://schemas.google.com/AddActivity',
         'scope': 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email'
     });
+    },
+    registerSubmit: function(){
+        $("#registration-form").submit()
     }
 }
 
+var authRedirect = function(data){
+    if(data != undefined && data.code != undefined && data.url != undefined){
+        window.location.replace( window.location.protocol + "//" + window.location.host+ "/" + data.url)
+    }
+    return false;
+}
+
 var registerCallback = function(authResult) {
-    authAjax(authResult,"registration-form","ipython", "register")
+    $("#registerAuthResult").attr("value", JSON.stringify(authResult))
+    googleAuth.registerSubmit()
+    //authAjax(authResult,"registration-form","ipython", googleAuth.registerSubmit, "register")
 }
 
 var loginCallback = function(authResult){
     authAjax(authResult,null, "login")
 }
 
-var authAjax =  function(authResult, formId,redirectUrl, url){
-    console.log('signinCallback');
+var authAjax =  function(authResult, redirectUrl, url){
     console.log(authResult);
     var obj = {};
-    obj.auth = authResult;
-    obj.form = {};
-    if(formId != undefined){
-        obj.form = $("#"+formId).serializeArray()
-    }
-
+    //obj.auth = authResult;
     if (authResult['access_token']) {
         // Successfully authorized
         // Hide the sign-in button now that the user is authorized, for example:
@@ -66,12 +73,20 @@ var authAjax =  function(authResult, formId,redirectUrl, url){
             contentType: "application/json",
             async: false,
             //json object to sent to the authentication url
-            data: JSON.stringify(obj),
+            data: JSON.stringify(authResult),
             //data: authResult,
-            success: function () {
+            success: function (data) {
+                console.log(data)
+                authRedirect(data)
                 if(redirectUrl != undefined){
-                    window.location.replace( window.location.protocol + "//" + window.location.host+ "/" + redirectUrl)
+                    console.log("forward: " + redirectUrl)
+                    //window.location.replace( window.location.protocol + "//" + window.location.host+ "/" + redirectUrl)
                 }
+            },
+            error: function(one, two){
+                console.log("error")
+                console.log(one)
+                console.log(two)
             }
         })
     } else if (authResult['error']) {

@@ -107,17 +107,13 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 		onkeyup: false, 
 		submitHandler: function(form) {
 			var dataString = $(form).serialize();
-            googleAuth.registerRender()
-            /*        $(form).ajaxSubmit({
-                    		url:'email.php',
-                            type:"post",
-							data: dataString,
-							cache: false,
-							success: function(){
-								 
-							}
-                    }); */
-            },	
+            if($("#registerAuthResult").attr("value") == ""){
+                googleAuth.registerRender();
+            }
+            else{
+                form.submit()
+            }
+        },
 		/***** Highlight effects on validation error *****/
 		highlight: function(element, errorClass) {
 			if(!$(element).is(':radio') && !$(element).is(':checkbox') && !$(element).is('select')){

@@ -8,6 +8,7 @@ class Authorize(var authData: JsValue, var provider:Providers.Providers ) {
   var Provider = provider
   var jsonData = authData
   var responseData: TokenResponse = _;
+  var userInfo: UserInfo = _;
 
   def valdiateTokenResponseData(): Boolean = {
     Provider match{
@@ -20,28 +21,27 @@ class Authorize(var authData: JsValue, var provider:Providers.Providers ) {
     }
   }
 
-  def validateToken(): Boolean = {
+  def validateToken(): UserInfo = {
     Provider match{
       case Providers.GooglePlus =>
-       var bb = GooglePlus.validateToken(responseData.access_token)
-        return true;
+       userInfo = GooglePlus.validateToken(responseData.access_token)
+        if(userInfo != null && userInfo.email != null) userInfo else null
       case Providers.None =>
-        return false;
-
+        null
     }
   }
 
   def getUserInfo(): UserInfo = {
     Provider match{
       case Providers.GooglePlus =>
-        val userinfo = GooglePlus.getUserInfo(responseData.access_token)
-        return userinfo
+        userInfo = GooglePlus.getUserInfo(responseData.access_token)
+        return userInfo
       case _ =>
         return null
     }
   }
 
     def isAuthResponseDataValid(): Boolean = {
-        (valdiateTokenResponseData() && validateToken() && getUserInfo() != null)
+        (valdiateTokenResponseData() && validateToken() != null && getUserInfo() != null)
     }
 }

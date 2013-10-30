@@ -17,6 +17,7 @@ import services.authorize.providers.google.ValidateTokenJson
 import play.api.mvc.Controller
 
 object GooglePlus {
+  val https443_clientId = "141308260505-3qf2ofckirolrkajt3ansibkuk5qug5t.apps.googleusercontent.com"
   val https_clientId = "141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
   val http_clientId = "141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
   val clientSecret = "0fp9P9isYAz_vrlyA9I1Jk_j"
@@ -27,10 +28,17 @@ object GooglePlus {
   implicit val validateTokenJson = Json.reads[ValidateTokenJson]
   implicit val validateUserInfo = Json.reads[GoogleUserInfo]
 
+  def validateClientId(idToValidate: String): Boolean = {
+    if(idToValidate == https_clientId || idToValidate == http_clientId || idToValidate == https443_clientId){
+      return true
+    }else{
+      return false
+    }
+  }
   def validateTokenResponseData(authData: JsValue): TokenResponse = {
     authData.validate[ValidateTokenResponseData](validateTokenResponseData).map{
       case(validResponse) =>
-        if(validResponse.client_id == https_clientId || validResponse.client_id == http_clientId){
+        if(validateClientId(validResponse.client_id)){
           return new GoogleTokenResponse(validResponse.access_token, validResponse.authuser, validResponse.client_id)
         }
     }.recoverTotal{
@@ -39,9 +47,7 @@ object GooglePlus {
     return null
   }
 
-
-
-  def validateToken(token: String): Boolean = {
+  def validateToken(token: String): UserInfo = {
     val responseFuture = WS.url(tokenVerifyUrl).withQueryString("access_token"-> token).get()
     val resultFuture = responseFuture map{ response =>
       response.status match{
@@ -51,16 +57,16 @@ object GooglePlus {
             validateTokenJson
           }
         case _ =>
-          return false
+          return null
       }
     }
 
     //this makes it a synchronous request
     val result = Await.result(resultFuture, 30 seconds)
-    if(result.get.audience == https_clientId || result.get.audience == http_clientId){
-      return true
+    if(validateClientId(result.get.audience)){
+      return UserInfo("", result.get.email, "", "")
     } else {
-      return false
+      return null
     }
   }
 
