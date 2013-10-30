@@ -84,6 +84,8 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
         scan.setCaching(GBHTableConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
+
+        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", cmd.hasOption("flattenlists"));
     }
 
     public void updateJobForMapper(Job job, CommandLine cmd) {

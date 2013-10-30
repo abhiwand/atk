@@ -44,6 +44,10 @@ public class TableToTextGraph {
                 .withArgName("Edge-Column-Name")
                 .create("e"));
 
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("FLATTEN_LISTS_OPTNAME"))
+                .withDescription("Flag that expends lists into multiple items. " )
+                .create("F"));
+
         return options;
     }
 

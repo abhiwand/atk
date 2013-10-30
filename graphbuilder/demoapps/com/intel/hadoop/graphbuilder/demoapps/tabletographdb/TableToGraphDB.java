@@ -52,6 +52,20 @@ public class TableToGraphDB {
                 .withArgName("Edge-Column-Name")
                 .create("e"));
 
+
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))
+                .withDescription("Specify the HTable columns which are edge tokens; " +
+                        "Example: --" + GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
+                        "Note: Edge labels must be unique")
+                .hasArgs()
+                .isRequired()
+                .withArgName("Edge-Column-Name")
+                .create("e"));
+
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("FLATTEN_LISTS_OPTNAME"))
+                .withDescription("Flag that expends lists into multiple items. " )
+                .create("F"));
+
         commandLineInterface.setOptions(options);
     }
 

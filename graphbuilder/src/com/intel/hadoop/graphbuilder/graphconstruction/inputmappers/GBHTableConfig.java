@@ -48,6 +48,7 @@ public class GBHTableConfig {
     public static final String CMD_EDGES_OPTNAME = "edges";
     public static final String CMD_TABLE_OPTNAME = "tablename";
     public static final String CMD_VERTICES_OPTNAME = "vertices";
+    public static final String FLATTEN_LISTS_OPTNAME = "flattenlists";
 
     public static final int HBASE_CACHE_SIZE = 500;
     public static final String TITAN_HBASE_TABLENAME = "GBTitan";
