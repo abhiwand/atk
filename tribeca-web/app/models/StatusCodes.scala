@@ -14,7 +14,7 @@ package object StatusCodes {
     1001 -> "ipython",
     1000 -> "ipython",
     1002 -> "ipython",
-    1003 -> "approvalpending",
+    1003 -> "",
     1004 -> ""
   )
 
