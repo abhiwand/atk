@@ -7,7 +7,9 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.21",
   anorm,
   cache,
-  "com.typesafe.play" %% "play-slick" % "0.5.0.8"
+  "com.typesafe.play" %% "play-slick" % "0.5.0.8",
+  "commons-codec" % "commons-codec" % "1.8",
+  "org.mockito" % "mockito-core" % "1.9.5"
 )     
 
 play.Project.playScalaSettings
