@@ -448,7 +448,11 @@ button.close {
     padding-top: 10px;
 }
 
-img.leadimage {
-    position: absolute;
+.imglead {
     float: right;
+    display: inline-block;
+    width: auto;
+    height: 45px;
 }
+
+
