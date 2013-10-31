@@ -418,14 +418,27 @@ body.error-page .message {
 }
 
 
-.absolute-center {
-  margin: auto;
-  position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
-}
+
 
 .modal-footer {
     margin-bottom: -50px;
 }
 
 
+.alert {
+    left: 50%;
+    margin-left: -191px;
+    position: fixed;
+    top: 70px;
+    width: auto;
+    z-index: 9999;
+}
+
+button.close {
+     margin-left: 10px;
+}
+
+
+.modal-content {
+    margin-top: 45px;
+}

@@ -60,6 +60,7 @@ var showSignInError = function(){
     $("#loginError").removeClass("hidden");
 }
 var isValidAuthResult = function(authResult){
+        return false;
     if(authResult == undefined || authResult.access_token == undefined || authResult.access_token === ""){
         return false;
     }else{
