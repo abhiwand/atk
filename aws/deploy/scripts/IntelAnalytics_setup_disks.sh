@@ -1,22 +1,22 @@
 #!/bin/bash
-source IntelAnalytics_env.sh
+# Description: Used for preparing data disks on the cluster nodes
+# Note: Expected to be executed from admin node
+# - Format data disks
+# - Mount data disks
+# - Chown data mount points
 
-# TODO: this is hard-coded right now, but should come from input file
-DISKS=(xvdb xvdc xvdd xvde)
+source IntelAnalytics_setup_env.sh
 
-# create fs for each data disks
+IA_HOSTS=$1
+if [ ! -f ${IA_HOSTS} ]; then
+    echo $(basename $0) <nodes_list_file>
+    exit 1
+fi
+
+_script=IntelAnalytics_setup_disks_node.sh
 for n in `cat ${IA_HOSTS}`
 do
-	for ((i = 0; i < ${#DISKS[${i}]}; i++ ))
-	do
-		d="${DISKS[${i}]}"
-		v="/dev/${d}"
-		m="/mnt/${d}"
-		echo Preparing disk ${d} (${v}) on ${n}...
-		ssh -i ${IA_PEM} -t ${n} "sudo mkfs.ext4 -q -t ext4 -F ${v}"
-		
-		# create mount points
-		echo Preparing mount points ${m} for ${d}(${v}) on ${n}...
-		ssh -i ${IA_PEM} -t ${n} "if [ ! -d ${m} ]; then sudo mkdir ${m}; sudo chown -R ${IA_USR}.${IA_USR} ${m}; fi"
-	done
+    # format disks
+    scp -i ${IA_PEM} ${_script} ${n}:/tmp/${_script}
+    ssh -i ${IA_PEM} -t ${n} "sudo /tmp/${_script}; sudo rm /tmp/${_script}";
 done

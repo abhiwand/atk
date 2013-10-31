@@ -1,5 +1,8 @@
-IntelAnalytics_env.sh
-- global variables'
+AMI Preparation
+===============
+IntelAnalytics_setup_env.sh
+- global variables for preparing a AMI for IntelAnalytics or post configuration
+- of the deployed IntelAnaltytics cluster
 
 Steps:
 1. IntelAnalytics_setup_system.sh: setup basic system config
@@ -17,3 +20,17 @@ Steps:
 5. IntelAnalytics_setup_deploy.sh: deploy the package
 - all configs are already updated
 - should be able to just run 
+
+Cluster Creation
+================
+IntelAnalytics_cluster_env.sh
+- global variables for creating a AWS cluster of IntelAnalytics
+
+Steps
+1. IntelAnalytics_cluster_create.sh: create a cluster of given size
+
+2. IntelAnalytics_cluster_genhosts.sh: produce hosts file fo this cluster
+
+3. IntelAnalytics_cluster_configure.sh: configure the cluster accordingly
+
+4. IntelAnalytics_setup_disks.sh: prepare data disks for cluster nodese

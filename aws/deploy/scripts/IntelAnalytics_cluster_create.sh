@@ -1,4 +1,5 @@
-#!/bin/bash 
+#!/bin/bash
+ 
 #
 # Big WIP: this is only the workflow description
 #
@@ -11,14 +12,15 @@
 # - support dryrun
 # - assume some resources, e.g., per vpc sec groups, are properly defined
 # - supports default 4 data volumes from IS, can be extended by ec2-register to add more
-
+# - --iam-profile
+#
 function usage()
 {
-    IA_logerr "Usage:$(basename $0) --cluster-id <id> --cluster-size <n> --cluster-cidr <cidr> [--dry-run]"
+    IA_logerr "Usage:$(basename $0) --cluster-id <id> [--cluster-size <n>] [--no-dryrun]"
     exit 1
 }
 
-function dump()
+function IA_create_dump()
 {
     IA_loginfo "Cluster Name = ${cname}"
     IA_loginfo "  Assigned VPC    = ${cvpcid}"
@@ -29,14 +31,15 @@ function dump()
     IA_loginfo "  Secuirty Groups = ${csgroup},${csgroup_https},${csgroup_admssh}"
     IA_loginfo "  Placement Group = ${cpgroup}"
     IA_loginfo "  Route Table     = ${croute}"
-    exit 0
+    IA_loginfo "  Cluster Nodes   = ${nnames[@]}"
 }
 
 # Get the env setup and helper funs
-source IntelAnalytics_env.sh
+source IntelAnalytics_cluster_env.sh
 
 # Reset the global RET
 _RET=""
+dryrun=yes
 
 # Check inputs
 while [ $# -gt 0 ]
@@ -50,12 +53,8 @@ do
             csize=$2
             shift 2
             ;;
-        --cluster-cidr)
-            ccidr=$2
-            shift 2
-            ;;
-        --no-dryrun)
-            IA_DRYRUN=""
+          --no-dryrun)
+            dryrun=no
             shift 1
             ;;
         *)
@@ -66,11 +65,6 @@ do
 done
 
 # Input 1 is a unique cluster id from frontend user registration
-if [ -z "${cid}" ]; then
-    cid=1
-    IA_DRYRUN="echo "
-    IA_loginfo "Setting to testing cluster id ${cid}!"
-fi
 IA_check_cluster_id ${cid};
 if [ $? -ne 0 ]; then
     IA_logerr "Invalid input cluster id ${cid}!"
@@ -88,17 +82,17 @@ if [ $? -ne 0 ]; then
     usage
 fi
 
-# Input 3 is the target subnet in CIDR
-IA_check_cluster_cidr ${ccidr};
+# Find out the cidr from the given cid
+IA_check_cluster_cidr ${cid}
 if [ $? -ne 0 ]; then
     IA_logerr "Invalid input cluster CIDR!"
     usage
 fi
-IA_loginfo "Receive request to create cluster with id ${cid} of size ${csize}..."
+ccidr="${_RET}"
 
 # Prefix=IntelAnalytics-${id}
-cname=IntelAnalytics-${cid}-${csize}
-IA_loginfo "Preparing to create cluster ${cname}..."
+cname=`IA_format_cluster_name "${cid}-${csize}"`
+IA_loginfo "Preparing to create cluster ${cname} (${cid},${csize},${ccidr})..."
 
 ## No difference between master and slave any more!!!
 ## Retrieve cluster node AMI image id for master node
@@ -122,6 +116,14 @@ if [ -z "${camiid}" ]; then
     exit 1
 fi
 IA_loginfo "AMI IMAGE = ${camiid}"
+
+# Retrieve instance type
+cinstype=`IA_get_instance_type`
+if [ -z "${cinstype}" ]; then
+    IA_logerr "No valid instance type defined for cluser \"${cname}\"!"
+    exit 1
+fi
+IA_loginfo "Instance Type = ${cinstype}"
 
 # Retrieve cluster vpc id
 cvpcid=`IA_get_vpc`
@@ -190,7 +192,7 @@ fi
 IA_loginfo "Security group (Adm SSH) = ${csgroup_admssh}"
 
 # Create per cluster security groups
-IA_create_sgroup ${cname} ${cvpcid} ${csubnet}
+IA_create_sgroup ${cname} ${cvpcid} ${ccidr}
 if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
     IA_logerr "Failed to create security group for cluster ${cname} in VPC ${cvpcid}!"
     exit 1
@@ -204,7 +206,6 @@ if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
     IA_logerr "Failed to update the routing table ${croute} for cluster ${cname} in VPC ${cvpcid}!"
     exit 1
 fi
-dump
 
 # TODO:
 # Prepare the user data script
@@ -216,7 +217,57 @@ dump
 # - bring up the cluster
 
 # - Launch 4 instances into the placement group
+#nname=`IA_format_node_name ${cname} ${i}`
+nnames=(
+"`IA_format_node_name ${cname} 0`" 
+"`IA_format_node_name ${cname} 1`" 
+"`IA_format_node_name ${cname} 2`" 
+"`IA_format_node_name ${cname} 3`")
 
-echo ec2-run-instances ${IA_EC2_OPTS} ${camiid} \
--g ${csgroup} -g ${csgroup_https} -g ${csgroup_admssh} \
+# dump 
+IA_create_dump
 
+for (( i = 0; i < ${csize}; i++ ))
+do
+    nname=${nnames[$i]}
+
+    cmd_opts="${IA_EC2_OPTS} ${camiid} \
+--instance-count 1 \
+--key ${ciamuser} \
+--group ${csgroup} \
+--group ${csgroup_https} \
+--group ${csgroup_admssh} \
+--instance-type ${cinstype} \
+--placement-group ${cpgroup} \
+--subnet ${csubnet}"
+    
+    if [ $i -eq 0 ]; then
+        cmd_opts="${cmd_opts} --associate-public-ip-address true"
+    fi
+    IA_loginfo "Creating EC2 instance for node ${nname}, executing..."
+    IA_loginfo "  ec2-run-instances ${cmd_opts}"
+
+    # set tag
+    if [ "${dryrun}" == "no" ]; then
+        iid=`ec2-run-instances ${cmd_opts} | grep INSTANCE | awk '{print $2}'`
+        ec2-create-tags ${iid} --tag "Name=${nname}"
+    fi
+done
+
+# generate a report
+cat << EOF > ${cname}_info.txt
+
+Time Stamp      = `date`
+Cluster Name    = ${cname}
+Assigned VPC    = ${cvpcid}
+AMI Image ID    = ${camiid}
+Target CIDR     = ${ccidr}
+Target Subnet   = ${csubnet}
+IAM Group:User  = ${ciamgroup}:${ciamuser}
+Secuirty Groups = ${csgroup},${csgroup_https},${csgroup_admssh}
+Placement Group = ${cpgroup}
+Route Table     = ${croute}
+Cluster Nodes   = ${nnames[@]}
+EC2 Creation Commandline Options: ${cmd_opts}
+
+EOF

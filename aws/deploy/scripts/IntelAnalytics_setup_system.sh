@@ -1,5 +1,7 @@
 #!/bin/bash
-source IntelAnalytics_env.sh
+# Description: Used for do system configuration on the cluster for hadoop
+# Note: Expected to be executed from admin node
+source IntelAnalytics_setup_env.sh
 
 # set selinux to permissve and disable firewall
 for n in `cat ${IA_HOSTS}`

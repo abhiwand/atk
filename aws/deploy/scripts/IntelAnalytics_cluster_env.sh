@@ -1,5 +1,5 @@
 #
-# Global settings for per user/customer cluster
+# Global settings for per user/customer cluster bring-up
 #
 # TODO: 
 # - generate hosts the IA_HOSTS mapping to standard master, node${i},...to hosts file
@@ -13,25 +13,7 @@
 # Notes: this script needs AWS EC2 CLI, AMI CLI, IAM CLI
 #
 
-# Default tag/name
-export IA_NAME=IntelAnalytics
-export IA_TAG=${IA_NAME}
-
-# TODO: these are for deployment, should be moved out to avoid confusion
-export IA_HOME=${HOME}/deploy
-export IA_USR=hadoop
-export IA_UID=5002
-export IA_USRSSH=${IA_HOME}/sshconf
-export IA_FILES=( \
-  "hadoop-1.2.1.tar.gz" \
-  "hbase-0.94.12-security.tar.gz" \
-  "titan-all-0.4.0.tar.gz" \
-  "titan-server-0.4.0.tar.gz" \
-  "pig-0.12.0.tar.gz" \
-  "Python-2.7.5.tgz")
-
-export IA_PACKAGE=${IA_NAME}.tar.gz
-export IA_HOSTS=${IA_HOME}/customers/IntelAnalytics-0.hosts
+source IntelAnalytics_common_env.sh
 
 # For AWS EC2
 export JAVA_HOME=/usr/lib/jvm/default-java
@@ -56,6 +38,8 @@ export IA_AMI_WEBSRV="${IA_NAME}-WebSRV"
 export IA_AMI_WEBRDS="${IA_NAME}-WebRDS"
 # consolidate master and slave to use just one image
 export IA_AMI_NODE="${IA_NAME}-Master"
+# instance type is cc2.8xlarge
+export IA_INSTANCE_TYPE=cc2.8xlarge
 
 # Default IAM group and user
 export IA_IAM_GROUP=${IA_NAME}_Public
@@ -68,44 +52,36 @@ export IA_CLUSTER_ID_MAX=40
 export IA_CLUSTER_SIZE_MIN=4
 export IA_CLUSTER_SIZE_MAX=24
 export IA_CLUSTER_SIZE_INC=4
+# The pre-generated cluster CIDR file
+export IA_CLUSTER_CIDR=${IA_NAME}_cidr.txt
 
 # TODO: these are pre-existing shared resources, we can also 
 # do a query at the beginning instead of hard-coding them
-export IA_CIDR_IP="10.0.60.92"
-export IA_CIDR_ADMIN="${IA_CIDR_IP}/32"
-# ${IA_DRYRUN} ec2-describe-route-tables -F "vpc-id=vpc-c84049aa" | grep ROUTETABLE | awk '{print $2}'
+export IA_IP_ADMIN="10.0.60.92"
+export IA_CIDR_ADMIN="${IA_IP_ADMIN}/32"
+# L2 flat CIDR
+export IA_CIDR_FULL=10.0.0.0/18
+# reserved
+export IA_CIDR_RESV=10.0.64.0/27
+# start ip
+export IA_IP_MIN=10.0.64.32
+
+# ec2-describe-route-tables -F "vpc-id=vpc-c84049aa" | grep ROUTETABLE | awk '{print $2}'
 export IA_ROUTETABLE="rtb-bd464fdf"
 # every cluser has the following two security groups
 export IA_SGROUP_HTTPS="sg-381c145a"
-export IA_SGROUP_ADMSSH="sg-97c2caf5"
-
-# overwrite this for dryrun
-export IA_DRYRUN="echo "
+export IA_SGROUP_ADMSSH="sg-447e7526"
+export IA_SGROUP_INTSSH="sg-1c70787e"
+export IA_SGROUP_EXTSSH="sg-97c2caf5"
 
 # Helpers
-
-# Logging helper
-# TODO: log file
-function IA_logger()
-{
-    echo "### ${IA_NAME} $1"
-}
-
-function IA_loginfo()
-{
-    IA_logger "LOG:${1}"
-}
-
-function IA_logerr()
-{
-    IA_logger "ERR:${1}"
-}
 
 # validate the cluster id
 function IA_check_cluster_id()
 {
     IA_loginfo "Check cluster id $1..."
-    if [ ${1} -ge ${IA_CLUSTER_ID_MIN} ] && [ ${1} -le ${IA_CLUSTER_ID_MAX} ]
+
+    if [ ! -z "${1}" ] &&  [ ${1} -ge ${IA_CLUSTER_ID_MIN} ] && [ ${1} -le ${IA_CLUSTER_ID_MAX} ]
     then
         return 0
     fi
@@ -119,10 +95,10 @@ function IA_check_cluster_size()
 {
     local size=$1
     local sizes=(`seq ${IA_CLUSTER_SIZE_MIN} ${IA_CLUSTER_SIZE_MIN} ${IA_CLUSTER_SIZE_MAX}`)
-
     local SIZES="`echo ${sizes[@]}`"
+
     IA_loginfo "Check cluster size ${size}..."
-    for (( i = 0; i < ${#sizes[${i}]}; i++ ))
+    for (( i = 0; i < ${#sizes[@]}; i++ ))
     do
         if [ "${size}" == "${sizes[$i]}" ]
         then
@@ -132,17 +108,73 @@ function IA_check_cluster_size()
     IA_logerr "Input cluster size ${size} is not supported! Valid sizes are ${SIZES}"
     return 1
 }
-# validate the cluster CIDR
-# FIXME: dummy stub right now, no checking
+
+# validate the cluster CIDR, use the pre-generated cluster cidr file, each line is in the format
+# <cluster-id>  <cluster-cidr>
+# Returns 0 for success, 1 for failure
+# Sets _RET to be the placement group name
 function IA_check_cluster_cidr()
 {
-   return 0
+    local cid=$1
+    local line=$((${cid}+1))
+    local cidr=(`sed "${line}q;d" ${IA_CLUSTER_CIDR}`)
+
+    if [ ${cidr[0]} -eq ${cid} ]; then
+        _RET=${cidr[1]}
+        return 0
+    fi
+    IA_logerr "Input cluster id ${cid} != cidr file cluster id ${cidr[0]}!"
+    _RET=""
+    return 1
 }
+
+# get cluster name
+function IA_format_cluster_name()
+{
+    echo ${IA_NAME}-$1
+}
+
+function IA_format_node_name_role()
+{
+    local nid=$1
+
+    if [ ${nid} -eq 0 ]; then
+        echo master
+    else
+        echo "node`printf "%02d" ${nid}`"
+    fi
+}
+
+function IA_format_node_name()
+{
+    local cname=$1
+    local nid=$2
+
+    echo ${cname}-`IA_format_node_name_role ${nid}`
+}
+
+
+#shorter format for hostname, using 'ia' for 'IntelAnalytics"
+function IA_format_node_hostname()
+{
+    local cname=$1
+    local nid=$2
+
+    nname=${cname}-`IA_format_node_name_role ${nid}`
+    echo ${nname} | sed 's/IntelAnalytics/ia/g'
+}
+
 
 # get ami id by name
 function IA_get_ami()
 {
     echo `ec2-describe-images ${IA_EC2_OPTS_TAG} -F "name=${1}" -o self | grep IMAGE | awk '{print $2}'`
+}
+
+# get instance type
+function IA_get_instance_type()
+{
+    echo ${IA_INSTANCE_TYPE}
 }
 
 # get vpc id
@@ -178,7 +210,7 @@ function IA_get_sgroup_https()
 # get per vpc security group for external Admin SSH
 function IA_get_sgroup_admssh()
 {
-    echo ${IA_SGROUP_HTTPS}
+    echo ${IA_SGROUP_ADMSSH}
 }
 
 # find a given placement group by name
@@ -203,7 +235,7 @@ function IA_create_pgroup()
         return 0
     fi
 
-    ${IA_DRYRUN} ec2-create-placement-group ${IA_EC2_OPTS} -s cluster ${pgrp_name}
+    ec2-create-placement-group ${IA_EC2_OPTS} -s cluster ${pgrp_name}
     _RET=`IA_find_pgroup ${pgrp_name}`
     if [ ! -z "${_RET}" ] && [ "${pgrp_name}" == "${_RET}" ]; then
         IA_loginfo "Created placement group ${pgrp_name}..."
@@ -233,27 +265,34 @@ function IA_create_sgroup()
     # check if the group exsits
     local sgrp_name=$1-ssh
     local sgrp_vpc=$2
+    local sgrp_cidr=$3
 
     IA_loginfo "Prepare to create security group ${sgrp_name}..."
     _RET=`IA_find_sgroup ${sgrp_name} ${sgrp_vpc}`
     if [ ! -z "${_RET}" ]; then
         IA_loginfo "Found existing security group ${sgrp_name}, ${_RET}"
-        return 0
+    else
+        IA_loginfo "Creating security group ${sgrp_name}..."
+        ec2-create-group ${IA_EC2_OPTS} ${sgrp_name} -d "Allow SSH Access for ${sgrp_name} within Cluster" -c ${sgrp_vpc}
+        _RET=`IA_find_sgroup ${sgrp_name} ${sgrp_vpc}`
+        if [ -z "${_RET}" ]; then
+            IA_logerr "Failed to create security group ${sgrp_name}..."
+            _RET=""
+            return 1
+        fi
+        IA_loginfo "Created security group ${sgrp_name}, ${_RET}"
     fi
 
-    IA_loginfo "Creating security group ${sgrp_name}..."
-    ${IA_DRYRUN} ec2-create-group ${IA_EC2_OPTS} ${sgrp_name} -d "Allow SSH Access for ${sgrp_name} within Cluster" -c ${sgrp_vpc}
-    _RET=`IA_find_sgroup ${sgrp_name} ${sgrp_vpc}`
-    if [ ! -z "${_RET}" ]; then
-        IA_loginfo "Created security group ${sgrp_name}, ${_RET}"
-        # add rules
+    # note, only check by grepping cidr, to be really careful, get the
+    # corresponding columns, and compare all idr, to, and from columns
+    ec2-describe-group -H -F "vpc-id=${sgrp_vpc}" -F "group-id=${_RET}" | grep "${sgrp_cidr}" 2>&1 > /dev/null
+    if [ $? -ne 0 ];then
         IA_loginfo "Creating inbound cluster SSH rule for ${sgrp_name}..."
-        ec2-authorize ${IA_EC2_OPTS} ${_RET} --protocol tcp --port-range 22 --cidr "${IA_CIDR_ADMIN}"
-        return 0
+        ec2-authorize ${IA_EC2_OPTS} ${_RET} --protocol tcp --port-range 22 --cidr "${sgrp_cidr}"
+    else
+        IA_loginfo "Existing rule on ${sgrp_cidr} for ${sgrp_name} found..."
     fi
-    IA_logerr "Failed to create security group ${sgrp_name}..."
-    _RET=""
-    return 1
+    return 0
 }
 
 # find the subnet for the target cluster
@@ -281,11 +320,11 @@ function IA_create_subnet()
 
     # default zone
     IA_loginfo "Creating subnet ${snet_name}..."
-    ${IA_DRYRUN} ec2-create-subnet ${IA_EC2_OPTS} --vpc ${snet_vpc} --cidr ${snet_cidr}
+    ec2-create-subnet ${IA_EC2_OPTS} --vpc ${snet_vpc} --cidr ${snet_cidr}
     _RET=`IA_find_subnet ${snet_name} ${snet_vpc} ${snet_cidr}`
     if [ ! -z "${_RET}" ]; then
         IA_loginfo "Found existing subnet ${snet_name} with id ${_RET} in vpc ${snet_vpc}"
-        ${IA_DRYRUN} ec2-create-tags ${IA_EC2_OPTS} ${snet_id} --tag "Name=${snet_name}"
+        ec2-create-tags ${IA_EC2_OPTS} ${snet_id} --tag "Name=${snet_name}"
         return 0
     fi
     IA_logerr "Failed to create subnet ${sne_name} for VPC ${snet_vpc} using CIR ${snet_cidr}!"
@@ -316,7 +355,7 @@ function IA_update_routes()
         IA_loginfo "Found existing association in route table ${rt_id} for subnet ${_RET}"
         return 0
     fi
-    ${IA_DRYRUN} ec2-associate-route-table ${IA_EC2_OPTS} ${rt_id} --subnet ${rt_snet}
+    ec2-associate-route-table ${IA_EC2_OPTS} ${rt_id} --subnet ${rt_snet}
     _RET=`IA_find_routetable_subnet ${rt_id} ${rt_snet}`
     if [ ! -z "${_RET}" ] && [ "${_RET}" == "${rt_snet}" ]; then
         IA_loginfo "Updated route table with association with subnet ${_RET}"
@@ -325,4 +364,83 @@ function IA_update_routes()
     IA_logerr "Failed to associate subnet ${rt_snet} with routing table ${rt_id}!"
     _RET=""
     return 1
+}
+
+# find out the ec2 instance id by the name tag
+function IA_get_instance_id()
+{
+    local name=$1
+    local vpc=`IA_get_vpc`
+
+    echo `ec2-describe-instances -F "vpc-id=${vpc}" -F "tag:Name=${name}" | grep INSTANCE | awk '{print $2}' `
+    return 0
+}
+
+# get the value of a given column for an ec2 instance
+# this is extracted from ec2-describe-instances, and matches the ec2 docs 
+# supported filter fields
+function IA_get_instance_column()
+{
+    local ins=(`ec2-describe-instances --show-empty-fields -F "tag:Name=${1}" | grep INSTANCE`)
+
+    case $2 in
+    vpc-id)
+        echo ${ins[18]}
+        ;;
+    instance-id)
+        echo ${ins[1]}
+        ;;
+    public-dns-name)
+        echo ${ins[3]}
+        ;;
+    private-dns-name)
+        echo ${ins[4]}
+        ;;
+    public-ip-address)
+        echo ${ins[16]}
+        ;;
+    private-ip-address)
+        echo ${ins[17]}
+        ;;
+    *)
+        ;;
+    esac
+}
+
+# find out the ec2 instance ip by the name tag
+function IA_get_instance_private_ip()
+{
+    echo `IA_get_instance_column $1 private-ip-address`
+}
+
+function IA_get_instance_private_dns()
+{
+    echo `IA_get_instance_column $1 private-dns-name`
+}
+
+function IA_get_instance_public_ip()
+{
+    echo `IA_get_instance_column $1 public-ip-address`
+}
+function IA_get_instance_public_dns()
+{
+    echo `IA_get_instance_column $1 public-dns-name`
+}
+
+function IA_generate_hosts_file()
+{
+    local cname=$1
+    local csize=$2
+    local output=$3
+
+    rm ${output} 2>&1 > /dev/null
+    for (( i = 0; i < ${csize}; i++ ))
+    do
+        hosts[$i]=`IA_format_node_name_role $i`
+        nname[$i]=`IA_format_node_name ${cname} $i`
+        ip[$i]=`IA_get_instance_private_ip ${nname[$i]}`
+        dnsfull[$i]=`IA_get_instance_private_dns ${nname[$i]}`
+        dns[$i]=`echo ${dnsfull[$i]} | awk -F"." '{print $1}'`
+        echo "${ip[$i]} ${hosts[$i]} ${dns[$i]}" >> ${output}
+    done
 }

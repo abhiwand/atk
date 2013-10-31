@@ -1,5 +1,8 @@
 #!/bin/bash
-source IntelAnalytics_env.sh
+# Description: Used for generating default IA running account and the default ssh 
+# Note: Expected to be executed from admin node
+
+source IntelAnalytics_setup_env.sh
 
 for n in `cat ${IA_HOSTS}`
 do
