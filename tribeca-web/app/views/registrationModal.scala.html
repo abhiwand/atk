@@ -8,20 +8,29 @@
             </div>
             <div class="modal-body">
                 <div class='row'>
-                    <div class='col-sm-12'>
+                    <div class='col-sm-12  '>
                         @*<form class='DA_custom_form' method="post" action="register" id="registration-form" onsubmit="">*@
                             <fieldset class='row'>
-                                <div class='col-sm-12 mg-b-md'>
+                                <div class='col-sm-12 mg-b-md DA_holder'>
 
-                                    <div class='lead'>Intelanalytics Beta Registration</div>
+                                    <div class='lead'>intel®analytics Beta Registration</div>
                                     <small class='text-muted'>Thank you for signing up for our invite-only beta test group. After you fill out the simple form below, we can verify your identity as a human being and analyze your request. You will receive a response with your approval which is based on availability!</small>
                                     </div>
                                     <form method="post" class="DA_custom_form" id="registration-form" action="register">
             <div class="DA_holder horizontal">
 
+                <label>Your Name</label>
+                <div class="DA_field_container">
+                    <input type="text" class="field" id="myname" name="myname" />
+                    <span><i class="icon-remove"></i></span>
+                </div>  
+            </div>  
+
+            <div class="DA_holder horizontal">
+
                 <label>Company Name</label>
                 <div class="DA_field_container">
-                    <input type="text" class="field" id="myname" name="name" />
+                    <input type="text" class="field" id="companyname" name="companyname" />
                     <span><i class="icon-remove"></i></span>
                 </div>  
             </div>  
@@ -42,34 +51,54 @@
                 </div>
             </div>
 
-            <div class='DA_holder DA_select_holder horizontal'>
-                <label>Level of Experience</label>
+            <div class='DA_holder DA_select_holder '>
+                <label>How Experienced are you in Machine Learning?</label>
                 <div class='select_wrap'>
                     <select class='select_field' id='experience' name='experience'>
                         <option value=''>What is Your Level of Experience?</option>
-                        <option value='none'>This is new to me.</option>
-                        <option value='beginner'>I have some experience.</option>
-                        <option value='novice'>I've used it extensively.</option>
-                        <option value='expert'>I consider myself an expert.</option>
+                        <option value='1'>This is new to me - 1</option>
+                        <option value='2'>I have some experience - 2</option>
+                        <option value='3'>I'm experienced - 3</option>
+                        <option value='4'>I've used it extensively - 4</option>           <option value='5'>I consider myself an expert - 5</option>
+
                     </select>
                 </div>    
             </div>
-            <div class='DA_holder DA_select_holder horizontal'>
-                <label>Role in Your Company?</label>
+
+            <div class='DA_holder DA_select_holder '>
+                <label>What Best Describes Your Role at Your Company or Institution?</label>
                 <div class='select_wrap'>
                     <select class='select_field' id='role' name='role'>
                         <option value=''>What is Your Role in Your Company?</option>
-                        <option value='marketing'>Marketing Professional</option>
+                        <option value='datascientist'>Data Scientist/Programmer</option>
                         <option value='analyst'>Business Analyst</option>
-                        <option value='developer'>Software Developer</option>
-                        <option value='designer'>UX Designer</option>
+                        <option value='it-department'>IT Department</option>
+                        <option value='researcher'>Researcher</option>
+                        <option value='student'>Student</option>
+                        <option value='marketing'>Marketing</option>
+                        <option value='management'>Management</option>
+                        <option value='other'>Other</option>
                     </select>
                 </div>    
             </div>
-            
+            <div class='DA_holder '>
+                <label>Why do you Want to Participate in This Beta Test?</label>
+                <div class='textarea-frame'>
+                    <div class="cl">&nbsp;</div>
+                        <textarea name="required" id="message1" class="field" rows="8" cols="40"></textarea>
+                    <div class="cl">&nbsp;</div>
+                </div>    
+            </div>
+            <div class='DA_holder '>
+                <label>What tools for graph or machine learning are you currently using or evaluating?</label>
+                <div class='textarea-frame'>
+                    <div class="cl">&nbsp;</div>
+                        <textarea name="required" id="message2" class="field" rows="8" cols="40"></textarea>
+                    <div class="cl">&nbsp;</div>
+                </div>    
+            </div>           
 
-
-            <div class="DA_holder DA_check_holder horizontal">
+            <div class="DA_holder DA_check_holder ">
                <div class='cl'>&nbsp;</div>
                     <input type="checkbox" class="check-box" id="terms" name="terms"  />
                     <label for="remember" class="fl">I have read the terms of use</label>              

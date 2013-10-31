@@ -18,6 +18,28 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 		/*** here are the validation rules. the elements are get by name attribute ( <input type="field" name="firstname" /> ) ***/
 		/********************HERE YOU CAN CUSTOMIZE THE STOCK VALIDATION RULES*******************/
 		rules: {
+			myname: {
+				required: true,
+				minlength: 3
+			},
+			companyname: {
+				required: true,
+				minlength: 3
+			},
+			role: {
+				required: true,
+			},
+			experience: {
+				required: true,
+			},
+			message1: {
+				required: true,
+				minlength: 3
+			},
+			message2: {
+				required: true,
+				minlength: 3
+			},
 			name: {
 				required: true,
 				minlength: 3

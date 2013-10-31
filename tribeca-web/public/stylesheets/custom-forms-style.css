@@ -58,12 +58,12 @@ h1#logo img{ width:100%; }
 
 /********************* text fields frames styles **********************/
 
-.DA_custom_form{ margin:0 auto 30px auto; padding-bottom:15px; max-width:700px; padding:0 10px; position: relative; z-index: 1}
+.DA_custom_form{ margin:0 auto 30px auto; padding-bottom:15px; max-width:800px; padding:0 10px; position: relative; z-index: 1}
 .DA_custom_form .DA_field_container{ display: block; width:100%; height:45px; padding:10px 0;  border:solid 1px #ccc; }
 .DA_custom_form .DA_field_container{ -webkit-border-radius: 3px; border-radius: 5px; }
-.DA_custom_form .DA_field_container{ position: relative; z-index: 1;}
+.DA_custom_form .DA_field_container{ position: relative;}
 
-.DA_custom_form .textarea-frame{ display: block; width:100%; height:160px; padding:10px 0;  border:solid 1px #ccc; }
+.DA_custom_form .textarea-frame{ display: block; width:100%; height:100px; padding:10px 0;  border:solid 1px #ccc; }
 .DA_custom_form .textarea-frame{ -webkit-border-radius: 5px; border-radius: 3px;}
 .DA_custom_form .textarea-frame{ position: relative; z-index: 1;}
 
@@ -326,7 +326,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 
 /*************************************** HORIZONTAL FORM STYLE *****************************************/
 
-.DA_custom_form .horizontal{  width:90%; float: left; display: inline; margin:10px 5%;}
+.DA_custom_form .horizontal{  width:80.8%; float: left; display: inline; margin:5px 10%;}
 .DA_custom_form .horizontal label{ float: left; display: inline; width:35%; padding:0; line-height: 45px}
 .DA_custom_form .horizontal  label.fl{ width:80%; line-height: 23px; padding-bottom:8px; }
 .DA_custom_form .horizontal label.error{ display: block; float: none; width:auto; line-height: 22px; padding:0 5px;}

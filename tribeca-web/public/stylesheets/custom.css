@@ -442,3 +442,12 @@ button.close {
 .modal-content {
     margin-top: 45px;
 }
+
+#footer #footer-main p {
+    font-size: 9px;
+    padding-top: 10px;
+}
+
+.modal-dialog {
+    width: 700px;
+}
