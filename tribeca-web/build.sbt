@@ -14,3 +14,12 @@ libraryDependencies ++= Seq(
 
 play.Project.playScalaSettings
 
+
+//name in Rpm := "intelanalytics-saas-web",
+   // version in Rpm <<= sbtVersion.identity,
+   // rpmRelease := "1",
+  //  rpmVendor := "Intel",
+   // rpmUrl := None,
+    //rpmLicense := None,
+
+
