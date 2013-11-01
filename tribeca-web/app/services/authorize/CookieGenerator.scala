@@ -19,7 +19,7 @@ object CookieGenerator {
 
     def createCookie(secret: String, name: String): Cookie = {
         val value = CookieGenerator.create_signed_value(secret, name, "localuser")
-        Cookie(name, value, Some(3600 * 8), "/", Some("intel.com"), true, false)
+        Cookie(name, value, Some(3600 * 8), "/", Some("intel.com"), false, false)
     }
 
 
