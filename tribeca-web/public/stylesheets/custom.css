@@ -426,8 +426,6 @@ body.error-page .message {
 
 
 .alert {
-    left: 50%;
-    margin-left: -191px;
     position: fixed;
     top: 70px;
     width: auto;
@@ -442,3 +440,18 @@ button.close {
 .modal-content {
     margin-top: 45px;
 }
+
+#footer #footer-main p {
+    font-size: 9px;
+    padding-top: 10px;
+}
+
+.imglead {
+    float: right;
+    display: inline-block;
+    width: auto;
+    height: 45px;
+}
+
+
+

@@ -845,7 +845,7 @@ a [class*=" fa-icon-"] {
   background-position: 0% 0%;
   background-repeat: repeat;
   margin-top: 0;
-  margin-right: 15px; }
+   }
 
 /* more sprites.less reset */
 .fa-icon-white,
