@@ -426,8 +426,6 @@ body.error-page .message {
 
 
 .alert {
-    left: 50%;
-    margin-left: -191px;
     position: fixed;
     top: 70px;
     width: auto;
@@ -454,5 +452,6 @@ button.close {
     width: auto;
     height: 45px;
 }
+
 
 
