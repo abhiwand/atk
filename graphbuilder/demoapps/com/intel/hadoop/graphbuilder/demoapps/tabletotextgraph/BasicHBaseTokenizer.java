@@ -57,44 +57,33 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
 
     @Override
     public void configure(Configuration conf) {
-        // Parse the column names of vertices and properties from command line prompt
-        // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
 
-        String   separators          = "\\" + GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR");
-        String[] vertexIdColumnNames = conf.get(GBHTableConfig.config.getProperty("VCN_CONF_NAME")).split(separators);
+        String[] vertexRules = BasicHBaseGraphBuildingRule.unpackVertexRulesFromConfiguration(conf);
+
         String   vertexIdColumnName  = null;
 
-        for (String iteratorString : vertexIdColumnNames) {
-            if (iteratorString.contains("=")) {
-                String[] columnNames = iteratorString.split("\\=");
+        for (String vertexRule : vertexRules) {
 
-                vertexIdColumnName = columnNames[0];
+                vertexIdColumnName = BasicHBaseGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
                 vertexIdColumnList.add(vertexIdColumnName);
 
-                String[] vertexPropertiesColumnNames = columnNames[1].split("\\,");
+                String[] vertexPropertiesColumnNames =
+                        BasicHBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
+
                 vertexPropColMap.put(vertexIdColumnName, vertexPropertiesColumnNames);
-            } else {
-                vertexIdColumnName = iteratorString;
-                vertexIdColumnList.add(vertexIdColumnName);
-            }
         }
 
         LOG.info("TRIBECA_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
 
-        // now we have to do the same with the edges
-        // The first three attributes in the edge string are source vertex column, destination
-        // vertex column and the string label e.g.
-        // <src_vertex_col>,<dest_vertex_col>,<label>,[<edge_property_col1>,<edge_property_col2>,...]
 
-        String   separator   = "\\" + GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR");
-        String[] edgeStrings = conf.get(GBHTableConfig.config.getProperty("ECN_CONF_NAME")).split(separator);
+        String[] edgeRules = BasicHBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
 
-        for (String next : edgeStrings) {
+        for (String edgeRule : edgeRules) {
 
-            String[] columnNames      = next.split("\\,");
-            String   srcVertexColName = columnNames[0];
-            String   tgtVertexColName = columnNames[1];
-            String   label            = columnNames[2];
+            String   srcVertexColName     = BasicHBaseGraphBuildingRule.getSrcColNameFromEdgeRule(edgeRule);
+            String   tgtVertexColName     = BasicHBaseGraphBuildingRule.getDstColNameFromEdgeRule(edgeRule);
+            String   label                = BasicHBaseGraphBuildingRule.getLabelFromEdgeRule(edgeRule);
+            List<String> edgePropertyCols = BasicHBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
 
             List<String> edgeColumns = new ArrayList<String>();
 
@@ -106,8 +95,8 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
             edgeColumns.add(srcVertexColName);
             edgeColumns.add(tgtVertexColName);
 
-            for (int i = 3; i < columnNames.length; i++) {
-                edgeColumns.add(columnNames[i]);
+            for (String edgePropertyColumn : edgePropertyCols) {
+                edgeColumns.add(edgePropertyColumn);
             }
 
             edgeLabelToColumnList.put(label, edgeColumns);
