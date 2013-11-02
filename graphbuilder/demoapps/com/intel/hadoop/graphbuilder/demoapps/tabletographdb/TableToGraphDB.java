@@ -2,6 +2,7 @@
 
 package com.intel.hadoop.graphbuilder.demoapps.tabletographdb;
 
+import com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph.BasicHBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph.BasicHBaseTokenizer;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.HBaseInputConfiguration;
@@ -84,16 +85,18 @@ public class TableToGraphDB {
             System.exit(1);
         }
 
+        CommandLine cmd = commandLineInterface.getCmd();
+
         Job                      job                 = new TableToGraphDB().new Job();
         job = (Job) commandLineInterface.getRuntimeConfig().addConfig(job);
 
         HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration();
-        BasicHBaseTokenizer      tokenizer           = new BasicHBaseTokenizer();
+        BasicHBaseGraphBuildingRule buildingRule     = new BasicHBaseGraphBuildingRule(cmd);
         TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
 
         LOG.info("============= Creating graph from feature table ==================");
         timer.start();
-        job.run(inputConfiguration, tokenizer, outputConfiguration, commandLineInterface.getCmd());
+        job.run(inputConfiguration, buildingRule, outputConfiguration, cmd);
         LOG.info("========== Done creating graph from feature table ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

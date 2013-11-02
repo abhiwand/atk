@@ -23,6 +23,7 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextG
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.OutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFileInputConfiguration;
+import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
 
@@ -134,7 +135,7 @@ public class CreateWordCountGraph {
 
         TextInputFormat            format             = new WikiPageInputFormat();
         TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
-        GraphTokenizer             tokenizer          = new WordCountGraphTokenizer();
+        WordCountGraphBuildingRule graphBuildingRule  = new WordCountGraphBuildingRule();
 
         OutputConfiguration outputConfiguration = null;
 
@@ -147,7 +148,7 @@ public class CreateWordCountGraph {
 
         LOG.info("============= Creating Word Count Graph ===================");
         timer.start();
-        job.run(inputConfiguration, tokenizer, outputConfiguration, commandLineInterface.getCmd());
+        job.run(inputConfiguration, graphBuildingRule, outputConfiguration, commandLineInterface.getCmd());
         LOG.info("========== Done Creating Word Count Graph  ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

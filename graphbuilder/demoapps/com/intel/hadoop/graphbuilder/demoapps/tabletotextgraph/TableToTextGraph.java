@@ -144,13 +144,13 @@ public class TableToTextGraph {
 
         Job                                   job                 = new TableToTextGraph().new Job();
         HBaseInputConfiguration               inputConfiguration  = new HBaseInputConfiguration();
-        BasicHBaseTokenizer                   tokenizer           = new BasicHBaseTokenizer();
+        BasicHBaseGraphBuildingRule           buildingRule        = new BasicHBaseGraphBuildingRule(cmd);
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
 
 
         LOG.info("============= Creating graph from hbase ==================");
         timer.start();
-        job.run( inputConfiguration,tokenizer, outputConfiguration, cmd);
+        job.run( inputConfiguration,buildingRule, outputConfiguration, cmd);
         LOG.info("========== Done creating graph from hbase ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

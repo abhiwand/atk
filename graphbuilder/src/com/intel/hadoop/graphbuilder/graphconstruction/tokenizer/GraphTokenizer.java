@@ -20,6 +20,8 @@ package com.intel.hadoop.graphbuilder.graphconstruction.tokenizer;
 
 import java.util.Iterator;
 
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertyGraphSchema;
+import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -38,7 +40,6 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @see com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat
  */
 public interface GraphTokenizer<RecordType, VidType extends WritableComparable<VidType>> {
-
     /**
      * Configure the tokenizer from JobConf.
      *
@@ -65,8 +66,4 @@ public interface GraphTokenizer<RecordType, VidType extends WritableComparable<V
      */
     Iterator<Edge<VidType>> getEdges();
 
-    /**
-     * @return Class of the VidType. Used for type safety in the high level.
-     */
-    Class vidClass();
 }

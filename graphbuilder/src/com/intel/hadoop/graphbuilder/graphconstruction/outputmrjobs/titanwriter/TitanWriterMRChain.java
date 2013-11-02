@@ -6,18 +6,28 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.Titan
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.GraphGenerationMRJob;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.EdgeSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertyGraphSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.VertexSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.PassThruMapperIntegerKey;
+import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.core.TitanKey;
+import com.tinkerpop.blueprints.Vertex;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -25,6 +35,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
@@ -65,11 +76,12 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private HBaseUtils hbaseUtils = null;
     private boolean    usingHBase = false;
 
-    private GraphTokenizer     tokenizer;
+    private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
 
     private PropertyGraphElement mapValueType;
     private Class                vidClass;
+    private PropertyGraphSchema  graphSchema;
 
     private Functional vertexReducerFunction;
     private Functional edgeReducerFunction;
@@ -83,12 +95,13 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      */
 
     @Override
-    public void init(InputConfiguration inputConfiguration, GraphTokenizer tokenizer) {
+    public void init(InputConfiguration inputConfiguration, GraphBuildingRule graphBuildingRule) {
 
-        this.tokenizer          = tokenizer;
+        this.graphBuildingRule  = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
-        this.usingHBase         = inputConfiguration.usesHBase();
+        this.graphSchema        = graphBuildingRule.getGraphSchema();
 
+        this.usingHBase = true;
         this.hbaseUtils = HBaseUtils.getInstance();
         this.conf       = hbaseUtils.getConfiguration();
     }
@@ -182,6 +195,53 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             conf.set(key, userOpts.get(key.toString()));
     }
 
+
+    /**
+     * create the titan graph for saving edges and remove the static open method from setup so it can be mocked
+     *
+     * @return TitanGraph for saving edges
+     * @throws IOException
+     */
+    private TitanGraph tribecaGraphFactoryOpen(Configuration configuration) throws IOException {
+        BaseConfiguration titanConfig = new BaseConfiguration();
+
+        return GraphDatabaseConnector.open("titan", titanConfig, configuration);
+    }
+
+    private void initTitanGraph () {
+        TitanGraph graph = null;
+
+        try {
+            graph = tribecaGraphFactoryOpen(conf);
+        } catch (IOException e) {
+            LOG.fatal("Unhandled IO exception while attempting to open Titan");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        graph.makeKey("trueName").dataType(String.class).indexed(Vertex.class).unique().make();
+
+        for (VertexSchema vertexSchema : graphSchema.getVertexSchemata())  {
+            for (PropertySchema vps : vertexSchema.getPropertySchemata()) {
+                graph.makeKey(vps.getName()).dataType(vps.getType()).make();
+            }
+        }
+
+
+        for (EdgeSchema edgeSchema : graphSchema.getEdgeSchemata())  {
+            ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
+
+            for (PropertySchema eps : edgeSchema.getPropertySchemata()) {
+                titanKeys.add(graph.makeKey(eps.getName()).dataType(eps.getType()).make());
+            }
+
+            TitanKey[] titanKeyArray = titanKeys.toArray(new TitanKey[titanKeys.size()]);
+            graph.makeLabel(edgeSchema.getLabel()).signature(titanKeyArray).make();
+        }
+
+        graph.commit();
+    }
+
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
 
@@ -197,9 +257,15 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         String intermediateDataFileName = "graphbuilder_temp_file-" + random().toString();
         Path   intermediateDataFilePath = new Path("/tmp/" + intermediateDataFileName);
 
+
+        initTitanGraph();
+
         runReadInputLoadVerticesMRJob(intermediateDataFilePath, cmd);
 
         runEdgeLoadMRJob(intermediateDataFilePath);
+
+        FileSystem fs = FileSystem.get(getConf());
+        fs.delete(intermediateDataFilePath, true);
     }
 
     public void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath, CommandLine cmd)
@@ -207,7 +273,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         // Set required parameters in configuration
 
-        conf.set("GraphTokenizer", tokenizer.getClass().getName());
+        conf.set("GraphTokenizer", graphBuildingRule.getGraphTokenizerClass().getName());
         conf.setBoolean("noBiDir", cleanBidirectionalEdge);
         conf.set("vidClass", vidClass.getName());
         conf.set("KeyFunction", SourceVertexKeyFunction.class.getName());
@@ -224,6 +290,10 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         // set the configuration per the input
 
         inputConfiguration.updateConfigurationForMapper(conf, cmd);
+
+        // update the configuration per the tokenizer
+
+        graphBuildingRule.updateConfigurationForTokenizer(conf, cmd);
 
         // create loadVerticesJob from configuration and initialize MR parameters
 
@@ -261,7 +331,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         LOG.info("Output is a titan dbase = " +  TitanConfig.config.getProperty("TITAN_STORAGE_TABLENAME"));
 
         LOG.info("InputFormat = " + inputConfiguration.getDescription());
-        LOG.info("GraphTokenizerFromString = " + tokenizer.getClass().getName());
+        LOG.info("GraphBuildingRule = " + graphBuildingRule.getClass().getName());
 
         if (vertexReducerFunction != null) {
             LOG.info("vertexReducerFunction = " + vertexReducerFunction.getClass().getName());
@@ -313,8 +383,5 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         LOG.info("==================== Start ====================================");
         writeEdgesJob.waitForCompletion(true);
         LOG.info("=================== Done ====================================\n");
-
-        FileSystem fs = FileSystem.get(getConf());
-        fs.delete(intermediateDataFilePath, true);
     }
 }

@@ -48,6 +48,7 @@ public class CommandLineInterface {
         } catch (IOException e) {
             showHelp("Error parsing hadoop generic options.");
         }
+
         //load all the grahpbuilder configs into the runtime class
         runtimeConfig.loadConfig(genericOptionsParser.getConfiguration());
         //parse the remaining args

@@ -18,6 +18,7 @@
  */
 package com.intel.hadoop.graphbuilder.test.job;
 
+import com.intel.hadoop.graphbuilder.demoapps.wikipedia.linkgraph.LinkGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextGraphOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFileInputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
@@ -81,11 +82,10 @@ public class CreateGraphJobTest {
 
         TextInputFormat            format             = new WikiPageInputFormat();
         TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
-
-        GraphTokenizer             tokenizer          = new LinkGraphTokenizer();
+        LinkGraphBuildingRule      graphBuildingRule  = new LinkGraphBuildingRule();
 
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
 
-        job.run(inputConfiguration, tokenizer, outputConfiguration, cmd);
+        job.run(inputConfiguration, graphBuildingRule, outputConfiguration, cmd);
     }
 }

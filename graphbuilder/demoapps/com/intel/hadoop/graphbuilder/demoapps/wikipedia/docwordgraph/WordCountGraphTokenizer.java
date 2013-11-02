@@ -37,8 +37,13 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.EdgeSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertyGraphSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.VertexSchema;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.IntType;
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -85,6 +90,11 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
     private HashSet<String>          dictionary;
     private HashSet<String>          stopWordsList;
 
+    private PropertyGraphSchema      graphSchema;
+
+    public static final String CONTAINS  = "contains";
+    public static final String WORDCOUNT = "wordCount";
+
     // tags used to mark each vertex name as either a "document" or a "word"
     // documents are prefixed by 0, words are prefixed by 1...
     // nls todo:  investigate eliminating this legacy functionality
@@ -120,11 +130,6 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
                 e.printStackTrace();
             }
         }
-    }
-
-    @Override
-    public Class vidClass() {
-        return StringType.class;
     }
 
     public void parse(String inputString, Mapper.Context context) {
@@ -226,14 +231,14 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
         ArrayList<Edge<StringType>>      edgeList      = new ArrayList<Edge<StringType>>(wordCountMap.size());
         Iterator<Entry<String, Integer>> entryIterator = wordCountMap.entrySet().iterator();
-        final StringType                 CONTAINS      = new StringType("contains");
+        final StringType                 CONTAINS_STYPE      = new StringType(CONTAINS);
 
         while (entryIterator.hasNext()) {
 
             Entry<String, Integer> entry = entryIterator.next();
             Edge                   edge  = new Edge<StringType>(new StringType(DOCUMENT_TAG + pageTitle),
                                                                 new StringType(WORD_TAG + entry.getKey()),
-                                                                CONTAINS);
+                                                                CONTAINS_STYPE);
 
             edge.setProperty("wordCount", new IntType(entry.getValue()));
 

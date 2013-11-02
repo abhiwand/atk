@@ -136,6 +136,29 @@ public class HBaseUtils {
     }
 
     /**
+     * Check if the given full column has a column family that is present in the table.
+     *
+     * @param fullColumnName
+     * @param tableName,
+     * @return  true iff the column's family is present in the table
+     */
+    public boolean columnHasValidFamily( String fullColumnName, String tableName) {
+
+        boolean returnValue = false;
+
+        if (fullColumnName.contains(":")) {
+            String columnFamilyName = fullColumnName.split(":")[0];
+            try {
+                returnValue = tableContainsColumnFamily(tableName, columnFamilyName);
+            } catch (IOException e) {
+                LOG.fatal("Unhandled IO exception.");
+                System.exit(1);
+            }
+        }
+
+        return returnValue;
+    }
+    /**
      * Constructor method
      *
      * @throws IOException
@@ -253,4 +276,5 @@ public class HBaseUtils {
 
         return scan;
     }
+
 }

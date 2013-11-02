@@ -23,6 +23,7 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.Outpu
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFileInputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat.WikiPageInputFormat;
+import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
@@ -114,9 +115,9 @@ public class CreateLinkGraph {
         Job job = new CreateLinkGraph().new Job();
         job = (Job) commandLineInterface.getRuntimeConfig().addConfig(job);
 
-        WikiPageInputFormat format = new WikiPageInputFormat();
+        WikiPageInputFormat        format             = new WikiPageInputFormat();
         TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
-        GraphTokenizer tokenizer = new LinkGraphTokenizer();
+        GraphBuildingRule          buildingRule       = new LinkGraphBuildingRule();
 
         OutputConfiguration outputConfiguration = null;
 
@@ -128,7 +129,7 @@ public class CreateLinkGraph {
 
         LOG.info("========== Creating link graph ================");
         timer.start();
-        job.run(inputConfiguration, tokenizer, outputConfiguration, commandLineInterface.getCmd());
+        job.run(inputConfiguration, buildingRule, outputConfiguration, commandLineInterface.getCmd());
         LOG.info("========== Done creating link graph ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

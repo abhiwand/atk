@@ -33,7 +33,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.EdgeSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertyGraphSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.VertexSchema;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -63,10 +67,14 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
 
     private static final Logger LOG = Logger.getLogger(LinkGraphTokenizer.class);
 
+    public static final String LINKSTO = "linksTo";
+
     private String                        title;
     private List<String>                  links;
     private ArrayList<Vertex<StringType>> vertexList;
     private ArrayList<Edge<StringType>>   edgeList;
+
+
 
     private DocumentBuilderFactory factory;
     private DocumentBuilder        builder;
@@ -88,11 +96,6 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
 
     @Override
     public void configure(Configuration job) {
-    }
-
-    @Override
-    public Class vidClass() {
-        return StringType.class;
     }
 
     public void parse(String string, Mapper.Context context) {
@@ -137,11 +140,11 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
 
         edgeList.clear();
         Iterator<String> iterator = links.iterator();
-        final StringType LINKSTO  = new StringType("linksTo");
+        final StringType LINKSTO_STYPE  = new StringType(LINKSTO);
 
         while (iterator.hasNext()) {
             edgeList.add(new Edge<StringType>(new StringType(title),
-                    new StringType(iterator.next()), LINKSTO));
+                    new StringType(iterator.next()), LINKSTO_STYPE));
         }
 
         return edgeList.iterator();

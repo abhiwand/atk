@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.job;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.OutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.GraphGenerationMRJob;
+import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.io.WritableComparable;
@@ -61,7 +62,7 @@ public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<
     }
 
     public boolean run(InputConfiguration  inputConfiguration,
-                       GraphTokenizer      tokenizer,
+                       GraphBuildingRule   graphBuildingRule,
                        OutputConfiguration outputConfiguration,
                        CommandLine         cmd)
             throws Exception {
@@ -71,9 +72,9 @@ public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<
 
         // "hook up" the input configuration and tokenizer to the MR Job specified by the output configuration
 
-        graphGenerationMRJob.init(inputConfiguration, tokenizer);
+        graphGenerationMRJob.init(inputConfiguration, graphBuildingRule);
 
-        Class vidClass   = tokenizer.vidClass();
+        Class vidClass   = graphBuildingRule.vidClass();
         Class valueClass = ValueClassFactory.getValueClassByVidClassName(vidClass.getName());
 
         graphGenerationMRJob.setVidClass(vidClass);

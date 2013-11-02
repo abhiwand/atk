@@ -122,10 +122,17 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
 
             // Major operation - add the edge to Titan graph
 
-            com.tinkerpop.blueprints.Edge bluePrintsEdge = this.graph.addEdge(null,
+            com.tinkerpop.blueprints.Edge bluePrintsEdge = null;
+            try {
+                bluePrintsEdge = this.graph.addEdge(null,
                                                                               srcBlueprintsVertex,
                                                                               tgtBlueprintsVertex,
                                                                               label);
+            } catch (IllegalArgumentException e) {
+                LOG.fatal("Could not add edge to Titan; likely a schema error. The label on the edge is  " + label);
+                System.exit(1);
+            }
+
             // Edge is added to the graph; now add the edge properties
 
             // the "srcTitanID" property was added during this MR job to propagate the Titan ID of the edge's
@@ -136,7 +143,16 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
             for (Writable propertyKey : propertyMap.getPropertyKeys()) {
                 EncapsulatedObject mapEntry = (EncapsulatedObject) propertyMap.getProperty(propertyKey.toString());
 
+                try {
                 bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
+                    e.getMessage();
+                    LOG.fatal("Could not add edge property; probably a schema error. The label on the edge is  " + label);
+                    LOG.fatal("The property on the edge is " + propertyKey.toString());
+                    System.exit(1);
+                }
+
             }
 
             edgeCount++;
