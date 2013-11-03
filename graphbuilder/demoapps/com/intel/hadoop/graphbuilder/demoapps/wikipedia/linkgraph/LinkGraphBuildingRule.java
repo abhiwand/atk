@@ -10,10 +10,35 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 
 
+/**
+ * This class manage the set-up time state for the graph construction phase that emits vertices and edges of a link
+ * graph from a wiki page (presented as a string).
+ *
+ * <p>
+ * <ul>
+ *     <li>There is vertex for every wiki page in the specified input file.</li>
+ *     <li>There is a "linksTO" edge from each page to every page to which it links.</li>
+ * </ul>
+ * </p>
+ *
+ * @see LinkGraphTokenizer
+ * @see CreateLinkGraph
+ * @see PropertyGraphSchema
+ *
+ */
 public class LinkGraphBuildingRule implements GraphBuildingRule {
 
     private PropertyGraphSchema    graphSchema;
 
+    /**
+     * Allocates and initializes the property graph schema.
+     * <p>
+     *     <ul>
+     *         <li> There is one vertex schema: It has no properties.</li>
+     *         <li> There is one edge schema: It has the label "linksTo" and it has no properties.</li>
+     *     </ul>
+     * </p>
+     */
     public LinkGraphBuildingRule() {
         graphSchema = new PropertyGraphSchema();
 
@@ -24,18 +49,35 @@ public class LinkGraphBuildingRule implements GraphBuildingRule {
         graphSchema.addEdgeSchema(edgeSchema);
     }
 
-
+    /**
+     * Get the property graph schmea for the link graph.
+     * @return  the property graph schmea for the link graph
+     */
     public PropertyGraphSchema getGraphSchema() {
         return graphSchema;
     }
 
+    /**
+     * Update the MR configuration for use by the {@code LinkGraphTokenizer}
+     * @param conf hadoop configuration being updated
+     * @param cmd  the command line options provided by the user
+     */
     public void updateConfigurationForTokenizer(Configuration conf, CommandLine cmd) {
     }
 
+    /**
+     * Get the class of the {@code GraphTokenizer} used to construct the link graph
+     * @return  {@LinkGraphTokenizer.class}
+     */
     public Class<? extends GraphTokenizer> getGraphTokenizerClass() {
         return LinkGraphTokenizer.class;
     }
 
+    /**
+     * Get the vertex ID class used to construct the link graph.
+     * @return  {@code StringType.class}
+     * @see StringType
+     */
     public Class vidClass() {
         return StringType.class;
     }

@@ -14,9 +14,51 @@ import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
 /**
- * TableToGraphDB
- * a demonstration/testing application showing how to generate graphs from big tables and load
- * them into a database
+ * Generate a graph from rows of a big table, store in a graph database.
+ * <p>
+ *    <ul>
+ *        <li>At present, only Hbase is supported for the big table</li>
+ *        <li>At present, only Titan is supported for the graph database</li>
+ *    </ul>
+ * </p>
+ *
+ * <p>
+ *     Path Arguments:
+ *     <ul>
+ *         <li> <code>-t</code> specifies the HBase table from which to read</li>
+ *         <li> <code>-conf</code> specifies configuration file</li>
+ *     </ul>
+ *     The Titan table name is specifed in the configuration file in the property
+ *     <code>graphbuilder.titan.storage_tablename</code>
+ * </p>
+ *
+ * <p>TO SPECIFY EDGES:
+ * The first three attributes in the edge string are source vertex column, destination
+ * vertex column and the string label. </p>
+ * <code> src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code>
+ * </p>
+ * <p>
+ * <p>TO SPECIFY VERTICES: The first attribute in the string is the vertex ID column. Subsequent attributes
+ * denote vertex properties
+ * and are separated from the first by an equals sign:</p>
+ * <code> vertex_id_column=vertex_prop1_column,... vertex_propn_column </code>
+ * <p>or in the case there are no properties associated with the vertex id:
+ * <code> vertex_id_column </code>
+ *
+ * </p>
+ *  Becuase the endpoints of an edge must be vertices, all endpoints of edges are implicitly declared to be vertices.
+ *  (The declaration is implicit; the vertices really end up in the graph database.)
+ * <p>
+ *     EXAMPLE:
+ *     <p>
+ *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age" -e "
+ cf:name,cf:dept,worksAt,cf:seniority"</code>
+ *     </p>
+ *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
+ *     one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
+ *     seniority in that department.
+ * </p>
+ *
  */
 
 public class TableToGraphDB {
@@ -27,7 +69,6 @@ public class TableToGraphDB {
     static {
         Options options = new Options();
         options.addOption("h", "help", false, "");
-        options.addOption("o", "out",  true, "output path");
 
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"))
                 .withDescription("HBase table name")
@@ -56,12 +97,26 @@ public class TableToGraphDB {
         commandLineInterface.setOptions(options);
     }
 
+    /**
+     * Encapsulation of the job setup process.
+     */
     public class Job extends AbstractCreateGraphJob {
+
+        /**
+         * Should bidirectional edges be removed?
+         *
+         * @return   false:  this graph construction method allows bidirectional edges
+         */
         @Override
         public boolean cleanBidirectionalEdge() {
             return false;
         }
 
+        /**
+         * Does this graph construction method use hbase?
+         *
+         * @return  true: this graph construction method uses hbase
+         */
         @Override
         public boolean usesHBase() {
             return true;

@@ -19,27 +19,51 @@
 
 package com.intel.hadoop.graphbuilder.demoapps.wikipedia.docwordgraph;
 
-import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextGraphOutputConfiguration;
-import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.OutputConfiguration;
-import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFileInputConfiguration;
-import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
-import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
+import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat.WikiPageInputFormat;
+import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.OutputConfiguration;
+import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextGraphOutputConfiguration;
+import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
-
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.hadoop.graphbuilder.util.Timer;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.log4j.Logger;
 
-import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat.WikiPageInputFormat;
-
+/**
+ * Generate a word count graph from a collection of wiki pages.
+ * <p>
+ * The word count graph is a bipartite graph between wiki pages and words.
+ * <ul>
+ *     <li>There is a "contains" edge between every page and every word that it contains</li>
+ *     <li>The "contains" edge between a page and a word contains the frequency of the word</li>
+ * </ul>
+ * </p>
+ *
+ * <p>At present there are two possible datasinks, a TextGraph, or a load into the Titan graph database. At present,
+ * only one datasink can be specified for each run.
+ * <ul>
+ *     <li>To specify a text output: use option <code>-o directory_name </code></li>
+ *     <li>To specify a Titan load, use the option <code>-t</code>
+ *     <ul><li>The tablename used by Titan is specified in the config file specified at <code> -conf conf_path </code></li>
+ *     <li>If no tablename is specified, Titan uses the default table name <code>titan</code></li>
+ *     <li>If you try to write to an existing table, Titan will append the graph to the existing table</li></ul>
+ *     </li>
+ * </ul>
+ * </p>
+ *
+ */
 public class CreateWordCountGraph {
 
     private static final   Logger  LOG             = Logger.getLogger(CreateWordCountGraph.class);
     private static         boolean titanAsDataSink = false;
 
+    /**
+     * Encapsulation of the job setup process.
+     */
     public class Job extends AbstractCreateGraphJob {
         @Override
         public boolean cleanBidirectionalEdge() {
@@ -83,11 +107,10 @@ public class CreateWordCountGraph {
         commandLineInterface.setOptions(options);
     }
 
-    /**
+    /*
      * This function checks whether required input path and output path
      * are specified as command line arguments
      *
-     * @param args Command line parameters
      */
     private static void checkCli(String[] args) {
         String outputPath = null;
@@ -108,7 +131,8 @@ public class CreateWordCountGraph {
     }
 
     /**
-     * @param args
+     * The main method for creating wordcount graph.
+     * @param args  raw command line from user
      * @throws Exception
      */
 

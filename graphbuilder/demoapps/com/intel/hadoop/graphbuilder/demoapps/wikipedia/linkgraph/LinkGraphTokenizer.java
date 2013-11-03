@@ -51,14 +51,17 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 
 /**
- * LinkGraphTokenizer is a GraphTokenizerFromString class that is  called by the mapper to convert a Wiki page (presented as
+ * A {@code GraphTokenizer} that converts a Wiki page (presented as
  * a string) into a set of vertices and edges by the following rule:
- * - there is a vertex for each page
- * - there is an edge from page1 to page2 if page1 links to page2; the edge is labeled "linksTo"
- *
+ * <ul>
+ *     <li>there is a vertex for each page</li>
+ *     <li>there is an edge from page1 to page2 if page1 links to page2; the edge is labeled "linksTo"</li>
+ * </ul>
+
  *
  * @see com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer
  * @see CreateLinkGraph
+ * @see LinkGraphBuildingRule
  * @see com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.textgraph.TextGraphMR
  * @see com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.TextParsingMapper
  */
@@ -80,6 +83,11 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
     private DocumentBuilder        builder;
     private XPath                  xpath;
 
+    /**
+     * Allocates and initializes parser and graph elements store.
+     *
+     * @throws ParserConfigurationException
+     */
     public LinkGraphTokenizer() throws ParserConfigurationException {
 
         factory = DocumentBuilderFactory.newInstance();
@@ -94,10 +102,19 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         links      = new ArrayList<String>();
     }
 
+    /**
+     * Configure the tokenizer from the MR  configuration.
+     * @param configuration   the MR configuration
+     */
     @Override
-    public void configure(Configuration job) {
+    public void configure(Configuration configuration) {
     }
 
+    /**
+     * Generate property graph elements from parsing of a wiki page.
+     * @param string  Wikipage presented as a string.
+     * @param context  The Hadoop supplied mapper context.
+     */
     public void parse(String string, Mapper.Context context) {
 
         try {
@@ -119,6 +136,10 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         }
     }
 
+    /**
+     * Get the vertex list for the wikipage.
+     * @return   iterator over vertex list
+     */
     public Iterator<Vertex<StringType>> getVertices() {
 
         vertexList.clear();
@@ -131,6 +152,11 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         return vertexList.iterator();
     }
 
+    /**
+     * Get the edge list for the wikipage.
+     *
+     * @return iterator over the edge list
+     */
     @Override
     public Iterator<Edge<StringType>> getEdges() {
 
@@ -150,7 +176,7 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         return edgeList.iterator();
     }
 
-    /**
+    /*
      * This function is taken and modified from wikixmlj WikiTextParser
      */
 

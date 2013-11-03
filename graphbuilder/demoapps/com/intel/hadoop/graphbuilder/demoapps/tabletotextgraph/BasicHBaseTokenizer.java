@@ -2,20 +2,13 @@
 
 package com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph;
 
-import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.EdgeSchema;
-import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertyGraphSchema;
-import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertySchema;
-import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.VertexSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.RecordTypeHBaseRow;
-import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
-import com.thinkaurelius.titan.core.TitanKey;
-import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -24,13 +17,20 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.util.*;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * MR-time graph construction routine that creates property graph elements from HBase rows.
+ *
+ * Its set-up time analog is {@code BasicHBaseGraphBuildingRule}
+ *
+ * @see BasicHBaseGraphBuildingRule
+ * @see com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.HBaseInputConfiguration
+ * @see com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.HBaseReaderMapper
+ */
 public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, StringType> {
 
     private static final Logger LOG = Logger.getLogger(BasicHBaseTokenizer.class);
@@ -43,7 +43,11 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
     private ArrayList<String>             edgeLabelList;
     private ArrayList<Edge<StringType>>   edgeList;
 
-
+    /**
+     * Allocates the tokenizer and its constituent collections.
+     *
+     * @throws ParserConfigurationException
+     */
     public BasicHBaseTokenizer() throws ParserConfigurationException {
 
         vertexPropColMap   = new HashMap<String, String[]>();
@@ -55,6 +59,14 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
         edgeList              = new ArrayList<Edge<StringType>>();
     }
 
+    /**
+     * Extracts the vertex and edge generation rules from the configuration.
+     *
+     * The edge and vertex rules are placed in the configuration by {@code BasicHBaseGraphBuildingRule}
+     *
+     * @param conf  jobc configuration, provided by Hadoop
+     * @see BasicHBaseGraphBuildingRule
+     */
     @Override
     public void configure(Configuration conf) {
 
@@ -106,9 +118,11 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
 
 
     /**
+     * Get column data from the HBase table. If any errors are encountered, log them.
+     *
      * @param columns        HTable columns for the current row
-     * @param fullColumnName Name of the HTABLE column - <column family>:<column qualifier>
-     * @param context        Hadoop's mapper context
+     * @param fullColumnName Name of the HTABLE column - column_family:column_qualifier
+     * @param context        Hadoop's mapper context. Used for error logging.
      */
     private String getColumnData(Result columns, String fullColumnName, Mapper.Context context) {
 
@@ -128,6 +142,13 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
         return value;
     }
 
+    /**
+     * Read an hbase record, and generate vertices and edges according to the generation rules
+     * previously extracted from the configuration.
+     *
+     * @param record  An hbase row.
+     * @param context The mapper's context. Used for error logging.
+     */
     public void parse(RecordTypeHBaseRow record, Mapper.Context context) {
 
         ImmutableBytesWritable row     = record.getRow();
@@ -137,8 +158,7 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
         edgeList.clear();
 
         try {
-
-            // check row for vertices
+            // generate vertices from the row
 
             for (String columnName : vertexIdColumnList) {
 
@@ -235,10 +255,19 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
         }
     }
 
+    /**
+     * Obtain iterator over the vertex list.
+     *
+     * @return  Iterator over the vertex list.
+     */
     public Iterator<Vertex<StringType>> getVertices() {
         return vertexList.iterator();
     }
 
+    /**
+     * Obtain iterator over the edge list.
+     * @return Iterator over the edge list.
+     */
     @Override
     public Iterator<Edge<StringType>> getEdges() {
         return edgeList.iterator();

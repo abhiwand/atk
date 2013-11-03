@@ -12,8 +12,9 @@ import org.apache.log4j.Logger;
 
 /**
  * TableToTextGraph
- * a demonstration/testing application showing how to read big tables and generate graphs in
- * textGraph - the  classic GraphBuilder "separate vertex list, edge list text files" format
+ *
+ * Read  a big tables and generate a graph in the TextGraph format,
+ * This is two text files, one a vertex list, and the other an edge list text files.
  */
 
 public class TableToTextGraph {
@@ -117,12 +118,23 @@ public class TableToTextGraph {
         return cmd;
     }
 
+    /**
+     * Encapsulation of the job setup process.
+     */
     public class Job extends AbstractCreateGraphJob {
+        /**
+         * This method allows bidirectional edges (do not clean them).
+         * @return  false
+         */
         @Override
         public boolean cleanBidirectionalEdge() {
             return false;
         }
 
+        /**
+         * This method uses hbase.
+         * @return  true
+         */
         @Override
         public boolean usesHBase() {
             return true;

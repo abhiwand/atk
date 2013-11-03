@@ -43,14 +43,8 @@ import org.apache.log4j.Logger;
 import com.intel.hadoop.graphbuilder.util.Functional;
 
 /**
- * This MapReduce Job creates an initial edge list and vertex list from raw
- * input data, e.g. text xml. The result set of graph elements does not contain self edges or
- * duplicate vertices or edges.
- * <p>
- * The Mapper class parse each input value, provided by the {@code InputFormat},
- * and output a list of {@code Vertex} and a list of {@code Edge} using a
- * {@code GraphTokenizerFromString}.
- * </p>
+ * Create a text graph (text edge list and vertex list) from the property graph elements.
+ *
  * <p>
  * The Reducer class applies user defined {@code Functional}s to reduce
  * duplicate edges and vertices. If no such {@code Functional} is provide, it
@@ -59,15 +53,14 @@ import com.intel.hadoop.graphbuilder.util.Functional;
  * is provided by {@code setCleanBidirectionalEdges(boolean)}.
  * </p>
  * <p>
- * Input directory: Can take multiple input directories. Output directory
- * structure:
+ * Output directorystructure:
  * <ul>
  * <li>$outputdir/edata contains edge data output</li>
  * <li>$outputdir/vdata contains vertex data output</li>
  * </ul>
  * </p>
  *
- * @see com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer
+ * @see TextGraphReducer
  */
 
 public class TextGraphMR extends GraphGenerationMRJob {
@@ -93,10 +86,11 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
 
     /**
-     * set graphBuildingRule and inputconfiguration.
+     * Set-up time routine that connects raw data ({@code inputConfiguration} and the graph generations rule
+     * ({@code graphBuildingRule}) into the MR chain..
      *
-     * @param graphBuildingRule
-     * @param inputConfiguration
+     * @param inputConfiguration object that handles the generation of data records from raw data
+     * @param graphBuildingRule object that handles the conversion of data records into property graph elements
      */
     @Override
     public void init(InputConfiguration inputConfiguration, GraphBuildingRule graphBuildingRule) {
@@ -116,8 +110,8 @@ public class TextGraphMR extends GraphGenerationMRJob {
     /**
      * Set user defined function for reduce duplicate vertex and edges.
      *
-     * @param vertexReducerFunction
-     * @param edgeReducerFunction
+     * @param vertexReducerFunction user specified function for reducing duplicate vertices
+     * @param edgeReducerFunction   user specified functino for reducing duplicate edges
      */
 
     public void setFunctionClass(Class vertexReducerFunction, Class edgeReducerFunction) {
@@ -141,9 +135,9 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Set the option to clean bidirectional edges.
+     * Set the option for whether to clean bidirectional edges.
      *
-     * @param clean the boolean option value, if true then clean bidirectional edges.
+     * @param clean the boolean option value, if true then remove bidirectional edges.
      */
 
     @Override
@@ -152,9 +146,14 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Set the intermediate key value class.
+     * Set the value class for the property graph elements coming from the mapper/tokenizer
      *
-     * @param valueClass
+     * This type can vary depending on the class used for vertex IDs.
+     *
+     * @param valueClass   class of the PropertyGraphElement value
+     * @see PropertyGraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
      */
 
     @Override
@@ -169,7 +168,12 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * set the vertex id class
+     * Set the vertex id class
+     *
+     * Currently long and String are supported.
+     * @see PropertyGraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
      */
 
     @Override
@@ -198,6 +202,15 @@ public class TextGraphMR extends GraphGenerationMRJob {
             conf.set(key, userOpts.get(key.toString()));
     }
 
+    /**
+     * Execute the map reduce chain that generates a TextGraph from the previously specified
+     * raw input using the previously specified graph building rule.
+     *
+     * @param cmd     user specified command line
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws InterruptedException
+     */
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
 

@@ -19,11 +19,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The methods in this class are used by the full MR chain to properly configure the first MR job to work
- * with the HBaseReaderMapper.
+ * This class handles the set-up time configuration when the raw input is an Hbase table.
  *
- * Called when setting up the first MR job of a chain,
- * it initializes the configuration to read from teh source table and calls TableMapReduceUtil.initTableMapperJob
+ * For graph construction tasks that require multiple chained MR jobs, this class affects only the first MR job,
+ * as that is the first mapper that deals with raw input.
+ *
+ * <ul>
+ * <li> It provides a handle to the mapper class used to read hbase tables ({@code HBaseReaderMapper})</li>
+ * <li> It prepares the MR job and configuration by calling hbase utilities</li>
+ * </ul>
  *
  * @see InputConfiguration
  * @see HBaseReaderMapper
@@ -40,15 +44,26 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     private Class      mapperClass  = HBaseReaderMapper.class;
 
+    /**
+     * Allocate and acquire an instance of the singleton HBaseUtils
+     */
     public HBaseInputConfiguration() {
         this.hBaseUtils = HBaseUtils.getInstance();
     }
 
+    /**
+     * This input configuration uses hbase.
+     * @return  {@literal true }
+     */
     public boolean usesHBase() {
         return true;
     }
 
-
+    /**
+     * Perform setup tasks with hbase.
+     * @param configuration configuration being prepared for graph construction job
+     * @param cmd  user provided command line
+     */
     public void updateConfigurationForMapper(Configuration configuration, CommandLine cmd) {
 
         srcTableName = cmd.getOptionValue(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"));
@@ -72,6 +87,11 @@ public class HBaseInputConfiguration implements InputConfiguration {
         scan.setCacheBlocks(false);
     }
 
+    /**
+     * Initialize the table mapper job.
+     * @param job  Map reduce job in preparation for graph construction
+     * @param cmd  User provided command line
+     */
     public void updateJobForMapper(Job job, CommandLine cmd) {
         try {
             TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, PropertyGraphElement.class, job);
@@ -82,11 +102,20 @@ public class HBaseInputConfiguration implements InputConfiguration {
         }
     }
 
+    /**
+     * The class of the mapper used.
+     * @return {@code HBaseReaderMapper.class}
+     * @see HBaseReaderMapper
+     */
     public Class getMapperClass() {
         return mapperClass;
     }
 
+    /**
+     * Obtain description of the input configuration for logging purposes.
+     * @return  "Hbase table name: " appended with source table name
+     */
     public String getDescription() {
-        return "HBase table, name: " + srcTableName;
+        return "Hbase table name: " + srcTableName;
     }
 }

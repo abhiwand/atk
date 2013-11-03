@@ -33,6 +33,28 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
+/**
+ * Generate a link graph from a collection of wiki pages.
+ * <p>
+ * <ul>
+ *     <li>There is vertex for every wiki page in the specified input file.</li>
+ *     <li>There is a "linksTO" edge from each page to every page to which it links.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>At present there are two possible datasinks, a TextGraph, or a load into the Titan graph database. At present,
+ * only one datasink can be specified for each run.
+ * <ul>
+ *     <li>To specify a text output: use option <code>-o directory_name </code></li>
+ *     <li>To specify a Titan load, use the option <code>-t</code>
+ *     <ul><li>The tablename used by Titan is specified in the config file specified at <code> -conf conf_path </code></li>
+ *     <li>If no tablename is specified, Titan uses the default table name <code>titan</code></li>
+ *     <li>If you try to write to an existing table, Titan will append the graph to the existing table</li></ul>
+ *     </li>
+ * </ul>
+ * </p>
+ *
+ */
 public class CreateLinkGraph {
 
     private static final Logger LOG = Logger.getLogger(CreateLinkGraph.class);
@@ -61,11 +83,10 @@ public class CreateLinkGraph {
         commandLineInterface.setOptions(options);
     }
 
-    /**
+    /*
      * This function checks whether required input path and output path
      * are specified as command line arguments
      *
-     * @param args Command line parameters
      */
     private static void checkCli(String[] args) {
         String outputPath = null;
@@ -84,6 +105,9 @@ public class CreateLinkGraph {
         }
     }
 
+    /**
+     * Encapsulation of the job setup process.
+     */
     public class Job extends AbstractCreateGraphJob {
 
         @Override
@@ -98,7 +122,8 @@ public class CreateLinkGraph {
     }
 
     /**
-     * @param args [inputPath, outputPath
+     * Main method for creating the link graph
+     * @param args raw command line
      * @throws Exception
      */
 

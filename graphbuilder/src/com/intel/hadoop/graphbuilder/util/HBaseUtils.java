@@ -12,6 +12,11 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
+/**
+ * Utility library for graphbuilder's hbase operations.
+ *
+ * Implemented as a singleton.
+ */
 public class HBaseUtils {
 
     private static HBaseUtils uniqueInstanceOfHBaseUtils = null;
@@ -23,8 +28,29 @@ public class HBaseUtils {
     private String        hTableName;
     private HTable        hTable;
 
+    /*
+     * PRIVATE constructor method... this is a singleton class, remember?
+     *
+     * @throws IOException
+     */
+    private HBaseUtils() throws IOException {
+        this.configuration = HBaseConfiguration.create();
+        this.admin         = new HBaseAdmin(configuration);
+    }
+
     /**
-     *  return the unique instance of HBaseUtils, create one if there isn't one already
+     * Private constructor method
+     *
+     * @throws IOException
+     */
+    private HBaseUtils(String tableName) throws IOException {
+        this.configuration = HBaseConfiguration.create();
+        this.hTableName    = tableName;
+        this.hTable        = new HTable(configuration, hTableName);
+    }
+
+    /**
+     *  Return the unique instance of HBaseUtils, create one if there isn't one already
      *
      */
 
@@ -43,8 +69,9 @@ public class HBaseUtils {
 
         return uniqueInstanceOfHBaseUtils;
     }
+
     /**
-     * Return a new configuration
+     * Return a new hbase configuration
      */
     public static Configuration getNewConfiguration() {
         return HBaseConfiguration.create();
@@ -54,6 +81,7 @@ public class HBaseUtils {
      * Parse the column name to return the family and qualifier in a string array
      *
      * @param columnName Column name in HBase "column family:column qualifier"
+     * @return family and qualifier in string array
      */
     public static byte[][] parseColumnName(String columnName) {
         return KeyValue.parseColumn(Bytes.toBytes(columnName));
@@ -64,6 +92,7 @@ public class HBaseUtils {
      *
      * @param columns        Scanned columns from a HTable row passed from a mapper/reducer
      * @param fullColumnName Full column key "family:qualifier"
+     * @return cell value as byte array
      */
     public static byte[] getColumnData(Result columns, String fullColumnName) {
         byte[][] columnKey = HBaseUtils.parseColumnName(fullColumnName);
@@ -83,6 +112,7 @@ public class HBaseUtils {
      * @param Key           Row key
      * @param colFamilyName Column family name
      * @param colName       Column name
+     * @return column value as byte array
      */
 
     public byte[] getColumnData(String Key, String colFamilyName, String colName)
@@ -101,8 +131,9 @@ public class HBaseUtils {
      * @param key             HBase row key
      * @param columnFamily    HBase column family (default - "VertexID")
      * @param columnQualifier HBase column name
-     * @param value
+     * @param value           value to be written
      * @param context         Context of Hadoop's reducer
+     * @return value          the value that was written
      */
     public static byte[] putValue(byte[] key,
                                   byte[] columnFamily,
@@ -119,6 +150,7 @@ public class HBaseUtils {
      * Check if the table exists in HBase
      *
      * @param hTableName HBase table name
+     * @return true iff the table with the given name exists
      */
     public boolean tableExists(String hTableName) throws IOException {
         return admin.tableExists(hTableName);
@@ -129,6 +161,7 @@ public class HBaseUtils {
      *
      * @param hTableName HBase table name
      * @param columnFamilyName
+     * @return true iff the table contains the given column family
      */
     public boolean tableContainsColumnFamily(String hTableName, String columnFamilyName) throws IOException {
         HTableDescriptor htd = admin.getTableDescriptor(hTableName.getBytes());
@@ -158,29 +191,10 @@ public class HBaseUtils {
 
         return returnValue;
     }
-    /**
-     * Constructor method
-     *
-     * @throws IOException
-     */
-    private HBaseUtils() throws IOException {
-        this.configuration = HBaseConfiguration.create();
-        this.admin         = new HBaseAdmin(configuration);
-    }
-
-    /**
-     * Constructor method
-     *
-     * @throws IOException
-     */
-    private HBaseUtils(String tableName) throws IOException {
-        this.configuration = HBaseConfiguration.create();
-        this.hTableName    = tableName;
-        this.hTable        = new HTable(configuration, hTableName);
-    }
 
     /**
      * Return configuration
+     * @return the configuration of the {@code HBaseUtils} instance
      */
     public Configuration getConfiguration() {
         return this.configuration;
@@ -191,6 +205,7 @@ public class HBaseUtils {
      *
      * @param hTableName           Name of the HBase table to be created
      * @param hTableColumnFamilies Names of the table column families
+     * @return a scan for the table
      */
     public Scan createTable(String hTableName, String[] hTableColumnFamilies) throws IOException {
 
@@ -232,6 +247,7 @@ public class HBaseUtils {
      *
      * @param hTableName         Name of the HBase table to be created
      * @param hTableColumnFamily Names of the table column family
+     * @return a scan for the table
      */
     public Scan createTable(String hTableName, String hTableColumnFamily) throws IOException {
 
@@ -267,6 +283,11 @@ public class HBaseUtils {
         return scan;
     }
 
+    /**
+     * Get a scanner for the specified table.
+     * @param tableName   name of the table in question
+     * @return  a scanner for the specified table
+     */
     public Scan getTableScanner(String tableName) {
         this.hTableName = tableName;
         Scan scan       = new Scan();
@@ -276,5 +297,4 @@ public class HBaseUtils {
 
         return scan;
     }
-
 }

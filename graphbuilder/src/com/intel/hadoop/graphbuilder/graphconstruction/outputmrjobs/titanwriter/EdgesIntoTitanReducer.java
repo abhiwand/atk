@@ -22,12 +22,13 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * This reducer loads edges into Titan.
- *
+ * Load edges into Titan.
+ * <p>
  * It gathers each vertex with the edges that point to that vertex, that is,
  * those edges for whom the vertex is the destination.  Because the edges were tagged with the
  * Titan IDs of their sources in the previous MR job and each vertex is tagged with its Titan ID,
  * we now know the Titan ID of the source and destination of the edges and can add them to Titan.
+ * </p>
  */
 
 public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphElement, IntWritable, PropertyGraphElement> {
@@ -43,26 +44,48 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     }
 
     /**
-     * create the titan graph for saving edges and remove the static open method from setup so it can be mocked
+     * Create the titan graph for saving edges and remove the static open method from setup so it can be mocked
      *
      * @return TitanGraph for saving edges
      * @throws IOException
      */
-    protected TitanGraph tribecaGraphFactoryOpen(Context context) throws IOException {
+    private TitanGraph tribecaGraphFactoryOpen(Context context) throws IOException {
         BaseConfiguration titanConfig = new BaseConfiguration();
         return GraphDatabaseConnector.open("titan", titanConfig, context.getConfiguration());
     }
 
+    /**
+     * Set up Titan connection.
+     *
+     * @param context  the reducer context provided by Hadoop
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void setup(Context context) throws IOException, InterruptedException {
 
         this.vertexNameToTitanID = new HashMap<Object, Long>();
 
         this.graph               = tribecaGraphFactoryOpen(context);
-
-        assert (null != this.graph);
     }
 
+    /**
+     * Hadoop-called routine for loading edges into Titan.
+     * <p>
+     * It is assumed that edges and vertices have been gathered so that every
+     * edge shares the reducer of its destination vertex, and that every edge has previously
+     * been assigned the TitanID of its source vertex.
+     * </p>
+     * <p>
+     * Titan IDs are propagatd from the destination vertices to each edge and the edges are loaded into Titan
+     * using the BluePrints API
+     * </p>
+     * @param key    mapreduce key; a hash of a vertex ID
+     * @param values  either a vertex with that hashed vertex ID, or an edge with said vertex as its destination
+     * @param context  reducer context provided by Hadoop
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void reduce(IntWritable key, Iterable<PropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
@@ -161,6 +184,14 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
         context.getCounter(Counters.NUM_EDGES).increment(edgeCount);
     }
 
+    /**
+     * Perform cleanup tasks after the reducer is finished.
+     *
+     * In particular, close the Titan graph.
+     * @param context    Hadoop provided reducer context.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         this.graph.shutdown();
