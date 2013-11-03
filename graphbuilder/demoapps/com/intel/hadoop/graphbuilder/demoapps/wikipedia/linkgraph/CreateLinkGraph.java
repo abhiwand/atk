@@ -20,6 +20,7 @@ package com.intel.hadoop.graphbuilder.demoapps.wikipedia.linkgraph;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextGraphOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.OutputConfiguration;
+import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanCommandLineOptions;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFileInputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat.WikiPageInputFormat;
@@ -79,6 +80,9 @@ public class CreateLinkGraph {
                 .withArgName("output path")
                 .create("o"));
         options.addOption("t", "titan", false, "select Titan for graph storage");
+        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
+                .withDescription("Append Graph to Current Graph at Specified Titan Table")
+                .create("a"));
 
         commandLineInterface.setOptions(options);
     }
@@ -95,6 +99,8 @@ public class CreateLinkGraph {
 
         if (cmd.hasOption("out") && cmd.hasOption("titan")) {
             commandLineInterface.showHelp("You cannot simultaneously specify a file and Titan for the output.");
+        } else if (!cmd.hasOption("titan") && cmd.hasOption(TitanCommandLineOptions.APPEND)) {
+            commandLineInterface.showHelp("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
         } else if (cmd.hasOption("out")) {
             outputPath = cmd.getOptionValue("out");
             LOG.info("output path: " + outputPath);

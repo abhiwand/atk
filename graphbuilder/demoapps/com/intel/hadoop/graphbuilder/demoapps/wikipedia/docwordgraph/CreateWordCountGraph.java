@@ -23,6 +23,7 @@ import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFi
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat.WikiPageInputFormat;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.OutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextGraphOutputConfiguration;
+import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanCommandLineOptions;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
@@ -94,6 +95,9 @@ public class CreateWordCountGraph {
                 .withDescription("select Titan for graph storage")
                 .withArgName("titan ")
                 .create("t"));
+        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
+                .withDescription("Append Graph to Current Graph at Specified Titan Table")
+                .create("a"));
         options.addOption(OptionBuilder.withLongOpt("dictionary")
                 .withDescription("dictionary path")
                 .hasArgs()
@@ -119,6 +123,8 @@ public class CreateWordCountGraph {
 
         if (cmd.hasOption("out") && cmd.hasOption("titan")) {
             commandLineInterface.showHelp("You cannot simultaneously specify a file and Titan for the output.");
+        } else if (!cmd.hasOption("titan") && cmd.hasOption(TitanCommandLineOptions.APPEND)) {
+            commandLineInterface.showHelp("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
         } else if (cmd.hasOption("out")) {
             outputPath = cmd.getOptionValue("out");
             LOG.info("output path: " + outputPath);

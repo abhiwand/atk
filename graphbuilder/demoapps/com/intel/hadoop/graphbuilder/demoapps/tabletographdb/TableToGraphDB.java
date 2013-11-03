@@ -4,6 +4,7 @@ package com.intel.hadoop.graphbuilder.demoapps.tabletographdb;
 
 import com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph.BasicHBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph.BasicHBaseTokenizer;
+import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanCommandLineOptions;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
@@ -69,6 +70,10 @@ public class TableToGraphDB {
     static {
         Options options = new Options();
         options.addOption("h", "help", false, "");
+
+        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
+                .withDescription("Append Graph to Current Graph at Specified Titan Table")
+                .create("a"));
 
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"))
                 .withDescription("HBase table name")

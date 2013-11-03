@@ -2,6 +2,7 @@
 
 package com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.titanwriter;
 
+import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanCommandLineOptions;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanConfig;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.keyfunction.SourceVertexKeyFunction;
@@ -291,8 +292,14 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         String titanTableName = TitanConfig.config.getProperty("TITAN_STORAGE_TABLENAME");
 
         if (hbaseUtils.tableExists(titanTableName)) {
+            if (cmd.hasOption(TitanCommandLineOptions.APPEND)) {
             LOG.info("WARNING:  hbase table " + titanTableName +
                      " already exists. Titan will append new graph to existing data.");
+            } else {
+                LOG.info("ABORTING:  hbase table " + titanTableName +
+                        " already exists. Use -a option if you wish to append new graph to existing data.");
+                System.exit(1);
+            }
         }
 
         String intermediateDataFileName = "graphbuilder_temp_file-" + random().toString();
