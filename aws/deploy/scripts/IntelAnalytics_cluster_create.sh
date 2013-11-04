@@ -235,14 +235,13 @@ do
 --instance-count 1 \
 --key ${ciamuser} \
 --group ${csgroup} \
---group ${csgroup_https} \
 --group ${csgroup_admssh} \
 --instance-type ${cinstype} \
 --placement-group ${cpgroup} \
 --subnet ${csubnet}"
     
     if [ $i -eq 0 ]; then
-        cmd_opts="${cmd_opts} --associate-public-ip-address true"
+        cmd_opts="${cmd_opts} --group ${csgroup_https} --associate-public-ip-address true"
     fi
     IA_loginfo "Creating EC2 instance for node ${nname}, executing..."
     IA_loginfo "  ec2-run-instances ${cmd_opts}"
