@@ -1,4 +1,9 @@
-   @()
+@(user:models.database.User)
+
+@import services.aws.S3
+
+
+
    <!-- Dataset Modal -->
   <div class="modal fade" id="datasetModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -49,7 +54,17 @@
           <div class='row'>
                   <div class='col-sm-12'>
                     <div id="dropzone">
-                        <form class="dropzone dz-clickable" action="http://www.torrentplease.com/dropzone.php">
+
+                        <form id="uploadform" class="dropzone dz-clickable" action="https://gaopublic.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
+                            @defining(S3.getPolicy(user.email)){ implicit policy =>
+                            <input type="hidden" name="key" value="user/@user.email/${filename}">
+                            <input type="hidden" name="AWSAccessKeyId" value="AKIAJ65RQRJONMKNT2NQ">
+                            <input type="hidden" name="acl" value="private">
+                            <!--<input type="hidden" name="success_action_redirect" value="http://localhost/s3">-->
+                            <input type="hidden" name="policy" value="@policy">
+                            <input type="hidden" name="signature" value="@S3.getSignature">
+                            }
+                            <!--<input type="hidden" name="Content-Type" value="image/jpeg">*-->
                           <div>
                             <h2>Drop files or click here to add to Notebook</h2>
                             <p>We currently support .csv files up to 500MB</p>

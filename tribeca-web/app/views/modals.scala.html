@@ -1,7 +1,10 @@
-@()
+@(user:models.database.User)
 
-@loginModal()
-@supportModal()
-@registrationModal()
-@feedbackModal()
-@datasetModal()
+    @if(user != null && user.uid.get > 0 ){
+        @feedbackModal()
+        @datasetModal(user)
+    } else{
+        @loginModal()
+        @supportModal()
+        @registrationModal()
+    }
