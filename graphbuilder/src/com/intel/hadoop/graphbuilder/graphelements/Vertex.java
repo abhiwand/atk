@@ -25,6 +25,7 @@ import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Represents a vertex object with id and vertex data.
@@ -87,18 +88,46 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
         return properties;
     }
 
+    /**
+     * Test for equality based on vertex ID.
+     *
+     * <p>
+     * Vertices of the same vertex ID but with different property maps are view as two copies of the same vertex with
+     * different property maps - the vertices are equal.
+     * </p>
+     *
+     * @return true iff the two vertices have the same ID
+     */
     @Override
     public final boolean equals(Object obj) {
         if (obj instanceof Vertex) {
             Vertex other = (Vertex) obj;
-            return (vertexId.equals(other.vertexId) && properties.equals(other.properties));
+            return Objects.equals(vertexId, other.vertexId);
         }
         return false;
     }
 
+    /**
+     * Hash the vertex according to its vertex ID.
+     *
+     * <p>
+     * Vertices of the same vertex ID but with different property maps will hash to the same value. This is intended
+     * because that situation is interpreted as two copies of the same vertex with different property maps.
+     * </p>
+     *
+     * <p>
+     * If the vertex ID has not been set yet, we provide an arbitrary value, 0.
+     * </p>
+     *
+     * @return integer hashcode of the vertex
+     */
     @Override
     public final int hashCode() {
-        return vertexId.hashCode();
+        if (vertexId == null) {
+            return 0;
+        } else {
+            return vertexId.hashCode();
+        }
     }
 
     @Override
