@@ -14,6 +14,8 @@ class ETLSchema:
         splitted = schema_string.split(',')
         for schema_item in splitted:
             feature_name, feature_type = schema_item.split(':')
+            feature_name = feature_name.strip()
+            feature_type = feature_type.strip()
             self.feature_names.append(feature_name)
             self.feature_types.append(feature_type)
     
