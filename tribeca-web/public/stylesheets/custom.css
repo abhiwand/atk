@@ -83,11 +83,19 @@
 
 .carousel-blur, .carousel-blur .item {
     height: 850px;
+
+
 }
 
 .carousel-blur .item {
     text-align: center;
     padding-top: 150px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: auto;
+    min-height:550px;
+    max-height:950px;
+
 }
 
 .btn-primary {
