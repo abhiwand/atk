@@ -12,23 +12,7 @@
 # 
 # Notes: this script needs AWS EC2 CLI, AMI CLI, IAM CLI
 #
-
 source IntelAnalytics_common_env.sh
-
-# For AWS EC2
-export JAVA_HOME=/usr/lib/jvm/default-java
-# EC2 needs key id and key
-export IA_AWS_ACCESS_KEY="`cat ${HOME}/.aws/${USER}.keyid`"
-export IA_AWS_SECRET_KEY="`cat ${HOME}/.aws/${USER}.secret`"
-# SSH needs pem
-export IA_AWS_PERMISSIONS=${HOME}/.aws/${USER}.pem
-# IAM needs credentails
-export IA_AWS_CREDENTIALS=${HOME}/.aws/${USER}.csv
-
-export IA_AWS_REGION=us-west-2
-export IA_EC2_URL=https://ec2.us-west-2.amazonaws.com
-export IA_EC2_OPTS=" -O ${IA_AWS_ACCESS_KEY} -W ${IA_AWS_SECRET_KEY} --region ${IA_AWS_REGION}"
-export IA_EC2_OPTS_TAG="${IA_EC2_OPTS} -F \"tag:Name=${IA_TAG}\""
 
 # existing AMI Names (Gold Images)
 export IA_AMI_MASTER="${IA_NAME}-Master"
@@ -285,7 +269,7 @@ function IA_create_sgroup()
 
     # note, only check by grepping cidr, to be really careful, get the
     # corresponding columns, and compare all idr, to, and from columns
-    ec2-describe-group -H -F "vpc-id=${sgrp_vpc}" -F "group-id=${_RET}" | grep "${sgrp_cidr}" 2>&1 > /dev/null
+    ec2-describe-group ${IA_EC2_OPTS} -H -F "vpc-id=${sgrp_vpc}" -F "group-id=${_RET}" | grep "${sgrp_cidr}" 2>&1 > /dev/null
     if [ $? -ne 0 ];then
         IA_loginfo "Creating inbound cluster SSH rule for ${sgrp_name}..."
         ec2-authorize ${IA_EC2_OPTS} ${_RET} --protocol tcp --port-range 22 --cidr "${sgrp_cidr}"
@@ -431,16 +415,37 @@ function IA_generate_hosts_file()
 {
     local cname=$1
     local csize=$2
-    local output=$3
+    local outdir=$3
 
-    rm ${output} 2>&1 > /dev/null
+    if [ ! -d ${outdir} ]; then
+        IA_logerr "Output director \"${outdir}\" not found!"
+        return 1
+    fi
+
+    headers=${outdir}/headers.hosts
+    if [ ! -f ${headers}} ]; then
+        IA_logerr "Hosts file header \"${headers}\" not found!"
+        return 1
+    fi
+
+    cname=`IA_format_cluster_name "${cid}-${csize}"`
+    outhosts=${outdir}/${cname}.hosts
+    outnodes=${outdir}/${cname}.nodes
+    rm -f ${outhosts} 2>&1 > /dev/null
+    rm -f ${outnodes} 2>&1 > /dev/null
+    
+    cat ${headers} > ${outhosts}
     for (( i = 0; i < ${csize}; i++ ))
-    do
+    do  
         hosts[$i]=`IA_format_node_name_role $i`
         nname[$i]=`IA_format_node_name ${cname} $i`
         ip[$i]=`IA_get_instance_private_ip ${nname[$i]}`
         dnsfull[$i]=`IA_get_instance_private_dns ${nname[$i]}`
         dns[$i]=`echo ${dnsfull[$i]} | awk -F"." '{print $1}'`
-        echo "${ip[$i]} ${hosts[$i]} ${dns[$i]}" >> ${output}
+        echo "${ip[$i]} ${hosts[$i]} ${dns[$i]}" >> ${outhosts}
+        echo "${ip} ${host} ${dns}" >> ${outhosts}
+        echo "${dnsfull[$i]}" >> ${outnodes}
     done
+    IA_loginfo "Generated hosts file ${outhosts}..."
+    IA_loginfo "Generated nodes file ${outnodes}..."
 }

@@ -23,6 +23,7 @@ function usage()
 function IA_create_dump()
 {
     IA_loginfo "Cluster Name = ${cname}"
+    IA_loginfo "  Time Stamp      = `date`"
     IA_loginfo "  Assigned VPC    = ${cvpcid}"
     IA_loginfo "  AMI Image ID    = ${camiid}"
     IA_loginfo "  Target CIDR     = ${ccidr}"
@@ -32,6 +33,7 @@ function IA_create_dump()
     IA_loginfo "  Placement Group = ${cpgroup}"
     IA_loginfo "  Route Table     = ${croute}"
     IA_loginfo "  Cluster Nodes   = ${nnames[@]}"
+    IA_loginfo "  OutputCluster Nodes   = ${nnames[@]}"
 }
 
 # Get the env setup and helper funs
@@ -40,6 +42,7 @@ source IntelAnalytics_cluster_env.sh
 # Reset the global RET
 _RET=""
 dryrun=yes
+#et per cluster log
 
 # Check inputs
 while [ $# -gt 0 ]
@@ -92,7 +95,10 @@ ccidr="${_RET}"
 
 # Prefix=IntelAnalytics-${id}
 cname=`IA_format_cluster_name "${cid}-${csize}"`
-IA_loginfo "Preparing to create cluster ${cname} (${cid},${csize},${ccidr})..."
+IA_logfile "${IA_CLUSTERS}/${cname}.log"
+IA_loginfo "`date`: preparing to create cluster ${cname} (${cid},${csize},${ccidr})..."
+IA_loginfo "Cluster basic info:id=${cid}, size=${csize}, CIDR=${ccidr}"
+IA_loginfo "Log file at ${IA_LOGFILE}"
 
 ## No difference between master and slave any more!!!
 ## Retrieve cluster node AMI image id for master node
@@ -254,7 +260,7 @@ do
 done
 
 # generate a report
-cat << EOF > ${cname}_info.txt
+cat << EOF > ${IA_CLUSTERS}/${cname}.info
 
 Time Stamp      = `date`
 Cluster Name    = ${cname}
@@ -270,3 +276,8 @@ Cluster Nodes   = ${nnames[@]}
 EC2 Creation Commandline Options: ${cmd_opts}
 
 EOF
+
+# generate hosts file
+if [ "${dryrun}" == "no" ]; then
+    IA_generate_hosts_file ${cname} ${csize} ${IA_CLUSTERS}
+fi

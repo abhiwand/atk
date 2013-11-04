@@ -17,11 +17,9 @@
 source IntelAnalytics_common_env.sh
 
 # TODO: these are for deployment, should be moved out to avoid confusion
-export IA_HOME=${HOME}/deploy
 export IA_USR=hadoop
 export IA_UID=5002
-export IA_CONFIG=${IA_HOME}/config
-export IA_USRSSH=${IA_HOME}/sshconf
+export IA_USRSSH=${IA_DEPLOY}/config/sshconf
 export IA_FILES=( \
   "hadoop-1.2.1.tar.gz" \
   "hbase-0.94.12-security.tar.gz" \
@@ -32,6 +30,6 @@ export IA_FILES=( \
 
 # hard-coded, mapping is guaranteed by the original AMI creation
 export IA_DISKS=(xvdb xvdc xvdd xvde)
-export IA_PACKAGE=${IA_NAME}.tar.gz
-export IA_HOSTS=${IA_HOME}/clusters/IntelAnalytics-0.hosts
-export IA_PEM=${IA_HOME}/credentials/IntelAnalytics_User.pem
+export IA_PACKAGE=${IA_DEPLOY}/${IA_NAME}.tar.gz
+# default is to the testing cluster 0
+export IA_HOSTS=${IA_CLUSTERS}/${IA_NAME}-0-4.hosts
