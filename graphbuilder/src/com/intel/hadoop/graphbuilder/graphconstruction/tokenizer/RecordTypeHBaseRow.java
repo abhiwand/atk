@@ -28,7 +28,7 @@ public class RecordTypeHBaseRow {
     }
 
     public void setColumns(Result columns) {
-        this.row = row;
+        this.columns = columns;
     }
 
     public Result getColumns() {
