@@ -28,7 +28,7 @@ object Login extends Controller {
     }
 
     def getResponse(auth: Authorize): (Int, String) = {
-        if (!(auth.valdiateTokenResponseData() && auth.validateToken() != null))
+        if (!(auth.validateTokenResponseData() && auth.validateToken() != null))
             return (0,null)//BadRequest("Couldn't validate auth response data")
 
         val result = Users.login(auth.userInfo.email, MySQLStatementGenerator)
