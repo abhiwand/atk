@@ -30,6 +30,9 @@ import org.apache.hadoop.conf.Configuration;
 public class WordCountGraphBuildingRule implements GraphBuildingRule {
     private PropertyGraphSchema graphSchema;
 
+    private Class                           vidClass       = StringType.class;
+    private Class<? extends GraphTokenizer> tokenizerClass = WordCountGraphTokenizer.class;
+
     /**
      * Allocates and initializes the graph schema for the word count graph.
      *
@@ -66,19 +69,18 @@ public class WordCountGraphBuildingRule implements GraphBuildingRule {
 
     /**
      * Get the class of the tokenizer used by the {@code WordCountGraphBuildingRule}
-     * @return {@code WordCountGraphTokenizer.class}
+     * @return the class of the tokenizer used by the {@code WordCountGraphBuildingRule}
      * @see WordCountGraphTokenizer
      */
     public Class<? extends GraphTokenizer> getGraphTokenizerClass() {
-        return WordCountGraphTokenizer.class;
+        return tokenizerClass;
     }
 
     /**
      * Get the classname of the vertex IDs used by the wordcount graph
-     * @return {@code StringType.class}
-     * @see StringType
-     * */
+     *
+     */
     public Class vidClass() {
-        return StringType.class;
+        return vidClass;
     }
 }

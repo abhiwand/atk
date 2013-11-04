@@ -28,8 +28,10 @@ import org.apache.log4j.Logger;
  *     <ul>
  *         <li> <code>-t</code> specifies the HBase table from which to read</li>
  *         <li> <code>-conf</code> specifies configuration file</li>
+ *         <li><code>-a</code> an option that tells Titan it can append the newly generated graph to an existing
+ *         one in the same table. Default behavior is to abort if you try to use an existing Titan table name</li>
  *     </ul>
- *     The Titan table name is specifed in the configuration file in the property
+ *     The Titan table name is specified in the configuration file in the property
  *     <code>graphbuilder.titan.storage_tablename</code>
  * </p>
  *

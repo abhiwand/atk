@@ -28,7 +28,9 @@ import org.apache.hadoop.conf.Configuration;
  */
 public class LinkGraphBuildingRule implements GraphBuildingRule {
 
-    private PropertyGraphSchema    graphSchema;
+    private PropertyGraphSchema             graphSchema;
+    private Class                           vidClass       = StringType.class;
+    private Class<? extends GraphTokenizer> tokenizerClass = LinkGraphTokenizer.class;
 
     /**
      * Allocates and initializes the property graph schema.
@@ -67,18 +69,19 @@ public class LinkGraphBuildingRule implements GraphBuildingRule {
 
     /**
      * Get the class of the {@code GraphTokenizer} used to construct the link graph
-     * @return  {@LinkGraphTokenizer.class}
+     * @return  the class of the {@code GraphTokenizer} used to construct the link graph
+     * @see LinkGraphTokenizer
      */
     public Class<? extends GraphTokenizer> getGraphTokenizerClass() {
-        return LinkGraphTokenizer.class;
+        return tokenizerClass;
     }
 
     /**
-     * Get the vertex ID class used to construct the link graph.
-     * @return  {@code StringType.class}
+     * Get the class of vertex IDs used to construct the link graph.
+     * @return  the class of vertex IDs used to construct the link graph.
      * @see StringType
      */
     public Class vidClass() {
-        return StringType.class;
+        return vidClass;
     }
 }

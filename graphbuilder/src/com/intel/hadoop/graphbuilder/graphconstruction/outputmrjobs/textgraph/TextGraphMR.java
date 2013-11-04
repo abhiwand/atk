@@ -95,7 +95,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
     @Override
     public void init(InputConfiguration inputConfiguration, GraphBuildingRule graphBuildingRule) {
 
-        this.graphBuildingRule = this.graphBuildingRule;
+        this.graphBuildingRule  = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
         this.usingHBase         = inputConfiguration.usesHBase();
 

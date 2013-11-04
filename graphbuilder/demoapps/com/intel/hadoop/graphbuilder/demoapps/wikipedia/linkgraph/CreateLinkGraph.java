@@ -50,8 +50,8 @@ import org.apache.log4j.Logger;
  *     <li>To specify a Titan load, use the option <code>-t</code>
  *     <ul><li>The tablename used by Titan is specified in the config file specified at <code> -conf conf_path </code></li>
  *     <li>If no tablename is specified, Titan uses the default table name <code>titan</code></li>
- *     <li>If you try to write to an existing table, Titan will append the graph to the existing table</li></ul>
- *     </li>
+ *     <li><code>-a</code> an option that tells Titan it can append the newly generated graph to an existing
+ *         one in the same table. Default behavior is to abort if you try to use an existing Titan table name</li></ul>
  * </ul>
  * </p>
  *
