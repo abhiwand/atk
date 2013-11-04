@@ -64,7 +64,6 @@ do
             usage
             ;;        
     esac
-
 done
 
 # Input 1 is a unique cluster id from frontend user registration
@@ -255,7 +254,8 @@ do
     # set tag
     if [ "${dryrun}" == "no" ]; then
         iid=`ec2-run-instances ${cmd_opts} | grep INSTANCE | awk '{print $2}'`
-        ec2-create-tags ${iid} --tag "Name=${nname}"
+	    IA_add_name_tag ${iid} ${nname}
+	    IA_check_instance_status ${iid}
     fi
 done
 
@@ -279,5 +279,5 @@ EOF
 
 # generate hosts file
 if [ "${dryrun}" == "no" ]; then
-    IA_generate_hosts_file ${cname} ${csize} ${IA_CLUSTERS}
+    IA_generate_hosts_file ${cid} ${csize} ${IA_CLUSTERS}
 fi

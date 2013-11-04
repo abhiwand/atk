@@ -7,7 +7,7 @@ IA_DISKS=(xvdb xvdc xvdd xvde)
 IA_USR=hadoop
 
 let j=0
-for ((i = 0; i < ${#IA_DISKS[${i}]}; i++ ))
+for ((i = 0; i < ${#IA_DISKS[@]}; i++ ))
 do
 	d="${IA_DISKS[${i}]}"
 	let j=$i+1

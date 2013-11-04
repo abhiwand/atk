@@ -40,23 +40,27 @@ export IA_CLUSTER_SIZE_INC=4
 export IA_CLUSTER_CIDR=${IA_NAME}_cidr.txt
 
 # TODO: these are pre-existing shared resources, we can also 
-# do a query at the beginning instead of hard-coding them
-export IA_IP_ADMIN="10.0.60.92"
+if [ -z "${IA_SUBNET}" ]; then
+    export IA_SUBNET="10.0.0.0/18"
+fi
+if [ -z "${IA_IP_ADMIN}" ]; then
+    export IA_IP_ADMIN="10.0.60.92"
+fi
 export IA_CIDR_ADMIN="${IA_IP_ADMIN}/32"
-# L2 flat CIDR
-export IA_CIDR_FULL=10.0.0.0/18
-# reserved
-export IA_CIDR_RESV=10.0.64.0/27
-# start ip
-export IA_IP_MIN=10.0.64.32
-
-# ec2-describe-route-tables -F "vpc-id=vpc-c84049aa" | grep ROUTETABLE | awk '{print $2}'
-export IA_ROUTETABLE="rtb-bd464fdf"
+if [ -z "${IA_ROUTETABLE}" ]; then
+    export IA_ROUTETABLE="rtb-bd464fdf"
+fi
 # every cluser has the following two security groups
-export IA_SGROUP_HTTPS="sg-381c145a"
-export IA_SGROUP_ADMSSH="sg-447e7526"
-export IA_SGROUP_INTSSH="sg-1c70787e"
-export IA_SGROUP_EXTSSH="sg-97c2caf5"
+if [ -z "${IA_SGROUP_HTTPS}" ]; then
+    export IA_SGROUP_HTTPS="sg-381c145a"
+fi
+if [ -z "${IA_SGROUP_ADMSSH}" ]; then
+    export IA_SGROUP_ADMSSH="sg-447e7526"
+fi
+
+# sunet status
+export IA_AWS_PENDING="pending"
+export IA_AWS_AVAILABLE="available"
 
 # Helpers
 
@@ -203,6 +207,33 @@ function IA_find_pgroup()
     # check if the group exsits
     echo `ec2-describe-placement-groups ${IA_EC2_OPTS} -F "group-name=${1}" | awk '{print $2}'`
 }
+function IA_find_pgroup_state()
+{
+    # check if the group exsits
+    echo `ec2-describe-placement-groups ${IA_EC2_OPTS} -F "group-name=${1}" | awk '{print $4}'`
+}
+
+#
+# Return in format TAG <type> <id> <tag-name> <tag-value>
+# e.g. TAG     instance        i-cb0994ff      test    testtag
+function IA_add_name_tag()
+{
+	local id=$1
+	local val=$2
+    local result=(`ec2-create-tags ${IA_EC2_OPTS} ${id} --tag "Name=${val}"`)
+
+    if [ ${#result[@]} -ne 5 ]; then
+        IA_logerr "Failed to create name tag for id ${id} using value ${val}!"
+        return 1
+    fi
+
+    if [ "${result[4]}" != "${val}" ]; then
+        IA_logerr "Error in tag adding, expect ${val}, got ${result[4]}"
+        return 1
+    fi
+    IA_loginfo "Successfully added name tag ${val} for id ${id}"
+    return 0
+}
 
 # create per cluster unique placement group
 # Returns 0 for success, 1 for failure
@@ -211,6 +242,7 @@ function IA_create_pgroup()
 {
     # check if the group exsits
     local pgrp_name=$1
+    local pgrp_state
 
     IA_loginfo "Preparing to create placement group ${pgrp_name}..."
     _RET=`IA_find_pgroup ${pgrp_name}`
@@ -219,14 +251,27 @@ function IA_create_pgroup()
         return 0
     fi
 
-    ec2-create-placement-group ${IA_EC2_OPTS} -s cluster ${pgrp_name}
-    _RET=`IA_find_pgroup ${pgrp_name}`
-    if [ ! -z "${_RET}" ] && [ "${pgrp_name}" == "${_RET}" ]; then
-        IA_loginfo "Created placement group ${pgrp_name}..."
-        return 0
+    _RET=`ec2-create-placement-group ${IA_EC2_OPTS} -s cluster ${pgrp_name} | awk '{print $2}'`
+    if [ -z "${_RET}" ] || [ "${pgrp_name}" != "${_RET}" ]; then
+        IA_logerr "Failed to create placement group ${pgrp_name}..."
+        _RET=""
+        return 1
     fi
+
+    # check group status
+    IA_loginfo "Created placement group ${pgrp_name}..."
+    for (( i = 0; i < 5; i++ ))
+    do
+        IA_loginfo "Checking placement group ${_RET} state, count ${i}..."
+        pgrp_state=`IA_find_pgroup_state ${_RET}`
+        if [ "${pgrp_state}" == "${IA_AWS_AVAILABLE}" ]; then
+            return 0
+        fi
+        sleep 5s
+    done
+
+    IA_logerr "Placement group ${pgrp_name} created, but in a wrong state \"${pgrp_state}\"..."
     _RET=""
-    IA_logerr "Failed to create placement group ${pgrp_name}..."
     return 1
 }
 
@@ -282,7 +327,28 @@ function IA_create_sgroup()
 # find the subnet for the target cluster
 function IA_find_subnet()
 {
-    echo `ec2-describe-subnets ${IA_EC2_OPTS} -F "tag:Name=${1}" -F "vpc-id=${2}" -F "cidr=${3}" | grep SUBNET | awk '{print $2}'`
+    local snet_id=`ec2-describe-subnets ${IA_EC2_OPTS} -F "tag:Name=${1}" -F "vpc-id=${2}" -F "cidr=${3}" | grep SUBNET | awk '{print $2}'`
+    if [ -z "${snet_id}" ]; then
+    # try w/o name tag
+        snet_id=`ec2-describe-subnets ${IA_EC2_OPTS} -F "vpc-id=${2}" -F "cidr=${3}" | grep SUBNET | awk '{print $2}'`
+        if [ ! -z "${snet_id}" ]; then
+            # found the subnet, let's add the tag
+            IA_add_name_tag ${snet_id} ${1}
+        fi
+    fi
+    echo ${snet_id}
+}
+
+# TODO: this is dummy, just logs the status output and wait for 5s
+function IA_check_instance_status()
+{
+    sleep 5s
+    IA_loginfo "`ec2-describe-instance-status ${IA_EC2_OPTS} ${1}`"
+}
+
+function IA_find_subnet_state()
+{
+    echo `ec2-describe-subnets ${IA_EC2_OPTS} ${1} -F "vpc-id=${2}" -F "cidr=${3}" | grep SUBNET | awk '{print $3}'`
 }
 
 # create subnet/cidr for the target cluster
@@ -294,24 +360,42 @@ function IA_create_subnet()
     local snet_name=$1
     local snet_vpc=$2
     local snet_cidr=$3
+    local snet_state
 
-    IA_loginfo "Prepare to create subnet ${snet_name}..."
+    IA_loginfo "Looking for subnet ${snet_name}..."
     _RET=`IA_find_subnet ${snet_name} ${snet_vpc} ${snet_cidr}`
     if [ ! -z "${_RET}" ]; then
         IA_loginfo "Found existing subnet ${snet_name} with id ${_RET} in vpc ${snet_vpc}"
+        snet_state=`IA_find_subnet_state ${_RET} ${snet_vpc} ${snet_cidr}`
+        if [ "${snet_state}" != "available" ]; then
+            IA_logerr "Existing subnet ${snet_name} with id ${_RET} in vpc ${snet_vpc} is in a wrong state as ${snet_state}!"
+            return 1
+        fi
         return 0
     fi
-
     # default zone
     IA_loginfo "Creating subnet ${snet_name}..."
-    ec2-create-subnet ${IA_EC2_OPTS} --vpc ${snet_vpc} --cidr ${snet_cidr}
-    _RET=`IA_find_subnet ${snet_name} ${snet_vpc} ${snet_cidr}`
-    if [ ! -z "${_RET}" ]; then
-        IA_loginfo "Found existing subnet ${snet_name} with id ${_RET} in vpc ${snet_vpc}"
-        ec2-create-tags ${IA_EC2_OPTS} ${snet_id} --tag "Name=${snet_name}"
-        return 0
-    fi
-    IA_logerr "Failed to create subnet ${sne_name} for VPC ${snet_vpc} using CIR ${snet_cidr}!"
+    _RET=`ec2-create-subnet ${IA_EC2_OPTS} --vpc ${snet_vpc} --cidr ${snet_cidr} | awk '{print $2}'`
+    if [ -z "${_RET}" ]; then
+        IA_logerr "Failed to create subnet ${snet_name} with id ${_RET} in vpc ${snet_vpc}!"
+        return 1
+    fi 
+
+    # we have a subnet id up to here, check the state   
+    # check sunet status before moving on, max five times
+    IA_loginfo "Created subnet subet (${snet_name}, ${_RET})..."
+    for (( i = 0; i < 5; i++ ))
+    do
+        IA_loginfo "Checking subnet (${snet_name}, ${_RET}) state..."
+        snet_state=`IA_find_subnet_state ${_RET} ${snet_vpc} ${snet_cidr}`
+        if [ "${snet_state}" == "${IA_AWS_AVAILABLE}" ]; then
+            IA_add_name_tag ${snet_id} ${snet_name}
+            return 0
+        fi
+        sleep 5s
+    done
+
+    IA_logerr "Created subnet ${sne_name} for VPC ${snet_vpc} using CIR ${snet_cidr}, but in a wrong state \"${snet_state}\"!"
     _RET=""
     return 1
 }
@@ -356,18 +440,15 @@ function IA_get_instance_id()
     local name=$1
     local vpc=`IA_get_vpc`
 
-    echo `ec2-describe-instances -F "vpc-id=${vpc}" -F "tag:Name=${name}" | grep INSTANCE | awk '{print $2}' `
+    echo `ec2-describe-instances ${IA_EC2_OPTS} -F "vpc-id=${vpc}" -F "tag:Name=${name}" | grep INSTANCE | awk '{print $2}' `
     return 0
 }
 
-# get the value of a given column for an ec2 instance
-# this is extracted from ec2-describe-instances, and matches the ec2 docs 
-# supported filter fields
-function IA_get_instance_column()
+function IA_get_instance_column_value()
 {
-    local ins=(`ec2-describe-instances --show-empty-fields -F "tag:Name=${1}" | grep INSTANCE`)
-
-    case $2 in
+    local ins=($@)
+    local type=${ins[$((${#ins[@]}-1))]}
+    case ${type} in
     vpc-id)
         echo ${ins[18]}
         ;;
@@ -380,6 +461,12 @@ function IA_get_instance_column()
     private-dns-name)
         echo ${ins[4]}
         ;;
+    instance-state-name)
+        echo ${ins[5]}
+        ;;
+    key-name)
+        echo ${ins[6]}
+        ;;
     public-ip-address)
         echo ${ins[16]}
         ;;
@@ -390,6 +477,25 @@ function IA_get_instance_column()
         ;;
     esac
 }
+
+function IA_get_instance_column_by_filter()
+{
+    local filter=$1
+    local ins=(`ec2-describe-instances ${IA_EC2_OPTS} --show-empty-fields -F "${filter}" | grep INSTANCE`)
+    
+    echo `IA_get_instance_column_value ${ins[@]} $2`
+} 
+
+# get the value of a given column for an ec2 instance
+# this is extracted from ec2-describe-instances, and matches the ec2 docs 
+# supported filter fields
+function IA_get_instance_column()
+{
+    local ins=(`ec2-describe-instances ${IA_EC2_OPTS} --show-empty-fields -F "tag:Name=${1}" | grep INSTANCE`)
+
+    echo `IA_get_instance_column_by_filter "tag:Name=${1}" $2`
+}
+
 
 # find out the ec2 instance ip by the name tag
 function IA_get_instance_private_ip()
@@ -406,6 +512,7 @@ function IA_get_instance_public_ip()
 {
     echo `IA_get_instance_column $1 public-ip-address`
 }
+
 function IA_get_instance_public_dns()
 {
     echo `IA_get_instance_column $1 public-dns-name`
@@ -413,7 +520,7 @@ function IA_get_instance_public_dns()
 
 function IA_generate_hosts_file()
 {
-    local cname=$1
+    local cid=$1
     local csize=$2
     local outdir=$3
 
@@ -421,9 +528,8 @@ function IA_generate_hosts_file()
         IA_logerr "Output director \"${outdir}\" not found!"
         return 1
     fi
-
     headers=${outdir}/headers.hosts
-    if [ ! -f ${headers}} ]; then
+    if [ ! -f ${headers} ]; then
         IA_logerr "Hosts file header \"${headers}\" not found!"
         return 1
     fi
@@ -443,7 +549,6 @@ function IA_generate_hosts_file()
         dnsfull[$i]=`IA_get_instance_private_dns ${nname[$i]}`
         dns[$i]=`echo ${dnsfull[$i]} | awk -F"." '{print $1}'`
         echo "${ip[$i]} ${hosts[$i]} ${dns[$i]}" >> ${outhosts}
-        echo "${ip} ${host} ${dns}" >> ${outhosts}
         echo "${dnsfull[$i]}" >> ${outnodes}
     done
     IA_loginfo "Generated hosts file ${outhosts}..."

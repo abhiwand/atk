@@ -28,6 +28,7 @@ export IA_FILES=( \
   "pig-0.12.0.tar.gz" \
   "Python-2.7.5.tgz")
 
+export IA_PEM=${IA_EC2_PERMISSIONS}
 # hard-coded, mapping is guaranteed by the original AMI creation
 export IA_DISKS=(xvdb xvdc xvdd xvde)
 export IA_PACKAGE=${IA_DEPLOY}/${IA_NAME}.tar.gz
