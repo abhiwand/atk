@@ -7,6 +7,7 @@ import services.authorize.CookieGenerator
 object Python extends Controller{
   var ipython = Authenticated{ request =>
 
-    Ok(views.html.ipython("Ipython", request.user._1)).withCookies(CookieGenerator.createCookie("secret", "username-{host}-{port}"))
+    val url = request.user._1.ipythonUrl.toString
+    Ok(views.html.ipython("Ipython", request.user._1)).withCookies(CookieGenerator.createCookie("secret", url))
   }
 }
