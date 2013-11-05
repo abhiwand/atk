@@ -2,9 +2,10 @@
 
 @import services.aws.S3
 @import com.amazonaws.services.s3.model.{S3ObjectSummary}
-
    <!-- Dataset Modal -->
   <div class="modal fade" id="datasetModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <script src="@routes.Assets.at("javascripts/dropzone.js")"></script>
+      <script src="@routes.Assets.at("javascripts/dropzoneConfig.js")"></script>
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -18,11 +19,11 @@
                     <h5>Current Dataset</h5>
                   </div>
                     <div class='table-responsive'>
-                        <table class='table table-condensed'>
+                        <table class='table table-condensed' id="uploadedFiles">
                           <thead>
                               <tr><th>Name</th><th>Size</th></tr>
                           </thead>
-                            <tbody>
+                            <tbody >
                             @for(file <- S3.getObjectList(user.uid.get.toString)){
                                 <tr class=''>
                                     <td>@S3.formatName(file.getKey)</td>
