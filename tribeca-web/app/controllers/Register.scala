@@ -45,34 +45,14 @@ object Register extends Controller {
 
     def getResponse(req: JsValue, registrationForm: RegistrationFormMapping, auth: Authorize): (Int,String) = {
         if (auth.validateUserInfo() == null) return (0,null)
-
         val userInfo = auth.userInfo
-        if(Users.exists(userInfo.email) && Whitelists.exists(userInfo.email)){
-          val u = Users.readByEmail(userInfo.email)
-          val sessionId = Sessions.create(u.uid.get)
-          ( StatusCodes.ALREADY_REGISTER, sessionId)
-        } else if(Users.exists(userInfo.email) && !Whitelists.exists(userInfo.email)){
-          ( StatusCodes.REGISTRATION_APPROVAL_PENDING, "")
-        } else{
-          val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, true, Some(""), None)
-          val uid = Users.create(u)
-          val registrationStatus = Registrations.createRegistration(database.Registration(uid,registrationForm.name,
-            registrationForm.organization_name, registrationForm.organization_phone, registrationForm.organization_email,
-            registrationForm.experience, registrationForm.role, registrationForm.whyParticipate, registrationForm.whatTools))
-          if(Whitelists.exists(userInfo.email)){
-            val sessionId = Sessions.create(uid)
-            (StatusCodes.LOGIN, sessionId)
-          } else{
-            (StatusCodes.REGISTRATION_APPROVAL_PENDING,"")
-          }
+        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, true, Some(""), None)
+        val result = Users.register(u, registrationForm, MySQLStatementGenerator)
+        val sessionId = Sessions.create(result.uid)
+        result.errorCode match {
+            case StatusCodes.ALREADY_REGISTER => return (StatusCodes.ALREADY_REGISTER,sessionId)
+            case StatusCodes.REGISTRATION_APPROVAL_PENDING => return (StatusCodes.REGISTRATION_APPROVAL_PENDING,sessionId)
+            case _ => return (StatusCodes.LOGIN,sessionId)
         }
-
-        //TODO update procedure to take new registration fields
-        //val result = Users.register(u, MySQLStatementGenerator)
-      /*StatusCodes.REGISTRATION_APPROVAL_PENDING match {
-          case StatusCodes.ALREADY_REGISTER => return (StatusCodes.ALREADY_REGISTER,sessionId)
-          case StatusCodes.REGISTRATION_APPROVAL_PENDING => return (StatusCodes.REGISTRATION_APPROVAL_PENDING,sessionId)
-          case _ => return (StatusCodes.LOGIN,sessionId)
-        }*/
     }
 }

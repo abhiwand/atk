@@ -14,17 +14,22 @@ import java.sql.{ResultSet, Types, CallableStatement}
 
 object Users {
 
-    def register(user: User, statementGenerator : StatementGenerator): RegistrationOutput = DB.withSession {
+    def register(user: User, registrationForm: RegistrationFormMapping, statementGenerator : StatementGenerator): RegistrationOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
-            var callString =  "{call sp_register(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+            var callString =  "{call sp_register(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
             var cStmt = statementGenerator.getCallStatement(session, callString)
+            cStmt.setString("myName", registrationForm.name)
             cStmt.setString("given_name", user.givenName)
             cStmt.setString("family_name", user.familyName)
             cStmt.setString("email", user.email)
-            cStmt.setString("phone", "phone")
-            cStmt.setString("organization_name", "org name")
-            cStmt.setString("organization_email", "org email")
+            cStmt.setString("organization_name", registrationForm.organization_name)
+            cStmt.setString("organization_phone", registrationForm.organization_phone)
+            cStmt.setString("organization_email", registrationForm.organization_email)
+            cStmt.setInt("experience", registrationForm.experience)
+            cStmt.setString("role", registrationForm.role)
+            cStmt.setString("why_participate", registrationForm.whyParticipate)
+            cStmt.setString("what_tools", registrationForm.whatTools)
             cStmt.registerOutParameter("loginAfterRegister", Types.BIGINT)
             cStmt.registerOutParameter("errorCode", Types.BIGINT)
             cStmt.registerOutParameter("errorMessage", Types.VARCHAR)
