@@ -685,6 +685,14 @@
   font-style: normal;
  } 
 
+ @media screen and (-webkit-min-device-pixel-ratio:0) {
+    @font-face {
+        font-family: 'Neo Sans Intel Light';
+        src: url('../fonts/NeoSansIntel/NeoSansIntel-Light.svg') format('svg');
+
+    }
+}
+
  @font-face {
   font-family: 'Neo Sans Intel Light';
   src: url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.svg'), url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.ttf'), url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.eot'), url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.woff'), url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.otf');
@@ -706,12 +714,7 @@
   font-style: italic;
  } 
 
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-    @font-face {
-        font-family: 'Neo Sans Intel Light';
-        src: url('../fonts/NeoSansIntel/NeoSansIntel-Light.svg') format('svg');
-    }
-}
+
 
 /* FONT AWESOME CORE
  * -------------------------- */
@@ -7527,7 +7530,8 @@ body.boxed .carousel-blur .flex-direction-nav .flex-next {
     margin: 0;
     margin-top: 54px;
     font-size: 36px;
-    line-height: 45px; }
+    line-height: 45px;
+    -webkit-font-smoothing: antialiased; }
     @media (min-width: 768px) and (max-width: 991px) {
       .carousel-blur .big, .carousel-blur .normal {
         margin-top: 72px;
@@ -7537,7 +7541,9 @@ body.boxed .carousel-blur .flex-direction-nav .flex-next {
       .carousel-blur .big, .carousel-blur .normal {
         margin-top: 90px;
         font-size: 77px;
-        line-height: 75px; } }
+        line-height: 75px;
+
+ } }
   .carousel-blur .normal {
     font-weight: 400;
     margin: 0;
