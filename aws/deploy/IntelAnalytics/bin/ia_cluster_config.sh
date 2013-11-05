@@ -1,25 +1,24 @@
 #!/bin/bash
 
-RSYNC_ROOT=${HOME}/IntelAnalytics
+IA_ROOT=${HOME}/IntelAnalytics
 
 # TODO: should have a globl file track all version and source into here
-RSYNC_HDOOP=${RSYNC_ROOT}/hadoop/conf
-RSYNC_HBASE=${RSYNC_ROOT}/hbase/conf
+IA_HDOOP=${IA_ROOT}/hadoop
+IA_HBASE=${IA_ROOT}/hbase
+IA_ZKEEP=${IA_ROOT}/zookeeper
+IA_TTNHB=${IA_ROOT}/titan
+IA_PIG=${IA_ROOT}/pig
+IA_MAHOUT=${IA_ROOT}/mahout
+IA_GIRAPH=${IA_ROOT}/girap
 
-RSYNC_ZKEEP=${RSYNC_ROOT}/zookeeper/conf
-RSYNC_TTNHB=${RSYNC_ROOT}/titan
-RSYNC_PIG=${RSYNC_ROOT}/pig
-RSYNC_MAHOUT=${RSYNC_ROOT}/mahout
-RSYNC_GIRAPH=${RSYNC_ROOT}/girap
-
-RSYNC_NODES=${RSYNC_HDOOP}/slaves
-
+# nodes, use hadoo slaves opr hbase regionservers
+IA_NODES=${IA_HDOOP}/slaves
 CMMD=$1
 if [ -z "${CMMD}" ]
 then
         exit -1
 fi
-for node in `cat ${RSYNC_NODES}`
+for node in `cat ${IA_NODES}`
 do
         echo "## \"${CMMD}\":working on cluster node ${node}..."
         if [ "${CMMD}" == "--synconf" ]
@@ -29,21 +28,21 @@ do
                         echo "excluding self as ${node}..."
                         continue;
                 fi
-                rsync -avzl -e ssh ${RSYNC_HDOOP}/conf ${node}:${RSYNC_HDOOP}/conf
-                rsync -avzl -e ssh ${RSYNC_HBASE}/conf ${node}:${RSYNC_HBASE}/conf
-#               rsync -avzl -e ssh ${RSYNC_ZKEEP}/ ${node}:${RSYNC_ZKEEP}/
+                rsync -avzl -e ssh ${IA_HDOOP}/conf/ ${node}:${IA_HDOOP}/conf/
+                rsync -avzl -e ssh ${IA_HBASE}/conf/ ${node}:${IA_HBASE}/conf/
+#               rsync -avzl -e ssh ${IA_ZKEEP}/conf/ ${node}:${IA_ZKEEP}/conf/
         elif [ "${CMMD}" == "--rmlogs" ]
         then
-                ssh ${node} 'rm -rf ~/hadoop/logs/* ~/hbase/logs/*'
+                ssh ${node} "rm -rf ${IA_HADOOP}/logs/* ${IA_HBASE}/logs/*'
         elif [ "${CMMD}" == "--rmlogs-hadoop" ]
         then
-                ssh ${node} 'rm -rf ~/hadoop/logs/*'
+                ssh ${node} 'rm -rf ${IA_HADOOP}/logs/*'
         elif [ "${CMMD}" == "--rmlogs-hbase" ]
         then
-                ssh ${node} 'rm  -rf ~/hbase/logs/*'
+                ssh ${node} 'rm  -rf ${IA_HBASE}/logs/*'
         elif [ "${CMMD}" == "--rmlogs-zookeeper" ]
         then
-                ssh ${node} 'rm ~/zookeeper/logs/*'
+                ssh ${node} 'rm ${IA_ZKEEP}/logs/*'
         elif [ "${CMMD}" == "--jpsls" ]
         then
                 ssh ${node} 'jps -l | grep -v jps'
