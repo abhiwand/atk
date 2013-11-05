@@ -48,6 +48,10 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 				required: true,
 				minlength: 3
 			},
+			support_message: {
+				required: true,
+				minlength: 3
+			},
 			/*name: {
 				required: true,
 				minlength: 3
