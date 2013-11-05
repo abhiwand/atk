@@ -30,6 +30,9 @@ import models._
 import models.database.{MySQLStatementGenerator, User}
 import controllers.Session._
 
+/**
+ * Singleton object to handle register request and generate response accordingly.
+ */
 object Register extends Controller {
 
   var simpleResult: SimpleResult = Ok
@@ -65,6 +68,11 @@ object Register extends Controller {
       }
     }
 
+    /**
+     *
+     * @param Authorization info
+     * @return tuple of (status code, session Id)
+     */
     def getResponse(req: JsValue, registrationForm: RegistrationFormMapping, auth: Authorize): (Int, Option[String]) = {
         if (Option(auth.validateUserInfo()) == None) return (0, None)
 

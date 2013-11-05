@@ -28,6 +28,9 @@ import controllers.Session._
 import services.authorize.CookieGenerator
 import play.Play
 
+/**
+ * Ipython page controller
+ */
 object Python extends Controller {
     var ipython = Authenticated {
         request =>

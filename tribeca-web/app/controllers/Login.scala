@@ -52,7 +52,7 @@ object Login extends Controller {
 
     /**
      *
-     * @param authorization info
+     * @param Authorization info
      * @return tuple of (status code, session Id)
      */
     def getResponse(auth: Authorize): (Int, Option[String]) = {
