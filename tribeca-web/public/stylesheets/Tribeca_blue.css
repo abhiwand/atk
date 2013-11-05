@@ -666,47 +666,52 @@
 
  @font-face {
   font-family: 'Neo Sans Intel';
-  src: url('../fonts/NeoSansIntel/NeoSansIntel.ttf');
+  src:  url('../fonts/NeoSansIntel/NeoSansIntel.svg'), url('../fonts/NeoSansIntel/NeoSansIntel.ttf'), url('../fonts/NeoSansIntel/NeoSansIntel.eot'), url('../fonts/NeoSansIntel/NeoSansIntel.woff'), url('../fonts/NeoSansIntel/NeoSansIntel.otf');
   font-weight: normal;
   font-style: normal;
  } 
 
  @font-face {
   font-family: 'Neo Sans Intel';
-  src: url('../fonts/NeoSansIntel/NeoSansIntel-Italic.ttf');
+  src: url('../fonts/NeoSansIntel/NeoSansIntel-Italic.svg'), url('../fonts/NeoSansIntel/NeoSansIntel-Italic.ttf'), url('../fonts/NeoSansIntel/NeoSansIntel-Italic.eot'), url('../fonts/NeoSansIntel/NeoSansIntel-Italic.woff'), url('../fonts/NeoSansIntel/NeoSansIntel-Italic.otf');
   font-weight: normal;
   font-style: italic;
  } 
 
  @font-face {
   font-family: 'Neo Sans Intel Light';
-  src: url('../fonts/NeoSansIntel/NeoSansIntel-Light.ttf');
+  src:  url('../fonts/NeoSansIntel/NeoSansIntel-Light.svg'), url('../fonts/NeoSansIntel/NeoSansIntel-Light.ttf'), url('../fonts/NeoSansIntel/NeoSansIntel-Light.eot'), url('../fonts/NeoSansIntel/NeoSansIntel-Light.woff'), url('../fonts/NeoSansIntel/NeoSansIntel-Light.otf');
   font-weight: 200;
   font-style: normal;
  } 
 
  @font-face {
   font-family: 'Neo Sans Intel Light';
-  src: url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.ttf');
+  src: url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.svg'), url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.ttf'), url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.eot'), url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.woff'), url('../fonts/NeoSansIntel/NeoSansIntel-LightItalic.otf');
   font-weight: 200;
   font-style: italic;
  } 
 
  @font-face {
   font-family: 'Neo Sans Intel Medium';
-  src: url('../fonts/NeoSansIntel/NeoSansIntel-Medium.ttf');
+  src: url('../fonts/NeoSansIntel/NeoSansIntel-Medium.svg'), url('../fonts/NeoSansIntel/NeoSansIntel-Medium.ttf'), url('../fonts/NeoSansIntel/NeoSansIntel-Medium.eot'), url('../fonts/NeoSansIntel/NeoSansIntel-Medium.woff'), url('../fonts/NeoSansIntel/NeoSansIntel-Medium.otf');
   font-weight: 500;
   font-style: normal;
  } 
 
  @font-face {
   font-family: 'Neo Sans Intel Medium';
-  src: url('../fonts/NeoSansIntel/NeoSansIntel-MediumItalic.ttf');
+  src: url('../fonts/NeoSansIntel/NeoSansIntel-MediumItalic.svg'), url('../fonts/NeoSansIntel/NeoSansIntel-MediumItalic.ttf'), url('../fonts/NeoSansIntel/NeoSansIntel-MediumItalic.eot'), url('../fonts/NeoSansIntel/NeoSansIntel-MediumItalic.woff'), url('../fonts/NeoSansIntel/NeoSansIntel-MediumItalic.otf');
   font-weight: 500;
   font-style: italic;
  } 
 
-
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+    @font-face {
+        font-family: 'Neo Sans Intel Light';
+        src: url('../fonts/NeoSansIntel/NeoSansIntel-Light.svg') format('svg');
+    }
+}
 
 /* FONT AWESOME CORE
  * -------------------------- */
@@ -5647,7 +5652,7 @@ body {
   background-image: transparent; }
   @media (min--moz-device-pixel-ratio: 1.3), (-o-min-device-pixel-ratio: 2.6 / 2), (-webkit-min-device-pixel-ratio: 1.3), (min-device-pixel-ratio: 1.3), (min-resolution: 1.3dppx) {
     #wrapper {
-      background-image: url("../images/bg_wrapper@2x.jpg");
+      background-image: transparent;
       background-size: 1920px 535px; } }
 
 #main-content {
