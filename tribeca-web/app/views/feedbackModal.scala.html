@@ -6,42 +6,42 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title">Tribeca Beta Release Feedback Form</h4>
-                <p class='modal-header'>Hey! Thanks for being a beta tester for the Tribeca Knowledge Discovery Platform. We really appreciate it. Would you mind taking a moment to answer a few questions regarding your experience? It helps us to make things better!<p>
+                
             </div>
             <div class="modal-body">
                 <div class='row'>
                     <div class='col-sm-12'>
+                       
+                            <fieldset class='row'>
+                                <div class='col-sm-12 mg-b-md DA_holder'>
+                                    <small class='text-muted'>Hey! Thanks for being a beta tester for the Tribeca Knowledge Discovery Platform. We really appreciate it. Would you mind taking a moment to answer a few questions regarding your experience? It helps us to make things better!</small>
+                                </div>
+                                <form class='DA_custom_form' method="post"  class="DA_custom_form" id="feedback-form" >
 
-                        <form action='#' class='form form-validation' method='get'>
-                            <div class='row'>
-
-                                <div class='col-sm-12'>
-                                    <div class='form-group control-group'>
-                                        <input class='form-control' data-rule-required='true' id='contact_email' name='contact[email]' placeholder='Subject' type='text'>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='row'>
-                                <div class='col-sm-12'>
-                                    <div class='form-group control-group'>
-                                        <textarea class='form-control' data-rule-required='true' id='contact_message' name='contact[message]' placeholder='Your message...'></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='row'>
-                                <div class='col-sm-12'>
-                                    <a href='ipython.html'>
-                                        <button class='btn btn-contrast btn-block' type='button' >
-                                                    Send Feedback and Log Me In
-                                        </button>
-                                    </a>
-                                </div>
-                            </div>
-                        </form>
+                                        <div class="DA_holder">
+                                            <label>Subject</label>
+                                            <div class="DA_field_container">
+                                                <input type="text" class="field" id="subject" name="subject" />
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="DA_holder">
+                                            <label>Your Message</label>
+                                            <div class="textarea-frame">
+                                                
+                                                <textarea name="feedback_message" id="feedback_message" class="field" rows="8" cols="40"></textarea>
+                                            </div>
+                                        <div class="modal-footer">
+                                        <div class="btnp"><input type="submit" value="Submit Feedback" /></div>
+                                        </div>
+                                </form>
+                            </fieldset>
                     </div>
                 </div>
             </div>
         </div>
-
+    </div>
     </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
+
+
