@@ -1,8 +1,7 @@
 @(user:models.database.User)
 
 @import services.aws.S3
-
-
+@import com.amazonaws.services.s3.model.{S3ObjectSummary}
 
    <!-- Dataset Modal -->
   <div class="modal fade" id="datasetModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -21,28 +20,15 @@
                     <div class='table-responsive'>
                         <table class='table table-condensed'>
                           <thead>
-                            <tr>
-                              <th>
-                              Name 
-                              </th>
-                              <th>
-                              Size 
-                              </th>                             
-                            </tr>
+                              <tr><th>Name</th><th>Size</th></tr>
                           </thead>
-                          <tbody>
-                            <tr class=''>
-                              <td> users.csv </td>
-                              <td> 3456k </td>
-                            </tr>
-                            <tr class=''>
-                              <td> ratings.csv </td>
-                              <td> 800k </td>
-                            </tr> 
-                            <tr class=''>
-                              <td> movie-titles.csv </td>
-                              <td> 679k </td>
-                            </tr>   
+                            <tbody>
+                            @for(file <- S3.getObjectList(user.uid.get.toString)){
+                                <tr class=''>
+                                    <td>@S3.formatName(file.getKey)</td>
+                                    <td>@S3.formatSize(file.getSize)</td>
+                                </tr>
+                            }
                           </tbody>
                         </table>  
                     </div>
@@ -55,9 +41,9 @@
                   <div class='col-sm-12'>
                     <div id="dropzone">
 
-                        <form id="uploadform" class="dropzone dz-clickable" action="https://gaopublic.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
-                            @defining(S3.getPolicy(user.email)){ implicit policy =>
-                            <input type="hidden" name="key" value="user/@user.email/${filename}">
+                        <form id="uploadForm" @*class="dropzone dz-clickable"*@ action="https://gaopublic.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
+                            @defining(S3.getPolicy(user.uid.get.toString())){ implicit policy =>
+                            <input type="hidden" name="key" value="user/@user.uid/${filename}">
                             <input type="hidden" name="AWSAccessKeyId" value="AKIAJ65RQRJONMKNT2NQ">
                             <input type="hidden" name="acl" value="private">
                             <!--<input type="hidden" name="success_action_redirect" value="http://localhost/s3">-->

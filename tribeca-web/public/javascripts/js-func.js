@@ -18,11 +18,11 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 		/*** here are the validation rules. the elements are get by name attribute ( <input type="field" name="firstname" /> ) ***/
 		/********************HERE YOU CAN CUSTOMIZE THE STOCK VALIDATION RULES*******************/
 		rules: {
-			myname: {
+			name: {
 				required: true,
 				minlength: 3
 			},
-			companyname: {
+            organization_name: {
 				required: true,
 				minlength: 3
 			},
@@ -40,11 +40,11 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 				required: true,
 				minlength: 3
 			},
-			name: {
+			/*name: {
 				required: true,
 				minlength: 3
-			},
-			password:{
+			},*/
+			/*password:{
 				required: true,
 				minlength: 5
 			},
@@ -52,25 +52,25 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 			    required: true,
 			    minlength: 5,
 			    equalTo: "#password"
-			},
-			email: {
+			},*/
+            organization_email: {
 			    required: true,
 			    minlength: 6,
 				email: true
 			}, 
-			country: {
+			/*country: {
 				required: true
 			},
 			gender: {
 				required: true
-			},
+			},*/
 			terms:{
 				required:true
 			}, 
-			url:{
+			/*url:{
 				required:true, 
 				url: true
-			},
+			},*/
 			rangelength:{
 				required:true, 
 				rangelength: [2, 6]
@@ -79,7 +79,7 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 				required:true,
 				range: [2,6]
 			},
-			phone_us:{
+            organization_phone:{
 				required:true,
 				phoneUS: true
 			}, 

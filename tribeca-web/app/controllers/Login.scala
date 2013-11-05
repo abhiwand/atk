@@ -33,7 +33,7 @@ object Login extends Controller {
             return (0,null)//BadRequest("Couldn't validate auth response data")
 
         val result = Users.login(auth.userInfo.email, MySQLStatementGenerator)
-        val sessionId = Sessions.createSession(result.uid)
+        val sessionId = Sessions.create(result.uid)
 
         result.errorCode match {
             case StatusCodes.NOT_YET_REGISTERED => (StatusCodes.NOT_YET_REGISTERED,null)//BadRequest(StatusCodes.getJsonStatusCode(StatusCodes.NOT_YET_REGISTERED))

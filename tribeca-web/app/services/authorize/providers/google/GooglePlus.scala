@@ -70,22 +70,31 @@ object GooglePlus {
     }
   }
 
+  def validateUserInfo(body: JsValue): UserInfo = {
+      body.validate[GoogleUserInfo](validateUserInfo).map{
+        case(validUser) =>
+          return UserInfo(validUser.id, validUser.email, validUser.given_name, validUser.family_name)
+        case _ =>
+          return null
+    }
+    null
+  }
+
   def getUserInfo(token: String): UserInfo = {
     val responseFuture = WS.url(userInfoUrl).withQueryString("access_token"-> token).get()
     val resultFuture = responseFuture map{ response =>
       response.status match{
-        case 200 =>
-          Json.parse(response.body).validate[GoogleUserInfo](validateUserInfo).map{
-            case(validUser) =>
-              validUser
-          }
+        case 200 =>{
+          validateUserInfo(Json.parse(response.body))
+        }
         case _ =>
-          return null
+          null
       }
     }
 
     //this makes it a synchronous request
     val result = Await.result(resultFuture, 30 seconds)
-    return UserInfo(result.get.id, result.get.email, result.get.given_name, result.get.family_name)
+    result.email
+    return UserInfo(result.id, result.email, result.givenName, result.familyName)
   }
 }

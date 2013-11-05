@@ -73,20 +73,48 @@ object Users {
             return output
     }
 
-  def getUser(uid: Long, userInfoTable: database.Users.type, whiteListTable: database.WhiteLists.type): Query[(database.Users.type , database.WhiteLists.type),(User,WhiteList)] = DB.withSession{implicit session: scala.slick.session.Session =>
-    return for { (u,w) <- userInfoTable leftJoin whiteListTable on (_.uid === _.uid) if u.uid === uid} yield (u,w)
+  def getByUid(uid: Long): Query[(database.Users.type , database.WhiteLists.type),(User,WhiteList)] = DB.withSession{implicit session: scala.slick.session.Session =>
+    return for { (u,w) <- database.Users leftJoin database.WhiteLists on (_.uid === _.uid) if u.uid === uid} yield (u,w)
   }
+
+  def getByEmail(email:String): Query[database.Users.type, database.User]  = DB.withSession{implicit session: scala.slick.session.Session =>
+    for{ u <- database.Users if u.email === email }yield u
+  }
+
   def anonymousUser(): User = {
     User(Some(0),"","","",false,None,None)
   }
 
-  //crud
-  def readUser(uid: Long, userInfoTable: database.Users.type, whiteListTable: database.WhiteLists.type): (database.User, database.WhiteList) = DB.withSession{implicit session: scala.slick.session.Session =>
-    val users = getUser(uid, userInfoTable, whiteListTable).list
-    if(users.length > 0){
-      return users.last
+  def exists(email:String): Boolean = DB.withSession{implicit session: scala.slick.session.Session =>
+    val usersResult = readByEmail(email)
+    if(usersResult != null && usersResult.uid.get > 0){
+      true
     }else{
-      return null
+      false
     }
   }
+  //crud
+  def create(user:database.User): Long = DB.withSession{implicit session: scala.slick.session.Session =>
+    database.Users.insert(user)
+  }
+
+  def readByUid(uid: Long): (database.User, database.WhiteList) = DB.withSession{implicit session: scala.slick.session.Session =>
+    val users = getByUid(uid).list
+    if(users.length > 0){
+       users.last
+    }else{
+      null
+    }
+  }
+
+  def readByEmail(email: String): database.User = DB.withSession{implicit session: scala.slick.session.Session =>
+    val getResult = getByEmail(email).list
+    if(getResult != null){
+      getResult.last
+    }else{
+      null
+    }
+  }
+
+
 }

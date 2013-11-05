@@ -9,7 +9,8 @@ libraryDependencies ++= Seq(
   cache,
   "com.typesafe.play" %% "play-slick" % "0.5.0.8",
   "commons-codec" % "commons-codec" % "1.8",
-  "org.mockito" % "mockito-core" % "1.9.5"
+  "org.mockito" % "mockito-core" % "1.9.5",
+  "com.amazonaws" % "aws-java-sdk" % "1.6.4"
 )     
 
 play.Project.playScalaSettings
