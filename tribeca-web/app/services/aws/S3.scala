@@ -35,6 +35,7 @@ import com.amazonaws.services.s3.AmazonS3Client
 import java.lang.Math
 import scala.collection.mutable
 import org.apache.commons.codec.binary.Base64
+import sun.misc.BASE64Encoder
 
 object S3 {
   val aws_secret_key = "h57vzrHg18IRdGUGnRvfSph381VtuEOfK+r3oNBQ";
@@ -83,7 +84,7 @@ object S3 {
   }
 
   def encodePolicy(policy_document: String): String = {
-    (new Base64()).encode(policy_document.getBytes("UTF-8")).replaceAll("\n", "").replaceAll("\r", "");
+    new BASE64Encoder().encode(policy_document.getBytes("UTF-8")).replaceAll("\n", "").replaceAll("\r", "");
   }
 
   def getPolicy(userIdentifier: String): String = {
@@ -98,6 +99,6 @@ object S3 {
   def createSignature(policy: String): String = {
     val hmac = Mac.getInstance("HmacSHA1");
     hmac.init(new SecretKeySpec(aws_secret_key.getBytes("UTF-8"), "HmacSHA1"));
-    (new Base64()).encode(hmac.doFinal(policy.getBytes("UTF-8"))).replaceAll("\n", "");
+    new BASE64Encoder().encode(hmac.doFinal(policy.getBytes("UTF-8"))).replaceAll("\n", "");
   }
 }
