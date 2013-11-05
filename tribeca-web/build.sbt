@@ -15,6 +15,8 @@ libraryDependencies ++= Seq(
 
 play.Project.playScalaSettings
 
+org.scalastyle.sbt.ScalastylePlugin.Settings
+
 
 //name in Rpm := "intelanalytics-saas-web",
    // version in Rpm <<= sbtVersion.identity,
