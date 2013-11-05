@@ -1,0 +1,20 @@
+@(title: String, user: models.database.User)(content: Html)
+<!DOCTYPE html>
+<html>
+    @head(title)
+
+        <body class='homepage'>
+            <div id='wrapper'>
+                @header(user)
+                <div id='main' role='main'>
+                @content
+                </div>
+                @footer()
+            </div>
+
+            @modals(user)
+
+            @jsfooter()
+            @errors()
+</body>
+</html>
