@@ -5,21 +5,22 @@ package com.intel.hadoop.graphbuilder.graphconstruction.keyfunction;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 
+
 /**
- * Generate key for map reduce by hashing vertices by their ID and edges by the ID of their destination vertex.
+ * Generate key for map reduce by hashing vertices by their ID and edges by their edge ID.
  *
  * @see KeyFunction
  */
-public class DestinationVertexKeyFunction  implements KeyFunction {
+public class ElementIdKeyFunction implements KeyFunction {
 
     /**
-     * Generate an integer hash of an edge using its destination vertex
+     * Generate an integer hash of an edge by hashing its ID
      *
      * @param edge
-     * @return  hash code of the edge's destination vertex ID
+     * @return  hash code of the  edge ID
      */
     public int getEdgeKey(Edge edge) {
-        return edge.getDst().hashCode();
+        return edge.getEdgeID().hashCode();
     }
 
     /**

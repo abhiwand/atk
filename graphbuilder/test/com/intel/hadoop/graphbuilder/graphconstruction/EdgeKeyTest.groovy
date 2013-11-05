@@ -8,9 +8,9 @@ import static junit.framework.Assert.assertFalse
 import static junit.framework.Assert.assertNotNull
 import static junit.framework.Assert.assertSame
 
-class EdgeKeyTest {
+public class EdgeKeyTest {
     @Test
-    public void testGetA() throws Exception {
+    public final void testGetA() throws Exception {
         Triple<Integer, Integer, Integer> t = new Triple(7, 8, 9);
 
         int a = t.getA();
@@ -18,7 +18,7 @@ class EdgeKeyTest {
     }
 
     @Test
-    void testConstructorGet() {
+    public final void testConstructorGet() {
         Object src = new String("src");
         Object dst = new String("dst");
         Object label = new String("label");
@@ -32,7 +32,7 @@ class EdgeKeyTest {
     }
 
     @Test
-    void testConstructorGetSet() {
+    public final void testConstructorGetSet() {
         Object src   = new String("src");
         Object dst   = new String("dst");
         Object label = new String("label");
@@ -87,7 +87,7 @@ class EdgeKeyTest {
     }
 
     @Test
-    void testReverseEdge() {
+    public final void testReverseEdge() {
         Object src = new String("src");
         Object dst = new String("dst");
         Object label = new String("label");
@@ -111,7 +111,7 @@ class EdgeKeyTest {
     }
 
     @Test
-    void testEquals() {
+    public final void testEquals() {
         Object src       = new String("src")
         Object badSrc    = new String("badSrc")
         Object dst       = new String("dst");
@@ -135,7 +135,7 @@ class EdgeKeyTest {
     }
 
     @Test
-    void testHashCode() {
+    public final void testHashCode() {
         Object src = new String("src");
         Object dst = new String("dst");
         Object label = new String("label");
@@ -148,7 +148,7 @@ class EdgeKeyTest {
     }
 
     @Test
-    void testToString() {
+    public final void testToString() {
         Object src   = new String("src");
         Object dst   = new String("dst");
         Object label = new String("label");

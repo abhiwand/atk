@@ -28,7 +28,11 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * Represents a vertex object with id and vertex data.
+ * Represents a vertex object with a vertex ID and a (potentially empty) property map.
+ *
+ *  * <p>
+ * This class is mutable. See the {@code configure} and {@code setProperty} methods.
+ * </p>
  *
  * @param <VertexIdType> the type of vertex id.
  */
@@ -38,16 +42,16 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     private PropertyMap  properties;
 
     /**
-     * Default constructor. Creates an empty vertex.
+     * Default constructor. Creates an placeholder vertex.
      */
     public Vertex() {
         this.properties = new PropertyMap();
     }
 
     /**
-     * Creates a vertex with given vertex id and vertex data.
+     * Create a vertex with given vertex ID.
      *
-     * @param vid
+     * @param vid vertex ID
      */
     public Vertex(VertexIdType vid) {
         this.vertexId   = vid;
@@ -55,14 +59,17 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Returns the id of the vertex.
+     * Return the ID of the vertex.
+     * @return the ID of the vertex
      */
     public VertexIdType getVertexId() {
         return vertexId;
     }
 
     /**
-     * overrides the id of the vertex. used when id not specified on creation
+     * Overwrite the ID and property map of the vertex.
+     * @param vid new vertex ID
+     * @param properties new {@code PropertyMap}
      */
     public void configure(VertexIdType vid, PropertyMap properties) {
         this.vertexId   = vid;
@@ -70,18 +77,25 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Returns a property of the vertex.
+     * Return a property of the vertex.
+     * @param key lookup key for the property
+     * @return the value of the property
      */
     public Object getProperty(String key) {
         return properties.getProperty(key);
     }
 
-    public Vertex<VertexIdType> setProperty(String key, Writable val) {
+    /**
+     * Set a property of the vertex
+     * @param key  the key of the property being updated
+     * @param val  the new value for the property
+     */
+    public void setProperty(String key, Writable val) {
         this.properties.setProperty(key, val);
-        return this;
     }
 
     /**
+     * Get the property map for the vertex.
      * @return the property map
      */
     public PropertyMap getProperties() {
@@ -89,58 +103,30 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Test for equality based on vertex ID.
-     *
-     * <p>
-     * Vertices of the same vertex ID but with different property maps are view as two copies of the same vertex with
-     * different property maps - the vertices are equal.
-     * </p>
-     *
-     * @return true iff the two vertices have the same ID
+     * Convert the vertex to a string.
+     * @return  a string representation of the vertex
      */
-    @Override
-    public final boolean equals(Object obj) {
-        if (obj instanceof Vertex) {
-            Vertex other = (Vertex) obj;
-            return Objects.equals(vertexId, other.vertexId);
-        }
-        return false;
-    }
-
-    /**
-     * Hash the vertex according to its vertex ID.
-     *
-     * <p>
-     * Vertices of the same vertex ID but with different property maps will hash to the same value. This is intended
-     * because that situation is interpreted as two copies of the same vertex with different property maps.
-     * </p>
-     *
-     * <p>
-     * If the vertex ID has not been set yet, we provide an arbitrary value, 0.
-     * </p>
-     *
-     * @return integer hashcode of the vertex
-     */
-    @Override
-    public final int hashCode() {
-        if (vertexId == null) {
-            return 0;
-        } else {
-            return vertexId.hashCode();
-        }
-    }
-
     @Override
     public final String toString() {
         return vertexId.toString() + "\t" + properties.toString();
     }
 
+    /**
+     * Read a vertex from an input stream
+     * @param input the input stream
+     * @throws IOException
+     */
     @Override
     public void readFields(DataInput input) throws IOException {
         vertexId.readFields(input);
         this.properties.readFields(input);
     }
 
+    /**
+     * Write a vertex to an output stream
+     * @param output the output stream
+     * @throws IOException
+     */
     @Override
     public void write(DataOutput output) throws IOException {
         vertexId.write(output);
