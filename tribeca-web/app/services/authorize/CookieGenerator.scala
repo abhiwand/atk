@@ -9,7 +9,7 @@ import play.api.mvc.Cookie
 /**
  * Generate cookie with the secret and name value
  */
-object CookieGenerator {
+class CookieGenerator {
 
     private val HMAC_SHA1_ALGORITHM = "HmacSHA1"
     private val MILLISECONDS_PER_SECOND = 1000
@@ -17,7 +17,7 @@ object CookieGenerator {
     private val SECONDS_PER_HOUR = 3600
 
     def createCookie(secret: String, name: String): Cookie = {
-        val value = CookieGenerator.create_signed_value(secret, name, "localuser")
+        val value = create_signed_value(secret, name, "localuser")
         Cookie(name, value, Some(SECONDS_PER_HOUR * 8), "/", Some("intel.com"), false, false)
     }
 
@@ -30,12 +30,20 @@ object CookieGenerator {
      * @return
      */
     def create_signed_value(secret: String, name: String, value: String): String = {
-        val timestamp = (System.currentTimeMillis / MILLISECONDS_PER_SECOND).toString
+
+        if(Option(secret) == None)
+            throw new IllegalArgumentException
+
+        val timestamp = getEpochTime.toString
         val valueBase64 = new sun.misc.BASE64Encoder().encode(value.getBytes(UTF8))
         val signature = create_signature(secret.getBytes(UTF8), name.getBytes(UTF8), valueBase64.getBytes(UTF8), timestamp.getBytes(UTF8))
         val signatureHex = Hex.encodeHexString(signature)
         val strArray = Array(valueBase64, timestamp, signatureHex)
         strArray.mkString("|")
+    }
+
+    def getEpochTime: Long = {
+        System.currentTimeMillis / MILLISECONDS_PER_SECOND
     }
 
     /**
