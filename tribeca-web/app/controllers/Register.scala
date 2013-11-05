@@ -12,10 +12,11 @@ import controllers.Session._
 
 object Register extends Controller {
 
-  var simpleResult: SimpleResult = Ok;
-  var json: JsValue = _;
-  var auth: Authorize = _;
-  var response: (Int, String) = (0,"");
+  var simpleResult: SimpleResult = Ok
+  var json: JsValue = _
+  var auth: Authorize = _
+  var response: (Int, Option[String]) = (0, None)
+
     var register = Action {
       request => {
           Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
@@ -32,9 +33,10 @@ object Register extends Controller {
             }
           )
       }
+
       response._1 match{
-        case  StatusCodes.ALREADY_REGISTER => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
-        case  StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
+        case  StatusCodes.ALREADY_REGISTER => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.toString)
+        case  StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.toString)
 
         case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/").withCookies(Cookie("approvalPending","true", Some(3600),
           "/", None, true, false ))
@@ -43,16 +45,17 @@ object Register extends Controller {
       }
     }
 
-    def getResponse(req: JsValue, registrationForm: RegistrationFormMapping, auth: Authorize): (Int,String) = {
-        if (auth.validateUserInfo() == null) return (0,null)
+    def getResponse(req: JsValue, registrationForm: RegistrationFormMapping, auth: Authorize): (Int, Option[String]) = {
+        if (Option(auth.validateUserInfo()) == None) return (0, None)
+
         val userInfo = auth.userInfo
         val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, true, Some(""), None)
         val result = Users.register(u, registrationForm, MySQLStatementGenerator)
         val sessionId = Sessions.create(result.uid)
         result.errorCode match {
-            case StatusCodes.ALREADY_REGISTER => return (StatusCodes.ALREADY_REGISTER,sessionId)
-            case StatusCodes.REGISTRATION_APPROVAL_PENDING => return (StatusCodes.REGISTRATION_APPROVAL_PENDING,sessionId)
-            case _ => return (StatusCodes.LOGIN,sessionId)
+            case StatusCodes.ALREADY_REGISTER => (StatusCodes.ALREADY_REGISTER, Some(sessionId))
+            case StatusCodes.REGISTRATION_APPROVAL_PENDING => (StatusCodes.REGISTRATION_APPROVAL_PENDING, Some(sessionId))
+            case _ => (StatusCodes.LOGIN, Some(sessionId))
         }
     }
 }
