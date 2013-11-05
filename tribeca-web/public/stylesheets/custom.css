@@ -471,6 +471,11 @@ button.close {
     color: #fff;
 }
 
+.intel-logo-footer {
+    height: 29px;
+    padding-left: 15px;
+}
+
 .imglead {
     float: right;
     display: inline-block;
@@ -504,3 +509,4 @@ button.close {
     width: 100%;
     height: 100%;
 }
+
