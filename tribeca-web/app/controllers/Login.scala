@@ -24,11 +24,12 @@ object Login extends Controller {
             case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2)
             case StatusCodes.REGISTRATION_APPROVAL_PENDING =>
               Ok(StatusCodes.getJsonStatusCode(StatusCodes.REGISTRATION_APPROVAL_PENDING)).withCookies(Cookie("approvalPending","true", Some(3600),"/", None, true, false ))
+            case _ => BadRequest("Couldn't validate auth response data")
           }
     }
 
     def getResponse(auth: Authorize): (Int, String) = {
-        if (!(auth.valdiateTokenResponseData() && auth.validateToken() != null))
+        if (auth.validateUserInfo() == null)
             return (0,null)//BadRequest("Couldn't validate auth response data")
 
         val result = Users.login(auth.userInfo.email, MySQLStatementGenerator)

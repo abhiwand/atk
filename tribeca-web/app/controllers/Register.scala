@@ -24,7 +24,7 @@ object Register extends Controller {
             },
             registrationForm =>{
               //make sure the terms are set to on since we couldnt' validate with a boolean
-              if(registrationForm.terms == "on"){
+              if(registrationForm.terms == "on" && registrationForm.experience >= 1 && registrationForm.experience <= 4){
                 json = Json.parse(registrationForm.authResult)
                 auth = new Authorize(json, Providers.GooglePlus)
                 response = getResponse(json, registrationForm, auth)
@@ -38,17 +38,17 @@ object Register extends Controller {
 
         case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/").withCookies(Cookie("approvalPending","true", Some(3600),
           "/", None, true, false ))
+
+        case _ => BadRequest("")
       }
     }
 
     def getResponse(req: JsValue, registrationForm: Registration, auth: Authorize): (Int,String) = {
+        if (auth.validateUserInfo() == null) return (0,null)
 
-        if (!auth.isAuthResponseDataValid())
-            return (0,null)
-
-        val userInfo = auth.getUserInfo()
+        val userInfo = auth.userInfo
         val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email,
-          registrationForm.name,registrationForm.phone_us,registrationForm.email , true, None, None)
+          /*registrationForm.companyname,registrationForm.phone_us,registrationForm.email ,*/ true, None, None)
         val result = Users.register(u, MySQLStatementGenerator)
         val sessionId = Sessions.createSession(result.uid)
         //Sessions.removeSession(sessionId)

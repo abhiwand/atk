@@ -130,7 +130,7 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 		submitHandler: function(form) {
 			var dataString = $(form).serialize();
             if($("#registerAuthResult").attr("value") == ""){
-                googleAuth.registerRender();
+                handleAuthResultRegister()
             }
             else{
                 form.submit()
