@@ -454,6 +454,7 @@
     <module>imahout</module>
     <module>igiraph</module> 
     <module>tribeca</module>
-	<module>feateng</module>
+    <module>feateng</module>
+    <module>tribeca-web</module>
   </modules>
 </project>
