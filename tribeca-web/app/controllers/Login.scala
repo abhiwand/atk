@@ -2,12 +2,9 @@ package controllers
 
 import play.api.mvc._
 import services.authorize.{Providers, Authorize}
-import models.database.{MySQLStatementGenerator, User}
+import models.database.MySQLStatementGenerator
 import models.{StatusCodes, Sessions, Users}
-import play.api.libs.json.Json
 import controllers.Session._
-import models.database.User
-import play.api.mvc.SimpleResult
 
 
 object Login extends Controller {

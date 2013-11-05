@@ -12,10 +12,11 @@ import controllers.Session._
 
 object Register extends Controller {
 
-  var simpleResult: SimpleResult = Ok;
-  var json: JsValue = _;
-  var auth: Authorize = _;
-  var response: (Int, String) = (0,"");
+  var simpleResult: SimpleResult = Ok
+  var json: JsValue = _
+  var auth: Authorize = _
+  var response: (Int, Option[String]) = (0, None)
+
     var register = Action {
       request => {
           Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
@@ -32,9 +33,10 @@ object Register extends Controller {
             }
           )
       }
+
       response._1 match{
-        case  StatusCodes.ALREADY_REGISTER => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
-        case  StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2)
+        case  StatusCodes.ALREADY_REGISTER => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.toString)
+        case  StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.toString)
 
         case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/").withCookies(Cookie("approvalPending","true", Some(3600),
           "/", None, true, false ))
@@ -43,36 +45,17 @@ object Register extends Controller {
       }
     }
 
-    def getResponse(req: JsValue, registrationForm: RegistrationFormMapping, auth: Authorize): (Int,String) = {
-        if (auth.validateUserInfo() == null) return (0,null)
+    def getResponse(req: JsValue, registrationForm: RegistrationFormMapping, auth: Authorize): (Int, Option[String]) = {
+        if (Option(auth.validateUserInfo()) == None) return (0, None)
 
         val userInfo = auth.userInfo
-        if(Users.exists(userInfo.email) && Whitelists.exists(userInfo.email)){
-          val u = Users.readByEmail(userInfo.email)
-          val sessionId = Sessions.create(u.uid.get)
-          ( StatusCodes.ALREADY_REGISTER, sessionId)
-        } else if(Users.exists(userInfo.email) && !Whitelists.exists(userInfo.email)){
-          ( StatusCodes.REGISTRATION_APPROVAL_PENDING, "")
-        } else{
-          val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, true, Some(""), None)
-          val uid = Users.create(u)
-          val registrationStatus = Registrations.createRegistration(database.Registration(uid,registrationForm.name,
-            registrationForm.organization_name, registrationForm.organization_phone, registrationForm.organization_email,
-            registrationForm.experience, registrationForm.role, registrationForm.whyParticipate, registrationForm.whatTools))
-          if(Whitelists.exists(userInfo.email)){
-            val sessionId = Sessions.create(uid)
-            (StatusCodes.LOGIN, sessionId)
-          } else{
-            (StatusCodes.REGISTRATION_APPROVAL_PENDING,"")
-          }
+        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, true, Some(""), None)
+        val result = Users.register(u, registrationForm, MySQLStatementGenerator)
+        val sessionId = Sessions.create(result.uid)
+        result.errorCode match {
+            case StatusCodes.ALREADY_REGISTER => (StatusCodes.ALREADY_REGISTER, Some(sessionId))
+            case StatusCodes.REGISTRATION_APPROVAL_PENDING => (StatusCodes.REGISTRATION_APPROVAL_PENDING, Some(sessionId))
+            case _ => (StatusCodes.LOGIN, Some(sessionId))
         }
-
-        //TODO update procedure to take new registration fields
-        //val result = Users.register(u, MySQLStatementGenerator)
-      /*StatusCodes.REGISTRATION_APPROVAL_PENDING match {
-          case StatusCodes.ALREADY_REGISTER => return (StatusCodes.ALREADY_REGISTER,sessionId)
-          case StatusCodes.REGISTRATION_APPROVAL_PENDING => return (StatusCodes.REGISTRATION_APPROVAL_PENDING,sessionId)
-          case _ => return (StatusCodes.LOGIN,sessionId)
-        }*/
     }
 }
