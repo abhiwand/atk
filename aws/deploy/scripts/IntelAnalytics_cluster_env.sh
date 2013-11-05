@@ -319,18 +319,24 @@ function IA_create_sgroup()
 }
 
 # find the subnet for the target cluster
+# Returns 0 for success, 1 for failure
+# Sets _RET the subnet id
 function IA_find_subnet()
 {
-    local snet_id=`ec2-describe-subnets ${IA_EC2_OPTS} -F "tag:Name=${1}" -F "vpc-id=${2}" -F "cidr=${3}" | grep SUBNET | awk '{print $2}'`
-    if [ -z "${snet_id}" ]; then
+    _RET=`ec2-describe-subnets ${IA_EC2_OPTS} -F "tag:Name=${1}" -F "vpc-id=${2}" -F "cidr=${3}" | grep SUBNET | awk '{print $2}'`
+    if [ -z "${_RET}" ]; then
     # try w/o name tag
-        snet_id=`ec2-describe-subnets ${IA_EC2_OPTS} -F "vpc-id=${2}" -F "cidr=${3}" | grep SUBNET | awk '{print $2}'`
-        if [ ! -z "${snet_id}" ]; then
-            # found the subnet, let's add the tag
-            IA_add_name_tag ${snet_id} ${1}
+        _RET=`ec2-describe-subnets ${IA_EC2_OPTS} -F "vpc-id=${2}" -F "cidr=${3}" | grep SUBNET | awk '{print $2}'`
+        if [ -z "${_RET}" ]; then
+            IA_logerr "Did no find the subnet ${1} for vpc ${2} with CIDR ${3}"
+            return 1
         fi
+        # found it w/o the tag, so add the tag
+        IA_add_name_tag ${_RET} ${1}
     fi
-    echo ${snet_id}
+    # found the subnet, let's add the tag
+    _RET=${_RET}
+    return 0
 }
 
 # TODO: this is dummy, just logs the status output and wait for 5s
@@ -357,8 +363,8 @@ function IA_create_subnet()
     local snet_state
 
     IA_loginfo "Looking for subnet ${snet_name}..."
-    _RET=`IA_find_subnet ${snet_name} ${snet_vpc} ${snet_cidr}`
-    if [ ! -z "${_RET}" ]; then
+    IA_find_subnet ${snet_name} ${snet_vpc} ${snet_cidr}
+    if [ $? -eq 0 ] && [ ! -z "${_RET}" ]; then
         IA_loginfo "Found existing subnet ${snet_name} with id ${_RET} in vpc ${snet_vpc}"
         snet_state=`IA_find_subnet_state ${_RET} ${snet_vpc} ${snet_cidr}`
         if [ "${snet_state}" != "available" ]; then
