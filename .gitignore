@@ -28,3 +28,5 @@ download
 *.swp
 dist
 /bin
+*.pydevproject
+.settings/

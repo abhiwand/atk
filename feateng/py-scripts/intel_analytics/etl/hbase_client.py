@@ -27,6 +27,10 @@ class ETLHBaseClient:
         table = self.connection.table(table_name)
         return table.row(row_key)
     
+    def delete(self, table_name, row_key):
+        table = self.connection.table(table_name)
+        table.delete(row_key)        
+    
     """
     first drops the table with the given name and then creates a new table with the given name and column families
     table_name: table name to drop & create

@@ -10,12 +10,12 @@ def main(argv):
     parser.add_argument('-i', '--input', dest='input', help='the input file path (on HDFS)', required=True)
     parser.add_argument('-o', '--output', dest='output', help='the output file path (on HDFS)', required=True)
     parser.add_argument('-r', '--replace', dest='replacement_value', help='value to replace the missing values for the given feature (available special constants: avg)')
-    parser.add_argument('-a', '--any', dest='should_clean_any', help='clean all rows with a missing value for any of the features')
+    parser.add_argument('-s', '--strategy', dest='clean_strategy', help='any: if any missing values are present drop that record, all: if all values are missing, drop that record')
     parser.add_argument('-n', '--features', dest='feature_names', help='name of the features as a comma separated string')
     parser.add_argument('-t', '--feature_types', dest='feature_types', help='type of the features as a comma separated string')
     
     cmd_line_args = parser.parse_args()
-      
+    
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
             
@@ -43,17 +43,31 @@ def main(argv):
         else:
             pig_statements.append("cleaned_data = FILTER parsed_val BY %s is not NULL;" % (cmd_line_args.feature_to_clean))
             pig_statements.append("null_relation = FILTER parsed_val BY %s is NULL;" % (cmd_line_args.feature_to_clean))
-    elif cmd_line_args.should_clean_any:
-        any_clean_statement=''
-        for i, feature in enumerate(features):
-          if feature_type_dict[feature] == 'chararray':
-              any_clean_statement += "(%s != '')" % (feature)#chararray checks are done using empty strings instead of NULLs
-          else:
-              any_clean_statement += "(%s is not NULL)" % (feature)
-          if i != len(features) - 1:
-            any_clean_statement += ' and '    
-        pig_statements.append("cleaned_data = FILTER parsed_val BY %s;" % any_clean_statement)
-
+    elif cmd_line_args.clean_strategy:
+        clean_statement=''
+        if cmd_line_args.clean_strategy == 'any':
+            for i, feature in enumerate(features):
+              if feature == 'key':#skip the hbase row key
+                  continue
+              if feature_type_dict[feature] == 'chararray':
+                  clean_statement += "(%s != '')" % (feature)#chararray checks are done using empty strings instead of NULLs
+              else:
+                  clean_statement += "(%s is not NULL)" % (feature)
+              if i != len(features) - 1:
+                clean_statement += ' AND ' 
+        elif cmd_line_args.clean_strategy == 'all':
+            for i, feature in enumerate(features):
+              if feature == 'key':#skip the hbase row key
+                  continue                
+              if feature_type_dict[feature] == 'chararray':
+                  clean_statement += "(%s == '')" % (feature)#chararray checks are done using empty strings instead of NULLs
+              else:
+                  clean_statement += "(%s is NULL)" % (feature)
+              if i != len(features) - 1:
+                clean_statement += ' AND '              
+            clean_statement = "NOT (%s)" % (clean_statement)
+        pig_statements.append("cleaned_data = FILTER parsed_val BY %s;" % clean_statement)
+            
     if cmd_line_args.replacement_value:
         generate_statement = ''
         for i, feature in enumerate(features):
