@@ -153,6 +153,8 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
                                                                               label);
             } catch (IllegalArgumentException e) {
                 LOG.fatal("Could not add edge to Titan; likely a schema error. The label on the edge is  " + label);
+                LOG.fatal(e.getMessage());
+                e.printStackTrace();
                 System.exit(1);
             }
 
@@ -169,10 +171,10 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
                 try {
                 bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
                 } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                    e.getMessage();
                     LOG.fatal("Could not add edge property; probably a schema error. The label on the edge is  " + label);
                     LOG.fatal("The property on the edge is " + propertyKey.toString());
+                    LOG.fatal(e.getMessage());
+                    e.printStackTrace();
                     System.exit(1);
                 }
 

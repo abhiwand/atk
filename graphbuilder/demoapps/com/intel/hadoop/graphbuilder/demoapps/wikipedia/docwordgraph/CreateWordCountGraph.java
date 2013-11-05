@@ -67,12 +67,12 @@ public class CreateWordCountGraph {
      */
     public class Job extends AbstractCreateGraphJob {
         @Override
-        public boolean cleanBidirectionalEdge() {
+        public boolean shouldCleanBiDirectionalEdges() {
             return true;
         }
 
         @Override
-        public boolean usesHBase() {
+        public boolean shouldUseHBase() {
             return false;
         }
     }

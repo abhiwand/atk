@@ -49,8 +49,8 @@ import org.apache.log4j.Logger;
  * <code> vertex_id_column </code>
  *
  * </p>
- *  Becuase the endpoints of an edge must be vertices, all endpoints of edges are implicitly declared to be vertices.
- *  (The declaration is implicit; the vertices really end up in the graph database.)
+ *  Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices.
+ *  (The declaration is implicit, but the vertices really end up in the graph database.)
  * <p>
  *     EXAMPLE:
  *     <p>
@@ -115,7 +115,7 @@ public class TableToGraphDB {
          * @return   false:  this graph construction method allows bidirectional edges
          */
         @Override
-        public boolean cleanBidirectionalEdge() {
+        public boolean shouldCleanBiDirectionalEdges() {
             return false;
         }
 
@@ -125,7 +125,7 @@ public class TableToGraphDB {
          * @return  true: this graph construction method uses hbase
          */
         @Override
-        public boolean usesHBase() {
+        public boolean shouldUseHBase() {
             return true;
         }
     }

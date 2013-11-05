@@ -53,9 +53,9 @@ public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<
         this.userOpts = new HashMap<String, String>();
     }
 
-    public abstract boolean cleanBidirectionalEdge();
+    public abstract boolean shouldCleanBiDirectionalEdges();
 
-    public abstract boolean usesHBase();
+    public abstract boolean shouldUseHBase();
 
     public void addUserOpt(String key, String value) {
         userOpts.put(key, value);
@@ -82,7 +82,7 @@ public abstract class AbstractCreateGraphJob<VidType extends WritableComparable<
 
         // Set optional parameters
 
-        graphGenerationMRJob.setCleanBidirectionalEdges(cleanBidirectionalEdge());
+        graphGenerationMRJob.setCleanBidirectionalEdges(shouldCleanBiDirectionalEdges());
 
         // Set user defined parameters
 

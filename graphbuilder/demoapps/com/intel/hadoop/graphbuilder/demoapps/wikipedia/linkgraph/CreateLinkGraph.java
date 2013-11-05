@@ -117,12 +117,12 @@ public class CreateLinkGraph {
     public class Job extends AbstractCreateGraphJob {
 
         @Override
-        public boolean cleanBidirectionalEdge() {
+        public boolean shouldCleanBiDirectionalEdges() {
             return false;
         }
 
         @Override
-        public boolean usesHBase() {
+        public boolean shouldUseHBase() {
             return false;
         }
     }

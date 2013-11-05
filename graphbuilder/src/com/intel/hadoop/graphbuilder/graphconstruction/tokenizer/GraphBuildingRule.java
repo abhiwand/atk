@@ -57,5 +57,5 @@ public interface GraphBuildingRule {
      * Get the vertex ID type. Used for type safety at set-up time.
      * @return Class of the vertex ID type.
      */
-    Class vidClass();
+    public Class vidClass();
 }

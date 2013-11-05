@@ -302,13 +302,18 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     private void packVertexRulesIntoConfiguration(Configuration configuration) {
-        String vertexConfigString = vertexRules[0];
+
+        String       separator = GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR");
+        StringBuffer buffer    = new StringBuffer();
+
+        buffer.append(vertexRules[0]);
 
         for (int i = 1; i < vertexRules.length; i++) {
-            vertexConfigString += GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR") + vertexRules[i];
+            buffer.append(separator);
+            buffer.append(vertexRules[i]);
         }
 
-        configuration.set(GBHTableConfig.config.getProperty("VCN_CONF_NAME"), vertexConfigString);
+        configuration.set(GBHTableConfig.config.getProperty("VCN_CONF_NAME"), buffer.toString());
     }
 
     /**

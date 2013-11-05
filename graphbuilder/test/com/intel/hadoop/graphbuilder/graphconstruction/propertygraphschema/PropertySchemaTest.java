@@ -1,12 +1,11 @@
-package com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema
+package com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema;
 
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse
 import static junit.framework.Assert.assertNotNull;
 
-class PropertySchemaTest {
+public class PropertySchemaTest {
 
 
     @Test
@@ -21,9 +20,9 @@ class PropertySchemaTest {
         String   testName     = propertySchema.getName();
         Class<?> testDataType = propertySchema.getType();
 
-        assertNotNull(testName)
-        assert(testName.compareTo(A) == 0)
-        assertEquals(dataType,testDataType)
+        assertNotNull(testName);
+        assert(testName.compareTo(A) == 0);
+        assertEquals(dataType,testDataType);
     }
 
     @Test
@@ -45,7 +44,7 @@ class PropertySchemaTest {
         String   testName1 = propertySchemaA.getName();
         Class<?> testType1 = propertySchemaA.getType();
         assert(testName1.compareTo(C) == 0);
-        assertEquals(dataTypeA, testType1)
+        assertEquals(dataTypeA, testType1);
 
         propertySchemaA.setType(dataTypeC);
 

@@ -127,7 +127,7 @@ public class TableToTextGraph {
          * @return  false
          */
         @Override
-        public boolean cleanBidirectionalEdge() {
+        public boolean shouldCleanBiDirectionalEdges() {
             return false;
         }
 
@@ -136,7 +136,7 @@ public class TableToTextGraph {
          * @return  true
          */
         @Override
-        public boolean usesHBase() {
+        public boolean shouldUseHBase() {
             return true;
         }
     }
