@@ -6,9 +6,8 @@
 GET         /                    controllers.Application.index
 GET         /ipython             controllers.Python.ipython
 POST        /register            controllers.Register.register
-GET         /approvalpending     controllers.Application.approvalPending
 POST        /login               controllers.Login.login
-GET        /logout               controllers.Application.logout
+GET         /logout               controllers.Application.logout
 
 #GET        /logout               controllers.Application.logout
 #GET        /logout               controllers.Application.register
