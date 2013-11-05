@@ -463,6 +463,14 @@ button.close {
     padding-top: 10px;
 }
 
+#footer #footer-front p {
+    font-size: 9px;
+    padding-top: 10px;
+    text-align: center;
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.2);
+    color: #fff;
+}
+
 .imglead {
     float: right;
     display: inline-block;
