@@ -1,19 +1,45 @@
 #!/bin/bash
- 
+# This is the core script that does the cluster creation. It shows the workflow
+# of bringing up a cluster on AWS inside the given target VPC
 #
-# Big WIP: this is only the workflow description
+# Notes:
+# - Most core functions are in _cluster_env.sh script
+# - This assumes to work on the existing VPC, if not, use the env variable to override
+#    IA_TAG, the VPC name tag, default to "IntelAnalytics" used to get to the VPC id
+#    IA_EC2_USR, amdin user, default to gaoyi, must have ${IA_EC2_USER}.csv/.pem in ${IA_HOME}/credentials
+#    IA_AWS_REGION: region, default to us-west-2
+#    IA_SUBNET, the flat L2 sunet for this VPC, default to 10.0.0.0/18
+#    IA_IP_ADMIN, the admin node private ip for this VPC
+#    IA_ROUTETABLE, the route table id for this VPC
+#    IA_SGROUP_HTTPS, the default HTTPS security group for this VPC
+#    IA_SGROUP_ADMSSH, the default Adm SSH access security group for this VPC
+# - You must have the most recent EC2 CLI to allow this scrip to work, particularly the
+#   ec2-run-instances needs the latest version to support public ip enabling option
+# - This currently does not support rolling back to delete resources created but failed to
+#   get started
+# - By default this only does a fake dry-run, "fake" as it is still only create some resources
+#   but dry-run refers to no creation of the actual EC2 instances
+# - This assume the basic resources of the VPC are there, and are hard-coded to existing VPC
+#   "IntelAnalytics".
+# - This current supports 4, 8, 12, 16, 20 nodes. The subnet per cluster is 5 bits but varies
+#   in total avaialbel private IP depending on the reserved addresses
+# - All nodes are built based on our preexisting master node AMI that has the current agreed
+#   server components version, hadoop-1.2.1, hbase-0.94.12, titan-all-0.4.0
 #
-# Implementation script will follow
-#
-# Note !! must have right EC2 env
-# TODO:
-# - support rolling back? or just manual clean on error
-# - support VPC network acl?
-# - support dryrun
-# - assume some resources, e.g., per vpc sec groups, are properly defined
-# - supports default 4 data volumes from IS, can be extended by ec2-register to add more
-# - --iam-profile
-#
+# Further Technical Notes:
+# - This is not necessary since we have post configuration scripts in place, but ideally, we should
+#   use AWS user data script to do per EC2 instance boot time configuration, such as disk preparation.
+#   However, I haven't had much luck getting it to work to allow files system preparation of data
+#   disks on the instance store (ephemoral)
+# - We should update per cluster user hadoop's default ssh keypair, currently all clusters are
+#   created w/ the same default ssh keypair.
+# - For slave nodes instances, should try to create them all at once, to allow a better chance to be
+#   fit into the same placement group. The reason we are not doing that was that we may be able to
+#   assign the static private ip for each instance, allowing up to prebuild the hosts file before
+#   creating the instance. However, it seesm quite difficult to figure out which IPs can be used,
+#   where AWS seems to reserver some of the outside the stand broadcast, loopback ips, so it may
+#   be better to just create all slave instances once.
+
 function usage()
 {
     IA_logerr "Usage:$(basename $0) --cluster-id <id> [--cluster-size <n>] [--no-dryrun]"
@@ -212,15 +238,6 @@ if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
     exit 1
 fi
 
-# TODO:
-# Prepare the user data script
-# - Prepare ssh keypair for password less login
-# - Prepare cluster hosts file password less login
-# - Format IS disks
-# - Mount IS disks to /mnt/data{1,4}
-# - update cluster config
-# - bring up the cluster
-
 # - Launch 4 instances into the placement group
 #nname=`IA_format_node_name ${cname} ${i}`
 nnames=(
@@ -255,6 +272,7 @@ do
     if [ "${dryrun}" == "no" ]; then
         iid=`ec2-run-instances ${cmd_opts} | grep INSTANCE | awk '{print $2}'`
 	    IA_add_name_tag ${iid} ${nname}
+        # FIXME: polling wellness of the instances
 	    IA_check_instance_status ${iid}
     fi
 done

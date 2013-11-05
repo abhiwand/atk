@@ -16,7 +16,7 @@
 # Default tag/name
 source IntelAnalytics_common_env.sh
 
-# TODO: these are for deployment, should be moved out to avoid confusion
+# These are per cluster preparation setups to create the AMI images
 export IA_USR=hadoop
 export IA_UID=5002
 export IA_USRSSH=${IA_DEPLOY}/config/sshconf

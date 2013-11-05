@@ -1,18 +1,5 @@
-#
 # Common global settings for IntelAnalytics AWS
-#
-# TODO:
-# - generate hosts the IA_HOSTS mapping to standard master, node${i},...to hosts file
-# - seperate envs for deployment from cluster creation
-# - everything is prefixed by IntelAnalytic
-# - fix the credentials to allow multiple users to use this script
-# - logging to file
-# - settle down the requirement on max/min clustesr (customers) to be supported
-# - settle down the requirement on max/min cluster nodes, default, is `seq 4,4,24`
-# - log to file
-#
-# Notes: this script needs AWS EC2 CLI, AMI CLI, IAM CLI
-#
+# This used for both AMI preparation and cluster creation.
 
 # All customer clusters will be prefixed w/ this string
 export IA_NAME=IntelAnalytics
@@ -43,7 +30,6 @@ if [ -z "${IA_TAG}" ]; then
 fi
 
 # Overwrite IA_AWS_REGION to create the cluster to a different region
-# TODO: only supporst the following region at this moment
 if [ -z "${IA_AWS_REGION}" ]; then
     export IA_AWS_REGION=us-west-2
 fi

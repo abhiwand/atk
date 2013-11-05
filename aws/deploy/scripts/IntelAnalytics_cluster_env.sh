@@ -1,15 +1,6 @@
-#
 # Global settings for per user/customer cluster bring-up
+# This has the cluster creation env settings and many aws cli wrapper functions
 #
-# TODO: 
-# - generate hosts the IA_HOSTS mapping to standard master, node${i},...to hosts file
-# - seperate envs for deployment from cluster creation
-# - everything is prefixed by IntelAnalytic
-# - fix the credentials to allow multiple users to use this script
-# - logging to file
-# - settle down the requirement on max/min clustesr (customers) to be supported
-# - settle down the requirement on max/min cluster nodes, default, is `seq 4,4,24`
-# 
 # Notes: this script needs AWS EC2 CLI, AMI CLI, IAM CLI
 #
 source IntelAnalytics_common_env.sh
@@ -29,17 +20,20 @@ export IA_INSTANCE_TYPE=cc2.8xlarge
 export IA_IAM_GROUP=${IA_NAME}_Public
 export IA_IAM_USER=${IA_NAME}_User
 
-# TODO: requirement on supported clusters
+# The current requirements on supported clusters are
+# - max 40 clusters
+# - default 4 nodes per cluster
+# - max to 20 nodes per cluster
 export IA_CLUSTER_ID_RSV=0
 export IA_CLUSTER_ID_MIN=1
 export IA_CLUSTER_ID_MAX=40
 export IA_CLUSTER_SIZE_MIN=4
-export IA_CLUSTER_SIZE_MAX=24
+export IA_CLUSTER_SIZE_MAX=20
 export IA_CLUSTER_SIZE_INC=4
 # The pre-generated cluster CIDR file
 export IA_CLUSTER_CIDR=${IA_NAME}_cidr.txt
 
-# TODO: these are pre-existing shared resources, we can also 
+# These are pre-existing shared resources, we can also 
 if [ -z "${IA_SUBNET}" ]; then
     export IA_SUBNET="10.0.0.0/18"
 fi

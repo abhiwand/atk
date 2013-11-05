@@ -1,21 +1,38 @@
 #!/bin/bash
-# Description: Used for preparing IntelAnalytics cluster to start operation
-# Note: Expected to be executed from admin node
-# - Update config files
-# - Start hdfs
+# Description: Used for configuring the cluster, but currently the only
+# thing it does is to copy the hosts file to all nodes. There is no
+# hadoop and hbase configuraion required as every AMI is built w/ the
+# configuration using hosts alias names, i.e., master, node01 etc
+#
+# You still need to manually do
+# - Start hdfs, mapred
 # - Start hbase
-# - Start iPython??
+# - Start iPython
+#
+# Notes"
+# - Only the server componenbts
+# - Need integration test w/ the iPython
+# - Need integration test w/ the web front
+# - Need integration test w/ s3 copy to hdfs
+#
+# Usage:
+#    --nodes-file the nodes list file w/ node's private ip/dns
+#    --hosts-file /etc/hosts file generated for the clustrer
+#    --pem-file the SSH pem file (prv key) that is part of the AMI
+#               for the use to perform ssh login to the node
+#    --dry-run echo the commands instead of actually running it
 
 source IntelAnalytics_setup_env.sh
 source IntelAnalytics_cluster_env.sh
 
 function usage()
 {
-    echo "usage: --nodes-file <nodes-list-file> --hosts-file <hosts-file> --key-name <key-name>"
+    echo "usage: --nodes-file <nodes-list-file> --hosts-file <hosts-file> --pem-file <pem-file> [--dry-run]"
     exit 1
 }
 
 # Check inputs
+dryrun=""
 while [ $# -gt 0 ]
 do
     case "$1" in
@@ -27,10 +44,15 @@ do
         hostsfile=$2
         shift 2
         ;;
-    --key-name)
-        keyname=$2
+    --pem-file)
+        pemfile=$2
         shift 2
         ;;
+    --dry-run)
+        dryrun="echo "
+        shift 1
+        ;;
+
     *)
         usage
         ;;
@@ -46,27 +68,24 @@ if [ -z "${hostsfile}" ] || [ ! -f ${hostsfile} ]; then
     usage
 fi
 
-# get key name to associate with the .pem file for SSH access
-if [ -z "${keyname}" ]; then
-    echo "Must provide the valid key name for tis cluster!"
-    usage
-fi
-pem=${IA_CREDENTIALS}/${keyname}.pem
-if [ ! -f "${pem}" ]; then
-    echo "Could not locate the pem file \"${pem}\" for key name \"${keyname}\"!"
+if [ -z "${pemfile}" ] || [ ! -f ${pemfile} ]; then
+    echo "Could not locate the pem file \"${pemfile}\"!"
     usage
 fi
 
 # Update cluster-wide hosts file
 for n in `cat ${nodesfile}`; do
-    # get the pem
-    scp -i ${pem} ${hostsfile} ${n}:/tmp/_hosts
-    ssh -t -i ${pem} ${n} "sudo mv -f /tmp/_hosts /etc/hosts"
+    # update the host file
+    ${dryrun} scp -i ${pemfile} ${hostsfile} ${n}:/tmp/_hosts
+    ${dryrun} ssh -t -i ${pemfile} ${n} "sudo mv -f /tmp/_hosts /etc/hosts"
+    # remove the existing .ssh/known_hosts file
+    ${dryrun} ssh -t -i ${pemfile} ${n} "sudo rm -f /home/hadoop/.ssh/known_hosts"
 done
 
-# prepare hadoop/hbase config: we probably don't have to do anything
-# here, the AMIs has hadoop/hbase configs based on master, node01, etc.
+# prepare to start the cluster/hadoop: nothing to do, already configured
+# we don't have to do anything here as the node AMI is already built w/
+# the correct hadoop/hbase configs based on master, node01, etc.
 
-# TODO: prepare to start the cluster/hadoop
+# ??: start hadoop/hbase
 
-# TODO: prepare to start the ipython server
+# ??: start iPython service
