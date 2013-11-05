@@ -1,0 +1,135 @@
+<!--
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2013 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>tribeca-igiraph</artifactId>
+  <packaging>pom</packaging>
+  <name>Intel Tribeca iGiraph Parent</name>
+  <description>Tribeca iGiraph : Large Scale Graph Processing on Hadoop</description>
+  <inceptionYear>2013</inceptionYear>
+
+   <parent>
+	<groupId>com.intel.hadoop</groupId>
+	<artifactId>tribeca</artifactId>
+	<relativePath>../pom.xml</relativePath>  
+	<version>0.5-SNAPSHOT</version>
+  </parent>
+  <dependencies>
+    <!-- compile dependencies. sorted lexicographically. -->
+    <dependency>
+      <groupId>org.apache.giraph</groupId>
+      <artifactId>giraph-core</artifactId>
+      <version>${dep.giraph-core.version}</version>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.giraph</groupId>
+       <artifactId>giraph-hbase</artifactId>
+       <version>${dep.giraph-hbase.version}</version>
+    </dependency>
+   <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+      <version>${dep.commons-configuration.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>${dep.json.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${dep.slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${dep.slf4j.version}</version>
+    </dependency>
+    <dependency>
+           <groupId>com.thinkaurelius.titan</groupId>
+           <artifactId>titan-core</artifactId>
+           <version>${dep.aurelius.version}</version>
+         </dependency>
+    <dependency>
+             <groupId>com.thinkaurelius.titan</groupId>
+             <artifactId>titan-hbase</artifactId>
+             <version>${dep.aurelius.version}</version>
+    </dependency>
+    <dependency>
+             <groupId>org.apache.hbase</groupId>
+             <artifactId>hbase</artifactId>
+             <version>${dep.hbase.version}</version>
+     </dependency>
+     <dependency>
+           <groupId>com.thinkaurelius.faunus</groupId>
+           <artifactId>faunus</artifactId>
+           <version>${dep.aurelius.version}</version>
+     </dependency>
+     <dependency>
+          <groupId>org.apache.mahout</groupId>
+          <artifactId>mahout-core</artifactId>
+          <version>${dep.mahout.version}</version>
+     </dependency>
+    <dependency>
+      <groupId>org.apache.giraph</groupId>
+      <artifactId>giraph-core</artifactId>
+      <version>${dep.giraph-core.version}</version>
+      <type>test-jar</type>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.giraph</groupId>
+       <artifactId>giraph-hbase</artifactId>
+       <version>${dep.giraph-hbase.version}</version>
+       <type>test-jar</type>
+     </dependency>
+
+    <!-- test dependencies. sorted lexicographically. -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${dep.junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${dep.mockito-all.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <modules>
+    <module>giraph-core</module>
+    <module>giraph-algorithms</module>
+    <module>giraph-titan</module>
+  </modules>
+
+</project>
