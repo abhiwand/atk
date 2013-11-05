@@ -1,6 +1,6 @@
 import java.sql.{ResultSet, CallableStatement}
 import models.database.{User, StatementGenerator}
-import models.Users
+import models.{RegistrationFormMapping, Users, StatusCodes}
 import org.specs2.mutable._
 import org.specs2.runner._
 import org.junit.runner._
@@ -8,7 +8,6 @@ import org.specs2.mock._
 import play.api.test._
 import play.api.test.Helpers._
 import scala.slick.session.Session
-import models.StatusCodes
 
 
 /**
@@ -22,6 +21,16 @@ import models.StatusCodes
 class UserSpec extends Specification with Mockito {
 
     "User service should" should {
+
+        val registrationForm = mock[RegistrationFormMapping]
+        registrationForm.name returns "test name"
+        registrationForm.organization_name returns "test org"
+        registrationForm.organization_phone returns "123456789"
+        registrationForm.organization_email returns "test@intel.com"
+        registrationForm.experience returns 1
+        registrationForm.role returns "Software Engineer"
+        registrationForm.whyParticipate returns "explore big data"
+        registrationForm.whatTools returns "test tool"
 
         "new register" in {
 
@@ -43,8 +52,8 @@ class UserSpec extends Specification with Mockito {
                     }
                 }
 
-                val u = User(None, "first name", "last name", "abcd@intel.com", "1234567890", "Intel", "abcd@intel.com", true, None, None)
-                val result = Users.register(u, dummyStatementGenerator)
+                val u = User(None, "first name", "last name", "abcd@intel.com", true, None, None)
+                val result = Users.register(u, registrationForm, dummyStatementGenerator)
                 (result.uid == 100 && result.errorCode == 0 && result.errorMessage == "" && result.login == 0) must beEqualTo(true)
             }
 
@@ -68,8 +77,8 @@ class UserSpec extends Specification with Mockito {
                         }
                     }
 
-                    val u = User(None, "first name", "last name", "abcd@intel.com", "1234567890", "Intel", "abcd@intel.com", true, None, None)
-                    val result = Users.register(u, dummyStatementGenerator)
+                    val u = User(None, "first name", "last name", "abcd@intel.com", true, None, None)
+                    val result = Users.register(u, registrationForm, dummyStatementGenerator)
                     (result.uid == 100 && result.errorCode == StatusCodes.ALREADY_REGISTER && result.login == 0) must beEqualTo(true)
                 }
 
@@ -94,7 +103,7 @@ class UserSpec extends Specification with Mockito {
                         }
                     }
 
-                    val u = User(None, "first name", "last name", "abcd@intel.com", "1234567890", "Intel", "abcd@intel.com", true, None, None)
+                    val u = User(None, "first name", "last name", "abcd@intel.com", true, None, None)
                     val result = Users.login(u.email, dummyStatementGenerator)
                     (result.uid == 100 && result.errorCode == 0 && result.success == 1) must beEqualTo(true)
                 }
@@ -120,7 +129,7 @@ class UserSpec extends Specification with Mockito {
                         }
                     }
 
-                    val u = User(None, "first name", "last name", "abcd@intel.com", "1234567890", "Intel", "abcd@intel.com", true, None, None)
+                    val u = User(None, "first name", "last name", "abcd@intel.com", true, None, None)
                     val result = Users.login(u.email, dummyStatementGenerator)
                     (result.uid == 0 && result.errorCode == StatusCodes.NOT_YET_REGISTERED && result.success == 0) must beEqualTo(true)
                 }
