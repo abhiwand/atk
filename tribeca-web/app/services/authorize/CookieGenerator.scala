@@ -9,7 +9,7 @@ import play.api.mvc.Cookie
 /**
  * Generate cookie with the secret and name value
  */
-object CookieGenerator {
+class CookieGenerator {
 
     private val HMAC_SHA1_ALGORITHM = "HmacSHA1"
     private val MILLISECONDS_PER_SECOND = 1000
