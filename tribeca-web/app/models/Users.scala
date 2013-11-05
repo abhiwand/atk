@@ -109,7 +109,7 @@ object Users {
 
   def readByEmail(email: String): database.User = DB.withSession{implicit session: scala.slick.session.Session =>
     val getResult = getByEmail(email).list
-    if(getResult != null){
+    if(getResult.length >0){
       getResult.last
     }else{
       null
