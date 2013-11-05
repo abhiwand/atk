@@ -4,11 +4,11 @@
 }
 
 .slider2 {
-  background-image: url("../images/carousel/virtualcity.jpg");
+  background-image: url("../images/carousel/architect.jpg");
 }
 
 .slider3 {
-  background-image: url("../images/carousel/architect.jpg");
+  background-image: url("../images/carousel/virtualcity.jpg");
 }
 
 *::-moz-selection {
@@ -82,12 +82,18 @@
 }
 
 .carousel-blur, .carousel-blur .item {
-    height: 850px;
+    height: 900px;
+
+
 }
 
 .carousel-blur .item {
     text-align: center;
     padding-top: 150px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
 }
 
 .btn-primary {
@@ -457,5 +463,29 @@ button.close {
     height: 45px;
 }
 
+#ipython {
+    position: relative;
+    width: 100%;
+    min-height: 2700px;
+    max-height: 100%;
+    background-color: #fff;
+    border: none;
+}
 
 
+
+.fluidMedia {
+    position: relative;
+    padding-bottom: 56.25%; /* proportion value to aspect ratio 16:9 (9 / 16 = 0.5625 or 56.25%) */
+    padding-top: 30px;
+    height: 0;
+    overflow: hidden;
+}
+
+.fluidMedia iframe {
+    position: absolute;
+    top: 0; 
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
