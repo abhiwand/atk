@@ -22,9 +22,9 @@ object Users {
             cStmt.setString("given_name", user.givenName)
             cStmt.setString("family_name", user.familyName)
             cStmt.setString("email", user.email)
-            cStmt.setString("phone", user.phone)
-            cStmt.setString("organization_name", user.organization_name)
-            cStmt.setString("organization_email", user.organization_email)
+            cStmt.setString("phone", "phone")
+            cStmt.setString("organization_name", "org name")
+            cStmt.setString("organization_email", "org email")
             cStmt.registerOutParameter("loginAfterRegister", Types.BIGINT)
             cStmt.registerOutParameter("errorCode", Types.BIGINT)
             cStmt.registerOutParameter("errorMessage", Types.VARCHAR)
@@ -77,7 +77,7 @@ object Users {
     return for { (u,w) <- userInfoTable leftJoin whiteListTable on (_.uid === _.uid) if u.uid === uid} yield (u,w)
   }
   def anonymousUser(): User = {
-    User(Some(0),"","","","","","",false,None,None)
+    User(Some(0),"","","",false,None,None)
   }
 
   //crud

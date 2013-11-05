@@ -35,15 +35,26 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
         }
     }
 
-    def getUserInfo(): UserInfo = {
-        Provider match {
-            case Providers.GooglePlus =>
-                userInfo = GooglePlus.getUserInfo(responseData.access_token)
-                return userInfo
-            case _ =>
-                return null
-        }
+  def validateUserInfo(): UserInfo = {
+    Provider match{
+      case Providers.GooglePlus =>
+        userInfo = GooglePlus.validateUserInfo(authData)
+        userInfo
+      case _ =>
+        null
     }
+
+  }
+
+  def getUserInfo(): UserInfo = {
+    Provider match{
+      case Providers.GooglePlus =>
+        userInfo = GooglePlus.getUserInfo(responseData.access_token)
+        userInfo
+      case _ =>
+        return null
+    }
+  }
 
     def isAuthResponseDataValid(): Boolean = {
         (validateTokenResponseData() && validateToken() != null && getUserInfo() != null)
