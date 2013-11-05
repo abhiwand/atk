@@ -1,12 +1,14 @@
 var myDropZone = "";
 $(window).ready(function(){
-    myDropZone = new Dropzone("#uploadForm", {
-        maxFilesize: 5120,
-        clickable: true,
-        init:function(){
-            $("#uploadForm").addClass("dropzone")
-        }
-    });
+    if($("#uploadForm").length > 0){
+        myDropZone = new Dropzone("#uploadForm", {
+            maxFilesize: 5120,
+            clickable: true,
+            init:function(){
+                $("#uploadForm").addClass("dropzone")
+            }
+        });
+    }
     /*$("div#upload-form").dropzone(
         {
             maxFilesize: 5120,
