@@ -25,8 +25,8 @@ package controllers
 
 import play.api.mvc._
 import services.authorize.{Providers, Authorize}
-import models.database.MySQLStatementGenerator
-import models.{StatusCodes, Sessions, Users}
+import models.database.{StatementGenerator, MySQLStatementGenerator}
+import models.{SessionGenerator, StatusCodes, Sessions, Users}
 import controllers.Session._
 
 /**
@@ -35,18 +35,18 @@ import controllers.Session._
 object Login extends Controller {
 
     var response: (Int, Option[String]) = (0, None);
+    var simpleResult: SimpleResult = Ok
 
     var login = Action(parse.json) {
         request => {
             val auth = new Authorize(request.body, Providers.GooglePlus)
-            response = getResponse(auth)
+            response = getResponse(auth, Sessions, MySQLStatementGenerator)
         }
+
             response._1 match {
-                case StatusCodes.NOT_YET_REGISTERED => Ok(StatusCodes.getJsonStatusCode(StatusCodes.NOT_YET_REGISTERED))
                 case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
-                case StatusCodes.REGISTRATION_APPROVAL_PENDING =>
-                    Ok(StatusCodes.getJsonStatusCode(StatusCodes.REGISTRATION_APPROVAL_PENDING)).withCookies(Cookie("approvalPending", "true", Some(3600), "/", None, true, false))
-                case _ => BadRequest("Couldn't validate auth response data")
+                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => BadRequest("Couldn't validate auth response data")
+                case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
             }
     }
 
@@ -55,21 +55,16 @@ object Login extends Controller {
      * @param Authorization info
      * @return tuple of (status code, session Id)
      */
-    def getResponse(auth: Authorize): (Int, Option[String]) = {
-        if (Option(auth.validateUserInfo()) == None)
-            return (0, None)
+    def getResponse(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): (Int, Option[String]) = {
 
-        if(auth.userInfo == None)
-            return (0, None)
+        if (auth.validateUserInfo() == None)
+            return (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
 
-        val result = Users.login(auth.userInfo.get.email, MySQLStatementGenerator)
-        val sessionId = Sessions.create(result.uid)
+        val result = Users.login(auth.userInfo.get.email, statementGenerator)
 
-        result.errorCode match {
-            case StatusCodes.NOT_YET_REGISTERED => (StatusCodes.NOT_YET_REGISTERED, None)
-            case StatusCodes.REGISTRATION_APPROVAL_PENDING => (StatusCodes.REGISTRATION_APPROVAL_PENDING, None)
-            case _ => (StatusCodes.LOGIN, Some(sessionId))
-        }
+        if (result.success == 1)
+            (StatusCodes.LOGIN, Some(sessionGen.create(result.uid)))
+        else
+            (result.errorCode, None)
     }
-
 }

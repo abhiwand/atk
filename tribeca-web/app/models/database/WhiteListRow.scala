@@ -30,14 +30,14 @@ import play.api.db.slick.Config.driver.simple._
  * @param uid
  * @param email
  */
-case class WhiteList(uid:Option[Long], email:Option[String])
+case class WhiteListRow(uid:Option[Long], email:Option[String])
 
 /**
  * Table mapping for white_list table.
  */
-object WhiteLists extends Table[WhiteList]("white_list"){
+object WhiteListTable extends Table[WhiteListRow]("white_list"){
   def uid = column[(Long)]("uid", O.PrimaryKey)
   def email = column[(String)]("email", O.NotNull)
-  def * = uid.? ~ email.? <> (WhiteList , WhiteList.unapply _)
+  def * = uid.? ~ email.? <> (WhiteListRow , WhiteListRow.unapply _)
   //def autoInc = * returning id
 }

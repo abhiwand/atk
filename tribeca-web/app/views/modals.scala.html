@@ -1,4 +1,4 @@
-@(user:models.database.User)
+@(user:models.database.UserRow)
 
     @if(user != null && user.uid.get > 0 ){
         @feedbackModal()

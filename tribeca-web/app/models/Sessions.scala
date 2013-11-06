@@ -26,20 +26,20 @@ package models
 import play.api.Play.current
 import play.api.db.slick.Config.driver.simple._
 import play.api.db.slick.DB
-import models.database.Session
+import models.database.SessionRow
 
 /**
  * Singleton object to provide session services.
  */
-object Sessions {
-    var table = database.Sessions
+object Sessions extends SessionGenerator {
+    var table = database.SessionTable
 
     /**
      *
      * @param sessionId
      * @return
      */
-    def getById(sessionId: String): Query[database.Sessions.type, database.Session] = DB.withSession {
+    def getById(sessionId: String): Query[database.SessionTable.type, database.SessionRow] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             return for {se <- table if se.Id === sessionId} yield se
     }
@@ -52,7 +52,7 @@ object Sessions {
     def create(uid: Long): String = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val sessionId = createSessionId
-            val successful = table.insert(Session(sessionId, uid, "", System.currentTimeMillis / 1000))
+            val successful = table.insert(SessionRow(sessionId, uid, "", System.currentTimeMillis / 1000))
             if (successful == 1) {
                 return sessionId
             } else {
@@ -65,7 +65,7 @@ object Sessions {
      * @param sessionId
      * @return
      */
-    def read(sessionId: String): Option[database.Session] = DB.withSession {
+    def read(sessionId: String): Option[database.SessionRow] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val userSessions = getById(sessionId).list
 
@@ -80,7 +80,7 @@ object Sessions {
      * @param userSession
      * @return
      */
-    def update(userSession: models.database.Session) = DB.withSession {
+    def update(userSession: models.database.SessionRow) = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val userSes = getById(userSession.Id)
             userSes.update(userSession)

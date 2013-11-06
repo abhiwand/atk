@@ -43,7 +43,7 @@ object Users {
      * @param statementGenerator
      * @return
      */
-    def register(user: User, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator): RegistrationOutput = DB.withSession {
+    def register(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator): RegistrationOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
             val callString = "{call sp_register(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
@@ -123,9 +123,9 @@ object Users {
      * @param uid
      * @return
      */
-    def getByUid(uid: Long): Query[(database.Users.type, database.WhiteLists.type), (User, WhiteList)] = DB.withSession {
+    def getByUid(uid: Long): Query[(database.UserTable.type, database.WhiteListTable.type), (UserRow, WhiteListRow)] = DB.withSession {
         implicit session: scala.slick.session.Session =>
-            return for {(u, w) <- database.Users leftJoin database.WhiteLists on (_.uid === _.uid) if u.uid === uid} yield (u, w)
+            return for {(u, w) <- database.UserTable leftJoin database.WhiteListTable on (_.uid === _.uid) if u.uid === uid} yield (u, w)
     }
 
     /**
@@ -133,17 +133,17 @@ object Users {
      * @param email
      * @return
      */
-    def getByEmail(email: String): Query[database.Users.type, database.User] = DB.withSession {
+    def getByEmail(email: String): Query[database.UserTable.type, database.UserRow] = DB.withSession {
         implicit session: scala.slick.session.Session =>
-            for {u <- database.Users if u.email === email} yield u
+            for {u <- database.UserTable if u.email === email} yield u
     }
 
     /**
      *
      * @return
      */
-    def anonymousUser(): User = {
-        User(Some(0), "", "", "", false, None, None)
+    def anonymousUser(): UserRow = {
+        UserRow(Some(0), "", "", "", false, None, None, None)
     }
 
     /**
@@ -166,9 +166,9 @@ object Users {
      * @param user
      * @return
      */
-    def create(user: database.User): Long = DB.withSession {
+    def create(user: database.UserRow): Long = DB.withSession {
         implicit session: scala.slick.session.Session =>
-            database.Users.insert(user)
+            database.UserTable.insert(user)
     }
 
     /**
@@ -176,7 +176,7 @@ object Users {
      * @param uid
      * @return
      */
-    def readByUid(uid: Long): (database.User, database.WhiteList) = DB.withSession {
+    def readByUid(uid: Long): (database.UserRow, database.WhiteListRow) = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val users = getByUid(uid).list
             if (users.length > 0) {
@@ -191,7 +191,7 @@ object Users {
      * @param email
      * @return
      */
-    def readByEmail(email: String): database.User = DB.withSession {
+    def readByEmail(email: String): database.UserRow = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val getResult = getByEmail(email).list
             if (getResult.length > 0) {
