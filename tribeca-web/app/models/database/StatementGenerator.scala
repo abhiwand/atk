@@ -26,7 +26,7 @@ package models.database
 import java.sql.CallableStatement
 
 /**
- * define signature for preparing call statement
+ * define signature for preparing call statement.
  */
 trait StatementGenerator {
     def getCallStatement(session: scala.slick.session.Session, callString: String): CallableStatement

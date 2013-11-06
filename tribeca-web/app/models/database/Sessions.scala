@@ -25,8 +25,18 @@ package models.database
 
 import play.api.db.slick.Config.driver.simple._
 
+/**
+ * Session entry.
+ * @param Id
+ * @param uid
+ * @param data
+ * @param timestamp
+ */
 case class Session(Id:String, uid:Long, data:String, var timestamp:Long)
 
+/**
+ * Table mapping for Sessions table.
+ */
 object Sessions extends Table[Session]("Sessions"){
   def Id = column[String]("Id", O.PrimaryKey)
   def uid = column[Long]("uid", O.NotNull)

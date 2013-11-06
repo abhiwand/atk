@@ -25,10 +25,25 @@ package models.database
 
 import play.api.db.slick.Config.driver.simple._
 
+/**
+ * Mapping to data submitted from registration form.
+ * @param uid
+ * @param myName
+ * @param organization_name
+ * @param organization_phone
+ * @param organization_email
+ * @param experience
+ * @param role
+ * @param whyParticipate
+ * @param whatTools
+ */
 case class Registration(uid:Long,myName:String,
                         organization_name: String,  organization_phone: String,organization_email: String,
                         experience:Int, role:String, whyParticipate:String, whatTools:String )
 
+/**
+ * Table mapping for user_registration table.
+ */
 object Registrations extends Table[Registration]("user_registration"){
   def uid = column[Long]("uid", O.PrimaryKey)
   def myName = column[String]("myName")

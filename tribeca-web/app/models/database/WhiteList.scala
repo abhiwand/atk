@@ -25,8 +25,16 @@ package models.database
 
 import play.api.db.slick.Config.driver.simple._
 
+/**
+ * whilte list entry.
+ * @param uid
+ * @param email
+ */
 case class WhiteList(uid:Option[Long], email:Option[String])
 
+/**
+ * Table mapping for white_list table.
+ */
 object WhiteLists extends Table[WhiteList]("white_list"){
   def uid = column[(Long)]("uid", O.PrimaryKey)
   def email = column[(String)]("email", O.NotNull)
