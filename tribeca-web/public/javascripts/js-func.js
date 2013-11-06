@@ -32,15 +32,19 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 			experience: {
 				required: true,
 			},
-			message1: {
+			whatTools: {
 				required: true,
 				minlength: 3
 			},
-			message2: {
+			whyParticipate: {
 				required: true,
 				minlength: 3
 			},
-			subject: {
+			support_subject: {
+				required: true,
+				minlength: 3
+			},
+			feedback_subject: {
 				required: true,
 				minlength: 3
 			},
