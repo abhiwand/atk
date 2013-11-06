@@ -31,8 +31,18 @@ import play.api.db.slick.DB
 
 import java.sql.{ResultSet, Types}
 
+/**
+ * Singleton object to provide user related services.
+ */
 object Users {
 
+    /**
+     *
+     * @param user
+     * @param registrationForm
+     * @param statementGenerator
+     * @return
+     */
     def register(user: User, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator): RegistrationOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
@@ -67,12 +77,23 @@ object Users {
             return output
     }
 
+    /**
+     *
+     * @param rs
+     * @return
+     */
     private def getUidFromResultSet(rs: ResultSet): Int = {
         var uid = 0
         if (rs.next()) uid = rs.getInt("uid")
         return uid
     }
 
+    /**
+     *
+     * @param email
+     * @param statementGenerator
+     * @return
+     */
     def login(email: String, statementGenerator: StatementGenerator): LoginOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
@@ -97,20 +118,39 @@ object Users {
             return output
     }
 
+    /**
+     *
+     * @param uid
+     * @return
+     */
     def getByUid(uid: Long): Query[(database.Users.type, database.WhiteLists.type), (User, WhiteList)] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             return for {(u, w) <- database.Users leftJoin database.WhiteLists on (_.uid === _.uid) if u.uid === uid} yield (u, w)
     }
 
+    /**
+     *
+     * @param email
+     * @return
+     */
     def getByEmail(email: String): Query[database.Users.type, database.User] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             for {u <- database.Users if u.email === email} yield u
     }
 
+    /**
+     *
+     * @return
+     */
     def anonymousUser(): User = {
         User(Some(0), "", "", "", false, None, None)
     }
 
+    /**
+     *
+     * @param email
+     * @return
+     */
     def exists(email: String): Boolean = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val usersResult = readByEmail(email)
@@ -121,12 +161,21 @@ object Users {
             }
     }
 
-    //crud
+    /**
+     *
+     * @param user
+     * @return
+     */
     def create(user: database.User): Long = DB.withSession {
         implicit session: scala.slick.session.Session =>
             database.Users.insert(user)
     }
 
+    /**
+     *
+     * @param uid
+     * @return
+     */
     def readByUid(uid: Long): (database.User, database.WhiteList) = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val users = getByUid(uid).list
@@ -137,6 +186,11 @@ object Users {
             }
     }
 
+    /**
+     *
+     * @param email
+     * @return
+     */
     def readByEmail(email: String): database.User = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val getResult = getByEmail(email).list
