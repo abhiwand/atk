@@ -35,16 +35,16 @@ import com.amazonaws.services.s3.AmazonS3Client
 import java.lang.Math
 import scala.collection.mutable
 import sun.misc.BASE64Encoder
+import play.api.Play
+import play.api.Play.current
+import services.aws
 
 object S3 {
-  val aws_secret_key = "h57vzrHg18IRdGUGnRvfSph381VtuEOfK+r3oNBQ";
-  val access_key = "AKIAJ65RQRJONMKNT2NQ";
-  val POLICY_EXPIRATION = 604800000
   //one week in milliseconds
-  val BUCKET = "gaopublic"
-  val MAX_SIZE = 5368709120L
-  val SUCCESS_ACTION_REDIRECT = "https://localhost/s33"
-  val PREFIX = "user/"
+  val POLICY_EXPIRATION =  Play.application.configuration.getLong("aws.bucket_expiration_policy").get
+  val BUCKET = Play.application.configuration.getString("aws.bucket").get
+  val MAX_SIZE = Play.application.configuration.getLong("aws.bucket_max_file_size").get
+  val PREFIX = Play.application.configuration.getString("aws.bucket_prefix").get
   val BYTE = 1024
 
   def formatName(key: String): String = {
@@ -60,7 +60,7 @@ object S3 {
   }
 
   def getObjectList(userIdentifier: String): mutable.Buffer[S3ObjectSummary] = {
-    val myCredentials = new BasicAWSCredentials(access_key, aws_secret_key);
+    val myCredentials = new BasicAWSCredentials(access_key, aws.secret_access_key);
     val s3Client = new AmazonS3Client(myCredentials);
     val objectList = s3Client.listObjects(BUCKET, PREFIX + userIdentifier + "/")
     scala.collection.JavaConversions.asScalaBuffer[S3ObjectSummary](objectList.getObjectSummaries)
@@ -68,7 +68,7 @@ object S3 {
 
   def createPolicy(userIdentifier: String): String = {
 
-    val expire = new Date(System.currentTimeMillis() + 604800000)
+    val expire = new Date(System.currentTimeMillis() + POLICY_EXPIRATION)
     val dateFormat = new SimpleDateFormat("yyyy-MM-d'T'hh:mm:ss'Z'")
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     val policyJson = Json.obj("expiration" -> dateFormat.format(expire),
@@ -97,7 +97,7 @@ object S3 {
 
   def createSignature(policy: String): String = {
     val hmac = Mac.getInstance("HmacSHA1");
-    hmac.init(new SecretKeySpec(aws_secret_key.getBytes("UTF-8"), "HmacSHA1"));
+    hmac.init(new SecretKeySpec(aws.secret_access_key.getBytes("UTF-8"), "HmacSHA1"));
     new BASE64Encoder().encode(hmac.doFinal(policy.getBytes("UTF-8"))).replaceAll("\n", "");
   }
 }
