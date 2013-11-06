@@ -98,7 +98,7 @@ def main(argv):
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         #create if output table doesn't exist
         if not hbase_client.is_table_readable(cmd_line_args.output):          
-            hbase_client.drop_create_table(cmd_line_args.output , [CONFIG_PARAMS['etl-column-family']])
+            hbase_client.drop_create_table(cmd_line_args.output, [CONFIG_PARAMS['etl-column-family']])
     
     transform_script_path = os.path.join(base_script_path, 'intel_analytics', 'etl', 'pig', 'pig_transform.py')
         
@@ -124,7 +124,9 @@ def main(argv):
     if ret == 0:#success
         #need to update schema here as it's difficult to pass the updated schema info from jython to python
         if not cmd_line_args.keep_original_feature:
-            etl_schema.feature_names.remove(cmd_line_args.feature_to_transform)
+            if not cmd_line_args.output == cmd_line_args.input:#if NOT an in place transform (the output table is the same as the input table)
+                #if the transform is an inplace transform the feature is NOT removed from the source table!
+                etl_schema.feature_names.remove(cmd_line_args.feature_to_transform)
         etl_schema.feature_names.append(cmd_line_args.new_feature_name)
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types
