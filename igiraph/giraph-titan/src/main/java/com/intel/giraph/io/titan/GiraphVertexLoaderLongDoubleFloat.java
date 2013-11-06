@@ -44,6 +44,7 @@ import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
 import org.apache.log4j.Logger;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -57,26 +58,40 @@ import java.util.Set;
 //@SuppressWarnings("unchecked")
 public class GiraphVertexLoaderLongDoubleFloat {
 
-    /** Class logger. */
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleFloat.class);
-    /** whether it is Titan sytem type */
+    /**
+     * whether it is Titan sytem type
+     */
     private boolean isSystemType = false;
-    /** Long type vertex id */
+    /**
+     * Long type vertex id
+     */
     private long vertexId = 0;
-    /** Giraph Vertex */
+    /**
+     * Giraph Vertex
+     */
     private Vertex<LongWritable, DoubleWritable, FloatWritable> vertex = null;
-    /** HashSet of configured vertex properties */
+    /**
+     * HashSet of configured vertex properties
+     */
     private Set<String> vertexPropertyKeyValues = null;
-    /** HashSet of configured edge properties */
+    /**
+     * HashSet of configured edge properties
+     */
     private Set<String> edgePropertyKeyValues = null;
-    /** HashSet of configured edge labels */
+    /**
+     * HashSet of configured edge labels
+     */
     private Set<String> edgeLabelValues = null;
 
     /**
      * GiraphVertexLoaderLongDoubleFloat constructor
      *
      * @param conf : Giraph configuration
-     * @param id vertex id
+     * @param id   vertex id
      */
     public GiraphVertexLoaderLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf, final long id) {
         /** Vertex properties to filter */
@@ -118,22 +133,32 @@ public class GiraphVertexLoaderLongDoubleFloat {
     /**
      * Implement com.thinkaurelius.titan.graphdb.database.RelationFactory to
      * parse graph semantics on data loaded from HBase
-     *
-     *
      */
     public class RelationFactory implements com.thinkaurelius.titan.graphdb.database.RelationFactory {
 
-        /** Titan property */
+        /**
+         * Titan property
+         */
         private final Map<String, Object> properties = new HashMap<String, Object>();
-        /** Relation Direction */
+        /**
+         * Relation Direction
+         */
         private Direction direction;
-        /** Titan Type */
+        /**
+         * Titan Type
+         */
         private TitanType type;
-        /** Relation ID */
+        /**
+         * Relation ID
+         */
         private long relationID;
-        /** The other vertex ID for a Titan Edge */
+        /**
+         * The other vertex ID for a Titan Edge
+         */
         private long otherVertexID;
-        /** Property value */
+        /**
+         * Property value
+         */
         private Object value;
 
         /**
@@ -205,7 +230,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
         /**
          * add relation property
          *
-         * @param type : TitanType
+         * @param type  : TitanType
          * @param value : Titan property value
          */
         @Override

@@ -24,6 +24,7 @@ package com.intel.giraph.io.titan;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
+
 import java.util.Iterator;
 import java.util.Map;
 
@@ -31,7 +32,6 @@ import java.util.Map;
  * Converts a Giraph configuration file to a Titan configuration file. For all
  * Titan specific properties, the conversion removes the Giraph prefix and
  * provides to Titan's graph factory.
- *
  */
 public class GiraphToTitanGraphFactory {
 

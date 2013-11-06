@@ -106,7 +106,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
      * @param id   vertex id
      */
     public GiraphVertexLoaderPropertyGraph4CF(final ImmutableClassesGiraphConfiguration conf,
-                                                         final long id) {
+                                              final long id) {
         /**
          * Vertex properties to filter
          */
@@ -280,7 +280,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
          */
         public void build() {
             if (this.type instanceof SystemType) {
-                    return;
+                return;
             }
             if (this.type.isPropertyKey()) {
                 Preconditions.checkNotNull(value);

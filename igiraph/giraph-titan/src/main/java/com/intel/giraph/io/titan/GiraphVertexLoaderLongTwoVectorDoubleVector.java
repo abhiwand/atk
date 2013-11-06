@@ -80,7 +80,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleVector {
      * @param id   vertex id
      */
     public GiraphVertexLoaderLongTwoVectorDoubleVector(final ImmutableClassesGiraphConfiguration conf,
-                                                          final long id) {
+                                                       final long id) {
         /**
          * Vertex properties to filter
          */

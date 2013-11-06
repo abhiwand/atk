@@ -135,7 +135,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
      * @param conf : Giraph configuration
      */
     public void sanityCheckInputParameters(ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> conf) {
-        String tableName =  GIRAPH_TITAN_STORAGE_TABLENAME.get(conf);
+        String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(conf);
 
         if (GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf).equals("")) {
             throw new IllegalArgumentException("Please configure Titan/HBase storage hostname by -D" +
@@ -145,18 +145,17 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
         if (tableName.equals("")) {
             throw new IllegalArgumentException("Please configure Titan/HBase Table name by -D" +
                     GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + ". Otherwise no vertex will be read from Titan.");
-        }
-        else {
-            try{
+        } else {
+            try {
                 HBaseConfiguration config = new HBaseConfiguration();
                 HBaseAdmin hbaseAdmin = new HBaseAdmin(config);
                 if (!hbaseAdmin.tableExists(tableName)) {
-                    throw new IllegalArgumentException("HBase table " +  tableName +
+                    throw new IllegalArgumentException("HBase table " + tableName +
                             " does not exist! Please double check your configuration.");
                 }
 
                 if (!hbaseAdmin.isTableAvailable(tableName)) {
-                    throw new IllegalArgumentException("HBase table " +  tableName +
+                    throw new IllegalArgumentException("HBase table " + tableName +
                             " is not available! Please double check your configuration.");
                 }
             } catch (IOException e) {
@@ -165,7 +164,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
         }
 
 
-        if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)){
+        if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)) {
             LOG.info(GIRAPH_TITAN_STORAGE_PORT.getKey() + " is configured as default value. " +
                     "Ensure you are using port " + GIRAPH_TITAN_STORAGE_PORT.get(conf));
 

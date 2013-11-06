@@ -15,12 +15,14 @@ import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN;
  * for writing back algorithm results
  */
 public class TitanGraphWriter {
-    /** LOG class */
+    /**
+     * LOG class
+     */
     private static final Logger LOG = Logger
             .getLogger(TitanGraphWriter.class);
 
     /**
-     * @param context       task attempt context
+     * @param context task attempt context
      */
     public static TitanGraph open(TaskAttemptContext context) throws IOException {
         TitanGraph graph = null;
@@ -31,10 +33,9 @@ public class TitanGraphWriter {
 
         graph = TitanFactory.open(configuration);
 
-        if (null != graph){
+        if (null != graph) {
             return graph;
-        }
-        else {
+        } else {
             LOG.fatal("IGIRAPH ERROR: Unable to open titan graph");
             System.exit(-1);
             return null;

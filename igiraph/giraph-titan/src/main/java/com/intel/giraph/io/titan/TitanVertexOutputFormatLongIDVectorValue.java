@@ -82,7 +82,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
                     GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + ". Otherwise no vertex will be read from Titan.");
         }
 
-        if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)){
+        if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)) {
             LOG.info(GIRAPH_TITAN_STORAGE_PORT.getKey() + " is configured as default value. " +
                     "Ensure you are using port " + GIRAPH_TITAN_STORAGE_PORT.get(conf));
         }

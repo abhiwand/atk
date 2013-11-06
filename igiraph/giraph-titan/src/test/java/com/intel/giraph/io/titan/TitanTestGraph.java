@@ -10,7 +10,9 @@ import org.apache.log4j.Logger;
 
 public class TitanTestGraph extends StandardTitanGraph {
 
-    /** Class logger. */
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(TitanTestGraph.class);
 
     public TitanTestGraph(final GraphDatabaseConfiguration configuration) {
