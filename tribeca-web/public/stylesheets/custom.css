@@ -486,10 +486,10 @@ button.close {
 #ipython {
     position: relative;
     width: 100%;
-    min-height: 2700px;
+   /* min-height: 700px;
     max-height: 100%;
     background-color: #fff;
-    border: none;
+    border: none; */
 }
 
 

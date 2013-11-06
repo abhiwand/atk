@@ -1,47 +1,43 @@
+@()
 <!-- Support Modal -->
-<div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="supportModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title">Tribeca Beta Release Support Form</h4>
+                
             </div>
             <div class="modal-body">
                 <div class='row'>
                     <div class='col-sm-12'>
+                       
+                            <fieldset class='row'>
+                              
+                                <form class='DA_custom_form' method="post"  class="DA_custom_form" id="feedback-form" >
 
-                        <form action='#' class='form form-validation' method='get'>
-                            <div class='row'>
-                                <div class='col-sm-6'>
-                                    <div class='form-group control-group'>
-                                        <input class='form-control' data-rule-required='true' id='contact_name' name='contact[name]' placeholder='Name' type='text'>
-                                    </div>
-                                </div>
-                                <div class='col-sm-6'>
-                                    <div class='form-group control-group'>
-                                        <input class='form-control' data-rule-email='true' data-rule-required='true' id='contact_email' name='contact[email]' placeholder='E-Mail' type='text'>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='row'>
-                                <div class='col-sm-12'>
-                                    <div class='form-group control-group'>
-                                        <textarea class='form-control' data-rule-required='true' id='contact_message' name='contact[message]' placeholder='Your message...'></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class='row'>
-                                <div class='col-sm-12'>
-                                    <button class='btn btn-contrast btn-block' type='submit'>
-                                                Send message
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+                                        <div class="DA_holder">
+                                            <label>Subject</label>
+                                            <div class="DA_field_container">
+                                                <input type="text" class="field" id="subject" name="subject" />
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="DA_holder">
+                                            <label>How Can We Help You?</label>
+                                            <div class="textarea-frame">
+                                                
+                                                <textarea name="support_message" id="support_message" class="field" rows="8" cols="40"></textarea>
+                                            </div>
+                                        <div class="modal-footer">
+                                        <div class="btnp"><input type="submit" value="Send Message" /></div>
+                                        </div>
+                                </form>
+                            </fieldset>
                     </div>
                 </div>
             </div>
         </div>
-
+    </div>
     </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->

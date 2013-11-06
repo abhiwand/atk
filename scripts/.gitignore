@@ -1,0 +1,7 @@
+**/*.tar.gz
+**/SRPMS/*
+**/RPMS/*
+**/SOURCES/*
+**/BUILDROOT/*
+**/BUILD/*
+**/git/*

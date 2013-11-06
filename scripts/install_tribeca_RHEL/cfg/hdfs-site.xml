@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><configuration>
+
+<property>
+  <name>dfs.name.dir</name>
+  <value>/data2/hadoop-data/name</value>
+</property>
+
+<property>
+<name>dfs.data.dir</name>
+<value>/data2/hadoop-data/data,/data3/hadoop-data/data,/data4/hadoop-data/data</value>
+</property>
+
+<property>
+  <name>dfs.block.size</name>
+  <value>134217728</value>
+  <description>The default block size for new files.</description>
+</property>
+
+<property>
+  <name>dfs.replication</name>
+  <value>2</value>
+</property>
+
+<property>
+  <name>dfs.namenode.handler.count</name>
+  <value>40</value>
+  <description>The number of server threads for the namenode.</description>
+</property>
+
+<property>
+  <name>fs.trash.interval</name>
+  <value>1440</value>
+  <description>Number of minutes between trash checkpoints.
+  If zero, the trash feature is disabled.
+  </description>
+</property>
+
+<property>
+ <name>dfs.datanode.max.xcievers</name>
+ <value>65535</value>
+</property>
+
+<property>
+  <name>dfs.datanode.handler.count</name>
+  <value>8</value>
+</property>
+
+</configuration>

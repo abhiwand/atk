@@ -3,8 +3,9 @@
     @if(user != null && user.uid.get > 0 ){
         @feedbackModal()
         @datasetModal(user)
+        @supportModal()
+
     } else{
         @loginModal()
-        @supportModal()
         @registrationModal()
     }
