@@ -6,13 +6,15 @@
 source IntelAnalytics_common_env.sh
 
 # existing AMI Names (Gold Images)
-export IA_AMI_MASTER="${IA_NAME}-Master"
+# 
+#export IA_AMI_MASTER="${IA_NAME}-Master"
+export IA_AMI_MASTER="${IA_NAME}-Master-${IA_VERSION}"
 export IA_AMI_SLAVE="${IA_NAME}-Slave"
 export IA_AMI_ADMIN="${IA_NAME}-Admin"
 export IA_AMI_WEBSRV="${IA_NAME}-WebSRV"
 export IA_AMI_WEBRDS="${IA_NAME}-WebRDS"
 # consolidate master and slave to use just one image
-export IA_AMI_NODE="${IA_NAME}-Master"
+export IA_AMI_NODE="${IA_AMI_MASTER}"
 # instance type is cc2.8xlarge
 export IA_INSTANCE_TYPE=cc2.8xlarge
 
