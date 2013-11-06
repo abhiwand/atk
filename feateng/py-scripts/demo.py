@@ -103,35 +103,3 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
 
 commands.getoutput("hadoop fs -rmr /tmp/worldbank.csv")
 commands.getoutput("hadoop fs -rmr /tmp/us_states.csv")
- 
-#import some data
-# shaw_header = 'timestamp,event_type,method,duration,item_id,src_tms,dst_tms'
-# big_frame.import_data('/tmp/sample_shaw.log', '../custom-parsers/shaw_udfs.py', 'shaw_table', shaw_header)
-# #TODO need a read_csv file for v 0.5
-# big_frame = big_frame['duration'].dropna() # drop the missing values for the duration field
-# big_frame['duration'].fillna('999')# replace with a specific value
-# big_frame['duration'].fillna('avg')# replace with a specific value
-#big_frame['duration^2'] = big_frame['duration'].apply(Transformations.POW, 2)
-#TODO setitem type assignment should only work for transforms for v 0.5
-#big_frame['log_duration'] = big_frame['duration'].apply(Transformations.LOG) # apply log transformation to the duration field and name the new feature as log_duration
-# print big_frame.features() # list all features
-# print big_frame.schema()#TODO
-# print big_frame.derived_features() # list only the features derived by applying transformations to the base features
-
-
-
-# #only f_1 is chararray
-# big_frame['f_1_len'] = big_frame['f_1'].apply(EvalFunctions.String.LENGTH)
-# big_frame['f_1_lower'] = big_frame['f_1'].apply(EvalFunctions.String.LOWER)
-# big_frame['f_1_trimmed'] = big_frame['f_1'].apply(EvalFunctions.String.LTRIM)
-# 
-# #f_4 is a double
-# big_frame['log_f4_duration'] = big_frame['f_4'].apply(EvalFunctions.Math.LOG)
-# print big_frame
-
-#TODO: dropna, fillna, projection
-# big_frame = big_frame['duration'].dropna() # drop the missing values for the duration field
-# big_frame['duration'].fillna('999')# replace with a specific value
-# big_frame['duration'].fillna('avg')# replace with a specific value
-# print big_frame.features() # list all features
-# print big_frame.derived_features() # list only the features derived by applying transformations to the base features
