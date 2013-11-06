@@ -77,7 +77,10 @@ object Register extends Controller {
         if (Option(auth.validateUserInfo()) == None) return (0, None)
 
         val userInfo = auth.userInfo
-        val u = User(None, userInfo.givenName, userInfo.familyName, userInfo.email, true, Some(""), None)
+
+        if (userInfo == None) return (0, None)
+
+        val u = User(None, userInfo.get.givenName, userInfo.get.familyName, userInfo.get.email, true, Some(""), None)
         val result = Users.register(u, registrationForm, MySQLStatementGenerator)
         val sessionId = Sessions.create(result.uid)
         result.errorCode match {

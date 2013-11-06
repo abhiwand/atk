@@ -59,7 +59,10 @@ object Login extends Controller {
         if (Option(auth.validateUserInfo()) == None)
             return (0, None)
 
-        val result = Users.login(auth.userInfo.email, MySQLStatementGenerator)
+        if(auth.userInfo == None)
+            return (0, None)
+
+        val result = Users.login(auth.userInfo.get.email, MySQLStatementGenerator)
         val sessionId = Sessions.create(result.uid)
 
         result.errorCode match {

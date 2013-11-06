@@ -28,15 +28,27 @@ import play.api.db.slick.Config.driver.simple._
 import play.api.db.slick.DB
 import models.database.Session
 
+/**
+ * Singleton object to provide session services.
+ */
 object Sessions {
     var table = database.Sessions
 
+    /**
+     *
+     * @param sessionId
+     * @return
+     */
     def getById(sessionId: String): Query[database.Sessions.type, database.Session] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             return for {se <- table if se.Id === sessionId} yield se
     }
 
-    //crud
+    /**
+     *
+     * @param uid
+     * @return
+     */
     def create(uid: Long): String = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val sessionId = createSessionId
@@ -48,6 +60,11 @@ object Sessions {
             }
     }
 
+    /**
+     *
+     * @param sessionId
+     * @return
+     */
     def read(sessionId: String): Option[database.Session] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val userSessions = getById(sessionId).list
@@ -58,19 +75,32 @@ object Sessions {
                 None
     }
 
+    /**
+     *
+     * @param userSession
+     * @return
+     */
     def update(userSession: models.database.Session) = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val userSes = getById(userSession.Id)
             userSes.update(userSession)
     }
 
+    /**
+     *
+     * @param sessionId
+     * @return
+     */
     def delete(sessionId: String) = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val userSes = getById(sessionId)
             userSes.delete
     }
 
-
+    /**
+     *
+     * @return
+     */
     def createSessionId(): String = {
         java.util.UUID.randomUUID().toString()
     }

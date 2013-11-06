@@ -34,7 +34,6 @@ import com.amazonaws.services.s3.model.S3ObjectSummary
 import com.amazonaws.services.s3.AmazonS3Client
 import java.lang.Math
 import scala.collection.mutable
-import org.apache.commons.codec.binary.Base64
 import sun.misc.BASE64Encoder
 
 object S3 {
