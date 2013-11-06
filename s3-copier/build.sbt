@@ -1,28 +1,19 @@
-name := "tribeca-web"
+name := "intelanalytics-s3-copier"
 
 version := "1.0-SNAPSHOT"
 
+scalaVersion := "2.10.3"
+
+resolvers += "sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
+
+
 libraryDependencies ++= Seq(
-  jdbc,
-  "mysql" % "mysql-connector-java" % "5.1.21",
-  anorm,
-  cache,
-  "com.typesafe.play" %% "play-slick" % "0.5.0.8",
   "commons-codec" % "commons-codec" % "1.8",
   "org.mockito" % "mockito-core" % "1.9.5",
-  "com.amazonaws" % "aws-java-sdk" % "1.6.4"
+  "com.amazonaws" % "aws-java-sdk" % "1.6.4",
+  "com.github.seratch" % "awscala_2.10" % "0.1.0-SNAPSHOT"
 )     
 
-play.Project.playScalaSettings
 
-org.scalastyle.sbt.ScalastylePlugin.Settings
-
-
-//name in Rpm := "intelanalytics-saas-web",
-   // version in Rpm <<= sbtVersion.identity,
-   // rpmRelease := "1",
-  //  rpmVendor := "Intel",
-   // rpmUrl := None,
-    //rpmLicense := None,
 
 
