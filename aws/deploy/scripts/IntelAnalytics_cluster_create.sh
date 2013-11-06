@@ -46,20 +46,32 @@ function usage()
     exit 1
 }
 
+function IA_create_info()
+{
+# generate a report
+cat << EOF > ${IA_CLUSTERS}/${cname}.info
+
+Time Stamp      = `date`
+Cluster Name    = ${cname}
+Assigned VPC    = ${cvpcid}
+AMI Image ID    = ${camiid}
+Target CIDR     = ${ccidr}
+Target Subnet   = ${csubnet}
+IAM Group:User  = ${ciamgroup}:${ciamuser}
+Secuirty Groups = ${csgroup},${csgroup_https},${csgroup_admssh}
+Placement Group = ${cpgroup}
+Route Table     = ${croute}
+Cluster Nodes   = ${cnnames[@]}
+Instance IDs    = ${cniids[@]}
+Dry Run         = ${dryrun}
+
+EOF
+}
+
 function IA_create_dump()
 {
-    IA_loginfo "Cluster Name = ${cname}"
-    IA_loginfo "  Time Stamp      = `date`"
-    IA_loginfo "  Assigned VPC    = ${cvpcid}"
-    IA_loginfo "  AMI Image ID    = ${camiid}"
-    IA_loginfo "  Target CIDR     = ${ccidr}"
-    IA_loginfo "  Target Subnet   = ${csubnet}"
-    IA_loginfo "  IAM Group:User  = ${ciamgroup}:${ciamuser}"
-    IA_loginfo "  Secuirty Groups = ${csgroup},${csgroup_https},${csgroup_admssh}"
-    IA_loginfo "  Placement Group = ${cpgroup}"
-    IA_loginfo "  Route Table     = ${croute}"
-    IA_loginfo "  Cluster Nodes   = ${nnames[@]}"
-    IA_loginfo "  OutputCluster Nodes   = ${nnames[@]}"
+    IA_create_info
+    cat ${IA_CLUSTERS}/${cname}.info >> ${IA_LOGFILE}
 }
 
 # Get the env setup and helper funs
@@ -88,7 +100,7 @@ do
             ;;
         *)
             usage
-            ;;        
+            ;;
     esac
 done
 
@@ -239,20 +251,15 @@ if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
 fi
 
 # - Launch 4 instances into the placement group
-#nname=`IA_format_node_name ${cname} ${i}`
-nnames=(
+cnnames=(
 "`IA_format_node_name ${cname} 0`" 
 "`IA_format_node_name ${cname} 1`" 
 "`IA_format_node_name ${cname} 2`" 
 "`IA_format_node_name ${cname} 3`")
 
-# dump 
-IA_create_dump
-
+# create instances
 for (( i = 0; i < ${csize}; i++ ))
 do
-    nname=${nnames[$i]}
-
     cmd_opts="${IA_EC2_OPTS} ${camiid} \
 --instance-count 1 \
 --key ${ciamuser} \
@@ -261,41 +268,43 @@ do
 --instance-type ${cinstype} \
 --placement-group ${cpgroup} \
 --subnet ${csubnet}"
-    
+
     if [ $i -eq 0 ]; then
         cmd_opts="${cmd_opts} --group ${csgroup_https} --associate-public-ip-address true"
     fi
-    IA_loginfo "Creating EC2 instance for node ${nname}, executing..."
+    IA_loginfo "Creating ${i}-th instance as node ${cnnames[$i]}}, executing..."
     IA_loginfo "  ec2-run-instances ${cmd_opts}"
 
     # set tag
     if [ "${dryrun}" == "no" ]; then
-        iid=`ec2-run-instances ${cmd_opts} | grep INSTANCE | awk '{print $2}'`
-	    IA_add_name_tag ${iid} ${nname}
-        # FIXME: polling wellness of the instances
-	    IA_check_instance_status ${iid}
+        cniids[$i]=`ec2-run-instances ${cmd_opts} | grep INSTANCE | awk '{print $2}'`
+        IA_add_name_tag ${cniids[$i]} ${cnnames[$i]}
     fi
 done
 
-# generate a report
-cat << EOF > ${IA_CLUSTERS}/${cname}.info
+# dump
+IA_create_dump
 
-Time Stamp      = `date`
-Cluster Name    = ${cname}
-Assigned VPC    = ${cvpcid}
-AMI Image ID    = ${camiid}
-Target CIDR     = ${ccidr}
-Target Subnet   = ${csubnet}
-IAM Group:User  = ${ciamgroup}:${ciamuser}
-Secuirty Groups = ${csgroup},${csgroup_https},${csgroup_admssh}
-Placement Group = ${cpgroup}
-Route Table     = ${croute}
-Cluster Nodes   = ${nnames[@]}
-EC2 Creation Commandline Options: ${cmd_opts}
-
-EOF
+# check how man we have created
+if [ "${dryrun}" == "no" ] && [ ${#cnnids[@]} -ne ${csize} ]; then
+    IA_logerr "Requested ${csize} instances, only created ${#cnnids[@]} instances!"
+fi
 
 # generate hosts file
 if [ "${dryrun}" == "no" ]; then
+    # polling wellness of the instances, retry up to 5 times
+    for (( i = 0; i < 5; i++ ))
+    do
+        # check instance status, max 5 waits, every wait is 10s
+        IA_check_instance_status ${cniids[@]}
+        if [ $? -eq 0 ]; then
+            IA_logerr "Instances status check ${i} passed on instances:${cniids[@]}..."
+            break
+        fi
+        IA_logerr "Instances status check ${i} failed on instances:${cniids[@]}..."
+        sleep 10s
+    done
+
+    # now instances are running, create hosts file
     IA_generate_hosts_file ${cid} ${csize} ${IA_CLUSTERS}
 fi

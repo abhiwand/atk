@@ -339,11 +339,94 @@ function IA_find_subnet()
     return 0
 }
 
-# TODO: this is dummy, just logs the status output and wait for 5s
+# Get the instance status value from ec2-describe-instance-status, e.g.
+#INSTANCE        i-d39edfe7      us-west-2c      running 16      ok      ok      active  (nil)
+#SYSTEMSTATUS    reachability    passed  (nil)
+#INSTANCESTATUS  reachability    passed  (nil)
+function IA_get_instance_status()
+{
+    local ins=($@)
+    local type=${ins[$((${#ins[@]}-1))]}
+    case ${type} in
+    instance-state-name)
+        echo ${ins[3]}
+        ;;
+    instance-state-code)
+        echo ${ins[4]}
+        ;;
+    instance-status)
+        echo ${ins[5]}
+        ;;
+    system-status)
+        echo ${ins[6]}
+        ;;
+    # these two are in sub-columns
+    instance-reachability | system-rechability)
+        echo ${ins[3]}
+        ;;
+    *)
+        ;;
+    esac
+}
+
+# Check a given instance' status by its id
+# Returns 0 for success, 1 for failure
+# Sets _RET to be "passed" or "failed"
 function IA_check_instance_status()
 {
-    sleep 5s
-    IA_loginfo "`ec2-describe-instance-status ${IA_EC2_OPTS} ${1}`"
+    local inst=(`ec2-describe-instance-status ${IA_EC2_OPTS} --show-empty-fields ${1} | grep ${1}`)
+    local sysr=(`ec2-describe-instance-status ${IA_EC2_OPTS} --show-empty-fields ${1} | grep SYSTEMSTATUS`)
+    local insr=(`ec2-describe-instance-status ${IA_EC2_OPTS} --show-empty-fields ${1} | grep INSTANCESTATUS`)
+    local state
+
+    _RET="failed"
+    state=`IA_get_instance_status ${inst[@]} instance-state-name`
+    if [ "running" != "${state}" ]; then
+        IA_loginfo "Instance ${1} instance-state-name is \"${state}\", not \"running\"!"
+        return 1
+    fi
+    state=`IA_get_instance_status ${inst[@]} instance-status`
+    if [ "ok" != "${state}" ]; then
+        IA_loginfo "Instance ${1} instance-status is \"${state}\", not \"ok\"!"
+        return 1
+    fi
+    state=`IA_get_instance_status ${inst[@]} system-status`
+    if [ "ok" != "${state}" ]; then
+        IA_loginfo "Instance ${1} system-status is \"${state}\", not \"ok\"!"
+        return 1
+    fi
+    state=`IA_get_instance_status ${insr[@]} instance-reachability`
+    if [ "passed" != "${state}" ]; then
+        IA_loginfo "Instance ${1} instance-status.reachability is \"${state}\", not \"passed\"!"
+        return 1
+    fi
+    state=`IA_get_instance_status ${sysr[@]} system-rechability`
+    if [ "passed" != "${state}" ]; then
+        IA_loginfo "Instance ${1} system-status.reachability is \"${state}\", not \"passed\"!"
+        return 1
+    fi
+    IA_loginfo "Instance ${1} status check good."
+    _RET="passed"
+    return 0
+}
+
+# check multiple instances status
+# Returns 0 for success, 1 for failure
+function IA_check_instances_status()
+{
+    local iids=($@)
+
+    # check instance status, max 5 waits, every wait is 10s
+    for (( i = 0; i < ${#iids[@]}; i++ ))
+    do
+        # polling wellness of the instances
+        IA_loginfo "Checking instance ${1} status..."
+        IA_check_instance_status ${iids[${i}]}
+        if [ $? -ne 0]; then
+            return 1
+        fi
+    done
+    return 0
 }
 
 function IA_find_subnet_state()
