@@ -17,7 +17,7 @@ source IntelAnalytics_setup_env.sh
 
 function usage()
 {
-    echo "usage: --nodes-file <nodes-list-file> --pem-file <ssh-user-pem-file> [--dry-run]"
+    echo "Usage: $1 --nodes-file <nodes-list-file> --pem-file <ssh-user-pem-file> [--dry-run]"
     exit 1
 }
 
@@ -39,7 +39,7 @@ do
         shift 1
         ;;
     *)
-        usage
+        usage $(basename $0)
         ;;
     esac
 done
@@ -53,11 +53,23 @@ if [ -z "${pemfile}" ] || [ ! -f ${pemfile} ]; then
     usage
 fi
 
+# FIXME: not sure exactly why, but the nohup, even w/ stderr/stout redirected,
+# which according to man should work properly, still does not sometime work
+# reliablly to actually executing the script on the remote side.
+#
+# The only work around is to execute this multiple times till the mkfs is kicked
+# out on every nodes, there is no impact on an existing mkfs going on on a given disk
 _script=IntelAnalytics_setup_disks_node.sh
 for n in `cat ${nodesfile}`
 do
     ${dryrun} scp -i ${pemfile} ${_script} ${n}:/tmp/${_script}
+    echo "Copied \"${_script}\" to ${n}..."
     sleep 2s
+done
+sleep 5s
+for n in `cat ${nodesfile}`
+do
+    echo "Executing \"${_script}\" on ${n}..."
     ${dryrun} ssh -i ${pemfile} -t ${n} "sudo bash -c '( ( nohup /tmp/${_script} &> /dev/null ) & )'";
     sleep 2s
 done
