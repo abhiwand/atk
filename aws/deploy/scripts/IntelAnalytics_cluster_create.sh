@@ -6,7 +6,7 @@
 # - Most core functions are in _cluster_env.sh script
 # - This assumes to work on the existing VPC, if not, use the env variable to override
 #    IA_TAG, the VPC name tag, default to "IntelAnalytics" used to get to the VPC id
-#    IA_EC2_USR, amdin user, default to gaoyi, must have ${IA_EC2_USER}.csv/.pem in ${IA_HOME}/credentials
+#    IA_EC2_USR, amdin user, default to ${IA_NAME}_Adm, must have ${IA_EC2_USER}.csv/.pem in ${IA_HOME}/credentials
 #    IA_AWS_REGION: region, default to us-west-2
 #    IA_SUBNET, the flat L2 sunet for this VPC, default to 10.0.0.0/18
 #    IA_IP_ADMIN, the admin node private ip for this VPC

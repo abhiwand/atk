@@ -37,7 +37,7 @@ export IA_EC2_URL=https://ec2.${IA_AWS_REGION}.amazonaws.com
 
 # Overwrite IA_EC2_USR to use a different IAM, must have admin right
 if [ -z "${IA_EC2_USR}" ];then
-    export IA_EC2_USR=gaoyi
+    export IA_EC2_USR=${IA_NAME}_Adm
 fi
 
 # SSH needs pem
@@ -52,7 +52,7 @@ function IA_get_aws_access_key()
     local type=$2
     local crd=${IA_CREDENTIALS}/${usr}.csv
 
-    if [ -f ${crd} ]; then
+    if [ -f ${crd} ] || [ -h ${crd} ]; then
             case ${type} in
                 aws-access-name)
                     echo `sed '2q;d' ${crd} | awk -F ',' '{print $1}'`
