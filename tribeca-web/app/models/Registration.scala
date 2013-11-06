@@ -33,7 +33,7 @@ import models.database.{Registration, Session}
 
 
 case class RegistrationFormMapping(name:String,organization_name: String, organization_phone: String,
-                        organization_email: String,experience:Int, role:String, whyParticipate:String,
+                        experience:Int, role:String, whyParticipate:String,
                         whatTools:String, terms: String, authResult: String)
 
 object Registrations{
@@ -42,7 +42,6 @@ object Registrations{
       "name" -> nonEmptyText,
       "organization_name" -> nonEmptyText,
       "organization_phone" -> nonEmptyText,
-      "organization_email" -> email,
       "experience" -> number,
       "role" ->nonEmptyText,
       "whyParticipate" -> nonEmptyText,

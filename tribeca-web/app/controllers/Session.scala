@@ -99,7 +99,7 @@ object Session extends Controller {
                         val u = Users.readByUid(validatedSession.get.uid)
                         //continue with the request
                         if (u._2.email.isEmpty || u._2.uid.get == 0) {
-                            Future.successful(Redirect("approvalpending"))
+                            Future.successful(Redirect("/"))
                         } else {
                             block(new AuthenticatedRequest(u, request))
                         }
