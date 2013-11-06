@@ -35,7 +35,7 @@ do
         shift 2
         ;;
     --dry-run)
-        dryrun=$1
+        dryrun="echo "
         shift 1
         ;;
     *)
@@ -56,7 +56,14 @@ fi
 _script=IntelAnalytics_setup_disks_node.sh
 for n in `cat ${nodesfile}`
 do
-    # format disks
-    scp -i ${pemfile} ${_script} ${n}:/tmp/${_script}
-    ssh -i ${pemfile} -t ${n} "sudo nohup /tmp/${_script} ${dryrun}";
+    ${dryrun} scp -i ${pemfile} ${_script} ${n}:/tmp/${_script}
+    sleep 2s
+    ${dryrun} ssh -i ${pemfile} -t ${n} "sudo bash -c '( ( nohup /tmp/${_script} &> /dev/null ) & )'";
+    sleep 2s
 done
+# show the running process
+for n in `cat ${nodesfile}`
+do
+    ${dryrun} ssh -i ${pemfile} -t ${n} "hostname; ps aux | grep mkfs";
+done
+echo All disks prepared ready!
