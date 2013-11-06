@@ -2,9 +2,12 @@
 # Description: Used for preparing hosts file for the target cluster
 source IntelAnalytics_cluster_env.sh
 
+outdir=${IA_CLUSTERS}
+
 function usage()
 {
-    echo "usage: --cluster-id <cid> [--cluster-size <csize>]"
+    echo "Inputs error!"
+    echo "Usage: $1 --cluster-id <cid> [--cluster-size <csize>] [--output-dir <outdir>]"
     exit 1
 }
 
@@ -21,13 +24,17 @@ do
         csize=$2
         shift 2
         ;;
+    --output-dir)
+        outdir=$2
+        shift 2
+        ;;
     *)
-        usage
+        usage $(basename $0)
         ;;
     esac
 done
 
-if [ -z "${cid}" ] || [ -z "${csize}" ]; then
+if [ -z "${cid}" ] || [ -z "${csize}" ] || [ ! -d "${outdir}" ]; then
     usage
 fi
-IA_generate_hosts_file ${cid} ${csize} ${IA_CLUSTERS}
+IA_generate_hosts_file ${cid} ${csize} ${outdir}
