@@ -43,7 +43,7 @@ object Login extends Controller {
         }
             response._1 match {
                 case StatusCodes.NOT_YET_REGISTERED => Ok(StatusCodes.getJsonStatusCode(StatusCodes.NOT_YET_REGISTERED))
-                case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.toString)
+                case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
                 case StatusCodes.REGISTRATION_APPROVAL_PENDING =>
                     Ok(StatusCodes.getJsonStatusCode(StatusCodes.REGISTRATION_APPROVAL_PENDING)).withCookies(Cookie("approvalPending", "true", Some(3600), "/", None, true, false))
                 case _ => BadRequest("Couldn't validate auth response data")
