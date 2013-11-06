@@ -22,42 +22,25 @@
 //////////////////////////////////////////////////////////////////////////////
 
 package models.database
+
 import play.api.db.slick.Config.driver.simple._
 
 /**
- * User entry.
+ * Session entry.
+ * @param Id
  * @param uid
- * @param givenName
- * @param familyName
- * @param email
- * @param registered
- * @param ipythonUrl
- * @param clusterId
+ * @param data
+ * @param timestamp
  */
-case class User(uid: Option[Long], givenName: String, familyName: String, email: String, registered: Boolean,
-                ipythonUrl: Option[String], clusterId: Option[String])
+case class SessionRow(Id:String, uid:Long, data:String, var timestamp:Long)
 
 /**
- * Table mapping for user_info table.
+ * Table mapping for Sessions table.
  */
-object Users extends Table[User]("user_info") {
-
-    def uid = column[Long]("uid", O.PrimaryKey, O.AutoInc)
-
-    def givenName = column[String]("given_name")
-
-    def familyName = column[String]("family_name")
-
-    def email = column[String]("email", O.NotNull)
-
-    def registered = column[Boolean]("registered")
-
-    def ipythonUrl = column[String]("ipythonUrl")
-
-    def clusterId = column[String]("cluster_id", O.Nullable)
-
-    def * = uid.? ~ givenName ~ familyName ~ email ~ registered ~ ipythonUrl.? ~ clusterId.? <>(User, User.unapply _)
+object SessionTable extends Table[SessionRow]("Sessions"){
+  def Id = column[String]("Id", O.PrimaryKey)
+  def uid = column[Long]("uid", O.NotNull)
+  def data = column[String]("data")
+  def timeStamp = column[Long]("timeStamp")
+  def * = Id ~ uid ~ data ~ timeStamp <> (SessionRow, SessionRow.unapply _)
 }
-
-
-
