@@ -12,7 +12,7 @@ IA_MAHOUT=${IA_ROOT}/mahout
 IA_GIRAPH=${IA_ROOT}/girap
 
 # nodes, use hadoo slaves opr hbase regionservers
-IA_NODES=${IA_HDOOP}/slaves
+IA_NODES=${IA_HDOOP}/conf/slaves
 CMMD=$1
 if [ -z "${CMMD}" ]
 then
@@ -33,19 +33,19 @@ do
 #               rsync -avzl -e ssh ${IA_ZKEEP}/conf/ ${node}:${IA_ZKEEP}/conf/
         elif [ "${CMMD}" == "--rmlogs" ]
         then
-                ssh ${node} "rm -rf ${IA_HADOOP}/logs/* ${IA_HBASE}/logs/*'
+                ssh ${node} "rm -rf ${IA_HDOOP}/logs/* ${IA_HBASE}/logs/*"
         elif [ "${CMMD}" == "--rmlogs-hadoop" ]
         then
-                ssh ${node} 'rm -rf ${IA_HADOOP}/logs/*'
+                ssh ${node} "rm -rf ${IA_HDOOP}/logs/*"
         elif [ "${CMMD}" == "--rmlogs-hbase" ]
         then
-                ssh ${node} 'rm  -rf ${IA_HBASE}/logs/*'
+                ssh ${node} "rm  -rf ${IA_HBASE}/logs/*"
         elif [ "${CMMD}" == "--rmlogs-zookeeper" ]
         then
-                ssh ${node} 'rm ${IA_ZKEEP}/logs/*'
+                ssh ${node} "rm ${IA_ZKEEP}/logs/*"
         elif [ "${CMMD}" == "--jpsls" ]
         then
-                ssh ${node} 'jps -l | grep -v jps'
+                ssh ${node} "jps -l | grep -v jps"
         fi
 done
 
