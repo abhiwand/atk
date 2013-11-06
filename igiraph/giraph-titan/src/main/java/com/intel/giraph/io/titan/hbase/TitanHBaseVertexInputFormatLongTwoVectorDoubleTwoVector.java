@@ -22,11 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN;
-
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
@@ -44,6 +39,8 @@ import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -57,17 +54,30 @@ import java.nio.charset.Charset;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+
 /**
- * TitanHBaseVertexInputFormatLongDoubleFloat which input vertex with Long
- * vertex id Double vector as vertex value and Double edge value
- *
+ * TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector loads vertex
+ * with <code>long</code> vertex ID's,
+ * <code>TwoVector</code> vertex values: one for prior and
+ * one for posterior,
+ * and <code>DoubleTwoVector</code> edge weights.
  */
 public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
         TitanHBaseVertexInputFormat<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> {
 
-    /** the edge store name used by Titan */
+    /**
+     * the edge store name used by Titan
+     */
     static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
-    /** LOG class */
+    /**
+     * the vertex format type
+     */
+    static final String FORMAT_TYPE = "LongTwoVectorDoubleTwoVector";
+    /**
+     * LOG class
+     */
     private static final Logger LOG = Logger
             .getLogger(TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector.class);
 
@@ -88,6 +98,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
     @Override
     public void setConf(
             ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> conf) {
+        sanityCheckInputParameters(conf);
         conf.set(TableInputFormat.INPUT_TABLE, GIRAPH_TITAN_STORAGE_TABLENAME.get(conf));
         conf.set(HConstants.ZOOKEEPER_QUORUM, GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf));
         conf.set(HConstants.ZOOKEEPER_CLIENT_PORT, GIRAPH_TITAN_STORAGE_PORT.get(conf));
@@ -119,9 +130,78 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
     }
 
     /**
+     * check whether input parameter is valid
+     *
+     * @param conf : Giraph configuration
+     */
+    public void sanityCheckInputParameters(ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> conf) {
+        String tableName =  GIRAPH_TITAN_STORAGE_TABLENAME.get(conf);
+
+        if (GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf).equals("")) {
+            throw new IllegalArgumentException("Please configure Titan/HBase storage hostname by -D" +
+                    GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + ". Otherwise no vertex will be read from Titan.");
+        }
+
+        if (tableName.equals("")) {
+            throw new IllegalArgumentException("Please configure Titan/HBase Table name by -D" +
+                    GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + ". Otherwise no vertex will be read from Titan.");
+        }
+        else {
+            try{
+                HBaseConfiguration config = new HBaseConfiguration();
+                HBaseAdmin hbaseAdmin = new HBaseAdmin(config);
+                if (!hbaseAdmin.tableExists(tableName)) {
+                    throw new IllegalArgumentException("HBase table " +  tableName +
+                            " does not exist! Please double check your configuration.");
+                }
+
+                if (!hbaseAdmin.isTableAvailable(tableName)) {
+                    throw new IllegalArgumentException("HBase table " +  tableName +
+                            " is not available! Please double check your configuration.");
+                }
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Failed to connect to HBase table " + tableName);
+            }
+        }
+
+
+        if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)){
+            LOG.info(GIRAPH_TITAN_STORAGE_PORT.getKey() + " is configured as default value. " +
+                    "Ensure you are using port " + GIRAPH_TITAN_STORAGE_PORT.get(conf));
+
+        }
+
+        if (INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).equals("")) {
+            LOG.info("No input vertex property list specified. Ensure your " +
+                    "InputFormat does not require one.");
+        }
+
+        if (INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).equals("")) {
+            LOG.info("No input edge property list specified. Ensure your " +
+                    "InputFormat does not require one.");
+        }
+
+        if (INPUT_EDGE_LABEL_LIST.get(conf).equals("")) {
+            LOG.info("No input edge label specified. Ensure your " +
+                    "InputFormat does not require one.");
+        }
+
+        if (VERTEX_TYPE_PROPERTY_KEY.get(conf).equals("")) {
+            LOG.info("No vertex type property specified. Ensure your " +
+                    "InputFormat does not require one.");
+        }
+
+        if (EDGE_TYPE_PROPERTY_KEY.get(conf).equals("")) {
+            LOG.info("No edge type property specified. Ensure your " +
+                    "InputFormat does not require one.");
+        }
+
+    }
+
+    /**
      * create TitanHBaseVertexReader
      *
-     * @param split : inputsplits from TableInputFormat
+     * @param split   : inputsplits from TableInputFormat
      * @param context : task context
      * @return VertexReader
      * @throws IOException
@@ -139,21 +219,31 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
      */
     public static class TitanHBaseVertexReader extends
             HBaseVertexReader<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> {
-        /** reader to parse Titan graph */
+        /**
+         * reader to parse Titan graph
+         */
         private TitanHBaseGraphReader graphReader;
-        /** Giraph vertex */
+        /**
+         * Giraph vertex
+         */
         private Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> vertex;
-        /** task context */
+        /**
+         * task context
+         */
         private final TaskAttemptContext context;
-        /** The length of vertex value vector */
+        /**
+         * The length of vertex value vector
+         */
         private int cardinality = 0;
-        /** Data vector */
+        /**
+         * Data vector
+         */
         private final Vector vector = null;
 
         /**
          * TitanHBaseVertexReader constructor
          *
-         * @param split Input Split
+         * @param split   Input Split
          * @param context Task context
          * @throws IOException
          */
@@ -165,7 +255,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          * initialize TitanHBaseVertexReader
          *
          * @param inputSplit input splits
-         * @param context task context
+         * @param context    task context
          */
         @Override
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
@@ -187,12 +277,21 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
         public boolean nextVertex() throws IOException, InterruptedException {
             if (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> temp = graphReader
-                        .readGiraphVertexLoaderLongTwoVectorDoubleTwoVector(getConf(), getRecordReader()
+                        .readGiraphVertex(FORMAT_TYPE, getConf(), getRecordReader()
                                 .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
                                 .get(EDGE_STORE_FAMILY));
                 if (null != temp) {
                     vertex = temp;
                     return true;
+                } else if (getRecordReader().nextKeyValue()) {
+                    final Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> temp1 = graphReader
+                            .readGiraphVertex(FORMAT_TYPE, getConf(), getRecordReader()
+                                    .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
+                                    .get(EDGE_STORE_FAMILY));
+                    if (null != temp1) {
+                        vertex = temp1;
+                        return true;
+                    }
                 }
             }
             return false;
@@ -208,7 +307,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          */
         @Override
         public Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> getCurrentVertex()
-            throws IOException, InterruptedException {
+                throws IOException, InterruptedException {
             return vertex;
         }
 

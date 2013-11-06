@@ -1,53 +1,34 @@
 package com.intel.giraph.io.titan.hbase;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
-
+import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
+import com.intel.giraph.io.titan.TitanTestGraph;
+import com.thinkaurelius.titan.core.*;
+import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
+import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
+import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
+import com.tinkerpop.blueprints.Direction;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.JsonLongDoubleFloatDoubleVertexOutputFormat;
 import org.apache.giraph.utils.InternalVertexRunner;
-
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleFloat;
-import com.intel.giraph.io.titan.TitanTestGraph;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-
+import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.commons.configuration.BaseConfiguration;
-
-import com.thinkaurelius.titan.diskstorage.Backend;
-import com.thinkaurelius.titan.core.*;
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.transaction.TransactionConfig;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.tinkerpop.blueprints.Direction;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.Ignore;
 
 import java.io.IOException;
 import java.util.Iterator;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.After;
-import org.junit.Assert;
-
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-
-
 
 
 /**
@@ -55,7 +36,6 @@ import static junit.framework.Assert.assertTrue;
  * TitanHBaseVertexInputFormat. No special preparation needed before the test.
  */
 public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
-    static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
     public TitanTestGraph graph;
     public StandardTitanTx tx;
     protected String[] EXPECT_JSON_OUTPUT;
@@ -73,9 +53,10 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
         GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
         GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
         GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
-        VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "age");
-        EDGE_PROPERTY_KEY_LIST.set(giraphConf, "time");
-        EDGE_LABEL_LIST.set(giraphConf, "battled");
+        GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
+        INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "age");
+        INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "time");
+        INPUT_EDGE_LABEL_LIST.set(giraphConf, "battled");
 
         HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
         if (hbaseAdmin.isTableAvailable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf))) {
@@ -87,31 +68,27 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
                 giraphConf);
 
         BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
-                "giraph.titan.input");
+                GIRAPH_TITAN.get(giraphConf));
         GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(baseConfig);
         graph = new TitanTestGraph(titanConfig);
-        tx = graph.newTransaction(new TransactionConfig(titanConfig, false));
-
     }
 
+    //@Ignore
     @Test
     public void TitanHBaseVertexInputLongDoubleFloatTest() throws Exception {
+        graph.makeKey("age").dataType(String.class).make();
+        graph.makeKey("time").dataType(String.class).make();
+        graph.makeLabel("battled").make();
 
-        TitanKey age = tx.makeType().name("age").unique(Direction.OUT).dataType(String.class).makePropertyKey();
-        TitanKey time = tx.makeType().name("time").dataType(String.class).unique(Direction.OUT)
-                .makePropertyKey();
-        TitanLabel battled = tx.makeType().name("battled").makeEdgeLabel();
+        com.tinkerpop.blueprints.Vertex n1 = graph.addVertex(null);
+        n1.setProperty("age", "1000");
+        com.tinkerpop.blueprints.Vertex n2 = graph.addVertex(null);
+        n2.setProperty("age", "2000");
+        n1.addEdge("battled", n2).setProperty("time", "333");
 
-        TitanVertex n1 = tx.addVertex();
-        TitanProperty p1 = n1.addProperty(age, "1000");
-        TitanVertex n2 = tx.addVertex();
-        TitanProperty p2 = n2.addProperty(age, "2000");
-        TitanEdge e1 = n1.addEdge(battled, n2);
-        e1.setProperty(time, "333");
+        graph.commit();
 
-        tx.commit();
-
-        EXPECT_JSON_OUTPUT = new String[] { "[8,2000,[]]", "[4,1000,[[8,333]]]" };
+        EXPECT_JSON_OUTPUT = new String[]{"[8,2000,[]]", "[4,1000,[[8,333]]]"};
 
         Iterable<String> results = InternalVertexRunner.run(conf, new String[0], new String[0]);
         Assert.assertNotNull(results);
@@ -135,9 +112,6 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
     }
 
     public void close() {
-        if (null != tx && tx.isOpen())
-            tx.rollback();
-
         if (null != graph)
             graph.shutdown();
     }
@@ -151,7 +125,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
 
         @Override
         public void compute(Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
-                Iterable<DoubleWritable> messages) throws IOException {
+                            Iterable<DoubleWritable> messages) throws IOException {
             vertex.voteToHalt();
         }
     }

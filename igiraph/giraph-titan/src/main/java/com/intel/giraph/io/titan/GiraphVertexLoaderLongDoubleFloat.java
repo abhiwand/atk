@@ -22,9 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
 
 import com.google.common.base.Preconditions;
 import org.apache.giraph.edge.Edge;
@@ -65,12 +65,6 @@ public class GiraphVertexLoaderLongDoubleFloat {
     private long vertexId = 0;
     /** Giraph Vertex */
     private Vertex<LongWritable, DoubleWritable, FloatWritable> vertex = null;
-    /** Vertex properties to filter */
-    private String[] vertexPropertyKeyList;
-    /** Edge properties to filter */
-    private String[] edgePropertyKeyList;
-    /** Edge labels to filter */
-    private String[] edgeLabelList;
     /** HashSet of configured vertex properties */
     private Set<String> vertexPropertyKeyValues = null;
     /** HashSet of configured edge properties */
@@ -82,26 +76,22 @@ public class GiraphVertexLoaderLongDoubleFloat {
      * GiraphVertexLoaderLongDoubleFloat constructor
      *
      * @param conf : Giraph configuration
-     * @param key input from HBase
-     */
-    public GiraphVertexLoaderLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf,
-            final StaticBuffer key) {
-        this(conf, IDHandler.getKeyID(key));
-    }
-
-    /**
-     * GiraphVertexLoaderLongDoubleFloat constructor
-     *
-     * @param conf : Giraph configuration
      * @param id vertex id
      */
     public GiraphVertexLoaderLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf, final long id) {
+        /** Vertex properties to filter */
+        final String[] vertexPropertyKeyList;
+        /** Edge properties to filter */
+        final String[] edgePropertyKeyList;
+        /** Edge labels to filter */
+        final String[] edgeLabelList;
+
         vertex = conf.createVertex();
         vertex.initialize(new LongWritable(id), new DoubleWritable(0));
         vertexId = id;
-        vertexPropertyKeyList = VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgePropertyKeyList = EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgeLabelList = EDGE_LABEL_LIST.get(conf).split(",");
+        vertexPropertyKeyList = INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
+        edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
+        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
         vertexPropertyKeyValues = new HashSet<String>(Arrays.asList(vertexPropertyKeyList));
         edgePropertyKeyValues = new HashSet<String>(Arrays.asList(edgePropertyKeyList));
         edgeLabelValues = new HashSet<String>(Arrays.asList(edgeLabelList));
@@ -197,7 +187,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
         @Override
         public void setOtherVertexID(final long vertexId) {
             if (vertexId < 0) {
-                LOG.error("negtive vertexId");
+                LOG.error("negative vertexId");
             }
             this.otherVertexID = vertexId;
         }
@@ -262,7 +252,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
                         }
                     }
                 } else {
-                    LOG.error("negtive Edge ID.");
+                    LOG.error("negative Edge ID.");
                 }
 
             }

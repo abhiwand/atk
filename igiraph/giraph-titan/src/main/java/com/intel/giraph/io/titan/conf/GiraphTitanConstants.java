@@ -31,41 +31,141 @@ import org.apache.giraph.conf.StrConfOption;
 
 public class GiraphTitanConstants {
 
-    /** Titan backend type . */
+    /**
+     * Titan backend type .
+     */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_BACKEND = new StrConfOption(
-            "giraph.titan.input.storage.backend", "hbase", "Titan backend - required");
-    /** Titan/Hbase hostname . */
+            "giraph.titan.input.storage.backend", "", "Titan backend - required");
+    /**
+     * Titan Storage hostname .
+     */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_HOSTNAME = new StrConfOption(
-            "giraph.titan.input.storage.hostname", "localhost", "Titan/Hbase hostname - required");
-    /** Titan/Hbase table name . */
+            "giraph.titan.input.storage.hostname", "", "Titan/Hbase hostname - required");
+    /**
+     * Titan Stroage table name .
+     */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_TABLENAME = new StrConfOption(
-            "giraph.titan.input.storage.tablename", "titan", "Titan/Hbase tablename - required");
-    /** port where to contact Titan/Hbase. */
+            "giraph.titan.input.storage.tablename", "", "Titan/Hbase tablename - required");
+    /**
+     * port where to contact Titan storage.
+     */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_PORT = new StrConfOption(
-            "giraph.titan.input.storage.port", "2181", "port where to contact Titan/hbase.");
-    /** the configuration prefix to stripped for Titan */
+            "giraph.titan.input.storage.port", "2181", "port where to contact Titan/hbase");
+    /**
+     * Titan storage connection time out.
+     */
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_CONNECTION_TIMEOUT = new StrConfOption(
+            "giraph.titan.input.storage.connection-timeout", "10001", "Titan/hbase storage time out");
+
+    /**
+     * Titan storage batch loading.
+     */
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_BATCH_LOADING = new StrConfOption(
+            "giraph.titan.input.storage.batch-loading", "true", "Titan storage batch-loading");
+    /**
+     * Titan Storage attempt-wait.
+     */
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_ATTEMPT_WAIT = new StrConfOption(
+            "giraph.titan.input.storage.attempt-wait", "750", "Titan storage attempt wait");
+    /**
+     * Titan Storage idauthority-wait-time.
+     */
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_IDAUTORITY_WAIT_TIME = new StrConfOption(
+            "giraph.titan.input.storage.idauthority-wait-time", "3000", "Titan storage idauthority wait time");
+    /**
+     * Titan Storage write attempts
+     */
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_WRITE_ATTEMPTS = new StrConfOption(
+            "giraph.titan.input.storage.write-attempts", "10", "Titan storage write attempts");
+    /**
+     * Titan Storage lock wait time.
+     */
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_LOCK_WAIT_TIME = new StrConfOption(
+            "giraph.titan.input.storage.lock-wait-time", "500", "Titan storage lock wait time");
+    /**
+     * Titan Storage lock expiry time
+     */
+    public static final StrConfOption GIRAPH_TITAN_STORAGE_LOCK_EXPIRY_TIME = new StrConfOption(
+            "giraph.titan.input.storage.locak-expiry-time", "600000", "Titan storage lock expiry time");
+    /**
+     * Titan storage ids block-size.
+     */
+    public static final StrConfOption GIRAPH_TITAN_IDS_BLOCK_SIZE = new StrConfOption(
+            "giraph.titan.input.storage.ids.block-size", "50000", "Titan ids block size");
+    /**
+     * Titan Storage ids renew-timeout.
+     */
+    public static final StrConfOption GIRAPH_TITAN_IDS_RENEW_TIMEOUT = new StrConfOption(
+            "giraph.titan.input.ids.renew-timeout", "600000", "Titan ids renew timeout");
+    /**
+     * Titan Storage ids partition.
+     */
+    public static final StrConfOption GIRAPH_TITAN_IDS_PARTITION = new StrConfOption(
+            "giraph.titan.input.ids.partition", "false", "Titan ids partition");
+    /**
+     * Titan Storage ids num-partition
+     */
+    public static final StrConfOption GIRAPH_TITAN_IDS_NUM_PARTITIONS = new StrConfOption(
+            "giraph.titan.input.ids.num-partitions", "100", "Titan ids num partitions");
+    /**
+     * the configuration prefix to stripped for Titan
+     */
     public static final StrConfOption GIRAPH_TITAN = new StrConfOption("giraph.titan", "giraph.titan.input",
             "Giraph/Titan prefix");
-    /** Storage backend */
+    /**
+     * Storage backend
+     */
     public static final StrConfOption GIRAPH_TITAN_STORAGE_READ_ONLY = new StrConfOption(
             "giraph.titan.input.storage.read-only", "false", "read only or not");
-    /** backend autotype */
+    /**
+     * backend autotype
+     */
     public static final StrConfOption GIRAPH_TITAN_AUTOTYPE = new StrConfOption(
             "giraph.titan.input.autotype", "none", "autotype");
-    /** the list of vertex properties to filter during data loading from Titan */
-    public static final StrConfOption VERTEX_PROPERTY_KEY_LIST = new StrConfOption(
-            "vertex.property.key.list", "age", "the vertex property keys which Giraph needs");
-    /** the list of edge properties to filter during data loading from Titan */
-    public static final StrConfOption EDGE_PROPERTY_KEY_LIST = new StrConfOption("edge.property.key.list",
-            "battled", "the edge property keys which Giraph needs");
-    /** the list of edge labels to filter during data loading from titan */
-    public static final StrConfOption EDGE_LABEL_LIST = new StrConfOption("edge.label.list", "time",
+    /**
+     * the list of vertex properties to filter during data loading from Titan
+     */
+    public static final StrConfOption INPUT_VERTEX_PROPERTY_KEY_LIST = new StrConfOption(
+            "input.vertex.property.key.list", "", "the vertex property keys which Giraph reads from Titan");
+    /**
+     * the list of edge properties to filter during data loading from Titan
+     */
+    public static final StrConfOption INPUT_EDGE_PROPERTY_KEY_LIST = new StrConfOption("input.edge.property.key.list",
+            "", "the edge property keys which Giraph needs");
+    /**
+     * the list of edge labels to filter during data loading from titan
+     */
+    public static final StrConfOption INPUT_EDGE_LABEL_LIST = new StrConfOption("input.edge.label.list", "",
             "the edge labels which Giraph needs");
+    /**
+     * the list of vertex properties to write results back to Titan
+     */
+    public static final StrConfOption OUTPUT_VERTEX_PROPERTY_KEY_LIST = new StrConfOption(
+            "output.vertex.property.key.list", "", "the vertex property keys which Giraph writes back to Titan");
+    /**
+     * the property key for vertex type
+     */
+    public static final StrConfOption VERTEX_TYPE_PROPERTY_KEY = new StrConfOption(
+            "vertex.type.property.key", "", "the property key for vertex type");
+    /**
+     * the property key for edge type
+     */
+    public static final StrConfOption EDGE_TYPE_PROPERTY_KEY = new StrConfOption(
+            "edge.type.property.key", "", "the property key for edge type");
+    /**
+     * whether to output bias for each vertex
+     * when bias is enabled, the last property name in the OUTPUT_VERTEX_PROPERTY_KEY_LIST
+     * is for bias
+     */
+    public static final StrConfOption OUTPUT_VERTEX_BIAS = new StrConfOption(
+            "output.vertex.bias", "false", "whether to output vertex bias");
 
     /**
      * prevent instantiation of utility class
      */
+    /*
     private GiraphTitanConstants() {
 
     }
+    */
 }

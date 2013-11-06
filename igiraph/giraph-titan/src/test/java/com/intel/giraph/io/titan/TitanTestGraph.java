@@ -15,10 +15,7 @@ public class TitanTestGraph extends StandardTitanGraph {
 
     public TitanTestGraph(final GraphDatabaseConfiguration configuration) {
         super(configuration);
-    }
-
-    public Entry writeEdge(InternalRelation relation, int pos, StandardTitanTx tx) {
-        return super.edgeSerializer.writeRelation(relation, pos, true, tx);
+        LOG.info("create TitanTestGraph");
     }
 
     @Override

@@ -1,67 +1,55 @@
 package com.intel.giraph.io.titan.hbase;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
-
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation;
+import com.intel.giraph.io.formats.JsonLongIDVectorValueOutputFormat;
+import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
+import com.intel.giraph.io.titan.TitanTestGraph;
+import com.intel.mahout.math.DoubleWithTwoVectorWritable;
+import com.intel.mahout.math.TwoVectorWritable;
+import com.thinkaurelius.titan.core.*;
+import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
+import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
+import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.util.ElementHelper;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
-
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector;
-import com.intel.giraph.io.titan.TitanTestGraph;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.formats.JsonLongIDVectorValueOutputFormat;
-import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation;
-
-import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithTwoVectorWritable;
-
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.commons.configuration.BaseConfiguration;
-
-import com.thinkaurelius.titan.diskstorage.Backend;
-import com.thinkaurelius.titan.core.*;
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.transaction.TransactionConfig;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.tinkerpop.blueprints.Direction;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-
-import org.json.JSONException;
+import org.apache.hadoop.io.LongWritable;
 import org.json.JSONArray;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Iterator;
-
-import org.junit.Before;
-import org.junit.Test;
+import org.json.JSONException;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.Ignore;
 
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
+
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 
 /**
+ * Test TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector
+ * which loads vertex with <code>long</code> vertex ID's,
+ * <code>TwoVector</code> vertex values: one for prior and
+ * one for posterior,
+ * and <code>DoubleTwoVector</code> edge weights.
+ * <p/>
  * This test firstly load a graph to Titan/HBase, then read out the graph from
  * TitanHBaseVertexInputFormat. Then run algorithm with input data.
  */
+
 public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
-    static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
-    public TitanTestGraph graph;
-    public StandardTitanTx tx;
-    protected String[] EXPECT_JSON_OUTPUT;
+    public TitanTestGraph graph = null;
+    public TitanTransaction tx = null;
     private GiraphConfiguration giraphConf;
     private ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> conf;
 
@@ -79,9 +67,10 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
         GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
         GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
         GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
-        VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "red,blue,yellow");
-        EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
-        EDGE_LABEL_LIST.set(giraphConf, "friend");
+        GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
+        INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "red,blue,yellow");
+        INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
+        INPUT_EDGE_LABEL_LIST.set(giraphConf, "friend");
 
         HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
         if (hbaseAdmin.isTableAvailable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf))) {
@@ -93,29 +82,31 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
                 giraphConf);
 
         BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
-                "giraph.titan.input");
+                GIRAPH_TITAN.get(giraphConf));
         GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(baseConfig);
         graph = new TitanTestGraph(titanConfig);
-        tx = graph.newTransaction(new TransactionConfig(titanConfig, false));
+        tx = graph.newTransaction();
 
     }
 
+    //@Ignore
     @Test
-    public void TitanHBaseVertexInputLongDoubleFloatTest() throws Exception {
-        // a small four vertex graph
-        String[] graph = new String[] { "[0,[1,0.1,0.1],[[1,1],[3,3]]]", "[1,[0.2,2,2],[[0,1],[2,2],[3,1]]]",
-                "[2,[0.3,0.3,3],[[1,2],[4,4]]]", "[3,[0.4,4,0.4],[[0,3],[1,1],[4,4]]]",
-                "[4,[5,5,0.5],[[3,4],[2,4]]]" };
+    public void TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest() throws Exception {
+        /* a small four vertex graph
+        String[] graph = new String[] {
+            "[0,[1,0.1,0.1],[[1,1],[3,3]]]",
+            "[1,[0.2,2,2],[[0,1],[2,2],[3,1]]]",
+            "[2,[0.3,0.3,3],[[1,2],[4,4]]]",
+            "[3,[0.4,4,0.4],[[0,3],[1,1],[4,4]]]",
+            "[4,[5,5,0.5],[[3,4],[2,4]]]"
+        };
+         */
 
-        TitanKey red = tx.makeType().name("red").unique(Direction.OUT).dataType(String.class)
-                .makePropertyKey();
-        TitanKey blue = tx.makeType().name("blue").unique(Direction.OUT).dataType(String.class)
-                .makePropertyKey();
-        TitanKey yellow = tx.makeType().name("yellow").unique(Direction.OUT).dataType(String.class)
-                .makePropertyKey();
-        TitanKey weight = tx.makeType().name("weight").dataType(String.class).unique(Direction.OUT)
-                .makePropertyKey();
-        TitanLabel friend = tx.makeType().name("friend").makeEdgeLabel();
+        TitanKey red = tx.makeKey("red").dataType(String.class).make();
+        TitanKey blue = tx.makeKey("blue").dataType(String.class).make();
+        TitanKey yellow = tx.makeKey("yellow").dataType(String.class).make();
+        TitanKey weight = tx.makeKey("weight").dataType(String.class).make();
+        TitanLabel friend = tx.makeLabel("friend").make();
 
         TitanVertex n0 = tx.addVertex();
         n0.addProperty(red, "1");
@@ -165,6 +156,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
 
         tx.commit();
 
+
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0], new String[0]);
         Assert.assertNotNull(results);
         Iterator<String> result = results.iterator();
@@ -194,6 +186,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
         if (null != tx && tx.isOpen())
             tx.rollback();
 
+
         if (null != graph)
             graph.shutdown();
     }
@@ -204,14 +197,12 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
             try {
                 JSONArray jsonVertex = new JSONArray(line);
                 if (jsonVertex.length() != 2) {
-                    System.err.println("Wrong vertex output format!");
-                    System.exit(-1);
+                    throw new IllegalArgumentException("Wrong vertex output format!");
                 }
                 long id = jsonVertex.getLong(0);
                 JSONArray valueArray = jsonVertex.getJSONArray(1);
                 if (valueArray.length() != 3) {
-                    System.err.println("Wrong vertex output value format!");
-                    System.exit(-1);
+                    throw new IllegalArgumentException("Wrong vertex output value format!");
                 }
                 Double[] values = new Double[3];
                 for (int i = 0; i < 3; i++) {
