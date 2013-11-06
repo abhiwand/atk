@@ -22,12 +22,6 @@ except:
 
 SUPPORTED_CLEAN_STRATEGIES = ['any', 'all']
 
-def validate_args(cmd_line_args):
-    errors=[]
-    if cmd_line_args.feature_to_clean and cmd_line_args.should_clean_any:
-        errors.append("Please specify either -f or -a")
-    return errors
-
 def main(argv):
     parser = ArgumentParser(description='cleans big datasets')
     parser.add_argument('-f', '--feature', dest='feature_to_clean', help='the feature to clean based on missing values')
@@ -39,10 +33,6 @@ def main(argv):
     cmd_line_args = parser.parse_args()
     print cmd_line_args
 
-    errors = validate_args(cmd_line_args)
-    if len(errors)>0:
-        raise Exception(errors) 
-    
     etl_schema = ETLSchema()
     etl_schema.load_schema(cmd_line_args.input)
     etl_schema.save_schema(cmd_line_args.output)
@@ -51,12 +41,12 @@ def main(argv):
     feature_types_as_str = ",".join(etl_schema.feature_types)
     
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        if not hbase_client.is_table_readable(cmd_line_args.input):
-            raise Exception("%s is not readable. Please make sure the table exists and is enabled.")
+        if not hbase_client.table_exists(cmd_line_args.input):
+            raise Exception("%s does not exist. Please make sure the table exists and is enabled.")
 
         #create if output table doesn't exist, if the output is the same as the input, the input table will get
         #updated as the same keys are used while writing the output
-        if not hbase_client.is_table_readable(cmd_line_args.output):          
+        if not hbase_client.table_exists(cmd_line_args.output):          
             hbase_client.drop_create_table(cmd_line_args.output , [CONFIG_PARAMS['etl-column-family']])
         
     if cmd_line_args.feature_to_clean and cmd_line_args.feature_to_clean not in etl_schema.feature_names:
