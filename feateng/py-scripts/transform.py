@@ -70,6 +70,9 @@ def main(argv):
                 feature_type = etl_schema.feature_types[i] 
                 print "%s:%s"%(feature_name,feature_type)
         sys.exit(1)
+        
+    if (cmd_line_args.input == cmd_line_args.output) and (not cmd_line_args.keep_original_feature):#in-place transformation AND don't keep source
+        raise Exception("For in-place transformations the source/original feature has to be kept")
    
     errors = validate_args(cmd_line_args)
     if len(errors)>0:
