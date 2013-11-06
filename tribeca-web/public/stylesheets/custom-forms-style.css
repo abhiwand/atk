@@ -46,19 +46,19 @@ h1#logo img{ width:100%; }
 /************************ end of header bar styles *************/
 
 /************** form container styles*********************/
-.DA_holder{ width:80%; margin:16px 10%; padding:0;  display: inline-block;}
+.DA_holder{ width:80%; margin:16px 8.5%; padding:0;  display: inline-block;}
 
 .DA_radio_holder, 
 .DA_check_holder, 
 .DA_select_holder{ position:relative;}
 
-.DA_check_holder, .DA_radio_holder{ margin:16px 10%;}
+.DA_check_holder, .DA_radio_holder{ margin:16px 8.5%;}
 .DA_radio_holder{ padding:0px 0 0 0;}
 /************** end of form container styles*********************/
 
 /********************* text fields frames styles **********************/
 
-.DA_custom_form{ margin:0 auto 30px auto; padding-bottom:15px; max-width:700px; padding:0 10px; position: relative; z-index: 1}
+.DA_custom_form{ margin:0 auto 30px auto; padding-bottom:15px; max-width:700px; padding:0 0px; position: relative; z-index: 1}
 .DA_custom_form .DA_field_container{ display: block; width:100%; height:45px; padding:10px 0;  border:solid 1px #ccc; }
 .DA_custom_form .DA_field_container{ -webkit-border-radius: 3px; border-radius: 5px; }
 .DA_custom_form .DA_field_container{ position: relative;}
@@ -251,7 +251,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
     width: 80%;
 }
 .DA_custom_form .sbSelector:link, .sbSelector:visited, .sbSelector:hover{
-    color: #c6c6c6;
+    color: #676F7A;
     outline: none;
     text-decoration: none;
 }
@@ -326,7 +326,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 
 /*************************************** HORIZONTAL FORM STYLE *****************************************/
 
-.DA_custom_form .horizontal{  width:80.8%; float: left; display: inline; margin:5px 10%;}
+.DA_custom_form .horizontal{  width:80.8%; float: left; display: inline; margin:5px 8.5%;}
 .DA_custom_form .horizontal label{ float: left; display: inline; width:35%; padding:0; line-height: 45px}
 .DA_custom_form .horizontal  label.fl{ width:80%; line-height: 23px; padding-bottom:8px; }
 .DA_custom_form .horizontal label.error{ display: block; float: none; width:auto; line-height: 22px; padding:0 5px;}
