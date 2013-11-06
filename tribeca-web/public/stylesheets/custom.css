@@ -482,6 +482,7 @@ button.close {
 .intel-logo-footer {
     height: 29px;
     padding-left: 15px;
+    padding-right: 15px;
 }
 
 .imglead {
@@ -523,3 +524,6 @@ button.close {
     height: 35px;
 }
 
+#footer-front a {
+    padding-left: 15px;
+}
