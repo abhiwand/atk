@@ -24,11 +24,11 @@
 package models.database
 
 /**
- * Output from log in stored procedure
- * @param code error code returned from the procedure
- * @param message error message returned from the procedure
- * @param loginSuccessful indicate whether log in is successful
- * @param userId current user's id in the system
+ * Output from calling log in stored procedure.
+ * @param code error code returned from the procedure.
+ * @param message error message returned from the procedure.
+ * @param loginSuccessful indicate whether log in is successful.
+ * @param userId current user's id in the system.
  */
 class LoginOutput(code : Int, message : String, loginSuccessful : Int, userId : Long) extends ProcedureOutput{
     val uid = userId

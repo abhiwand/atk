@@ -1,24 +1,43 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2013 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package models
 
 import models.database._
 import play.api.Play.current
 import play.api.db.slick.Config.driver.simple._
-import play.api.db.slick.DB
-import scala.slick.session.Session
 
-import slick.driver.ExtendedProfile
-import play.api.db.slick.Profile
 import play.api.db.slick.DB
 
-import java.sql.{ResultSet, Types, CallableStatement}
+import java.sql.{ResultSet, Types}
 
 object Users {
 
-    def register(user: User, registrationForm: RegistrationFormMapping, statementGenerator : StatementGenerator): RegistrationOutput = DB.withSession {
+    def register(user: User, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator): RegistrationOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
-            var callString =  "{call sp_register(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
-            var cStmt = statementGenerator.getCallStatement(session, callString)
+            val callString = "{call sp_register(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+            val cStmt = statementGenerator.getCallStatement(session, callString)
             cStmt.setString("myName", registrationForm.name)
             cStmt.setString("given_name", user.givenName)
             cStmt.setString("family_name", user.familyName)
@@ -40,7 +59,7 @@ object Users {
             val errorMessage = cStmt.getString("errorMessage")
 
             var uid = 0
-            if(hadResults) {
+            if (hadResults) {
                 uid = getUidFromResultSet(cStmt.getResultSet())
             }
 
@@ -54,11 +73,11 @@ object Users {
         return uid
     }
 
-    def login(email:String, statementGenerator : StatementGenerator) : LoginOutput   = DB.withSession {
+    def login(email: String, statementGenerator: StatementGenerator): LoginOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
-            var callString =  "{call sp_login(?, ?, ?, ?)}";
-            var cStmt = statementGenerator.getCallStatement(session, callString)
+            val callString = "{call sp_login(?, ?, ?, ?)}";
+            val cStmt = statementGenerator.getCallStatement(session, callString)
             cStmt.setString("email", email)
             cStmt.registerOutParameter("loginSuccessful", Types.BIGINT)
             cStmt.registerOutParameter("errorCode", Types.BIGINT)
@@ -70,7 +89,7 @@ object Users {
             val errorMessage = cStmt.getString("errorMessage")
 
             var uid = 0
-            if(hadResults) {
+            if (hadResults) {
                 uid = getUidFromResultSet(cStmt.getResultSet())
             }
 
@@ -78,48 +97,55 @@ object Users {
             return output
     }
 
-  def getByUid(uid: Long): Query[(database.Users.type , database.WhiteLists.type),(User,WhiteList)] = DB.withSession{implicit session: scala.slick.session.Session =>
-    return for { (u,w) <- database.Users leftJoin database.WhiteLists on (_.uid === _.uid) if u.uid === uid} yield (u,w)
-  }
-
-  def getByEmail(email:String): Query[database.Users.type, database.User]  = DB.withSession{implicit session: scala.slick.session.Session =>
-    for{ u <- database.Users if u.email === email }yield u
-  }
-
-  def anonymousUser(): User = {
-    User(Some(0),"","","",false,None,None)
-  }
-
-  def exists(email:String): Boolean = DB.withSession{implicit session: scala.slick.session.Session =>
-    val usersResult = readByEmail(email)
-    if(usersResult != null && usersResult.uid.get > 0){
-      true
-    }else{
-      false
+    def getByUid(uid: Long): Query[(database.Users.type, database.WhiteLists.type), (User, WhiteList)] = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            return for {(u, w) <- database.Users leftJoin database.WhiteLists on (_.uid === _.uid) if u.uid === uid} yield (u, w)
     }
-  }
-  //crud
-  def create(user:database.User): Long = DB.withSession{implicit session: scala.slick.session.Session =>
-    database.Users.insert(user)
-  }
 
-  def readByUid(uid: Long): (database.User, database.WhiteList) = DB.withSession{implicit session: scala.slick.session.Session =>
-    val users = getByUid(uid).list
-    if(users.length > 0){
-       users.last
-    }else{
-      null
+    def getByEmail(email: String): Query[database.Users.type, database.User] = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            for {u <- database.Users if u.email === email} yield u
     }
-  }
 
-  def readByEmail(email: String): database.User = DB.withSession{implicit session: scala.slick.session.Session =>
-    val getResult = getByEmail(email).list
-    if(getResult.length >0){
-      getResult.last
-    }else{
-      null
+    def anonymousUser(): User = {
+        User(Some(0), "", "", "", false, None, None)
     }
-  }
+
+    def exists(email: String): Boolean = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            val usersResult = readByEmail(email)
+            if (usersResult != null && usersResult.uid.get > 0) {
+                true
+            } else {
+                false
+            }
+    }
+
+    //crud
+    def create(user: database.User): Long = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            database.Users.insert(user)
+    }
+
+    def readByUid(uid: Long): (database.User, database.WhiteList) = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            val users = getByUid(uid).list
+            if (users.length > 0) {
+                users.last
+            } else {
+                null
+            }
+    }
+
+    def readByEmail(email: String): database.User = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            val getResult = getByEmail(email).list
+            if (getResult.length > 0) {
+                getResult.last
+            } else {
+                null
+            }
+    }
 
 
 }
