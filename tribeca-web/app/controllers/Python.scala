@@ -32,11 +32,15 @@ import play.Play
  * Ipython page controller
  */
 object Python extends Controller {
+
+    /**
+     * direct to ipython page
+     */
     var ipython = Authenticated {
         request =>
 
             val url = request.user._1.ipythonUrl.toString
-            val secret = Play.application().configuration().getString("secret")
+            val secret = request.user._1.secret.get
             Ok(views.html.ipython("Ipython", request.user._1)).withCookies(new CookieGenerator createCookie(secret, url))
     }
 }

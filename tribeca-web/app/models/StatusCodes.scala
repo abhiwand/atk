@@ -29,11 +29,13 @@ import play.api.libs.json.{JsObject, Json}
  * Define status codes
  */
 package object StatusCodes {
+
+    val REGISTERED = 1000
+    val LOGIN = 1001
     val ALREADY_REGISTER = 1002
     val REGISTRATION_APPROVAL_PENDING = 1003
     val NOT_YET_REGISTERED = 1004
-    val REGISTERED = 1000
-    val LOGIN = 1001
+    val FAIL_TO_VALIDATE_AUTH_DATA = 1005
 
     val SC = Map(
         1001 -> "ipython",

@@ -32,8 +32,8 @@ import scala.Some
  * Singleton object to provide white list services
  */
 object Whitelists {
-    def anonymousWhitelist(): database.WhiteList = {
-        database.WhiteList(Some(0), Some(""))
+    def anonymousWhitelist(): database.WhiteListRow = {
+        database.WhiteListRow(Some(0), Some(""))
     }
 
     /**
@@ -55,9 +55,9 @@ object Whitelists {
      * @param email
      * @return
      */
-    def getByEmail(email: String): Query[database.WhiteLists.type, database.WhiteList] = DB.withSession {
+    def getByEmail(email: String): Query[database.WhiteListTable.type, database.WhiteListRow] = DB.withSession {
         implicit session: scala.slick.session.Session =>
-            for {w <- database.WhiteLists if w.email === email} yield w
+            for {w <- database.WhiteListTable if w.email === email} yield w
     }
 
     /**
@@ -65,7 +65,7 @@ object Whitelists {
      * @param email
      * @return
      */
-    def read(email: String): database.WhiteList = DB.withSession {
+    def read(email: String): database.WhiteListRow = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val result = getByEmail(email).list
             if (result != null && result.length > 0) {

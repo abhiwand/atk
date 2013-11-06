@@ -22,25 +22,44 @@
 //////////////////////////////////////////////////////////////////////////////
 
 package models.database
-
 import play.api.db.slick.Config.driver.simple._
 
 /**
- * Session entry.
- * @param Id
+ * User entry.
  * @param uid
- * @param data
- * @param timestamp
+ * @param givenName
+ * @param familyName
+ * @param email
+ * @param registered
+ * @param ipythonUrl
+ * @param clusterId
  */
-case class Session(Id:String, uid:Long, data:String, var timestamp:Long)
+case class UserRow(uid: Option[Long], givenName: String, familyName: String, email: String, registered: Boolean,
+                ipythonUrl: Option[String], clusterId: Option[String], secret: Option[String])
 
 /**
- * Table mapping for Sessions table.
+ * Table mapping for user_info table.
  */
-object Sessions extends Table[Session]("Sessions"){
-  def Id = column[String]("Id", O.PrimaryKey)
-  def uid = column[Long]("uid", O.NotNull)
-  def data = column[String]("data")
-  def timeStamp = column[Long]("timeStamp")
-  def * = Id ~ uid ~ data ~ timeStamp <> (Session, Session.unapply _)
+object UserTable extends Table[UserRow]("user_info") {
+
+    def uid = column[Long]("uid", O.PrimaryKey, O.AutoInc)
+
+    def givenName = column[String]("given_name")
+
+    def familyName = column[String]("family_name")
+
+    def email = column[String]("email", O.NotNull)
+
+    def registered = column[Boolean]("registered")
+
+    def ipythonUrl = column[String]("ipythonUrl")
+
+    def clusterId = column[String]("cluster_id", O.Nullable)
+
+    def secret = column[String]("secret", O.Nullable)
+
+    def * = uid.? ~ givenName ~ familyName ~ email ~ registered ~ ipythonUrl.? ~ clusterId.? ~ secret.? <>(UserRow, UserRow.unapply _)
 }
+
+
+
