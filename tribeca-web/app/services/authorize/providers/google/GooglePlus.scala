@@ -91,11 +91,10 @@ object GooglePlus {
     }
 
     def validateUserInfo(body: JsValue): Option[UserInfo] = {
+
         body.validate[GoogleUserInfo](validateUserInfo).map {
             case (validUser) =>
                 return Some(UserInfo(validUser.id, validUser.email, validUser.given_name, validUser.family_name))
-            case _ =>
-                return None
         }
         None
     }
