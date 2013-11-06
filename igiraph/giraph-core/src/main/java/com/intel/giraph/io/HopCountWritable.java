@@ -22,83 +22,76 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /**
- * Vertex value class for average path length computation.
+ * Message class for average path length computation.
  */
 
-package com.intel.giraph.algorithms.apl;
-
-import org.apache.hadoop.conf.Configurable;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.Writable;
+package com.intel.giraph.io;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
-import java.util.HashMap;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.Writable;
 
 /**
- * DistanceMapWritable class
+ * HopCountWritable class.
  */
-public class DistanceMapWritable implements Writable, Configurable {
+public class HopCountWritable implements Writable, Configurable {
     /** Hadoop configuration handle */
     private Configuration conf;
-    /** HashMap to track the shortest hop counts between source and current vertex. */
-    private HashMap<Long, Integer> distanceMap;
-
-    /** Constructor */
-    public DistanceMapWritable() {
-        distanceMap = new HashMap<Long, Integer>();
-    }
+    /** Source vertex id. */
+    private long source;
+    /** Distance from source to the next vertex */
+    private int distance;
 
     /**
-     * Getter that returns distance map.
-     *
-     * @return Distance map (HashMap).
+     * Default constructor.
      */
-    public HashMap<Long, Integer> getDistanceMap() {
-        return distanceMap;
+    public HopCountWritable() {
+        this.source = 0;
+        this.distance = 0;
     }
 
     /**
-     * Check if the source vertex has been observed.
+     * Constructor.
      *
      * @param source Source vertex id.
-     *
-     * @return True if source has been observed. Otherwise false.
+     * @param distance Distance from source vertex id to the next vertex.
      */
-    public boolean distanceMapContainsKey(long source) {
-        return distanceMap.containsKey(source);
+    public HopCountWritable(long source, int distance) {
+        this.source = source;
+        this.distance = distance;
     }
 
     /**
-     * Returns the distance from source to current vertex.
+     * Returns source vertex id.
      *
-     * @param source Source vertex id.
-     *
-     * @return Distance from source to current vertex.
+     * @return Source vertex id.
      */
-    public int distanceMapGet(long source) {
-        return distanceMap.get(source);
+    public long getSource() {
+        return this.source;
     }
 
     /**
-     * Add source vertex id and associated distance to the HashMap.
+     * Returns the distance value.
      *
-     * @param source Source vertex id.
-     * @param distance Distance from source to current vertex.
-     *
+     * @return Distance.
      */
-    public void distanceMapPut(long source, int distance) {
-        distanceMap.put(source, distance);
+    public int getDistance() {
+        return this.distance;
     }
 
     @Override
     public void readFields(DataInput input) throws IOException {
+        this.source = input.readLong();
+        this.distance = input.readInt();
     }
 
     @Override
     public void write(DataOutput output) throws IOException {
+        output.writeLong(this.source);
+        output.writeInt(this.distance);
     }
 
     @Override
@@ -113,6 +106,6 @@ public class DistanceMapWritable implements Writable, Configurable {
 
     @Override
     public String toString() {
-        return "";
+        return this.source + "," + this.distance;
     }
 }
