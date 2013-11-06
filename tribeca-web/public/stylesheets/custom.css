@@ -278,20 +278,7 @@ h1, h2, h3, h4, h5 {
 
 }
 
-#footer-feedback {
-      position:fixed;
-   left:0px;
-   bottom:0px;
-   width:100%;
-    background: rgba(0, 0, 0, 0.7);
-    height: 40px;
-    z-index: 1;
-}
 
-#footer-feedback p,a {
-    color: #fff;
-    padding-top: 0px;
-}
 
 .footer-right {
     float: right;
@@ -465,10 +452,31 @@ button.close {
 
 #footer #footer-front p {
     font-size: 9px;
-    padding-top: 10px;
     text-align: center;
-    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.2);
     color: #fff;
+    position:fixed;
+    left:0px;
+    bottom:-10px;
+    width:100%;
+    background: rgba(0, 0, 0, 0.2);
+    height: 60px;
+    z-index: 9999999;
+    padding: 15px;
+}
+
+#footer-feedback {
+    position:fixed;
+    left:0px;
+    bottom:0px;
+    width:100%;
+    background: rgba(0, 0, 0, 0.7);
+    height: 40px;
+    z-index: 9999999;
+}
+
+#footer-feedback p,a {
+    color: #fff;
+    padding-top: 0px;
 }
 
 .intel-logo-footer {
