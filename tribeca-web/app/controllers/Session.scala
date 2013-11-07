@@ -28,23 +28,24 @@ import scala.concurrent.Future
 import models.database.{WhiteListRow, UserRow}
 import models.Users
 import models.Whitelists
+import play.api.Play
+import play.api.Play.current
 
 /**
  * Singleton object to provide session related services.
  */
 object Session extends Controller {
+  val SessionValName = Play.application.configuration.getString("session.cookie.name").get//"SESSIONID"
+  val SessionTimeout = Play.application.configuration.getLong("session.cookie.timeout").get//3600
+  val millisecondsPerSecond = 1000
 
-    val SessionValName = "SESSIONID"
-    val SessionTimeout = 3600
-    val millisecondsPerSecond = 1000
-
-    /**
-     * Create random session id
-     * @return session id
-     */
-    def createSessionId(): String = {
-        java.util.UUID.randomUUID().toString()
-    }
+  /**
+   * Create random session id
+   * @return session id
+   */
+  def createSessionId(): String = {
+      java.util.UUID.randomUUID().toString()
+  }
 
     /**
      * Validate the session. Check whether the session has expired or not.
@@ -52,14 +53,17 @@ object Session extends Controller {
      * @return Session object
      */
     def validateSessionId(sessionId: String): Option[models.database.SessionRow] = {
-        val userSession = models.Sessions.read(sessionId)
+        var userSession = models.Sessions.read(sessionId)
         if(userSession == None)
-            return None
+            None
 
         if (System.currentTimeMillis / millisecondsPerSecond - userSession.get.timestamp > SessionTimeout) {
-            return None
+            None
         } else {
-            return userSession
+            userSession.get.timestamp = System.currentTimeMillis / 1000
+            //update the session timeout
+            models.Sessions.update(userSession.get)
+            userSession
         }
     }
 
@@ -99,7 +103,7 @@ object Session extends Controller {
                         val u = Users.readByUid(validatedSession.get.uid)
                         //continue with the request
                         if (u._2.email.isEmpty || u._2.uid.get == 0) {
-                            Future.successful(   Redirect("/"))
+                            Future.successful(Redirect("/"))
                         } else {
                             block(new AuthenticatedRequest(u, request))
                         }
@@ -112,5 +116,12 @@ object Session extends Controller {
         }
     }
 
+  def onlyHttps[A](action: Action[A]) = Action.async(action.parser) { request =>
+    request.headers.get("X-Forwarded-Proto").collect {
+      case "https" => action(request)
+    } getOrElse {
+      Future.successful(Forbidden("Only HTTPS requests allowed"))
+    }
+  }
 
 }
