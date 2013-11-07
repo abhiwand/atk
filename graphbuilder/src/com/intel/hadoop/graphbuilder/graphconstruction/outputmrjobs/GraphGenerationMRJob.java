@@ -3,6 +3,7 @@
 package com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
+import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import org.apache.commons.cli.CommandLine;
 
@@ -20,6 +21,6 @@ public abstract class GraphGenerationMRJob {
     public abstract void setVidClass(Class vidClass);
     public abstract void setCleanBidirectionalEdges(boolean clean);
     public abstract void setUserOptions(HashMap<String, String> userOpts);
-    public abstract void init(InputConfiguration inputConfiguration, GraphTokenizer tokenizer);
+    public abstract void init(InputConfiguration inputConfiguration, GraphBuildingRule graphBuildingRule);
     public abstract void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException;
 }
