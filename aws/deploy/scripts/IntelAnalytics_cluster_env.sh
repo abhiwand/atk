@@ -5,11 +5,13 @@
 #
 source IntelAnalytics_common_env.sh
 
-# existing AMI Names (Gold Images)
-# 
-#export IA_AMI_MASTER="${IA_NAME}-Master"
-export IA_AMI_MASTER="${IA_NAME}-Master-${IA_VERSION}"
-export IA_AMI_SLAVE="${IA_NAME}-Slave"
+# existing AMI Names (with build version, can override 
+if [ -z "${IA_AMI_BUILD}" ]; then
+    IA_AMI_BUILD="Build.01"
+fi
+export IA_AMI_VERSION="${IA_VERSION}-${IA_AMI_BUILD}"
+export IA_AMI_MASTER="${IA_NAME}-Master-${IA_AMI_VERSION}"
+export IA_AMI_SLAVE="${IA_AMI_MASTER}"
 export IA_AMI_ADMIN="${IA_NAME}-Admin"
 export IA_AMI_WEBSRV="${IA_NAME}-WebSRV"
 export IA_AMI_WEBRDS="${IA_NAME}-WebRDS"
