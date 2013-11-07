@@ -27,7 +27,7 @@ source IntelAnalytics_cluster_env.sh
 
 function usage()
 {
-    echo "usage: --nodes-file <nodes-list-file> --hosts-file <hosts-file> --pem-file <pem-file> [--dry-run]"
+    echo "usage: $1 --nodes-file <nodes-list-file> --hosts-file <hosts-file> --pem-file <pem-file> [--dry-run]"
     exit 1
 }
 
@@ -54,32 +54,42 @@ do
         ;;
 
     *)
-        usage
+        usage $(basename $0)
         ;;
     esac
 done
 
 if [ -z "${nodesfile}" ] || [ ! -f ${nodesfile} ]; then
     echo "Could not find the nodes list file \"${nodesfile}\"!"
-    usage
+    usage $(basename $0)
 fi
 if [ -z "${hostsfile}" ] || [ ! -f ${hostsfile} ]; then
     echo "Could not find the hosts list file \"${hostsfile}\"!"
-    usage
+    usage $(basename $0)
 fi
 
 if [ -z "${pemfile}" ] || [ ! -f ${pemfile} ]; then
     echo "Could not locate the pem file \"${pemfile}\"!"
-    usage
+    usage $(basename $0)
 fi
 
 # Update cluster-wide hosts file
 for n in `cat ${nodesfile}`; do
     # update the host file
+    echo "Updating the hosts file on node ${n}..."
     ${dryrun} scp -i ${pemfile} ${hostsfile} ${n}:/tmp/_hosts
     ${dryrun} ssh -t -i ${pemfile} ${n} "sudo mv -f /tmp/_hosts /etc/hosts"
     # remove the existing .ssh/known_hosts file
     ${dryrun} ssh -t -i ${pemfile} ${n} "sudo rm -f /home/hadoop/.ssh/known_hosts"
+done
+
+# Mount the disks: the FS is ext3 by default
+for n in `cat ${nodesfile}`; do
+    # update the host file
+    echo "Mount the disks on node ${n}..."
+    # Remove existing mount
+    # ${dryrun} ssh -t -i ${pemfile} ${n} "sudo bash -c 'mount /dev/xvdb /mnt/data1; mount /dev/xvdc /mnt/data2; mount /dev/xvdd /mnt/data3; mount /dev/xvde /mnt/data4;'"
+    ${dryrun} ssh -t -i ${pemfile} ${n} "sudo chomod -R hadoop.hadoop /mnt/data*"
 done
 
 # prepare to start the cluster/hadoop: nothing to do, already configured
