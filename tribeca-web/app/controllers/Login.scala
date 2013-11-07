@@ -46,14 +46,13 @@ object Login extends Controller {
             val auth = new Authorize(request.body, Providers.GooglePlus)
             response = getResponse(auth, Sessions, MySQLStatementGenerator)
         }
+        response._1 match {
+            case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
+            case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
+                "/", None, true, false ))
 
-            response._1 match {
-                case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
-                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
-                    "/", None, true, false ))
-
-                case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
-            }
+            case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
+        }
     }
 
     /**

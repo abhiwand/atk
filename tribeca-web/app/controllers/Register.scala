@@ -43,7 +43,7 @@ object Register extends Controller {
       request => {
           Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
             formWithErrors => {
-              BadRequest("couldn't validate form vals")
+              Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600), "/", None, true, false ))
             },
             registrationForm =>{
               //make sure the terms are set to on since we couldnt' validate with a boolean
