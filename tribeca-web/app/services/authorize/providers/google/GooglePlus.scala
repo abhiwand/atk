@@ -23,31 +23,36 @@
 
 package services.authorize.providers.google
 
-
 import play.api.libs.json._
+import play.api.Play.current
 import scala.concurrent.duration._
 import play.api.libs.ws.WS
 import scala.concurrent.Await
 import play.api.libs.concurrent.Execution.Implicits._
 import services.authorize.{UserInfo, TokenResponse}
+import play.api.Play
 
 /**
  * Singleton object to provide google oauth services.
  */
 object GooglePlus {
-    val https443_clientId = "141308260505-3qf2ofckirolrkajt3ansibkuk5qug5t.apps.googleusercontent.com"
-    val https_clientId = "141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
-    val http_clientId = "141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
-    val clientSecret = "0fp9P9isYAz_vrlyA9I1Jk_j"
-    val tokenVerifyUrl = "https://www.googleapis.com/oauth2/v1/tokeninfo"
-    val userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo"
+    val clientId = Play.application.configuration.getString("oauth.google.client_id").get//"141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
+    val clientSecret = Play.application.configuration.getString("oauth.google.secret").get//"0fp9P9isYAz_vrlyA9I1Jk_j"
+    val tokenVerifyUrl = Play.application.configuration.getString("oauth.google.token_verify_url").get// "https://www.googleapis.com/oauth2/v1/tokeninfo"
+    val userInfoUrl = Play.application.configuration.getString("oauth.google.user_info_url").get//"https://www.googleapis.com/oauth2/v1/userinfo"
+    val scope = Play.application.configuration.getString("oauth.google.scope").get
+    val apiKey = Play.application.configuration.getString("oauth.google.api_key").get
 
     implicit val validateTokenResponseData = Json.reads[ValidateTokenResponseData]
     implicit val validateTokenJson = Json.reads[ValidateTokenJson]
     implicit val validateUserInfo = Json.reads[GoogleUserInfo]
 
+    def getJavascriptOauthParams(): String = {
+      Json.stringify(Json.obj("clientId" -> clientId, "scope" -> scope, "apiKey" -> apiKey ))
+    }
+
     def validateClientId(idToValidate: String): Boolean = {
-        if (idToValidate == https_clientId || idToValidate == http_clientId || idToValidate == https443_clientId) {
+        if (idToValidate == clientId) {
             true
         } else {
             false

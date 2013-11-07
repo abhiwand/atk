@@ -3,4 +3,5 @@ This is your new Play application
 run the play server with this
 -Dplay.config=qa -Dhttp.port=80 -Dhttps.port=443 -Dhttps.keyStore=conf/graphtrial.com.keystore.jks -Dhttps.keyStorePassword=sewerroots
 -Dplay.config=prod -Dhttp.port=80 -Dhttps.port=443 -Dhttps.keyStore=conf/\\graphtrial.com.keystore.jks -Dhttps.keyStorePassword=sewerroots
+-Dplay.config=dev -Dhttp.port=80 -Dhttps.port=443 -Dhttps.keyStore=conf/\\graphtrial.com.keystore.jks -Dhttps.keyStorePassword=sewerroots
 This file will be packaged with your application, when using `play dist`.

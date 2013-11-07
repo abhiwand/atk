@@ -25,6 +25,7 @@ package services.authorize
 
 import play.api.libs.json.JsValue
 import services.authorize.providers.google.{GoogleTokenResponse, GooglePlus}
+import services.authorize.Providers.Providers
 
 class Authorize(var authData: JsValue, var provider: Providers.Providers) {
 
@@ -76,16 +77,23 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
         Provider match {
             case Providers.GooglePlus =>
                 if(responseData == None)
-                    return None
+                    None
 
                 userInfo = GooglePlus.getUserInfo(responseData.get.access_token)
                 userInfo
             case _ =>
-                return None
+                None
         }
     }
 
     def isAuthResponseDataValid(): Boolean = {
         (validateTokenResponseData() && validateToken() != None && getUserInfo() != None)
+    }
+
+    def getJavascriptOauthParams( provider: Providers ): String = {
+      provider match{
+        case Providers.GooglePlus =>
+          GooglePlus.getJavascriptOauthParams()
+      }
     }
 }
