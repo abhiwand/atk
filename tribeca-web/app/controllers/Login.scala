@@ -26,8 +26,12 @@ package controllers
 import play.api.mvc._
 import services.authorize.{Providers, Authorize}
 import models.database.{StatementGenerator, MySQLStatementGenerator}
-import models.{SessionGenerator, StatusCodes, Sessions, Users}
+import models._
 import controllers.Session._
+import models.StatusCodes
+import play.api.mvc.Cookie
+import scala.Some
+import play.api.mvc.SimpleResult
 
 /**
  * Singleton object to handle log in request and generate response accordingly.
@@ -45,7 +49,9 @@ object Login extends Controller {
 
             response._1 match {
                 case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
-                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => BadRequest("Couldn't validate auth response data")
+                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
+                    "/", None, true, false ))
+
                 case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
             }
     }
