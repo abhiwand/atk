@@ -35,35 +35,34 @@ import controllers.Session._
  */
 object Register extends Controller {
 
-  var json: JsValue = _
-  var auth: Authorize = _
-  var response: (Int, Option[String]) = (0, None)
+    var json: JsValue = _
+    var auth: Authorize = _
+    var response: (Int, Option[String]) = (0, None)
 
     var register = Action {
-      request => {
-          Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
-            formWithErrors => {
-              Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600), "/", None, true, false ))
-            },
-            registrationForm =>{
-              //make sure the terms are set to on since we couldnt' validate with a boolean
-              if(registrationForm.terms == "on" && registrationForm.experience >= 1 && registrationForm.experience <= 4){
-                json = Json.parse(registrationForm.authResult)
-                auth = new Authorize(json, Providers.GooglePlus)
-                response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
-              }
+        request => {
+            Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
+                formWithErrors => {
+                    Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
+                },
+                registrationForm => {
+                    //make sure the terms are set to on since we couldnt' validate with a boolean
+                    if (registrationForm.terms == "on" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
+                        json = Json.parse(registrationForm.authResult)
+                        auth = new Authorize(json, Providers.GooglePlus)
+                        response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
+                    }
+                }
+            )
+        }
+
+            response._1 match {
+                case StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get)
+                case StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
+                    "/", None, true, false))
+                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+                    "/", None, true, false))
             }
-          )
-      }
-
-      response._1 match{
-        case  StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get)
-        case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/").withCookies(Cookie("approvalPending","true", Some(3600),
-            "/", None, true, false ))
-
-        case _ => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
-            "/", None, true, false ))
-      }
     }
 
     /**
@@ -85,6 +84,8 @@ object Register extends Controller {
     def getResponseFromRegistrationResult(result: RegistrationOutput, sessionGen: SessionGenerator): (Int, Option[String]) = {
         if (result.login == 1)
             (StatusCodes.LOGIN, Some(sessionGen.create(result.uid)))
+        else if (result.errorCode == 0 && result.login == 0)
+            (StatusCodes.REGISTRATION_APPROVAL_PENDING, None)
         else
             (result.errorCode, None)
     }
