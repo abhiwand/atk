@@ -41,10 +41,10 @@ import services.aws
 
 object S3 {
   //one week in milliseconds
-  val POLICY_EXPIRATION =  Play.application.configuration.getLong("aws.bucket_expiration_policy").get
-  val BUCKET = Play.application.configuration.getString("aws.bucket").get
-  val MAX_SIZE = Play.application.configuration.getLong("aws.bucket_max_file_size").get
-  val PREFIX = Play.application.configuration.getString("aws.bucket_prefix").get
+  val POLICY_EXPIRATION =  Play.application.configuration.getLong("aws.S3.bucket_expiration_policy").get
+  val BUCKET = Play.application.configuration.getString("aws.S3.bucket").get
+  val MAX_SIZE = Play.application.configuration.getLong("aws.S3.bucket_max_file_size").get
+  val PREFIX = Play.application.configuration.getString("aws.S3.bucket_prefix").get
   val BYTE = 1024
 
   def formatName(key: String): String = {
