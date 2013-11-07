@@ -3,7 +3,6 @@ import play.api.mvc._
 import play.api._
 import java.io.File
 import scala.collection.JavaConversions._
-import filters.{HttpsOnlyFilter, LoggingFilter}
 import scala.concurrent.Future
 import scala.Some
 import scala.Some
