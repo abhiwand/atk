@@ -1,0 +1,28 @@
+@(message: String, user: models.database.UserRow)
+
+@mainLoggedIn(message, user) {
+
+    <div id='main-content'>
+
+        <div id='main-content-upload'>
+            <div class='container'>
+                <div class="row" >
+                    <div class='col-sm-12'>
+
+                        <div class="row-fluid">
+                         <iframe id='ipython' src="https://nbviewer.ipython.org/url/github.com/ipython/ipython/raw/master/examples/notebooks/Part%205%20-%20Rich%20Display%20System.ipynb" >
+                            </iframe> 
+                        </div>
+                        <a href ='#'>
+                            <button type="button" class="btn btn-primary btn-lg btn-block">That was awesome. Export it!</button>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='fade' id='scroll-to-top'>
+        <i class='fa-icon-chevron-up'></i>
+    </div>
+}
