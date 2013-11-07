@@ -58,9 +58,11 @@ object Register extends Controller {
 
       response._1 match{
         case  StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get)
-        case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/")
+        case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/").withCookies(Cookie("approvalPending","true", Some(3600),
+            "/", None, true, false ))
 
-        case _ => BadRequest("")
+        case _ => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
+            "/", None, true, false ))
       }
     }
 
