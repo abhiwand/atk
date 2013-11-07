@@ -1,6 +1,7 @@
 package com.intel.hadoop.graphbuilder.graphconstruction.inputmappers;
 
 
+import com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph.BasicHBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph.BasicHBaseTokenizer;
 import com.intel.hadoop.graphbuilder.graphconstruction.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.RecordTypeHBaseRow;
@@ -94,11 +95,19 @@ public class HBaseReaderMapperTest {
         conf = new Configuration();
         conf.set("GraphTokenizer", BasicHBaseTokenizer.class.getName());
         conf.set("KeyFunction", SourceVertexKeyFunction.class.getName());
-        //command line paramaters
-        //-d
-        conf.set(GBHTableConfig.DECN_CONF_NAME, "cf:name,cf:dept,worksAt");
-        //-v
-        conf.set(GBHTableConfig.VCN_CONF_NAME, "cf:name=cf:age,cf:dept");
+
+        //sample vertex and edge generation rules
+
+        String[] vertexRules = new String[1];
+        vertexRules[0] = "cf:name=cf:age,cf:dept";
+        BasicHBaseGraphBuildingRule.packVertexRulesIntoConfiguration(conf, vertexRules);
+
+        String[] edgeRules = new String[0];
+        BasicHBaseGraphBuildingRule.packEdgeRulesIntoConfiguration(conf, edgeRules);
+
+        String[] directedEdgeRules = new String[1];
+        directedEdgeRules[0] =  "cf:name,cf:dept,worksAt";
+        BasicHBaseGraphBuildingRule.packDirectedEdgeRulesIntoConfiguration(conf, directedEdgeRules);
 
         //mapper context mocks
         Class valClass = PropertyGraphElementStringTypeVids.class;
