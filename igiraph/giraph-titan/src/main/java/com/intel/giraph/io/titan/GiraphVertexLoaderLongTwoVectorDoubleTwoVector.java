@@ -63,7 +63,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
      */
     private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongTwoVectorDoubleTwoVector.class);
     /**
-     * whether it is Titan sytem type
+     * whether it is Titan system type
      */
     private boolean isSystemType = false;
     /**
@@ -96,7 +96,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
     private Vector vector = null;
 
     /**
-     * GiraphVertexLoaderLongVectorVector Constructor with ID
+     * GiraphVertexLoaderLongTwoVectorDoubleTwoVector Constructor with ID
      *
      * @param conf Giraph configuration
      * @param id   vertex id

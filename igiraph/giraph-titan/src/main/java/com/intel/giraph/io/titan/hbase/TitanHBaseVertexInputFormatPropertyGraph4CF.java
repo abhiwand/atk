@@ -322,7 +322,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
         /**
          * get vertex value
          *
-         * @return TwoVectorWritable vertex value in two vectors
+         * @return VertexDataWritable vertex value in vector
          * @throws IOException
          */
         protected VertexDataWritable getValue() throws IOException {

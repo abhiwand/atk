@@ -76,7 +76,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
      */
     private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderPropertyGraph4CF.class);
     /**
-     * whether it is Titan sytem type
+     * whether it is Titan system type
      */
     private boolean isSystemType = false;
     /**
@@ -122,7 +122,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
 
 
     /**
-     * GiraphVertexLoaderLongVectorVector Constructor with ID
+     * GiraphVertexLoaderPropertyGraph4CF Constructor with ID
      *
      * @param conf Giraph configuration
      * @param id   vertex id

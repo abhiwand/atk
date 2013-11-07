@@ -22,8 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import com.intel.giraph.io.VertexDataWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
+import com.intel.giraph.io.VertexData4LDAWritable;
+import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
+import com.intel.mahout.math.DoubleWithVectorWritable;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.blueprints.Direction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
@@ -45,34 +46,34 @@ import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_TYPE_PROP
 
 /**
  * The Vertex Output Format which writes back Giraph algorithm results
- * to Titan for Collaborative filter algorithms.
- *
- * Features <code>VertexData</code> vertex values and
- * <code>EdgeData</code> out-edge info.
- *
+ * to Titan for LDA algorithms.
+ * <p/>
+ * Features <code>VertexData4LDAWritable</code> vertex values and
+ * <code>DoubleWithVectorWritable</code> out-edge info.
+ * <p/>
  * Each vertex follows this format:
  * (<vertex id>, <vertex valueVector>, <vertex property>,
  * ((<dest vertex id>, <edge value>, <edge property>), ...))
- *
+ * <p/>
  * Here is an example of left-side vertex, with vertex id 1,
- * vertex value 4,3 marked as "l", and two edges.
- * First edge has a destination vertex 2, edge value 2.1, marked as "tr".
- * Second edge has a destination vertex 3, edge value 0.7,marked as "va".
- * [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
+ * vertex value 4,3 marked as "d", and two edges.
+ * First edge has a destination vertex 2, edge value 2.1.
+ * Second edge has a destination vertex 3, edge value 0.7.
+ * [1,[4,3],[d],[[2,2.1,[]],[3,0.7,[]]]]
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value
  * @param <E> Edge value
  */
-public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
-        V extends VertexDataWritable, E extends Writable>
+public class TitanVertexOutputFormatPropertyGraph4LDA <I extends LongWritable,
+        V extends VertexData4LDAWritable, E extends DoubleWithVectorWritable>
         extends TextVertexOutputFormat<I, V, E> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-            .getLogger(TitanVertexOutputFormatPropertyGraph4CF.class);
+            .getLogger(TitanVertexOutputFormatPropertyGraph4LDA.class);
 
 
     /**
@@ -219,11 +220,11 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
                     VertexType vertexType = vertex.getValue().getType();
                     String vertexString = null;
                     switch (vertexType) {
-                        case LEFT:
-                            vertexString = "l";
+                        case DOC:
+                            vertexString = "d";
                             break;
-                        case RIGHT:
-                            vertexString = "r";
+                        case WORD:
+                            vertexString = "w";
                             break;
                         default:
                             throw new IllegalArgumentException(String.format("Unrecognized vertex type: %s", vertexType.toString()));
@@ -244,4 +245,3 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
         }
     }
 }
-

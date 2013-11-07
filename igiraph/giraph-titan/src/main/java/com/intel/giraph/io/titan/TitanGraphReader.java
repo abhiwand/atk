@@ -157,6 +157,24 @@ public class TitanGraphReader extends StandardTitanGraph {
                     }
                     return loader4.getVertex();
 
+
+                case "PropertyGraph4LDA":
+                    final GiraphVertexLoaderPropertyGraph4LDA
+                            loader5 = new GiraphVertexLoaderPropertyGraph4LDA(
+                            conf, vertexId);
+
+                    for (final Entry data : entries) {
+                        try {
+                            final GiraphVertexLoaderPropertyGraph4LDA.RelationFactory factory = loader5
+                                    .getFactory();
+                            super.edgeSerializer.readRelation(factory, data, tx);
+                            factory.build();
+                        } catch (NullPointerException e) {
+                            LOG.info("Skip this entry because no valid property for Giraph to read");
+                        }
+                    }
+                    return loader5.getVertex();
+
                 default:
                     break;
             }

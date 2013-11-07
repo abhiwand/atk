@@ -64,7 +64,7 @@ public class GiraphVertexLoaderLongDistanceMapNull {
      */
     private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleFloat.class);
     /**
-     * whether it is Titan sytem type
+     * whether it is Titan system type
      */
     private boolean isSystemType = false;
     /**
@@ -81,7 +81,7 @@ public class GiraphVertexLoaderLongDistanceMapNull {
     private Set<String> edgeLabelValues = null;
 
     /**
-     * GiraphVertexLoaderLongDoubleFloat constructor
+     * GiraphVertexLoaderLongDistanceMapNull constructor
      *
      * @param conf : Giraph configuration
      * @param id   vertex id

@@ -64,7 +64,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
      */
     private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleFloat.class);
     /**
-     * whether it is Titan sytem type
+     * whether it is Titan system type
      */
     private boolean isSystemType = false;
     /**
