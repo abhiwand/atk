@@ -58,13 +58,15 @@ import com.intel.giraph.io.VertexDataWritable;
 import com.intel.giraph.io.VertexDataWritable.VertexType;
 
 /**
- * Alternating Least Squares for collaborative filtering
- * The algorithm presented in
- * Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. Large-Scale
+ * Alternating Least Squares with Bias for collaborative filtering
+ * The algorithms presented in
+ * (1) Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. Large-Scale
  * Parallel Collaborative Filtering for the Netflix Prize. 2008.
+ * (2) Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative
+ * Filtering Model. In ACM KDD 2008. (Equation 5)
  */
 @Algorithm(
-    name = "Alternating Least Squares"
+    name = "Alternating Least Squares with Bias"
 )
 public class AlternatingLeastSquaresComputation extends BasicComputation<LongWritable, VertexDataWritable,
     EdgeDataWritable, MessageDataWritable> {
@@ -77,6 +79,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
      * f = L2_error + lambda*Tikhonov_regularization
      */
     public static final String LAMBDA = "als.lambda";
+    /** Custom argument to turn on/off bias */
+    public static final String BIAS_ON = "als.biasOn";
     /** Custom argument for the convergence threshold */
     public static final String CONVERGENCE_THRESHOLD = "als.convergenceThreshold";
     /** Custom argument for maximum edge weight value */
@@ -115,6 +119,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     private int featureDimension = 20;
     /** The regularization parameter */
     private float lambda = 0f;
+    /** Bias on/off switch */
+    private boolean biasOn = false;
     /** Maximum edge weight value */
     private float maxVal = Float.POSITIVE_INFINITY;
     /** Minimum edge weight value */
@@ -134,6 +140,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         if (lambda < 0) {
             throw new IllegalArgumentException("Regularization parameter lambda should be >= 0.");
         }
+        biasOn = getConf().getBoolean(BIAS_ON, false);
         maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
         minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
         learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
@@ -148,7 +155,9 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
      * @param vertex of the graph
      */
     private void initialize(Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex) {
-        // initialize vertex vector
+        // initialize vertex data: bias, vector, gradient, conjugate
+        vertex.getValue().setBias(0d);
+
         double sum = 0d;
         int numTrain = 0;
         for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
@@ -208,6 +217,35 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         }
     }
 
+    /**
+     * compute bias
+     *
+     * @param value of type Vector
+     * @param messages of type Iterable
+     * @return bias of type double
+     */
+    private double computeBias(Vector value, Iterable<MessageDataWritable> messages) {
+        double errorOnTrain = 0d;
+        int numTrain = 0;
+        for (MessageDataWritable message : messages) {
+            EdgeType et = message.getType();
+            if (et == EdgeType.TRAIN) {
+                double weight = message.getWeight();
+                Vector vector = message.getVector();
+                double otherBias = message.getBias();
+                double predict = otherBias + value.dot(vector);
+                double e = weight - predict;
+                errorOnTrain += e;
+                numTrain++;
+            }
+        }
+        double bias = 0d;
+        if (numTrain > 0) {
+            bias = errorOnTrain / ((1 + lambda) * numTrain);
+        }
+        return bias;
+    }
+
     @Override
     public void compute(Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex,
         Iterable<MessageDataWritable> messages) throws IOException {
@@ -218,7 +256,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             return;
         }
 
-        Vector preValue = vertex.getValue().getVector();
+        Vector currentValue = vertex.getValue().getVector();
+        double currentBias = vertex.getValue().getBias();
         // update aggregators every (2 * interval) super steps
         if ((step % (2 * learningCurveOutputInterval)) == 0) {
             double errorOnTrain = 0d;
@@ -229,7 +268,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 EdgeType et = message.getType();
                 double weight = message.getWeight();
                 Vector vector = message.getVector();
-                double predict = preValue.dot(vector);
+                double otherBias = message.getBias();
+                double predict = currentBias + otherBias + currentValue.dot(vector);
                 double e = weight - predict;
                 switch (et) {
                 case TRAIN:
@@ -248,7 +288,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             }
             double costOnTrain = 0d;
             if (numTrain > 0) {
-                costOnTrain = errorOnTrain / numTrain + lambda * preValue.dot(preValue);
+                costOnTrain = errorOnTrain / numTrain + lambda * (currentBias * currentBias +
+                    currentValue.dot(currentValue));
             }
             aggregate(SUM_TRAIN_COST, new DoubleWritable(costOnTrain));
             aggregate(SUM_VALIDATE_ERROR, new DoubleWritable(errorOnValidate));
@@ -261,15 +302,16 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             Matrix xxt = new DenseMatrix(featureDimension, featureDimension);
             xxt = xxt.assign(0d);
             // xr records the result of x times rating
-            Vector xr = preValue.clone().assign(0d);
+            Vector xr = currentValue.clone().assign(0d);
             int numTrain = 0;
             for (MessageDataWritable message : messages) {
                 EdgeType et = message.getType();
                 if (et == EdgeType.TRAIN) {
                     double weight = message.getWeight();
                     Vector vector = message.getVector();
+                    double otherBias = message.getBias();
                     xxt = xxt.plus(vector.cross(vector));
-                    xr = xr.plus(vector.times(weight));
+                    xr = xr.plus(vector.times(weight - currentBias - otherBias));
                     numTrain++;
                 }
             }
@@ -277,6 +319,12 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             Matrix bMatrix = new DenseMatrix(featureDimension, 1).assignColumn(0, xr);
             Vector value = new QRDecomposition(xxt).solve(bMatrix).viewColumn(0);
             vertex.getValue().setVector(value);
+
+            // update vertex bias
+            if (biasOn) {
+                double bias = computeBias(value, messages);
+                vertex.getValue().setBias(bias);
+            }
 
             // send out messages
             for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
@@ -406,6 +454,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 // output ALS configuration
                 int featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
                 float lambda = getConf().getFloat(LAMBDA, 0f);
+                boolean biasOn = getConf().getBoolean(BIAS_ON, false);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
@@ -413,6 +462,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 output.writeUTF("ALS Configuration:\n");
                 output.writeUTF(String.format("featureDimension: %d%n", featureDimension));
                 output.writeUTF(String.format("lambda: %f%n", lambda));
+                output.writeUTF(String.format("biasOn: %b%n", biasOn));
                 output.writeUTF(String.format("convergenceThreshold: %f%n", convergenceThreshold));
                 output.writeUTF(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeUTF(String.format("maxVal: %f%n", maxVal));
