@@ -24,18 +24,22 @@
 package controllers
 
 import play.api.mvc._
-import controllers.Session.ActionWithSession
-import play.Play
-
-//import play.api.libs.json.Json
+import controllers.Session._
 
 object Application extends Controller {
 
-  def index() = ActionWithSession { request =>
+  var index = ActionWithSession { request =>
     Ok(views.html.index("Index", request.user._1))
   }
 
   var logout = Action{
     Redirect("/").withNewSession
   }
+
+
+
+  /*try in aws with elb in front of the server
+  def redirect = Action { implicit request =>
+    MovedPermanently("https://" + request.host + request.uri).withHeaders("x-forwarded-proto" -> "https")
+  }*/
 }
