@@ -267,10 +267,10 @@ function all_events(){
 				else{
 					$(this).parent().animate({
 						/*** here you can change the box shadow color of the field on focus when it's valid***/
-						boxShadow: '0px 0px 2px 2px #ED1C24 '
+						boxShadow: '0px 0px 2px 2px #0071c5 '
 					},90);
 					/*** here you can change the border color of the field on focus when it's valid***/
-					$(this).parent().css('border','solid 1px #ED1C24 ')
+					$(this).parent().css('border','solid 1px #0071c5 ')
 				}
 				if($(this).parent().find('span').hasClass('ok')){
 					$(this).parent().find('span').removeClass();
