@@ -27,7 +27,7 @@ import play.api.mvc._
 import play.api.libs.json._
 import services.authorize.{Providers, Authorize}
 import models._
-import models.database.{StatementGenerator, MySQLStatementGenerator, UserRow}
+import models.database.{RegistrationOutput, StatementGenerator, MySQLStatementGenerator, UserRow}
 import controllers.Session._
 
 /**
@@ -79,6 +79,10 @@ object Register extends Controller {
         val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true, Some(""), None, None)
         val result = Users.register(u, registrationForm, statementGenerator)
 
+        getResponseFromRegistrationResult(result, sessionGen)
+    }
+
+    def getResponseFromRegistrationResult(result: RegistrationOutput, sessionGen: SessionGenerator): (Int, Option[String]) = {
         if (result.login == 1)
             (StatusCodes.LOGIN, Some(sessionGen.create(result.uid)))
         else
