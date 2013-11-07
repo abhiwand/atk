@@ -286,8 +286,8 @@ done
 IA_create_dump
 
 # check how man we have created
-if [ "${dryrun}" == "no" ] && [ ${#cnnids[@]} -ne ${csize} ]; then
-    IA_logerr "Requested ${csize} instances, only created ${#cnnids[@]} instances!"
+if [ "${dryrun}" == "no" ] && [ ${#cniids[@]} -ne ${csize} ]; then
+    IA_logerr "Requested ${csize} instances, only created ${#cniids[@]} instances!"
 fi
 
 # generate hosts file
@@ -298,10 +298,10 @@ if [ "${dryrun}" == "no" ]; then
         # check instance status, max 5 waits, every wait is 10s
         IA_check_instance_status ${cniids[@]}
         if [ $? -eq 0 ]; then
-            IA_logerr "Instances status check ${i} passed on instances:${cniids[@]}..."
+            IA_loginfo "Instances status check ${i} passed on instances:${cniids[@]}..."
             break
         fi
-        IA_logerr "Instances status check ${i} failed on instances:${cniids[@]}..."
+        IA_loginfo "Instances status check ${i} failed on instances:${cniids[@]}..."
         sleep 10s
     done
 

@@ -500,7 +500,6 @@ function IA_update_routes()
     local rt_id=$1
     local rt_vpc=$2
     local rt_snet=$3
-    local snet
 
     IA_loginfo "Updating route table ${rt_id} in vpc ${rt_vpc} for subnet ${rt_snet}..."
     _RET=`IA_find_routetable_subnet ${rt_id} ${rt_snet}`
@@ -508,13 +507,12 @@ function IA_update_routes()
         IA_loginfo "Found existing association in route table ${rt_id} for subnet ${_RET}"
         return 0
     fi
-    ec2-associate-route-table ${IA_EC2_OPTS} ${rt_id} --subnet ${rt_snet}
-    _RET=`IA_find_routetable_subnet ${rt_id} ${rt_snet}`
+    _RET=`ec2-associate-route-table ${IA_EC2_OPTS} ${rt_id} --subnet ${rt_snet} | awk '{print $4}'`
     if [ ! -z "${_RET}" ] && [ "${_RET}" == "${rt_snet}" ]; then
-        IA_loginfo "Updated route table with association with subnet ${_RET}"
+        IA_loginfo "Updated route table with association with subnet ${rt_snet}, RET=${_RET}"
         return 0
     fi
-    IA_logerr "Failed to associate subnet ${rt_snet} with routing table ${rt_id}!"
+    IA_logerr "Failed to associate subnet ${rt_snet} with routing table ${rt_id}, RET=${_RET}!"
     _RET=""
     return 1
 }
