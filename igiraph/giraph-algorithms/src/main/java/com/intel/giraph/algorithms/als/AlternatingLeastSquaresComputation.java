@@ -192,24 +192,36 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             break;
         case RIGHT:
             aggregate(SUM_RIGHT_VERTICES, new LongWritable(1));
-            // send out messages
+            long numTrainEdges = 0L;
+            long numValidateEdges = 0L;
+            long numTestEdges = 0L;
             for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
                 EdgeType et = edge.getValue().getType();
                 switch (et) {
                 case TRAIN:
-                    aggregate(SUM_TRAIN_EDGES, new LongWritable(1));
+                    numTrainEdges++;
                     break;
                 case VALIDATE:
-                    aggregate(SUM_VALIDATE_EDGES, new LongWritable(1));
+                    numValidateEdges++;
                     break;
                 case TEST:
-                    aggregate(SUM_TEST_EDGES, new LongWritable(1));
+                    numTestEdges++;
                     break;
                 default:
                     throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
                 }
+                // send out messages
                 MessageDataWritable newMessage = new MessageDataWritable(vertex.getValue(), edge.getValue());
                 sendMessage(edge.getTargetVertexId(), newMessage);
+            }
+            if (numTrainEdges > 0) {
+                aggregate(SUM_TRAIN_EDGES, new LongWritable(numTrainEdges));
+            }
+            if (numValidateEdges > 0) {
+                aggregate(SUM_VALIDATE_EDGES, new LongWritable(numValidateEdges));
+            }
+            if (numTestEdges > 0) {
+                aggregate(SUM_TEST_EDGES, new LongWritable(numTestEdges));
             }
             break;
         default:
@@ -391,10 +403,10 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     }
 
     /**
-     * This is an aggregator writer, which after each superstep will persist the
+     * This is an aggregator writer for ALS, which after each superstep will persist the
      * aggregator values to disk, by use of the Writable interface.
      */
-    public static class SimpleAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
+    public static class AlternatingLeastSquaresAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
         implements AggregatorWriter {
         /** Name of the file we wrote to */
         private static String FILENAME;

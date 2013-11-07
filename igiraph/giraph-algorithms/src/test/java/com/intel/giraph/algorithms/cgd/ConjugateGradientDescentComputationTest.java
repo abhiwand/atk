@@ -37,7 +37,7 @@ import org.junit.Test;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation.ConjugateGradientDescentMasterCompute;
-import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation.SimpleAggregatorWriter;
+import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation.ConjugateGradientDescentAggregatorWriter;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFCGDInputFormat;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 
@@ -69,7 +69,7 @@ public class ConjugateGradientDescentComputationTest {
 
         conf.setComputationClass(ConjugateGradientDescentComputation.class);
         conf.setMasterComputeClass(ConjugateGradientDescentMasterCompute.class);
-        conf.setAggregatorWriterClass(SimpleAggregatorWriter.class);
+        conf.setAggregatorWriterClass(ConjugateGradientDescentAggregatorWriter.class);
         conf.setVertexInputFormatClass(JsonPropertyGraph4CFCGDInputFormat.class);
         conf.setVertexOutputFormatClass(JsonPropertyGraph4CFOutputFormat.class);
         conf.set("cgd.maxSupersteps", "6");
@@ -89,10 +89,10 @@ public class ConjugateGradientDescentComputationTest {
         // verify results
         assertNotNull(vertexValues);
         assertEquals(5, vertexValues.size());
-        for (long i = 0; i < 5; i++) {
-            assertEquals(4, vertexValues.get(i).length);
+        for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
+            assertEquals(4, entry.getValue().length);
             for (int j = 0; j < 4; j++) {
-                assertEquals(expectedValues[(int)i][j], vertexValues.get(i)[j], 0.01d);    
+                assertEquals(expectedValues[entry.getKey().intValue()][j], entry.getValue()[j], 0.01d);    
             }
         }
     }
