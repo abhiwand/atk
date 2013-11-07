@@ -259,18 +259,18 @@ function all_events(){
 				if(!$(this).hasClass('error')){
 						$(this).parent().animate({
 							/*** here you can change the box shadow color of the field on focus  when it's not valid***/
-							boxShadow: '0px 0px 10px 2px #0071C5'
+							boxShadow: '0px 0px 2px 2px #0071c5 '
 						},90);
 						/*** here you can change the border color of the field on focus when it's not valid***/
-						$(this).parent().css('border','solid 1px #0071C5')
+						$(this).parent().css('border','solid 1px #0071c5 ')
 				}
 				else{
 					$(this).parent().animate({
 						/*** here you can change the box shadow color of the field on focus when it's valid***/
-						boxShadow: '0px 0px 10px 2px #0071C5'
+						boxShadow: '0px 0px 2px 2px #ED1C24 '
 					},90);
 					/*** here you can change the border color of the field on focus when it's valid***/
-					$(this).parent().css('border','solid 1px #0071C5')
+					$(this).parent().css('border','solid 1px #ED1C24 ')
 				}
 				if($(this).parent().find('span').hasClass('ok')){
 					$(this).parent().find('span').removeClass();
@@ -291,10 +291,10 @@ function all_events(){
 				if($(this).hasClass('error')){
 						$(this).parent().animate({
 							/*** here you can change the box shadow color of the field on blur when it's not valid***/
-							boxShadow: '0px 0px 0px 0px #0071C5'		
+							boxShadow: '0px 0px 0px 0px #ED1C24'		
 						},90);
 						/*** here you can change the border color of the field on blur when it's not valid***/
-						$(this).parent().css('border','solid 1px #0071C5');
+						$(this).parent().css('border','solid 1px #ED1C24');
 						$(this).parent().find('i').removeClass('fa-icon-ok').addClass('fa-icon-remove');
 						$(this).parent().find('span').removeClass('ok').addClass('error');
 				}

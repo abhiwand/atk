@@ -45,6 +45,6 @@ object Python extends Controller {
     }
 
     var documentation = Authenticated{ request =>
-      Ok(views.html.index("documentation", request.user._1))
+      Ok(views.html.documentation("documentation", request.user._1))
     }
 }

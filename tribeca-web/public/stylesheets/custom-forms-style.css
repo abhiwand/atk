@@ -46,7 +46,7 @@ h1#logo img{ width:100%; }
 /************************ end of header bar styles *************/
 
 /************** form container styles*********************/
-.DA_holder{ width:80%; margin:16px 8.5%; padding:0;  display: inline-block;}
+.DA_holder{ width:82.7%; margin:16px 8.5%; padding:0;  display: inline-block;}
 
 .DA_radio_holder, 
 .DA_check_holder, 
@@ -226,7 +226,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 /****************************** select box custom styles ********************************/
 
 .DA_custom_form .sbHolder{
-    height:45px; border:solid 1px #ccc; -webkit-border-radius: 3px; border-radius: 3px;
+    height:45px; border:solid 1px #ccc; -webkit-border-radius: 5px; border-radius: 5px;
     padding:10px 0;
     font-family: Neo Sans Intel, Verdana, sans-serif;
     font-size: 14px;
@@ -326,7 +326,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
 
 /*************************************** HORIZONTAL FORM STYLE *****************************************/
 
-.DA_custom_form .horizontal{  width:80.8%; float: left; display: inline; margin:5px 8.5%;}
+.DA_custom_form .horizontal{  width:83.3%; float: left; display: inline; margin:5px 8.5%;}
 .DA_custom_form .horizontal label{ float: left; display: inline; width:35%; padding:0; line-height: 45px}
 .DA_custom_form .horizontal  label.fl{ width:80%; line-height: 23px; padding-bottom:8px; }
 .DA_custom_form .horizontal label.error{ display: block; float: none; width:auto; line-height: 22px; padding:0 5px;}
@@ -388,7 +388,7 @@ label.fl{ line-height:23px; margin-left:-10px; width:80%;}
     .DA_custom_form span{ width:8%!important; }
 
     .DA_custom_form .field{ width:89%!important; }
-    .DA_custom_form .btnp input{ height:45px; line-height: 45px; width:25%; }
+    .DA_custom_form .btnp input{ height:45px; line-height: 45px; width:100%; }
 
     .DA_double{ width:80%!important; padding:0; float: none; display: block; margin:13px auto;}
     .DA_custom_form .sbToggle{ width:23px;  right:2%!important;}
