@@ -1,9 +1,11 @@
 package com.intel.giraph.algorithms.apl;
 
 import com.intel.giraph.io.formats.LongNullTextEdgeInputFormat;
+import com.intel.giraph.io.formats.AveragePathLengthComputationOutputFormat;
 
 import java.util.Map;
 import java.util.Arrays;
+
 import org.junit.Test;
 
 import org.apache.giraph.utils.InternalVertexRunner;
@@ -22,30 +24,30 @@ import com.google.common.collect.Maps;
  */
 public class AveragePathLengthComputationTest {
     /**
-    * Average path length test with toy data.
-    */
+     * Average path length test with toy data.
+     */
     @Test
     public void testToyData() throws Exception {
         /** edge list for test */
-        String[] graph = new String[] {
-            "0 1",
-            "0 3",
-            "1 2",
-            "1 3",
-            "2 0",
-            "2 1",
-            "2 4",
-            "3 4",
-            "4 2",
-            "4 3"
-        }; 
+        String[] graph = new String[]{
+                "0 1",
+                "0 3",
+                "1 2",
+                "1 3",
+                "2 0",
+                "2 1",
+                "2 4",
+                "3 4",
+                "4 2",
+                "4 3"
+        };
 
-        GiraphConfiguration conf = new GiraphConfiguration(); 
+        GiraphConfiguration conf = new GiraphConfiguration();
 
         // Configuration.
         conf.setComputationClass(AveragePathLengthComputation.class);
         conf.setEdgeInputFormatClass(LongNullTextEdgeInputFormat.class);
-        conf.setVertexOutputFormatClass(AveragePathLengthComputation.AveragePathLengthComputationOutputFormat.class);
+        conf.setVertexOutputFormatClass(AveragePathLengthComputationOutputFormat.class);
 
         // run internally
         Iterable<String> results = InternalVertexRunner.run(conf, null, graph);
@@ -63,14 +65,12 @@ public class AveragePathLengthComputationTest {
     }
 
     /**
-     * @brief Parse the output.
-     *
      * @param results String container of output lines.
-     *
      * @return Parsed KV pairs stored in Map.
+     * @brief Parse the output.
      */
     private Map<Long, Integer[]> parseResults(Iterable<String> results) {
-    Map<Long, Integer[]> hopCountResults = Maps.newHashMapWithExpectedSize(Iterables.size(results));
+        Map<Long, Integer[]> hopCountResults = Maps.newHashMapWithExpectedSize(Iterables.size(results));
         for (String line : results) {
             Long key;
             Integer[] values = new Integer[2];

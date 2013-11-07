@@ -41,12 +41,18 @@ import java.util.HashMap;
  * DistanceMapWritable class
  */
 public class DistanceMapWritable implements Writable, Configurable {
-    /** Hadoop configuration handle */
+    /**
+     * Hadoop configuration handle
+     */
     private Configuration conf;
-    /** HashMap to track the shortest hop counts between source and current vertex. */
+    /**
+     * HashMap to track the shortest hop counts between source and current vertex.
+     */
     private HashMap<Long, Integer> distanceMap;
 
-    /** Constructor */
+    /**
+     * Constructor
+     */
     public DistanceMapWritable() {
         distanceMap = new HashMap<Long, Integer>();
     }
@@ -64,7 +70,6 @@ public class DistanceMapWritable implements Writable, Configurable {
      * Check if the source vertex has been observed.
      *
      * @param source Source vertex id.
-     *
      * @return True if source has been observed. Otherwise false.
      */
     public boolean distanceMapContainsKey(long source) {
@@ -75,7 +80,6 @@ public class DistanceMapWritable implements Writable, Configurable {
      * Returns the distance from source to current vertex.
      *
      * @param source Source vertex id.
-     *
      * @return Distance from source to current vertex.
      */
     public int distanceMapGet(long source) {
@@ -85,9 +89,8 @@ public class DistanceMapWritable implements Writable, Configurable {
     /**
      * Add source vertex id and associated distance to the HashMap.
      *
-     * @param source Source vertex id.
+     * @param source   Source vertex id.
      * @param distance Distance from source to current vertex.
-     *
      */
     public void distanceMapPut(long source, int distance) {
         distanceMap.put(source, distance);

@@ -30,6 +30,7 @@ package com.intel.giraph.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
@@ -38,11 +39,17 @@ import org.apache.hadoop.io.Writable;
  * HopCountWritable class.
  */
 public class HopCountWritable implements Writable, Configurable {
-    /** Hadoop configuration handle */
+    /**
+     * Hadoop configuration handle
+     */
     private Configuration conf;
-    /** Source vertex id. */
+    /**
+     * Source vertex id.
+     */
     private long source;
-    /** Distance from source to the next vertex */
+    /**
+     * Distance from source to the next vertex
+     */
     private int distance;
 
     /**
@@ -56,7 +63,7 @@ public class HopCountWritable implements Writable, Configurable {
     /**
      * Constructor.
      *
-     * @param source Source vertex id.
+     * @param source   Source vertex id.
      * @param distance Distance from source vertex id to the next vertex.
      */
     public HopCountWritable(long source, int distance) {
