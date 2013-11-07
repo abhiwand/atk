@@ -92,6 +92,20 @@ public class TitanGraphReader extends StandardTitanGraph {
                     }
                     return loader.getVertex();
 
+                case "LongDistanceMapNull":
+                    final GiraphVertexLoaderLongDistanceMapNull loader1 = new GiraphVertexLoaderLongDistanceMapNull(conf,
+                            vertexId);
+                    for (final Entry data : entries) {
+                        try {
+                            final GiraphVertexLoaderLongDistanceMapNull.RelationFactory factory = loader1.getFactory();
+                            super.edgeSerializer.readRelation(factory, data, tx);
+                            factory.build();
+                        } catch (NullPointerException e) {
+                            LOG.info("Skip this entry because no valid property for Giraph to read");
+                        }
+                    }
+                    return loader1.getVertex();
+
                 case "LongTwoVectorDoubleTwoVector":
                     final GiraphVertexLoaderLongTwoVectorDoubleTwoVector
                             loader2 = new GiraphVertexLoaderLongTwoVectorDoubleTwoVector(

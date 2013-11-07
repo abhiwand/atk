@@ -52,10 +52,11 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Load Giraph Vertex with Long type Vertex Id Double type vertex value Float
- * type edge value
+ * GiraphVertexLoaderLongDoubleFloat loads vertex
+ * with <code>Long</code> vertex ID's,
+ * <code>Double</code> vertex values,
+ * and <code>Float</code> edge weights.
  */
-//@SuppressWarnings("unchecked")
 public class GiraphVertexLoaderLongDoubleFloat {
 
     /**

@@ -51,7 +51,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 
 import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 
 
 /**
