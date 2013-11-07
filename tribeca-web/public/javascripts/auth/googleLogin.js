@@ -60,7 +60,6 @@ $(window).load(function(){
         },
         registerCallback: function(authResult) {
             if(isValidApiResponse(authResult)){
-                authResult.access_token = gapi
                 $("#registerAuthResult").attr("value", JSON.stringify(authResult))
                 googleAuth.registerSubmit()
             }else{
