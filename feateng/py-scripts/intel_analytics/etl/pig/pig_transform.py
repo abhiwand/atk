@@ -67,7 +67,6 @@ def main(argv):
     parser.add_argument('-s', '--schema', dest='schema_information', help='schema information')
     
     cmd_line_args = parser.parse_args()
-    print cmd_line_args
     
     features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
@@ -111,8 +110,6 @@ def main(argv):
     pig_statements.append("transformed_dataset = FOREACH hbase_data GENERATE %s;" % (transform_statement)) 
     pig_statements.append("store transformed_dataset into 'hbase://$OUTPUT' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (hbase_store_args))
     pig_script = "\n".join(pig_statements)
-#     print pig_script
-#     exit(1)
     compiled = Pig.compile(pig_script)
     status = compiled.bind({'OUTPUT':cmd_line_args.output}).runSingle()#without binding anything Pig raises error
     return 0 if status.isSuccessful() else 1

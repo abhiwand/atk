@@ -15,8 +15,7 @@ def main(argv):
     parser.add_argument('-k', '--skip_header', dest='skip_header', help='skip the header line (first line) of the CSV file while loading', action='store_true', default=False)
 
     cmd_line_args = parser.parse_args()
-    print cmd_line_args
-    
+
     delimeter_char = ','#by default this script parses comma separated files
     if cmd_line_args.delimeter_char:
         delimeter_char = cmd_line_args.delimeter_char
