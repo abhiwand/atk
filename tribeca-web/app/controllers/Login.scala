@@ -25,7 +25,7 @@ package controllers
 
 import play.api.mvc._
 import services.authorize.{Providers, Authorize}
-import models.database.{StatementGenerator, MySQLStatementGenerator}
+import models.database.{LoginOutput, StatementGenerator, MySQLStatementGenerator}
 import models._
 import controllers.Session._
 import models.StatusCodes
@@ -38,20 +38,19 @@ import play.api.mvc.SimpleResult
  */
 object Login extends Controller {
 
-    var response: (Int, Option[String]) = (0, None);
     var simpleResult: SimpleResult = Ok
 
     var login = Action(parse.json) {
         request => {
             val auth = new Authorize(request.body, Providers.GooglePlus)
-            response = getResponse(auth, Sessions, MySQLStatementGenerator)
-        }
-        response._1 match {
-            case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
-            case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
-                "/", None, true, false ))
+            val response = getResponse(auth, Sessions, MySQLStatementGenerator)
+            response._1 match {
+                case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
+                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
+                    "/", None, true, false ))
 
-            case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
+                case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
+            }
         }
     }
 
@@ -67,6 +66,10 @@ object Login extends Controller {
 
         val result = Users.login(auth.userInfo.get.email, statementGenerator)
 
+        getResponseFromLoginResult(result, sessionGen)
+    }
+
+    def getResponseFromLoginResult(result: LoginOutput, sessionGen: SessionGenerator): (Int, Option[String]) = {
         if (result.success == 1)
             (StatusCodes.LOGIN, Some(sessionGen.create(result.uid)))
         else

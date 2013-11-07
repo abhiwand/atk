@@ -27,7 +27,7 @@ import play.api.mvc._
 import play.api.libs.json._
 import services.authorize.{Providers, Authorize}
 import models._
-import models.database.{StatementGenerator, MySQLStatementGenerator, UserRow}
+import models.database.{RegistrationOutput, StatementGenerator, MySQLStatementGenerator, UserRow}
 import controllers.Session._
 
 /**
@@ -35,35 +35,34 @@ import controllers.Session._
  */
 object Register extends Controller {
 
-  var json: JsValue = _
-  var auth: Authorize = _
-  var response: (Int, Option[String]) = (0, None)
+    var json: JsValue = _
+    var auth: Authorize = _
+    var response: (Int, Option[String]) = (0, None)
 
     var register = Action {
-      request => {
-          Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
-            formWithErrors => {
-              Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600), "/", None, true, false ))
-            },
-            registrationForm =>{
-              //make sure the terms are set to on since we couldnt' validate with a boolean
-              if(registrationForm.terms == "on" && registrationForm.experience >= 1 && registrationForm.experience <= 4){
-                json = Json.parse(registrationForm.authResult)
-                auth = new Authorize(json, Providers.GooglePlus)
-                response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
-              }
+        request => {
+            Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
+                formWithErrors => {
+                    Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
+                },
+                registrationForm => {
+                    //make sure the terms are set to on since we couldnt' validate with a boolean
+                    if (registrationForm.terms == "on" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
+                        json = Json.parse(registrationForm.authResult)
+                        auth = new Authorize(json, Providers.GooglePlus)
+                        response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
+                    }
+                }
+            )
+        }
+
+            response._1 match {
+                case StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get)
+                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+                    "/", None, true, false))
+                case _ => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
+                    "/", None, true, false))
             }
-          )
-      }
-
-      response._1 match{
-        case  StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get)
-        case  StatusCodes.REGISTRATION_APPROVAL_PENDING => Redirect("/").withCookies(Cookie("approvalPending","true", Some(3600),
-            "/", None, true, false ))
-
-        case _ => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
-            "/", None, true, false ))
-      }
     }
 
     /**
@@ -79,6 +78,10 @@ object Register extends Controller {
         val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true, Some(""), None, None)
         val result = Users.register(u, registrationForm, statementGenerator)
 
+        getResponseFromRegistrationResult(result, sessionGen)
+    }
+
+    def getResponseFromRegistrationResult(result: RegistrationOutput, sessionGen: SessionGenerator): (Int, Option[String]) = {
         if (result.login == 1)
             (StatusCodes.LOGIN, Some(sessionGen.create(result.uid)))
         else
