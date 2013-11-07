@@ -40,7 +40,7 @@ object Python extends Controller {
         request =>
 
             val url = request.user._1.ipythonUrl.toString
-            val secret = request.user._1.secret.get
+            val secret = request.user._1.secret.getOrElse("")
             Ok(views.html.ipython("Ipython", request.user._1)).withCookies(new CookieGenerator createCookie(secret, url))
     }
 }
