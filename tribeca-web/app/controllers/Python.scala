@@ -43,4 +43,8 @@ object Python extends Controller {
             val secret = request.user._1.secret.getOrElse("")
             Ok(views.html.ipython("Ipython", request.user._1)).withCookies(new CookieGenerator createCookie(secret, url))
     }
+
+    var documentation = Authenticated{ request =>
+      Ok(views.html.index("documentation", request.user._1))
+    }
 }
