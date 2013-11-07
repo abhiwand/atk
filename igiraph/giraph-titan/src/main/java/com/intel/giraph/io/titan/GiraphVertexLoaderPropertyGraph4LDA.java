@@ -92,10 +92,6 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
      */
     private final String vertexTypePropertyKey;
     /**
-     * Property key for Edge Type
-     */
-    private final String edgeTypePropertyKey;
-    /**
      * HashMap of configured vertex properties
      */
     private final Map<String, Integer> vertexPropertyKeyValues = new HashMap<String, Integer>();
@@ -114,12 +110,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
     /**
      * the vertex type
      */
-    private VertexType vertexType = VertexType.NONE;
-    /**
-     * the edge type
-     */
-    private EdgeType edgeType = EdgeType.NONE;
-
+    private VertexType vertexType = null;
 
     /**
      * GiraphVertexLoaderPropertyGraph4LDA Constructor with ID
@@ -146,7 +137,6 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
         edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
         edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
         vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
-        edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
         int size = vertexPropertyKeyList.length;
         for (int i = 0; i < size; i++) {
             vertexPropertyKeyValues.put(vertexPropertyKeyList[i], i);
@@ -329,7 +319,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                         throw new IllegalArgumentException(String.format(
                                 "Vertex type string: %s isn't supported.", vertexTypeString));
                     }
-                    vertex.setValue(new VertexDataWritable(vertexType, priorVector));
+                    vertex.setValue(new VertexData4LDAWritable(vertexType, priorVector));
                 }
             } else {
                 Preconditions.checkArgument(this.type.isEdgeLabel());

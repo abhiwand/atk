@@ -155,12 +155,12 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
             for (int i = 0; i < vertexPropertyKeyList.length; i++) {
                 LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
+                // for titan 0.3.2
                 //     this.graph.makeType().name().unique(Direction.OUT).dataType(String.class)
                 //             .makePropertyKey();
+                //for titan 0.4.0
                 this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
 
-                //  this.graph.makeType().name(vertexPropertyKeyList[i]).unique(Direction.OUT).dataType(Double.class)
-                //        .makePropertyKey();
             }
         }
 
@@ -171,22 +171,11 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
             long vertex_id = vertex.getId().get();
             com.tinkerpop.blueprints.Vertex bluePrintVertex = this.graph.getVertex(vertex_id);
             Vector vector = vertex.getValue().getPosteriorVector();
-            JSONArray jsonVertex = new JSONArray();
-
 
             if (vector.size() == vertexPropertyKeyList.length) {
-                try {
-                    jsonVertex.put(vertex_id);
-                    JSONArray jsonValueArray = new JSONArray();
-                    for (int i = 0; i < vector.size(); i++) {
-                        jsonValueArray.put(vector.getQuick(i));
-                        bluePrintVertex.setProperty(vertexPropertyKeyList[i], Double.toString(vector.getQuick(i)));
-                        //bluePrintVertex.setProperty(vertexPropertyKeyList[i], vector.getQuick(i));
-                    }
-                    this.graph.commit();
-                    jsonVertex.put(jsonValueArray);
-                } catch (JSONException e) {
-                    throw new IllegalArgumentException("writeVertex: Couldn't write vertex " + vertex);
+                for (int i = 0; i < vector.size(); i++) {
+                    bluePrintVertex.setProperty(vertexPropertyKeyList[i], Double.toString(vector.getQuick(i)));
+                    //bluePrintVertex.setProperty(vertexPropertyKeyList[i], vector.getQuick(i));
                 }
             } else {
                 LOG.error("The number of output vertex property does not match! " +
@@ -195,7 +184,13 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
                 throw new IllegalArgumentException("The number of output vertex property does not match. Current Vertex is: " + vertex.getId());
             }
 
-            return new Text(jsonVertex.toString());
+            return null;
+        }
+
+        @Override
+        public void close(TaskAttemptContext context)
+                throws IOException, InterruptedException {
+            this.graph.commit();
         }
     }
 }

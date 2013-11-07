@@ -65,7 +65,7 @@ import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_TYPE_PROP
  * @param <V> Vertex value
  * @param <E> Edge value
  */
-public class TitanVertexOutputFormatPropertyGraph4LDA <I extends LongWritable,
+public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
         V extends VertexData4LDAWritable, E extends DoubleWithVectorWritable>
         extends TextVertexOutputFormat<I, V, E> {
 
@@ -172,12 +172,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDA <I extends LongWritable,
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
             for (int i = 0; i < vertexPropertyKeyList.length; i++) {
                 LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
-                //     this.graph.makeType().name().unique(Direction.OUT).dataType(String.class)
-                //             .makePropertyKey();
                 this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
-
-                //  this.graph.makeType().name(vertexPropertyKeyList[i]).unique(Direction.OUT).dataType(Double.class)
-                //        .makePropertyKey();
             }
         }
 
@@ -188,51 +183,12 @@ public class TitanVertexOutputFormatPropertyGraph4LDA <I extends LongWritable,
             long vertex_id = vertex.getId().get();
             com.tinkerpop.blueprints.Vertex bluePrintVertex = this.graph.getVertex(vertex_id);
             Vector vector = vertex.getValue().getVector();
-            JSONArray jsonVertex = new JSONArray();
-            int numValueProperty = 0;
-
-            //output bias if enabled
-            if (enableVertexBias.equals("true")) {
-                //if output bias is enabled, the last property name is for output bias
-                numValueProperty = vertexPropertyKeyList.length - 1;
-                bluePrintVertex.setProperty(vertexPropertyKeyList[numValueProperty], Double.toString(vertex.getValue().getBias()));
-            } else {
-                numValueProperty = vertexPropertyKeyList.length;
-            }
 
             //output vertex value
-            if (vector.size() == numValueProperty) {
-                try {
-                    jsonVertex.put(vertex_id);
-                    JSONArray jsonBiasArray = new JSONArray();
-                    jsonBiasArray.put(vertex.getValue().getBias());
-                    jsonVertex.put(jsonBiasArray);
-                    JSONArray jsonValueArray = new JSONArray();
-                    for (int i = 0; i < vector.size(); i++) {
-                        jsonValueArray.put(vector.getQuick(i));
-                        bluePrintVertex.setProperty(vertexPropertyKeyList[i], Double.toString(vector.getQuick(i)));
-                        //bluePrintVertex.setProperty(vertexPropertyKeyList[i], vector.getQuick(i));
-                    }
-                    this.graph.commit();
-                    jsonVertex.put(jsonValueArray);
-                    // add vertex type
-                    JSONArray jsonTypeArray = new JSONArray();
-                    VertexType vertexType = vertex.getValue().getType();
-                    String vertexString = null;
-                    switch (vertexType) {
-                        case DOC:
-                            vertexString = "d";
-                            break;
-                        case WORD:
-                            vertexString = "w";
-                            break;
-                        default:
-                            throw new IllegalArgumentException(String.format("Unrecognized vertex type: %s", vertexType.toString()));
-                    }
-                    jsonTypeArray.put(vertexString);
-                    jsonVertex.put(jsonTypeArray);
-                } catch (JSONException e) {
-                    throw new IllegalArgumentException("writeVertex: Couldn't write vertex " + vertex);
+            if (vector.size() == vertexPropertyKeyList.length) {
+                for (int i = 0; i < vector.size(); i++) {
+                    bluePrintVertex.setProperty(vertexPropertyKeyList[i], Double.toString(vector.getQuick(i)));
+                    //bluePrintVertex.setProperty(vertexPropertyKeyList[i], vector.getQuick(i));
                 }
             } else {
                 LOG.error("The number of output vertex property does not match! " +
@@ -241,7 +197,13 @@ public class TitanVertexOutputFormatPropertyGraph4LDA <I extends LongWritable,
                 throw new IllegalArgumentException("The number of output vertex property does not match. Current Vertex is: " + vertex.getId());
             }
 
-            return new Text(jsonVertex.toString());
+            return null;
+        }
+
+        @Override
+        public void close(TaskAttemptContext context)
+                throws IOException, InterruptedException {
+            this.graph.commit();
         }
     }
 }

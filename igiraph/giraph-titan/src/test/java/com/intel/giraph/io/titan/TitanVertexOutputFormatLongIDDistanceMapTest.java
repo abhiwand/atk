@@ -187,7 +187,7 @@ public class TitanVertexOutputFormatLongIDDistanceMapTest {
 
         for (int i = 0; i < 5; i++) {
             nid[i] = nodes[i].getID();
-            assertTrue(tx.containsVertex(nid[0]));
+            assertTrue(tx.containsVertex(nid[i]));
             nodes[i] = tx.getVertex(nid[i]);
 
             for (int j = 0; j < 2; j++) {

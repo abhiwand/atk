@@ -155,12 +155,7 @@ public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
             for (int i = 0; i < vertexPropertyKeyList.length; i++) {
                 LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
-                //     this.graph.makeType().name().unique(Direction.OUT).dataType(String.class)
-                //             .makePropertyKey();
-                this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
-
-                //  this.graph.makeType().name(vertexPropertyKeyList[i]).unique(Direction.OUT).dataType(Double.class)
-                //        .makePropertyKey();
+                 this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
             }
         }
 
@@ -181,8 +176,13 @@ public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
 
             bluePrintVertex.setProperty(vertexPropertyKeyList[0], Long.toString(numSources));
             bluePrintVertex.setProperty(vertexPropertyKeyList[1], Long.toString(sumHopCounts));
+            return null;
+        }
+
+        @Override
+        public void close(TaskAttemptContext context)
+                throws IOException, InterruptedException {
             this.graph.commit();
-            return new Text(destinationVidStr + "\t" + numSources + "\t" + sumHopCounts);
         }
     }
 }
