@@ -43,16 +43,21 @@ object Login extends Controller {
     var login = Action(parse.json) {
         request => {
             val auth = new Authorize(request.body, Providers.GooglePlus)
-            val response = getResponse(auth, Sessions, MySQLStatementGenerator)
-            response._1 match {
-                case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
-                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed","true", Some(3600),
-                    "/", None, true, false ))
-
-                case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
-            }
+            getResult(auth, Sessions, MySQLStatementGenerator)
         }
     }
+
+
+    def getResult(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): SimpleResult = {
+        val response = getResponse(auth, sessionGen, statementGenerator)
+        response._1 match {
+            case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get)
+            case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+                "/", None, true, false))
+            case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
+        }
+    }
+
 
     /**
      *

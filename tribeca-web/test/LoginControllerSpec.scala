@@ -8,6 +8,7 @@ import org.specs2.mutable.Specification
 import org.specs2.runner.JUnitRunner
 import play.api.test.FakeApplication
 import play.api.test.Helpers._
+import play.mvc.Http.Context
 import scala.slick.session.Session
 import scala.Some
 import services.authorize.{UserInfo, Authorize}
@@ -29,8 +30,8 @@ class LoginControllerSpec extends Specification with Mockito {
             val sessionGen = mock[SessionGenerator]
             sessionGen.create(1) returns "1"
             val statementGenerator = mock[StatementGenerator]
-            val response = Login.getResponse(auth, sessionGen, statementGenerator)
-            response._1 must beEqualTo(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA)
+            val result = Login.getResult(auth, sessionGen, statementGenerator)
+            (result.header.status == 303 && result.header.headers("Set-Cookie").contains("authenticationFailed")) must beTrue
         }
 
         "get response for valid log in" in {
@@ -60,8 +61,8 @@ class LoginControllerSpec extends Specification with Mockito {
                     }
                 }
 
-                val response = Login.getResponse(auth, sessionGen, dummyStatementGenerator)
-                (response._1 == StatusCodes.LOGIN && response._2 == Some("100")) must beEqualTo(true)
+                val result = Login.getResult(auth, sessionGen, dummyStatementGenerator)
+                (result.header.status == 200 && result.header.headers("Set-Cookie").contains("PLAY_SESSION")) must beEqualTo(true)
             }
 
         }
@@ -94,8 +95,8 @@ class LoginControllerSpec extends Specification with Mockito {
                     }
                 }
 
-                val response = Login.getResponse(auth, sessionGen, dummyStatementGenerator)
-                (response._1 == StatusCodes.REGISTRATION_APPROVAL_PENDING && response._2 == None) must beEqualTo(true)
+                val result = Login.getResult(auth, sessionGen, dummyStatementGenerator)
+                (result.header.status == 200 && !result.header.headers.contains("Set-Cookie")) must beTrue
             }
 
         }
