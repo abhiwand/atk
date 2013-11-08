@@ -6,4 +6,14 @@ assemblySettings
 
 jarName in assembly := "s3-copier.jar"
 
+mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
+  {
+    case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
+    case PathList("javax", "xml", xs @ _*)             => MergeStrategy.first
+    case PathList("org", "apache", xs @ _*)             => MergeStrategy.first
+    case PathList(ps @ _*) if ps.last endsWith ".html" => MergeStrategy.first
+    case x => old(x)
+  }
+}
+
 
