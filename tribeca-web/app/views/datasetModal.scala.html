@@ -1,6 +1,7 @@
 @(user:models.database.UserRow)
 
 @import services.aws.S3
+@import services.aws.baseAccessKey
 @import com.amazonaws.services.s3.model.{S3ObjectSummary}
    <!-- Dataset Modal -->
   <div class="modal fade" id="datasetModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -45,7 +46,7 @@
                         <form id="uploadForm" @*class="dropzone dz-clickable"*@ action="https://gaopublic.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
                             @defining(S3.getPolicy(user.uid.get.toString())){ implicit policy =>
                             <input type="hidden" name="key" value="user/@user.uid/${filename}">
-                            <input type="hidden" name="AWSAccessKeyId" value="AKIAJ65RQRJONMKNT2NQ">
+                            <input type="hidden" name="AWSAccessKeyId" value="@baseAccessKey">
                             <input type="hidden" name="acl" value="private">
                             <!--<input type="hidden" name="success_action_redirect" value="http://localhost/s3">-->
                             <input type="hidden" name="policy" value="@policy">
