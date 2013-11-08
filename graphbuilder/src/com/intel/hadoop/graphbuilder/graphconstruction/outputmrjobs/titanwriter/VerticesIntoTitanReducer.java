@@ -151,7 +151,6 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                         /**
                          * default behavior is to merge the property maps of duplicate vertices
                          * conflicting key/value pairs get overwritten
-                         * if that's a problem, write your own damn @code vertexReducerFunction
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) vertexSet.get(vid);
@@ -193,7 +192,6 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                         /**
                          * default behavior is to merge the property maps of duplicate edges
                          * conflicting key/value pairs get overwritten
-                         * if that's a problem, write your own damn @code edgeReducerFunction
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeKey);

@@ -12,8 +12,9 @@ import org.apache.log4j.Logger;
 
 /**
  * TableToTextGraph
- * a demonstration/testing application showing how to read big tables and generate graphs in
- * textGraph - the  classic GraphBuilder "separate vertex list, edge list text files" format
+ *
+ * Read  a big tables and generate a graph in the TextGraph format,
+ * This is two text files, one a vertex list, and the other an edge list text files.
  */
 
 public class TableToTextGraph {
@@ -117,14 +118,25 @@ public class TableToTextGraph {
         return cmd;
     }
 
+    /**
+     * Encapsulation of the job setup process.
+     */
     public class Job extends AbstractCreateGraphJob {
+        /**
+         * This method allows bidirectional edges (do not clean them).
+         * @return  false
+         */
         @Override
-        public boolean cleanBidirectionalEdge() {
+        public boolean shouldCleanBiDirectionalEdges() {
             return false;
         }
 
+        /**
+         * This method uses hbase.
+         * @return  true
+         */
         @Override
-        public boolean usesHBase() {
+        public boolean shouldUseHBase() {
             return true;
         }
     }
@@ -144,13 +156,13 @@ public class TableToTextGraph {
 
         Job                                   job                 = new TableToTextGraph().new Job();
         HBaseInputConfiguration               inputConfiguration  = new HBaseInputConfiguration();
-        BasicHBaseTokenizer                   tokenizer           = new BasicHBaseTokenizer();
+        BasicHBaseGraphBuildingRule           buildingRule        = new BasicHBaseGraphBuildingRule(cmd);
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
 
 
         LOG.info("============= Creating graph from hbase ==================");
         timer.start();
-        job.run( inputConfiguration,tokenizer, outputConfiguration, cmd);
+        job.run( inputConfiguration,buildingRule, outputConfiguration, cmd);
         LOG.info("========== Done creating graph from hbase ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

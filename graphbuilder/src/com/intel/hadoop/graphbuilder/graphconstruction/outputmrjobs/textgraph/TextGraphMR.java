@@ -24,7 +24,7 @@ import java.util.Set;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.keyfunction.ElementIdKeyFunction;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.GraphGenerationMRJob;
-import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
+import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
@@ -47,7 +47,7 @@ import com.intel.hadoop.graphbuilder.util.Functional;
  * <p>
  *     To run a graph construction job:
  *     <ul>
- *         <li>Configure the graph building pipeline by providing a {@code InputConfiguration} and {@code GraphTokenizer}
+ *         <li>Configure the graph building pipeline by providing a {@code InputConfiguration} and {@code GraphBuildingRule}
  *         through the method {@code init}</li>
  *         <li>Invoke the pipeline with the method {@code run}</li>
  *     </ul>
@@ -68,7 +68,8 @@ import com.intel.hadoop.graphbuilder.util.Functional;
  * </p>
  *
  * @see InputConfiguration
- * @see GraphTokenizer
+ * @see GraphBuildingRule
+ * @see TextGraphReducer
  */
 
 public class TextGraphMR extends GraphGenerationMRJob {
@@ -80,7 +81,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
     private HBaseUtils hbaseUtils = null;
     private boolean    usingHBase = false;
 
-    private GraphTokenizer     tokenizer;
+    private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
 
     private PropertyGraphElement mapValueType;
@@ -94,20 +95,20 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
 
     /**
-     * Configure the graph building pipeline.
+     * Set-up time routine that connects raw data ({@code inputConfiguration} and the graph generations rule
+     * ({@code graphBuildingRule}) into the MR chain.
      *
      * <p>
      *     This step must be taken before attempting to execute the pipeline with the {@code run} method.
      * </p>
      *
-     * @param tokenizer  the graph tokenization rule that streams data records into property graph elements
-     * @param inputConfiguration handles reading raw data and converting it into "records" that can be
-     *                           processed by the tokenizer
+     * @param inputConfiguration object that handles the generation of data records from raw data
+     * @param graphBuildingRule object that handles the conversion of data records into property graph element
      */
     @Override
-    public void init(InputConfiguration inputConfiguration, GraphTokenizer tokenizer) {
+    public void init(InputConfiguration inputConfiguration, GraphBuildingRule graphBuildingRule) {
 
-        this.tokenizer          = tokenizer;
+        this.graphBuildingRule  = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
         this.usingHBase         = inputConfiguration.usesHBase();
 
@@ -124,8 +125,8 @@ public class TextGraphMR extends GraphGenerationMRJob {
      * <p>If the user does not specify these functions, the default behavior is that duplicate objects will be
      * merged by having their property maps merged.</p>
      *
-     * @param vertexReducerFunction  a method for reducing duplicate vertices
-     * @param edgeReducerFunction   a method for reducing duplicate edges
+     * @param vertexReducerFunction user specified function for reducing duplicate vertices
+     * @param edgeReducerFunction   user specified function for reducing duplicate edges
      */
 
     public void setFunctionClass(Class vertexReducerFunction, Class edgeReducerFunction) {
@@ -151,7 +152,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
     /**
      * Set the option to clean (remove) bidirectional edges.
      *
-     * @param clean the boolean option value, if true then clean bidirectional edges.
+     * @param clean the boolean option value, if true then remove bidirectional edges.
      */
 
     @Override
@@ -160,11 +161,14 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Set the intermediate value class.
+     *Set the value class for the property graph elements coming from the mapper/tokenizer.
      *
-     * <p>Always one of the instantiations of a property graph element</p>
+     * <p> The class is one of the instantiations of {@code PropertyGraphElement}, determined the vertex ID type</p>
      *
      * @param valueClass the intermediate value class
+     * @see PropertyGraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
      */
 
     @Override
@@ -183,6 +187,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
      * <p>This can either be a {@code StringType} or {@code LongType}, which are writable encapsulations of the
      * {@code String} and {@code Long} types, respectively. </p>
      * @param vidClass the class of the vertex IDs
+     * @see PropertyGraphElement
      * @see com.intel.hadoop.graphbuilder.types.StringType
      * @see com.intel.hadoop.graphbuilder.types.LongType
      */
@@ -228,9 +233,9 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
         // Set required parameters in configuration
 
-        String test = tokenizer.getClass().getName();
+        String test = graphBuildingRule.getClass().getName();
 
-        conf.set("GraphTokenizer", tokenizer.getClass().getName());
+        conf.set("GraphTokenizer", graphBuildingRule.getGraphTokenizerClass().getName());
         conf.setBoolean("noBiDir", cleanBidirectionalEdge);
         conf.set("vidClass", vidClass.getName());
         conf.set("KeyFunction", keyFuncClass.getName());
@@ -247,6 +252,10 @@ public class TextGraphMR extends GraphGenerationMRJob {
         // set the configuration per the input
 
         inputConfiguration.updateConfigurationForMapper(conf, cmd);
+
+        // update the configuration per the graphBuildingRule
+
+        graphBuildingRule.updateConfigurationForTokenizer(conf, cmd);
 
         // create job from configuration and initialize MR parameters
 
@@ -284,7 +293,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
         LOG.info("Output = " + outputPath);
 
         LOG.info("InputFormat = " + inputConfiguration.getDescription());
-        LOG.info("GraphTokenizerFromString = " + tokenizer.getClass().getName());
+        LOG.info("GraphTokenizerFromString = " + graphBuildingRule.getClass().getName());
 
         if (vertexReducerFunction != null) {
             LOG.info("vertexReducerFunction = " + vertexReducerFunction.getClass().getName());
