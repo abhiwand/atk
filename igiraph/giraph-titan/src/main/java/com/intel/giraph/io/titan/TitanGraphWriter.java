@@ -30,7 +30,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
 
 /**
  * The titan graph writer which connects Giraph to Titan

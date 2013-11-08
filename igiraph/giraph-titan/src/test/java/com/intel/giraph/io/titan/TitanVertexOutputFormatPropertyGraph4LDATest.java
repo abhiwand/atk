@@ -30,8 +30,6 @@ import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAAggregatorWrite
 import com.intel.giraph.io.formats.JsonPropertyGraph4LDAOutputFormat;
 import com.intel.giraph.io.VertexData4LDAWritable;
 import com.intel.mahout.math.DoubleWithVectorWritable;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.TitanTestGraph;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LDA;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
@@ -55,9 +53,8 @@ import org.junit.Ignore;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;

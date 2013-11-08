@@ -49,7 +49,7 @@ import org.junit.Ignore;
 import java.io.IOException;
 import java.util.Iterator;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 
 
@@ -95,7 +95,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
         graph = new TitanTestGraph(titanConfig);
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void TitanHBaseVertexInputLongDoubleFloatTest() throws Exception {
         graph.makeKey("age").dataType(String.class).make();

@@ -59,12 +59,12 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
 
 /**
  * Test TitanHBaseVertexInputFormatPropertyGraph4CF which loads vertex

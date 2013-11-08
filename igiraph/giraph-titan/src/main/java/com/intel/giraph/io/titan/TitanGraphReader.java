@@ -35,7 +35,7 @@ import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.log4j.Logger;
 import org.apache.commons.configuration.Configuration;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 import java.nio.ByteBuffer;
 

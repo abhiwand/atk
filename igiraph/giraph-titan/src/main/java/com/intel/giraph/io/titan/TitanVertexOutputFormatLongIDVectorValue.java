@@ -22,6 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.intel.mahout.math.TwoVectorWritable;
 import com.thinkaurelius.titan.core.*;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
@@ -38,7 +39,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 /**
  * The Vertex Output Format which writes back Giraph algorithm results
@@ -64,64 +65,14 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
 
 
     /**
-     * set up Titan with based on users' configuration
+     * set up Titan based on users' configuration
      *
      * @param conf : Giraph configuration
      */
     @Override
     public void setConf(ImmutableClassesGiraphConfiguration<I, V, E> conf) {
-        sanityCheckInputParameters(conf);
-        conf.setBoolean("mapred.map.tasks.speculative.execution", false);
-        conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+        GiraphTitanUtils.setupTitanOutput(conf);
         super.setConf(conf);
-    }
-
-    /**
-     * check whether input parameter is valid
-     *
-     * @param conf : Giraph configuration
-     */
-    public void sanityCheckInputParameters(ImmutableClassesGiraphConfiguration<I, V, E> conf) {
-        String[] vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
-        if (vertexPropertyKeyList.length == 0) {
-            throw new IllegalArgumentException("Please configure output vertex property list by -D" +
-                    OUTPUT_VERTEX_PROPERTY_KEY_LIST.getKey() + ". Otherwise no vertex result will be written.");
-        }
-
-        if (GIRAPH_TITAN_STORAGE_BACKEND.get(conf).equals("")) {
-            throw new IllegalArgumentException("Please configure Titan storage backend by -D" +
-                    GIRAPH_TITAN_STORAGE_BACKEND.getKey() + ". Otherwise no vertex will be read from Titan.");
-        }
-
-        if (GIRAPH_TITAN_STORAGE_TABLENAME.get(conf).equals("")) {
-            throw new IllegalArgumentException("Please configure Titan storage Table name by -D" +
-                    GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + ". Otherwise no vertex will be read from Titan.");
-        }
-
-        if (GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf).equals("")) {
-            throw new IllegalArgumentException("Please configure Titan storage hostname by -D" +
-                    GIRAPH_TITAN_STORAGE_HOSTNAME.getKey() + ". Otherwise no vertex will be read from Titan.");
-        }
-
-        if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)) {
-            LOG.info(GIRAPH_TITAN_STORAGE_PORT.getKey() + " is configured as default value. " +
-                    "Ensure you are using port " + GIRAPH_TITAN_STORAGE_PORT.get(conf));
-        }
-
-        if (GIRAPH_TITAN_STORAGE_READ_ONLY.get(conf).equals("true")) {
-            throw new IllegalArgumentException("Please turnoff Titan storage read-only by -D" +
-                    GIRAPH_TITAN_STORAGE_READ_ONLY.getKey() + ". Otherwise no vertex will be read from Titan.");
-        }
-
-        if (VERTEX_TYPE_PROPERTY_KEY.get(conf).equals("")) {
-            LOG.info("No vertex type property specified. Ensure your " +
-                    "InputFormat does not require one.");
-        }
-
-        if (EDGE_TYPE_PROPERTY_KEY.get(conf).equals("")) {
-            LOG.info("No edge type property specified. Ensure your " +
-                    "InputFormat does not require one.");
-        }
     }
 
     @Override
@@ -195,8 +146,8 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
         @Override
         public void close(TaskAttemptContext context)
                 throws IOException, InterruptedException {
-            this.graph.commit();
-          //  this.graph.shutdown();
+            this.graph.shutdown();
+            super.close(context);
         }
     }
 }

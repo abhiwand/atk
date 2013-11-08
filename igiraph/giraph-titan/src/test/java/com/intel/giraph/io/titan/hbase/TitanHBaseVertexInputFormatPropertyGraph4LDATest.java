@@ -56,7 +56,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 

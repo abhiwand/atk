@@ -24,8 +24,6 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDistanceMapNull;
 
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.TitanTestGraph;
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.algorithms.apl.AveragePathLengthComputation;
 import com.thinkaurelius.titan.core.*;
@@ -49,11 +47,9 @@ import org.junit.Test;
 import org.junit.Ignore;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Map;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
@@ -112,7 +108,7 @@ public class TitanVertexOutputFormatLongIDDistanceMapTest {
         open();
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void TitanVertexOutputFormatLongIDDistanceMapTest() throws Exception {
         /*

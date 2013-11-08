@@ -54,7 +54,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
@@ -111,7 +111,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest {
 
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest() throws Exception {
         /* a small four vertex graph
