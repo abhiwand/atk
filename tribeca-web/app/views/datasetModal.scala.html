@@ -25,12 +25,16 @@
                               <tr><th>Name</th><th>Size</th></tr>
                           </thead>
                             <tbody >
+
                             @for(file <- S3.getObjectList(user.uid.get.toString)){
+
                                 <tr class=''>
                                     <td>@S3.formatName(file.getKey)</td>
                                     <td>@S3.formatSize(file.getSize)</td>
+                                    <td><i class="fa-icon-remove file-remove" id="file-remove-" ></i></td>
                                 </tr>
-                            }
+
+                                }
                           </tbody>
                         </table>  
                     </div>

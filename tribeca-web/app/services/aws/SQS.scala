@@ -29,7 +29,6 @@ object SQS {
   }
 
   def createPermissionPolicy(queueName:String, url: String): String ={
-    //var pi = Json.arr()
     val pi = collection.mutable.Seq()
     val principalIds = Play.application.configuration.getStringList("aws.SQS.principalIds").get
     val permissions = Play.application.configuration.getStringList("aws.SQS.permissions").get
@@ -52,10 +51,6 @@ object SQS {
                           )
     Json.stringify(policy)
   }
-  def test() = {
-    val message = new SendMessageRequest("https://sqs.us-west-2.amazonaws.com/953196509655/SaaSFileUpdates","test two web")
-    sqs.sendMessage(message)
-  }
 
   def createQueue(clusterId: String): String ={
     val queue = new CreateQueueRequest(clusterId)
@@ -66,5 +61,14 @@ object SQS {
     sqs.setQueueAttributes(settigns)
 
     queueUrl.getQueueUrl
+  }
+
+  def setMessage(url:String, message:String){
+    val messageRequest = new SendMessageRequest(url, message)
+    sqs.sendMessage(messageRequest)
+  }
+
+  def setFileCreateMessage(fileName:String, size:Long){
+
   }
 }
