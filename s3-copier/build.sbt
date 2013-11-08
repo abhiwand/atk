@@ -14,10 +14,10 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk" % "1.6.4",
   "com.github.seratch" % "awscala_2.10" % "0.1.0-SNAPSHOT",
   "org.apache.hadoop" % "hadoop-core" % "1.2.1",
-  "org.apache.hadoop" % "hadoop-distcp" % "0.23.9",
   "com.typesafe.play" %% "play-json" % "2.2.0",
   "com.github.scala-incubator.io" % "scala-io-file_2.10" % "0.4.2",
-  "com.github.scopt" %% "scopt" % "3.1.0"
+  "com.github.scopt" %% "scopt" % "3.1.0",
+  "org.scalaz" %% "scalaz-core" % "7.0.4"
 )     
 
 

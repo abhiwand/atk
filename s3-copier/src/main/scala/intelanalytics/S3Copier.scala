@@ -1,8 +1,14 @@
 import awscala._, s3._
+import scalaz._
+import Scalaz._
+import scala.concurrent.duration._
+
 package com.intel.intelanalytics {
 
 import awscala.sqs.{Message, SQS}
-import org.apache.hadoop.tools.{DistCpOptions, DistCp}
+import scalax.io.{Input, StandardOpenOption}
+
+//import org.apache.hadoop.tools.{DistCpOptions, DistCp}
 import play.api.libs.json.Json
 import org.apache.hadoop.conf.Configuration
 import scala.collection._
@@ -30,7 +36,12 @@ object S3Copier {
   def writeProgress(progressFolder: String, status: FileStatus) = {
     implicit val fileStatusFormat = Json.format[FileStatus]
     val json = Json.toJson(status)
-    (Path(progressFolder) / (status.file + ".status")).write(Json.stringify(json))
+    val path = Path.fromString(progressFolder)
+
+    if (!path.exists) {
+      path.createDirectory(createParents = true)
+    }
+    (path / (s"${status.file}.status", '/')).write(Json.stringify(json))
   }
 
   def parseConfig(args: Array[String]) : Config = {
@@ -72,45 +83,75 @@ object S3Copier {
     queue.messages().foreach {
       msg =>
 
+        log(msg.body)
         val json = Json.parse(msg.body)
 
         val file = for {
           bucketName <- (json \ "bucket").asOpt[String] orElse log("bucket not found in message")
-          if bucketName == config.bucket
-          fileName <- (json \ "name").asOpt[String] orElse log("fileName not found in message")
-          if fileName.startsWith(config.prefix)
-          bucket <- s3.bucket(bucketName) orElse log("bucket " + bucketName + " does not exist")
-          file <- bucket.get(fileName) orElse log("uploaded file " + fileName + " does not exist")
+          validBucket <- (bucketName == config.bucket).option(bucketName) orElse log("bucket name does not match")
+          fileName <- (json \ "name").asOpt[String] orElse log("name not found in message")
+          valid <- fileName.startsWith(config.prefix).option(fileName) orElse log("fileName prefix does not match")
+          bucket <- s3.bucket(bucketName) orElse log(s"bucket $bucketName does not exist")
+          file <- bucket.get(fileName) orElse log(s"uploaded file $fileName does not exist")
         } yield file
 
-        val result = file.map {
+        log(file.toString)
+
+        file.foreach {
           f =>
-            val len = f.getObjectMetadata.getContentLength
-            var status = FileStatus(f.key, 0, len)
-            writeProgress(config.statusDestination, status)
-            val source = f.publicUrl.toString
-            val destination = new HdPath(config.destination + "/" + f.key)
-            val distCp = new DistCp(configuration, new DistCpOptions(new HdPath(source), destination))
-            log("Starting distcp")
-            val job = distCp.execute()
-            val result = future {
-              while(!job.isComplete) {
-                status = status.copy(currentSize = fs.getContentSummary(destination).getLength)
-                log("updated progress for " + f.key + ": " + status.progress())
-                writeProgress(config.statusDestination, status)
-                Thread.sleep(1000)
-              }
-              if (job.isSuccessful) {
-                msg.destroy()
-                log("Message processed: " + f.key)
-              } else {
-                log("Failed to copy " + f.key)
-              }
-              status
-            }
+            val result: Future[FileStatus] = copyFile(f, config, configuration, fs)
             inProgress.put(f.key, result)
         }
+        msg.destroy()
     }
+
+    log("Final results:")
+    inProgress.foreach(kv => println(Await.result(kv._2, Duration.Inf).toString))
+
+//    log(s"Files in bucket ${config.bucket} starting with ${config.prefix}:")
+//    s3.bucket(config.bucket).get.keys()
+//        .filter(_.startsWith(config.prefix))
+//        .foreach(log)
+  }
+
+  def copyFile(f: S3Object, config: Config, configuration: Configuration, fs: FileSystem): Future[FileStatus] = {
+    val len = f.getObjectMetadata.getContentLength
+    var status = FileStatus(f.key, 0, len)
+    writeProgress(config.statusDestination, status)
+    val localPath = Path.fromString(config.statusDestination) / (f.key, '/')
+    future {
+      val resource = scalax.io.Resource.fromInputStream(f.content)
+      localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
+      log(s"Wrote to $localPath")
+      log(s"Local exists: ${localPath.exists}")
+      val fs = FileSystem.get(configuration)
+
+      fs.moveFromLocalFile(new HdPath(localPath.toString()), new HdPath(config.destination))
+      log(s"Wrote to HDFS: ${config.destination}")
+      status.copy(currentSize = len)
+    }
+
+
+//    val source = f.publicUrl.toString
+//    val destination = new HdPath(config.destination + "/" + f.key)
+//    val distCp = new DistCp(configuration, new DistCpOptions(new HdPath(source), destination))
+//    log("Starting distcp")
+//    val job = distCp.execute()
+//    val result = future {
+//      while (!job.isComplete) {
+//        status = status.copy(currentSize = fs.getContentSummary(destination).getLength)
+//        log(s"updated progress for ${f.key} : ${status.progress()}")
+//        writeProgress(config.statusDestination, status)
+//        Thread.sleep(1000)
+//      }
+//      if (job.isSuccessful) {
+//        log(s"Message processed: ${f.key}")
+//      } else {
+//        log("Failed to copy ${f.key}")
+//      }
+//      status
+//    }
+    //result
   }
 }
 
