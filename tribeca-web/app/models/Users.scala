@@ -70,9 +70,9 @@ object Users {
      * @param email
      * @return
      */
-    def exists(email: String): Boolean = {
+    def exists(email: String, getUserCommand: GetUserDetailsCommand): Boolean = {
 
-        val usersResult = readByEmail(email, DBGetUserDetailsCommand)
+        val usersResult = readByEmail(email, getUserCommand)
         if (usersResult != None && usersResult.get.uid.get > 0)
             true
         else

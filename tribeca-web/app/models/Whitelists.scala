@@ -23,17 +23,16 @@
 
 package models
 
-import play.api.Play.current
-import play.api.db.slick.Config.driver.simple._
-import play.api.db.slick.DB
 import scala.Some
+import models.database.{GetWhiteListEntryCommand, WhiteListRow}
 
 /**
  * Singleton object to provide white list services
  */
 object Whitelists {
-    def anonymousWhitelist(): database.WhiteListRow = {
-        database.WhiteListRow(Some(0), Some(""))
+
+    def anonymousWhitelist(): WhiteListRow = {
+        WhiteListRow(Some(0), Some(""))
     }
 
     /**
@@ -41,37 +40,22 @@ object Whitelists {
      * @param email
      * @return
      */
-    def exists(email: String): Boolean = {
-        val whiteListResult = read(email)
-        if (whiteListResult != null && whiteListResult.uid.get > 0) {
+    def exists(email: String, getWhiteListEntryCommand: GetWhiteListEntryCommand): Boolean = {
+        val whiteListResult = read(email, getWhiteListEntryCommand)
+        if (whiteListResult != None && whiteListResult.get.uid.get > 0)
             true
-        } else {
+        else
             false
-        }
     }
+
+
 
     /**
      *
      * @param email
      * @return
      */
-    def getByEmail(email: String): Query[database.WhiteListTable.type, database.WhiteListRow] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            for {w <- database.WhiteListTable if w.email === email} yield w
-    }
-
-    /**
-     *
-     * @param email
-     * @return
-     */
-    def read(email: String): database.WhiteListRow = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val result = getByEmail(email).list
-            if (result != null && result.length > 0) {
-                result.last
-            } else {
-                null
-            }
+    def read(email: String, getWhiteListEntryCommand: GetWhiteListEntryCommand): Option[WhiteListRow] = {
+        getWhiteListEntryCommand.execute(email)
     }
 }
