@@ -50,7 +50,6 @@ def main(argv):
     parser.add_argument('-s', '--print-schema', dest='print_schema', help='prints the schema of the given hbase table and exits', action='store_true', default=False)
     
     cmd_line_args = parser.parse_args()
-    print cmd_line_args
     
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         if not hbase_client.table_exists(cmd_line_args.input):
@@ -129,7 +128,9 @@ def main(argv):
         if not cmd_line_args.keep_original_feature:
             if not cmd_line_args.output == cmd_line_args.input:#if NOT an in place transform (the output table is the same as the input table)
                 #if the transform is an inplace transform the feature is NOT removed from the source table!
-                etl_schema.feature_names.remove(cmd_line_args.feature_to_transform)
+                feature_index = etl_schema.feature_names.index(cmd_line_args.feature_to_transform)
+                del etl_schema.feature_names[feature_index]
+                del etl_schema.feature_types[feature_index]
         etl_schema.feature_names.append(cmd_line_args.new_feature_name)
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types

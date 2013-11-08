@@ -66,7 +66,6 @@ def main(argv):
     parser.add_argument('-s', '--schema', dest='schema_information', help='schema information')
     
     cmd_line_args = parser.parse_args()
-    print cmd_line_args
     
     if (cmd_line_args.input == cmd_line_args.output) and (not cmd_line_args.keep_original_feature):#in-place transformation AND don't keep source
         raise Exception("For in-place transformations the source/original feature has to be kept")

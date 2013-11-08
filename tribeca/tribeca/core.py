@@ -20,6 +20,7 @@ from intel_analytics.etl.schema import ETLSchema
 
 #for quick testing
 local_run = True
+debug_run = True
 DATAFRAME_NAME_PREFIX_LENGTH=5 #table name prefix length, names are generated with a rand prefix
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 feateng_home = os.path.join(base_script_path,'..','..', 'feateng')
@@ -89,7 +90,8 @@ def read_csv(file, schema=None, skip_header=False):
     if skip_header:  
         args += ['-k']  
     
-    print args
+    if debug_run:
+        print args
     # need to delete/create output table so that we can write the transformed features
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         hbase_client.drop_create_table(df_name , [CONFIG_PARAMS['etl-column-family']])   
@@ -284,7 +286,8 @@ class HBaseTable(Table):
         if keep_source_column:
             args += ['-k']
             
-        print args
+        if debug_run:
+            print args
         
         return_code = subprocess.call(args)
                     
@@ -294,7 +297,9 @@ class HBaseTable(Table):
         self.table_name = table_name
         #need to update schema here as it's difficult to pass the updated schema info from jython to python
         if not keep_source_column:
-            etl_schema.feature_names.remove(column_name)
+                feature_index = etl_schema.feature_names.index(column_name)
+                del etl_schema.feature_names[feature_index]
+                del etl_schema.feature_types[feature_index]
         etl_schema.feature_names.append(new_column_name)
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types
@@ -362,7 +367,9 @@ class HBaseTable(Table):
         with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
             hbase_client.drop_create_table(output_table , [CONFIG_PARAMS['etl-column-family']])#create output table
             
-        print args
+        if debug_run:
+            print args
+            
         return_code = subprocess.call(args)
  
         if return_code:
