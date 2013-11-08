@@ -65,58 +65,6 @@ object SQS {
     val settigns = new SetQueueAttributesRequest(queueUrl.getQueueUrl, mapAsJavaMap(policyMap))
     sqs.setQueueAttributes(settigns)
 
-   /* val perm = new AddPermissionRequest(queueUrl.getQueueUrl,"addnecessaryusers",util.Arrays.asList("arn:aws:iam::953196509655:user/IntelAnalytics_Web"),
-      ListBuffer(List("GetQueueAttributes"): _*))
-    perm.setRequestCredentials(baseCredentials)
-    val test = sqs.addPermission(perm)*/
-
-    /*Play.application.configuration.getObjectList("aws.SQS.users").get.foreach( user =>{
-      val secretAccessKey = user.toConfig.getString("secretAccessKey")
-      val accessKey = user.toConfig.getString("accessKey")
-      val permission = new AddPermissionRequest(queueUrl.getQueueUrl,"addPerm",util.Arrays.asList(principalId), permissions)
-
-      permission.setRequestCredentials( new BasicAWSCredentials(secretAccessKey, accessKey))
-      sqs.addPermission(permission)
-
-
-      })*/
-
-      //perm.setRequestCredentials( new BasicAWSCredentials(baseAccessKey, baseSecretAccessKey))
-        //sqs.addPermission(perm)
-
-
-    //Play.application.configuration.getConfigList("aws.SQS.users") map(new awsUser(_))
-    //Play.application.configuration.getConfigList("aws.SQS.users") map(new awsUser(_))
-  /*  Play.application.configuration.getObjectList("aws.SQS.users")
-      .foreach(java.util.List[_ <: com.typesafe.config.ConfigObject]){
-
-    }*/
-
-    /*  user(0).unwrapped().
-
-    }*/
-    //val users = List("arn:aws:iam::953196509655:user/IntelAnalytics_User")
-    //val u = util.Arrays.asList("arn:aws:iam::953196509655:user/IntelAnalytics_Web")
-
-
-    //val policyMap =  Map( "Policy" -> createPermissionPolicy)
-    //val pm = java.util.Map<String,String>()
-    //policyMap.toMap[String,String]
-    //mapAsJavaMap(policyMap).asInstanceOf[java.util.Map[java.lang.String,java.lang.String]]
-    //val settigns = new SetQueueAttributesRequest(queueUrl.getQueueUrl, mapAsJavaMap(policyMap))
-
-   /* val t = queueUrl.getQueueUrl
-
-    var gqar = new GetQueueAttributesRequest(queueUrl.getQueueUrl)
-
-    //var bleh = new java.util.Collection[String]()
-
-    val jul: java.util.List[String] = ArrayBuffer("All")
-
-    */
-
-    /*var quedata = sqs.getQueueAttributes(gqar)
-    val quel = sqs.listQueues*/
     queueUrl.getQueueUrl
   }
 }
