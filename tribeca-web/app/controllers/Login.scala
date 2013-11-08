@@ -71,13 +71,17 @@ object Login extends Controller {
 
         val result = Users.login(auth.userInfo.get.email, statementGenerator)
 
-        getResponseFromLoginResult(result, sessionGen)
-    }
+        if (result.success == 1) {
 
-    def getResponseFromLoginResult(result: LoginOutput, sessionGen: SessionGenerator): (Int, Option[String]) = {
-        if (result.success == 1)
-            (StatusCodes.LOGIN, Some(sessionGen.create(result.uid)))
+            val sessionId = sessionGen.create(result.uid)
+            if (sessionId == None)
+                (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
+            else
+                (StatusCodes.LOGIN, Some(sessionId.get))
+        }
         else
             (result.errorCode, None)
     }
 }
+
+

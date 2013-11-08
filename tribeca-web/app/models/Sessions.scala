@@ -49,15 +49,14 @@ object Sessions extends SessionGenerator {
      * @param uid
      * @return
      */
-    def create(uid: Long): String = DB.withSession {
+    def create(uid: Long): Option[String] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val sessionId = createSessionId
             val successful = table.insert(SessionRow(sessionId, uid, "", System.currentTimeMillis / 1000))
-            if (successful == 1) {
-                return sessionId
-            } else {
-                return null
-            }
+            if (successful == 1)
+                Some(sessionId)
+            else
+                None
     }
 
     /**

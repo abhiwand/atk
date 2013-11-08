@@ -21,7 +21,7 @@ trait SessionGenerator {
      * @param uid
      * @return
      */
-    def create(uid: Long): String
+    def create(uid: Long): Option[String]
 
     /**
      *
