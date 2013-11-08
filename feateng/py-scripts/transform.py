@@ -1,10 +1,24 @@
 import sys
 import re
 import subprocess
+import os
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.argparse_lib import ArgumentParser
 from intel_analytics.etl.config import CONFIG_PARAMS
 from intel_analytics.etl.schema import ETLSchema
+
+base_script_path = os.path.dirname(os.path.abspath(__file__))
+
+#If the INTEL_ANALYTICS_ETL_RUN_LOCAL env. variable is set, run in local mode
+#useful when running the validation tests, which take quite a lot of time if not run in local mode
+should_run_local_mode = False
+try:
+    value = os.environ["INTEL_ANALYTICS_ETL_RUN_LOCAL"]
+    if value == 'true':
+        should_run_local_mode = True
+        print "Will run pig in local mode"
+except:
+    pass
 
 def validate_args(cmd_line_args):
     errors = []
@@ -39,8 +53,8 @@ def main(argv):
     print cmd_line_args
     
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        if not hbase_client.is_table_readable(cmd_line_args.input):
-            print "Specified input table %s is not readable"%(cmd_line_args.input)
+        if not hbase_client.table_exists(cmd_line_args.input):
+            print "Specified input table %s does not exist"%(cmd_line_args.input)
             sys.exit(1)    
 
     etl_schema = ETLSchema()
@@ -56,6 +70,9 @@ def main(argv):
                 feature_type = etl_schema.feature_types[i] 
                 print "%s:%s"%(feature_name,feature_type)
         sys.exit(1)
+        
+    if (cmd_line_args.input == cmd_line_args.output) and (not cmd_line_args.keep_original_feature):#in-place transformation AND don't keep source
+        raise Exception("For in-place transformations the source/original feature has to be kept")
    
     errors = validate_args(cmd_line_args)
     if len(errors)>0:
@@ -63,13 +80,12 @@ def main(argv):
     
     if cmd_line_args.take_a_diff:
         with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-            if cmd_line_args.output and not hbase_client.is_table_readable(cmd_line_args.output):
-                print "Specified output table %s is not readable"%(cmd_line_args.output)
+            if cmd_line_args.output and not hbase_client.table_exists(cmd_line_args.output):
+                print "Specified output table %s does not exist"%(cmd_line_args.output)
                 sys.exit(1)        
                 
             dest_etl_schema = ETLSchema()
             dest_etl_schema.load_schema(cmd_line_args.output)           
-                             
             input_columns = set(etl_schema.feature_names)
             output_columns = set(dest_etl_schema.feature_names)
             diff_columns = list(output_columns - input_columns)
@@ -84,14 +100,20 @@ def main(argv):
     
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         #create if output table doesn't exist
-        if not hbase_client.is_table_readable(cmd_line_args.output):          
-            hbase_client.drop_create_table(cmd_line_args.output , [CONFIG_PARAMS['etl-column-family']])
-                        
-    args = ['pig', 'py-scripts/intel_analytics/etl/pig/pig_transform.py', '-f', cmd_line_args.feature_to_transform, 
-                        '-i', cmd_line_args.input, '-o', cmd_line_args.output, 
-                        '-t', cmd_line_args.transformation_function, '-n', cmd_line_args.new_feature_name, 
-                         '-u', feature_names_as_str, '-r', feature_types_as_str]
+        if not hbase_client.table_exists(cmd_line_args.output):          
+            hbase_client.drop_create_table(cmd_line_args.output, [CONFIG_PARAMS['etl-column-family']])
+    
+    transform_script_path = os.path.join(base_script_path, 'intel_analytics', 'etl', 'pig', 'pig_transform.py')
         
+    args = ['pig']
+    
+    if should_run_local_mode:
+        args += ['-x', 'local']
+                               
+    args += [transform_script_path, '-f', cmd_line_args.feature_to_transform, 
+                '-i', cmd_line_args.input, '-o', cmd_line_args.output, 
+                '-t', cmd_line_args.transformation_function, '-n', cmd_line_args.new_feature_name, 
+                '-u', feature_names_as_str, '-r', feature_types_as_str]
     
     if cmd_line_args.transformation_function_args:  
         args += ['-a', cmd_line_args.transformation_function_args]
@@ -105,7 +127,9 @@ def main(argv):
     if ret == 0:#success
         #need to update schema here as it's difficult to pass the updated schema info from jython to python
         if not cmd_line_args.keep_original_feature:
-            etl_schema.feature_names.remove(cmd_line_args.feature_to_transform)
+            if not cmd_line_args.output == cmd_line_args.input:#if NOT an in place transform (the output table is the same as the input table)
+                #if the transform is an inplace transform the feature is NOT removed from the source table!
+                etl_schema.feature_names.remove(cmd_line_args.feature_to_transform)
         etl_schema.feature_names.append(cmd_line_args.new_feature_name)
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types

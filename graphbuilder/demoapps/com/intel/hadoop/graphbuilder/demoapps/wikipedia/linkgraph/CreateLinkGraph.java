@@ -20,9 +20,11 @@ package com.intel.hadoop.graphbuilder.demoapps.wikipedia.linkgraph;
 
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextGraphOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.OutputConfiguration;
+import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanCommandLineOptions;
 import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.TextFileInputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.inputformat.WikiPageInputFormat;
+import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
@@ -32,6 +34,28 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
+/**
+ * Generate a link graph from a collection of wiki pages.
+ * <p>
+ * <ul>
+ *     <li>There is vertex for every wiki page in the specified input file.</li>
+ *     <li>There is a "linksTO" edge from each page to every page to which it links.</li>
+ * </ul>
+ * </p>
+ *
+ * <p>At present there are two possible datasinks, a TextGraph, or a load into the Titan graph database. At present,
+ * only one datasink can be specified for each run.
+ * <ul>
+ *     <li>To specify a text output: use option <code>-o directory_name </code></li>
+ *     <li>To specify a Titan load, use the option <code>-t</code>
+ *     <ul><li>The tablename used by Titan is specified in the config file specified at <code> -conf conf_path </code></li>
+ *     <li>If no tablename is specified, Titan uses the default table name <code>titan</code></li>
+ *     <li><code>-a</code> an option that tells Titan it can append the newly generated graph to an existing
+ *         one in the same table. Default behavior is to abort if you try to use an existing Titan table name</li></ul>
+ * </ul>
+ * </p>
+ *
+ */
 public class CreateLinkGraph {
 
     private static final Logger LOG = Logger.getLogger(CreateLinkGraph.class);
@@ -56,15 +80,17 @@ public class CreateLinkGraph {
                 .withArgName("output path")
                 .create("o"));
         options.addOption("t", "titan", false, "select Titan for graph storage");
+        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
+                .withDescription("Append Graph to Current Graph at Specified Titan Table")
+                .create("a"));
 
         commandLineInterface.setOptions(options);
     }
 
-    /**
+    /*
      * This function checks whether required input path and output path
      * are specified as command line arguments
      *
-     * @param args Command line parameters
      */
     private static void checkCli(String[] args) {
         String outputPath = null;
@@ -73,6 +99,8 @@ public class CreateLinkGraph {
 
         if (cmd.hasOption("out") && cmd.hasOption("titan")) {
             commandLineInterface.showHelp("You cannot simultaneously specify a file and Titan for the output.");
+        } else if (!cmd.hasOption("titan") && cmd.hasOption(TitanCommandLineOptions.APPEND)) {
+            commandLineInterface.showHelp("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
         } else if (cmd.hasOption("out")) {
             outputPath = cmd.getOptionValue("out");
             LOG.info("output path: " + outputPath);
@@ -83,21 +111,25 @@ public class CreateLinkGraph {
         }
     }
 
+    /**
+     * Encapsulation of the job setup process.
+     */
     public class Job extends AbstractCreateGraphJob {
 
         @Override
-        public boolean cleanBidirectionalEdge() {
+        public boolean shouldCleanBiDirectionalEdges() {
             return false;
         }
 
         @Override
-        public boolean usesHBase() {
+        public boolean shouldUseHBase() {
             return false;
         }
     }
 
     /**
-     * @param args [inputPath, outputPath
+     * Main method for creating the link graph
+     * @param args raw command line
      * @throws Exception
      */
 
@@ -114,9 +146,9 @@ public class CreateLinkGraph {
         Job job = new CreateLinkGraph().new Job();
         job = (Job) commandLineInterface.getRuntimeConfig().addConfig(job);
 
-        WikiPageInputFormat format = new WikiPageInputFormat();
+        WikiPageInputFormat        format             = new WikiPageInputFormat();
         TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
-        GraphTokenizer tokenizer = new LinkGraphTokenizer();
+        GraphBuildingRule          buildingRule       = new LinkGraphBuildingRule();
 
         OutputConfiguration outputConfiguration = null;
 
@@ -128,7 +160,7 @@ public class CreateLinkGraph {
 
         LOG.info("========== Creating link graph ================");
         timer.start();
-        job.run(inputConfiguration, tokenizer, outputConfiguration, commandLineInterface.getCmd());
+        job.run(inputConfiguration, buildingRule, outputConfiguration, commandLineInterface.getCmd());
         LOG.info("========== Done creating link graph ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }
