@@ -3,8 +3,7 @@ Titan-specific implementation
 """
 
 from tribeca.graph.titan.ml import TitanGiraphMachineLearning
-from tribeca.graph.biggraph import GraphBuilder
-
+from tribeca.graph.biggraph import GraphBuilder, GraphBuilderFactory
 
 class TitanGraph(object):   # TODO: inherit BigGraph
     """
@@ -18,7 +17,7 @@ class TitanGraph(object):   # TODO: inherit BigGraph
 #------------------------------------------------------------------------------
 # Graph Builder
 #------------------------------------------------------------------------------
-class TitanGraphBuilder(object):
+class TitanGraphBuilderFactory(GraphBuilderFactory):
     """
     Provides a set of graph builders for a particular table
     """
