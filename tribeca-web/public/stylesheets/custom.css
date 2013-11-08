@@ -528,5 +528,6 @@ button.close {
 #footer-front a {
 }
 
-.modal-dialog {
+.table thead > tr > th {
+    border-bottom: 0px solid #000;
 }
