@@ -60,8 +60,7 @@ object S3 {
   }
 
   def getObjectList(userIdentifier: String): mutable.Buffer[S3ObjectSummary] = {
-    val myCredentials = new BasicAWSCredentials(access_key, aws.secret_access_key);
-    val s3Client = new AmazonS3Client(myCredentials);
+    val s3Client = new AmazonS3Client(baseCredentials);
     val objectList = s3Client.listObjects(BUCKET, PREFIX + userIdentifier + "/")
     scala.collection.JavaConversions.asScalaBuffer[S3ObjectSummary](objectList.getObjectSummaries)
   }
@@ -97,7 +96,7 @@ object S3 {
 
   def createSignature(policy: String): String = {
     val hmac = Mac.getInstance("HmacSHA1");
-    hmac.init(new SecretKeySpec(aws.secret_access_key.getBytes("UTF-8"), "HmacSHA1"));
+    hmac.init(new SecretKeySpec(baseSecretAccessKey.getBytes("UTF-8"), "HmacSHA1"));
     new BASE64Encoder().encode(hmac.doFinal(policy.getBytes("UTF-8"))).replaceAll("\n", "");
   }
 }
