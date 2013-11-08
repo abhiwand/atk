@@ -1,5 +1,6 @@
 package com.intel.hadoop.graphbuilder.graphconstruction.inputmappers;
 
+import com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph.BasicHBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.demoapps.tabletotextgraph.BasicHBaseTokenizer;
 import com.intel.hadoop.graphbuilder.graphconstruction.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
@@ -60,11 +61,19 @@ public class BaseMapperTest {
         //this is the config if we were loading titan from hbase
         conf.set("GraphTokenizer", BasicHBaseTokenizer.class.getName());
         conf.set("KeyFunction", SourceVertexKeyFunction.class.getName());
-        //sample command line paramaters
-        //-e
-        conf.set(GBHTableConfig.ECN_CONF_NAME, "cf:name,cf:dept,worksAt");
-        //-v
-        conf.set(GBHTableConfig.VCN_CONF_NAME, "cf:name=cf:age,cf:dept");
+
+        //sample vertex and edge generation rules
+
+        String[] vertexRules = new String[1];
+        vertexRules[0] = "cf:name=cf:age,cf:dept";
+        BasicHBaseGraphBuildingRule.packVertexRulesIntoConfiguration(conf,vertexRules);
+
+        String[] edgeRules = new String[1];
+        edgeRules[0] =  "cf:name,cf:dept,worksAt";
+        BasicHBaseGraphBuildingRule.packEdgeRulesIntoConfiguration(conf, edgeRules);
+
+        String[] directedEdgeRules = new String[0];
+        BasicHBaseGraphBuildingRule.packDirectedEdgeRulesIntoConfiguration(conf, directedEdgeRules);
 
         //mapper context mocks
         Class valClass = PropertyGraphElementStringTypeVids.class;

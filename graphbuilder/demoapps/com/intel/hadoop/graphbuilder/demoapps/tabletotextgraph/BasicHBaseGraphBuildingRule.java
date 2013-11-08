@@ -76,6 +76,7 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
     private String srcTableName;
     private String[] vertexRules;
     private String[] edgeRules;
+    private String[] directedEdgeRules;
 
     private Class vidClass = StringType.class;
     private Class<? extends GraphTokenizer>  tokenizerClass = BasicHBaseTokenizer.class;
@@ -94,8 +95,15 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
         hBaseUtils  = HBaseUtils.getInstance();
 
         srcTableName = cmd.getOptionValue(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"));
-        vertexRules  = cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_VERTICES_OPTNAME"));
-        edgeRules    = cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"));
+
+        vertexRules =
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_VERTICES_OPTNAME")));
+
+        edgeRules =
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME")));
+
+        directedEdgeRules =
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME")));
 
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();
@@ -105,6 +113,17 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
 
         generateEdgeSchemata();
         generateVertexSchemata();
+    }
+
+    /**
+     * A helper function that replaces nulls with empty lists.
+     */
+    private String[] nullsIntoEmptyStringArrays(String[] in) {
+        if (in == null) {
+            return new String[0];
+        } else {
+            return in;
+        }
     }
 
     /**
@@ -122,10 +141,20 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
      * This method does not check if the column names are present in the hbase table..
      */
     private void checkSyntaxOfEdgeRules() {
+
+
         for (String edgeRule : edgeRules) {
             if (edgeRule.split("\\,").length < 3) {
                 LOG.fatal("Edge rule too short; does not specify <source>,<destination>,<label>");
                 LOG.fatal("The fatal rule: " + edgeRule);
+                System.exit(1);
+            }
+        }
+
+        for (String directedEdgeRule : directedEdgeRules) {
+            if (directedEdgeRule.split("\\,").length < 3) {
+                LOG.fatal("Edge rule too short; does not specify <source>,<destination>,<label>");
+                LOG.fatal("The fatal rule: " + directedEdgeRule);
                 System.exit(1);
             }
         }
@@ -231,8 +260,9 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
      * @see BasicHBaseTokenizer
      */
     public void updateConfigurationForTokenizer(Configuration configuration, CommandLine cmd) {
-        packVertexRulesIntoConfiguration(configuration);
-        packEdgeRulesIntoConfiguration(configuration);
+        packVertexRulesIntoConfiguration(configuration, vertexRules);
+        packEdgeRulesIntoConfiguration(configuration, edgeRules);
+        packDirectedEdgeRulesIntoConfiguration(configuration, directedEdgeRules);
     }
 
     /**
@@ -299,9 +329,26 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
 
             graphSchema.addEdgeSchema(edgeSchema);
         }
+
+        for (String directedEdgeRule : directedEdgeRules) {
+
+            List<String> columnNames = BasicHBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(directedEdgeRule);
+            String label = BasicHBaseGraphBuildingRule.getLabelFromEdgeRule(directedEdgeRule);
+
+            EdgeSchema edgeSchema = new EdgeSchema(label);
+
+            for (String columnName : columnNames) {
+                String edgePropertyName = columnName.replaceAll(GBHTableConfig.config.getProperty("HBASE_COLUMN_SEPARATOR"),
+                        GBHTableConfig.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
+                edgeSchema.getPropertySchemata().add(propertySchema);
+            }
+
+            graphSchema.addEdgeSchema(edgeSchema);
+        }
     }
 
-    private void packVertexRulesIntoConfiguration(Configuration configuration) {
+    public static void packVertexRulesIntoConfiguration(Configuration configuration, String[] vertexRules) {
 
         String       separator = GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR");
         StringBuffer buffer    = new StringBuffer();
@@ -332,15 +379,40 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
         return vertexRules;
     }
 
-    private void packEdgeRulesIntoConfiguration(Configuration configuration) {
-        String edgeConfigString = edgeRules[0];
+    public static void packEdgeRulesIntoConfiguration(Configuration configuration, String[] edgeRules) {
+        String       separator = GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR");
+        StringBuffer edgeRuleBuffer    = new StringBuffer();
 
-        for (int i = 1; i < edgeRules.length; i++) {
-            edgeConfigString += GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR") + edgeRules[i];
+        if (edgeRules.length > 0) {
+
+            edgeRuleBuffer.append(edgeRules[0]);
+
+            for (int i = 1; i < edgeRules.length; i++) {
+                edgeRuleBuffer.append(separator);
+                edgeRuleBuffer.append(edgeRules[i]);
+            }
+        }
+        configuration.set(GBHTableConfig.config.getProperty("ECN_CONF_NAME"), edgeRuleBuffer.toString());
+    }
+
+    public static void packDirectedEdgeRulesIntoConfiguration(Configuration configuration, String[] directedEdgeRules) {
+
+        String       separator = GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR");
+        StringBuffer directedEdgeRuleBuffer    = new StringBuffer();
+
+        if (directedEdgeRules.length > 0) {
+
+            directedEdgeRuleBuffer.append(directedEdgeRules[0]);
+
+            for (int i = 1; i < directedEdgeRules.length; i++) {
+                directedEdgeRuleBuffer.append(separator);
+                directedEdgeRuleBuffer.append(directedEdgeRules[i]);
+            }
         }
 
-        configuration.set(GBHTableConfig.config.getProperty("ECN_CONF_NAME"), edgeConfigString);
+        configuration.set(GBHTableConfig.config.getProperty("DECN_CONF_NAME"), directedEdgeRuleBuffer.toString());
     }
+
 
     /**
      * Static helper function for unpacking edge rules from job configuration.
@@ -354,8 +426,44 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
 
     public static String[] unpackEdgeRulesFromConfiguration(Configuration configuration) {
         String separator = "\\" + GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR");
-        String[] edgeRules = configuration.get(GBHTableConfig.config.getProperty("ECN_CONF_NAME")).split(separator);
+
+        String packedEdgeRules = configuration.get(GBHTableConfig.config.getProperty("ECN_CONF_NAME"));
+
+        String[] edgeRules  = null;
+
+        if (packedEdgeRules == null || packedEdgeRules.length() == 0) {
+            edgeRules = new String[0];
+        } else {
+            edgeRules = packedEdgeRules.split(separator);
+        }
+
         return edgeRules;
+    }
+
+    /**
+     * Static helper function for unpacking edge rules from job configuration.
+     * <p/>
+     * Intended to be used by the MR-time tokenizer.
+     *
+     * @param configuration The job configuration into which the edge rules have been stored.
+     * @return array of strings, each encoding a edge rule
+     * @see BasicHBaseTokenizer
+     */
+
+    public static String[] unpackDirectedEdgeRulesFromConfiguration(Configuration configuration) {
+        String   separator = "\\" + GBHTableConfig.config.getProperty("COL_NAME_SEPARATOR");
+
+        String  packedDirectedEdgeRules = configuration.get(GBHTableConfig.config.getProperty("DECN_CONF_NAME"));
+
+        String[] directedEdgeRules  = null;
+
+        if (packedDirectedEdgeRules == null || packedDirectedEdgeRules.length() == 0) {
+           directedEdgeRules = new String[0];
+        } else {
+            directedEdgeRules = packedDirectedEdgeRules.split(separator);
+        }
+
+        return directedEdgeRules;
     }
 
     /**
