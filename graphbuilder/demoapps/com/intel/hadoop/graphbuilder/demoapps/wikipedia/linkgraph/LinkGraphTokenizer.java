@@ -33,9 +33,13 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.EdgeSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertyGraphSchema;
+import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.VertexSchema;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
+import org.apache.commons.cli.CommandLine;
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -49,14 +53,17 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 
 /**
- * LinkGraphTokenizer is a GraphTokenizerFromString class that is  called by the mapper to convert a Wiki page (presented as
+ * A {@code GraphTokenizer} that converts a Wiki page (presented as
  * a string) into a set of vertices and edges by the following rule:
- * - there is a vertex for each page
- * - there is an edge from page1 to page2 if page1 links to page2; the edge is labeled "linksTo"
- *
+ * <ul>
+ *     <li>there is a vertex for each page</li>
+ *     <li>there is an edge from page1 to page2 if page1 links to page2; the edge is labeled "linksTo"</li>
+ * </ul>
+
  *
  * @see com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer
  * @see CreateLinkGraph
+ * @see LinkGraphBuildingRule
  * @see com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.textgraph.TextGraphMR
  * @see com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.TextParsingMapper
  */
@@ -65,15 +72,23 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
 
     private static final Logger LOG = Logger.getLogger(LinkGraphTokenizer.class);
 
+    public static final String LINKSTO = "linksTo";
+
     private String                        title;
     private List<String>                  links;
     private ArrayList<Vertex<StringType>> vertexList;
     private ArrayList<Edge<StringType>>   edgeList;
 
+
+
     private DocumentBuilderFactory factory;
     private DocumentBuilder        builder;
     private XPath                  xpath;
 
+    /**
+     * Allocates and initializes parser and graph elements store.
+     *
+     */
     public LinkGraphTokenizer()  {
 
         factory = DocumentBuilderFactory.newInstance();
@@ -94,15 +109,19 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         links      = new ArrayList<String>();
     }
 
+    /**
+     * Configure the tokenizer from the MR  configuration.
+     * @param configuration   the MR configuration
+     */
     @Override
-    public void configure(Configuration job) {
+    public void configure(Configuration configuration) {
     }
 
-    @Override
-    public Class vidClass() {
-        return StringType.class;
-    }
-
+    /**
+     * Generate property graph elements from parsing of a wiki page.
+     * @param string  Wikipage presented as a string.
+     * @param context  The Hadoop supplied mapper context.
+     */
     public void parse(String string, Mapper.Context context) {
 
         try {
@@ -116,14 +135,21 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
             parseLinks(text);
 
         } catch (SAXException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "Could not parse document", LOG, e);
         } catch (IOException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "IO exception while parsing document", LOG, e);
         } catch (XPathExpressionException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "Could not parse document", LOG, e);
         }
     }
 
+    /**
+     * Get the vertex list for the wikipage.
+     * @return   iterator over vertex list
+     */
     public Iterator<Vertex<StringType>> getVertices() {
 
         vertexList.clear();
@@ -136,6 +162,11 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         return vertexList.iterator();
     }
 
+    /**
+     * Get the edge list for the wikipage.
+     *
+     * @return iterator over the edge list
+     */
     @Override
     public Iterator<Edge<StringType>> getEdges() {
 
@@ -145,17 +176,17 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
 
         edgeList.clear();
         Iterator<String> iterator = links.iterator();
-        final StringType LINKSTO  = new StringType("linksTo");
+        final StringType LINKSTO_STYPE  = new StringType(LINKSTO);
 
         while (iterator.hasNext()) {
             edgeList.add(new Edge<StringType>(new StringType(title),
-                    new StringType(iterator.next()), LINKSTO));
+                    new StringType(iterator.next()), LINKSTO_STYPE));
         }
 
         return edgeList.iterator();
     }
 
-    /**
+    /*
      * This function is taken and modified from wikixmlj WikiTextParser
      */
 

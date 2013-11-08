@@ -142,7 +142,6 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
                         /**
                          * default behavior is to merge the property maps of duplicate vertices
                          * conflicting key/value pairs get overwritten
-                         * if that's a problem, write your own damn @code vertexReducerFunction
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) vertexPropertiesMap.get(vertexId);
@@ -185,7 +184,6 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
                         /**
                          * default behavior is to merge the property maps of duplicate edges
                          * conflicting key/value pairs get overwritten
-                         * if that's a problem, write your own damn @code edgeReducerFunction
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) edgePropertiesMap.get(edgeKey);

@@ -4,12 +4,17 @@ import org.apache.commons.cli.*;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
 /**
- * A simple util class to remove some of the command line parsing from the mapper class to make it easier to test
+ * General command line parsing utility for graph builder.
+ *
+ * <p>
+ *     <code>-conf</code>   specifies the configuration file
+ * </p>
  */
 public class CommandLineInterface {
 
@@ -20,15 +25,42 @@ public class CommandLineInterface {
     private RuntimeConfig        runtimeConfig = RuntimeConfig.getInstance();
     private GenericOptionsParser genericOptionsParser;
 
+    /**
+     * does this command line have the specified option?
+     * @param option  name of option being requested
+     * @return  true iff the command line has the option
+     */
     public boolean hasOption(String option) {
         return cmd.hasOption(option);
     }
 
+    /**
+     * Get value of option from command line
+     * @param option name of option whose value is requested
+     * @return value of the option as specified by the command line
+     */
     public String getOptionValue(String option) {
         return cmd.getOptionValue(option);
     }
 
+    /**
+     * Parse raw arguments into {@code CommandLine} object
+     * @param args raw command line arguments as string array
+     * @return  nicely packaged {@code CommandLine} object
+     */
     public CommandLine parseArgs(String[] args) {
+
+        for (int i = 0; i < args.length;i++) {
+            if (args[i].equals("-conf")) {
+                if (i + 1 == args.length) {
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                            "-conf argument given but no file path specified!", LOG);
+                } else if (!new File(args[i+1]).exists()) {
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CANNOT_FIND_CONFIG_FILE,
+                            "Configuration file " + args[i+1] + " cannot be found.", LOG);
+                }
+            }
+        }
 
         //send the command line options to hadoop parse args to get runtime config options first
 
@@ -66,6 +98,10 @@ public class CommandLineInterface {
         return cmd;
     }
 
+    /**
+     * Make sure that all required options are present in raw arguments..
+     * @param args  raw arguments as string array
+     */
     public void checkCli(String[] args) {
         parseArgs(args);
         options.getRequiredOptions().iterator();
@@ -80,15 +116,25 @@ public class CommandLineInterface {
         }
     }
 
-
+    /**
+     * Get Hadoop's generic options parser
+     * @return  Hadoop's generic options parser
+     */
     public GenericOptionsParser getGenericOptionsParser() {
         return genericOptionsParser;
     }
 
+    /**
+     * Displays parsed options given option name.
+     * @param option name of option as string
+     */
     public void showOptionParsed(String option){
         LOG.info(String.format("%s: %s", options.getOption(option).getLongOpt(), cmd.getOptionValue(option) ));
     }
 
+    /**
+     * Display parsed options.
+     */
     public void showOptionsParsed(){
         Iterator optionss = options.getOptions().iterator();
         while( optionss.hasNext()){
@@ -98,6 +144,11 @@ public class CommandLineInterface {
             }
         }
     }
+
+    /**
+     * Display help  after error message
+     * @param message  error message
+     */
     public void showHelp(String message){
         _showHelp(message);
     }
@@ -160,6 +211,7 @@ public class CommandLineInterface {
     }
 
     /**
+     * Check if the lack of an option caused a parsing exception
      * @param e      the parse exception that was thrown
      * @param option the option that should be in the MissingOptionException
      * @return a boolean on weather or not the String option is the missing option we are looking for
@@ -176,6 +228,10 @@ public class CommandLineInterface {
         return false;
     }
 
+    /**
+     * Convert missing argument exception into string message.
+     * @param ex a ParseException
+     */
     public static String getMissingArgumentFromException(ParseException ex){
         MissingArgumentException missingArgumentException;
 
@@ -192,6 +248,12 @@ public class CommandLineInterface {
         }
     }
 
+    /**
+     * Check if an unrecognized option caused a parsing exception.
+     *
+     * @param ex the parsing exception
+     * @return name of unrecognized option
+     */
     public static String getUnrecognizedOptionFromException(ParseException ex){
         UnrecognizedOptionException unrecognizedOption;
 
@@ -208,6 +270,11 @@ public class CommandLineInterface {
         }
     }
 
+    /**
+     * Find the first missing option from a parsing exception
+     * @param ex the parsing exception
+     * @return  name of the first missing option
+     */
     public static String getFirstMissingOptionFromException(ParseException ex){
         MissingOptionException missingOptions;
 
