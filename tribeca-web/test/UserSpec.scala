@@ -1,5 +1,5 @@
 import java.sql.{ResultSet, CallableStatement}
-import models.database.{UserRow, StatementGenerator}
+import models.database.{DBLoginCommand, DBRegisterCommand, UserRow, StatementGenerator}
 import models.{RegistrationFormMapping, Users, StatusCodes}
 import org.specs2.mutable._
 import org.specs2.runner._
@@ -54,7 +54,7 @@ class UserSpec extends Specification with Mockito {
                 }
 
                 val u = UserRow(None, "first name", "last name", "abcd@intel.com", true, None, None, None)
-                val result = Users.register(u, registrationForm, dummyStatementGenerator)
+                val result = Users.register(u, registrationForm, dummyStatementGenerator, DBRegisterCommand)
                 (result.uid == 100 && result.errorCode == 0 && result.errorMessage == "" && result.login == 0) must beEqualTo(true)
             }
 
@@ -79,7 +79,7 @@ class UserSpec extends Specification with Mockito {
                     }
 
                     val u = UserRow(None, "first name", "last name", "abcd@intel.com", true, None, None, None)
-                    val result = Users.register(u, registrationForm, dummyStatementGenerator)
+                    val result = Users.register(u, registrationForm, dummyStatementGenerator, DBRegisterCommand)
                     (result.uid == 100 && result.errorCode == StatusCodes.ALREADY_REGISTER_AND_ALREADY_IN_WHITE_LIST && result.login == 0) must beEqualTo(true)
                 }
 
@@ -105,7 +105,7 @@ class UserSpec extends Specification with Mockito {
                     }
 
                     val u = UserRow(None, "first name", "last name", "abcd@intel.com", true, None, None, None)
-                    val result = Users.login(u.email, dummyStatementGenerator)
+                    val result = Users.login(u.email, dummyStatementGenerator, DBLoginCommand)
                     (result.uid == 100 && result.errorCode == 0 && result.success == 1) must beEqualTo(true)
                 }
 
@@ -131,7 +131,7 @@ class UserSpec extends Specification with Mockito {
                     }
 
                     val u = UserRow(None, "first name", "last name", "abcd@intel.com", true, None, None, None)
-                    val result = Users.login(u.email, dummyStatementGenerator)
+                    val result = Users.login(u.email, dummyStatementGenerator, DBLoginCommand)
                     (result.uid == 0 && result.errorCode == StatusCodes.NOT_YET_REGISTERED && result.success == 0) must beEqualTo(true)
                 }
 
