@@ -63,14 +63,6 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
         TitanHBaseVertexInputFormat<LongWritable, DoubleWritable, FloatWritable> {
 
     /**
-     * the edge store name used by Titan
-     */
-    static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
-    /**
-     * the vertex format type
-     */
-    static final String FORMAT_TYPE = "LongDoubleFloat";
-    /**
      * LOG class
      */
     private static final Logger LOG = Logger.getLogger(TitanHBaseVertexInputFormatLongDoubleFloat.class);
@@ -258,14 +250,14 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
             if (getRecordReader().nextKeyValue()) {
-                final Vertex temp = graphReader.readGiraphVertex(FORMAT_TYPE, getConf(),
+                final Vertex temp = graphReader.readGiraphVertex(LONG_DOUBLE_FLOAT, getConf(),
                         getRecordReader().getCurrentKey().copyBytes(),
                         getRecordReader().getCurrentValue().getMap().get(EDGE_STORE_FAMILY));
                 if (null != temp) {
                     vertex = temp;
                     return true;
                 } else if (getRecordReader().nextKeyValue()) {
-                    final Vertex temp1 = graphReader.readGiraphVertex(FORMAT_TYPE, getConf(),
+                    final Vertex temp1 = graphReader.readGiraphVertex(LONG_DOUBLE_FLOAT, getConf(),
                             getRecordReader().getCurrentKey().copyBytes(),
                             getRecordReader().getCurrentValue().getMap().get(EDGE_STORE_FAMILY));
                     if (null != temp1) {

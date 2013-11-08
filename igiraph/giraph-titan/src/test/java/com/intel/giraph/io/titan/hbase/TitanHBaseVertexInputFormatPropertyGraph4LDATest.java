@@ -127,7 +127,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDATest {
 
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void TitanHBaseVertexInputFormatPropertyGraph4LDATest() throws Exception {
         /*

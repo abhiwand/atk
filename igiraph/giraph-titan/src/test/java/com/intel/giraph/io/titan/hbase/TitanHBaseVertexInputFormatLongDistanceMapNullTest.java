@@ -107,7 +107,7 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNullTest {
         graph = new TitanTestGraph(titanConfig);
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void TitanHBaseVertexInputFormatLongDistanceMapNullTest() throws Exception {
         /*

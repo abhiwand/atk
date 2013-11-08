@@ -25,8 +25,7 @@ package com.intel.giraph.io.titan;
 import com.intel.giraph.io.VertexData4LDAWritable;
 import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
 import com.intel.mahout.math.DoubleWithVectorWritable;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.tinkerpop.blueprints.Direction;
+import com.thinkaurelius.titan.core.*;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
@@ -154,13 +153,14 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
          */
         private TitanGraph graph;
         /**
+         * TitanTransaction to write back results
+         */
+        private TitanTransaction tx = null;
+        /**
          * Vertex properties to filter
          */
         private String[] vertexPropertyKeyList;
-        /**
-         * Enable Vertex Bias output or not
-         */
-        private String enableVertexBias;
+
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
@@ -168,7 +168,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
             assert (null != this.graph);
-            enableVertexBias = OUTPUT_VERTEX_BIAS.get(context.getConfiguration());
+            tx = graph.newTransaction();
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
             for (int i = 0; i < vertexPropertyKeyList.length; i++) {
                 LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
@@ -204,6 +204,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
         public void close(TaskAttemptContext context)
                 throws IOException, InterruptedException {
             this.graph.commit();
+        //    this.graph.shutdown();
         }
     }
 }

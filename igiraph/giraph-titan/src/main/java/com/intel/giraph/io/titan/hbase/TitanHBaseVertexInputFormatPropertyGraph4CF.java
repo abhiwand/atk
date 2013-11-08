@@ -77,14 +77,6 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
         TitanHBaseVertexInputFormat<LongWritable, VertexDataWritable, EdgeDataWritable> {
 
     /**
-     * the edge store name used by Titan
-     */
-    static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
-    /**
-     * the vertex format type
-     */
-    static final String FORMAT_TYPE = "PropertyGraph4CF";
-    /**
      * LOG class
      */
     private static final Logger LOG = Logger
@@ -285,7 +277,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
         public boolean nextVertex() throws IOException, InterruptedException {
             if (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> temp = graphReader
-                        .readGiraphVertex(FORMAT_TYPE, getConf(), getRecordReader()
+                        .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
                                 .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
                                 .get(EDGE_STORE_FAMILY));
                 if (null != temp) {
@@ -293,7 +285,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
                     return true;
                 } else if (getRecordReader().nextKeyValue()) {
                     final Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> temp1 = graphReader
-                            .readGiraphVertex(FORMAT_TYPE, getConf(), getRecordReader()
+                            .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
                                     .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
                                     .get(EDGE_STORE_FAMILY));
                     if (null != temp1) {

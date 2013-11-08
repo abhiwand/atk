@@ -60,14 +60,6 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
         TitanHBaseVertexInputFormat<LongWritable, DistanceMapWritable, NullWritable> {
 
     /**
-     * the edge store name used by Titan
-     */
-    static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
-    /**
-     * the vertex format type
-     */
-    static final String FORMAT_TYPE = "LongDistanceMapNull";
-    /**
      * LOG class
      */
     private static final Logger LOG = Logger.getLogger(TitanHBaseVertexInputFormatLongDistanceMapNull.class);
@@ -197,7 +189,7 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
      * @throws RuntimeException
      */
     public VertexReader<LongWritable, DistanceMapWritable, NullWritable> createVertexReader(InputSplit split,
-                                                                                        TaskAttemptContext context) throws IOException {
+                                                                                            TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
 
@@ -255,14 +247,14 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
             if (getRecordReader().nextKeyValue()) {
-                final Vertex temp = graphReader.readGiraphVertex(FORMAT_TYPE, getConf(),
+                final Vertex temp = graphReader.readGiraphVertex(LONG_DISTANCE_MAP_NULL, getConf(),
                         getRecordReader().getCurrentKey().copyBytes(),
                         getRecordReader().getCurrentValue().getMap().get(EDGE_STORE_FAMILY));
                 if (null != temp) {
                     vertex = temp;
                     return true;
                 } else if (getRecordReader().nextKeyValue()) {
-                    final Vertex temp1 = graphReader.readGiraphVertex(FORMAT_TYPE, getConf(),
+                    final Vertex temp1 = graphReader.readGiraphVertex(LONG_DISTANCE_MAP_NULL, getConf(),
                             getRecordReader().getCurrentKey().copyBytes(),
                             getRecordReader().getCurrentValue().getMap().get(EDGE_STORE_FAMILY));
                     if (null != temp1) {

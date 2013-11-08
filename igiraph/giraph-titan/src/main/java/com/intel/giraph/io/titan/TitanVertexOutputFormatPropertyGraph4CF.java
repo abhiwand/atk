@@ -24,8 +24,7 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.io.VertexDataWritable;
 import com.intel.giraph.io.VertexDataWritable.VertexType;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.tinkerpop.blueprints.Direction;
+import com.thinkaurelius.titan.core.*;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
@@ -149,9 +148,13 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
     protected class TitanVertexPropertyGraph4CFWriter extends TextVertexWriterToEachLine {
 
         /**
-         * reader to parse Titan graph
+         * TitanFactory to write back results
          */
         private TitanGraph graph;
+        /**
+         * TitanTransaction to write back results
+         */
+        private TitanTransaction tx = null;
         /**
          * Vertex properties to filter
          */
@@ -167,11 +170,14 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
             assert (null != this.graph);
+            tx = graph.newTransaction();
             enableVertexBias = OUTPUT_VERTEX_BIAS.get(context.getConfiguration());
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
             for (int i = 0; i < vertexPropertyKeyList.length; i++) {
-                LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
-                this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
+                if(!tx.containsType(vertexPropertyKeyList[i])){
+                    LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
+                    this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
+                }
             }
         }
 
@@ -213,6 +219,7 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
         public void close(TaskAttemptContext context)
                 throws IOException, InterruptedException {
             this.graph.commit();
+        //    this.graph.shutdown();
         }
     }
 }

@@ -195,21 +195,6 @@ public class TitanVertexOutputFormatPropertyGraph4CFTest {
             System.out.println(" got: " + resultLine);
         }
 
-        //verify results
-        /*
-        Map<Long, Double[]> vertexValues = parseVertexValues(results);
-        assertNotNull(vertexValues);
-        assertEquals(5, vertexValues.size());
-        for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
-            Double[] vertexValue = entry.getValue();
-            assertEquals(4, vertexValue.length);
-            for (int j = 0; j < 3; j++) {
-                assertEquals(expectedValues[(int) (entry.getKey().longValue()) / 4 - 1][j], vertexValue[j].doubleValue(), 0.01d);
-            }
-        }
-        */
-
-
         //verify data is written to Titan
         clopen();
         long[] nid;
@@ -262,43 +247,5 @@ public class TitanVertexOutputFormatPropertyGraph4CFTest {
     private void clopen() {
         close();
         open();
-    }
-
-    private Map<Long, Double[]> parseVertexValues(Iterable<String> results) {
-        Map<Long, Double[]> vertexValues = Maps.newHashMapWithExpectedSize(Iterables.size(results));
-        for (String line : results) {
-            try {
-                JSONArray jsonVertex = new JSONArray(line);
-                if (jsonVertex.length() != 4) {
-                    throw new IllegalArgumentException("Wrong vertex output format! got " + jsonVertex.length());
-                }
-                // get vertex id
-                long id = jsonVertex.getLong(0);
-                // get vertex bias
-                JSONArray biasArray = jsonVertex.getJSONArray(1);
-                if (biasArray.length() != 1) {
-                    throw new IllegalArgumentException("Wrong vertex bias value output value format!");
-                }
-                double bias = biasArray.getDouble(0);
-                JSONArray valueArray = jsonVertex.getJSONArray(2);
-                if (valueArray.length() != 3) {
-                    throw new IllegalArgumentException("Wrong vertex vector output value format!");
-                }
-                Double[] values = new Double[4];
-                values[3] = bias;
-                for (int i = 0; i < 3; i++) {
-                    values[i] = valueArray.getDouble(i);
-                }
-                vertexValues.put(id, values);
-                // get vertex type
-                JSONArray typeArray = jsonVertex.getJSONArray(3);
-                if (typeArray.length() != 1) {
-                    throw new IllegalArgumentException("Wrong vertex type output value format!");
-                }
-            } catch (JSONException e) {
-                throw new IllegalArgumentException("Couldn't get vertex from line " + line, e);
-            }
-        }
-        return vertexValues;
     }
 }

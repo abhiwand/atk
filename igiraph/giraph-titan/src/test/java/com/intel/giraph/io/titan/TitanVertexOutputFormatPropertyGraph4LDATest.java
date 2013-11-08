@@ -247,20 +247,6 @@ public class TitanVertexOutputFormatPropertyGraph4LDATest {
             System.out.println(" got: " + resultLine);
         }
 
-        // verify results
-        /*
-        Map<Long, Double[]> vertexValues = parseVertexValues(results);
-        assertNotNull(vertexValues);
-        assertEquals(11, vertexValues.size());
-        for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
-            Double[] vertexValue = entry.getValue();
-            assertEquals(3, vertexValue.length);
-            for (int j = 0; j < 2; j++) {
-                assertEquals(expectedValues[(int) (entry.getKey().longValue()) / 4 - 1][j], vertexValue[j].doubleValue(), 0.01d);
-            }
-        }
-          */
-
         //verify data is written to Titan
         clopen();
         long[] nid;
@@ -313,36 +299,5 @@ public class TitanVertexOutputFormatPropertyGraph4LDATest {
     private void clopen() {
         close();
         open();
-    }
-
-    private Map<Long, Double[]> parseVertexValues(Iterable<String> results) {
-        Map<Long, Double[]> vertexValues = Maps.newHashMapWithExpectedSize(Iterables.size(results));
-        for (String line : results) {
-            try {
-                JSONArray jsonVertex = new JSONArray(line);
-                if (jsonVertex.length() != 3) {
-                    throw new IllegalArgumentException("Wrong vertex output format!");
-                }
-                // get vertex id
-                long id = jsonVertex.getLong(0);
-                JSONArray valueArray = jsonVertex.getJSONArray(1);
-                if (valueArray.length() != 3) {
-                    throw new IllegalArgumentException("Wrong vertex vector output value format!");
-                }
-                Double[] values = new Double[3];
-                for (int i = 0; i < 3; i++) {
-                    values[i] = valueArray.getDouble(i);
-                }
-                vertexValues.put(id, values);
-                // get vertex type
-                JSONArray typeArray = jsonVertex.getJSONArray(2);
-                if (typeArray.length() != 1) {
-                    throw new IllegalArgumentException("Wrong vertex type output value format!");
-                }
-            } catch (JSONException e) {
-                throw new IllegalArgumentException("Couldn't get vertex from line " + line, e);
-            }
-        }
-        return vertexValues;
     }
 }

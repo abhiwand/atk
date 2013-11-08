@@ -111,7 +111,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
 
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest() throws Exception {
         /* a small four vertex graph

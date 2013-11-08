@@ -153,17 +153,6 @@ public class TitanVertexOutputFormatLongIDVectorValueTest {
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0], new String[0]);
         Assert.assertNotNull(results);
 
-        //verify algorithm results are right
-        /*
-        Map<Long, Double[]> vertexValues = parseVertexValues(results);
-        assertEquals(5, vertexValues.size());
-        for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
-            Double[] vertexValue = entry.getValue();
-            assertEquals(3, vertexValue.length);
-            assertEquals(1.0, vertexValue[1].doubleValue(), 0.05d);
-        }
-        */
-
         //verify data is written to Titan
         clopen();
         long nid = n0.getID();
@@ -206,30 +195,4 @@ public class TitanVertexOutputFormatLongIDVectorValueTest {
         close();
         System.out.println("***Done with TitanVertexOutputFormatLongIDVectorValueTest****");
     }
-
-    private Map<Long, Double[]> parseVertexValues(Iterable<String> results) {
-        Map<Long, Double[]> vertexValues = Maps.newHashMapWithExpectedSize(Iterables.size(results));
-        for (String line : results) {
-            try {
-                JSONArray jsonVertex = new JSONArray(line);
-                if (jsonVertex.length() != 2) {
-                    throw new IllegalArgumentException("Wrong vertex output format!");
-                }
-                long id = jsonVertex.getLong(0);
-                JSONArray valueArray = jsonVertex.getJSONArray(1);
-                if (valueArray.length() != 3) {
-                    throw new IllegalArgumentException("Wrong vertex output value format!");
-                }
-                Double[] values = new Double[3];
-                for (int i = 0; i < 3; i++) {
-                    values[i] = valueArray.getDouble(i);
-                }
-                vertexValues.put(id, values);
-            } catch (JSONException e) {
-                throw new IllegalArgumentException("Couldn't get vertex from line " + line, e);
-            }
-        }
-        return vertexValues;
-    }
-
 }

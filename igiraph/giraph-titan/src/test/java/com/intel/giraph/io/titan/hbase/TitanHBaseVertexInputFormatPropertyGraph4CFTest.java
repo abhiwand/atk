@@ -130,7 +130,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFTest {
 
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void TitanHBaseVertexInputFormatPropertyGraph4CFTest() throws Exception {
         /*

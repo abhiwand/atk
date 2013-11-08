@@ -35,6 +35,7 @@ import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.log4j.Logger;
 import org.apache.commons.configuration.Configuration;
+import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.*;
 
 import java.nio.ByteBuffer;
 
@@ -78,7 +79,7 @@ public class TitanGraphReader extends StandardTitanGraph {
 
         if (vertexId > 0 && vertexId % 4 == 0) {
             switch (type) {
-                case "LongDoubleFloat":
+                case LONG_DOUBLE_FLOAT:
                     final GiraphVertexLoaderLongDoubleFloat loader = new GiraphVertexLoaderLongDoubleFloat(conf,
                             vertexId);
                     for (final Entry data : entries) {
@@ -92,7 +93,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                     }
                     return loader.getVertex();
 
-                case "LongDistanceMapNull":
+                case LONG_DISTANCE_MAP_NULL:
                     final GiraphVertexLoaderLongDistanceMapNull loader1 = new GiraphVertexLoaderLongDistanceMapNull(conf,
                             vertexId);
                     for (final Entry data : entries) {
@@ -106,7 +107,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                     }
                     return loader1.getVertex();
 
-                case "LongTwoVectorDoubleTwoVector":
+                case LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR:
                     final GiraphVertexLoaderLongTwoVectorDoubleTwoVector
                             loader2 = new GiraphVertexLoaderLongTwoVectorDoubleTwoVector(
                             conf, vertexId);
@@ -123,7 +124,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                     return loader2.getVertex();
 
 
-                case "LongTwoVectorDoubleVector":
+                case LONG_TWO_VECTOR_DOUBLE_VECTOR:
                     final GiraphVertexLoaderLongTwoVectorDoubleVector
                             loader3 = new GiraphVertexLoaderLongTwoVectorDoubleVector(
                             conf, vertexId);
@@ -140,7 +141,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                     return loader3.getVertex();
 
 
-                case "PropertyGraph4CF":
+                case PROPERTY_GRAPH_4_CF:
                     final GiraphVertexLoaderPropertyGraph4CF
                             loader4 = new GiraphVertexLoaderPropertyGraph4CF(
                             conf, vertexId);
@@ -158,7 +159,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                     return loader4.getVertex();
 
 
-                case "PropertyGraph4LDA":
+                case PROPERTY_GRAPH_4_LDA:
                     final GiraphVertexLoaderPropertyGraph4LDA
                             loader5 = new GiraphVertexLoaderPropertyGraph4LDA(
                             conf, vertexId);

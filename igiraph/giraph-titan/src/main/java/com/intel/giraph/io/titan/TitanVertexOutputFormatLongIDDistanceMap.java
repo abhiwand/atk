@@ -23,8 +23,7 @@
 package com.intel.giraph.io.titan;
 
 import com.intel.giraph.io.DistanceMapWritable;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.tinkerpop.blueprints.Direction;
+import com.thinkaurelius.titan.core.*;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
@@ -127,7 +126,7 @@ public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new TitanHBaseLongIDDistanceMapWriter();
+        return new TitanLongIDDistanceMapWriter();
     }
 
     /**
@@ -135,12 +134,16 @@ public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanHBaseLongIDDistanceMapWriter extends TextVertexWriterToEachLine {
+    protected class TitanLongIDDistanceMapWriter extends TextVertexWriterToEachLine {
 
         /**
-         * reader to parse Titan graph
+         * TitanFactory to write back results
          */
         private TitanGraph graph;
+        /**
+         * TitanTransaction to write back results
+         */
+        private TitanTransaction tx = null;
         /**
          * Vertex properties to filter
          */
@@ -152,10 +155,13 @@ public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
             assert (null != this.graph);
+            tx = graph.newTransaction();
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
             for (int i = 0; i < vertexPropertyKeyList.length; i++) {
-                LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
-                 this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
+                if(!tx.containsType(vertexPropertyKeyList[i])){
+                    LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
+                    this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
+                }
             }
         }
 
@@ -183,6 +189,7 @@ public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
         public void close(TaskAttemptContext context)
                 throws IOException, InterruptedException {
             this.graph.commit();
+       //     this.graph.shutdown();
         }
     }
 }
