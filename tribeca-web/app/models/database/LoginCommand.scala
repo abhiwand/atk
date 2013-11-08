@@ -1,12 +1,15 @@
 package models.database
 
 /**
- * Created with IntelliJ IDEA.
- * User: schen55
- * Date: 11/8/13
- * Time: 10:55 AM
- * To change this template use File | Settings | File Templates.
+ * Command for login operation
  */
 trait LoginCommand {
+
+    /**
+     * execute login command.
+     * @param email
+     * @param statementGenerator
+     * @return
+     */
     def execute(email: String, statementGenerator: StatementGenerator): LoginOutput
 }

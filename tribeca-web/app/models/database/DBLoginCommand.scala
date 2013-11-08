@@ -4,13 +4,7 @@ import play.api.db.slick._
 import java.sql.{ResultSet, Types}
 import play.api.Play.current
 
-/**
- * Created with IntelliJ IDEA.
- * User: schen55
- * Date: 11/8/13
- * Time: 10:56 AM
- * To change this template use File | Settings | File Templates.
- */
+
 object DBLoginCommand extends LoginCommand {
 
     def execute(email: String, statementGenerator: StatementGenerator): LoginOutput = DB.withSession {

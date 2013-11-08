@@ -50,17 +50,6 @@ object Users {
 
     /**
      *
-     * @param rs
-     * @return
-     */
-    private def getUidFromResultSet(rs: ResultSet): Int = {
-        var uid = 0
-        if (rs.next()) uid = rs.getInt("uid")
-        return uid
-    }
-
-    /**
-     *
      * @param email
      * @param statementGenerator
      * @return
