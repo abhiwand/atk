@@ -29,7 +29,6 @@ import play.api.db.slick.Config.driver.simple._
 
 import play.api.db.slick.DB
 
-import java.sql.{ResultSet, Types}
 
 /**
  * Singleton object to provide user related services.
@@ -43,8 +42,7 @@ object Users {
      * @param statementGenerator
      * @return
      */
-    def register(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator, registerCommand : RegisterCommand): RegistrationOutput =
-    {
+    def register(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator, registerCommand: RegisterCommand): RegistrationOutput = {
         registerCommand.execute(user, registrationForm, statementGenerator)
     }
 
@@ -54,30 +52,10 @@ object Users {
      * @param statementGenerator
      * @return
      */
-    def login(email: String, statementGenerator: StatementGenerator, loginCommand: LoginCommand): LoginOutput =
-    {
+    def login(email: String, statementGenerator: StatementGenerator, loginCommand: LoginCommand): LoginOutput = {
         loginCommand.execute(email, statementGenerator)
     }
 
-    /**
-     *
-     * @param uid
-     * @return
-     */
-    def getByUid(uid: Long): Query[(database.UserTable.type, database.WhiteListTable.type), (UserRow, WhiteListRow)] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            return for {(u, w) <- database.UserTable leftJoin database.WhiteListTable on (_.uid === _.uid) if u.uid === uid} yield (u, w)
-    }
-
-    /**
-     *
-     * @param email
-     * @return
-     */
-    def getByEmail(email: String): Query[database.UserTable.type, database.UserRow] = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            for {u <- database.UserTable if u.email === email} yield u
-    }
 
     /**
      *
@@ -92,14 +70,13 @@ object Users {
      * @param email
      * @return
      */
-    def exists(email: String): Boolean = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val usersResult = readByEmail(email)
-            if (usersResult != null && usersResult.uid.get > 0) {
-                true
-            } else {
-                false
-            }
+    def exists(email: String): Boolean = {
+
+        val usersResult = readByEmail(email, DBGetUserDetailsCommand)
+        if (usersResult != None && usersResult.get.uid.get > 0)
+            true
+        else
+            false
     }
 
     /**
@@ -117,14 +94,8 @@ object Users {
      * @param uid
      * @return
      */
-    def readByUid(uid: Long): (database.UserRow, database.WhiteListRow) = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val users = getByUid(uid).list
-            if (users.length > 0) {
-                users.last
-            } else {
-                null
-            }
+    def readByUid(uid: Long, getUserCommand: GetUserDetailsCommand): Option[(database.UserRow, database.WhiteListRow)] = {
+        getUserCommand.executeById(uid)
     }
 
     /**
@@ -132,15 +103,7 @@ object Users {
      * @param email
      * @return
      */
-    def readByEmail(email: String): database.UserRow = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-            val getResult = getByEmail(email).list
-            if (getResult.length > 0) {
-                getResult.last
-            } else {
-                null
-            }
+    def readByEmail(email: String, getUserCommand: GetUserDetailsCommand): Option[database.UserRow] = {
+        getUserCommand.executeByEmail(email)
     }
-
-
 }
