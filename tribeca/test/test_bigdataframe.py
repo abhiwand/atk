@@ -34,10 +34,10 @@ class BigDataFrameTest(unittest.TestCase):
         with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
            table = hbase_client.connection.table(table)
            for key, data in table.scan():
-               all_null = true
+               all_null = True
                for k in data.keys():
                    if data[k] != '':
-                       all_null = false
+                       all_null = False
                        break
                self.assertEqual(all_null, False)                          
                    
@@ -54,34 +54,36 @@ class BigDataFrameTest(unittest.TestCase):
         fp = open('/tmp/clean_test.csv', 'w')
         for data in data_set:
             fp.write(data)
+            fp.write('\n')
         fp.close()
 
         schema = 'name:chararray,age:int,salary:int'
+        
         big_frame = read_csv('/tmp/clean_test.csv', schema, True) 
         big_frame.dropna(column_name='age')
         self.validate_nonnull(big_frame._table.table_name, 'age')
         temp_tables.extend(big_frame.lineage)
-        
+         
         big_frame = read_csv('/tmp/clean_test.csv', schema, True)
         big_frame.dropna(column_name='salary')
         self.validate_nonnull(big_frame._table.table_name, 'salary')
         temp_tables.extend(big_frame.lineage)
-        
+         
         big_frame = read_csv('/tmp/clean_test.csv', schema, True)
         big_frame.dropna(how='any')
         self.validate_all_nonnull(big_frame._table.table_name)
         temp_tables.extend(big_frame.lineage)
-        
+         
         big_frame = read_csv('/tmp/clean_test.csv', schema, True)
         big_frame.dropna(how='all')
         self.validate_no_allnull(big_frame._table.table_name)
         temp_tables.extend(big_frame.lineage)
-        
+         
         big_frame = read_csv('/tmp/clean_test.csv', schema, True)
         big_frame.fillna('age', '9999')
         self.validate_nonnull(big_frame._table.table_name, 'age')
         temp_tables.extend(big_frame.lineage)
-        
+         
         big_frame = read_csv('/tmp/clean_test.csv', schema, True)
         big_frame.impute('salary', Imputation.MEAN)
         self.validate_nonnull(big_frame._table.table_name, 'salary')
@@ -89,8 +91,7 @@ class BigDataFrameTest(unittest.TestCase):
         
         #failure cases
         big_frame = read_csv('/tmp/clean_test.csv', schema, True)
-        with self.assertRaises(BigDataFrameException):
-            big_frame.dropna(column_name='col_doesnt_exist')#should throw BigDataFrameException
+        self.assertRaises(BigDataFrameException,big_frame.dropna, column_name='col_doesnt_exist')
         temp_tables.extend(big_frame.lineage)
         
         big_frame = read_csv('/tmp/clean_test.csv', schema, True)
@@ -99,8 +100,7 @@ class BigDataFrameTest(unittest.TestCase):
         temp_tables.extend(big_frame.lineage)
         
         big_frame = read_csv('/tmp/clean_test.csv', schema, True)
-        with self.assertRaises(BigDataFrameException):
-            big_frame.fillna('col_doesnt_exist', '{}\"sss')#should throw BigDataFrameException
+        self.assertRaises(BigDataFrameException, big_frame.fillna, 'col_doesnt_exist', '{}\"sss')
         temp_tables.extend(big_frame.lineage)  
 
         print 'Cleaning up the temp tables %s & their schema definitions' % (big_frame.lineage)
