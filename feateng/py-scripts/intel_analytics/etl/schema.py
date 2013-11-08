@@ -24,7 +24,7 @@ class ETLSchema:
     '''
     def load_schema(self, table_name):
         with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-            assert hbase_client.is_table_readable(CONFIG_PARAMS['etl-schema-table']), 'Cannot read the schema from %s!' % (CONFIG_PARAMS['etl-schema-table'])
+            assert hbase_client.table_exists(CONFIG_PARAMS['etl-schema-table']), 'Cannot read the schema from %s!' % (CONFIG_PARAMS['etl-schema-table'])
             data_dict = hbase_client.get(CONFIG_PARAMS['etl-schema-table'],table_name)
             assert len(data_dict.items())>0, 'No schema information found for table %s!' % (table_name)
             for feature_name,feature_type in data_dict.items():
@@ -38,7 +38,7 @@ class ETLSchema:
     ''' 
     def save_schema(self, table_name):
         with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-            if not hbase_client.is_table_readable(CONFIG_PARAMS['etl-schema-table']):#create if etl schema table doesn't exist
+            if not hbase_client.table_exists(CONFIG_PARAMS['etl-schema-table']):#create if etl schema table doesn't exist
                 hbase_client.drop_create_table(CONFIG_PARAMS['etl-schema-table'] , [CONFIG_PARAMS['etl-column-family']])
                 
             #check if an entry already exists in ETL_SCHEMA

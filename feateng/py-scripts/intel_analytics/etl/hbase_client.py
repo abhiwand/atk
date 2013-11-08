@@ -13,11 +13,8 @@ class ETLHBaseClient:
     def __init__(self, hbase_host):
         self.hbase_host = hbase_host
 
-    def is_table_readable(self, table_name):
-        try:
-            return self.connection.is_table_enabled(table_name)
-        except:
-            return False
+    def table_exists(self, table_name):
+        return table_name in self.connection.tables()
 
     def put(self, table_name, row_key, data_dict):
         table = self.connection.table(table_name)
