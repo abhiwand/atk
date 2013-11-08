@@ -28,7 +28,9 @@ import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
 
-/** Aggregator for summing up vector values. */
+/**
+ * Aggregator for summing up vector values.
+ */
 public class VectorSumAggregator extends BasicAggregator<VectorWritable> {
     @Override
     public void aggregate(VectorWritable value) {

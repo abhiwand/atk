@@ -88,8 +88,6 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     private static String SUM_DOC_VERTEX_COUNT = "num_doc_vertices";
     /** Aggregator name for number of word-vertices */
     private static String SUM_WORD_VERTEX_COUNT = "num_word_vertices";
-    /** Aggregator name for number of edges */
-    private static String SUM_EDGE_COUNT = "num_edges";
     /** Aggregator name for number of word occurrences */
     private static String SUM_OCCURRENCE_COUNT = "num_occurrences";
     /** Aggregator name for sum of word-vertex values, the nk in LDA */
@@ -98,6 +96,8 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     private static String SUM_COST = "sum_cost";
     /** Aggregator name for max of delta at each super step */
     private static String MAX_DELTA = "max_delta";
+    /** Number of edges */
+    private static String NUM_EDGES = "num_edges";
     /** Max delta value of previous super step for convergence monitoring */
     private static String PREV_MAX_DELTA = "prev_max_delta";
 
@@ -200,7 +200,6 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
             break;
         case WORD:
             aggregate(SUM_WORD_VERTEX_COUNT, new LongWritable(1));
-            aggregate(SUM_EDGE_COUNT, new LongWritable(vertex.getNumEdges()));
             break;
         default:
             throw new IllegalArgumentException("Unknow recognized vertex type: " + vt.toString());
@@ -385,7 +384,6 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         public void initialize() throws InstantiationException, IllegalAccessException {
             registerPersistentAggregator(SUM_DOC_VERTEX_COUNT, LongSumAggregator.class);
             registerPersistentAggregator(SUM_WORD_VERTEX_COUNT, LongSumAggregator.class);
-            registerPersistentAggregator(SUM_EDGE_COUNT, LongSumAggregator.class);
             registerPersistentAggregator(SUM_OCCURRENCE_COUNT, DoubleSumAggregator.class);
             registerAggregator(SUM_WORD_VERTEX_VALUE, VectorSumAggregator.class);
             registerAggregator(MAX_DELTA, DoubleMaxAggregator.class);
@@ -399,6 +397,11 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         public void compute() {
             long step = getSuperstep();
             if (step > 0) {
+                // store number of edges for graph statistics
+                if (step == 1) {
+                    long numEdges = getTotalNumEdges() / 2;
+                    getConf().setLong(NUM_EDGES, numEdges);
+                }
                 // evaluate convergence condition
                 float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 float prevMaxDelta = getConf().getFloat(PREV_MAX_DELTA, 0f);
@@ -424,7 +427,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     }
 
     /**
-     * This is an aggregator writer, which after each super step will persist the
+     * This is an aggregator writer for LDA, which after each super step will persist the
      * aggregator values to disk, by use of the Writable interface.
      */
     public static class CVB0LDAAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
@@ -475,7 +478,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
                 // output graph statistics
                 long numDocVertices = Long.parseLong(map.get(SUM_DOC_VERTEX_COUNT));
                 long numWordVertices = Long.parseLong(map.get(SUM_WORD_VERTEX_COUNT));
-                long numEdges = Long.parseLong(map.get(SUM_EDGE_COUNT));
+                long numEdges = getConf().getLong(NUM_EDGES, 0L);
                 output.writeUTF("Graph Statistics:\n");
                 output.writeUTF(String.format("Number of vertices: %d (doc: %d, word: %d)%n",
                     numDocVertices + numWordVertices, numDocVertices, numWordVertices));
