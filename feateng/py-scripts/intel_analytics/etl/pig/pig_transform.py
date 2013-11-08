@@ -35,7 +35,6 @@ def generate_transform_statement(features, cmd_line_args):
     else:#PIG functions
         #we have some args to pass to the transformation_function
         if cmd_line_args.transformation_function_args:
-#             transform_statement += "%s(%s,%s) as %s" % (cmd_line_args.transformation_function, cmd_line_args.feature_to_transform, cmd_line_args.transformation_function_args, cmd_line_args.new_feature_name)
             transform_statement += "%s(%s," % (cmd_line_args.transformation_function, cmd_line_args.feature_to_transform)
             for i, arg in enumerate(cmd_line_args.transformation_function_args):
                 if type(arg) is str:#need to wrap it in quotes for pig
@@ -67,6 +66,10 @@ def main(argv):
     parser.add_argument('-s', '--schema', dest='schema_information', help='schema information')
     
     cmd_line_args = parser.parse_args()
+    print cmd_line_args
+    
+    if (cmd_line_args.input == cmd_line_args.output) and (not cmd_line_args.keep_original_feature):#in-place transformation AND don't keep source
+        raise Exception("For in-place transformations the source/original feature has to be kept")
     
     features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
@@ -76,8 +79,6 @@ def main(argv):
     #if we have some args, convert the string representation of args to a list
     if cmd_line_args.transformation_function_args:
         cmd_line_args.transformation_function_args = ast.literal_eval(cmd_line_args.transformation_function_args)
-#         print "cmd_line_args.transformation_function_args >>>> ",cmd_line_args.transformation_function_args
-#         print type(cmd_line_args.transformation_function_args)
 
     #don't forget to add the key we read from hbase, we read from hbase like .... as (key:chararray, ... remaining_features ...), see below
     features.insert(0, 'key')

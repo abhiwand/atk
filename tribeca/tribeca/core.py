@@ -10,10 +10,8 @@ import random
 import sys
 
 from builtin_functions import EvalFunctions
-
 from intel_analytics.etl.config import CONFIG_PARAMS
 from intel_analytics.etl.hbase_client import ETLHBaseClient
-from intel_analytics.etl.functions import EvalFunctions
 from intel_analytics.etl.schema import ETLSchema
 
 #-----------------------------------------------------------------------------
@@ -32,7 +30,7 @@ print 'Using',pig_log4j_path
 os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
 os.environ["JYTHONPATH"] = os.path.join(feateng_home, "py-scripts")#required to ship jython scripts with pig
 
-class BigDataFrameExeption(Exception):
+class BigDataFrameException(Exception):
     pass
 
 def get_pig_args():
@@ -97,7 +95,7 @@ def read_csv(file, schema=None, skip_header=False):
         hbase_client.drop_create_table(df_name , [CONFIG_PARAMS['etl-column-family']])   
     return_code = subprocess.call(args)
     if return_code:
-        raise BigDataFrameExeption('Could not import CSV file')
+        raise BigDataFrameException('Could not import CSV file')
     
     return new_frame
 
@@ -118,7 +116,7 @@ def read_json(file, schema=None):
     -------
     table : BigDataFrame
     """
-    raise BigDataFrameExeption("Not implemented")
+    raise BigDataFrameException("Not implemented")
 
 def read_xml(file, schema=None):
     """ 
@@ -137,7 +135,7 @@ def read_xml(file, schema=None):
     -------
     table : BigDataFrame
     """
-    raise BigDataFrameExeption("Not implemented")
+    raise BigDataFrameException("Not implemented")
 
 #-----------------------------------------------------------------------------
 # Schema Management - no explicit user API
@@ -158,7 +156,7 @@ def merge():  # TODO: fill out parameters
 
     (See BigDataFrame.merge)
     """
-    raise BigDataFrameExeption("Not implemented")
+    raise BigDataFrameException("Not implemented")
 
 #------------------------------------------------------------------------------
 # Enums
@@ -263,7 +261,7 @@ class HBaseTable(Table):
         feature_types_as_str = ",".join(etl_schema.feature_types)
         
         if column_name and (column_name not in etl_schema.feature_names):
-            raise BigDataFrameExeption("Column %s does not exist" % (column_name))        
+            raise BigDataFrameException("Column %s does not exist" % (column_name))        
         
         #generate some table name for transformation output
         table_name = self.table_name + "-%s" % (transformation_to_apply)
@@ -291,7 +289,7 @@ class HBaseTable(Table):
         return_code = subprocess.call(args)
                     
         if return_code:
-            raise BigDataFrameExeption('Could not apply transformation')  
+            raise BigDataFrameException('Could not apply transformation')  
         
         self.table_name = table_name
         #need to update schema here as it's difficult to pass the updated schema info from jython to python
@@ -340,7 +338,7 @@ class HBaseTable(Table):
         feature_types_as_str = ",".join(etl_schema.feature_types)   
         
         if column_name and (column_name not in etl_schema.feature_names):
-            raise BigDataFrameExeption("Column %s does not exist" % (column_name))
+            raise BigDataFrameException("Column %s does not exist" % (column_name))
        
         script_path = os.path.join(etl_scripts_path,'pig_clean.py')
         
@@ -357,7 +355,7 @@ class HBaseTable(Table):
             args += ['-f', column_name]      
         else:
             if not how:
-                raise BigDataFrameExeption('Please specify a cleaning strategy with the how argument')
+                raise BigDataFrameException('Please specify a cleaning strategy with the how argument')
             args += ['-s', how]
           
         # need to delete/create output table so that we can write the transformed features
@@ -368,7 +366,7 @@ class HBaseTable(Table):
         return_code = subprocess.call(args)
  
         if return_code:
-            raise BigDataFrameExeption('Could not clean the dataset')            
+            raise BigDataFrameException('Could not clean the dataset')            
          
         self.table_name = output_table # update the table_name
         etl_schema.save_schema(self.table_name) # save the schema for the new table
@@ -384,7 +382,7 @@ class HBaseTable(Table):
     def impute(self, column_name, how):
         output_table = self.table_name + "_impute"
         if how not in available_imputations:
-            raise BigDataFrameExeption('Please specify a support imputation method. %d is not supported' % (how))      
+            raise BigDataFrameException('Please specify a support imputation method. %d is not supported' % (how))      
         self.__drop(output_table, column_name=column_name, how=None, replace_with=Imputation.to_string(how))
     
     def get_schema(self):       
@@ -460,7 +458,7 @@ class BigDataFrame(object):
         # We'll create an HDFS folder and shard into files
         # We'll provide a separate, explicit "Download" mechanism to go from
         # HDFS (or S3) to client
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
     def to_json(file, include_schema=True):
         """
@@ -474,7 +472,7 @@ class BigDataFrame(object):
             whether also write an schema file with same name
         """
         #TODO: embed the schema in same file, similar to header?
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
 
     def to_xml(file, include_schema=True):
@@ -490,7 +488,7 @@ class BigDataFrame(object):
         """
         #TODO: use a JSON schema (or XML XSD or DTD?) --embed in the same
         #      file, similar to header?
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
 
     #----------------------------------------------------------------------
@@ -523,7 +521,7 @@ class BigDataFrame(object):
         appended : DataFrame
 
         """
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
     def join(self, other, on=None, how='left', lsuffix='', rsuffix='',
              sort=False):
@@ -568,7 +566,7 @@ class BigDataFrame(object):
         -------
         joined : DataFrame
         """
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
     def merge(self, right, how='inner', on=None, left_on=None, right_on=None,
               left_index=False, right_index=False, sort=False,
@@ -639,7 +637,7 @@ class BigDataFrame(object):
         -------
         merged : DataFrame
         """
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
     #----------------------------------------------------------------------
     # Canned Transforms
@@ -737,7 +735,7 @@ class BigDataFrame(object):
         -------
         applied : Series or DataFrame
         """
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
     def applymap(self, column_name, func, output_type):
         """
@@ -767,7 +765,7 @@ class BigDataFrame(object):
         -------
         applied : DataFrame
         """
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
 
     # TODO: groupby needs more study
@@ -818,7 +816,7 @@ class BigDataFrame(object):
         GroupBy object
         (some context for future functions or another BDF)
         """
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
 
 
@@ -937,7 +935,7 @@ class BigDataFrame(object):
             filter function evaluated at each cell in the given column; if
             result is true, row is dropped
         """
-        raise BigDataFrameExeption("Not implemented")
+        raise BigDataFrameException("Not implemented")
 
 
 

@@ -53,8 +53,8 @@ def main(argv):
     print cmd_line_args
     
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        if not hbase_client.is_table_readable(cmd_line_args.input):
-            print "Specified input table %s is not readable"%(cmd_line_args.input)
+        if not hbase_client.table_exists(cmd_line_args.input):
+            print "Specified input table %s does not exist"%(cmd_line_args.input)
             sys.exit(1)    
 
     etl_schema = ETLSchema()
@@ -70,6 +70,9 @@ def main(argv):
                 feature_type = etl_schema.feature_types[i] 
                 print "%s:%s"%(feature_name,feature_type)
         sys.exit(1)
+        
+    if (cmd_line_args.input == cmd_line_args.output) and (not cmd_line_args.keep_original_feature):#in-place transformation AND don't keep source
+        raise Exception("For in-place transformations the source/original feature has to be kept")
    
     errors = validate_args(cmd_line_args)
     if len(errors)>0:
@@ -77,8 +80,8 @@ def main(argv):
     
     if cmd_line_args.take_a_diff:
         with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-            if cmd_line_args.output and not hbase_client.is_table_readable(cmd_line_args.output):
-                print "Specified output table %s is not readable"%(cmd_line_args.output)
+            if cmd_line_args.output and not hbase_client.table_exists(cmd_line_args.output):
+                print "Specified output table %s does not exist"%(cmd_line_args.output)
                 sys.exit(1)        
                 
             dest_etl_schema = ETLSchema()
@@ -97,7 +100,7 @@ def main(argv):
     
     with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
         #create if output table doesn't exist
-        if not hbase_client.is_table_readable(cmd_line_args.output):          
+        if not hbase_client.table_exists(cmd_line_args.output):          
             hbase_client.drop_create_table(cmd_line_args.output, [CONFIG_PARAMS['etl-column-family']])
     
     transform_script_path = os.path.join(base_script_path, 'intel_analytics', 'etl', 'pig', 'pig_transform.py')
