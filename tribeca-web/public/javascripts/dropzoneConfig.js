@@ -15,10 +15,46 @@ $(window).ready(function(){
             init:function(){
                 $("#uploadForm").addClass("dropzone")
             },
-            success:function(one){
-                one.previewElement.remove();
-                $("#uploadedFiles tbody").append("<tr><td>" + one.name + "</td><td>" + Dropzone.formatSize(one.size) + "</td></tr>")
+            success:function(file){
+                file.previewElement.remove();
+                $("#uploadedFiles tbody").append("<tr><td>" + file.name + "</td><td>" + Dropzone.formatSize(file.size) + "</td></tr>")
+                $.ajax({
+                        type: "POST",
+                        url: "files/create",
+                        dataType: 'json',
+                        contentType: "application/json",
+                        data: JSON.stringify({"name": file.name, "size": file.size}),
+                        success: function (data) {
+                            console.log(data)
+                        },
+                        error: function(){
+                            console.log("error")
+                        }
+                    })
+
             }
         });
     }
+
+    $(".file-remove").click(function(event){
+        $.ajax
+        ({
+            type: "POST",
+            url: "files/delete",
+            dataType: 'json',
+            contentType: "application/json",
+            data: JSON.stringify({"name": event.currentTarget.parentNode.parentNode.children[0].innerText}),
+            success: function (data) {
+                console.log(data)
+            },
+            error: function(){
+                console.log("error")
+            }
+        })
+    })
 })
+
+var deleteFile = function(fileName){
+
+
+}

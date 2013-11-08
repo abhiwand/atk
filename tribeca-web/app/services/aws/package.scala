@@ -25,9 +25,18 @@ package services
 
 import play.api.Play
 import play.api.Play.current
+import com.amazonaws.auth.BasicAWSCredentials
 
 package object aws {
-  val access_key = Play.application.configuration.getString("aws.access_key").get
-  val secret_access_key = Play.application.configuration.getString("aws.secret_access_key").get
+  val baseAccessKey = Play.application.configuration.getString("aws.access_key").get
+  val baseSecretAccessKey = Play.application.configuration.getString("aws.secret_access_key").get
+  val baseCredentials = new BasicAWSCredentials(baseAccessKey, baseSecretAccessKey)
+}
 
+class awsUser(params:com.typesafe.config.ConfigObject){
+    //val accountId = params.get(0).getString("accountId")
+  val tests:String = "";
+  def awsUser(params:List[_ <: com.typesafe.config.ConfigObject]) = {
+    println(params.toString)
+  }
 }

@@ -1,6 +1,7 @@
 @(user:models.database.UserRow)
 
 @import services.aws.S3
+@import services.aws.baseAccessKey
 @import com.amazonaws.services.s3.model.{S3ObjectSummary}
    <!-- Dataset Modal -->
   <div class="modal fade" id="datasetModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -24,20 +25,22 @@
                               <tr><th>Name</th><th>Size</th></tr>
                           </thead>
                             <tbody >
+
                             @for(file <- S3.getObjectList(user.uid.get.toString)){
+
                                 <tr class=''>
                                     <td>@S3.formatName(file.getKey)</td>
                                     <td>@S3.formatSize(file.getSize)</td>
+                                    <td><i class="fa-icon-remove file-remove" id="file-remove-" ></i></td>
                                 </tr>
-                            }
+
+                                }
                           </tbody>
                         </table>  
                     </div>
                   </div>
           </div>
-        <div class="modal-header">  
-          <h5>Add Files to Existing Dataset</h5>  
-        </div> 
+        
           <div class='row'>
                   <div class='col-sm-12'>
                     <div id="dropzone">
@@ -45,7 +48,7 @@
                         <form id="uploadForm" @*class="dropzone dz-clickable"*@ action="https://gaopublic.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
                             @defining(S3.getPolicy(user.uid.get.toString())){ implicit policy =>
                             <input type="hidden" name="key" value="user/@user.uid/${filename}">
-                            <input type="hidden" name="AWSAccessKeyId" value="AKIAJ65RQRJONMKNT2NQ">
+                            <input type="hidden" name="AWSAccessKeyId" value="@baseAccessKey">
                             <input type="hidden" name="acl" value="private">
                             <!--<input type="hidden" name="success_action_redirect" value="http://localhost/s3">-->
                             <input type="hidden" name="policy" value="@policy">
