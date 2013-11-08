@@ -43,49 +43,9 @@ object Users {
      * @param statementGenerator
      * @return
      */
-    def register(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator): RegistrationOutput = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-
-            val callString = "{call sp_register(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}";
-            val cStmt = statementGenerator.getCallStatement(session, callString)
-            cStmt.setString("myName", registrationForm.name)
-            cStmt.setString("given_name", user.givenName)
-            cStmt.setString("family_name", user.familyName)
-            cStmt.setString("email", user.email)
-            cStmt.setString("organization_name", registrationForm.organization_name)
-            cStmt.setString("organization_phone", registrationForm.organization_phone)
-            cStmt.setString("organization_email", "")
-            cStmt.setInt("experience", registrationForm.experience)
-            cStmt.setString("role", registrationForm.role)
-            cStmt.setString("why_participate", registrationForm.whyParticipate)
-            cStmt.setString("what_tools", registrationForm.whatTools)
-            cStmt.registerOutParameter("loginAfterRegister", Types.BIGINT)
-            cStmt.registerOutParameter("errorCode", Types.BIGINT)
-            cStmt.registerOutParameter("errorMessage", Types.VARCHAR)
-            val hadResults = cStmt.execute()
-
-            val loginAfterRegister = cStmt.getInt("loginAfterRegister")
-            val errorCode = cStmt.getInt("errorCode")
-            val errorMessage = cStmt.getString("errorMessage")
-
-            var uid = 0
-            if (hadResults) {
-                uid = getUidFromResultSet(cStmt.getResultSet())
-            }
-
-            val output = new RegistrationOutput(errorCode, errorMessage, loginAfterRegister, uid)
-            return output
-    }
-
-    /**
-     *
-     * @param rs
-     * @return
-     */
-    private def getUidFromResultSet(rs: ResultSet): Int = {
-        var uid = 0
-        if (rs.next()) uid = rs.getInt("uid")
-        return uid
+    def register(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator, registerCommand : RegisterCommand): RegistrationOutput =
+    {
+        registerCommand.execute(user, registrationForm, statementGenerator)
     }
 
     /**
@@ -94,28 +54,9 @@ object Users {
      * @param statementGenerator
      * @return
      */
-    def login(email: String, statementGenerator: StatementGenerator): LoginOutput = DB.withSession {
-        implicit session: scala.slick.session.Session =>
-
-            val callString = "{call sp_login(?, ?, ?, ?)}";
-            val cStmt = statementGenerator.getCallStatement(session, callString)
-            cStmt.setString("email", email)
-            cStmt.registerOutParameter("loginSuccessful", Types.BIGINT)
-            cStmt.registerOutParameter("errorCode", Types.BIGINT)
-            cStmt.registerOutParameter("errorMessage", Types.VARCHAR)
-            val hadResults = cStmt.execute()
-
-            val loginSuccessful = cStmt.getInt("loginSuccessful")
-            val errorCode = cStmt.getInt("errorCode")
-            val errorMessage = cStmt.getString("errorMessage")
-
-            var uid = 0
-            if (hadResults) {
-                uid = getUidFromResultSet(cStmt.getResultSet())
-            }
-
-            val output = new LoginOutput(errorCode, errorMessage, loginSuccessful, uid)
-            return output
+    def login(email: String, statementGenerator: StatementGenerator, loginCommand: LoginCommand): LoginOutput =
+    {
+        loginCommand.execute(email, statementGenerator)
     }
 
     /**

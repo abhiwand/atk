@@ -35,7 +35,7 @@ class RegisterControllerSpec extends Specification with Mockito {
             val auth = mock[Authorize]
             auth.validateUserInfo() returns None
             val sessionGen = mock[SessionGenerator]
-            sessionGen.create(1) returns "1"
+            sessionGen.create(1) returns Some("1")
             val statementGenerator = mock[StatementGenerator]
 
             val result = Register.getResponse(registrationData, auth, sessionGen, statementGenerator)
@@ -50,7 +50,7 @@ class RegisterControllerSpec extends Specification with Mockito {
                 auth.userInfo returns Some(userInfo)
 
                 val sessionGen = mock[SessionGenerator]
-                sessionGen.create(100) returns "100"
+                sessionGen.create(100) returns Some("100")
 
                 val dummyStatementGenerator = new StatementGenerator {
                     def getCallStatement(session: Session, callString: String): CallableStatement = {
@@ -83,7 +83,7 @@ class RegisterControllerSpec extends Specification with Mockito {
                 auth.userInfo returns Some(userInfo)
 
                 val sessionGen = mock[SessionGenerator]
-                sessionGen.create(100) returns "100"
+                sessionGen.create(100) returns Some("100")
 
                 val dummyStatementGenerator = new StatementGenerator {
                     def getCallStatement(session: Session, callString: String): CallableStatement = {
@@ -115,7 +115,7 @@ class RegisterControllerSpec extends Specification with Mockito {
                 auth.userInfo returns Some(userInfo)
 
                 val sessionGen = mock[SessionGenerator]
-                sessionGen.create(100) returns "100"
+                sessionGen.create(100) returns Some("100")
 
                 val dummyStatementGenerator = new StatementGenerator {
                     def getCallStatement(session: Session, callString: String): CallableStatement = {
@@ -146,7 +146,7 @@ class RegisterControllerSpec extends Specification with Mockito {
                 auth.userInfo returns Some(userInfo)
 
                 val sessionGen = mock[SessionGenerator]
-                sessionGen.create(100) returns "100"
+                sessionGen.create(100) returns Some("100")
 
                 val dummyStatementGenerator = new StatementGenerator {
                     def getCallStatement(session: Session, callString: String): CallableStatement = {

@@ -25,7 +25,7 @@ package controllers
 
 import play.api.mvc._
 import services.authorize.{Providers, Authorize}
-import models.database.{LoginOutput, StatementGenerator, MySQLStatementGenerator}
+import models.database.{DBLoginCommand, LoginOutput, StatementGenerator, MySQLStatementGenerator}
 import models._
 import controllers.Session._
 import models.StatusCodes
@@ -69,15 +69,19 @@ object Login extends Controller {
         if (auth.validateUserInfo() == None)
             return (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
 
-        val result = Users.login(auth.userInfo.get.email, statementGenerator)
+        val result = Users.login(auth.userInfo.get.email, statementGenerator, DBLoginCommand)
 
-        getResponseFromLoginResult(result, sessionGen)
-    }
+        if (result.success == 1) {
 
-    def getResponseFromLoginResult(result: LoginOutput, sessionGen: SessionGenerator): (Int, Option[String]) = {
-        if (result.success == 1)
-            (StatusCodes.LOGIN, Some(sessionGen.create(result.uid)))
+            val sessionId = sessionGen.create(result.uid)
+            if (sessionId == None)
+                (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
+            else
+                (StatusCodes.LOGIN, Some(sessionId.get))
+        }
         else
             (result.errorCode, None)
     }
 }
+
+
