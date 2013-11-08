@@ -74,8 +74,8 @@ h1, h2, h3, h4, h5 {
 }
 
 #header .navbar-default .navbar-nav > li > a span {
-   
     height: 60px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
   
 }
 
@@ -133,9 +133,7 @@ h1, h2, h3, h4, h5 {
       border-color: #67a2d4;
       color: #498fcc; }
 
-      p {
-    color: #0071C5;
-}
+
 
 .text-boxes .text-box .title a {
     color: #004280;
@@ -174,12 +172,7 @@ h1, h2, h3, h4, h5 {
     text-align: center;
 }
 
-#footer #footer-main {
-    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.2);
-    padding: 10px 0;
-    text-align: center;
 
-}
 
 .text-contrast {
     color: #fdb813 !important;
@@ -280,14 +273,6 @@ h1, h2, h3, h4, h5 {
 
 
 
-.footer-right {
-    float: right;
-}
-
-.footer-left {
-    float: left;
-    margin-left: -20px;
-}
 
 
 
@@ -300,6 +285,7 @@ h1, h2, h3, h4, h5 {
 
 .btn.btn-xs {
     padding: 12px 13px;
+    width: 50%;
 
 }
 
@@ -443,10 +429,24 @@ button.close {
      margin-left: 10px;
 }
 
-
-.modal-content {
-    margin-top: 45px;
+#footer #footer-main {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0.2);
+    padding: 10px 0;
+    position: fixed;
+    right: auto;
+    bottom: 0px;
+    width: 100%;
+    text-align: center;
 }
+
+.footer-right {
+    float: right;
+}
+
+.footer-left {
+    float: left;
+}
+
 
 #footer #footer-main p {
     font-size: 9px;
