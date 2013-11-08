@@ -83,13 +83,18 @@ for n in `cat ${nodesfile}`; do
     ${dryrun} ssh -t -i ${pemfile} ${n} "sudo rm -f /home/hadoop/.ssh/known_hosts"
 done
 
-# Mount the disks: the FS is ext3 by default
+# Check data disk mounts and ownershipt, default user is 'hadoop'
+if [ -z "${IA_USR}" ]; then
+    IA_USR=hadoop
+fi
 for n in `cat ${nodesfile}`; do
-    # update the host file
-    echo "Mount the disks on node ${n}..."
-    # Remove existing mount
+    # Mount is handled by cloud.cfg now in cloud-init
+    echo "Checking data disks mounts on node ${n}..."
+    ${dryrun} ssh -t -i ${pemfile} ${n} "mount | grep xvd | grep data;"
+    # Remove existing mount: by cloud-init now
     # ${dryrun} ssh -t -i ${pemfile} ${n} "sudo bash -c 'mount /dev/xvdb /mnt/data1; mount /dev/xvdc /mnt/data2; mount /dev/xvdd /mnt/data3; mount /dev/xvde /mnt/data4;'"
-    ${dryrun} ssh -t -i ${pemfile} ${n} "sudo chomod -R hadoop.hadoop /mnt/data*"
+    # Check/enforce ownership
+    ${dryrun} ssh -t -i ${pemfile} ${n} "sudo chown -R ${IA_USR}.${IA_USR} /mnt/data*"
 done
 
 # prepare to start the cluster/hadoop: nothing to do, already configured
