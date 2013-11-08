@@ -11,7 +11,8 @@ if [ -z "${IA_HOME}" ]; then
     export IA_HOME=${HOME}/${IA_NAME}/${IA_VERSION}
 fi
 if [ ! -d ${IA_HOME} ]; then
-    echo "Working directory is set as \"${IA_HOME}\""
+    echo "Could not find working directory \"${IA_HOME}\"!"
+    exit -1
 fi
 
 # deploy stuffs are here
@@ -20,7 +21,12 @@ export IA_CONFIG=${IA_DEPLOY}/config
 export IA_CLUSTERS=${IA_DEPLOY}/clusters
 export IA_LOGFILE=${IA_DEPLOY}/${IA_NAME}-${IA_VERSION}.log
 # credentials are here
-export IA_CREDENTIALS=${IA_HOME}/credentials
+if [ -z "${IA_CREDENTIALS}" ]; then
+    export IA_CREDENTIALS=${IA_HOME}/credentials
+fi
+if [ ! -d ${IA_CREDENTIALS} ]; then
+    echo "Assuming credentials are at \"${IA_CREDENTIALS}\""
+fi
 
 # Overwrite IA_TAG to create the cluster to a different VPC
 # IA_TAG is the name tag for the target VPC, used in all ec

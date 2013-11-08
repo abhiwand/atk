@@ -42,7 +42,17 @@
 
 function usage()
 {
-    IA_logerr "Usage:$(basename $0) --cluster-id <id> [--cluster-size <n>] [--no-dryrun]"
+    echo "Usage: $(basename $0) 
+    --cluster-id <id>       // valid range for id is [1, 40]
+    [--cluster-size <n> ]   // default to n=4
+    [--build <nn> ]         // nn is AMI build number, 00,01 etc
+    [--version <rev> ]      // rev is the product relsease version
+    [--ec2adm <str> ]       // ec2 adm name
+    [--workdir <str> ]      // work home, e.g. \`pwd\`/../..
+    [--credentials <str> ]  // directory with credentials
+    [--no-dryrun]           // do not launch instance
+    [--help ]               // print this message
+"
     exit 1
 }
 
@@ -74,9 +84,6 @@ function IA_create_dump()
     cat ${IA_CLUSTERS}/${cname}.info >> ${IA_LOGFILE}
 }
 
-# Get the env setup and helper funs
-source IntelAnalytics_cluster_env.sh
-
 # Reset the global RET
 _RET=""
 dryrun=yes
@@ -94,15 +101,38 @@ do
             csize=$2
             shift 2
             ;;
-          --no-dryrun)
+        --no-dryrun)
             dryrun=no
             shift 1
             ;;
-        *)
+        --build)
+            export IA_AMI_BUILD=$2
+            shift 2
+            ;;
+        --version)
+            export IA_VERSION=$2
+            shift 2
+            ;;
+        --ec2adm)
+            export IA_EC2_USR=$2
+            shift 2
+            ;;
+        --workdir)
+            export IA_HOME=$2
+            shift 2
+            ;;
+        --credentials)
+            export IA_CREDENTIALS=$2
+            shift 2
+            ;;
+        --help | *)
             usage
             ;;
     esac
 done
+
+# Get the env setup and helper funs
+source IntelAnalytics_cluster_env.sh
 
 # Input 1 is a unique cluster id from frontend user registration
 IA_check_cluster_id ${cid};
