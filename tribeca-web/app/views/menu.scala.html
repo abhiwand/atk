@@ -3,36 +3,36 @@
 <div class='collapse navbar-collapse navbar-header-collapse'>
     <ul class='nav navbar-nav navbar-right'>
         @if(user != null && user.uid.get > 0 ){
-            <li class='dropdown'>
-                <a href='faq.html'>
+            <li class='dropdown' >
+                <a href='faq.html' id='faq-page'>
                     <span>
                         FAQ
                     </span>
                 </a>
             </li>
             <li class='dropdown'>
-                <a href='documentation'>
+                <a href='documentation' id='documentation-page'>
                     <span>
                         API Documentation
                     </span>
                 </a>
             </li>
-            <li class='active dropdown'>
-                <a href='ipython'>
+            <li class='active dropdown' >
+                <a href='ipython' id='ipython-page'>
                     <span>
                         IPython Tutorial
                     </span>
                 </a>
             </li>
             <li class='dropdown'>
-                <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href='#datasetModal'>
+                <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href='#datasetModal' id='dataset-modal'>
                     <span>
                         View/Add Datasets
                     </span>
                 </a>
             </li>
             <li class='dropdown'>
-                <a href="logout">
+                <a href="logout" id='logout-link'>
                     <span>
                         Sign Out @user.givenName @user.familyName
                     </span>
@@ -42,7 +42,7 @@
         } else {
         
         <li class='dropdown'>
-            <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href='#myModal'>
+            <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href='#myModal' id='request-an-invite-modal'>
                 <span>
                     Request an Invitation
                 </span>
