@@ -47,8 +47,23 @@ public class HBaseInputConfiguration implements InputConfiguration {
     /**
      * Allocate and acquire an instance of the singleton HBaseUtils
      */
-    public HBaseInputConfiguration() {
+    public HBaseInputConfiguration(String srcTableName) {
+
+        this.srcTableName = srcTableName;
+
         this.hBaseUtils = HBaseUtils.getInstance();
+        // Check if input table exists
+
+        try {
+            if (!hBaseUtils.tableExists(srcTableName)) {
+                LOG.fatal("GRAPHBUILDER ERROR: " + srcTableName + " table does not exist");
+                System.exit(1);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            LOG.fatal("Could not read input HBase Table named: " + srcTableName);
+            System.exit(1);
+        }
     }
 
     /**
@@ -68,20 +83,8 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
         srcTableName = cmd.getOptionValue(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"));
 
-        // Check if input table exists
-
-        try {
-            if (!hBaseUtils.tableExists(srcTableName)) {
-                LOG.fatal("GRAPHBUILDER ERROR: " + srcTableName + " table does not exist");
-                System.exit(1);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            LOG.fatal("Could not read input HBase Table named: " + srcTableName);
-            System.exit(1);
-        }
-
         configuration.set("SRCTABLENAME", srcTableName);
+
 
         scan.setCaching(GBHTableConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
