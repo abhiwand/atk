@@ -23,9 +23,9 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * MR-time graph construction routine that creates property graph elements from HBase rows.
+ * MR-time routine that creates property graph elements from HBase rows.
  *
- * Its set-up time analog is {@code BasicHBaseGraphBuildingRule}
+ * <p>Its set-up time analog is {@code BasicHBaseGraphBuildingRule} </p>
  *
  * @see BasicHBaseGraphBuildingRule
  * @see com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.HBaseInputConfiguration
@@ -39,9 +39,69 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
     private HashMap<String, String[]>     vertexPropColMap;
     private ArrayList<Vertex<StringType>> vertexList;
 
-    private HashMap<String, List<String>> edgeLabelToColumnList;
+    private HashMap<String, EdgeRule>     edgeLabelToEdgeRules;
     private ArrayList<String>             edgeLabelList;
     private ArrayList<Edge<StringType>>   edgeList;
+
+    /**
+     * Encapsulation of the rules for creating edges.
+     *
+     * <p> Edge rules consist of the following:
+     * <ul>
+     * <li> A column name from which to read the edge's source vertex</li>
+     * <li> A column name from which to read the edge's destination vertex</li>
+     * <li> A boolean flag denoting if the edge is bidirectional or directed</li>
+     * <li> A list of column names from which to read the edge's properties</li>
+     * </ul></p>
+     * <p>Edge rules are indexed by their label, so we do not store the label in the rule.</p>
+     */
+    private class EdgeRule {
+        private String       srcColumnName;
+        private String       dstColumnName;
+        private List<String> propertyColumnNames;
+        boolean              isBiDirectional;
+
+        private EdgeRule() {
+
+        };
+
+        /**
+         * Constructor must take source, destination and bidirectionality as arguments.
+         * <p>There is no public default constructor.</p>
+         * @param srcColumnName  column name from which to get source vertex
+         * @param dstColumnName  column name from which to get destination vertex
+         * @param biDirectional  is this edge bidirectional or not?
+         */
+        EdgeRule(String srcColumnName, String dstColumnName, boolean biDirectional) {
+            this.srcColumnName       = srcColumnName;
+            this.dstColumnName       = dstColumnName;
+            this.propertyColumnNames = new ArrayList<String>();
+            this.isBiDirectional     = biDirectional;
+        }
+
+        String getSrcColumnName() {
+            return this.srcColumnName;
+        }
+
+        String getDstColumnName() {
+            return this.dstColumnName;
+        }
+
+        boolean isBiDirectional() {
+            return this.isBiDirectional;
+        }
+
+        void addPropertyColumnName(String columnName) {
+            propertyColumnNames.add(columnName);
+        }
+
+        List<String> getPropertyColumnNames() {
+            return propertyColumnNames;
+        }
+
+
+
+    }
 
     /**
      * Allocates the tokenizer and its constituent collections.
@@ -54,7 +114,7 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
         vertexIdColumnList = new ArrayList<String>();
         vertexList         = new ArrayList<Vertex<StringType>>();
 
-        edgeLabelToColumnList = new HashMap<String, List<String>>();
+        edgeLabelToEdgeRules  = new HashMap<String, EdgeRule>();
         edgeLabelList         = new ArrayList<String>();
         edgeList              = new ArrayList<Edge<StringType>>();
     }
@@ -88,32 +148,48 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
         LOG.info("TRIBECA_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
 
 
-        String[] edgeRules = BasicHBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
+        String[] rawEdgeRules         = BasicHBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
+        String[] rawDirectedEdgeRules = BasicHBaseGraphBuildingRule.unpackDirectedEdgeRulesFromConfiguration(conf);
 
-        for (String edgeRule : edgeRules) {
+        final boolean BIDIRECTIONAL = true;
+        final boolean DIRECTED      = false;
 
-            String   srcVertexColName     = BasicHBaseGraphBuildingRule.getSrcColNameFromEdgeRule(edgeRule);
-            String   tgtVertexColName     = BasicHBaseGraphBuildingRule.getDstColNameFromEdgeRule(edgeRule);
-            String   label                = BasicHBaseGraphBuildingRule.getLabelFromEdgeRule(edgeRule);
-            List<String> edgePropertyCols = BasicHBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
+        for (String rawEdgeRule : rawEdgeRules) {
 
-            List<String> edgeColumns = new ArrayList<String>();
+            String   srcVertexColName     = BasicHBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
+            String   tgtVertexColName     = BasicHBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
+            String   label                = BasicHBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
+            List<String> edgePropertyCols =
+                    BasicHBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawEdgeRule);
 
-            //  edgeColumns tells us the columns used to generate edges of
-            //  type "label"... "label" is used as the kep in the edge attribute list
-            //  the source column is the first entry in the list, the destination column
-            //  is the second, and the properties follow
-
-            edgeColumns.add(srcVertexColName);
-            edgeColumns.add(tgtVertexColName);
+           EdgeRule edgeRule = new EdgeRule(srcVertexColName, tgtVertexColName, BIDIRECTIONAL);
 
             for (String edgePropertyColumn : edgePropertyCols) {
-                edgeColumns.add(edgePropertyColumn);
+                edgeRule.addPropertyColumnName(edgePropertyColumn);
             }
-
-            edgeLabelToColumnList.put(label, edgeColumns);
+            edgeLabelToEdgeRules.put(label, edgeRule);
             edgeLabelList.add(label);
         }
+
+        for (String rawDirectedEdgeRule : rawDirectedEdgeRules) {
+
+            String   srcVertexColName     = BasicHBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawDirectedEdgeRule);
+            String   tgtVertexColName     = BasicHBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawDirectedEdgeRule);
+            String   label                = BasicHBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
+            List<String> edgePropertyCols =
+                    BasicHBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
+
+            EdgeRule edgeRule         = new EdgeRule(srcVertexColName, tgtVertexColName, DIRECTED);
+
+            for (String edgePropertyColumn : edgePropertyCols) {
+                edgeRule.addPropertyColumnName(edgePropertyColumn);
+            }
+
+            edgeLabelToEdgeRules.put(label, edgeRule);
+            edgeLabelList.add(label);
+
+        }
+
     }
 
 
@@ -206,15 +282,16 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
             for (String eLabel : edgeLabelList) {
 
                 int          countEdgeAttr  = 0;
-                List<String> list           = edgeLabelToColumnList.get(eLabel);
-                String[]     edgeAttributes = list.toArray(new String[list.size()]);
+                EdgeRule     edgeRule           = edgeLabelToEdgeRules.get(eLabel);
+                List<String> edgeAttributeList  = edgeRule.getPropertyColumnNames();
+                String[]     edgeAttributes     = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
 
                 // Get the src and tgt vertex ID's from GB_VidMap
 
-                srcVertexColName     = edgeAttributes[0];
+                srcVertexColName     = edgeRule.getSrcColumnName();
                 String srcVertexName = getColumnData(columns, srcVertexColName, context);
 
-                tgtVertexColName     = edgeAttributes[1];
+                tgtVertexColName     = edgeRule.getDstColumnName();
                 String tgtVertexName = getColumnData(columns, tgtVertexColName, context);
 
                 if (srcVertexColName != null && tgtVertexColName != null && eLabel != null) {
@@ -222,17 +299,19 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
                                                                  new StringType(tgtVertexName),
                                                                  new StringType(eLabel));
 
+
                     // now add the edge properties
 
-                    for (countEdgeAttr = 2; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
+                    for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
                         propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
 
 
-                        property = edgeAttributes[countEdgeAttr].replaceAll(GBHTableConfig.config.getProperty("HBASE_COLUMN_SEPARATOR"),
+                        property = edgeAttributes[countEdgeAttr].replaceAll(
+                                GBHTableConfig.config.getProperty("HBASE_COLUMN_SEPARATOR"),
                                 GBHTableConfig.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
 
                         if (property != null) {
-                        edge.setProperty(property, new StringType(propertyValue));
+                            edge.setProperty(property, new StringType(propertyValue));
                         }
                     }
 
@@ -244,6 +323,28 @@ public class BasicHBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, S
                     Vertex<StringType> tgtVertex = new Vertex<StringType>(new StringType(tgtVertexName));
                     vertexList.add(srcVertex);
                     vertexList.add(tgtVertex);
+
+                    if (edgeRule.isBiDirectional()) {
+                        Edge<StringType> opposingEdge = new Edge<StringType>(new StringType(tgtVertexName),
+                                                            new StringType(srcVertexName),
+                                                            new StringType(eLabel));
+
+                        // now add the edge properties
+
+                        for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
+                            propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
+
+
+                            property = edgeAttributes[countEdgeAttr].replaceAll(
+                                    GBHTableConfig.config.getProperty("HBASE_COLUMN_SEPARATOR"),
+                                    GBHTableConfig.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+
+                            if (property != null) {
+                                opposingEdge.setProperty(property, new StringType(propertyValue));
+                            }
+                        }
+                        edgeList.add(opposingEdge);
+                    }
                 }
 
             }   // End of edge block

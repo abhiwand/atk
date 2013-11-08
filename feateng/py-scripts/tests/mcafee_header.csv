@@ -1,0 +1,6 @@
+sip,chararray
+rpr,chararray
+sn,chararray
+pktsz,long
+bufsz,long
+id,chararray
