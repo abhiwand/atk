@@ -46,6 +46,7 @@ object S3 {
   val MAX_SIZE = Play.application.configuration.getLong("aws.S3.bucket_max_file_size").get
   val PREFIX = Play.application.configuration.getString("aws.S3.bucket_prefix").get
   val BYTE = 1024
+  val s3Client = new AmazonS3Client(baseCredentials);
 
   def formatName(key: String): String = {
     val splits = key.split("/")
@@ -60,11 +61,14 @@ object S3 {
   }
 
   def getObjectList(userIdentifier: String): mutable.Buffer[S3ObjectSummary] = {
-    val s3Client = new AmazonS3Client(baseCredentials);
+
     val objectList = s3Client.listObjects(BUCKET, PREFIX + userIdentifier + "/")
     scala.collection.JavaConversions.asScalaBuffer[S3ObjectSummary](objectList.getObjectSummaries)
   }
 
+  def uploadDirectory(userIdentifier:String): String = {
+    PREFIX + userIdentifier + "/"
+  }
   def createPolicy(userIdentifier: String): String = {
 
     val expire = new Date(System.currentTimeMillis() + POLICY_EXPIRATION)
@@ -72,7 +76,7 @@ object S3 {
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     val policyJson = Json.obj("expiration" -> dateFormat.format(expire),
       "conditions" -> Json.arr(Json.obj("bucket" -> BUCKET),
-        Json.arr("starts-with", "$key", PREFIX + userIdentifier + "/"),
+        Json.arr("starts-with", "$key", uploadDirectory(userIdentifier)),
         Json.obj("acl" -> "private"),
         //Json.obj("success_action_redirect" -> SUCCESS_ACTION_REDIRECT),
         //Json.arr("starts-with", "$Content-Type", ""),
@@ -98,5 +102,9 @@ object S3 {
     val hmac = Mac.getInstance("HmacSHA1");
     hmac.init(new SecretKeySpec(baseSecretAccessKey.getBytes("UTF-8"), "HmacSHA1"));
     new BASE64Encoder().encode(hmac.doFinal(policy.getBytes("UTF-8"))).replaceAll("\n", "");
+  }
+
+  def deleteObject(key: String){
+    s3Client.deleteObject(BUCKET, key)
   }
 }
