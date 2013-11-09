@@ -13,8 +13,9 @@ object Global extends GlobalSettings{
   override def onLoadConfig(config: Configuration, path: File, classloader: ClassLoader, mode: Mode.Mode): Configuration = {
     //if we get a play mode environment variable use that instead of the default one from play
     val playMode = if(System.getProperty("play.config") == null) mode.toString.toLowerCase else System.getProperty("play.config").toLowerCase
+    val customConfigFileName = s"application.${playMode}.conf";
     //load our config
-    val loadConfig = ConfigFactory.load(s"application.${playMode}.conf")
+    val loadConfig = ConfigFactory.load(customConfigFileName)
 
     val customConfigs = loadConfig.withOnlyPath(playMode.toLowerCase).entrySet map (_.getKey)
     for(customConfig <- customConfigs){
@@ -23,7 +24,7 @@ object Global extends GlobalSettings{
 
     val modeSpecificConfig = config ++ Configuration(loadConfig)
     if(!playMode.eq(Mode.Prod.toString.toLowerCase)){
-      System.out.println("play mode: " + playMode)
+      System.out.println("loaded config file: " + customConfigFileName)
     }
 
     //pass the regular play mode since our own custom mode is only use for loading a config
