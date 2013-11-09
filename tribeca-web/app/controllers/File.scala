@@ -15,36 +15,38 @@ object File {
   val create = Authenticated(parse.json){ request =>
     request.body.validate[FileUpload](fileUpload).map{
       case(file) =>
-
-      val queueUrl = SQS.createQueue(request.user._1.clusterId.getOrElse("waitingForClusterId"))
-      val message = Json.obj("create" -> Json.obj("bucket" -> services.aws.S3.BUCKET, "path" -> (S3.uploadDirectory(request.user._1.uid.get.toString) + file.name), "size" -> file.size))
-      SQS.setMessage(queueUrl, Json.stringify(message))
-      Ok("")
+        //create the que
+        val queueUrl = SQS.createQueue(request.user._1.clusterId.getOrElse("waitingForClusterId"))
+        //create the json object to send
+        val message = Json.obj("create" -> Json.obj("bucket" -> services.aws.S3.BUCKET, "path" ->
+          (S3.uploadDirectory(request.user._1.uid.get.toString) + file.name), "size" -> file.size))
+        //stringify the json to send to queue
+        SQS.setMessage(queueUrl, Json.stringify(message))
+        Ok(Json.obj("ok" -> ""))
     }.getOrElse {
-      Ok("")
+      BadRequest
     }
   }
 
   val delete = Authenticated(parse.json){ request =>
     request.body.validate[FileDelete](fileDelete).map{
       case(file) =>
-      //check files on s3
-      val files = S3.getObjectList(request.user._1.uid.get.toString)
+        //check file name  on the users dir s3
         breakable {
           for(s3Object <- S3.getObjectList(request.user._1.uid.get.toString)){
-        if(s3Object.getKey.split("/").last.equals(file.name)){
-          S3.deleteObject(s3Object.getKey)
-          break
-        }
-      }}
+            if(s3Object.getKey.split("/").last.equals(file.name)){
+              S3.deleteObject(s3Object.getKey)
+              break
+            }
+        }}
 
-      //send message to s3
+        //send message to s3
         val queueUrl = SQS.createQueue(request.user._1.clusterId.getOrElse("waitingForClusterId"))
         val message = Json.obj("delete" -> Json.obj("bucket" -> services.aws.S3.BUCKET, "path" -> (S3.uploadDirectory(request.user._1.uid.get.toString) + file.name)))
         SQS.setMessage(queueUrl, Json.stringify(message))
-      Ok("")
+        Ok(Json.obj("file"->file.name))
     }.getOrElse {
-      Ok("")
+      BadRequest
     }
   }
 }
