@@ -23,45 +23,57 @@
 
 package models.database
 
-import play.api.db.slick._
-import java.sql.{ResultSet, Types}
+import models.database
+
 import play.api.Play.current
+import play.api.db.slick.Config.driver.simple._
+
+import play.api.db.slick.DB
 
 
-object DBLoginCommand extends LoginCommand {
-
-    def execute(email: String, statementGenerator: StatementGenerator): LoginOutput = DB.withSession {
+object DBGetUserDetailsCommand extends GetUserDetailsCommand {
+    /**
+     *
+     * @param uid
+     * @return
+     */
+    def executeById(uid: Long): Option[(UserRow, WhiteListRow)] = DB.withSession {
         implicit session: scala.slick.session.Session =>
-
-            val callString = "{call sp_login(?, ?, ?, ?)}";
-            val cStmt = statementGenerator.getCallStatement(session, callString)
-            cStmt.setString("email", email)
-            cStmt.registerOutParameter("loginSuccessful", Types.BIGINT)
-            cStmt.registerOutParameter("errorCode", Types.BIGINT)
-            cStmt.registerOutParameter("errorMessage", Types.VARCHAR)
-            val hadResults = cStmt.execute()
-
-            val loginSuccessful = cStmt.getInt("loginSuccessful")
-            val errorCode = cStmt.getInt("errorCode")
-            val errorMessage = cStmt.getString("errorMessage")
-
-            var uid = 0
-            if (hadResults) {
-                uid = getUidFromResultSet(cStmt.getResultSet())
+            val users = getByUid(uid).list
+            if (users.length > 0) {
+                Some(users.last)
+            } else {
+                None
             }
+    }
 
-            val output = new LoginOutput(errorCode, errorMessage, loginSuccessful, uid)
-            return output
+    def executeByEmail(email: String): Option[UserRow] = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            val getResult = getByEmail(email).list
+            if (getResult.length > 0) {
+                Some(getResult.last)
+            } else {
+                None
+            }
     }
 
     /**
      *
-     * @param rs
+     * @param uid
      * @return
      */
-    private def getUidFromResultSet(rs: ResultSet): Int = {
-        var uid = 0
-        if (rs.next()) uid = rs.getInt("uid")
-        return uid
+    private def getByUid(uid: Long): Query[(database.UserTable.type, database.WhiteListTable.type), (UserRow, WhiteListRow)] = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            return for {(u, w) <- database.UserTable leftJoin database.WhiteListTable on (_.uid === _.uid) if u.uid === uid} yield (u, w)
+    }
+
+    /**
+     *
+     * @param email
+     * @return
+     */
+    private def getByEmail(email: String): Query[database.UserTable.type, database.UserRow] = DB.withSession {
+        implicit session: scala.slick.session.Session =>
+            for {u <- database.UserTable if u.email === email} yield u
     }
 }
