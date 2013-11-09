@@ -29,21 +29,16 @@ import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import com.intel.giraph.io.DistanceMapWritable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
-import org.apache.hadoop.hbase.util.Base64;
 import com.thinkaurelius.titan.diskstorage.Backend;
-
+import org.apache.hadoop.hbase.util.Bytes;
 import java.io.IOException;
-
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
 
 /**
  * TitanHBaseVertexInputFormatLongDistanceMapNull loads vertex
@@ -88,8 +83,8 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
      * @throws IOException
      * @throws RuntimeException
      */
-    public VertexReader<LongWritable, DistanceMapWritable, NullWritable> createVertexReader(InputSplit split,
-                                                                                            TaskAttemptContext context) throws IOException {
+    public VertexReader<LongWritable, DistanceMapWritable, NullWritable>
+    createVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
 
@@ -146,17 +141,20 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
          */
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
+            //the edge store name used by Titan
+            final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
+
             if (getRecordReader().nextKeyValue()) {
                 final Vertex temp = graphReader.readGiraphVertex(LONG_DISTANCE_MAP_NULL, getConf(),
                         getRecordReader().getCurrentKey().copyBytes(),
-                        getRecordReader().getCurrentValue().getMap().get(EDGE_STORE_FAMILY));
+                        getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
                 } else if (getRecordReader().nextKeyValue()) {
                     final Vertex temp1 = graphReader.readGiraphVertex(LONG_DISTANCE_MAP_NULL, getConf(),
                             getRecordReader().getCurrentKey().copyBytes(),
-                            getRecordReader().getCurrentValue().getMap().get(EDGE_STORE_FAMILY));
+                            getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
                     if (null != temp1) {
                         vertex = temp1;
                         return true;
@@ -177,6 +175,16 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
         public Vertex<LongWritable, DistanceMapWritable, NullWritable> getCurrentVertex() throws IOException,
                 InterruptedException {
             return vertex;
+        }
+
+        /**
+         * close
+         *
+         * @throws IOException
+         */
+        public void close() throws IOException {
+            this.graphReader.shutdown();
+            super.close();
         }
     }
 }

@@ -27,36 +27,20 @@ import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-
+import com.thinkaurelius.titan.diskstorage.Backend;
+import org.apache.hadoop.hbase.util.Bytes;
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-
 import org.apache.mahout.math.Vector;
-
 import com.intel.mahout.math.TwoVectorWritable;
 import com.intel.mahout.math.DoubleWithVectorWritable;
-
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.HBaseConfiguration;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.hbase.util.Base64;
 import org.apache.log4j.Logger;
-
-import com.thinkaurelius.titan.diskstorage.Backend;
-
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_VECTOR;
 
 /**
  * TitanHBaseVertexInputFormatLongTwoVectorDoubleVector loads vertex
@@ -132,10 +116,6 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
          * The length of vertex value vector
          */
         private int cardinality = 0;
-        /**
-         * Data vector
-         */
-        private final Vector vector = null;
 
         /**
          * TitanHBaseVertexReader constructor
@@ -172,11 +152,14 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
          */
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
+            //the edge store name used by Titan
+            final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
+
             if (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> temp = graphReader
                         .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_VECTOR, getConf(), getRecordReader()
                                 .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                .get(EDGE_STORE_FAMILY));
+                                .get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
@@ -184,7 +167,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
                     final Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> temp1 = graphReader
                             .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_VECTOR, getConf(), getRecordReader()
                                     .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                    .get(EDGE_STORE_FAMILY));
+                                    .get(edgeStoreFamily));
                     if (null != temp1) {
                         vertex = temp1;
                         return true;
@@ -204,7 +187,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
          */
         @Override
         public Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> getCurrentVertex()
-                throws IOException, InterruptedException {
+            throws IOException, InterruptedException {
             return vertex;
         }
 
@@ -235,6 +218,17 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
          */
         protected Iterable<Edge<LongWritable, DoubleWithVectorWritable>> getEdges() throws IOException {
             return vertex.getEdges();
+        }
+
+
+        /**
+         * close
+         *
+         * @throws IOException
+         */
+        public void close() throws IOException {
+            this.graphReader.shutdown();
+            super.close();
         }
 
     }

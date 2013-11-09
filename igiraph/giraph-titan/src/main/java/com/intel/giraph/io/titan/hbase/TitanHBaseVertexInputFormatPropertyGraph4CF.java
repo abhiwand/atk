@@ -22,32 +22,26 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import org.apache.mahout.math.Vector;
 import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.EdgeDataWritable.EdgeType;
 import com.intel.giraph.io.VertexDataWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.hbase.util.Base64;
 import org.apache.log4j.Logger;
-import com.thinkaurelius.titan.diskstorage.Backend;
 import java.io.IOException;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
+
 
 /**
  * TitanHBaseVertexInputFormatPropertyGraph4CF loads vertex
@@ -131,10 +125,6 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          * The length of vertex value vector
          */
         private int cardinality = -1;
-        /**
-         * Data vector
-         */
-        private final Vector vector = null;
 
         /**
          * TitanHBaseVertexReader constructor
@@ -171,11 +161,14 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          */
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
+            //the edge store name used by Titan
+            final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
+
             if (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> temp = graphReader
                         .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
                                 .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                .get(EDGE_STORE_FAMILY));
+                                .get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
@@ -183,7 +176,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
                     final Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> temp1 = graphReader
                             .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
                                     .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                    .get(EDGE_STORE_FAMILY));
+                                    .get(edgeStoreFamily));
                     if (null != temp1) {
                         vertex = temp1;
                         return true;
@@ -203,7 +196,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          */
         @Override
         public Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> getCurrentVertex()
-                throws IOException, InterruptedException {
+            throws IOException, InterruptedException {
             return vertex;
         }
 
@@ -236,5 +229,15 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
             return vertex.getEdges();
         }
 
+
+        /**
+         * close
+         *
+         * @throws IOException
+         */
+        public void close() throws IOException {
+            this.graphReader.shutdown();
+            super.close();
+        }
     }
 }

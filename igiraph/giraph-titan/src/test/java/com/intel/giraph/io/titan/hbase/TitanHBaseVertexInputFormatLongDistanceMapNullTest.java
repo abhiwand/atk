@@ -27,16 +27,10 @@ import com.intel.giraph.io.titan.TitanTestGraph;
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.algorithms.apl.AveragePathLengthComputation;
 import com.intel.giraph.io.formats.AveragePathLengthComputationOutputFormat;
-import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
-import com.tinkerpop.blueprints.Direction;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.giraph.graph.BasicComputation;
-import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.io.NullWritable;
@@ -46,18 +40,23 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Ignore;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
-
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
+import org.apache.log4j.Logger;
 import static junit.framework.Assert.assertEquals;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -72,8 +71,13 @@ import com.google.common.collect.Maps;
  * TitanHBaseVertexInputFormat. Then run algorithm with input data.
  */
 public class TitanHBaseVertexInputFormatLongDistanceMapNullTest {
+    /**
+     * LOG class
+     */
+    private static final Logger LOG = Logger
+            .getLogger(TitanHBaseVertexInputFormatLongDistanceMapNullTest.class);
+
     public TitanTestGraph graph;
-    public StandardTitanTx tx;
     private ImmutableClassesGiraphConfiguration<LongWritable, DistanceMapWritable, NullWritable> conf;
 
     @Before
@@ -109,7 +113,7 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNullTest {
 
     @Ignore
     @Test
-    public void TitanHBaseVertexInputFormatLongDistanceMapNullTest() throws Exception {
+    public void VertexInputFormatLongDistanceMapNullTest() throws Exception {
         /*
         // edge list for test
         String[] graph = new String[]{
@@ -146,16 +150,16 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNullTest {
 
         graph.commit();
 
-        Integer[][]  EXPECT_OUTPUT = {{4, 8}, {4, 7}, {4, 6}, {4, 5}, {4, 6}};
+        Integer[][] EXPECT_OUTPUT = {{4, 8}, {4, 7}, {4, 6}, {4, 5}, {4, 6}};
 
         Iterable<String> results = InternalVertexRunner.run(conf, new String[0], new String[0]);
         Assert.assertNotNull(results);
 
         Iterator<String> result = results.iterator();
-         while (result.hasNext()) {
+        while (result.hasNext()) {
             String resultLine = result.next();
-            System.out.println(" got: " + resultLine);
-         }
+            LOG.info(" got: " + resultLine);
+        }
 
         // Parse the results
         Map<Long, Integer[]> hopCountMap = parseResults(results);
@@ -164,19 +168,20 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNullTest {
         for (Map.Entry<Long, Integer[]> entry : hopCountMap.entrySet()) {
             Integer[] vertexValue = entry.getValue();
             assertEquals(2, vertexValue.length);
-            assertTrue(Arrays.equals(vertexValue, EXPECT_OUTPUT[(int) (entry.getKey().longValue()) / 4 - 1]));
+            assertTrue(Arrays.equals(vertexValue, EXPECT_OUTPUT[(int) (entry.getKey().longValue() / TITAN_ID_OFFSET ) - 1]));
         }
     }
 
     @After
     public void done() throws IOException {
         close();
-        System.out.println("***Done with TitanHBaseVertexInputFormatLongDistanceMapNullTest****");
+        LOG.info("***Done with VertexInputFormatLongDistanceMapNullTest****");
     }
 
     public void close() {
-        if (null != graph)
+        if (null != graph) {
             graph.shutdown();
+        }
     }
 
     /**

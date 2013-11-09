@@ -28,14 +28,9 @@ import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.algorithms.apl.AveragePathLengthComputation;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
-import com.tinkerpop.blueprints.Direction;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.giraph.graph.BasicComputation;
-import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.io.NullWritable;
@@ -45,22 +40,26 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Ignore;
-
+import org.apache.log4j.Logger;
 import java.io.IOException;
 import java.util.Iterator;
-
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
+import org.apache.log4j.Logger;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
-
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 
 /**
  * Test TitanVertexOutputFormatLongIDDistanceMap which writes
  * back Giraph algorithm results to Titan.
- *
+ * <p/>
  * Each Vertex is with <code>Long</code> id,
  * and <code>DistanceMap</code> values.
  *
@@ -69,9 +68,14 @@ import com.google.common.collect.Maps;
  * @param <E> Edge value
  */
 public class TitanVertexOutputFormatLongIDDistanceMapTest {
+    /**
+     * LOG class
+     */
+    private static final Logger LOG = Logger
+            .getLogger(TitanVertexOutputFormatLongIDDistanceMapTest.class);
+
     public TitanTestGraph graph = null;
     public TitanTransaction tx = null;
-    private GiraphConfiguration giraphConf;
     private GraphDatabaseConfiguration titanConfig;
 
     private ImmutableClassesGiraphConfiguration<LongWritable, DistanceMapWritable, NullWritable> conf;
@@ -110,7 +114,7 @@ public class TitanVertexOutputFormatLongIDDistanceMapTest {
 
     @Ignore
     @Test
-    public void TitanVertexOutputFormatLongIDDistanceMapTest() throws Exception {
+    public void VertexOutputFormatLongIDDistanceMapTest() throws Exception {
         /*
         // edge list for test
         String[] graph = new String[]{
@@ -152,7 +156,7 @@ public class TitanVertexOutputFormatLongIDDistanceMapTest {
 
         tx.commit();
 
-        Integer[][]  EXPECT_OUTPUT = {{4, 8}, {4, 7}, {4, 6}, {4, 5}, {4, 6}};
+        Integer[][] EXPECT_OUTPUT = {{4, 8}, {4, 7}, {4, 6}, {4, 5}, {4, 6}};
 
         Iterable<String> results = InternalVertexRunner.run(conf, new String[0], new String[0]);
         Assert.assertNotNull(results);
@@ -160,7 +164,7 @@ public class TitanVertexOutputFormatLongIDDistanceMapTest {
         Iterator<String> result = results.iterator();
         while (result.hasNext()) {
             String resultLine = result.next();
-            System.out.println(" got: " + resultLine);
+            LOG.info(" got: " + resultLine);
         }
 
         //verify data is written to Titan
@@ -195,21 +199,26 @@ public class TitanVertexOutputFormatLongIDDistanceMapTest {
     @After
     public void done() throws IOException {
         close();
-        System.out.println("***Done with TitanVertexOutputFormatLongIDDistanceMapTest****");
+        LOG.info("***Done with VertexOutputFormatLongIDDistanceMapTest****");
     }
 
 
     private void open() {
         graph = new TitanTestGraph(titanConfig);
         tx = graph.newTransaction();
+        if (tx == null) {
+            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
+        }
     }
 
-    private void close() {
-        if (null != tx && tx.isOpen())
-            tx.commit();
+    public void close() {
+        if (null != tx && tx.isOpen()){
+            tx.rollback();
+        }
 
-        if (null != graph)
+        if (null != graph){
             graph.shutdown();
+        }
     }
 
     private void clopen() {

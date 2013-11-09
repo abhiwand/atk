@@ -24,7 +24,9 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.thinkaurelius.titan.core.*;
+import com.tinkerpop.blueprints.TransactionalGraph;
+import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.core.TitanTransaction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
@@ -33,15 +35,12 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
-import org.apache.mahout.math.Vector;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 
 /**
  * The Vertex Output Format which writes back Giraph algorithm results
@@ -54,9 +53,9 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
  * @param <V> Vertex value
  * @param <E> Edge value
  */
-public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
-            V extends DistanceMapWritable, E extends NullWritable>
-    extends TextVertexOutputFormat<I, V, E> {
+public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
+        V extends DistanceMapWritable, E extends NullWritable>
+        extends TextVertexOutputFormat<I, V, E> {
     /**
      * LOG class
      */
@@ -105,25 +104,30 @@ public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
                 InterruptedException {
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
-            assert (null != this.graph);
             tx = graph.newTransaction();
+            if (tx == null) {
+                LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
+            }
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
             for (int i = 0; i < vertexPropertyKeyList.length; i++) {
-                if(!tx.containsType(vertexPropertyKeyList[i])){
+                if (!tx.containsType(vertexPropertyKeyList[i])) {
                     LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
                     this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
                 }
             }
+            if (tx.isOpen()) {
+                tx.commit();
+            }
+
         }
 
         @Override
         public Text convertVertexToLine(Vertex<I, V, E> vertex) throws IOException {
 
-            long vertex_id = vertex.getId().get();
-            String destinationVidStr = vertex.getId().toString();
+            long vertexId = vertex.getId().get();
             long numSources = 0;
             long sumHopCounts = 0;
-            com.tinkerpop.blueprints.Vertex bluePrintVertex = this.graph.getVertex(vertex_id);
+            com.tinkerpop.blueprints.Vertex bluePrintVertex = this.graph.getVertex(vertexId);
             HashMap<Long, Integer> distanceMap = vertex.getValue().getDistanceMap();
 
             for (Map.Entry<Long, Integer> entry : distanceMap.entrySet()) {
@@ -136,10 +140,17 @@ public class TitanVertexOutputFormatLongIDDistanceMap <I extends LongWritable,
             return null;
         }
 
+        /**
+         * close
+         *
+         * @param context Task attempt context
+         * @throws IOException
+         */
         @Override
-        public void close(TaskAttemptContext context)
-                throws IOException, InterruptedException {
+        public void close(TaskAttemptContext context) throws IOException, InterruptedException {
+            ((TransactionalGraph) this.graph).commit();
             this.graph.shutdown();
+            LOG.info("closed graph.");
             super.close(context);
         }
     }

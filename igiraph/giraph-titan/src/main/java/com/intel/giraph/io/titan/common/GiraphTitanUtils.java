@@ -27,7 +27,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
 
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.log4j.Logger;
@@ -187,8 +197,7 @@ public class GiraphTitanUtils {
     /**
      * Configure HBase for Titan input.
      *
-     * @param scan The scan to write out.
-     * @return The scan saved in a Base64 encoded string.
+     * @param conf Giraph configuration
      * @throws IOException When writing the scan fails.
      */
     public static void configHBase(ImmutableClassesGiraphConfiguration conf) throws IOException {
@@ -198,19 +207,13 @@ public class GiraphTitanUtils {
 
         Scan scan = new Scan();
         scan.addFamily(Backend.EDGESTORE_NAME.getBytes(Charset.forName("UTF-8")));
-
-        try {
-            conf.set(TableInputFormat.SCAN, convertScanToString(scan));
-        } catch (IOException e) {
-            LOG.error("cannot write scan into a Base64 encoded string!");
-        }
+        conf.set(TableInputFormat.SCAN, convertScanToString(scan));
     }
 
     /**
      * set up configuration for Titan/HBase.
      *
-     * @param conf : Giraph configuratio
-     * @throws IOException When writing the scan fails.
+     * @param conf : Giraph configuration
      */
     public static void setupHBase(ImmutableClassesGiraphConfiguration conf) {
         try {
@@ -224,6 +227,8 @@ public class GiraphTitanUtils {
 
     /**
      * disable Hadoop speculative execution.
+     *
+     * @param conf : Giraph configuration
      */
     public static void disableSpeculativeExe(ImmutableClassesGiraphConfiguration conf) {
         conf.setBoolean("mapred.map.tasks.speculative.execution", false);

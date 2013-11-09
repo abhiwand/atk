@@ -40,8 +40,6 @@ import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
 import com.intel.mahout.math.DoubleWithVectorWritable;
 
 import com.thinkaurelius.titan.core.TitanType;
-import com.thinkaurelius.titan.diskstorage.StaticBuffer;
-import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
@@ -118,7 +116,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
      * @param id   vertex id
      */
     public GiraphVertexLoaderPropertyGraph4LDA(final ImmutableClassesGiraphConfiguration conf,
-                                              final long id) {
+                                               final long id) {
         /**
          * Vertex properties to filter
          */
@@ -302,9 +300,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                     Vector vector = vertexValueVector.getVector();
                     vector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
                     vertex.setValue(new VertexData4LDAWritable(vertexType, vector));
-                }
-                //get the vertex type
-                else if (propertyName.equals(vertexTypePropertyKey)) {
+                } else if (propertyName.equals(vertexTypePropertyKey)) {
                     final Object vertexTypeObject = this.value;
                     Vector priorVector = vertexValueVector.getVector();
 
@@ -337,7 +333,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                             }
                             Edge<LongWritable, DoubleWithVectorWritable> edge = EdgeFactory.create(
                                     new LongWritable(this.otherVertexID), new DoubleWithVectorWritable(
-                                    edgeValue, new DenseVector()));
+                                        edgeValue, new DenseVector()));
 
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {

@@ -24,11 +24,7 @@ package com.intel.giraph.io.titan.hbase;
 
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.TitanTestGraph;
-import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
-import com.tinkerpop.blueprints.Direction;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
@@ -49,7 +45,17 @@ import org.junit.Ignore;
 import java.io.IOException;
 import java.util.Iterator;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import org.apache.log4j.Logger;
 import static junit.framework.Assert.assertEquals;
 
 
@@ -58,8 +64,13 @@ import static junit.framework.Assert.assertEquals;
  * TitanHBaseVertexInputFormat. No special preparation needed before the test.
  */
 public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
+    /**
+     * LOG class
+     */
+    private static final Logger LOG = Logger
+            .getLogger(TitanHBaseVertexInputFormatLongDoubleFloatTest.class);
+
     public TitanTestGraph graph;
-    public StandardTitanTx tx;
     protected String[] EXPECT_JSON_OUTPUT;
     private ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, DoubleWritable> conf;
 
@@ -97,7 +108,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
 
     @Ignore
     @Test
-    public void TitanHBaseVertexInputLongDoubleFloatTest() throws Exception {
+    public void VertexInputLongDoubleFloatTest() throws Exception {
         graph.makeKey("age").dataType(String.class).make();
         graph.makeKey("time").dataType(String.class).make();
         graph.makeLabel("battled").make();
@@ -120,7 +131,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
         while (i < EXPECT_JSON_OUTPUT.length && result.hasNext()) {
             String expectedLine = EXPECT_JSON_OUTPUT[i];
             String resultLine = result.next();
-            System.out.println("expected: " + expectedLine + ", got: " + resultLine);
+            LOG.info("expected: " + expectedLine + ", got: " + resultLine);
             assertEquals(resultLine, expectedLine);
             i++;
         }
@@ -130,12 +141,13 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
     @After
     public void done() throws IOException {
         close();
-        System.out.println("***Done with TitanHBaseVertexInputLongDoubleFloatTest****");
+        LOG.info("***Done with VertexInputLongDoubleFloatTest****");
     }
 
     public void close() {
-        if (null != graph)
+        if (null != graph) {
             graph.shutdown();
+        }
     }
 
     /*

@@ -38,11 +38,8 @@ public class GiraphToTitanGraphFactory {
     /**
      * prevent instantiation of utilize class
      */
-    /*
     private GiraphToTitanGraphFactory() {
-
     }
-    */
 
     /**
      * generateTitanConfiguration from Giraph configuration

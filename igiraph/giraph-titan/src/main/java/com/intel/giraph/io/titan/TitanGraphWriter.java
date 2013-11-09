@@ -44,7 +44,14 @@ public class TitanGraphWriter {
             .getLogger(TitanGraphWriter.class);
 
     /**
+     * Do not instantiate
+     */
+    private TitanGraphWriter() {
+    }
+
+    /**
      * @param context task attempt context
+     * @return TitanGraph Titan graph to which Giraph write results
      */
     public static TitanGraph open(TaskAttemptContext context) throws IOException {
         TitanGraph graph = null;

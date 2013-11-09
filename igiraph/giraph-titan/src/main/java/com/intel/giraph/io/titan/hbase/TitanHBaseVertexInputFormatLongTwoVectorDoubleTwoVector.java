@@ -27,26 +27,20 @@ import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR;
 import com.intel.mahout.math.TwoVectorWritable;
 import com.intel.mahout.math.DoubleWithTwoVectorWritable;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.hadoop.hbase.util.Base64;
 import org.apache.log4j.Logger;
 import org.apache.mahout.math.Vector;
-import com.thinkaurelius.titan.diskstorage.Backend;
-
 import java.io.IOException;
-
 
 
 /**
@@ -123,10 +117,6 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          * The length of vertex value vector
          */
         private int cardinality = 0;
-        /**
-         * Data vector
-         */
-        private final Vector vector = null;
 
         /**
          * TitanHBaseVertexReader constructor
@@ -163,11 +153,14 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          */
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
+            //the edge store name used by Titan
+            final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
+
             if (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> temp = graphReader
                         .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR, getConf(), getRecordReader()
                                 .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                .get(EDGE_STORE_FAMILY));
+                                .get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
@@ -175,7 +168,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
                     final Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> temp1 = graphReader
                             .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR, getConf(), getRecordReader()
                                     .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                    .get(EDGE_STORE_FAMILY));
+                                    .get(edgeStoreFamily));
                     if (null != temp1) {
                         vertex = temp1;
                         return true;
@@ -195,7 +188,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          */
         @Override
         public Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> getCurrentVertex()
-                throws IOException, InterruptedException {
+            throws IOException, InterruptedException {
             return vertex;
         }
 
@@ -226,6 +219,17 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          */
         protected Iterable<Edge<LongWritable, DoubleWithTwoVectorWritable>> getEdges() throws IOException {
             return vertex.getEdges();
+        }
+
+
+        /**
+         * close
+         *
+         * @throws IOException
+         */
+        public void close() throws IOException {
+            this.graphReader.shutdown();
+            super.close();
         }
 
     }

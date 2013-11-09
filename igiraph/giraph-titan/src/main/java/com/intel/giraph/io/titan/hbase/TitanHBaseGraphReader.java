@@ -62,6 +62,7 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
      * <code>Double</code> vertex values, and <code>Float</code> edge
      * weights.
      *
+     * @param  type     : input format type
      * @param conf      : Giraph configuration
      * @param key       : key from HBase input data
      * @param columnMap : columnMap from HBase input data, in

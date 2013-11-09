@@ -23,8 +23,7 @@
 package com.intel.giraph.io.titan.common;
 
 import org.apache.giraph.conf.StrConfOption;
-import com.thinkaurelius.titan.diskstorage.Backend;
-import org.apache.hadoop.hbase.util.Bytes;
+
 
 /**
  * Constants used all over Giraph for configuration specific for Titan/Hbase
@@ -163,10 +162,6 @@ public class GiraphTitanConstants {
             "output.vertex.bias", "false", "whether to output vertex bias");
 
     /**
-     * the edge store name used by Titan
-     */
-    public static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
-    /**
      * the vertex format type
      */
     public static final String LONG_DISTANCE_MAP_NULL = "LongDistanceMapNull";
@@ -190,6 +185,10 @@ public class GiraphTitanConstants {
      * the vertex format type
      */
     public static final String PROPERTY_GRAPH_4_LDA = "PropertyGraph4LDA";
+    /**
+     * the id offset used by Titan
+     */
+    public static final long TITAN_ID_OFFSET = 4;
 
 
     /**

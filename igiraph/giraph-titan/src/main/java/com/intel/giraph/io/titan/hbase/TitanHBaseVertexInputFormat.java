@@ -88,8 +88,9 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
          * @throws InterruptedException exception that can be thrown during
          *                              creation
          */
-        protected RecordReader<ImmutableBytesWritable, Result> createHBaseRecordReader(InputSplit inputSplit,
-                                                                                       TaskAttemptContext context) throws IOException, InterruptedException {
+        protected RecordReader<ImmutableBytesWritable, Result>
+        createHBaseRecordReader(InputSplit inputSplit, TaskAttemptContext context)
+            throws IOException, InterruptedException {
             INPUT_FORMAT.setConf(context.getConfiguration());
             return INPUT_FORMAT.createRecordReader(inputSplit, context);
         }

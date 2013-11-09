@@ -29,18 +29,11 @@ import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.Altern
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.SimpleAggregatorWriter;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.MessageDataWritable;
-import com.intel.giraph.io.EdgeDataWritable.EdgeType;
 import com.intel.giraph.io.VertexDataWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.TitanTestGraph;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.util.ElementHelper;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
@@ -54,17 +47,24 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.Ignore;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
-
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import org.apache.log4j.Logger;
 
 /**
  * Test TitanHBaseVertexInputFormatPropertyGraph4CF which loads vertex
@@ -82,6 +82,12 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN
  * [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4CFTest {
+    /**
+     * LOG class
+     */
+    private static final Logger LOG = Logger
+            .getLogger(TitanHBaseVertexInputFormatPropertyGraph4CFTest.class);
+
     public TitanTestGraph graph = null;
     public TitanTransaction tx = null;
     private GiraphConfiguration giraphConf;
@@ -127,12 +133,14 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFTest {
         GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(baseConfig);
         graph = new TitanTestGraph(titanConfig);
         tx = graph.newTransaction();
-
+        if (tx == null) {
+            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
+        }
     }
 
     @Ignore
     @Test
-    public void TitanHBaseVertexInputFormatPropertyGraph4CFTest() throws Exception {
+    public void VertexInputFormatPropertyGraph4CFTest() throws Exception {
         /*
         String[] graph = new String[] {
                 "[0,[],[l],[[2,1,[tr]],[3,2,[te]]]]",
@@ -200,7 +208,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFTest {
         Iterator<String> result = results.iterator();
         while (result.hasNext()) {
             String resultLine = result.next();
-            System.out.println(" got: " + resultLine);
+            LOG.info(" got: " + resultLine);
         }
 
         // verify results
@@ -211,7 +219,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFTest {
             Double[] vertexValue = entry.getValue();
             assertEquals(4, vertexValue.length);
             for (int j = 0; j < 3; j++) {
-                assertEquals(expectedValues[(int) (entry.getKey().longValue()) / 4 - 1][j], vertexValue[j].doubleValue(), 0.01d);
+                assertEquals(expectedValues[(int) (entry.getKey().longValue() / TITAN_ID_OFFSET ) - 1][j], vertexValue[j].doubleValue(), 0.01d);
             }
         }
     }
@@ -219,16 +227,17 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFTest {
     @After
     public void done() throws IOException {
         close();
-        System.out.println("***Done with TitanHBaseVertexInputFormatPropertyGraph4CFTest****");
+        LOG.info("***Done with VertexInputFormatPropertyGraph4CFTest****");
     }
 
     public void close() {
-        if (null != tx && tx.isOpen())
+        if (null != tx && tx.isOpen()){
             tx.rollback();
+        }
 
-
-        if (null != graph)
+        if (null != graph){
             graph.shutdown();
+        }
     }
 
     private Map<Long, Double[]> parseVertexValues(Iterable<String> results) {

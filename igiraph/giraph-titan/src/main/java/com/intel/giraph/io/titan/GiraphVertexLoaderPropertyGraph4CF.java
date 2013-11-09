@@ -42,8 +42,6 @@ import com.intel.giraph.io.VertexDataWritable;
 import com.intel.giraph.io.VertexDataWritable.VertexType;
 
 import com.thinkaurelius.titan.core.TitanType;
-import com.thinkaurelius.titan.diskstorage.StaticBuffer;
-import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
@@ -314,9 +312,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                     Vector vector = vertexValueVector.getVector();
                     vector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
                     vertex.setValue(new VertexDataWritable(vertexType, vector));
-                }
-                //get the vertex type
-                else if (propertyName.equals(vertexTypePropertyKey)) {
+                } else if (propertyName.equals(vertexTypePropertyKey)) {
                     final Object vertexTypeObject = this.value;
                     Vector priorVector = vertexValueVector.getVector();
 
@@ -345,9 +341,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                                 if (edgePropertyKeyValues.containsKey(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
                                     edgeValue = Double.parseDouble(edgeValueObject.toString());
-                                }
-                                //get the edge type
-                                else if (edgeTypePropertyKey.equals(entry.getKey())) {
+                                } else if (edgeTypePropertyKey.equals(entry.getKey())) {
                                     final Object edgeTypeObject = entry.getValue();
                                     edgeTypeString = edgeTypeObject.toString();
                                     if (edgeTypeString.equals("tr")) {
@@ -365,7 +359,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                             }
                             Edge<LongWritable, EdgeDataWritable> edge = EdgeFactory.create(
                                     new LongWritable(this.otherVertexID), new EdgeDataWritable(
-                                    edgeType, edgeValue));
+                                        edgeType, edgeValue));
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();

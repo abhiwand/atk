@@ -32,10 +32,6 @@ import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 import com.intel.mahout.math.TwoVectorWritable;
 import com.thinkaurelius.titan.core.*;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.util.ElementHelper;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
@@ -54,7 +50,17 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import org.apache.log4j.Logger;
 import static junit.framework.Assert.assertEquals;
 
 
@@ -70,6 +76,12 @@ import static junit.framework.Assert.assertEquals;
  */
 
 public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
+    /**
+     * LOG class
+     */
+    private static final Logger LOG = Logger
+            .getLogger(TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest.class);
+
     public TitanTestGraph graph = null;
     public TitanTransaction tx = null;
     private GiraphConfiguration giraphConf;
@@ -108,12 +120,15 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
         GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(baseConfig);
         graph = new TitanTestGraph(titanConfig);
         tx = graph.newTransaction();
+        if (tx == null) {
+            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
+        }
 
     }
 
     @Ignore
     @Test
-    public void TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest() throws Exception {
+    public void VertexInputFormatLongTwoVectorDoubleTwoVectorTest() throws Exception {
         /* a small four vertex graph
         String[] graph = new String[] {
             "[0,[1,0.1,0.1],[[1,1],[3,3]]]",
@@ -184,7 +199,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
         Iterator<String> result = results.iterator();
         while (result.hasNext()) {
             String resultLine = result.next();
-            System.out.println(" got: " + resultLine);
+            LOG.info(" got: " + resultLine);
         }
 
         Map<Long, Double[]> vertexValues = parseVertexValues(results);
@@ -201,16 +216,17 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest {
     @After
     public void done() throws IOException {
         close();
-        System.out.println("***Done with TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVectorTest****");
+        LOG.info("***Done with VertexInputFormatLongTwoVectorDoubleTwoVectorTest****");
     }
 
     public void close() {
-        if (null != tx && tx.isOpen())
+        if (null != tx && tx.isOpen()){
             tx.rollback();
+        }
 
-
-        if (null != graph)
+        if (null != graph){
             graph.shutdown();
+        }
     }
 
     private Map<Long, Double[]> parseVertexValues(Iterable<String> results) {

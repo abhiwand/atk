@@ -37,8 +37,6 @@ import org.apache.mahout.math.DenseVector;
 import com.intel.mahout.math.TwoVectorWritable;
 import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 import com.thinkaurelius.titan.core.TitanType;
-import com.thinkaurelius.titan.diskstorage.StaticBuffer;
-import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
@@ -303,7 +301,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
                             }
                             Edge<LongWritable, DoubleWithTwoVectorWritable> edge = EdgeFactory.create(
                                     new LongWritable(this.otherVertexID), new DoubleWithTwoVectorWritable(
-                                    edgeValue, vector.clone(), vector.clone()));
+                                        edgeValue, vector.clone(), vector.clone()));
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();
