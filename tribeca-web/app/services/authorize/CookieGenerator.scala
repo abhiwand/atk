@@ -27,6 +27,8 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import org.apache.commons.codec.binary.Hex
 import play.api.mvc.Cookie
+import play.api.Play
+import play.api.Play.current
 
 
 /**
@@ -42,9 +44,10 @@ class CookieGenerator {
     def createCookie(secret: String, name: String): Cookie = {
         var checkEmpty = "";
         //temporary fix
-        if(secret.isEmpty) checkEmpty = "empty"
+        if(secret.isEmpty) checkEmpty = "empty" else checkEmpty = secret
         val value = create_signed_value(checkEmpty, name, "localuser")
-        Cookie(name, value, Some(SECONDS_PER_HOUR * 8), "/", Some("intel.com"), false, false)
+
+        Cookie(name, value, Some(SECONDS_PER_HOUR * 8), "/", Some(Play.application.configuration.getString("ipython.cookieDomain").get), false, false)
     }
 
     /**

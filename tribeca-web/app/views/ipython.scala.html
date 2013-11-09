@@ -1,5 +1,8 @@
 @(message: String, user: models.database.UserRow)
 
+@import play.api.Play
+@import play.api.Play.current
+
 @mainLoggedIn(message, user) {
 
     <div id='main-content'>
@@ -11,7 +14,7 @@
 
 
                         <div class="row-fluid">
-                         <iframe id='ipython' src=""></iframe>
+                         <iframe id='ipython' src="@Play.application.configuration.getString("ipython.url").getOrElse("")"></iframe>
                         </div>
                         <a href ='#'>
                             <button type="button" class="btn btn-primary btn-lg btn-block">That was awesome. Export it!</button>

@@ -26,7 +26,8 @@ package controllers
 import play.api.mvc._
 import controllers.Session._
 import services.authorize.CookieGenerator
-import play.Play
+import play.api.Play
+import play.api.Play.current
 
 /**
  * Ipython page controller
@@ -39,8 +40,8 @@ object Python extends Controller {
     var ipython = Authenticated {
         request =>
 
-            val url = request.user._1.ipythonUrl.toString
-            val secret = request.user._1.secret.getOrElse("")
+            val url = Play.application.configuration.getString("ipython.url").get//request.user._1.ipythonUrl.toString
+            val secret = Play.application.configuration.getString("ipython.secret").get//request.user._1.secret.getOrElse("")
             Ok(views.html.ipython("Ipython", request.user._1)).withCookies(new CookieGenerator createCookie(secret, url))
     }
 
