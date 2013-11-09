@@ -15,8 +15,12 @@ $(window).ready(function(){
             init:function(){
                 $("#uploadForm").addClass("dropzone")
             },
+            addRemoveLinks:true,
+            createImageThumbnails:false,
+            acceptedFiles:".csv",
             success:function(file){
-                file.previewElement.remove();
+                //file.previewElement.remove();
+                myDropZone.removeFile(file);
                 $(".file-remove").unbind()
                 $("#uploadedFiles tbody").append("<tr><td>" + file.name + "</td><td>" + Dropzone.formatSize(file.size) + "</td><td><i style=\"cursor:pointer;\" data-toggle='tooltip' data-placement='right' class=\"fa-icon-remove file-remove\" title='Remove File' ></i></td></tr>")
                 bindDelete()
