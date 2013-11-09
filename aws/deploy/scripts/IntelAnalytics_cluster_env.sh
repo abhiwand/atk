@@ -519,16 +519,6 @@ function IA_update_routes()
     return 1
 }
 
-# find out the ec2 instance id by the name tag
-function IA_get_instance_id()
-{
-    local name=$1
-    local vpc=`IA_get_vpc`
-
-    echo `ec2-describe-instances ${IA_EC2_OPTS} -F "vpc-id=${vpc}" -F "tag:Name=${name}" | grep INSTANCE | awk '{print $2}' `
-    return 0
-}
-
 function IA_get_instance_column_value()
 {
     local ins=($@)
@@ -576,11 +566,23 @@ function IA_get_instance_column_by_filter()
 # supported filter fields
 function IA_get_instance_column()
 {
-    local ins=(`ec2-describe-instances ${IA_EC2_OPTS} --show-empty-fields -F "tag:Name=${1}" | grep INSTANCE`)
-
     echo `IA_get_instance_column_by_filter "tag:Name=${1}" $2`
 }
 
+# find out the ec2 instance id by the name tag
+function IA_get_instance_id_by_vpc()
+{
+    local name=$1
+    local vpc=`IA_get_vpc`
+
+    echo `ec2-describe-instances ${IA_EC2_OPTS} -F "vpc-id=${vpc}" -F "tag:Name=${name}" | grep INSTANCE | awk '{print $2}' `
+    return 0
+}
+
+function IA_get_instance_id()
+{
+    echo `IA_get_instance_column $1 instance-id`
+}
 
 # find out the ec2 instance ip by the name tag
 function IA_get_instance_private_ip()

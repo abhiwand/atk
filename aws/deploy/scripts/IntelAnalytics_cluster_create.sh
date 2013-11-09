@@ -50,6 +50,8 @@ function usage()
     [--ec2adm <str> ]       // ec2 adm name
     [--workdir <str> ]      // work home, e.g. \`pwd\`/../..
     [--credentials <str> ]  // directory with credentials
+    [--use-placement-group] // use placement group for nodes within a cluster
+    [--no-public-ip-for-slave ] // do not allow slave nodes to have public ip
     [--no-dryrun]           // do not launch instance
     [--help ]               // print this message
 "
@@ -72,6 +74,7 @@ Secuirty Groups = ${csgroup},${csgroup_https},${csgroup_admssh}
 Placement Group = ${cpgroup}
 Route Table     = ${croute}
 Cluster Nodes   = ${cnnames[@]}
+Cluster Public  = ${cpublic}
 Instance IDs    = ${cniids[@]}
 Dry Run         = ${dryrun}
 
@@ -87,7 +90,8 @@ function IA_create_dump()
 # Reset the global RET
 _RET=""
 dryrun=yes
-#et per cluster log
+cpgroup="no"
+cpublic="yes"
 
 # Check inputs
 while [ $# -gt 0 ]
@@ -124,6 +128,14 @@ do
         --credentials)
             export IA_CREDENTIALS=$2
             shift 2
+            ;;
+        --use-placement-group)
+            cpgroup="yes"
+            shift 1
+            ;;
+        --no-public-ip-for-slave)
+            cpublic="yes"
+            shift 1
             ;;
         --help | *)
             usage
@@ -231,12 +243,14 @@ fi
 IA_loginfo "Route table = ${croute}"
 
 # Create cluster placement group
-IA_create_pgroup ${cname}
-if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
-    IA_logerr "Failed to create placemment group for ${cname}!"
-    exit 1
+if [ "${cpgroup}" == "yes" ]; then
+    IA_create_pgroup ${cname}
+    if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
+        IA_logerr "Failed to create placemment group for ${cname}!"
+        exit 1
+    fi
+    cpgroup=${_RET}
 fi
-cpgroup=${_RET}
 IA_loginfo "Placement group = ${cpgroup}"
 
 # Create cluster subnet matching the input CIDR
@@ -290,25 +304,49 @@ cnnames=(
 # create instances
 for (( i = 0; i < ${csize}; i++ ))
 do
+    # check if instance is already created
+    IA_loginfo "Check if instance for ${cnnames[$i]} already exists..."
+    iid=`IA_get_instance_id ${cnnames[${i}]}`
+    if [ ! -z "${iid}" ]; then
+        IA_loginfo "Bypass launching existing instance \"${iid}\" for ${cnnames[$i]}..."
+        continue;
+    fi
+
+    # Command launch options
     cmd_opts="${IA_EC2_OPTS} ${camiid} \
 --instance-count 1 \
 --key ${ciamuser} \
---group ${csgroup} \
---group ${csgroup_admssh} \
 --instance-type ${cinstype} \
---placement-group ${cpgroup} \
---subnet ${csubnet}"
+--subnet ${csubnet} \
+--group ${csgroup} \
+--group ${csgroup_admssh}"
 
+    # For master node, open inbound https for master node hosting ipython
+    # also allows public ip for master node
+    # For slave nodes, if cluster wide public (e.g. for s3ditscp) enable
+    # public ip for slave nodes as well
     if [ $i -eq 0 ]; then
-        cmd_opts="${cmd_opts} --group ${csgroup_https} --associate-public-ip-address true"
+        cmd_opts="${cmd_opts} --group ${csgroup_https}"
+        IA_loginfo "Will enable inbound https for ${cnnames[$i]}..."
     fi
-    IA_loginfo "Creating ${i}-th instance as node ${cnnames[$i]}}, executing..."
-    IA_loginfo "  ec2-run-instances ${cmd_opts}"
-
+    if [ $i -eq 0 ] || [ "${cpublic}" == "yes" ]; then
+        cmd_opts="${cmd_opts} --associate-public-ip-address true"
+        IA_loginfo "Will enable public ip for ${cnnames[$i]}..."
+    fi
+    # placement group is not required
+    if  [ "${cpgroup}" != "no" ]; then
+        cmd_opts="${cmd_opts} --placement-group ${cpgroup}"
+        IA_loginfo "Will enable placement group for ${cnnames[$i]}..."
+    fi
     # set tag
     if [ "${dryrun}" == "no" ]; then
+        IA_loginfo "Creating ${i}-th instance as node ${cnnames[$i]}, executing..."
+        IA_loginfo "  ec2-run-instances ${cmd_opts}"
         cniids[$i]=`ec2-run-instances ${cmd_opts} | grep INSTANCE | awk '{print $2}'`
         IA_add_name_tag ${cniids[$i]} ${cnnames[$i]}
+    else
+        IA_loginfo "DRYRUN:creating ${i}-th instance as node ${cnnames[$i]}, executing..."
+        IA_loginfo "  ec2-run-instances ${cmd_opts}"
     fi
 done
 
