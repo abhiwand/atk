@@ -49,7 +49,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * VertexInputFormat that features <code>long</code> vertex ID's,
+ * Load vertex from Titan
+ * Each vertex is with <code>long</code> vertex ID's,
  * <code>TwoVector</code> vertex values: one for prior and
  * one for posterior, and <code>DoubleVector</code> edge
  * weights.

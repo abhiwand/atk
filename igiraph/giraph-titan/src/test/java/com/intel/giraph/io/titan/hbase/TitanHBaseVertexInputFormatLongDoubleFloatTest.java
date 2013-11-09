@@ -40,7 +40,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -106,7 +106,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloatTest {
         graph = new TitanTestGraph(titanConfig);
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void VertexInputLongDoubleFloatTest() throws Exception {
         graph.makeKey("age").dataType(String.class).make();

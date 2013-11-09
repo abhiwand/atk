@@ -113,7 +113,6 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFTest {
         GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
         GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
         GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
-        //       INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "");
         INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
         VERTEX_TYPE_PROPERTY_KEY.set(giraphConf, "vertexType");

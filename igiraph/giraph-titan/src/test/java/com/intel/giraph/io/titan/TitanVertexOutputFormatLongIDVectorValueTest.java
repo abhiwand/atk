@@ -20,7 +20,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 import java.io.IOException;
 import java.util.Iterator;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
@@ -94,7 +94,7 @@ public class TitanVertexOutputFormatLongIDVectorValueTest {
         open();
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void VertexOutputFormatLongIDVectorValueTest() throws Exception {
         /* a small four vertex graph

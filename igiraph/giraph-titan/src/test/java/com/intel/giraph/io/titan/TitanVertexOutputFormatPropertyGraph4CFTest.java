@@ -40,7 +40,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
+//import org.junit.Ignore;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -117,7 +117,8 @@ public class TitanVertexOutputFormatPropertyGraph4CFTest {
             hbaseAdmin.deleteTable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf));
         }
 
-        conf = new ImmutableClassesGiraphConfiguration(giraphConf);
+        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable>(
+                giraphConf);
 
         BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
                 GIRAPH_TITAN.get(giraphConf));
@@ -125,7 +126,7 @@ public class TitanVertexOutputFormatPropertyGraph4CFTest {
         open();
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void VertexOutputFormatPropertyGraph4CFTest() throws Exception {
         /*

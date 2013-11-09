@@ -24,7 +24,6 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.io.VertexDataWritable;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.tinkerpop.blueprints.TransactionalGraph;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.TitanTransaction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
@@ -180,7 +179,7 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
          */
         @Override
         public void close(TaskAttemptContext context) throws IOException, InterruptedException {
-            ((TransactionalGraph) this.graph).commit();
+            this.graph.commit();
             this.graph.shutdown();
             LOG.info("closed graph.");
             super.close(context);

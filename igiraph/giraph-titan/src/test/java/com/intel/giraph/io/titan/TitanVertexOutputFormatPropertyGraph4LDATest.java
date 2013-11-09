@@ -123,8 +123,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDATest {
             hbaseAdmin.deleteTable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf));
         }
 
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable>(
-                giraphConf);
+        conf = new ImmutableClassesGiraphConfiguration(giraphConf);
 
         BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
                 GIRAPH_TITAN.get(giraphConf));
