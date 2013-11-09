@@ -18,7 +18,7 @@ $(window).ready(function(){
             success:function(file){
                 file.previewElement.remove();
                 $(".file-remove").unbind()
-                $("#uploadedFiles tbody").append("<tr><td>" + file.name + "</td><td>" + Dropzone.formatSize(file.size) + "</td><td><i data-toggle='tooltip' data-placement='right' class=\"fa-icon-remove file-remove\" title='Remove File' ></i></td></tr>")
+                $("#uploadedFiles tbody").append("<tr><td>" + file.name + "</td><td>" + Dropzone.formatSize(file.size) + "</td><td><i style=\"cursor:pointer;\" data-toggle='tooltip' data-placement='right' class=\"fa-icon-remove file-remove\" title='Remove File' ></i></td></tr>")
                 bindDelete()
                 $.ajax({
                         type: "POST",
