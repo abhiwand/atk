@@ -8,6 +8,8 @@ GET         /logout               controllers.Application.logout
 
 GET         /ipython              controllers.Python.ipython
 GET         /documentation        controllers.Python.documentation
+GET         /cookies        controllers.Application.cookies
+GET         /privacy        controllers.Application.privacy
 
 #file notifications
 POST        /files/create         controllers.File.create
