@@ -82,7 +82,7 @@ object S3Copier {
 
     implicit val sqs = SQS().at(Region.US_WEST_2)
     println("Getting/creating queue")
-    val queue = sqs.queue("uploads-bryn") getOrElse sqs.createQueue("uploads-bryn")
+    val queue = sqs.queue(config.queue) getOrElse sqs.createQueue(config.queue)
     val inProgress = mutable.Map[String, Future[Status]]()
     val configuration = new Configuration()
     val fs = FileSystem.get(configuration)
@@ -141,25 +141,27 @@ object S3Copier {
       f =>
         val result: Future[Status] = copyFile(f, config, configuration, fs)
         inProgress.put(f.key, result)
+        msg.destroy()
     }
-    msg.destroy()
   }
 
   def copyFile(f: S3Object, config: Config, configuration: Configuration, fs: FileSystem): Future[Status] = {
     val len = f.getObjectMetadata.getContentLength
-    var status = Status(f.key, 0)
+    val name = f.key.substring(config.prefix.length)
+    var status = Status(name, 0)
     writeProgress(config.statusDestination, status)
-    val localPath = Path.fromString(config.statusDestination) /(f.key, '/')
+    val localPath = Path.fromString(config.statusDestination) / (name, '/')
     future {
       val resource = scalax.io.Resource.fromInputStream(f.content)
       localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
-      log(s"Wrote to $localPath")
+      log(s"Wrote to ${localPath.path}")
       status = status.copy(progress = 50)
       writeProgress(config.statusDestination, status)
       log(s"Local exists: ${localPath.exists}")
       val fs = FileSystem.get(configuration)
 
-      fs.copyFromLocalFile(new HdPath("file://" + localPath.path), new HdPath(config.destination + "/" + f.key.split('/').last))
+      fs.copyFromLocalFile(new HdPath("file://" + localPath.path), new HdPath(config.destination + "/" + name))
+      localPath.delete(force = true)
       log(s"Wrote to HDFS: ${config.destination}")
       status = status.copy(progress = 100)
       writeProgress(config.statusDestination, status)
