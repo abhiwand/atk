@@ -45,6 +45,11 @@
   <description>The name of the group of super-users.</description>
 </property>
 <property>
+  <name>dfs.http.address</name>
+  <value>master:50070</value>
+  <description>The namenode http address</description>
+</property>
+<property>
   <name>fs.trash.interval</name>
   <value>1440</value>
   <description>Number of minutes between trash checkpoints.
