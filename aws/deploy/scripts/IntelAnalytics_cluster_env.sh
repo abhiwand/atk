@@ -7,7 +7,7 @@ source IntelAnalytics_common_env.sh
 
 # existing AMI Names (with build version, can override 
 if [ -z "${IA_AMI_BUILD}" ]; then
-    IA_AMI_BUILD="Build.01"
+    IA_AMI_BUILD="Build.02"
 fi
 export IA_AMI_VERSION="${IA_VERSION}-${IA_AMI_BUILD}"
 export IA_AMI_MASTER="${IA_NAME}-Master-${IA_AMI_VERSION}"
@@ -55,7 +55,19 @@ fi
 if [ -z "${IA_SGROUP_ADMSSH}" ]; then
     export IA_SGROUP_ADMSSH="sg-447e7526"
 fi
-
+# default port range for hadoop
+if [ -z "${IA_SGROUP_HADOOP_PORT_MIN}" ]; then
+    export IA_SGROUP_HADOOP_PORT_MIN=8000
+fi
+if [ -z "${IA_SGROUP_HADOOP_PORT_MAX}" ]; then
+    export IA_SGROUP_HADOOP_PORT_MAX=65535
+fi
+if [ -z "${IA_SGROUP_SSH_PORT}" ]; then
+    export IA_SGROUP_SSH_PORT=22
+fi
+if [ -z "${IA_SGROUP_HTTPS_PORT}" ]; then
+    export IA_SGROUP_HTTPS_PORT=443
+fi
 # sunet status
 export IA_AWS_PENDING="pending"
 export IA_AWS_AVAILABLE="available"
@@ -279,6 +291,36 @@ function IA_find_sgroup()
     echo `ec2-describe-group ${IA_EC2_OPTS} -F "group-name=${1}" -F "vpc-id=${2}" | grep GROUP | awk '{print $2}'`
 }
 
+# find an ingress rule by port range
+# return 0 for sucess
+# no overwriting _RET
+function IA_find_sgroup_ingress_rule()
+{
+    local vpc=$1
+    local sgrp=$2
+    local pmin=$3
+    local pmax=$4
+    local rules=(`ec2-describe-group ${IA_EC2_OPTS} --show-empty-fields -F "vpc-id=${1}" -F "group-id=${2}" | grep PERMISSION | grep ingress`)
+
+    if [ -z "$4" ]; then
+        pmax=${pmin}
+    fi
+    # 11 fields for permission
+    for (( i = 0; i < ${#rules[@]}; i++ ))
+    do
+        # 0, 11, 22
+        rule=("${rules[@]:${i}:11}")
+        port_min=${rule[5]}
+        port_max=${rule[6]}
+        if [ "${pmin}" == "${port_min}" ] && [ "${pmax}" == "${port_max}" ]; then
+            IA_logerr "Found ingress rule for ${vpc} group ${sgrp}, port ${pmin} ~ ${pmax}"
+            return 0
+        fi
+        let i=${i}+11
+    done
+    IA_logerr "Did not find any ingress rule for ${vpc} group ${sgrp}, port ${pmin} ~ ${pmax}"
+    return 1
+}
 
 # create per cluster unique security group, this security group contains 3 rules
 # - inbound, ssh only from everyone in the cluster
@@ -312,12 +354,15 @@ function IA_create_sgroup()
 
     # note, only check by grepping cidr, to be really careful, get the
     # corresponding columns, and compare all idr, to, and from columns
-    ec2-describe-group ${IA_EC2_OPTS} -H -F "vpc-id=${sgrp_vpc}" -F "group-id=${_RET}" | grep "${sgrp_cidr}" 2>&1 > /dev/null
+    IA_find_sgroup_ingress_rule ${sgrp_vpc} ${_RET} ${IA_SGROUP_SSH_PORT}
     if [ $? -ne 0 ];then
         IA_loginfo "Creating inbound cluster SSH rule for ${sgrp_name}..."
         ec2-authorize ${IA_EC2_OPTS} ${_RET} --protocol tcp --port-range 22 --cidr "${sgrp_cidr}"
-    else
-        IA_loginfo "Existing rule on ${sgrp_cidr} for ${sgrp_name} found..."
+    fi
+    IA_find_sgroup_ingress_rule ${sgrp_vpc} ${_RET} ${IA_SGROUP_HADOOP_PORT_MIN} ${IA_SGROUP_HADOOP_PORT_MAX}
+    if [ $? -ne 0 ];then
+        IA_loginfo "Creating inbound cluster SSH rule for ${sgrp_name}..."
+        ec2-authorize ${IA_EC2_OPTS} ${_RET} --protocol tcp --port-range ${IA_SGROUP_HADOOP_PORT_MIN}-${IA_SGROUP_HADOOP_PORT_MAX} --cidr "${sgrp_cidr}"
     fi
     return 0
 }
@@ -476,7 +521,7 @@ function IA_create_subnet()
         IA_loginfo "Checking subnet (${snet_name}, ${_RET}) state..."
         snet_state=`IA_find_subnet_state ${_RET} ${snet_vpc} ${snet_cidr}`
         if [ "${snet_state}" == "${IA_AWS_AVAILABLE}" ]; then
-            IA_add_name_tag ${snet_id} ${snet_name}
+            IA_add_name_tag ${_RET} ${snet_name}
             return 0
         fi
         sleep 5s

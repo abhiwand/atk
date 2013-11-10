@@ -64,6 +64,10 @@ function IA_create_info()
 cat << EOF > ${IA_CLUSTERS}/${cname}.info
 
 Time Stamp      = `date`
+Release Version = ${IA_VERSION}
+Build Verions   = ${IA_AMI_BUILD}
+AMI Version     = ${IA_AMI_VERSION}
+AMI Image Name  = ${IA_AMI_NODE}
 Cluster Name    = ${cname}
 Assigned VPC    = ${cvpcid}
 AMI Image ID    = ${camiid}
@@ -285,7 +289,7 @@ if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
     exit 1
 fi
 csgroup=${_RET}
-IA_loginfo "Security group (SSH) = ${csgroup}"
+IA_loginfo "Security group (in-cluster SSH and TCP) = ${csgroup}"
 
 # Associate cluster subnet to VPC router
 IA_update_routes ${croute} ${cvpcid} ${csubnet}
