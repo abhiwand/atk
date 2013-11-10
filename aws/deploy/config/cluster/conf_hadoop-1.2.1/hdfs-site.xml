@@ -40,6 +40,11 @@
   <description>The number of server threads for the namenode.</description>
 </property>
 <property>
+  <name>dfs.permissions.superusergroup</name>
+  <value>hadoop</value>
+  <description>The name of the group of super-users.</description>
+</property>
+<property>
   <name>fs.trash.interval</name>
   <value>1440</value>
   <description>Number of minutes between trash checkpoints.
