@@ -18,11 +18,7 @@ import org.apache.hadoop.fs.{FileSystem, Path => HdPath}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
-case class FileStatus(file: String, currentSize: Long, finalSize: Long) {
-  def progress(): Int = {
-    ((currentSize.toFloat / finalSize.toFloat) * 100).toInt
-  }
-}
+case class Status(name: String, progress: Float)
 
 case class Config(bucket: String = "gaopublic", prefix: String = "invalid", destination: String = "/user/gao", queue: String = "gao", statusDestination: String = "/tmp/s3-copier")
 
@@ -34,15 +30,15 @@ object S3Copier {
     None
   }
 
-  def writeProgress(progressFolder: String, status: FileStatus) = {
-    implicit val fileStatusFormat = Json.format[FileStatus]
+  def writeProgress(progressFolder: String, status: Status) = {
+    implicit val StatusFormat = Json.format[Status]
     val json = Json.toJson(status)
     val path = Path.fromString(progressFolder)
 
     if (!path.exists) {
       path.createDirectory(createParents = true)
     }
-    (path /(s"${status.file}.status", '/')).write(Json.stringify(json))
+    (path /(s"${status.name}.status", '/')).write(Json.stringify(json))
   }
 
   def parseConfig(args: Array[String]): Config = {
@@ -87,7 +83,7 @@ object S3Copier {
     implicit val sqs = SQS().at(Region.US_WEST_2)
     println("Getting/creating queue")
     val queue = sqs.queue("uploads-bryn") getOrElse sqs.createQueue("uploads-bryn")
-    val inProgress = mutable.Map[String, Future[FileStatus]]()
+    val inProgress = mutable.Map[String, Future[Status]]()
     val configuration = new Configuration()
     val fs = FileSystem.get(configuration)
     while (true) {
@@ -124,7 +120,7 @@ object S3Copier {
   def processMessage(msg: Message, config: Config, s3: S3,
                      sqs: SQS,
                      configuration: Configuration,
-                     fs: FileSystem, inProgress: mutable.Map[String, Future[FileStatus]]) {
+                     fs: FileSystem, inProgress: mutable.Map[String, Future[Status]]) {
     log(msg.body)
     val json = Json.parse(msg.body)
     implicit val s3impl = s3
@@ -143,27 +139,29 @@ object S3Copier {
 
     file.foreach {
       f =>
-        val result: Future[FileStatus] = copyFile(f, config, configuration, fs)
+        val result: Future[Status] = copyFile(f, config, configuration, fs)
         inProgress.put(f.key, result)
     }
     msg.destroy()
   }
 
-  def copyFile(f: S3Object, config: Config, configuration: Configuration, fs: FileSystem): Future[FileStatus] = {
+  def copyFile(f: S3Object, config: Config, configuration: Configuration, fs: FileSystem): Future[Status] = {
     val len = f.getObjectMetadata.getContentLength
-    var status = FileStatus(f.key, 0, len)
+    var status = Status(f.key, 0)
     writeProgress(config.statusDestination, status)
     val localPath = Path.fromString(config.statusDestination) /(f.key, '/')
     future {
       val resource = scalax.io.Resource.fromInputStream(f.content)
       localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
       log(s"Wrote to $localPath")
+      status = status.copy(progress = 50)
+      writeProgress(config.statusDestination, status)
       log(s"Local exists: ${localPath.exists}")
       val fs = FileSystem.get(configuration)
 
       fs.copyFromLocalFile(new HdPath("file://" + localPath.path), new HdPath(config.destination + "/" + f.key.split('/').last))
       log(s"Wrote to HDFS: ${config.destination}")
-      status = status.copy(currentSize = len)
+      status = status.copy(progress = 100)
       writeProgress(config.statusDestination, status)
       status
     }
