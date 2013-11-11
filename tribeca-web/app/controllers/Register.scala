@@ -34,6 +34,8 @@ import models.RegistrationFormMapping
 import play.api.mvc.Cookie
 import scala.Some
 import models.database.UserRow
+import play.api.Play
+import play.api.Play.current
 
 /**
  * Singleton object to handle register request and generate response accordingly.
@@ -61,11 +63,11 @@ object Register extends Controller {
             )
 
             response._1 match {
-                case StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get)
+                case StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get).withCookies(getRegisteredCookie)
                 case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
                     "/", None, true, false))
                 case _ => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
-                    "/", None, true, false))
+                    "/", None, true, false)).withCookies(getRegisteredCookie)
             }
         }
 
@@ -82,7 +84,9 @@ object Register extends Controller {
         if (auth.validateUserInfo() == None)
             return (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
 
-        val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true, Some(""), None, None)
+        val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true,
+          Some(Play.application.configuration.getString("ipython.url").get),
+          Some(Play.application.configuration.getString("ipython.secret").get), None)
         val result = Users.register(u, registrationForm, statementGenerator, DBRegisterCommand)
 
         if (result.login == 1) {
@@ -95,5 +99,9 @@ object Register extends Controller {
         else
             (result.errorCode, None)
     }
+
+  def getRegisteredCookie:Cookie = {
+    Cookie("registered", "true", Some(3600),"/", None, true, false)
+  }
 
 }

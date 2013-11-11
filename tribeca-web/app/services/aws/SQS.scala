@@ -7,7 +7,7 @@ import java.util
 import collection.JavaConversions._
 import play.api.libs.json.Json
 import scala.collection.mutable.ArrayBuffer
-import services.{awsUser, aws}
+import services.{aws}
 import com.amazonaws.auth.{AWSCredentials, BasicAWSCredentials}
 
 //import com.amazonaws.services.sns.model.AddPermissionRequest
@@ -27,6 +27,7 @@ object SQS {
     val queueAttributes = sqs.getQueueAttributes(queueAttributeRequest)
     mapAsScalaMap(queueAttributes.getAttributes)
   }
+
 
   def createPermissionPolicy(queueName:String, url: String): String ={
     val pi = collection.mutable.Seq()

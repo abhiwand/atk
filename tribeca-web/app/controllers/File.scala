@@ -34,7 +34,7 @@ object File {
         //check file name  on the users dir s3
         breakable {
           for(s3Object <- S3.getObjectList(request.user._1.uid.get.toString)){
-            if(s3Object.getKey.split("/").last.equals(file.name)){
+            if(s3Object.getKey.split("/").last.trim.toLowerCase.equals(file.name.trim.toLowerCase)){
               S3.deleteObject(s3Object.getKey)
               break
             }

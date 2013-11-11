@@ -32,11 +32,3 @@ package object aws {
   val baseSecretAccessKey = Play.application.configuration.getString("aws.secret_access_key").get
   val baseCredentials = new BasicAWSCredentials(baseAccessKey, baseSecretAccessKey)
 }
-
-class awsUser(params:com.typesafe.config.ConfigObject){
-    //val accountId = params.get(0).getString("accountId")
-  val tests:String = "";
-  def awsUser(params:List[_ <: com.typesafe.config.ConfigObject]) = {
-    println(params.toString)
-  }
-}

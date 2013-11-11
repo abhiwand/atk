@@ -30,7 +30,7 @@ import play.api.libs.json.Json
 import java.util.{TimeZone, Date}
 import java.text.SimpleDateFormat
 import com.amazonaws.auth.BasicAWSCredentials
-import com.amazonaws.services.s3.model.S3ObjectSummary
+import com.amazonaws.services.s3.model._
 import com.amazonaws.services.s3.AmazonS3Client
 import java.lang.Math
 import scala.collection.mutable
@@ -38,13 +38,17 @@ import sun.misc.BASE64Encoder
 import play.api.Play
 import play.api.Play.current
 import services.aws
+import scala.collection.JavaConversions._
+import java.util
+import com.amazonaws.AmazonClientException
 
 object S3 {
-  //one week in milliseconds
+  //one week
   val POLICY_EXPIRATION =  Play.application.configuration.getLong("aws.S3.bucket_expiration_policy").get
   val BUCKET = Play.application.configuration.getString("aws.S3.bucket").get
+  val BUCKET_PREFIX = Play.application.configuration.getString("aws.S3.bucketPrefix").get
   val MAX_SIZE = Play.application.configuration.getLong("aws.S3.bucket_max_file_size").get
-  val PREFIX = Play.application.configuration.getString("aws.S3.bucket_prefix").get
+  val PREFIX = Play.application.configuration.getString("aws.S3.bucketUploadPrefix").get
   val BYTE = 1024
   val s3Client = new AmazonS3Client(baseCredentials);
 
@@ -53,6 +57,77 @@ object S3 {
     splits.last
   }
 
+  def getBucketName: String = {
+    val bucketNameParts = List[String](BUCKET_PREFIX, Play.application.mode.toString.toLowerCase,"public")
+    bucketNameParts.mkString("-")
+  }
+
+  def getBucketResource:String ={
+    "arn:aws:s3:::" + getBucketName
+  }
+
+  def getCORSConfig():BucketCrossOriginConfiguration ={
+    val corsConfigs = Play.application.configuration.getObjectList("aws.S3.cors").get.toList map(new CR(_))
+
+    var corsRules:List[CORSRule] = List[CORSRule]()
+    for(corsConfig <- corsConfigs){
+      val rule = new CORSRule()
+      rule.setAllowedOrigins(corsConfig.origin)
+      rule.setAllowedHeaders(corsConfig.allowedHeaders)
+      rule.setExposedHeaders(corsConfig.exposedHeaders)
+      rule.setAllowedMethods(corsConfig.methods)
+      corsRules ::= rule
+    }
+
+    new BucketCrossOriginConfiguration(corsRules)
+  }
+
+  def getPermissions(): List[String] = {
+    val permissions = Play.application.configuration.getStringList("aws.S3.permissions").get.toList
+    var S3Permissions:List[String] = List[String]()
+    for(permission <- permissions){
+      S3Permissions ::= "S3:" + permission
+    }
+    S3Permissions
+  }
+
+  def getBucketPolicy: String = {
+    val principalIds = Play.application.configuration.getStringList("aws.S3.principalIds").get
+    val permissions = getPermissions
+
+    val Statement = Json.arr(
+      Json.obj(
+        "Sid" -> ("Sid-" + getBucketName),
+        "Effect" -> "Allow",
+        "Principal" -> Json.obj("AWS" -> principalIds.toList ),
+        "Action" -> permissions.toList,
+        "Resource" -> getBucketResource
+      )
+    )
+    val policy = Json.obj("Version" -> Play.application.configuration.getString("aws.S3.policyVersion").get,
+      "Id" -> (getBucketName + "-DefaultPolicy"),
+      "Statement" -> Statement
+    )
+    Json.stringify(policy)
+  }
+
+  def createBucket() {
+    var bucket:Bucket = new Bucket()
+    try{
+      bucket = s3Client.createBucket(getBucketName, Region.US_West_2)
+    } catch {
+      case e: AmazonS3Exception =>
+        if(!e.getErrorCode.equals("BucketAlreadyOwnedByYou")){
+            throw e
+        }
+    }
+    s3Client.setBucketCrossOriginConfiguration(getBucketName, getCORSConfig)
+
+    val bucketAcl = s3Client.getBucketAcl(getBucketName)
+    val grantee = new CanonicalGrantee("arn:aws:iam::953196509655:user/IntelAnalytics_Web")
+    bucketAcl.grantPermission(grantee, Permission.FullControl)
+    s3Client.setBucketPolicy(getBucketName, getBucketPolicy )
+  }
   def formatSize(size: Long): String = {
     val sizes = Array("Bytes", "KB", "MB", "GB", "TB")
     if (size == 0) "n/a"
@@ -62,7 +137,7 @@ object S3 {
 
   def getObjectList(userIdentifier: String): mutable.Buffer[S3ObjectSummary] = {
 
-    val objectList = s3Client.listObjects(BUCKET, PREFIX + userIdentifier + "/")
+    val objectList = s3Client.listObjects(getBucketName, PREFIX + userIdentifier + "/")
     scala.collection.JavaConversions.asScalaBuffer[S3ObjectSummary](objectList.getObjectSummaries)
   }
 
@@ -75,7 +150,7 @@ object S3 {
     val dateFormat = new SimpleDateFormat("yyyy-MM-d'T'hh:mm:ss'Z'")
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     val policyJson = Json.obj("expiration" -> dateFormat.format(expire),
-      "conditions" -> Json.arr(Json.obj("bucket" -> BUCKET),
+      "conditions" -> Json.arr(Json.obj("bucket" -> getBucketName),
         Json.arr("starts-with", "$key", uploadDirectory(userIdentifier)),
         Json.obj("acl" -> "private"),
         //Json.obj("success_action_redirect" -> SUCCESS_ACTION_REDIRECT),
@@ -105,6 +180,6 @@ object S3 {
   }
 
   def deleteObject(key: String){
-    s3Client.deleteObject(BUCKET, key)
+    s3Client.deleteObject(getBucketName, key)
   }
 }
