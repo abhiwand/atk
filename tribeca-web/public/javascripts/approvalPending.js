@@ -8,10 +8,10 @@ $(window).load(function(){
         $.removeCookie("authenticationFailed")
     }
     if($.cookie("registered") != undefined && $.cookie("registered") != ""){
-        $("#requestInvite").remove();
+        /*$("#requestInvite").remove();
         $("#request-an-invite-modal-slider1").remove();
         $("#request-an-invite-modal-slider2").remove();
-        $("#request-an-invite-modal-slider3").remove();
+        $("#request-an-invite-modal-slider3").remove();*/
     }
     messages.getMessagesHtml();
 })
