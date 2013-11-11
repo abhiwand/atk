@@ -24,6 +24,7 @@ package com.intel.giraph.io.titan.hbase;
 
 import java.io.IOException;
 import java.util.List;
+
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.hbase.client.Result;
@@ -37,7 +38,6 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 /**
- *
  * Base class that wraps an HBase TableInputFormat and underlying Scan object to
  * help instantiate vertices from an HBase table. All the static
  * TableInputFormat properties necessary to configure an HBase job are
@@ -68,9 +68,13 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
     public abstract static class HBaseVertexReader<I extends WritableComparable, V extends Writable, E extends Writable>
             extends VertexReader<I, V, E> {
 
-        /** Reader instance */
+        /**
+         * Reader instance
+         */
         private RecordReader<ImmutableBytesWritable, Result> reader;
-        /** Context passed to initialize */
+        /**
+         * Context passed to initialize
+         */
         private TaskAttemptContext context;
 
         /**
@@ -78,16 +82,15 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
          * underlying record reader (useful for testing).
          *
          * @param inputSplit the split to read
-         *
-         * @param context the context passed to initialize
-         *
+         * @param context    the context passed to initialize
          * @return the record reader to be used
-         * @throws IOException exception that can be thrown during creation
+         * @throws IOException          exception that can be thrown during creation
          * @throws InterruptedException exception that can be thrown during
-         *             creation
+         *                              creation
          */
-        protected RecordReader<ImmutableBytesWritable, Result> createHBaseRecordReader(InputSplit inputSplit,
-                TaskAttemptContext context) throws IOException, InterruptedException {
+        protected RecordReader<ImmutableBytesWritable, Result>
+        createHBaseRecordReader(InputSplit inputSplit, TaskAttemptContext context)
+            throws IOException, InterruptedException {
             INPUT_FORMAT.setConf(context.getConfiguration());
             return INPUT_FORMAT.createRecordReader(inputSplit, context);
         }
@@ -96,9 +99,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
          * initialize
          *
          * @param inputSplit Input split to be used for reading vertices.
-         *
-         * @param context Context from the task.
-         *
+         * @param context    Context from the task.
          * @throws IOException
          * @throws InterruptedException
          */
@@ -152,7 +153,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
     /**
      * getSplits from TableInputFormat
      *
-     * @param context task context
+     * @param context           task context
      * @param minSplitCountHint minimal split count
      * @return List<InputSplit> list of input splits
      * @throws IOException

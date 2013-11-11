@@ -20,27 +20,8 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.giraph.io.titan;
 
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
-import org.apache.log4j.Logger;
-
-public class TitanTestGraph extends StandardTitanGraph {
-
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(TitanTestGraph.class);
-
-    public TitanTestGraph(final GraphDatabaseConfiguration configuration) {
-        super(configuration);
-        LOG.info("create TitanTestGraph");
-    }
-
-    @Override
-    public void shutdown() {
-        super.shutdown();
-    }
-
-}
+/**
+ * Package of igiraph algorithms
+ */
+package com.intel.giraph.algorithms.apl;

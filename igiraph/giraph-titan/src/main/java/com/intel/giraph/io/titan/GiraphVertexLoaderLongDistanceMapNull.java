@@ -23,44 +23,42 @@
 package com.intel.giraph.io.titan;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
 
+import com.google.common.base.Preconditions;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.DenseVector;
 
-import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithTwoVectorWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import com.intel.giraph.io.DistanceMapWritable;
+
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
-import com.google.common.base.Preconditions;
-
 import org.apache.log4j.Logger;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Load vertex from Titan
- * Each vertex is with <code>long</code> vertex ID's,
- * <code>TwoVector</code> vertex values: one for prior and
- * one for posterior, and <code>DoubleWithTwoVector</code> edge
- * weights.
+ * GiraphVertexLoaderLongDistanceMapNull loads vertex
+ * with <code>Long</code> vertex ID's,
+ * <code>DistanceMap</code> vertex values,
+ * and <code>Null</code> edge weights.
  */
-public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
+public class GiraphVertexLoaderLongDistanceMapNull {
 
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongTwoVectorDoubleTwoVector.class);
+    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleFloat.class);
     /**
      * whether it is Titan system type
      */
@@ -72,74 +70,27 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
     /**
      * Giraph Vertex
      */
-    private Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> vertex = null;
-    /**
-     * HashMap of configured vertex properties
-     */
-    private final Map<String, Integer> vertexPropertyKeyValues = new HashMap<String, Integer>();
-    /**
-     * HashMap of configured edge properties
-     */
-    private final Map<String, Integer> edgePropertyKeyValues = new HashMap<String, Integer>();
+    private Vertex<LongWritable, DistanceMapWritable, NullWritable> vertex = null;
     /**
      * HashSet of configured edge labels
      */
-    private final Map<String, Integer> edgeLabelValues = new HashMap<String, Integer>();
-    /**
-     * vertex value vector
-     */
-    private TwoVectorWritable vertexValueVector = null;
-    /**
-     * Data vector
-     */
-    private Vector vector = null;
+    private Set<String> edgeLabelValues = null;
 
     /**
-     * GiraphVertexLoaderLongTwoVectorDoubleTwoVector Constructor with ID
+     * GiraphVertexLoaderLongDistanceMapNull constructor
      *
-     * @param conf Giraph configuration
+     * @param conf : Giraph configuration
      * @param id   vertex id
      */
-    public GiraphVertexLoaderLongTwoVectorDoubleTwoVector(final ImmutableClassesGiraphConfiguration conf,
-                                                          final long id) {
-        /**
-         * Vertex properties to filter
-         */
-        final String[] vertexPropertyKeyList;
-        /**
-         * Edge properties to filter
-         */
-        final String[] edgePropertyKeyList;
-        /**
-         * Edge labels to filter
-         */
+    public GiraphVertexLoaderLongDistanceMapNull(final ImmutableClassesGiraphConfiguration conf, final long id) {
+        /** Edge labels to filter */
         final String[] edgeLabelList;
 
-        vertexPropertyKeyList = INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
-        int size = vertexPropertyKeyList.length;
-
-        for (int i = 0; i < size; i++) {
-            vertexPropertyKeyValues.put(vertexPropertyKeyList[i], i);
-        }
-
-        for (int i = 0; i < edgePropertyKeyList.length; i++) {
-            edgePropertyKeyValues.put(edgePropertyKeyList[i], i);
-        }
-
-        for (int i = 0; i < edgeLabelList.length; i++) {
-            edgeLabelValues.put(edgeLabelList[i], i);
-        }
-
-
-        // set up vertex Value
         vertex = conf.createVertex();
-        double[] data = new double[size];
-        vector = new DenseVector(data);
-        vertexValueVector = new TwoVectorWritable(vector.clone(), vector.clone());
-        vertex.initialize(new LongWritable(id), vertexValueVector);
+        vertex.initialize(new LongWritable(id), new DistanceMapWritable());
         vertexId = id;
+        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
+        edgeLabelValues = new HashSet<String>(Arrays.asList(edgeLabelList));
     }
 
     /**
@@ -277,33 +228,16 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
             }
             if (this.type.isPropertyKey()) {
                 Preconditions.checkNotNull(value);
-                // filter vertex property key name
-                String propertyName = this.type.getName();
-                if (vertexPropertyKeyValues.containsKey(propertyName)) {
-                    final Object vertexValueObject = this.value;
-                    final double vertexValue = Double.parseDouble(vertexValueObject.toString());
-                    Vector priorVector = vertexValueVector.getPriorVector();
-                    priorVector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
-                    vertex.setValue(new TwoVectorWritable(priorVector, vector.clone()));
-                }
             } else {
                 Preconditions.checkArgument(this.type.isEdgeLabel());
                 // filter Edge Label
                 if (this.relationID > 0) {
-                    if (edgeLabelValues.containsKey(this.type.getName())) {
-                        double edgeValue = 0.0d;
+                    if (edgeLabelValues.contains(this.type.getName())) {
                         if (this.direction.equals(Direction.OUT)) {
-                            for (final Map.Entry<String, Object> entry : this.properties.entrySet()) {
-                                if (entry.getValue() != null &&
-                                        edgePropertyKeyValues.containsKey(entry.getKey())) {
-                                    final Object edgeValueObject = entry.getValue();
-                                    edgeValue = Double.parseDouble(edgeValueObject.toString());
-                                }
-                            }
-                            Edge<LongWritable, DoubleWithTwoVectorWritable> edge = EdgeFactory.create(
-                                    new LongWritable(this.otherVertexID), new DoubleWithTwoVectorWritable(
-                                        edgeValue, vector.clone(), vector.clone()));
+                            Edge<LongWritable, NullWritable> edge = EdgeFactory.create(new LongWritable(
+                                    this.otherVertexID), NullWritable.get());
                             vertex.addEdge(edge);
+
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();
                         }
@@ -316,3 +250,4 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
         }
     }
 }
+

@@ -43,7 +43,7 @@
 
     <dep.accumulo.version>1.4.0</dep.accumulo.version>
     <dep.airline.version>0.5</dep.airline.version>
-    <dep.aurelius.version>0.3.2</dep.aurelius.version>
+    <dep.aurelius.version>0.4.0</dep.aurelius.version>
     <dep.base64.version>2.3.8</dep.base64.version>
     <dep.cli-parser.version>1.1</dep.cli-parser.version>
     <dep.codehaus-jackson.version>1.8.0</dep.codehaus-jackson.version>
@@ -127,8 +127,8 @@
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.0</version>
           <configuration>
-            <source>1.6</source>
-            <target>1.6</target>
+            <source>1.7</source>
+            <target>1.7</target>
           </configuration>
         </plugin>
         <plugin>

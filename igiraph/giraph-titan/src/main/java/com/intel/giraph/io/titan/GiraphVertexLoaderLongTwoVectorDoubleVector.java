@@ -35,7 +35,7 @@ import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
 
 import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithTwoVectorWritable;
+import com.intel.mahout.math.DoubleWithVectorWritable;
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
@@ -52,15 +52,14 @@ import java.util.Map;
  * Load vertex from Titan
  * Each vertex is with <code>long</code> vertex ID's,
  * <code>TwoVector</code> vertex values: one for prior and
- * one for posterior, and <code>DoubleWithTwoVector</code> edge
+ * one for posterior, and <code>DoubleVector</code> edge
  * weights.
  */
-public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
-
+public class GiraphVertexLoaderLongTwoVectorDoubleVector {
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongTwoVectorDoubleTwoVector.class);
+    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongTwoVectorDoubleVector.class);
     /**
      * whether it is Titan system type
      */
@@ -72,7 +71,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
     /**
      * Giraph Vertex
      */
-    private Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> vertex = null;
+    private Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> vertex = null;
     /**
      * HashMap of configured vertex properties
      */
@@ -94,14 +93,15 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
      */
     private Vector vector = null;
 
+
     /**
-     * GiraphVertexLoaderLongTwoVectorDoubleTwoVector Constructor with ID
+     * GiraphVertexLoaderLongTwoVectorDoubleVector Constructor with ID
      *
      * @param conf Giraph configuration
      * @param id   vertex id
      */
-    public GiraphVertexLoaderLongTwoVectorDoubleTwoVector(final ImmutableClassesGiraphConfiguration conf,
-                                                          final long id) {
+    public GiraphVertexLoaderLongTwoVectorDoubleVector(final ImmutableClassesGiraphConfiguration conf,
+                                                       final long id) {
         /**
          * Vertex properties to filter
          */
@@ -119,7 +119,6 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
         edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
         edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
         int size = vertexPropertyKeyList.length;
-
         for (int i = 0; i < size; i++) {
             vertexPropertyKeyValues.put(vertexPropertyKeyList[i], i);
         }
@@ -140,6 +139,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
         vertexValueVector = new TwoVectorWritable(vector.clone(), vector.clone());
         vertex.initialize(new LongWritable(id), vertexValueVector);
         vertexId = id;
+
     }
 
     /**
@@ -300,9 +300,9 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
                                     edgeValue = Double.parseDouble(edgeValueObject.toString());
                                 }
                             }
-                            Edge<LongWritable, DoubleWithTwoVectorWritable> edge = EdgeFactory.create(
-                                    new LongWritable(this.otherVertexID), new DoubleWithTwoVectorWritable(
-                                        edgeValue, vector.clone(), vector.clone()));
+                            Edge<LongWritable, DoubleWithVectorWritable> edge = EdgeFactory.create(
+                                    new LongWritable(this.otherVertexID), new DoubleWithVectorWritable(
+                                        edgeValue, vector.clone()));
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();
@@ -315,4 +315,5 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
             }
         }
     }
+
 }

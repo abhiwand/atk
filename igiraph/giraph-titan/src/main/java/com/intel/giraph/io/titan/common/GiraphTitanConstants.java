@@ -20,11 +20,10 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.giraph.io.titan.conf;
+package com.intel.giraph.io.titan.common;
 
 import org.apache.giraph.conf.StrConfOption;
-import com.thinkaurelius.titan.diskstorage.Backend;
-import org.apache.hadoop.hbase.util.Bytes;
+
 
 /**
  * Constants used all over Giraph for configuration specific for Titan/Hbase
@@ -56,58 +55,57 @@ public class GiraphTitanConstants {
     /**
      * Titan storage connection time out.
      */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_CONNECTION_TIMEOUT = new StrConfOption(
+   /* public static final StrConfOption GIRAPH_TITAN_STORAGE_CONNECTION_TIMEOUT = new StrConfOption(
             "giraph.titan.input.storage.connection-timeout", "10001", "Titan/hbase storage time out");
-
     /**
      * Titan storage batch loading.
      */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_BATCH_LOADING = new StrConfOption(
+   /* public static final StrConfOption GIRAPH_TITAN_STORAGE_BATCH_LOADING = new StrConfOption(
             "giraph.titan.input.storage.batch-loading", "true", "Titan storage batch-loading");
     /**
      * Titan Storage attempt-wait.
      */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_ATTEMPT_WAIT = new StrConfOption(
+    /*public static final StrConfOption GIRAPH_TITAN_STORAGE_ATTEMPT_WAIT = new StrConfOption(
             "giraph.titan.input.storage.attempt-wait", "750", "Titan storage attempt wait");
     /**
      * Titan Storage idauthority-wait-time.
      */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_IDAUTORITY_WAIT_TIME = new StrConfOption(
+    /* static final StrConfOption GIRAPH_TITAN_STORAGE_IDAUTORITY_WAIT_TIME = new StrConfOption(
             "giraph.titan.input.storage.idauthority-wait-time", "3000", "Titan storage idauthority wait time");
     /**
      * Titan Storage write attempts
      */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_WRITE_ATTEMPTS = new StrConfOption(
+    /*public static final StrConfOption GIRAPH_TITAN_STORAGE_WRITE_ATTEMPTS = new StrConfOption(
             "giraph.titan.input.storage.write-attempts", "10", "Titan storage write attempts");
     /**
      * Titan Storage lock wait time.
      */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_LOCK_WAIT_TIME = new StrConfOption(
+    /*public static final StrConfOption GIRAPH_TITAN_STORAGE_LOCK_WAIT_TIME = new StrConfOption(
             "giraph.titan.input.storage.lock-wait-time", "500", "Titan storage lock wait time");
     /**
      * Titan Storage lock expiry time
      */
-    public static final StrConfOption GIRAPH_TITAN_STORAGE_LOCK_EXPIRY_TIME = new StrConfOption(
+    /*public static final StrConfOption GIRAPH_TITAN_STORAGE_LOCK_EXPIRY_TIME = new StrConfOption(
             "giraph.titan.input.storage.locak-expiry-time", "600000", "Titan storage lock expiry time");
     /**
      * Titan storage ids block-size.
      */
-    public static final StrConfOption GIRAPH_TITAN_IDS_BLOCK_SIZE = new StrConfOption(
+    /*public static final StrConfOption GIRAPH_TITAN_IDS_BLOCK_SIZE = new StrConfOption(
             "giraph.titan.input.storage.ids.block-size", "50000", "Titan ids block size");
     /**
      * Titan Storage ids renew-timeout.
      */
-    public static final StrConfOption GIRAPH_TITAN_IDS_RENEW_TIMEOUT = new StrConfOption(
+    /*public static final StrConfOption GIRAPH_TITAN_IDS_RENEW_TIMEOUT = new StrConfOption(
             "giraph.titan.input.ids.renew-timeout", "600000", "Titan ids renew timeout");
     /**
      * Titan Storage ids partition.
      */
-    public static final StrConfOption GIRAPH_TITAN_IDS_PARTITION = new StrConfOption(
+    /*public static final StrConfOption GIRAPH_TITAN_IDS_PARTITION = new StrConfOption(
             "giraph.titan.input.ids.partition", "false", "Titan ids partition");
     /**
      * Titan Storage ids num-partition
      */
-    public static final StrConfOption GIRAPH_TITAN_IDS_NUM_PARTITIONS = new StrConfOption(
+    /*public static final StrConfOption GIRAPH_TITAN_IDS_NUM_PARTITIONS = new StrConfOption(
             "giraph.titan.input.ids.num-partitions", "100", "Titan ids num partitions");
     /**
      * the configuration prefix to stripped for Titan
@@ -163,10 +161,6 @@ public class GiraphTitanConstants {
             "output.vertex.bias", "false", "whether to output vertex bias");
 
     /**
-     * the edge store name used by Titan
-     */
-    public static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
-    /**
      * the vertex format type
      */
     public static final String LONG_DISTANCE_MAP_NULL = "LongDistanceMapNull";
@@ -190,6 +184,10 @@ public class GiraphTitanConstants {
      * the vertex format type
      */
     public static final String PROPERTY_GRAPH_4_LDA = "PropertyGraph4LDA";
+    /**
+     * the id offset used by Titan
+     */
+    public static final long TITAN_ID_OFFSET = 4;
 
 
     /**

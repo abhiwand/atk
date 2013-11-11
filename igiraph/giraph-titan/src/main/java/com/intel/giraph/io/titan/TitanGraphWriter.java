@@ -22,25 +22,53 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
+import com.thinkaurelius.titan.core.TitanFactory;
+import com.thinkaurelius.titan.core.TitanGraph;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+
 import org.apache.log4j.Logger;
 
-public class TitanTestGraph extends StandardTitanGraph {
+import java.io.IOException;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+
+/**
+ * The titan graph writer which connects Giraph to Titan
+ * for writing back algorithm results
+ */
+public class TitanGraphWriter {
+    /**
+     * LOG class
+     */
+    private static final Logger LOG = Logger
+            .getLogger(TitanGraphWriter.class);
 
     /**
-     * Class logger.
+     * Do not instantiate
      */
-    private static final Logger LOG = Logger.getLogger(TitanTestGraph.class);
-
-    public TitanTestGraph(final GraphDatabaseConfiguration configuration) {
-        super(configuration);
-        LOG.info("create TitanTestGraph");
+    private TitanGraphWriter() {
     }
 
-    @Override
-    public void shutdown() {
-        super.shutdown();
-    }
+    /**
+     * @param context task attempt context
+     * @return TitanGraph Titan graph to which Giraph write results
+     */
+    public static TitanGraph open(TaskAttemptContext context) throws IOException {
+        TitanGraph graph = null;
 
+        org.apache.commons.configuration.Configuration configuration =
+                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                        GIRAPH_TITAN.get(context.getConfiguration()));
+
+        graph = TitanFactory.open(configuration);
+
+        if (null != graph) {
+            return graph;
+        } else {
+            LOG.fatal("IGIRAPH ERROR: Unable to open titan graph");
+            System.exit(-1);
+            return null;
+        }
+
+    }
 }

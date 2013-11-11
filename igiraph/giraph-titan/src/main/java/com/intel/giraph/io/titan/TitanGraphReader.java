@@ -29,11 +29,20 @@ import com.thinkaurelius.titan.diskstorage.util.StaticByteBuffer;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
 import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
-import com.thinkaurelius.titan.graphdb.transaction.TransactionConfig;
-
+import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
+import com.thinkaurelius.titan.diskstorage.StaticBuffer;
+import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.log4j.Logger;
 import org.apache.commons.configuration.Configuration;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_FLOAT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_VECTOR;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LDA;
 
 import java.nio.ByteBuffer;
 
@@ -44,10 +53,14 @@ import java.nio.ByteBuffer;
 
 public class TitanGraphReader extends StandardTitanGraph {
 
-    /** Class logger. */
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(TitanGraphReader.class);
 
-    /** it's only for reading a Titan graph into Hadoop. */
+    /**
+     * it's only for reading a Titan graph into Hadoop.
+     */
     private final StandardTitanTx tx;
 
     /**
@@ -57,58 +70,126 @@ public class TitanGraphReader extends StandardTitanGraph {
      */
     public TitanGraphReader(final Configuration configuration) {
         super(new GraphDatabaseConfiguration(configuration));
-        this.tx = newTransaction(new TransactionConfig(this.getConfiguration(), false));
+        this.tx = newTransaction(new StandardTransactionBuilder(this.getConfiguration(), this));
+        if (this.tx == null) {
+            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
+        }
     }
 
     /**
-     * readGiraphVertexLongDoubleFloat
-     *
-     * @param conf : Giraph configuration
-     * @param key : key value of HBase
+     * @param type    : input format type
+     * @param conf    : Giraph configuration
+     * @param key     : key value of HBase
      * @param entries : columnValues from HBase
      * @return Giraph Vertex
      */
-    protected Vertex readGiraphVertexLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf,
-            final ByteBuffer key, Iterable<Entry> entries) {
-        final GiraphVertexLoaderLongDoubleFloat loader = new GiraphVertexLoaderLongDoubleFloat(conf,
-                new StaticByteBuffer(key));
-        for (final Entry data : entries) {
-            try {
-                final GiraphVertexLoaderLongDoubleFloat.RelationFactory factory = loader.getFactory();
-                super.edgeSerializer.readRelation(factory, data, tx);
-                factory.build();
-            } catch (NullPointerException e) {
-                LOG.info("Skip this entry because no valid property for Giraph to read");
-                e.printStackTrace();
-            }
-        }
-        return loader.getVertex();
-    }
+    protected Vertex readGiraphVertex(final String type, final ImmutableClassesGiraphConfiguration conf,
+                                      final ByteBuffer key, Iterable<Entry> entries) {
+        StaticByteBuffer inKey = new StaticByteBuffer(key);
+        long vertexId = IDHandler.getKeyID((StaticBuffer) inKey);
 
-    /**
-     * readGiraphVertexLongDoubleFloat
-     *
-     * @param conf : Giraph configuration
-     * @param key : key value of HBase
-     * @param entries : columnValues from HBase
-     * @return Giraph Vertex
-     */
-    protected Vertex readGiraphVertexLoaderLongTwoVectorDoubleTwoVector(
-            final ImmutableClassesGiraphConfiguration conf, final ByteBuffer key, Iterable<Entry> entries) {
-        final GiraphVertexLoaderLongTwoVectorDoubleTwoVector
-                  loader = new GiraphVertexLoaderLongTwoVectorDoubleTwoVector(
-                      conf, new StaticByteBuffer(key));
-        for (final Entry data : entries) {
-            try {
-                final GiraphVertexLoaderLongTwoVectorDoubleTwoVector.RelationFactory factory = loader
-                        .getFactory();
-                super.edgeSerializer.readRelation(factory, data, tx);
-                factory.build();
-            } catch (NullPointerException e) {
-                LOG.info("Skip this entry because no valid property for Giraph to read");
+        if (vertexId > 0 && vertexId % TITAN_ID_OFFSET == 0) {
+            switch(type) {
+            case LONG_DOUBLE_FLOAT:
+                final GiraphVertexLoaderLongDoubleFloat loader1 = new GiraphVertexLoaderLongDoubleFloat(conf,
+                        vertexId);
+                for (final Entry data : entries) {
+                    try {
+                        final GiraphVertexLoaderLongDoubleFloat.RelationFactory factory = loader1.getFactory();
+                        super.edgeSerializer.readRelation(factory, data, tx);
+                        factory.build();
+                    } catch (NullPointerException e) {
+                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                    }
+                }
+                return loader1.getVertex();
+
+
+            case LONG_DISTANCE_MAP_NULL:
+                final GiraphVertexLoaderLongDistanceMapNull loader2 = new GiraphVertexLoaderLongDistanceMapNull(conf,
+                            vertexId);
+                for (final Entry data : entries) {
+                    try {
+                        final GiraphVertexLoaderLongDistanceMapNull.RelationFactory factory = loader2.getFactory();
+                        super.edgeSerializer.readRelation(factory, data, tx);
+                        factory.build();
+                    } catch (NullPointerException e) {
+                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                    }
+                }
+                return loader2.getVertex();
+
+            case LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR:
+                final GiraphVertexLoaderLongTwoVectorDoubleTwoVector
+                        loader3 = new GiraphVertexLoaderLongTwoVectorDoubleTwoVector(
+                            conf, vertexId);
+                for (final Entry data : entries) {
+                    try {
+                        final GiraphVertexLoaderLongTwoVectorDoubleTwoVector.RelationFactory factory = loader3
+                                .getFactory();
+                        super.edgeSerializer.readRelation(factory, data, tx);
+                        factory.build();
+                    } catch (NullPointerException e) {
+                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                    }
+                }
+                return loader3.getVertex();
+
+            case LONG_TWO_VECTOR_DOUBLE_VECTOR:
+                final GiraphVertexLoaderLongTwoVectorDoubleVector
+                        loader4 = new GiraphVertexLoaderLongTwoVectorDoubleVector(
+                            conf, vertexId);
+                for (final Entry data : entries) {
+                    try {
+                        final GiraphVertexLoaderLongTwoVectorDoubleVector.RelationFactory factory = loader4
+                                .getFactory();
+                        super.edgeSerializer.readRelation(factory, data, tx);
+                        factory.build();
+                    } catch (NullPointerException e) {
+                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                    }
+                }
+                return loader4.getVertex();
+
+            case PROPERTY_GRAPH_4_CF:
+                final GiraphVertexLoaderPropertyGraph4CF
+                        loader5 = new GiraphVertexLoaderPropertyGraph4CF(
+                            conf, vertexId);
+
+                for (final Entry data : entries) {
+                    try {
+                        final GiraphVertexLoaderPropertyGraph4CF.RelationFactory factory = loader5
+                                .getFactory();
+                        super.edgeSerializer.readRelation(factory, data, tx);
+                        factory.build();
+                    } catch (NullPointerException e) {
+                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                    }
+                }
+                return loader5.getVertex();
+
+            case PROPERTY_GRAPH_4_LDA:
+                final GiraphVertexLoaderPropertyGraph4LDA
+                        loader6 = new GiraphVertexLoaderPropertyGraph4LDA(
+                            conf, vertexId);
+
+                for (final Entry data : entries) {
+                    try {
+                        final GiraphVertexLoaderPropertyGraph4LDA.RelationFactory factory = loader6
+                               .getFactory();
+                        super.edgeSerializer.readRelation(factory, data, tx);
+                        factory.build();
+                    } catch (NullPointerException e) {
+                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                    }
+                }
+                return loader6.getVertex();
+
+            default:
+                break;
             }
         }
-        return loader.getVertex();
+        return null;
     }
 
     /**
