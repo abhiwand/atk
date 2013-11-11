@@ -45,9 +45,9 @@ class CookieGenerator {
         var checkEmpty = "";
         //temporary fix
         if(secret.isEmpty) checkEmpty = "empty" else checkEmpty = secret
-        val value = create_signed_value(checkEmpty, name, "localuser")
+        val value = create_signed_value(checkEmpty, name, "username")
 
-        Cookie(name, value, Some(SECONDS_PER_HOUR * 8), "/", Some(Play.application.configuration.getString("ipython.cookieDomain").get), false, false)
+        Cookie("username-" + name, value, Some(SECONDS_PER_HOUR * 8), "/", Some(Play.application.configuration.getString("ipython.cookieDomain").get), false, false)
     }
 
     /**

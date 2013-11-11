@@ -40,9 +40,11 @@ object Python extends Controller {
     var ipython = Authenticated {
         request =>
 
-            val url = Play.application.configuration.getString("ipython.url").get//request.user._1.ipythonUrl.toString
-            val secret = Play.application.configuration.getString("ipython.secret").get//request.user._1.secret.getOrElse("")
-            Ok(views.html.ipython("Ipython", request.user._1)).withCookies(new CookieGenerator createCookie(secret, url))
+            var url = request.user._1.ipythonUrl.getOrElse("")
+            url = url.replace(":", "-")
+
+            Ok(views.html.ipython("Ipython", request.user._1))
+              .withCookies(new CookieGenerator createCookie(request.user._1.secret.getOrElse(""), url))
     }
 
     var documentation = Authenticated{ request =>
