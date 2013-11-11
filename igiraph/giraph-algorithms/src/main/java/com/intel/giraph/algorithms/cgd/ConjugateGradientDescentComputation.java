@@ -21,12 +21,12 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.giraph.algorithms.als;
+package com.intel.giraph.algorithms.cgd;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Map.Entry;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -44,58 +44,54 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.master.DefaultMasterCompute;
-import org.apache.mahout.math.DenseMatrix;
-import org.apache.mahout.math.DiagonalMatrix;
-import org.apache.mahout.math.Matrix;
-import org.apache.mahout.math.QRDecomposition;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
 
 import com.intel.giraph.io.EdgeDataWritable;
 import com.intel.giraph.io.MessageDataWritable;
 import com.intel.giraph.io.EdgeDataWritable.EdgeType;
-import com.intel.giraph.io.VertexDataWritable;
+import com.intel.giraph.io.VertexData4CGDWritable;
 import com.intel.giraph.io.VertexDataWritable.VertexType;
 
 /**
- * Alternating Least Squares with Bias for collaborative filtering
- * The algorithms presented in
- * (1) Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. Large-Scale
- * Parallel Collaborative Filtering for the Netflix Prize. 2008.
- * (2) Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative
+ * Conjugate Gradient Descent (CGD) with Bias for collaborative filtering
+ * CGD implementation of the algorithm presented in
+ * Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative
  * Filtering Model. In ACM KDD 2008. (Equation 5)
  */
 @Algorithm(
-    name = "Alternating Least Squares with Bias"
+    name = "Conjugate Gradient Descent (CGD) with Bias"
 )
-public class AlternatingLeastSquaresComputation extends BasicComputation<LongWritable, VertexDataWritable,
+public class ConjugateGradientDescentComputation extends BasicComputation<LongWritable, VertexData4CGDWritable,
     EdgeDataWritable, MessageDataWritable> {
     /** Custom argument for number of super steps */
-    public static final String MAX_SUPERSTEPS = "als.maxSupersteps";
+    public static final String MAX_SUPERSTEPS = "cgd.maxSupersteps";
+    /** Custom argument for number of CGD iterations in each super step */
+    public static final String NUM_CGD_ITERS = "cgd.numCGDIters";
     /** Custom argument for feature dimension */
-    public static final String FEATURE_DIMENSION = "als.featureDimension";
+    public static final String FEATURE_DIMENSION = "cgd.featureDimension";
     /**
      * Custom argument for regularization parameter: lambda
      * f = L2_error + lambda*Tikhonov_regularization
      */
-    public static final String LAMBDA = "als.lambda";
+    public static final String LAMBDA = "cgd.lambda";
     /** Custom argument to turn on/off bias */
-    public static final String BIAS_ON = "als.biasOn";
+    public static final String BIAS_ON = "cgd.biasOn";
     /** Custom argument for the convergence threshold */
-    public static final String CONVERGENCE_THRESHOLD = "als.convergenceThreshold";
+    public static final String CONVERGENCE_THRESHOLD = "cgd.convergenceThreshold";
     /** Custom argument for maximum edge weight value */
-    public static final String MAX_VAL = "als.maxVal";
+    public static final String MAX_VAL = "cgd.maxVal";
     /** Custom argument for minimum edge weight value */
-    public static final String MIN_VAL = "als.minVal";
+    public static final String MIN_VAL = "cgd.minVal";
     /**
      * Custom argument for learning curve output interval (default: every iteration)
-     * Since each ALS iteration is composed by 2 super steps, one iteration
+     * Since each CGD iteration is composed by 2 super steps, one iteration
      * means two super steps.
      * */
-    public static final String LEARNING_CURVE_OUTPUT_INTERVAL = "als.learningCurveOutputInterval";
+    public static final String LEARNING_CURVE_OUTPUT_INTERVAL = "cgd.learningCurveOutputInterval";
 
     /** Aggregator name for sum of cost on training data */
-    private static String SUM_TRAIN_COST = "cost_train";
+    private static String SUM_TRAIN_COST = "train_cost";
     /** Aggregator name for sum of L2 error on validate data */
     private static String SUM_VALIDATE_ERROR = "validate_rmse";
     /** Aggregator name for sum of L2 error on test data */
@@ -104,7 +100,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     private static String SUM_LEFT_VERTICES = "num_left_vertices";
     /** Aggregator name for number of right vertices */
     private static String SUM_RIGHT_VERTICES = "num_right_vertices";
-    /** Aggregator name for number of training edges */
+    /** Aggregator name for number of validate edges */
     private static String SUM_TRAIN_EDGES = "num_train_edges";
     /** Aggregator name for number of validate edges */
     private static String SUM_VALIDATE_EDGES = "num_validate_edges";
@@ -115,6 +111,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
 
     /** Number of super steps */
     private int maxSupersteps = 20;
+    /** Number of CGD iterations in each super step */
+    private int numCGDIters = 5;
     /** Feature dimension */
     private int featureDimension = 20;
     /** The regularization parameter */
@@ -132,6 +130,10 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     public void preSuperstep() {
         // Set custom parameters
         maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
+        numCGDIters = getConf().getInt(NUM_CGD_ITERS, 5);
+        if (numCGDIters < 2) {
+            throw new IllegalArgumentException("numCGDIters should be >= 2.");
+        }
         featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
         if (featureDimension < 1) {
             throw new IllegalArgumentException("Feature dimension should be > 0.");
@@ -154,7 +156,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
      *
      * @param vertex of the graph
      */
-    private void initialize(Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex) {
+    private void initialize(Vertex<LongWritable, VertexData4CGDWritable, EdgeDataWritable> vertex) {
         // initialize vertex data: bias, vector, gradient, conjugate
         vertex.getValue().setBias(0d);
 
@@ -179,10 +181,12 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             values[0] = sum / numTrain;
         }
         for (int i = 1; i < featureDimension; i++) {
-            double sample = rand.nextDouble() * values[0];
-            values[i] = sample;
+            values[i] = rand.nextDouble() * values[0];
         }
-        vertex.getValue().setVector(new DenseVector(values));
+        Vector value = new DenseVector(values);
+        vertex.getValue().setVector(value);
+        vertex.getValue().setGradient(value.clone().assign(0d));
+        vertex.getValue().setConjugate(value.clone().assign(0d));
 
         // collect graph statistics and send out messages
         VertexType vt = vertex.getValue().getType();
@@ -230,6 +234,86 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     }
 
     /**
+     * compute gradient
+     *
+     * @param bias of type double
+     * @param value of type Vector
+     * @param messages of type Iterable
+     * @return gradient of type Vector
+     */
+    private Vector computeGradient(double bias, Vector value, Iterable<MessageDataWritable> messages) {
+        Vector xr = value.clone().assign(0d);
+        int numTrain = 0;
+        for (MessageDataWritable message : messages) {
+            EdgeType et = message.getType();
+            if (et == EdgeType.TRAIN) {
+                double weight = message.getWeight();
+                Vector vector = message.getVector();
+                double otherBias = message.getBias();
+                double predict = bias + otherBias + value.dot(vector);
+                double e = predict - weight;
+                xr = xr.plus(vector.times(e));
+                numTrain++;
+            }
+        }
+        Vector gradient = value.clone().assign(0d);
+        if (numTrain > 0) {
+            gradient = xr.divide(numTrain).plus(value.times(lambda));
+        }
+        return gradient;
+    }
+
+    /**
+     * compute alpha
+     *
+     * @param gradient of type Vector
+     * @param conjugate of type Vector
+     * @param messages of type Iterable
+     * @return alpha of type double
+     */
+    private double computeAlpha(Vector gradient, Vector conjugate,
+        Iterable<MessageDataWritable> messages) {
+        double alpha = 0d;
+        if (conjugate.norm(1d) == 0d) {
+            return alpha;
+        }
+
+        double predictSquared = 0d;
+        int numTrain = 0;
+        for (MessageDataWritable message : messages) {
+            EdgeType et = message.getType();
+            if (et == EdgeType.TRAIN) {
+                Vector vector = message.getVector();
+                double predict = conjugate.dot(vector);
+                predictSquared += predict * predict;
+                numTrain++;
+            }
+        }
+        if (numTrain > 0) {
+            alpha = - gradient.dot(conjugate) / (predictSquared / numTrain + lambda * conjugate.dot(conjugate));
+        }
+        return alpha;
+    }
+
+    /**
+     * compute beta
+     *
+     * @param gradient of type Vector
+     * @param conjugate of type Vector
+     * @param gradientNext of type Vector
+     * @return beta of type double
+     */
+    private double computeBeta(Vector gradient, Vector conjugate, Vector gradientNext) {
+        double beta = 0d;
+        if (conjugate.norm(1d) == 0d) {
+            return beta;
+        }
+        Vector deltaVector = gradientNext.minus(gradient);
+        beta = - gradientNext.dot(deltaVector) / conjugate.dot(deltaVector);
+        return beta;
+    }
+
+    /**
      * compute bias
      *
      * @param value of type Vector
@@ -259,7 +343,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     }
 
     @Override
-    public void compute(Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex,
+    public void compute(Vertex<LongWritable, VertexData4CGDWritable, EdgeDataWritable> vertex,
         Iterable<MessageDataWritable> messages) throws IOException {
         long step = getSuperstep();
         if (step == 0) {
@@ -308,33 +392,30 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             aggregate(SUM_TEST_ERROR, new DoubleWritable(errorOnTest));
         }
 
-        // update vertex value
         if (step < maxSupersteps) {
-            // xxt records the result of x times x transpose
-            Matrix xxt = new DenseMatrix(featureDimension, featureDimension);
-            xxt = xxt.assign(0d);
-            // xr records the result of x times rating
-            Vector xr = currentValue.clone().assign(0d);
-            int numTrain = 0;
-            for (MessageDataWritable message : messages) {
-                EdgeType et = message.getType();
-                if (et == EdgeType.TRAIN) {
-                    double weight = message.getWeight();
-                    Vector vector = message.getVector();
-                    double otherBias = message.getBias();
-                    xxt = xxt.plus(vector.cross(vector));
-                    xr = xr.plus(vector.times(weight - currentBias - otherBias));
-                    numTrain++;
-                }
+            // implement CGD iterations
+            Vector value0 = vertex.getValue().getVector();
+            Vector gradient0 = vertex.getValue().getGradient();
+            Vector conjugate0 = vertex.getValue().getConjugate();
+            double bias0 = vertex.getValue().getBias();
+            for (int i = 0; i < numCGDIters; i++) {
+                double alpha = computeAlpha(gradient0, conjugate0, messages);
+                Vector value = value0.plus(conjugate0.times(alpha));
+                Vector gradient = computeGradient(bias0, value, messages);
+                double beta = computeBeta(gradient0, conjugate0, gradient);
+                Vector conjugate = conjugate0.times(beta).minus(gradient);
+                value0 = value;
+                gradient0 = gradient;
+                conjugate0 = conjugate;
             }
-            xxt = xxt.plus(new DiagonalMatrix(lambda * numTrain, featureDimension));
-            Matrix bMatrix = new DenseMatrix(featureDimension, 1).assignColumn(0, xr);
-            Vector value = new QRDecomposition(xxt).solve(bMatrix).viewColumn(0);
-            vertex.getValue().setVector(value);
+            // update vertex values
+            vertex.getValue().setVector(value0);
+            vertex.getValue().setConjugate(conjugate0);
+            vertex.getValue().setGradient(gradient0);
 
             // update vertex bias
             if (biasOn) {
-                double bias = computeBias(value, messages);
+                double bias = computeBias(value0, messages);
                 vertex.getValue().setBias(bias);
             }
 
@@ -351,7 +432,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     /**
      * Master compute associated with {@link SimplePageRankComputation}. It registers required aggregators.
      */
-    public static class AlternatingLeastSquaresMasterCompute extends DefaultMasterCompute {
+    public static class ConjugateGradientDescentMasterCompute extends DefaultMasterCompute {
         @Override
         public void initialize() throws InstantiationException, IllegalAccessException {
             registerAggregator(SUM_TRAIN_COST, DoubleSumAggregator.class);
@@ -403,10 +484,10 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     }
 
     /**
-     * This is an aggregator writer for ALS, which after each superstep will persist the
+     * This is an aggregator writer for CGD, which after each superstep will persist the
      * aggregator values to disk, by use of the Writable interface.
      */
-    public static class AlternatingLeastSquaresAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
+    public static class ConjugateGradientDescentAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
         implements AggregatorWriter {
         /** Name of the file we wrote to */
         private static String FILENAME;
@@ -437,13 +518,13 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
          *            app attempt
          */
         private static void setFilename(long applicationAttempt) {
-            FILENAME = "als-learning-report_" + applicationAttempt;
+            FILENAME = "cgd-learning-report_" + applicationAttempt;
         }
 
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
             throws IOException {
-            // collect aggregator data
+            // collect aggregated data
             HashMap<String, String> map = new HashMap<String, String>();
             for (Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
@@ -463,20 +544,22 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 output.writeUTF(String.format("Number of edges: %d (train: %d, validate: %d, test: %d)%n",
                     trainEdges + validateEdges + testEdges, trainEdges, validateEdges, testEdges));
                 output.writeUTF("\n");
-                // output ALS configuration
+                // output cgd configuration
                 int featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
                 float lambda = getConf().getFloat(LAMBDA, 0f);
                 boolean biasOn = getConf().getBoolean(BIAS_ON, false);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
+                int numCGDIters = getConf().getInt(NUM_CGD_ITERS, 5);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
                 float minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
-                output.writeUTF("ALS Configuration:\n");
+                output.writeUTF("CGD Configuration:\n");
                 output.writeUTF(String.format("featureDimension: %d%n", featureDimension));
                 output.writeUTF(String.format("lambda: %f%n", lambda));
                 output.writeUTF(String.format("biasOn: %b%n", biasOn));
                 output.writeUTF(String.format("convergenceThreshold: %f%n", convergenceThreshold));
                 output.writeUTF(String.format("maxSupersteps: %d%n", maxSupersteps));
+                output.writeUTF(String.format("numCGDIters: %d%n", numCGDIters));
                 output.writeUTF(String.format("maxVal: %f%n", maxVal));
                 output.writeUTF(String.format("minVal: %f%n", minVal));
                 output.writeUTF(String.format("learningCurveOutputInterval: %d%n", learningCurveOutputInterval));

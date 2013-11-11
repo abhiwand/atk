@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.giraph.algorithms.als;
+package com.intel.giraph.algorithms.cgd;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -36,12 +36,12 @@ import org.junit.Test;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute;
-import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter;
-import com.intel.giraph.io.formats.JsonPropertyGraph4CFInputFormat;
+import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation.ConjugateGradientDescentMasterCompute;
+import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation.ConjugateGradientDescentAggregatorWriter;
+import com.intel.giraph.io.formats.JsonPropertyGraph4CFCGDInputFormat;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 
-public class AlternatingLeastSquaresComputationTest {
+public class ConjugateGradientDescentComputationTest {
 
     /**
      * A local test on toy data
@@ -57,39 +57,42 @@ public class AlternatingLeastSquaresComputationTest {
             "[4,[],[r],[[1,3,[va]]]]"
         };
 
-        double[][] expectedValues = new double[][] {
-            {0.16303398451511825,0.11920179824797916,0.14696659798422967},
-            {0.8151699225755752,0.5960089912399223,0.7348329899211448},
-            {2.6050355551222606,1.9046637644542772,2.348303111855532},
-            {0,0,0},
-            {0,0,0}
+        double[][] expectedValues = new double[][] {            
+            {0.0039651661335228594,0.07930678825437212,0.05799735117092943,0.11802093907151029},
+            {0.03703247235199952,0.7427304419460639,0.5430672995740519,0.7102763703821288},
+            {0.4150403139989932,2.57968396659953,1.886090358725125,2.2607985402557946},
+            {0,0,0,0},
+            {0,0,0,0}
         };
         
         GiraphConfiguration conf = new GiraphConfiguration();
 
-        conf.setComputationClass(AlternatingLeastSquaresComputation.class);
-        conf.setMasterComputeClass(AlternatingLeastSquaresMasterCompute.class);
-        conf.setAggregatorWriterClass(AlternatingLeastSquaresAggregatorWriter.class);
-        conf.setVertexInputFormatClass(JsonPropertyGraph4CFInputFormat.class);
+        conf.setComputationClass(ConjugateGradientDescentComputation.class);
+        conf.setMasterComputeClass(ConjugateGradientDescentMasterCompute.class);
+        conf.setAggregatorWriterClass(ConjugateGradientDescentAggregatorWriter.class);
+        conf.setVertexInputFormatClass(JsonPropertyGraph4CFCGDInputFormat.class);
         conf.setVertexOutputFormatClass(JsonPropertyGraph4CFOutputFormat.class);
-        conf.set("als.maxSupersteps", "6");
-        conf.set("als.featureDimension", "3");
-        conf.set("als.lambda", "0.05");
-        conf.set("als.convergenceThreshold", "0");
+        conf.set("cgd.maxSupersteps", "6");
+        conf.set("cgd.featureDimension", "3");
+        conf.set("cgd.lambda", "0.05");
+        conf.set("cgd.convergenceThreshold", "0");
+        conf.set("cgd.minVal", "1");
+        conf.set("cgd.maxVal", "5");
+        conf.set("cgd.numCGDIters", "5");
+        conf.set("cgd.biasOn", "true");
 
         // run internally
         Iterable<String> results = InternalVertexRunner.run(conf, graph);
 
         Map<Long, Double[]> vertexValues = parseVertexValues(results);
-        
+
         // verify results
         assertNotNull(vertexValues);
         assertEquals(5, vertexValues.size());
         for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
             assertEquals(4, entry.getValue().length);
-            assertEquals(0.0, entry.getValue()[0], 0d);
-            for (int j = 0; j < 3; j++) {
-                assertEquals(expectedValues[entry.getKey().intValue()][j], entry.getValue()[j+1], 0.01d);    
+            for (int j = 0; j < 4; j++) {
+                assertEquals(expectedValues[entry.getKey().intValue()][j], entry.getValue()[j], 0.01d);    
             }
         }
     }
