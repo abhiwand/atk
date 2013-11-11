@@ -87,7 +87,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
         /**
          * TitanFactory to write back results
          */
-        private TitanGraph graph;
+        private TitanGraph graph = null;
         /**
          * TitanTransaction to write back results
          */
@@ -95,7 +95,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
         /**
          * Vertex properties to filter
          */
-        private String[] vertexPropertyKeyList;
+        private String[] vertexPropertyKeyList = null;
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
@@ -103,6 +103,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
             tx = graph.newTransaction();
+            LOG.info("opened Titan Graph");
             if (tx == null) {
                 LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
             }
@@ -135,6 +136,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
                     bluePrintVertex.setProperty(vertexPropertyKeyList[i], Double.toString(vector.getQuick(i)));
                     //bluePrintVertex.setProperty(vertexPropertyKeyList[i], vector.getQuick(i));
                 }
+              //  LOG.info("saved " + vertexId);
             } else {
                 LOG.error("The number of output vertex property does not match! " +
                         "The size of vertex value vector is : " + vector.size() +

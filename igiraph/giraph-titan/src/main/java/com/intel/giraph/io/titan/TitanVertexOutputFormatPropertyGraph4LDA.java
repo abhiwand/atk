@@ -98,7 +98,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
         /**
          * reader to parse Titan graph
          */
-        private TitanGraph graph;
+        private TitanGraph graph = null;
         /**
          * TitanTransaction to write back results
          */
@@ -106,7 +106,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
         /**
          * Vertex properties to filter
          */
-        private String[] vertexPropertyKeyList;
+        private String[] vertexPropertyKeyList = null;
 
 
         @Override

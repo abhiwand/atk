@@ -88,7 +88,7 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
         /**
          * TitanFactory to write back results
          */
-        private TitanGraph graph;
+        private TitanGraph graph = null;
         /**
          * TitanTransaction to write back results
          */
@@ -96,7 +96,7 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
         /**
          * Vertex properties to filter
          */
-        private String[] vertexPropertyKeyList;
+        private String[] vertexPropertyKeyList = null;
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,

@@ -99,7 +99,7 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
         /**
          * TitanFactory to write back results
          */
-        private TitanGraph graph;
+        private TitanGraph graph = null;
         /**
          * TitanTransaction to write back results
          */
@@ -107,7 +107,7 @@ public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
         /**
          * Vertex properties to filter
          */
-        private String[] vertexPropertyKeyList;
+        private String[] vertexPropertyKeyList = null;
         /**
          * Enable Vertex Bias output or not
          */
