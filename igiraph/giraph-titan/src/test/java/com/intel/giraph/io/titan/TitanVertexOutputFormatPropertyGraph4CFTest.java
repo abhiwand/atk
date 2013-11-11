@@ -24,7 +24,7 @@ package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation;
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute;
-import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.SimpleAggregatorWriter;
+import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CF;
 import com.intel.giraph.io.EdgeDataWritable;
 import com.intel.giraph.io.VertexDataWritable;
@@ -89,7 +89,7 @@ public class TitanVertexOutputFormatPropertyGraph4CFTest {
         giraphConf = new GiraphConfiguration();
         giraphConf.setComputationClass(AlternatingLeastSquaresComputation.class);
         giraphConf.setMasterComputeClass(AlternatingLeastSquaresMasterCompute.class);
-        giraphConf.setAggregatorWriterClass(SimpleAggregatorWriter.class);
+        giraphConf.setAggregatorWriterClass(AlternatingLeastSquaresAggregatorWriter.class);
         giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatPropertyGraph4CF.class);
         giraphConf.set("als.maxSupersteps", "6");
