@@ -28,11 +28,11 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>igiraph-core</artifactId>
   <packaging>jar</packaging>
-  <name>Intel Tribeca iGiraph Core</name>
+  <name>IntelAnalytics iGiraph Core</name>
 
   <parent>
 	<groupId>com.intel.hadoop</groupId>
-	<artifactId>tribeca-igiraph</artifactId>
+	<artifactId>IntelAnalytics-igiraph</artifactId>
 	<relativePath>../pom.xml</relativePath>  
 	<version>0.5-SNAPSHOT</version>
   </parent>

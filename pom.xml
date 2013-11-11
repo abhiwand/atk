@@ -31,8 +31,8 @@
   <artifactId>tribeca</artifactId>
   <packaging>pom</packaging>
 	<version>0.5-SNAPSHOT</version>
-  <name>Intel Tribeca Parent</name>
-  <description>Tribeca : Large Scale Graph Analytics</description>
+  <name>IntelAnalytics Parent</name>
+  <description>IntelAnalytics : Large Scale Graph Analytics</description>
   <inceptionYear>2013</inceptionYear>
 
   <properties>
