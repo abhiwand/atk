@@ -47,12 +47,13 @@ def watcher(path, flag):
 		show_upload_progress(path)
 		time.sleep(1)
 
-def watch_changes(path = '.'):
+def watch_changes(path = '/tmp/s3c'):
 	if _watchers.has_key(path):
 		(t,flag) = _watchers[path]
 		flag[0] = False
 		t.join()
-		_watchers.remove(path)
+		del _watchers[path]
+		_progress.clear()
 	flag = [True]
 	t = Thread(target = watcher, args = (path,flag))
 	t.start()
