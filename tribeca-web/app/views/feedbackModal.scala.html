@@ -1,0 +1,61 @@
+@()
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Tribeca Beta Release Feedback Form</h4>
+                
+            </div>
+            <div class="modal-body">
+                <div class='row'>
+                    <div class='col-sm-12'>
+                       
+                            <fieldset class='row'>
+                                <div class='col-sm-12 mg-b-md DA_holder'>
+                                    <small class='text-muted'>Hey! Thanks for being a beta tester for the Tribeca Knowledge Discovery Platform. We really appreciate it. Would you mind taking a moment to answer a few questions regarding your experience? It helps us to make things better!</small>
+                                </div>
+                                <form class='DA_custom_form' method="post"  class="DA_custom_form" id="feedback-form" >
+
+                                        <div class='DA_holder DA_select_holder'>
+                                            <label>This message is in relation to:</label>
+                                            <div class='select_wrap'>
+                                            <select class='select_field' id='experience' name='experience'>
+                                                <option value=''>Select Feedback Category</option>
+                                                <option value='1'>Design</option>
+                                                <option value='2'>IPython</option>
+                                                <option value='3'>Algorithms</option>
+                                                <option value='4'>Output</option>     <option value='5'>Input</option>
+
+                                            </select>
+                                            </div>    
+                                        </div>
+                                        
+                                        <div class="DA_holder">
+                                            <label>Your Message</label>
+                                            <div class="textarea-frame">
+                                                
+                                                <textarea name="feedback_message" id="feedback_message" class="field" rows="8" cols="40"></textarea>
+                                        </div>
+                                    </div>
+                                            <div class="DA_holder">
+                                            <label>File Attachment</label>
+                                            <div class="DA_field_container">
+                                                <input type="file" />
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                        <div class="btnp"><input type="submit" value="Submit Feedback" /></div>
+                                        </div>
+                                </form>
+                            </fieldset>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+
+

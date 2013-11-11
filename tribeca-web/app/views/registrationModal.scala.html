@@ -1,0 +1,125 @@
+<!-- Registration Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Request an Invitation</h4>
+            </div>
+            <div class="modal-body">
+                <div class='row'>
+                    <div class='col-sm-12  '>
+                        @*<form class='DA_custom_form' method="post" action="register" id="registration-form" onsubmit="">*@
+                            <fieldset class='row'>
+                                <div class='col-sm-12 mg-b-md DA_holder'>
+
+                                    <div class='lead'>Intel®Analytics Invitation Request<div class='imglead'><img class='imglead' alt="intelanalytics" src="assets/images/logo-intel.png" /></div></div>
+
+                                    <small class='text-muted'>Thank you for requesting an invitation to our test group. We are looking for users who can dive in and help us build a better product through your experience and feedback. After you fill out the simple form below, we can verify your identity as a human being and analyze your request. You will receive a response with your approval which is based on availability!</small>
+                                    </div>
+                                    <form method="post" class="DA_custom_form" id="registration-form" action="register">
+            <div class="DA_holder horizontal">
+
+                <label>Your Name</label>
+                <div class="DA_field_container">
+                    <input type="text" class="field" id="myname" name="name" tabindex='1'/>
+                    <span><i class="fa-icon-remove"></i></span>
+                </div>  
+            </div>  
+
+            <div class="DA_holder horizontal">
+
+                <label>Company Name</label>
+                <div class="DA_field_container">
+                    <input type="text" class="field" id="companyname" name="organization_name" tabindex='2'/>
+                    <span><i class="fa-icon-remove"></i></span>
+                </div>  
+            </div>
+            
+            <div class="DA_holder horizontal">
+
+                <label>Company Email</label>
+                <div class="DA_field_container">
+                    <input type="text" class="field" id="organization_email" name="organization_email" tabindex='3'/>
+                    <span><i class="fa-icon-remove"></i></span>
+                </div>  
+            </div>
+
+            
+            <div class="DA_holder horizontal">
+                <label>Phone Number</label>
+                <div class="DA_field_container">
+                    <input type="text" class="field" id="phone_us" name="organization_phone" tabindex='4'/>
+                    <span><i class="fa-icon-remove"></i></span>
+                </div>
+            </div>
+
+            
+
+            <div class='DA_holder DA_select_holder'>
+                <label>Experience with Graph Analytics?</label>
+                <div class='select_wrap'>
+                    <select class='select_field' id='experience' name='experience' tabindex='5'>
+                        <option value=''>Select Experience Level</option>
+                        <option value='1'>This is new to me - 1</option>
+                        <option value='2'>I have some experience - 2</option>
+                        <option value='3'>I'm experienced - 3</option>
+                        <option value='4'>I've used it extensively - 4</option>          
+                        <option value='5'>I consider myself an expert - 5</option>
+
+                    </select>
+                </div>    
+            </div>
+
+            <div class='DA_holder DA_select_holder'>
+                <label>Role in your Company?</label>
+                <div class='select_wrap'>
+                    <select class='select_field' id='role' name='role' tabindex='6'>
+                        <option value=''>Select Role in Company</option>
+                        <option value='datascientist'>Data Scientist</option>
+                        <option value='analyst'>Business Analyst</option>
+                        <option value='it-department'>IT Department</option>
+                        <option value='researcher'>Researcher</option>
+                        <option value='student'>Student</option>
+                        <option value='marketing'>Marketing</option>
+                        <option value='management'>Management</option>
+                        <option value='other'>Other</option>
+                    </select>
+                </div>    
+            </div>
+            <div class='DA_holder '>
+                <label>Why do you Want to Participate in This Beta Test?</label>
+                <div class='textarea-frame' tabindex='7'>
+                        <textarea name="whyParticipate" id="message1" class="field" rows="8" cols="40"></textarea>
+                </div>    
+            </div>
+            <div class='DA_holder '>
+                <label>What tools for graph analytics are you currently using or evaluating?</label>
+                <div class='textarea-frame' tabindex='8'>
+                        <textarea name="whatTools" id="message2" class="field" rows="8" cols="40"></textarea>
+                </div>    
+            </div>           
+
+            <div class="DA_holder DA_check_holder ">
+                    <input type="checkbox" class="check-box" id="terms" name="terms"  />
+                    <label for="remember" class="fl" tabindex='9'>I have read and agree to the terms of use.</label>              
+                    <div class="terms" >
+                     These are the terms of use. It includes a NDA agreement which will be added to this box at the point when it is written.  These are the terms of use. It includes a NDA agreement which will be added to this box at the point when it is written.
+                     These are the terms of use. It includes a NDA agreement which will be added to this box at the point when it is written.
+                     </div>
+
+            </div>
+    
+            <div class="modal-footer">
+                     <div id='googleRegisterButton' class="btnp"><input type="submit"  value="Sign Up With Google +" /></div>
+
+                        </div>
+                        <input id="registerAuthResult" type="hidden" name="authResult" value="" tabindex='10'/>
+                        </form>
+                     </fieldset>
+                    </div>
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

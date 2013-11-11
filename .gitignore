@@ -1,3 +1,5 @@
+.idea
+*.iml
 .metadata*
 .classpath
 .project
