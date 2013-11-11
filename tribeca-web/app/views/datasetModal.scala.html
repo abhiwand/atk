@@ -45,9 +45,9 @@
                   <div class='col-sm-12'>
                     <div id="dropzone">
 
-                        <form id="uploadForm" @*class="dropzone dz-clickable"*@ action="https://gaopublic.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
+                        <form id="uploadForm" @*class="dropzone dz-clickable"*@ action="https://@{S3.getBucketName}.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
                             @defining(S3.getPolicy(user.uid.get.toString())){ implicit policy =>
-                            <input type="hidden" name="key" value="user/@user.uid/${filename}">
+                            <input type="hidden" name="key" value="@S3.uploadDirectory(user.uid.get.toString)/${filename}">
                             <input type="hidden" name="AWSAccessKeyId" value="@baseAccessKey">
                             <input type="hidden" name="acl" value="private">
                             <!--<input type="hidden" name="success_action_redirect" value="http://localhost/s3">-->
