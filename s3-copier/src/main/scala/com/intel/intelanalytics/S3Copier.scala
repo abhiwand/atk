@@ -28,8 +28,8 @@ import scala.concurrent.duration._
 
 package com.intel.intelanalytics {
 
-import awscala.sqs.{Message, SQS}
-import scalax.io.{Input, StandardOpenOption}
+import awscala.sqs.{Queue, Message, SQS}
+import scalax.io.StandardOpenOption
 
 //TODO: make this app work using distcp instead
 //import org.apache.hadoop.tools.{DistCpOptions, DistCp}
@@ -42,6 +42,80 @@ import org.apache.hadoop.fs.{FileSystem, Path => HdPath}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 
+
+
+/**
+ * Configuration for the S3Copier application
+ */
+case class Config(bucket: String = "gaopublic",
+                  prefix: String = "invalid",
+                  destination: String = "/user/gao", queue: String = "gao",
+                  statusDestination: String = "/tmp/s3-copier", loopDelay: Int = 1000)
+
+/**
+ * Companion object for Config class
+ */
+object Config {
+  /**
+   * Parse command line options
+   */
+  def parse(args: Array[String]): Config = {
+    val parser = new scopt.OptionParser[Config]("s3-copier") {
+      head("s3-copier", "1.x")
+      arg[String]("bucket") action {
+        (x, c) => c.copy(bucket = x)
+      } text "S3 bucket to watch"
+      arg[String]("prefix") action {
+        (x, c) => c.copy(prefix = x)
+      } text "prefix to limit which files can be copied"
+      arg[String]("destination") action {
+        (x, c) => c.copy(destination = x)
+      } text "hdfs location to which files should be copied"
+      arg[String]("queue") action {
+        (x, c) => c.copy(queue = x)
+      } text "queue to watch for upload messages"
+      arg[String]("statusDestination") action {
+        (x, c) => c.copy(statusDestination = x)
+      } text "directory where status files should be placed"
+    }
+    // parser.parse returns Option[C]
+    parser.parse(args, Config()) getOrElse {
+      System.exit(0)
+      Config()
+    }
+  }
+}
+
+object Main {
+  /**
+   * Reads command arguments, watches an SQS queue for messages, dispatches them for processing
+   */
+  def main(args: Array[String]) {
+
+    // It appears to be impossible to get through Intel's proxywall with this.
+    // I've also tried -D arguments as well as environment variables, even all three
+    // together, nothing worked. So you'll have to do testing in AWS.
+
+    //    val config = new ClientConfiguration()
+    //                      .withProxyHost("proxy.jf.intel.com")
+    //                      .withProxyPort(912)
+    //                      .withProtocol(Protocol.HTTPS)
+
+    val config = Config.parse(args)
+
+    println("Creating S3 object")
+    implicit val s3 = S3().at(Region.US_WEST_2)
+
+    implicit val sqs = SQS().at(Region.US_WEST_2)
+    println("Getting/creating queue")
+    val queue = sqs.queue(config.queue) getOrElse sqs.createQueue(config.queue)
+    val configuration = new Configuration()
+    val fs = FileSystem.get(configuration)
+    val copier = new S3Copier(queue, sqs, s3, config, fs)
+    copier.run()
+  }
+}
+
 /**
  * Status information
  * @param name the name that should appear for the user who is tracking this status
@@ -50,17 +124,13 @@ import ExecutionContext.Implicits.global
 case class Status(name: String, progress: Float)
 
 /**
- * Configuration for the S3Copier application
- */
-case class Config(bucket: String = "gaopublic", prefix: String = "invalid", destination: String = "/user/gao", queue: String = "gao", statusDestination: String = "/tmp/s3-copier")
-
-/**
  * Watches SQS for 'create' messages, copies the file named therein to HDFS.
  * Generates .status files containing status information about the transfers that are
  * in progress, so that other applications can report status information to the user
  */
-object S3Copier {
+class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config: Config, fs: FileSystem) {
 
+  val inProgress = mutable.Map[String,Future[Status]]()
   /**
    * Stub for later connecting with a proper logging system
    */
@@ -87,66 +157,18 @@ object S3Copier {
     (path /(s"${status.name}.status", '/')).write(Json.stringify(json))
   }
 
-  /**
-   * Parse command line options
-   */
-  def parseConfig(args: Array[String]): Config = {
-    val parser = new scopt.OptionParser[Config]("s3-copier") {
-      head("s3-copier", "1.x")
-      arg[String]("bucket") action {
-        (x, c) => c.copy(bucket = x)
-      } text "S3 bucket to watch"
-      arg[String]("prefix") action {
-        (x, c) => c.copy(prefix = x)
-      } text "prefix to limit which files can be copied"
-      arg[String]("destination") action {
-        (x, c) => c.copy(destination = x)
-      } text "hdfs location to which files should be copied"
-      arg[String]("queue") action {
-        (x, c) => c.copy(queue = x)
-      } text "queue to watch for upload messages"
-      arg[String]("statusDestination") action {
-        (x, c) => c.copy(statusDestination = x)
-      } text "directory where status files should be placed"
-    }
-    // parser.parse returns Option[C]
-    parser.parse(args, Config()) getOrElse {
-      System.exit(0)
-      Config()
-    }
-  }
+
 
   /**
-   * Reads command arguments, watches an SQS queue for messages, dispatches them for processing
+   * The processing loop. Watches an SQS queue for messages, dispatches them for processing
    */
-  def main(args: Array[String]) {
-
-    // It appears to be impossible to get through Intel's proxywall with this.
-    // I've also tried -D arguments as well as environment variables, even all three
-    // together, nothing worked. So you'll have to do testing in AWS.
-
-    //    val config = new ClientConfiguration()
-    //                      .withProxyHost("proxy.jf.intel.com")
-    //                      .withProxyPort(912)
-    //                      .withProtocol(Protocol.HTTPS)
-
-    val config = parseConfig(args)
-
-    log("Creating S3 object")
-    implicit val s3 = S3().at(Region.US_WEST_2)
-
-    implicit val sqs = SQS().at(Region.US_WEST_2)
-    log("Getting/creating queue")
-    val queue = sqs.queue(config.queue) getOrElse sqs.createQueue(config.queue)
-    val inProgress = mutable.Map[String, Future[Status]]()
-    val configuration = new Configuration()
-    val fs = FileSystem.get(configuration)
+  def run() = {
     while (true) {
       try {
         queue.messages().foreach {
-          msg => processMessage(msg, config, s3, sqs, configuration, fs, inProgress)
+          msg => processMessage(msg)
         }
-        Thread.sleep(1000);
+        Thread.sleep(config.loopDelay)
         if (!inProgress.isEmpty) {
           log("Final results:")
           inProgress.foreach(kv =>
@@ -164,33 +186,21 @@ object S3Copier {
     }
   }
 
-
   /**
    * Parses the message, and if it is valid and appropriate for this configuration,
    * copies the file from S3 to HDFS.
    *
    * @param msg the SQS message
-   * @param config
-   * @param s3
-   * @param sqs
-   * @param configuration
-   * @param fs
-   * @param inProgress
    */
-  def processMessage(msg: Message, config: Config, s3: S3,
-                     sqs: SQS,
-                     configuration: Configuration,
-                     fs: FileSystem, inProgress: mutable.Map[String, Future[Status]]) {
+  def processMessage(msg: Message) {
     log(msg.body)
     val json = Json.parse(msg.body)
-    implicit val s3impl = s3
-    implicit val sqsImpl = sqs
 
     val file = for {
       bucketName <- (json \ "create" \ "bucket").asOpt[String] orElse log("bucket not found in message")
-      validBucket <- (bucketName == config.bucket).option(bucketName) orElse log(s"bucket name ${bucketName} does not match ${config.bucket}")
+      validBucket <- (bucketName == config.bucket).option(bucketName) orElse log(s"bucket name $bucketName does not match ${config.bucket}")
       fileName <- (json \ "create" \ "path").asOpt[String] orElse log("path not found in message")
-      valid <- fileName.startsWith(config.prefix).option(fileName) orElse log(s"fileName ${fileName} does not match prefix ${config.prefix}")
+      valid <- fileName.startsWith(config.prefix).option(fileName) orElse log(s"fileName $fileName does not match prefix ${config.prefix}")
       bucket <- s3.bucket(bucketName) orElse log(s"bucket $bucketName does not exist")
       file <- bucket.get(fileName) orElse log(s"uploaded file $fileName does not exist")
     } yield file
@@ -213,7 +223,6 @@ object S3Copier {
    * @param fs the hdfs filesystem to use for copying
    */
   def copyFile(s3Object: S3Object, config: Config, fs: FileSystem): Future[Status] = {
-    val len = s3Object.getObjectMetadata.getContentLength
     val name = s3Object.key.substring(config.prefix.length)
     var status = Status(name, 0)
     writeProgress(config.statusDestination, status)
