@@ -9,8 +9,12 @@ export IA_ROUTETABLE="rtb-bfc8c1dd"
 export IA_SGROUP_HTTPS="sg-b8b9acda"
 export IA_SGROUP_ADMSSH="sg-8db9acef"
 
-export IA_HOME=${HOME}/intel/IntelAnalytics/0.5
-export IA_CREDENTIALS=${HOME}/intel/credentials
+if [ -z "${IA_HOME}" ]; then
+    export IA_HOME=${HOME}/intel/IntelAnalytics/0.5
+fi
+if [ -z "${IA_CREDENTIALS}" ]; then
+    export IA_CREDENTIALS=${IA_HOME}/credentials
+fi
 
 op=$1
 shift 1
