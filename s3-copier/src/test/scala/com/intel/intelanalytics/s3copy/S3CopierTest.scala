@@ -1,6 +1,7 @@
 package com.intel.intelanalytics.s3copy
 
 import com.intel.intelanalytics.Config
+import org.specs2.mutable.Specification
 
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
@@ -26,17 +27,19 @@ import com.intel.intelanalytics.Config
 //////////////////////////////////////////////////////////////////////////////
 class ConfigSpec extends Specification {
 
-  "Config parser" should "parse command line arguments" in {
-    val config = Config.parse(Array("buck", "prefix", "dest", "queue", "status"))
-    config.bucket should be ("buck")
-    config.prefix should be ("prefix")
-    config.destination should be ("dest")
-    config.queue should be ("queue")
-    config.statusDestination should be ("status")
+  "Config parser" should {
+    "parse command line arguments" in {
+      val config = Config.parse(Array("buck", "prefix", "dest", "queue", "status"))
+      config.bucket must be("buck")
+      config.prefix must be("prefix")
+      config.destination must be("dest")
+      config.queue must be("queue")
+      config.statusDestination must be("status")
+    }
   }
 
 }
 
-class S3CopierSpec extends FlatSpec with Mockito {
+class S3CopierSpec extends Specification {
 
 }
