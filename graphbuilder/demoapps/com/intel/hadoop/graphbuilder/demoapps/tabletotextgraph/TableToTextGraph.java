@@ -50,6 +50,11 @@ import org.apache.log4j.Logger;
  *  Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices.
  *  (The declaration is implicit, but the vertices really end up in the graph database.)
  * <p>
+ *     The option <code>-F</code> (for "flatten lists") specifies that when a cell containing a JSon list is read as a vertex ID, it is to be
+ *     expanded into one vertex for each entry in the list. This applies to the source and destination columns for
+ *     edges as well. It does not apply to properties.
+ * </p>
+ * <p>
  *     EXAMPLES:
  *     <p>
  *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age"  -d "cf:name,cf:dept,worksAt,cf:seniority"</code>
@@ -86,6 +91,10 @@ public class TableToTextGraph {
                 .hasArgs()
                 .withArgName("Edge-Column-Name")
                 .create("e"));
+
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("FLATTEN_LISTS_OPTNAME"))
+                .withDescription("Flag that expends lists into multiple items. " )
+                .create("F"));
 
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
                 .withDescription("Specify the columns which are directed edge tokens; " +

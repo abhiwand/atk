@@ -51,7 +51,11 @@ import org.apache.log4j.Logger;
  * <code> -v vertex_id_column=vertex_prop1_column,... vertex_propn_column </code>
  * <p>or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_column </code>
- *
+ * <p>
+ *     The option <code>-F</code> (for "flatten lists") specifies that when a cell containing a JSon list is read as a vertex ID, it is to be
+ *     expanded into one vertex for each entry in the list. This applies to the source and destination columns for
+ *     edges as well. It does not apply to properties.
+ * </p>
  * </p>
  *  Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices.
  *  (The declaration is implicit, but the vertices really end up in the graph database.)
@@ -103,6 +107,9 @@ public class TableToGraphDB {
                 .withArgName("Edge-Column-Name")
                 .create("e"));
 
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("FLATTEN_LISTS_OPTNAME"))
+                .withDescription("Flag that expends lists into multiple items. " )
+                .create("F"));
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
                 .withDescription("Specify the columns which are directed edge tokens; " +
                         "Example: --" + GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
