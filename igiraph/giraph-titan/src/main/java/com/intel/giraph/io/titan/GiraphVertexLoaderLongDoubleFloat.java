@@ -22,9 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
 
 import com.google.common.base.Preconditions;
 import org.apache.giraph.edge.Edge;
@@ -37,13 +37,12 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 
 import com.thinkaurelius.titan.core.TitanType;
-import com.thinkaurelius.titan.diskstorage.StaticBuffer;
-import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
 import org.apache.log4j.Logger;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,57 +50,62 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Load Giraph Vertex with Long type Vertex Id Double type vertex value Float
- * type edge value
+ * GiraphVertexLoaderLongDoubleFloat loads vertex
+ * with <code>Long</code> vertex ID's,
+ * <code>Double</code> vertex values,
+ * and <code>Float</code> edge weights.
  */
-//@SuppressWarnings("unchecked")
 public class GiraphVertexLoaderLongDoubleFloat {
 
-    /** Class logger. */
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleFloat.class);
-    /** whether it is Titan sytem type */
+    /**
+     * whether it is Titan system type
+     */
     private boolean isSystemType = false;
-    /** Long type vertex id */
+    /**
+     * Long type vertex id
+     */
     private long vertexId = 0;
-    /** Giraph Vertex */
+    /**
+     * Giraph Vertex
+     */
     private Vertex<LongWritable, DoubleWritable, FloatWritable> vertex = null;
-    /** Vertex properties to filter */
-    private String[] vertexPropertyKeyList;
-    /** Edge properties to filter */
-    private String[] edgePropertyKeyList;
-    /** Edge labels to filter */
-    private String[] edgeLabelList;
-    /** HashSet of configured vertex properties */
+    /**
+     * HashSet of configured vertex properties
+     */
     private Set<String> vertexPropertyKeyValues = null;
-    /** HashSet of configured edge properties */
+    /**
+     * HashSet of configured edge properties
+     */
     private Set<String> edgePropertyKeyValues = null;
-    /** HashSet of configured edge labels */
+    /**
+     * HashSet of configured edge labels
+     */
     private Set<String> edgeLabelValues = null;
 
     /**
      * GiraphVertexLoaderLongDoubleFloat constructor
      *
      * @param conf : Giraph configuration
-     * @param key input from HBase
-     */
-    public GiraphVertexLoaderLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf,
-            final StaticBuffer key) {
-        this(conf, IDHandler.getKeyID(key));
-    }
-
-    /**
-     * GiraphVertexLoaderLongDoubleFloat constructor
-     *
-     * @param conf : Giraph configuration
-     * @param id vertex id
+     * @param id   vertex id
      */
     public GiraphVertexLoaderLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf, final long id) {
+        /** Vertex properties to filter */
+        final String[] vertexPropertyKeyList;
+        /** Edge properties to filter */
+        final String[] edgePropertyKeyList;
+        /** Edge labels to filter */
+        final String[] edgeLabelList;
+
         vertex = conf.createVertex();
         vertex.initialize(new LongWritable(id), new DoubleWritable(0));
         vertexId = id;
-        vertexPropertyKeyList = VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgePropertyKeyList = EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgeLabelList = EDGE_LABEL_LIST.get(conf).split(",");
+        vertexPropertyKeyList = INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
+        edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
+        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
         vertexPropertyKeyValues = new HashSet<String>(Arrays.asList(vertexPropertyKeyList));
         edgePropertyKeyValues = new HashSet<String>(Arrays.asList(edgePropertyKeyList));
         edgeLabelValues = new HashSet<String>(Arrays.asList(edgeLabelList));
@@ -128,22 +132,32 @@ public class GiraphVertexLoaderLongDoubleFloat {
     /**
      * Implement com.thinkaurelius.titan.graphdb.database.RelationFactory to
      * parse graph semantics on data loaded from HBase
-     *
-     *
      */
     public class RelationFactory implements com.thinkaurelius.titan.graphdb.database.RelationFactory {
 
-        /** Titan property */
+        /**
+         * Titan property
+         */
         private final Map<String, Object> properties = new HashMap<String, Object>();
-        /** Relation Direction */
+        /**
+         * Relation Direction
+         */
         private Direction direction;
-        /** Titan Type */
+        /**
+         * Titan Type
+         */
         private TitanType type;
-        /** Relation ID */
+        /**
+         * Relation ID
+         */
         private long relationID;
-        /** The other vertex ID for a Titan Edge */
+        /**
+         * The other vertex ID for a Titan Edge
+         */
         private long otherVertexID;
-        /** Property value */
+        /**
+         * Property value
+         */
         private Object value;
 
         /**
@@ -197,7 +211,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
         @Override
         public void setOtherVertexID(final long vertexId) {
             if (vertexId < 0) {
-                LOG.error("negtive vertexId");
+                LOG.error("negative vertexId");
             }
             this.otherVertexID = vertexId;
         }
@@ -215,7 +229,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
         /**
          * add relation property
          *
-         * @param type : TitanType
+         * @param type  : TitanType
          * @param value : Titan property value
          */
         @Override
@@ -262,7 +276,7 @@ public class GiraphVertexLoaderLongDoubleFloat {
                         }
                     }
                 } else {
-                    LOG.error("negtive Edge ID.");
+                    LOG.error("negative Edge ID.");
                 }
 
             }

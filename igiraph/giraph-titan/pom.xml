@@ -28,11 +28,11 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>igiraph-titan</artifactId>
   <packaging>jar</packaging>
-  <name>Intel Tribeca iGiraph Titan I/O</name>
+  <name>IntelAnalytics iGiraph Titan I/O</name>
   <description>iGiraph Titan input/output classes</description>
   <parent>
 	<groupId>com.intel.hadoop</groupId>
-	<artifactId>tribeca-igiraph</artifactId>
+	<artifactId>IntelAnalytics-igiraph</artifactId>
 	<relativePath>../pom.xml</relativePath>  
 	<version>0.5-SNAPSHOT</version>
   </parent>

@@ -29,8 +29,8 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>tribeca-igiraph</artifactId>
   <packaging>pom</packaging>
-  <name>Intel Tribeca iGiraph Parent</name>
-  <description>Tribeca iGiraph : Large Scale Graph Processing on Hadoop</description>
+  <name>IntelAnalytics iGiraph Parent</name>
+  <description>IntelAnalytics iGiraph : Large Scale Graph Processing on Hadoop</description>
   <inceptionYear>2013</inceptionYear>
 
    <parent>

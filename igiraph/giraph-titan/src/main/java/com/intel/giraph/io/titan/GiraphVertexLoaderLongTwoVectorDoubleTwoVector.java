@@ -22,9 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
 
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
@@ -37,8 +37,6 @@ import org.apache.mahout.math.DenseVector;
 import com.intel.mahout.math.TwoVectorWritable;
 import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 import com.thinkaurelius.titan.core.TitanType;
-import com.thinkaurelius.titan.diskstorage.StaticBuffer;
-import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
@@ -47,73 +45,93 @@ import com.google.common.base.Preconditions;
 
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Load Giraph Vertex with Long type Vertex Id Double vector type vertex value
- * Double type edge value
+ * Load vertex from Titan
+ * Each vertex is with <code>long</code> vertex ID's,
+ * <code>TwoVector</code> vertex values: one for prior and
+ * one for posterior, and <code>DoubleWithTwoVector</code> edge
+ * weights.
  */
 public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
 
-    /** Class logger. */
+    /**
+     * Class logger.
+     */
     private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongTwoVectorDoubleTwoVector.class);
-    /** whether it is Titan sytem type */
+    /**
+     * whether it is Titan system type
+     */
     private boolean isSystemType = false;
-    /** Long type vertex id */
+    /**
+     * Long type vertex id
+     */
     private long vertexId = 0;
-    /** Giraph Vertex */
+    /**
+     * Giraph Vertex
+     */
     private Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> vertex = null;
-    /** Vertex properties to filter */
-    private final String[] vertexPropertyKeyList;
-    /** Edge properties to filter */
-    private final String[] edgePropertyKeyList;
-    /** Edge labels to filter */
-    private final String[] edgeLabelList;
-    /** HashMap of configured vertex properties */
+    /**
+     * HashMap of configured vertex properties
+     */
     private final Map<String, Integer> vertexPropertyKeyValues = new HashMap<String, Integer>();
-    /** HashMap of configured edge properties */
+    /**
+     * HashMap of configured edge properties
+     */
     private final Map<String, Integer> edgePropertyKeyValues = new HashMap<String, Integer>();
-    /** HashSet of configured edge labels */
+    /**
+     * HashSet of configured edge labels
+     */
     private final Map<String, Integer> edgeLabelValues = new HashMap<String, Integer>();
-    /** vertex value vector */
+    /**
+     * vertex value vector
+     */
     private TwoVectorWritable vertexValueVector = null;
-    /** Data vector */
+    /**
+     * Data vector
+     */
     private Vector vector = null;
 
     /**
-     * GiraphVertexLoaderLongVectorVector Constructor with key
+     * GiraphVertexLoaderLongTwoVectorDoubleTwoVector Constructor with ID
      *
      * @param conf Giraph configuration
-     * @param key StaticBuffer from HBase
+     * @param id   vertex id
      */
     public GiraphVertexLoaderLongTwoVectorDoubleTwoVector(final ImmutableClassesGiraphConfiguration conf,
-            final StaticBuffer key) {
-        this(conf, IDHandler.getKeyID(key));
-    }
+                                                          final long id) {
+        /**
+         * Vertex properties to filter
+         */
+        final String[] vertexPropertyKeyList;
+        /**
+         * Edge properties to filter
+         */
+        final String[] edgePropertyKeyList;
+        /**
+         * Edge labels to filter
+         */
+        final String[] edgeLabelList;
 
-    /**
-     * GiraphVertexLoaderLongVectorVector Constructor with ID
-     *
-     * @param conf Giraph configuration
-     * @param id vertex id
-     */
-    public GiraphVertexLoaderLongTwoVectorDoubleTwoVector(final ImmutableClassesGiraphConfiguration conf,
-            final long id) {
-        vertexPropertyKeyList = VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgePropertyKeyList = EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgeLabelList = EDGE_LABEL_LIST.get(conf).split(",");
+        vertexPropertyKeyList = INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
+        edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
+        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
         int size = vertexPropertyKeyList.length;
+
         for (int i = 0; i < size; i++) {
             vertexPropertyKeyValues.put(vertexPropertyKeyList[i], i);
         }
+
         for (int i = 0; i < edgePropertyKeyList.length; i++) {
             edgePropertyKeyValues.put(edgePropertyKeyList[i], i);
         }
+
         for (int i = 0; i < edgeLabelList.length; i++) {
             edgeLabelValues.put(edgeLabelList[i], i);
         }
+
 
         // set up vertex Value
         vertex = conf.createVertex();
@@ -122,22 +140,6 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
         vertexValueVector = new TwoVectorWritable(vector.clone(), vector.clone());
         vertex.initialize(new LongWritable(id), vertexValueVector);
         vertexId = id;
-
-    }
-
-    /**
-     * get DenseVector from Vertex value array
-     *
-     * @param valueVector the vertex value vector to use
-     * @return denseVector the generated DenseVector
-     * @throws IOException
-     */
-    protected DenseVector getDenseVector(Vector valueVector) throws IOException {
-        double[] values = new double[valueVector.size()];
-        for (int i = 0; i < valueVector.size(); i++) {
-            values[i] = valueVector.get(i);
-        }
-        return new DenseVector(values);
     }
 
     /**
@@ -161,22 +163,32 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
     /**
      * Implement com.thinkaurelius.titan.graphdb.database.RelationFactory to
      * parse graph semantics on data loaded from HBase
-     *
-     *
      */
     public class RelationFactory implements com.thinkaurelius.titan.graphdb.database.RelationFactory {
 
-        /** Titan property */
+        /**
+         * Titan property
+         */
         private final Map<String, Object> properties = new HashMap<String, Object>();
-        /** Relation Direction */
+        /**
+         * Relation Direction
+         */
         private Direction direction;
-        /** Titan Type */
+        /**
+         * Titan Type
+         */
         private TitanType type;
-        /** Relation ID */
+        /**
+         * Relation ID
+         */
         private long relationID;
-        /** The other vertex ID for a Titan Edge */
+        /**
+         * The other vertex ID for a Titan Edge
+         */
         private long otherVertexID;
-        /** Property value */
+        /**
+         * Property value
+         */
         private Object value;
 
         /**
@@ -230,7 +242,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
         @Override
         public void setOtherVertexID(final long vertexId) {
             if (vertexId < 0) {
-                LOG.error("negtive vertexId");
+                LOG.error("negative vertexId");
             }
             this.otherVertexID = vertexId;
         }
@@ -248,7 +260,7 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
         /**
          * add relation property
          *
-         * @param type : TitanType
+         * @param type  : TitanType
          * @param value : Titan property value
          */
         @Override
@@ -290,14 +302,14 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
                             }
                             Edge<LongWritable, DoubleWithTwoVectorWritable> edge = EdgeFactory.create(
                                     new LongWritable(this.otherVertexID), new DoubleWithTwoVectorWritable(
-                                            edgeValue, vector.clone(), vector.clone()));
+                                        edgeValue, vector.clone(), vector.clone()));
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();
                         }
                     }
                 } else {
-                    LOG.error("negtive Edge ID.");
+                    LOG.error("negative Edge ID.");
                 }
 
             }

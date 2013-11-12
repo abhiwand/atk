@@ -39,9 +39,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 
 /**
- *
  * TitanHBaseGraphReader which helps read in Graph from Titan/HBase
- *
  */
 public class TitanHBaseGraphReader extends TitanGraphReader {
 
@@ -60,51 +58,33 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
     }
 
     /**
-     * readGiraphVertexLongDoubleFloat to read Giraph Vertex with long vertex id
-     * double vertex value float edge value
+     * reading Vertex from Titan features <code>long</code> vertex ID's,
+     * <code>Double</code> vertex values, and <code>Float</code> edge
+     * weights.
      *
-     * @param conf : Giraph configuration
-     * @param key : key from HBase input data
+     * @param  type     : input format type
+     * @param conf      : Giraph configuration
+     * @param key       : key from HBase input data
      * @param columnMap : columnMap from HBase input data, in
-     *            Map<qualifier,Map<timestamp,value>> format
+     *                  Map<qualifier,Map<timestamp,value>> format
      * @return Vertex : Giraph Vertex
      */
-    public Vertex readGiraphVertexLongDoubleFloat(ImmutableClassesGiraphConfiguration conf, byte[] key,
-            final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap) {
+    public Vertex readGiraphVertex(String type, ImmutableClassesGiraphConfiguration conf, byte[] key,
+                                   final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap) {
 
-        return super.readGiraphVertexLongDoubleFloat(conf, ByteBuffer.wrap(key), new HBaseMapIterable(
+        return super.readGiraphVertex(type, conf, ByteBuffer.wrap(key), new HBaseMapIterable(
                 columnMap));
     }
 
     /**
-     * readGiraphVertexLongVectorDouble to read Giraph Vertex with long vertex
-     * id doublevector vertex value double edge value
-     *
-     * @param conf : Giraph configuration
-     * @param key : key from HBase input data
-     * @param columnMap : columnMap from HBase input data, in
-     *            Map<qualifier,Map<timestamp,value>> format
-     * @return Vertex : Giraph Vertex
-     */
-    public Vertex readGiraphVertexLoaderLongTwoVectorDoubleTwoVector(
-            ImmutableClassesGiraphConfiguration conf, byte[] key,
-            final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap) {
-
-        return super.readGiraphVertexLoaderLongTwoVectorDoubleTwoVector(conf, ByteBuffer.wrap(key),
-                new HBaseMapIterable(columnMap));
-    }
-
-    /**
-     *
      * HBaseMapIterable to create iterator from TableRecordReader Result
-     *
      */
     private static class HBaseMapIterable implements Iterable<Entry> {
         /**
          * Result from TableRecordReader is in a three level Map of the form:
          * <Map&family,Map<qualifier,Map<timestamp,value>>> Map&family is key;
          * Map<qualifier,Map<timestamp,value>> is columnMap
-         **/
+         */
         private final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap;
 
         /**
@@ -133,12 +113,12 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
     }
 
     /**
-     *
      * HBaseMapIterator
-     *
      */
     private static class HBaseMapIterator implements Iterator<Entry> {
-        /** iterator over columnValues */
+        /**
+         * iterator over columnValues
+         */
         private final Iterator<Map.Entry<byte[], NavigableMap<Long, byte[]>>> iterator;
 
         /**

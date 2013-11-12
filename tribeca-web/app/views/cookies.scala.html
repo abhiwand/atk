@@ -1,0 +1,158 @@
+@(message: String, user: models.database.UserRow)
+
+@mainLoggedIn(message, user) {
+
+         <div id='main-content'>
+          <div class='container'>
+            <div class='row'>
+              <div class='col-md-push-9 col-sm-push-8 col-sm-4 col-md-3'>
+                <nav class='sidebar'>
+                  <button class='btn btn-block btn-contrast sidebar-toggle' data-target='.sidebar-collapse' data-toggle='collapse' type='button'>
+                    <span class='sr-only'>Toggle navigation</span>
+                    <span class='icon-bar'></span>
+                    <span class='icon-bar'></span>
+                    <span class='icon-bar'></span>
+                  </button>
+                  <div class='sidebar-collapse collapse'>
+                    <div class='box'>
+                      <h3 class='title'>Search Cookies</h3>
+                      <form action='privacy' method='get'>
+                        <div class='input-group'>
+                          <input class='form-control' placeholder='Search...' type='text'>
+                          <span class='input-group-btn'>
+                            <button class='btn btn-contrast' type='button'>
+                              <i class='fa-icon-search'></i>
+                            </button>
+                          </span>
+                        </div>
+                      </form>
+                    </div>
+                    <div class='box'>
+                      <h3 class='title'>Privacy Notice Links</h3>
+                      <div class='list-group'>
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel® Online Privacy Notice Summary
+                        </a>
+                      
+                          <a class="list-group-item active" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Full Intel® Online Privacy Notice
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        FAQs
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Contact Us
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel Corporate Privacy Rules (Deed Poll)
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Candidate Notice
+                        </a>
+                       <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel Technology Provider Program Notice
+                        </a>
+                         <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel® Active Management Technology Notice
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel® Viiv™ Technology Notice
+                        </a>
+                      </div>
+                    </div>    
+                  </div>
+                </nav>
+              </div>
+              <div class='col-md-pull-3 col-sm-pull-4 col-sm-8 col-md-9'>
+                <div class='text-boxes'>
+                  <div class='row text-box text-box-title-above text-box-big-image'>
+                    <div class='col-sm-12'>
+                      <h2 class='title'><a href="/blog_single_post.html">Intel Cookie Notice</a></h2> 
+                      <hr class='hr-half'>
+                      <h3>More about cookies on Intel's websites</h3>
+                      
+                    </div>
+                  </div>
+                  <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>How Intel Uses Cookies</h2>
+                      <p>Intel uses various technologies to help improve the efficiency of our websites, including your experience when browsing our sites.  These technologies include cookies, clear GIFs, web bugs, and web beacons.</p>
+                    </div>
+                  </div>
+                   <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>What is a cookie?</h2>
+                      <p>A cookie is a small file - usually consisting of letters and numbers - placed on your computer, tablet, phone, or similar device, when you use that device to visit a website. Cookies are widely used by website owners to make their websites work, or to work more efficiently, as well as to provide reporting information.</p>
+                    </div>
+                  </div>
+                   <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>What are cookies used for?</h2>
+                      <p>Different types of cookies are used to do different things. </p>
+                      <h4>We use the following types of cookies:</h4>
+
+                        <ul>
+                            <li><strong>Strictly necessary cookies.</strong>  These are cookies that are required for the operation of our website (for example, to enable you to log into secure areas of our website or use a shopping cart).</li>
+                            <li><strong>Analytical/performance cookies.</strong>  These cookies allow us to recognize and count the number of visitors and to see how visitors move around our website when they are using it.  This helps us improve the way our website works (for example, by ensuring that visitors are finding what they are looking for easily).</li>
+                            <li><strong>Functionality cookies.</strong>  These are used to recognize you when you return to our website.  This enables us to personalize our content for you, greet you by name and remember your preferences (for example, your choice of language or region).</li>
+                            <li><strong>Targeting cookies.</strong>  These cookies record your visit to our website, the pages you have visited and the links you have followed.  We use this information to make our website and the content displayed on it more relevant to your interests.  We may also share this information with third parties for this purpose.</li>
+                            
+                        </ul>   
+                    </div>
+                  </div>
+                   <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>How long do cookies stay on my device?</h2>
+                      <p>Some cookies operate from the time you visit an Intel website to the end of that particular web-browsing session.  These cookies expire and are automatically deleted when you close your internet browser.  These cookies are called “session” cookies.</p>     
+                      <p>Some cookies will stay on your device between browsing sessions – they do not expire when you close your browser.  These cookies are called “persistent” cookies.  The length of time a persistent cookie stays on your device varies from cookie to cookie.</p>             
+                    </div>
+                  </div>    
+                  <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>Who puts the cookies on my device?</h2>
+                      <p>Cookies may be placed on your device by Intel as the website operator.  These cookies are called “first party” cookies.  Some cookies may be placed on your device by a party other than Intel.  These cookies are called “third party” cookies. For example, an Intel partner may place a third party cookie to enable online chat services.</p>     
+                             
+                    </div>
+                  </div>    
+                   <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>How do I control which cookies are placed on my device?</h2>
+                      <p>You can decide whether or not to accept cookies.  One way you can do this is through your internet browser’s settings.  Most internet browsers allow some control of most cookies through the browser settings.  (Please note that if you use your browser settings to block all cookies you may not be able to access parts of our website.)  The following websites provide information on how to adjust the cookies settings on some popular browsers:</p>     
+                          <ul>
+                            <li><strong>Apple Safari</strong></li>
+                            <li><strong>Google Chrome</strong></li>
+                            <li><strong>Microsoft Internet Explorer</strong></li>
+                            <li><strong>Mozilla Firefox</strong></li>      
+                          </ul>  
+                      <p>You can also use a browser plug-in such as Ghostery from Evidon Inc. or the Tracking Protection List from TRUSTe.  (A browser plug-in is a piece of software which adds extra capabilities to your browser - for example, to play video or scan for viruses.)</p>
+                      <p>Adobe Flash Player is software for viewing multimedia on a computer.  Websites which use Adobe Flash may store flash cookies on user’s devices to remember settings, preferences, and usage similar to other types of cookies.  Intel may use Flash to provide special content such as video clips or animation.  You can access Flash management tools from Adobe’s website directly.</p>
+                      <p>To opt out of Google Analytics and Adobe Analytics cookies across Intel websites visit:</p>
+                          <ul>
+                            <li><strong>Google Analytics:</strong> http://tools.google.com/dlpage/gaoptout</li>
+                            <li><strong>Adobe Analytics:</strong> http://www91.intel.com/optout.html</li>
+                          </ul>  
+
+                    </div>
+                  </div> 
+                   <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>What other technologies does Intel use to help improve the efficiency and user experience of its website?</h2>
+                      <p>We sometimes use transparent electronic images called “clear GIFs”, “Web bugs” or “Web beacons”.  This technology counts the number of users who visit a particular Intel webpage from specific banner advertisements outside the Intel website or who clicked on links or graphics included in email newsletters received from Intel.  We do not use this technology to collect or access your personal information.  Rather we use this technology as a tool to compile aggregated statistics about how Intel websites are used.</p>     
+                             
+                    </div>
+                  </div>       
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class='fade' id='scroll-to-top'>
+          <i class='fa-icon-chevron-up'></i>
+        </div>
+      </div>
+}

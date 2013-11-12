@@ -37,7 +37,7 @@ import org.junit.Test;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute;
-import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.SimpleAggregatorWriter;
+import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFInputFormat;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 
@@ -69,7 +69,7 @@ public class AlternatingLeastSquaresComputationTest {
 
         conf.setComputationClass(AlternatingLeastSquaresComputation.class);
         conf.setMasterComputeClass(AlternatingLeastSquaresMasterCompute.class);
-        conf.setAggregatorWriterClass(SimpleAggregatorWriter.class);
+        conf.setAggregatorWriterClass(AlternatingLeastSquaresAggregatorWriter.class);
         conf.setVertexInputFormatClass(JsonPropertyGraph4CFInputFormat.class);
         conf.setVertexOutputFormatClass(JsonPropertyGraph4CFOutputFormat.class);
         conf.set("als.maxSupersteps", "6");
@@ -81,15 +81,15 @@ public class AlternatingLeastSquaresComputationTest {
         Iterable<String> results = InternalVertexRunner.run(conf, graph);
 
         Map<Long, Double[]> vertexValues = parseVertexValues(results);
-
+        
         // verify results
         assertNotNull(vertexValues);
         assertEquals(5, vertexValues.size());
-        for (long i = 0; i < 5; i++) {
-            assertEquals(4, vertexValues.get(i).length);
-            assertEquals(0.0, vertexValues.get(i)[0], 0d);
+        for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
+            assertEquals(4, entry.getValue().length);
+            assertEquals(0.0, entry.getValue()[0], 0d);
             for (int j = 0; j < 3; j++) {
-                assertEquals(expectedValues[(int)i][j], vertexValues.get(i)[j+1], 0.01d);    
+                assertEquals(expectedValues[entry.getKey().intValue()][j], entry.getValue()[j+1], 0.01d);    
             }
         }
     }

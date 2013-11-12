@@ -1,0 +1,31 @@
+@(message: String, user: models.database.UserRow)
+
+@import play.api.Play
+@import play.api.Play.current
+
+@mainLoggedIn(message, user) {
+
+    <div id='main-content'>
+
+        <div id='main-content-upload'>
+            <div class='container'>
+                <div class="row" >
+                    <div class='col-sm-12'>
+
+
+                        <div class="row-fluid">
+                         <iframe id='ipython' src="https://@user.ipythonUrl"></iframe>
+                        </div>
+                        <a href ='#'>
+                            <button type="button" class="btn btn-primary btn-lg btn-block">That was awesome. Export it!</button>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class='fade' id='scroll-to-top'>
+        <i class='fa-icon-chevron-up'></i>
+    </div>
+}

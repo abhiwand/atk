@@ -1,0 +1,71 @@
+@(user:models.database.UserRow)
+
+@import services.aws.S3
+@import services.aws.baseAccessKey
+@import com.amazonaws.services.s3.model.{S3ObjectSummary}
+   <!-- Dataset Modal -->
+  <div class="modal fade" id="datasetModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <script src="@routes.Assets.at("javascripts/dropzone.js")"></script>
+      <script src="@routes.Assets.at("javascripts/dropzoneConfig.js")"></script>
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title">Datasets Add/Review</h4>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+                  <div class='col-sm-12'>
+                  <div class="modal-header">  
+                    <h5>Current Dataset</h5>
+                  </div>
+                    <div class='table-responsive'>
+                        <table class='table table-condensed table-hover table-striped' id="uploadedFiles">
+                          <thead>
+                              <tr><th>Name</th><th>Size</th></tr>
+                          </thead>
+                            <tbody >
+
+                            @for(file <- S3.getObjectList(user.uid.get.toString)){
+
+                                <tr class=''>
+                                    <td>@S3.formatName(file.getKey)</td>
+                                    <td>@S3.formatSize(file.getSize)</td>
+                                    <td><i style="cursor:pointer;" class="fa-icon-remove file-remove" title='Remove File' id="file-remove" ></i></td>
+                                </tr>
+
+                                }
+                          </tbody>
+                        </table>  
+                    </div>
+                  </div>
+          </div>
+        
+          <div class='row'>
+                  <div class='col-sm-12'>
+                    <div id="dropzone">
+
+                        <form id="uploadForm" @*class="dropzone dz-clickable"*@ action="https://@{S3.getBucketName}.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
+                            @defining(S3.getPolicy(user.uid.get.toString())){ implicit policy =>
+                            <input type="hidden" name="key" value="@S3.uploadDirectory(user.uid.get.toString)${filename}">
+                            <input type="hidden" name="AWSAccessKeyId" value="@baseAccessKey">
+                            <input type="hidden" name="acl" value="private">
+                            <!--<input type="hidden" name="success_action_redirect" value="http://localhost/s3">-->
+                            <input type="hidden" name="policy" value="@policy">
+                            <input type="hidden" name="signature" value="@S3.getSignature">
+                            }
+                            <!--<input type="hidden" name="Content-Type" value="image/jpeg">*-->
+                          <div>
+                            <h2>Drop files or click here to add to Dataset</h2>
+                            <p>We currently support .csv files up to 500MB</p>
+                          </div>
+                        </form>       
+                      </div>
+                  </div>
+                </div>
+        
+        </div>
+        
+      </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+  </div><!-- /.modal -->

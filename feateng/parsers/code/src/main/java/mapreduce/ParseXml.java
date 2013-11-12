@@ -154,7 +154,7 @@ public class ParseXml {
      * @param args command line arguments from the user
      * @return hadoop config ready to give to the job
      */
-    protected static Configuration setConfig(String[] args) throws IOException {
+    protected static Configuration setConfig(String[] args) {
         Configuration conf = HBaseConfiguration.create();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
         parseArgs(otherArgs);

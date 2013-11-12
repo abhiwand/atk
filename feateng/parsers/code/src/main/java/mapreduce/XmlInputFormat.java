@@ -1,11 +1,3 @@
-/*
-* Original Source: Mahout XMLInputFormat.java
-*https://raw.github.com/apache/mahout/ad84344e4055b1e6adff5779339a33fa29e1265d/examples/src/main/java/org/apache/mahout/classifier/bayes/XmlInputFormat.java
-* Modified from above source.
-* The source used old hadoop api's whereas we are using new api's (mapred) vs (mapreduce)
-* Hence tweak that original source code to be compatible with new hadoop api's
-*/
-
 package mapreduce;
 import java.io.IOException;
 import org.apache.hadoop.fs.FSDataInputStream;

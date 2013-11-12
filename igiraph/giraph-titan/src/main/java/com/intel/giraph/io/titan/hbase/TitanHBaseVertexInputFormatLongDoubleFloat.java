@@ -22,49 +22,36 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
-import static com.intel.giraph.io.titan.conf.GiraphTitanConstants.GIRAPH_TITAN;
-
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
+import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.client.Scan;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
-import org.apache.hadoop.hbase.util.Base64;
-
-import com.thinkaurelius.titan.diskstorage.Backend;
-
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_FLOAT;
 
 /**
- * TitanHBaseVertexInputFormatLongDoubleFloat which input vertex with Long
- * vertex id Double vertex value and Float edge value
- *
+ * TitanHBaseVertexInputFormatLongDoubleFloat loads vertex
+ * with <code>Long</code> vertex ID's,
+ * <code>Double</code> vertex values,
+ * and <code>Float</code> edge weights.
  */
 public class TitanHBaseVertexInputFormatLongDoubleFloat extends
         TitanHBaseVertexInputFormat<LongWritable, DoubleWritable, FloatWritable> {
 
-    /** the edge store name used by Titan */
-    static final byte[] EDGE_STORE_FAMILY = Bytes.toBytes(Backend.EDGESTORE_NAME);
-    /** LOG class */
+    /**
+     * LOG class
+     */
     private static final Logger LOG = Logger.getLogger(TitanHBaseVertexInputFormatLongDoubleFloat.class);
 
     /**
@@ -77,53 +64,28 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
     }
 
     /**
-     * set up HBase with based on users' configuration
+     * set up HBase based on users' configuration
      *
      * @param conf :Giraph configuration
      */
     @Override
     public void setConf(ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, FloatWritable> conf) {
-        conf.set(TableInputFormat.INPUT_TABLE, GIRAPH_TITAN_STORAGE_TABLENAME.get(conf));
-        conf.set(HConstants.ZOOKEEPER_QUORUM, GIRAPH_TITAN_STORAGE_HOSTNAME.get(conf));
-        conf.set(HConstants.ZOOKEEPER_CLIENT_PORT, GIRAPH_TITAN_STORAGE_PORT.get(conf));
-
-        Scan scan = new Scan();
-        scan.addFamily(Backend.EDGESTORE_NAME.getBytes(Charset.forName("UTF-8")));
-
-        try {
-            conf.set(TableInputFormat.SCAN, convertScanToString(scan));
-        } catch (IOException e) {
-            LOG.error("cannot write scan into a Base64 encoded string!");
-        }
-
+        GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
 
-    /**
-     * Writes the given scan into a Base64 encoded string.
-     *
-     * @param scan The scan to write out.
-     * @return The scan saved in a Base64 encoded string.
-     * @throws IOException When writing the scan fails.
-     */
-    static String convertScanToString(Scan scan) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(out);
-        scan.write(dos);
-        return Base64.encodeBytes(out.toByteArray());
-    }
 
     /**
      * create TitanHBaseVertexReader
      *
-     * @param split : inputsplits from TableInputFormat
+     * @param split   : inputsplits from TableInputFormat
      * @param context : task context
      * @return VertexReader
      * @throws IOException
      * @throws RuntimeException
      */
-    public VertexReader<LongWritable, DoubleWritable, FloatWritable> createVertexReader(InputSplit split,
-            TaskAttemptContext context) throws IOException {
+    public VertexReader<LongWritable, DoubleWritable, FloatWritable>
+    createVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
 
@@ -134,17 +96,23 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
      */
     public static class TitanHBaseVertexReader extends
             HBaseVertexReader<LongWritable, DoubleWritable, FloatWritable> {
-        /** Graph Reader to parse data in Titan Graph semantics */
+        /**
+         * Graph Reader to parse data in Titan Graph semantics
+         */
         private TitanHBaseGraphReader graphReader;
-        /** Giraph Veretex */
+        /**
+         * Giraph Veretex
+         */
         private Vertex vertex;
-        /** task context */
+        /**
+         * task context
+         */
         private final TaskAttemptContext context;
 
         /**
          * TitanHBaseVertexReader constructor
          *
-         * @param split InputSplit from TableInputFormat
+         * @param split   InputSplit from TableInputFormat
          * @param context task context
          * @throws IOException
          */
@@ -154,7 +122,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
 
         /**
          * @param inputSplit Input Split form HBase
-         * @param context task context
+         * @param context    task context
          */
         @Override
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
@@ -174,13 +142,24 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
          */
         @Override
         public boolean nextVertex() throws IOException, InterruptedException {
+            //the edge store name used by Titan
+            final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
+
             if (getRecordReader().nextKeyValue()) {
-                final Vertex temp = graphReader.readGiraphVertexLongDoubleFloat(getConf(),
+                final Vertex temp = graphReader.readGiraphVertex(LONG_DOUBLE_FLOAT, getConf(),
                         getRecordReader().getCurrentKey().copyBytes(),
-                        getRecordReader().getCurrentValue().getMap().get(EDGE_STORE_FAMILY));
+                        getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
+                } else if (getRecordReader().nextKeyValue()) {
+                    final Vertex temp1 = graphReader.readGiraphVertex(LONG_DOUBLE_FLOAT, getConf(),
+                            getRecordReader().getCurrentKey().copyBytes(),
+                            getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
+                    if (null != temp1) {
+                        vertex = temp1;
+                        return true;
+                    }
                 }
             }
             return false;
@@ -197,6 +176,16 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
         public Vertex<LongWritable, DoubleWritable, FloatWritable> getCurrentVertex() throws IOException,
                 InterruptedException {
             return vertex;
+        }
+
+        /**
+         * close
+         *
+         * @throws IOException
+         */
+        public void close() throws IOException {
+            this.graphReader.shutdown();
+            super.close();
         }
     }
 }

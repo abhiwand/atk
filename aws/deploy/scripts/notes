@@ -1,0 +1,105 @@
+Cluster Creation
+================
+IntelAnalytics_cluster_env.sh
+- global variables for creating a AWS cluster of IntelAnalytics
+
+We suppoprt only 4 nodes per cluster now, you can use more but not tested.
+
+Steps:
+Assume you want to create a cluster of id 10, and 4 nodes, no dry-run. No
+need to specify the size as by default it will be 4 nodes.
+
+1. Set up the work dirctory, e.g.
+> export IA_HOME=/home/ec2-user/intel/IntelAnalytics/0.5
+If you are in the deploy/scripts already, you can just do
+> export IA_HOME=`pwd`/../..
+
+2. Create the cluster w/ a give id and size
+> cd ${IA_HOME}/deploy/scripts
+> ./IntelAnalytics_cluster_create.sh --cluster-id 10
+
+We only support cluster of 4 nodes at this moment. You should see logs on
+the console, as well as the log file in ${IA_HOME}/deploy/clusters/IntelAnalytics-10-4.log
+
+3. If 2 finishes ok, go to the AWS console to verify the instances are up,
+or use the ec2-describe-instance-status to check 
+
+4. Prepare the cluster, first, generate the nodes list file and hosts file
+> ./IntelAnalytics_cluster_genhosts.sh --cluster-id 10
+
+The default outputs directory is at ${IA_HOME}/deploy/clusters, where you have
+IntelAnalytics-10-4.hosts as your host file, and IntelAnalytics-10-4.nodes as
+a nodes list file.
+
+5. Prepare the data disks, using the newly generated nodes list file, you will
+also need the correct private key (pem file) to allow you to ssh into the newly
+launched EC2 instances, normally, this is at ${IA_HOME}/credentials, or ../../ of 
+your current ./scripts direcotry:
+> ./IntelAnalytics_setup_disks.sh --nodes-file ../clusters/IntelAnalytics-10-4.nodes \
+--pem-file ../../credentials/IntelAnalytics_User.pem 
+
+NOTE:
+Observe the outputs to make sure the mkfs is kicked out on all four disks of all nodes,
+if not, you will have to run the same command line above again and again till 
+it gets started. You can verify that by doing:
+> for n in `cat ../clusters/intelanalytics-10-4.nodes`; do \
+ssh -i ../../credentials/telanalytics_user.pem -t ${n} 'ps aux | grep mkfs'; done
+
+wait for the mkfs to finish, and verify they are mounted properly by:
+> for n in `cat ../clusters/intelanalytics-10-4.nodes`; do \
+ssh -i ../../credentials/elanalytics_user.pem -t ${n} 'mount | grep xvd'; done
+
+The xvd{b,c,d,e} should be mounted at /mnt/disk{1,2,3,4}
+
+6. Prepare the hadoop cluster,
+> ./IntelAnalytics_cluster_configure.sh --nodes-file ../clusters/IntelAnalytics-10-4.nodes \
+--hosts-file ../clusters/IntelAnalytics-10-4.hosts \
+--pem-file ../../credentials/IntelAnalytics_User.pem
+
+This should update all nodes' hosts file in the cluster, and prepare the ssh for hadoop
+to do password-less login.
+
+7. Bring up the cluster. All nodes are physically up, now you can start hadoop like regular
+hadoop cluster
+1) ssh to your amdin node: ssh -i ../../credentials/IntelAnalytics_User.pem ip-10-0-64-61
+2) ssh from admin node to your cluster master node, look up ip/dns from the deploy/clusters subdir
+3) su --l hadoop, password is ‘hadoop’. Then cd ‘IntelAnalytics”
+4) Start hdfs by ~/hadoop/bin/start-dfs.sh
+5) Start mapred by ~/hadoop/bin/start-mapred.sh
+6) Start hbase by ~/hbase/bin/start-hbase.sh
+7) Start hbase thrift by ~/hbase/bin/hbase-daemon.sh start thrift
+
+If you have changed any configuration, you can use the tool provided to update all nodes.
+Assume you are in master node su logined as 'hadoop1
+> cd ~/IntelAnalytics
+> bin/ia_cluster_config.sh --synconf
+
+Or, you want to check the outsanding jvms on all nodes:
+> cd ~/IntelAnalytics
+> bin/ia_cluster_config.sh --jpsls
+
+
+AMI Preparation
+===============
+IntelAnalytics_setup_env.sh
+- global variables for preparing a AMI for IntelAnalytics or post configuration
+- of the deployed IntelAnaltytics cluster
+
+Steps:
+1. IntelAnalytics_setup_system.sh: setup basic system config
+
+2. IntelAnalytics_setup_user.sh: setup a given user account w/ passwordless ssh
+- 1) use the account name as password
+- 2) default user name is 'hadoop'
+
+3. IntelAnalytics_setup_disks.sh: prepare the disks for data mount points of hadoop
+- Assumes hard-coded device name, must match when launch intance from IS
+- Takes a while for this to finish the mkfs
+
+4. IntelAnalytics_setup_fstab_node.sh, IntelAnalytics_setup_fstab.sh: setup mount for the diesks
+
+5. IntelAnalytics_setup_deploy.sh: deploy the package
+- all configs are already updated
+- should be able to just run 
+
+

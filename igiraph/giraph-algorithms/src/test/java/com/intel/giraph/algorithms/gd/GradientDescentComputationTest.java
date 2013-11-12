@@ -34,7 +34,7 @@ import org.junit.Test;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.gd.GradientDescentComputation.GradientDescentMasterCompute;
-import com.intel.giraph.algorithms.gd.GradientDescentComputation.SimpleAggregatorWriter;
+import com.intel.giraph.algorithms.gd.GradientDescentComputation.GradientDescentAggregatorWriter;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFInputFormat;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 
@@ -66,7 +66,7 @@ public class GradientDescentComputationTest {
 
         conf.setComputationClass(GradientDescentComputation.class);
         conf.setMasterComputeClass(GradientDescentMasterCompute.class);
-        conf.setAggregatorWriterClass(SimpleAggregatorWriter.class);
+        conf.setAggregatorWriterClass(GradientDescentAggregatorWriter.class);
         conf.setVertexInputFormatClass(JsonPropertyGraph4CFInputFormat.class);
         conf.setVertexOutputFormatClass(JsonPropertyGraph4CFOutputFormat.class);
         conf.set("gd.maxSupersteps", "6");
