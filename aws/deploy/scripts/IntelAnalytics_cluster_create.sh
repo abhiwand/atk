@@ -365,7 +365,7 @@ fi
 # generate hosts file
 if [ "${dryrun}" == "no" ]; then
     # polling wellness of the instances, retry up to 5 times
-    for (( i = 0; i < 5; i++ ))
+    for (( i = 0; i < 10; i++ ))
     do
         # check instance status, max 5 waits, every wait is 10s
         IA_check_instance_status ${cniids[@]}

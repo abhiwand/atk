@@ -34,8 +34,6 @@ export IA_CLUSTER_ID_MAX=40
 export IA_CLUSTER_SIZE_MIN=4
 export IA_CLUSTER_SIZE_MAX=20
 export IA_CLUSTER_SIZE_INC=4
-# The pre-generated cluster CIDR file
-export IA_CLUSTER_CIDR=${IA_NAME}_cidr.txt
 
 # These are pre-existing shared resources, we can also 
 if [ -z "${IA_SUBNET}" ]; then
@@ -68,6 +66,15 @@ fi
 if [ -z "${IA_SGROUP_HTTPS_PORT}" ]; then
     export IA_SGROUP_HTTPS_PORT=443
 fi
+# The pre-generated cluster CIDR file
+if [ -z "${IA_CLUSTER_CIDR}" ]; then
+    export IA_CLUSTER_CIDR=${IA_TAG}_cidr.txt
+fi
+if [ ! -f "${IA_CLUSTER_CIDR}" ]; then
+    echo "Did not find cluster \"${IA_TAG}\" CIDR list file \"${IA_CLUSTER_CIDR}\"!!"
+    exit 1
+fi
+
 # sunet status
 export IA_AWS_PENDING="pending"
 export IA_AWS_AVAILABLE="available"
@@ -129,7 +136,7 @@ function IA_check_cluster_cidr()
 # get cluster name
 function IA_format_cluster_name()
 {
-    echo ${IA_NAME}-$1
+    echo ${IA_TAG}-$1
 }
 
 function IA_format_node_name_role()
@@ -166,7 +173,7 @@ function IA_format_node_hostname()
 # get ami id by name
 function IA_get_ami()
 {
-    echo `ec2-describe-images ${IA_EC2_OPTS_TAG} -F "name=${1}" -o self | grep IMAGE | awk '{print $2}'`
+    echo `ec2-describe-images ${IA_EC2_OPTS} -F "name=${1}" -o self | grep IMAGE | awk '{print $2}'`
 }
 
 # get instance type

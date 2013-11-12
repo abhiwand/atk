@@ -101,6 +101,14 @@ done
 # we don't have to do anything here as the node AMI is already built w/
 # the correct hadoop/hbase configs based on master, node01, etc.
 
-# ??: start hadoop/hbase
+# start hadoop/hbase
+n=`sed '3q;d' ${nodesfile}`
+echo "Formatting hadoop name node on master node ${n}..."
+${dryrun} ssh -t -i ${pemfile} hadoop@${n} "~/IntelAnalytics/hadoop/bin/hadoop namenode -format"
 
-# ??: start iPython service
+echo "Start hadoop..."
+${dryrun} ssh -t -i ${pemfile} hadoop@${n} "~/IntelAnalytics/hadoop/bin/start-all.sh"
+
+echo "Start hbase..."
+${dryrun} ssh -t -i ${pemfile} hadoop@${n} "~/IntelAnalytics/hbase/bin/start-hbase.sh"
+${dryrun} ssh -t -i ${pemfile} hadoop@${n} "~/IntelAnalytics/hbase/bin/hbase-daemon.sh start thrift -threadpool"
