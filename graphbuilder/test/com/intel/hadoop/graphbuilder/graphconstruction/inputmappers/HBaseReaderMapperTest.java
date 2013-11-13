@@ -223,7 +223,6 @@ public class HBaseReaderMapperTest {
                 mapDriver.getCounters().findCounter(BaseMapper.getEdgeWriteErrorCounter()).getValue());
     }
 
-
     @Test
     public final void verify_null_dst_in_edge_logs_null_pointer_exception() throws Exception {
         //set the return value on the getRecordTypeHBaseRow private method

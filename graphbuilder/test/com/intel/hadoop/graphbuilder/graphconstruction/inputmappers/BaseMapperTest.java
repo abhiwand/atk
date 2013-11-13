@@ -12,10 +12,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
@@ -189,62 +186,5 @@ public class BaseMapperTest {
         verify(spiedBaseMapper).incrementErrorCounter(any(Mapper.Context.class),
                 any(PropertyGraphElement.class));
         verify(loggerMock).error(any(Object.class), any(IOException.class));
-    }
-
-
-    @Test
-    public final void verify_setUp_calls_fatal_on_InstantiationException() throws Exception {
-        //power mockito setting up a mock to a possible private variable
-        //in this case  initializeTokenizer is protected but should also work if it's private
-        PowerMockito.doThrow(new InstantiationException()).when(spiedBaseMapper,
-                method(BaseMapper.class, "initializeTokenizer",
-                        Configuration.class))
-                .withArguments(conf);
-
-        //ignore the to systemExit because it will kill all our test due to the System.exit
-        PowerMockito.doNothing().when(spiedBaseMapper, method(BaseMapper.class, "systemExit", null))
-                .withNoArguments();
-
-
-        spiedBaseMapper.setUp(conf);
-
-
-        verify(loggerMock).fatal(any(String.class), any(InstantiationException.class));
-    }
-
-    @Test
-    public final void verify_setUp_calls_fatal_on_IllegalAccessException() throws Exception {
-        //power mockito setting up a mock to a possible private variable
-        //in this case  initializeTokenizer is protected but should also work if it's private
-        PowerMockito.doThrow(new IllegalAccessException()).when(spiedBaseMapper,
-                method(BaseMapper.class, "initializeTokenizer",
-                        Configuration.class))
-                .withArguments(conf);
-
-        //ignore the to systemExit because it will kill all our test due to the System.exit
-        PowerMockito.doNothing().when(spiedBaseMapper, method(BaseMapper.class, "systemExit", null))
-                .withNoArguments();
-
-        spiedBaseMapper.setUp(conf);
-
-        verify(loggerMock).fatal(any(String.class), any(IllegalAccessException.class));
-    }
-
-    @Test
-    public final void verify_setUp_calls_fatal_on_ClassNotFoundException() throws Exception {
-        //power mockito setting up a mock to a possible private variable
-        //in this case  initializeTokenizer is protected but should also work if it's private
-        PowerMockito.doThrow(new ClassNotFoundException()).when(spiedBaseMapper,
-                method(BaseMapper.class, "initializeTokenizer",
-                        Configuration.class))
-                .withArguments(conf);
-
-        //ignore the to systemExit because it will kill all our test due to the System.exit
-        PowerMockito.doNothing().when(spiedBaseMapper, method(BaseMapper.class, "systemExit", null))
-                .withNoArguments();
-
-        spiedBaseMapper.setUp(conf);
-
-        verify(loggerMock).fatal(any(String.class), any(ClassNotFoundException.class));
     }
 }

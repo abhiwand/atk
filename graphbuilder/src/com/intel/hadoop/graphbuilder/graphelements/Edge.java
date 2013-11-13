@@ -49,6 +49,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     /**
      * Create a placeholder edge.
      */
+
     public Edge() {
         this.properties = new PropertyMap();
     }
@@ -174,7 +175,6 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
      */
     @Override
     public void write(DataOutput output) throws IOException {
-
         src.write(output);
         dst.write(output);
         label.write(output);

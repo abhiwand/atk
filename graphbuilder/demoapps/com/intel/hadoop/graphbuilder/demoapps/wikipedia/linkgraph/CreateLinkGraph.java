@@ -34,6 +34,9 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.text.ParseException;
+
 /**
  * Generate a link graph from a collection of wiki pages.
  * <p>
@@ -133,15 +136,11 @@ public class CreateLinkGraph {
      * @throws Exception
      */
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         commandLineInterface.checkCli(args);
         checkCli(args);
 
         Timer timer = new Timer();
-
-        if (null == commandLineInterface.getCmd()) {
-            commandLineInterface.showHelp("Error parsing command line options");
-        }
 
         Job job = new CreateLinkGraph().new Job();
         job = (Job) commandLineInterface.getRuntimeConfig().addConfig(job);

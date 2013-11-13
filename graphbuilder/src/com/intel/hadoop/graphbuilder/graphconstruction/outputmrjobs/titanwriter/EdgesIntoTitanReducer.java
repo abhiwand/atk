@@ -8,7 +8,9 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.io.IntWritable;
@@ -151,11 +153,10 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
                                                                               srcBlueprintsVertex,
                                                                               tgtBlueprintsVertex,
                                                                               label);
-            } catch (IllegalArgumentException e) {
-                LOG.fatal("Could not add edge to Titan; likely a schema error. The label on the edge is  " + label);
-                LOG.fatal(e.getMessage());
-                e.printStackTrace();
-                System.exit(1);
+            } catch (IllegalArgumentException e) {;
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.TITAN_ERROR,
+                        "Could not add edge to Titan; likely a schema error. The label on the edge is  " + label,
+                        LOG, e);
             }
 
             // Edge is added to the graph; now add the edge properties

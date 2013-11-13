@@ -37,6 +37,8 @@ import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.EdgeS
 import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.VertexSchema;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
@@ -86,13 +88,18 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
     /**
      * Allocates and initializes parser and graph elements store.
      *
-     * @throws ParserConfigurationException
      */
-    public LinkGraphTokenizer() throws ParserConfigurationException {
+    public LinkGraphTokenizer()  {
 
         factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        builder = factory.newDocumentBuilder();
+
+        try {
+            builder = factory.newDocumentBuilder();
+        } catch (ParserConfigurationException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "Cannot configure XML parser for Link Graph tokenization", LOG, e);
+        }
 
         XPathFactory xPathFactory = XPathFactory.newInstance();
         xpath = xPathFactory.newXPath();
@@ -128,11 +135,14 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
             parseLinks(text);
 
         } catch (SAXException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "Could not parse document", LOG, e);
         } catch (IOException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "IO exception while parsing document", LOG, e);
         } catch (XPathExpressionException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "Could not parse document", LOG, e);
         }
     }
 

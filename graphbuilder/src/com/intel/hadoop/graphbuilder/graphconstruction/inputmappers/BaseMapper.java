@@ -5,6 +5,8 @@ import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -64,50 +66,65 @@ public class BaseMapper {
      * @param conf the mappers current configuration usually context.getConfiguration()
      */
     public void setUp(Configuration conf) {
+
+        initializeTokenizer(conf);
+        initializeKeyFunction(conf);
+        setValClass(context.getMapOutputValueClass());
+
         try {
-            initializeTokenizer(conf);
-            initializeKeyFunction(conf);
-
-            setValClass(context.getMapOutputValueClass());
             setMapVal((PropertyGraphElement) valClass.newInstance());
-            setMapKey(new IntWritable());
-
         } catch (InstantiationException e) {
-            logFatal(e);
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Cannot instantiate map value class (" + PropertyGraphElement.class.getName() + " )", log, e);
         } catch (IllegalAccessException e) {
-            logFatal(e);
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when instantiating map value class ("
+                            + PropertyGraphElement.class.getName() + " )", log, e);
+        }
+
+        setMapKey(new IntWritable());
+    }
+
+    /**
+     * wrapper method to initialize key function. makes it easier to mock in unit test.
+     *
+     * @param conf the mappers conf usually context.getConfiguration()
+     */
+
+    protected void initializeKeyFunction(Configuration conf) {
+        try {
+            this.keyFunction = (KeyFunction) Class.forName(conf.get("KeyFunction")).newInstance();
         } catch (ClassNotFoundException e) {
-            logFatal(e);
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Could not find class named for key function.", log, e);
+        } catch (IllegalAccessException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when instantiating key function.", log, e);
+        } catch (InstantiationException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Instantiation exception when instantiating key function.", log, e);
         }
     }
 
     /**
-     * wrapper method to initialize key function. makes it easier to mock in unit test. all the exceptions thrown
-     * will be caught by setUp method
-     *
-     * @param conf the mappers conf usually context.getConfiguration()
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     */
-    protected void initializeKeyFunction(Configuration conf) throws ClassNotFoundException, IllegalAccessException,
-            InstantiationException {
-        this.keyFunction = (KeyFunction) Class.forName(conf.get("KeyFunction")).newInstance();
-    }
-
-    /**
      * wrapper method to initialize tokenizer. makes it easier to mock in unit test and is general good practice to
-     * encapsulate. all the exceptions thrown will be caught by setUp method
+     * encapsulate.
      *
      * @param conf the mappers conf usually context.getConfiguration()
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
      */
-    protected void initializeTokenizer(Configuration conf) throws ClassNotFoundException,
-            IllegalAccessException,
-            InstantiationException {
-        this.tokenizer = (GraphTokenizer) Class.forName(conf.get("GraphTokenizer")).newInstance();
+    protected void initializeTokenizer(Configuration conf) {
+        try {
+            this.tokenizer = (GraphTokenizer) Class.forName(conf.get("GraphTokenizer")).newInstance();
+        } catch (ClassNotFoundException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Could not find class named for tokenizer.", log, e);
+        } catch (IllegalAccessException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when instantiating tokenizer.", log, e);
+        } catch (InstantiationException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Instantiation exception when instantiating tokenizer.", log, e);
+        }
         this.tokenizer.configure(conf);
     }
 
@@ -204,19 +221,6 @@ public class BaseMapper {
 
     public void setValClass(Class valClass) {
         this.valClass = valClass;
-    }
-
-    private void logFatal(Exception e) {
-        log.fatal(e.getMessage(), e);
-        systemExit();
-    }
-
-    /**
-     * wrap the system exit call so i can ignore the call during unit test and it will make changing the exit code
-     * easy.
-     */
-    private void systemExit() {
-        System.exit(1);
     }
 
     public GraphTokenizer getTokenizer() {

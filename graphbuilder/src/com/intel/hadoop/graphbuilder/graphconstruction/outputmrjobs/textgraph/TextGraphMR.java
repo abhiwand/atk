@@ -27,7 +27,9 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputmrjobs.GraphGenerat
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -113,7 +115,12 @@ public class TextGraphMR extends GraphGenerationMRJob {
         this.usingHBase         = inputConfiguration.usesHBase();
 
         if (usingHBase) {
-            this.hbaseUtils = HBaseUtils.getInstance();
+            try {
+                this.hbaseUtils = HBaseUtils.getInstance();
+            } catch (IOException e) {
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
+                        "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+            }
             this.conf       = hbaseUtils.getConfiguration();
         } else {
             this.conf = new Configuration();
@@ -139,13 +146,11 @@ public class TextGraphMR extends GraphGenerationMRJob {
                 this.edgeReducerFunction = (Functional) edgeReducerFunction.newInstance();
             }
         } catch (InstantiationException e) {
-            LOG.fatal("Cannot instantiate reducer functions.");
-            System.exit(1);
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Cannot instantiate reducer functions.", LOG, e);
         } catch (IllegalAccessException e) {
-            LOG.fatal("Error instantiating reducer functions.");
-            System.exit(1);
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when instantiating reducer functions.", LOG, e);
         }
     }
 
@@ -176,9 +181,11 @@ public class TextGraphMR extends GraphGenerationMRJob {
         try {
             this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
         }
     }
 
@@ -226,8 +233,8 @@ public class TextGraphMR extends GraphGenerationMRJob {
      * @throws ClassNotFoundException
      * @throws InterruptedException
      */
-    public void run(CommandLine cmd)
-            throws IOException, ClassNotFoundException, InterruptedException {
+
+    public void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException {
 
         String outputPath = cmd.getOptionValue("out");
 

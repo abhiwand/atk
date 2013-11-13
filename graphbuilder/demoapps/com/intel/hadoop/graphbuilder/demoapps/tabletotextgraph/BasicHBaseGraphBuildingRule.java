@@ -8,11 +8,14 @@ import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.Verte
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,7 +95,12 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
     public BasicHBaseGraphBuildingRule(CommandLine cmd) {
 
         graphSchema = new PropertyGraphSchema();
-        hBaseUtils  = HBaseUtils.getInstance();
+        try {
+            this.hBaseUtils = HBaseUtils.getInstance();
+        } catch (IOException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
+                    "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+        }
 
         srcTableName = cmd.getOptionValue(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"));
 
@@ -145,17 +153,17 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
 
         for (String edgeRule : edgeRules) {
             if (edgeRule.split("\\,").length < 3) {
-                LOG.fatal("Edge rule too short; does not specify <source>,<destination>,<label>");
-                LOG.fatal("The fatal rule: " + edgeRule);
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "Edge rule too short; does not specify <source>,<destination>,<label>. Bad edge rule = "
+                                + edgeRule, LOG);
             }
         }
 
         for (String directedEdgeRule : directedEdgeRules) {
             if (directedEdgeRule.split("\\,").length < 3) {
-                LOG.fatal("Edge rule too short; does not specify <source>,<destination>,<label>");
-                LOG.fatal("The fatal rule: " + directedEdgeRule);
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "Edge rule too short; does not specify <source>,<destination>,<label>. Bad edge rule = "
+                                + directedEdgeRule, LOG);
             }
         }
     }
@@ -179,10 +187,9 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
             returnValue &= hBaseUtils.columnHasValidFamily(vidColumn, srcTableName);
 
             if (returnValue == false) {
-                LOG.fatal("FAILURE: attempt to generate graph using column family name not in specified hbase table");
-                LOG.fatal("colum name: " + vidColumn);
-                LOG.fatal("hbase table name: " + srcTableName);
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "GRAPHBUILDER FAILURE: " + vidColumn + " does not belong to a valid column family of table "
+                                + srcTableName, LOG);
             }
 
             String[] vertexPropertiesColumnNames =
@@ -191,10 +198,9 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
             for (String columnName : vertexPropertiesColumnNames) {
                 returnValue &= hBaseUtils.columnHasValidFamily(columnName, srcTableName);
                 if (returnValue == false) {
-                    LOG.fatal("FAILURE: attempt to generate graph using column family name not in specified hbase table");
-                    LOG.fatal("colum name: " + columnName);
-                    LOG.fatal("hbase table name: " + srcTableName);
-                    System.exit(1);
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                            "GRAPHBUILDER FAILURE: " + columnName + " does not belong to a valid column family of table "
+                                    + srcTableName, LOG);
                 }
             }
         }
@@ -224,27 +230,24 @@ public class BasicHBaseGraphBuildingRule implements GraphBuildingRule {
 
             returnValue &= hBaseUtils.columnHasValidFamily(srcVertexColName, srcTableName);
             if (returnValue == false) {
-                LOG.fatal("FAILURE: attempt to generate graph using column family name not in specified hbase table");
-                LOG.fatal("colum name: " + srcVertexColName);
-                LOG.fatal("hbase table name: " + srcTableName);
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "GRAPHBUILDER FAILURE: " + srcVertexColName + " does not belong to a valid column family of table "
+                        + srcTableName, LOG);
             }
 
             returnValue &= hBaseUtils.columnHasValidFamily(tgtVertexColName, srcTableName);
             if (returnValue == false) {
-                LOG.fatal("FAILURE: attempt to generate graph using column family name not in specified hbase table");
-                LOG.fatal("colum name: " + tgtVertexColName);
-                LOG.fatal("hbase table name: " + srcTableName);
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "GRAPHBUILDER FAILURE: " + tgtVertexColName + " does not belong to a valid column family of table "
+                                + srcTableName, LOG);
             }
 
             for (String propertyColName : propertyColNames) {
                 returnValue &= hBaseUtils.columnHasValidFamily(propertyColName, srcTableName);
                 if (returnValue == false) {
-                    LOG.fatal("FAILURE: attempt to generate graph using column family name not in specified hbase table");
-                    LOG.fatal("colum name: " + propertyColName);
-                    LOG.fatal("hbase table name: " + srcTableName);
-                    System.exit(1);
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                            "GRAPHBUILDER FAILURE: " + propertyColName + " does not belong to a valid column family of table "
+                                    + srcTableName, LOG);
                 }
             }
         }

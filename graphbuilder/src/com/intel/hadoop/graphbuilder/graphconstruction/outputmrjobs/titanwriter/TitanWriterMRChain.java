@@ -14,13 +14,11 @@ import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.Verte
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.util.Functional;
-import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
-import com.intel.hadoop.graphbuilder.util.HBaseUtils;
-import com.intel.hadoop.graphbuilder.util.PassThruMapperIntegerKey;
+import com.intel.hadoop.graphbuilder.util.*;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.TitanKey;
 import com.tinkerpop.blueprints.Vertex;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
@@ -117,10 +115,17 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         this.graphBuildingRule  = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
         this.graphSchema        = graphBuildingRule.getGraphSchema();
+        this.usingHBase         = true;
 
-        this.usingHBase = true;
-        this.hbaseUtils = HBaseUtils.getInstance();
-        this.conf       = hbaseUtils.getConfiguration();
+        try {
+            this.hbaseUtils = HBaseUtils.getInstance();
+        } catch (IOException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
+                    "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+        }
+
+        this.conf = hbaseUtils.getConfiguration();
+
     }
 
     /**
@@ -142,9 +147,11 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                 this.edgeReducerFunction = (Functional) edgeReducerFunction.newInstance();
             }
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Unable to instantiate reducer functions.", LOG, e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when instantiating reducer functions.", LOG, e);
         }
     }
 
@@ -175,9 +182,11 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         try {
             this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
         }
     }
 
@@ -246,9 +255,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         try {
             graph = tribecaGraphFactoryOpen(conf);
         } catch (IOException e) {
-            LOG.fatal("Unhandled IO exception while attempting to open Titan");
-            e.printStackTrace();
-            System.exit(1);
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "GRAPHBUILDER FAILURE: Unhandled IO exception while attempting to connect to Titan.",  LOG, e);
         }
 
         graph.makeKey("trueName").dataType(String.class).indexed(Vertex.class).unique().make();
@@ -296,9 +304,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             LOG.info("WARNING:  hbase table " + titanTableName +
                      " already exists. Titan will append new graph to existing data.");
             } else {
-                LOG.info("ABORTING:  hbase table " + titanTableName +
-                        " already exists. Use -a option if you wish to append new graph to existing data.");
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                        "GRAPHBUILDER FAILURE: hbase table " + titanTableName +
+                                " already exists. Use -a option if you wish to append new graph to existing data.", LOG);
             }
         }
 
@@ -421,7 +429,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         try {
             FileInputFormat.addInputPath(writeEdgesJob, intermediateDataFilePath);
         } catch (IOException e) {
-            e.printStackTrace();  // nls todo clean up exceptions
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "Cannot access temporary edge file.", LOG, e);
         }
 
         writeEdgesJob.setOutputFormatClass(org.apache.hadoop.mapreduce.lib.output.NullOutputFormat.class);

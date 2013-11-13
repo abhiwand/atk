@@ -38,6 +38,7 @@ public class GBHTableConfig {
     // Column name separator cannot be ":" because HBase uses ":" as the
     // separator between column family and qualifier
 
+
     public static final String COL_NAME_SEPARATOR = "#";
     public static final String VIDMAP_HTABLE_NAME = "GB_VidMap";
     public static final String VIDMAP_HTABLE_HCD = "vidmap";
@@ -52,13 +53,14 @@ public class GBHTableConfig {
     public static final String CMD_VERTICES_OPTNAME = "vertices";
     public static final String FLATTEN_LISTS_OPTNAME = "flattenlists";
 
-    public static final int HBASE_CACHE_SIZE = 500;
-    public static final String TITAN_HBASE_TABLENAME = "GBTitan";
+
+    public static final int    HBASE_CACHE_SIZE            = 500;
+    public static final String TITAN_HBASE_TABLENAME       = "GBTitan";
     public static final String TITAN_HBASE_STORAGE_TIMEOUT = "10000";
 
-    public static final String HBASE_COLUMN_SEPARATOR = ":";
+    public static final String HBASE_COLUMN_SEPARATOR           = ":";
     public static final String TRIBECA_GRAPH_PROPERTY_SEPARATOR = "_";
-    public static final String NULLKEY = "NULLKEY";
+    public static final String NULLKEY                          = "NULLKEY";
 
     public static RuntimeConfig config = RuntimeConfig.getInstance(GBHTableConfig.class);
 

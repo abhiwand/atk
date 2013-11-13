@@ -6,6 +6,8 @@ import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TextG
 import com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
@@ -106,10 +108,16 @@ public class TableToTextGraph {
         return options;
     }
 
-    private static void showHelp(Options options) {
+    private static void exitWithHelp(Options options, String message, StatusCode statusCode) {
+
+        LOG.fatal(message);
+
         HelpFormatter h = new HelpFormatter();
         h.printHelp("TableToTextGraph", options);
+
+        GraphBuilderExit.graphbuilderFatalExitNoException(statusCode, message, LOG);
     }
+
 
     /**
      * This function checks whether required tablename, vertices, vertex properties
@@ -132,18 +140,14 @@ public class TableToTextGraph {
                 srcTableName = cmd.getOptionValue(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"));
                 LOG.info("Table Name: " + srcTableName);
             } else {
-                LOG.fatal("A table name is required");
-                showHelp(options);
-                System.exit(1);
+                exitWithHelp(options, "A table name is required.", StatusCode.BAD_COMMAND_LINE);
             }
 
             if (cmd.hasOption("o")) {
                 outTableName = cmd.getOptionValue("o");
                 LOG.info("Output path: " + outTableName);
             } else {
-                LOG.fatal("An output path is required");
-                showHelp(options);
-                System.exit(1);
+                exitWithHelp(options, "An output path is required", StatusCode.BAD_COMMAND_LINE);
             }
 
             if (cmd.hasOption(GBHTableConfig.config.getProperty("CMD_VERTICES_OPTNAME"))) {
@@ -151,9 +155,8 @@ public class TableToTextGraph {
                     LOG.info("Vertices: " + v);
                 }
             } else {
-                LOG.fatal("Please add column family and names for vertices and vertex properties");
-                showHelp(options);
-                System.exit(1);
+                exitWithHelp(options, "Please add column family and names for vertices and vertex properties",
+                        StatusCode.BAD_COMMAND_LINE);
             }
 
             if (cmd.hasOption(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))) {
@@ -170,15 +173,12 @@ public class TableToTextGraph {
 
             if (!(cmd.hasOption(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))) &&
                     !(cmd.hasOption(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME")))) {
-                LOG.fatal("Please add column family and names for (directed) edges and (directed) edge properties");
-                showHelp(options);
-                System.exit(1);
+                exitWithHelp(options, "Please add column family and names for (directed) edges and (directed) edge properties",
+                        StatusCode.BAD_COMMAND_LINE);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            showHelp(options);
-            System.exit(1);
+        } catch (ParseException e) {
+            exitWithHelp(options, "Parsing exception when parsing command line.", StatusCode.BAD_COMMAND_LINE);
         }
 
         assert(cmd != null);
@@ -226,7 +226,6 @@ public class TableToTextGraph {
         HBaseInputConfiguration      inputConfiguration  = new HBaseInputConfiguration(srcTableName);
         BasicHBaseGraphBuildingRule  buildingRule        = new BasicHBaseGraphBuildingRule(cmd);
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
-
 
         LOG.info("============= Creating graph from hbase ==================");
         timer.start();

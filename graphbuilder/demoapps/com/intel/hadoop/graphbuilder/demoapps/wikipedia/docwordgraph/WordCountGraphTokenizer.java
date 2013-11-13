@@ -43,7 +43,10 @@ import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.Prope
 import com.intel.hadoop.graphbuilder.graphconstruction.propertygraphschema.VertexSchema;
 import com.intel.hadoop.graphbuilder.graphconstruction.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.IntType;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
+
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -100,7 +103,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
     // tags used to mark each vertex name as either a "document" or a "word"
     // documents are prefixed by 0, words are prefixed by 1...
-    // nls todo:  investigate eliminating this legacy functionality
+    // todo:  investigate eliminating this legacy functionality
+    //        ie. dropping the DOCUMENT_TAG and WORD_TAG and prefixes
 
     private final char DOCUMENT_TAG = '0';
     private final char WORD_TAG     = '1';
@@ -126,7 +130,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
             try {
                 loadDictionary(dictPath);
             } catch (IOException e) {
-                e.printStackTrace();
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
+                        "Could not load dictionary file, path=" + dictPath, LOG, e);
             }
         }
 
@@ -136,7 +141,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
             try {
                 loadStopWords(stopWordsPath);
             } catch (IOException e) {
-                e.printStackTrace();
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
+                        "Could not load stopwords file, path=" + stopWordsPath, LOG, e);
             }
         }
     }
@@ -212,13 +218,17 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
                 }
             } // end of if (!(input_title.startsWith("Wikipedia:") || ...   block
         } catch (ParserConfigurationException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "Parser configuration error.", LOG, e);
         } catch (SAXException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "SAXException", LOG, e);
         } catch (IOException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "IO Exception", LOG, e);
         } catch (XPathExpressionException e) {
-            e.printStackTrace();
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
+                    "XPathExpressionException", LOG, e);
         }
     }
 
@@ -284,12 +294,20 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
         for (FileStatus stat : stats) {
 
             LOG.debug(("Load dictionary: " + stat.getPath().getName()));
+            Scanner scanner = null;
+            try {
+                scanner = new Scanner(new BufferedReader(new InputStreamReader(fileSystem.open(stat.getPath()))));
 
-            Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(fileSystem.open(stat.getPath()))));
-
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                dictionary.add(line);
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    dictionary.add(line);
+                }
+            }  catch (IOException e) {
+                throw e;
+            } finally {
+                if (scanner != null) {
+                    scanner.close();
+                }
             }
         }
     }
@@ -302,11 +320,20 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
         for (FileStatus stat : stats) {
             LOG.debug(("Load stop words: " + stat.getPath().getName()));
 
-            Scanner scanner = new Scanner(new BufferedReader(new InputStreamReader(fileSystem.open(stat.getPath()))));
+            Scanner scanner = null;
+            try {
+                scanner = new Scanner(new BufferedReader(new InputStreamReader(fileSystem.open(stat.getPath()))));
 
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                stopWordsList.add(line);
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    stopWordsList.add(line);
+                }
+            } catch (IOException e) {
+                throw e;
+            } finally {
+                if (scanner != null) {
+                    scanner.close();
+                }
             }
         }
     }

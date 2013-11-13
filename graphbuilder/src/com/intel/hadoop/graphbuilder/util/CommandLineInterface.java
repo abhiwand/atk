@@ -17,12 +17,13 @@ import java.util.List;
  * </p>
  */
 public class CommandLineInterface {
-    private static final Logger LOG = Logger.getLogger(CommandLineInterface.class);
-    private static final String GENERIC_ERROR = "Error parsing options";
-    private Options options = new Options();
-    private CommandLine cmd = null;
+
+    private static final Logger  LOG           = Logger.getLogger(CommandLineInterface.class);
+    private static final String  GENERIC_ERROR = "Error parsing options";
+    private Options              options       = new Options();
+    private CommandLine          cmd           = null;
+    private RuntimeConfig        runtimeConfig = RuntimeConfig.getInstance();
     private GenericOptionsParser genericOptionsParser;
-    private RuntimeConfig runtimeConfig = RuntimeConfig.getInstance();
 
     /**
      * does this command line have the specified option?
@@ -52,26 +53,32 @@ public class CommandLineInterface {
         for (int i = 0; i < args.length;i++) {
             if (args[i].equals("-conf")) {
                 if (i + 1 == args.length) {
-                    LOG.fatal("-conf argument given but no file path specified!");
-                    System.exit(1);  // nls todo: when integrating with TRIB-834 use new exit framework
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                            "-conf argument given but no file path specified!", LOG);
                 } else if (!new File(args[i+1]).exists()) {
-                    LOG.fatal("Configuration file " + args[i+1] + " cannot be found.");
-                    System.exit(1);  // nls todo: when integrating with TRIB-834 use new exit framework
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CANNOT_FIND_CONFIG_FILE,
+                            "Configuration file " + args[i+1] + " cannot be found.", LOG);
                 }
             }
         }
 
         //send the command line options to hadoop parse args to get runtime config options first
+
         try {
             genericOptionsParser = new GenericOptionsParser(args);
         } catch (IOException e) {
+            // show help and terminate the process
             showHelp("Error parsing hadoop generic options.");
         }
 
         //load all the grahpbuilder configs into the runtime class
+
         runtimeConfig.loadConfig(genericOptionsParser.getConfiguration());
+
         //parse the remaining args
+
         CommandLineParser parser = new PosixParser();
+
         try {
 
             cmd = parser.parse(options, genericOptionsParser.getRemainingArgs());
@@ -84,6 +91,8 @@ public class CommandLineInterface {
                 showHelpOption(getFirstMissingOptionFromException(e));
             }else if(e instanceof MissingArgumentException){
                 showHelpMissingArgument(getMissingArgumentFromException(e));
+            } else {
+                showHelp("Error parsing option string.");
             }
         }
         return cmd;
@@ -92,10 +101,8 @@ public class CommandLineInterface {
     /**
      * Make sure that all required options are present in raw arguments..
      * @param args  raw arguments as string array
-     * @throws IOException
-     * @throws ParseException
      */
-    public void checkCli(String[] args) throws IOException, ParseException {
+    public void checkCli(String[] args) {
         parseArgs(args);
         options.getRequiredOptions().iterator();
         List<String> opts = options.getRequiredOptions();
@@ -178,7 +185,8 @@ public class CommandLineInterface {
         }
         HelpFormatter h = new HelpFormatter();
         h.printHelp(error, options);
-        System.exit(1);
+        GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                "Unable to process command line.", LOG);
     }
 
     public void setOptions(Options options) {
@@ -224,7 +232,6 @@ public class CommandLineInterface {
      * Convert missing argument exception into string message.
      * @param ex a ParseException
      */
-
     public static String getMissingArgumentFromException(ParseException ex){
         MissingArgumentException missingArgumentException;
 

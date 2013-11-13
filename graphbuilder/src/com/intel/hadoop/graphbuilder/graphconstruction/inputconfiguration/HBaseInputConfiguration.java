@@ -5,7 +5,9 @@ package com.intel.hadoop.graphbuilder.graphconstruction.inputconfiguration;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
 import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.HBaseReaderMapper;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Scan;
@@ -29,6 +31,8 @@ import java.util.List;
  * <li> It prepares the MR job and configuration by calling hbase utilities</li>
  * </ul>
  *
+ * Constructor will terminate the process if it cannot connect to HBase.
+ *
  * @see InputConfiguration
  * @see HBaseReaderMapper
  *
@@ -50,19 +54,21 @@ public class HBaseInputConfiguration implements InputConfiguration {
     public HBaseInputConfiguration(String srcTableName) {
 
         this.srcTableName = srcTableName;
-
-        this.hBaseUtils = HBaseUtils.getInstance();
-        // Check if input table exists
+        try {
+            this.hBaseUtils = HBaseUtils.getInstance();
+        } catch (IOException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
+                    "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+        }
 
         try {
             if (!hBaseUtils.tableExists(srcTableName)) {
-                LOG.fatal("GRAPHBUILDER ERROR: " + srcTableName + " table does not exist");
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.MISSING_HBASE_TABLE,
+                        "GRAPHBUILDER ERROR: " + srcTableName + " table does not exist", LOG);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            LOG.fatal("Could not read input HBase Table named: " + srcTableName);
-            System.exit(1);
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "GRAPHBUILDER ERROR: IO exception when attempting to read HBase table " + srcTableName, LOG, e);
         }
     }
 
@@ -101,9 +107,8 @@ public class HBaseInputConfiguration implements InputConfiguration {
         try {
             TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, PropertyGraphElement.class, job);
         } catch (IOException e) {
-            e.printStackTrace();
-            LOG.fatal("Could not initialize table mapper job");
-            System.exit(1);
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
+                    "Could not initialize table mapper job", LOG, e);
         }
     }
 
