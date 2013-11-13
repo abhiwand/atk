@@ -80,7 +80,7 @@ for n in `cat ${nodesfile}`; do
     ${dryrun} scp -i ${pemfile} ${hostsfile} ${n}:/tmp/_hosts
     ${dryrun} ssh -t -i ${pemfile} ${n} "sudo mv -f /tmp/_hosts /etc/hosts"
     # remove the existing .ssh/known_hosts file
-    ${dryrun} ssh -t -i ${pemfile} ${n} "sudo rm -f /home/hadoop/.ssh/known_hosts"
+    ${dryrun} ssh -t -i ${pemfile} ${n} "sudo rm -f ~/.ssh/known_hosts /home/hadoop/.ssh/known_hosts"
 done
 
 # Check data disk mounts and ownershipt, default user is 'hadoop'

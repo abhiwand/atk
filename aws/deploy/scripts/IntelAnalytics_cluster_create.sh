@@ -52,7 +52,7 @@ function usage()
     [--credentials <str> ]  // directory with credentials
     [--use-placement-group] // use placement group for nodes within a cluster
     [--no-public-ip-for-slave ] // do not allow slave nodes to have public ip
-    [--no-dryrun]           // do not launch instance
+    [--no-dryrun]           // really launch instance
     [--help ]               // print this message
 "
     exit 1
@@ -299,11 +299,10 @@ if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
 fi
 
 # - Launch 4 instances into the placement group
-cnnames=(
-"`IA_format_node_name ${cname} 0`" 
-"`IA_format_node_name ${cname} 1`" 
-"`IA_format_node_name ${cname} 2`" 
-"`IA_format_node_name ${cname} 3`")
+for (( i = 0; i < ${csize}; i++ ))
+do
+    cnnames[$i]=`IA_format_node_name ${cname} $i`
+done
 
 # create instances
 for (( i = 0; i < ${csize}; i++ ))
