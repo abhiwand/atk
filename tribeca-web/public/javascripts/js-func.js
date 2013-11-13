@@ -14,6 +14,18 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
         phone_number.match(/^(1-?)?(\([2-9]\d{2}\)|[2-9]\d{2})-?[2-9]\d{2}-?\d{4}$/);
 }, 'Please enter a valid phone number.');
 
+$.validator.addMethod("accept", function(value, element, string) {
+    return value === string;
+}, $.validator.format("Please enter '{0}'"));
+$("#form").validate({
+    rules: {            
+        terms: {
+            required: true,
+            equals: "I agree"
+        }
+    }
+});
+
 	registrationForm = $( form ).validate({
 		/*** here are the validation rules. the elements are get by name attribute ( <input type="field" name="firstname" /> ) ***/
 		/********************HERE YOU CAN CUSTOMIZE THE STOCK VALIDATION RULES*******************/
@@ -81,7 +93,8 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 				required: true
 			},*/
 			terms:{
-				required:true
+				required:true,
+				equalTo:"I agree"
 			}, 
 			/*url:{
 				required:true, 
@@ -204,7 +217,8 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 				required: "Please select your gender"
 			},
 			terms: {
-				required: "You must agree to the terms of use"
+				required: "You must agree to the terms of use",
+				equalTo: "You must type 'I agree'"
 			}
 		}	
 	});
