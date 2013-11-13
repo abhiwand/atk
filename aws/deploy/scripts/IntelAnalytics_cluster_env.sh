@@ -55,7 +55,7 @@ if [ -z "${IA_SGROUP_ADMSSH}" ]; then
 fi
 # default port range for hadoop
 if [ -z "${IA_SGROUP_HADOOP_PORT_MIN}" ]; then
-    export IA_SGROUP_HADOOP_PORT_MIN=8000
+    export IA_SGROUP_HADOOP_PORT_MIN=0
 fi
 if [ -z "${IA_SGROUP_HADOOP_PORT_MAX}" ]; then
     export IA_SGROUP_HADOOP_PORT_MAX=65535
