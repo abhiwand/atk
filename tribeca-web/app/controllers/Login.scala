@@ -49,11 +49,11 @@ object Login extends Controller {
 
 
     def getResult(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): SimpleResult = {
+
         val response = getResponse(auth, sessionGen, statementGenerator)
         response._1 match {
             case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get).withCookies(Register.getRegisteredCookie)
-            case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
-                "/", None, true, false))
+            case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Ok(StatusCodes.getJsonStatusCode(response._1))
             case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
         }
     }
@@ -65,8 +65,7 @@ object Login extends Controller {
      * @return tuple of (status code, session Id)
      */
     def getResponse(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): (Int, Option[String]) = {
-
-        if (auth.validateUserInfo() == None)
+        if (auth.validateToken() == None || auth.validateUserInfo() == None)
             return (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
 
         val result = Users.login(auth.userInfo.get.email, statementGenerator, DBLoginCommand)

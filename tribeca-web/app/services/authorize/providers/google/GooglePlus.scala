@@ -63,7 +63,7 @@ object GooglePlus {
         authData.validate[ValidateTokenResponseData](validateTokenResponseData).map {
             case (validResponse) =>
                 if (validateClientId(validResponse.client_id)) {
-                    return Some(new GoogleTokenResponse(validResponse.access_token, validResponse.authuser, validResponse.client_id))
+                    return Some(new GoogleTokenResponse(validResponse.access_token, validResponse.client_id, validResponse.email))
                 }
         }.recoverTotal {
             return None
@@ -71,27 +71,34 @@ object GooglePlus {
         return None
     }
 
-    def validateToken(token: String): Option[UserInfo] = {
-        val responseFuture = WS.url(tokenVerifyUrl).withQueryString("access_token" -> token).get()
+  var validate:Option[TokenResponse] = _
+    def validateToken(auth: JsValue): Option[UserInfo] = {
+    validate = validateTokenResponseData(auth)
+
+      val responseFuture = WS.url(tokenVerifyUrl).withQueryString("access_token" -> validate.get.access_token).get()
         val resultFuture = responseFuture map {
             response =>
                 response.status match {
                     case 200 =>
                         Json.parse(response.body).validate[ValidateTokenJson](validateTokenJson).map {
                             case (validateTokenJson) =>
+                              if(validateClientId(validateTokenJson.audience) &&  validateTokenJson.email.equals(validate.get.email)){
                                 validateTokenJson
+                              }
                         }
                     case _ =>
-                        return None
+                      ValidateTokenJson("","","","",0,"",false,"")
                 }
         }
 
         //this makes it a synchronous request
-        val result = Await.result(resultFuture, 30 seconds)
-        if (validateClientId(result.get.audience)) {
-            return Some(UserInfo("", result.get.email, "", ""))
-        } else {
-            return None
+        val result = Await.result(resultFuture, 60 seconds)
+
+        if(result.isInstanceOf[play.api.libs.json.JsSuccess[ValidateTokenJson]]){
+          val jsSuccess = result.asInstanceOf[play.api.libs.json.JsSuccess[ValidateTokenJson]]
+          Some(UserInfo("", jsSuccess.get.email, "", ""))
+        } else{
+          None
         }
     }
 

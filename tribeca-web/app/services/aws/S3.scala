@@ -135,10 +135,14 @@ object S3 {
     Math.round(size / Math.pow(BYTE, sizeIndex)).toString + " " + sizes(sizeIndex)
   }
 
-  def getObjectList(userIdentifier: String): mutable.Buffer[S3ObjectSummary] = {
-
-    val objectList = s3Client.listObjects(getBucketName, PREFIX + userIdentifier + "/")
-    scala.collection.JavaConversions.asScalaBuffer[S3ObjectSummary](objectList.getObjectSummaries)
+  def getObjectList(userIdentifier: String): List[S3ObjectSummary] = {
+    if(userIdentifier.isEmpty){
+      List()
+    }else{
+      val objectList = s3Client.listObjects(getBucketName, PREFIX + userIdentifier + "/")
+      //scala.collection.JavaConversions.asScalaBuffer[S3ObjectSummary](objectList.getObjectSummaries)
+      objectList.getObjectSummaries.toList
+    }
   }
 
   def uploadDirectory(userIdentifier:String): String = {

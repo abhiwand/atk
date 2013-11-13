@@ -41,13 +41,12 @@ class CookieGenerator {
     private val UTF8 = "UTF-8"
     private val SECONDS_PER_HOUR = 3600
 
-    def createCookie(secret: String, name: String): Cookie = {
-        var checkEmpty = "";
-        //temporary fix
-        if(secret.isEmpty) checkEmpty = "empty" else checkEmpty = secret
-        val value = create_signed_value(checkEmpty, name, "username")
-
-        Cookie("username-" + name, value, Some(SECONDS_PER_HOUR * 8), "/", Some(Play.application.configuration.getString("ipython.cookieDomain").get), false, false)
+    def createCookie(secret: String, ipythonUrl: String): Cookie = {
+        var checkEmptySecret = "";
+        if(secret.isEmpty) checkEmptySecret = "empty" else checkEmptySecret = secret
+        val cookieName = "username-" + ipythonUrl.replace(":", "-")
+        val value = create_signed_value(secret, cookieName, "username")
+        Cookie(cookieName, value, Some(SECONDS_PER_HOUR * 8), "/", Some("localhost"), false, false)
     }
 
     /**
@@ -65,7 +64,7 @@ class CookieGenerator {
 
         val timestamp = getEpochTime.toString
         val valueBase64 = new sun.misc.BASE64Encoder().encode(value.getBytes(UTF8))
-        val signature = create_signature(secret.getBytes(UTF8), name.getBytes(UTF8), valueBase64.getBytes(UTF8), timestamp.getBytes(UTF8))
+        val signature = create_signature(secret.getBytes(UTF8), List(name.getBytes(UTF8), valueBase64.getBytes(UTF8), timestamp.getBytes(UTF8)) )
         val signatureHex = Hex.encodeHexString(signature)
         val strArray = Array(valueBase64, timestamp, signatureHex)
         strArray.mkString("|")
@@ -78,20 +77,19 @@ class CookieGenerator {
     /**
      *
      * Create signature with the secret.
-     * @param secret
-     * @param name
-     * @param value
-     * @param timestamp
+     * @param secret the cookie secret used to hash seed
+     * @param parts the byte arrays that will be part of the signature
      * @return
      */
-    private def create_signature(secret: Array[Byte], name: Array[Byte], value: Array[Byte], timestamp: Array[Byte]): Array[Byte] =
+    private def create_signature(secret: Array[Byte], parts: List[Array[Byte]]): Array[Byte] =
     {
         val mac: Mac = Mac.getInstance(HMAC_SHA1_ALGORITHM)
         val signingKey = new SecretKeySpec(secret, HMAC_SHA1_ALGORITHM)
         mac.init(signingKey)
-        mac.update(name)
-        mac.update(value)
-        mac.doFinal(timestamp)
+        for(bytes <- parts){
+          mac.update(bytes)
+        }
+        mac.doFinal()
     }
 
 }

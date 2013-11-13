@@ -54,10 +54,12 @@ object Register extends Controller {
                 },
                 registrationForm => {
                     //make sure the terms are set to on since we couldnt' validate with a boolean
-                    if (registrationForm.terms == "on" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
+                    if (registrationForm.terms.trim.toLowerCase == "i agree" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
                         json = Json.parse(registrationForm.authResult)
                         auth = new Authorize(json, Providers.GooglePlus)
                         response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
+                    }else{
+                      Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
                     }
                 }
             )
@@ -80,8 +82,7 @@ object Register extends Controller {
      * @return tuple of (status code, session Id)
      */
     def getResponse(registrationForm: RegistrationFormMapping, auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): (Int, Option[String]) = {
-
-        if (auth.validateUserInfo() == None)
+        if (auth.validateToken() == None || auth.validateUserInfo() == None)
             return (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
 
         val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true,

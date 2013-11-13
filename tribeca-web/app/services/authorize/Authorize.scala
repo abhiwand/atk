@@ -52,10 +52,7 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
     def validateToken(): Option[UserInfo] = {
         Provider match {
             case Providers.GooglePlus =>
-                if (responseData == None)
-                    return None
-
-                userInfo = GooglePlus.validateToken(responseData.get.access_token)
+                userInfo = GooglePlus.validateToken(jsonData)
                 if (userInfo != None && userInfo.get.email != null) userInfo else None
             case Providers.None =>
                 None

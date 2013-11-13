@@ -39,12 +39,8 @@ object Python extends Controller {
      */
     var ipython = Authenticated {
         request =>
-
-            var url = request.user._1.ipythonUrl.getOrElse("")
-            url = url.replace(":", "-")
-
             Ok(views.html.ipython("Ipython", request.user._1))
-              .withCookies(new CookieGenerator createCookie(request.user._1.secret.getOrElse(""), url))
+              .withCookies(new CookieGenerator createCookie(request.user._1.secret.getOrElse(""), request.user._1.ipythonUrl.getOrElse("")))
     }
 
     var documentation = Authenticated{ request =>
