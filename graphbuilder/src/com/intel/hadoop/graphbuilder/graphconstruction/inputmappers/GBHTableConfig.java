@@ -38,16 +38,21 @@ public class GBHTableConfig {
     // Column name separator cannot be ":" because HBase uses ":" as the
     // separator between column family and qualifier
 
-    public static final String COL_NAME_SEPARATOR         = "#";
-    public static final String VIDMAP_HTABLE_NAME         = "GB_VidMap";
-    public static final String VIDMAP_HTABLE_HCD          = "vidmap";
-    public static final String VCN_CONF_NAME              = "VertexColNames";
-    public static final String ECN_CONF_NAME              = "EdgeColNames";
-    public static final String VERTEX_PROP_COLFAMILY      = "VertexPropertyCF";
+
+    public static final String COL_NAME_SEPARATOR = "#";
+    public static final String VIDMAP_HTABLE_NAME = "GB_VidMap";
+    public static final String VIDMAP_HTABLE_HCD = "vidmap";
+    public static final String VCN_CONF_NAME = "VertexColNames";
+    public static final String ECN_CONF_NAME = "EdgeColNames";
+    public static final String DECN_CONF_NAME = "DirectedEdgeColNames";
+    public static final String VERTEX_PROP_COLFAMILY = "VertexPropertyCF";
     public static final String VERTEX_PROP_IDCOLQUALIFIER = "VertexID";
-    public static final String CMD_EDGES_OPTNAME          = "edges";
-    public static final String CMD_TABLE_OPTNAME          = "tablename";
-    public static final String CMD_VERTICES_OPTNAME       = "vertices";
+    public static final String CMD_EDGES_OPTNAME = "edges";
+    public static final String CMD_DIRECTED_EDGES_OPTNAME = "directedEdges";
+    public static final String CMD_TABLE_OPTNAME = "tablename";
+    public static final String CMD_VERTICES_OPTNAME = "vertices";
+    public static final String FLATTEN_LISTS_OPTNAME = "flattenlists";
+
 
     public static final int    HBASE_CACHE_SIZE            = 500;
     public static final String TITAN_HBASE_TABLENAME       = "GBTitan";

@@ -1,0 +1,116 @@
+@(message: String, user: models.database.UserRow)
+
+@mainLoggedIn(message, user) {
+
+         <div id='main-content'>
+          <div class='container'>
+            <div class='row'>
+              <div class='col-md-push-9 col-sm-push-8 col-sm-4 col-md-3'>
+                <nav class='sidebar'>
+                  <button class='btn btn-block btn-contrast sidebar-toggle' data-target='.sidebar-collapse' data-toggle='collapse' type='button'>
+                    <span class='sr-only'>Toggle navigation</span>
+                    <span class='icon-bar'></span>
+                    <span class='icon-bar'></span>
+                    <span class='icon-bar'></span>
+                  </button>
+                  <div class='sidebar-collapse collapse'>
+                    <div class='box'>
+                      <h3 class='title'>Search Privacy</h3>
+                      <form action='privacy' method='get'>
+                        <div class='input-group'>
+                          <input class='form-control' placeholder='Search...' type='text'>
+                          <span class='input-group-btn'>
+                            <button class='btn btn-contrast' type='button'>
+                              <i class='fa-icon-search'></i>
+                            </button>
+                          </span>
+                        </div>
+                      </form>
+                    </div>
+                    <div class='box'>
+                      <h3 class='title'>Privacy Notice Links</h3>
+                      <div class='list-group'>
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel® Online Privacy Notice Summary
+                        </a>
+                      
+                          <a class="list-group-item active" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Full Intel® Online Privacy Notice
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        FAQs
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Contact Us
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel Corporate Privacy Rules (Deed Poll)
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Candidate Notice
+                        </a>
+                       <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel Technology Provider Program Notice
+                        </a>
+                         <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel® Active Management Technology Notice
+                        </a>
+                      
+                          <a class="list-group-item" href="#"><i class='fa-icon-angle-right fa-icon-fixed-width'></i>
+                        Intel® Viiv™ Technology Notice
+                        </a>
+                      </div>
+                    </div>    
+                  </div>
+                </nav>
+              </div>
+              <div class='col-md-pull-3 col-sm-pull-4 col-sm-8 col-md-9'>
+                <div class='text-boxes'>
+                  <div class='row text-box text-box-title-above text-box-big-image'>
+                    <div class='col-sm-12'>
+                      <h2 class='title'><a href="/blog_single_post.html">Intel Online Privacy Notice</a></h2> 
+                      <hr class='hr-half'>
+                      <h3>Intel is committed to respecting your privacy. Our personal information handling practices are outlined below and in supplemental notices at the point of collection.</h3>
+                      <p>Our website uses cookies.  For more information about how we use cookies, please see our <a href='cookies'>Cookie Notice</a>. </p>
+                    </div>
+                  </div>
+                  <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>Collection of Your Personal Information</h2>
+                      <p>Intel collects personal information such as your name, address, email address, and payment card information for a variety of reasons. We will explain why we need to collect this information when we ask you for it.</p>
+                    </div>
+                  </div>
+                   <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>Use of Your Personal Information</h2>
+                      <p>Intel will only use your personal information for the purpose it was collected. For example, to deliver a product or service that you have requested, enable your participation in online activities, or personalize your experience. We will not use your personal information for a different purpose without first asking your permission.</p>
+                    </div>
+                  </div>
+                   <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>Sharing Your Personal Information</h2>
+                      <p>Intel may share your personal information with Intel Corporation in the US, with any Intel subsidiary worldwide, or with authorized third parties. We only provide third parties with the minimum amount of personal information necessary to complete the requested service. We do not allow third parties to use your personal information for a different purpose.</p>
+                      <p>We may need to access or disclose your personal information to comply with the law or legal process and to exercise our legal rights or defend against legal claims.</p>
+                      <p>We may share personal information and any additional information available to us in order to investigate, prevent, or take action regarding illegal activities, suspected fraud, and situations involving potential threats to the physical safety of any person, violations of Intel's terms of use, or as otherwise required by law.</p>                
+                    </div>
+                  </div>
+                   <div class='row text-box'>
+                    <div class='col-sm-12'>
+                      <h2>Use of Your Personal Information</h2>
+                      <p>Intel will only use your personal information for the purpose it was collected. For example, to deliver a product or service that you have requested, enable your participation in online activities, or personalize your experience. We will not use your personal information for a different purpose without first asking your permission.</p>             
+                    </div>
+                  </div>    
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class='fade' id='scroll-to-top'>
+          <i class='fa-icon-chevron-up'></i>
+        </div>
+      </div>
+}

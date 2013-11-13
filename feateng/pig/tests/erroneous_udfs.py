@@ -15,10 +15,6 @@ def square(num):
 #             print 'returning empty' 
 #             return ''
         else:
-            try:
-                num_f = float(num_str)
-            except:
-                print 'caught exception'
-                return None
+            num_f = float(num_str)
             print 'returning',num_f*num_f
             return num_f*num_f

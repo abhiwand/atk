@@ -54,13 +54,13 @@ import com.intel.giraph.io.VertexDataWritable;
 import com.intel.giraph.io.VertexDataWritable.VertexType;
 
 /**
- * Gradient Descent (GD) for collaborative filtering
+ * Gradient Descent (GD) with Bias for collaborative filtering
  * The algorithm presented in
- * Y. Koren, R. Bell, C. Volinsky, Matrix Factorization Techniques
- * for Recommender Systems. In IEEE Computer, Vol.42, No.8, 2009.
+ * Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative
+ * Filtering Model. In ACM KDD 2008. (Equation 5)
  */
 @Algorithm(
-    name = "Gradient Descent (GD)"
+    name = "Gradient Descent (GD) with Bias"
 )
 public class GradientDescentComputation extends BasicComputation<LongWritable, VertexDataWritable,
     EdgeDataWritable, MessageDataWritable> {
@@ -81,6 +81,8 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
      * f = L2_error + lambda*Tikhonov_regularization
      */
     public static final String LAMBDA = "gd.lambda";
+    /** Custom argument to turn on/off bias */
+    public static final String BIAS_ON = "gd.biasOn";
     /** Custom argument for the convergence threshold */
     public static final String CONVERGENCE_THRESHOLD = "gd.convergenceThreshold";
     /** Custom argument for maximum edge weight value */
@@ -123,6 +125,8 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
     private int featureDimension = 20;
     /** The regularization parameter */
     private float lambda = 0f;
+    /** Bias on/off switch */
+    private boolean biasOn = false;
     /** Maximum edge weight value */
     private float maxVal = Float.POSITIVE_INFINITY;
     /** Minimum edge weight value */
@@ -147,6 +151,7 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
         if (lambda < 0) {
             throw new IllegalArgumentException("Regularization parameter lambda should be >= 0.");
         }
+        biasOn = getConf().getBoolean(BIAS_ON, false);
         maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
         minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
         learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
@@ -165,7 +170,9 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
      * @param vertex of the graph
      */
     private void initialize(Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex) {
-        // initialize vertex vector
+        // initialize vertex data: bias, vector, gradient, conjugate
+        vertex.getValue().setBias(0d);
+
         double sum = 0d;
         int numTrain = 0;
         for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
@@ -199,29 +206,100 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
             break;
         case RIGHT:
             aggregate(SUM_RIGHT_VERTICES, new LongWritable(1));
-            // send out messages
+            long numTrainEdges = 0L;
+            long numValidateEdges = 0L;
+            long numTestEdges = 0L;
             for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
                 EdgeType et = edge.getValue().getType();
                 switch (et) {
                 case TRAIN:
-                    aggregate(SUM_TRAIN_EDGES, new LongWritable(1));
+                    numTrainEdges++;
                     break;
                 case VALIDATE:
-                    aggregate(SUM_VALIDATE_EDGES, new LongWritable(1));
+                    numValidateEdges++;
                     break;
                 case TEST:
-                    aggregate(SUM_TEST_EDGES, new LongWritable(1));
+                    numTestEdges++;
                     break;
                 default:
                     throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
                 }
+                // send out messages
                 MessageDataWritable newMessage = new MessageDataWritable(vertex.getValue(), edge.getValue());
                 sendMessage(edge.getTargetVertexId(), newMessage);
+            }
+            if (numTrainEdges > 0) {
+                aggregate(SUM_TRAIN_EDGES, new LongWritable(numTrainEdges));
+            }
+            if (numValidateEdges > 0) {
+                aggregate(SUM_VALIDATE_EDGES, new LongWritable(numValidateEdges));
+            }
+            if (numTestEdges > 0) {
+                aggregate(SUM_TEST_EDGES, new LongWritable(numTestEdges));
             }
             break;
         default:
             throw new IllegalArgumentException("Unknow recognized vertex type: " + vt.toString());
         }
+    }
+
+    /**
+     * compute gradient
+     *
+     * @param bias of type double
+     * @param value of type Vector
+     * @param messages of type Iterable
+     * @return gradient of type Vector
+     */
+    private Vector computeGradient(double bias, Vector value, Iterable<MessageDataWritable> messages) {
+        Vector xr = value.clone().assign(0d);
+        int numTrain = 0;
+        for (MessageDataWritable message : messages) {
+            EdgeType et = message.getType();
+            if (et == EdgeType.TRAIN) {
+                double weight = message.getWeight();
+                Vector vector = message.getVector();
+                double otherBias = message.getBias();
+                double predict = bias + otherBias + value.dot(vector);
+                double e = predict - weight;
+                xr = xr.plus(vector.times(e));
+                numTrain++;
+            }
+        }
+        Vector gradient = value.clone().assign(0d);
+        if (numTrain > 0) {
+            gradient = xr.divide(numTrain).plus(value.times(lambda));
+        }
+        return gradient;
+    }
+
+    /**
+     * compute bias
+     *
+     * @param value of type Vector
+     * @param messages of type Iterable
+     * @return bias of type double
+     */
+    private double computeBias(Vector value, Iterable<MessageDataWritable> messages) {
+        double errorOnTrain = 0d;
+        int numTrain = 0;
+        for (MessageDataWritable message : messages) {
+            EdgeType et = message.getType();
+            if (et == EdgeType.TRAIN) {
+                double weight = message.getWeight();
+                Vector vector = message.getVector();
+                double otherBias = message.getBias();
+                double predict = otherBias + value.dot(vector);
+                double e = weight - predict;
+                errorOnTrain += e;
+                numTrain++;
+            }
+        }
+        double bias = 0d;
+        if (numTrain > 0) {
+            bias = errorOnTrain / ((1 + lambda) * numTrain);
+        }
+        return bias;
     }
 
     @Override
@@ -234,7 +312,8 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
             return;
         }
 
-        Vector preValue = vertex.getValue().getVector();
+        Vector currentValue = vertex.getValue().getVector();
+        double currentBias = vertex.getValue().getBias();
         // update aggregators every (2 * interval) super steps
         if ((step % (2 * learningCurveOutputInterval)) == 0) {
             double errorOnTrain = 0d;
@@ -245,7 +324,8 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
                 EdgeType et = message.getType();
                 double weight = message.getWeight();
                 Vector vector = message.getVector();
-                double predict = preValue.dot(vector);
+                double otherBias = message.getBias();
+                double predict = currentBias + otherBias + currentValue.dot(vector);
                 double e = weight - predict;
                 switch (et) {
                 case TRAIN:
@@ -264,35 +344,28 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
             }
             double costOnTrain = 0d;
             if (numTrain > 0) {
-                costOnTrain = errorOnTrain / numTrain + lambda * preValue.dot(preValue);
+                costOnTrain = errorOnTrain / numTrain + lambda * (currentBias * currentBias +
+                    currentValue.dot(currentValue));
             }
             aggregate(SUM_TRAIN_COST, new DoubleWritable(costOnTrain));
             aggregate(SUM_VALIDATE_ERROR, new DoubleWritable(errorOnValidate));
             aggregate(SUM_TEST_ERROR, new DoubleWritable(errorOnTest));
         }
 
-        // update vertex value
         if (step < maxSupersteps) {
-            Vector xr = preValue.clone().assign(0d);
-            int numTrain = 0;
-            for (MessageDataWritable message : messages) {
-                EdgeType et = message.getType();
-                if (et == EdgeType.TRAIN) {
-                    double weight = message.getWeight();
-                    Vector vector = message.getVector();
-                    double predict = preValue.dot(vector);
-                    double e = weight - predict;
-                    xr = xr.plus(vector.times(e));
-                    numTrain++;
-                }
-            }
-            Vector value = preValue.clone().assign(0d);
-            if (numTrain > 0) {
-                value = xr.divide(numTrain).minus(preValue.times(lambda));
-            }
-            value = preValue.plus(value.times(learningRate));
-
+            // update vertex value
+            double bias = vertex.getValue().getBias();
+            Vector value = vertex.getValue().getVector();
+            Vector gradient = computeGradient(bias, value, messages);
+            value = value.minus(gradient.times(learningRate));
             vertex.getValue().setVector(value);
+
+            // update vertex bias
+            if (biasOn) {
+                bias = computeBias(value, messages);
+                vertex.getValue().setBias(bias);
+            }
+
             // send out messages
             for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
                 MessageDataWritable newMessage = new MessageDataWritable(vertex.getValue(), edge.getValue());
@@ -358,11 +431,10 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
     }
 
     /**
-     * This is a simple example for an aggregator writer. After each superstep the writer will persist the
-     * aggregator values to disk, by use of the Writable interface. The file will be created on the current
-     * working directory.
+     * This is an aggregator writer for GD, which after each superstep will persist the
+     * aggregator values to disk, by use of the Writable interface.
      */
-    public static class SimpleAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
+    public static class GradientDescentAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
         implements AggregatorWriter {
         /** Name of the file we wrote to */
         private static String FILENAME;
@@ -424,6 +496,7 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
                 float discount = getConf().getFloat(DISCOUNT, 1.0f);
                 int featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
                 float lambda = getConf().getFloat(LAMBDA, 0f);
+                boolean biasOn = getConf().getBoolean(BIAS_ON, false);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
@@ -433,6 +506,7 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
                 output.writeUTF(String.format("learningRate: %f%n", learningRate));
                 output.writeUTF(String.format("discount: %f%n", discount));
                 output.writeUTF(String.format("lambda: %f%n", lambda));
+                output.writeUTF(String.format("biasOn: %b%n", biasOn));
                 output.writeUTF(String.format("convergenceThreshold: %f%n", convergenceThreshold));
                 output.writeUTF(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeUTF(String.format("maxVal: %f%n", maxVal));

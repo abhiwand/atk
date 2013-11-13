@@ -38,29 +38,36 @@ import org.apache.log4j.Logger;
  * </p>
  *
  * <p>TO SPECIFY EDGES:
- * The first three attributes in the edge string are source vertex column, destination
+ * Edges are specified by a sequence of "edge rules" following the flag <code>-e</code> (for undirected edges) or
+ * <code>-d</code> (for directed edges). The rules for edge construction are the same for both directed and
+ * undirected edges.
+ * The first three attributes in the edge rule are source vertex column, destination
  * vertex column and the string label. </p>
- * <code> src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code>
+ * <code> -e src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code>
  * </p>
+ * <p> <code> -d src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code></p>
  * <p>
  * <p>TO SPECIFY VERTICES: The first attribute in the string is the vertex ID column. Subsequent attributes
  * denote vertex properties
  * and are separated from the first by an equals sign:</p>
- * <code> vertex_id_column=vertex_prop1_column,... vertex_propn_column </code>
+ * <code> -v vertex_id_column=vertex_prop1_column,... vertex_propn_column </code>
  * <p>or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_column </code>
- *
+ * <p>
+ *     The option <code>-F</code> (for "flatten lists") specifies that when a cell containing a JSon list is read as a vertex ID, it is to be
+ *     expanded into one vertex for each entry in the list. This applies to the source and destination columns for
+ *     edges as well. It does not apply to properties.
+ * </p>
  * </p>
  *  Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices.
  *  (The declaration is implicit, but the vertices really end up in the graph database.)
  * <p>
- *     EXAMPLE:
+ *     EXAMPLES:
  *     <p>
- *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age" -e "
- cf:name,cf:dept,worksAt,cf:seniority"</code>
+ *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age"  -d "cf:name,cf:dept,worksAt,cf:seniority"</code>
  *     </p>
  *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
- *     one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
+ *     one employee, and a directed edge labeled "worksAt" between each employee and their department, annotated by their
  *     seniority in that department.
  * </p>
  *
@@ -95,13 +102,24 @@ public class TableToGraphDB {
                 .create("v"));
 
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME"))
-                .withDescription("Specify the HTable columns which are edge tokens; " +
+                .withDescription("Specify the HTable columns which are undirected edge tokens; " +
                         "Example: --" + GBHTableConfig.config.getProperty("CMD_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
                         "Note: Edge labels must be unique")
                 .hasArgs()
-                .isRequired()
                 .withArgName("Edge-Column-Name")
                 .create("e"));
+
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("FLATTEN_LISTS_OPTNAME"))
+                .withDescription("Flag that expends lists into multiple items. " )
+                .create("F"));
+        options.addOption(OptionBuilder.withLongOpt(GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
+                .withDescription("Specify the columns which are directed edge tokens; " +
+                        "Example: --" + GBHTableConfig.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
+                        "Note: Edge labels must be unique")
+                .hasArgs()
+                .withArgName("Edge-Column-Name")
+                .create("d"));
+
 
         commandLineInterface.setOptions(options);
     }
@@ -155,7 +173,9 @@ public class TableToGraphDB {
         Job                      job                 = new TableToGraphDB().new Job();
         job = (Job) commandLineInterface.getRuntimeConfig().addConfig(job);
 
-        HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration();
+        String srcTableName = cmd.getOptionValue(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"));
+
+        HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
         BasicHBaseGraphBuildingRule buildingRule     = new BasicHBaseGraphBuildingRule(cmd);
         TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
 

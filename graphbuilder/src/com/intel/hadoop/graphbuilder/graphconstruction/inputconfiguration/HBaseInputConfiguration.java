@@ -51,12 +51,24 @@ public class HBaseInputConfiguration implements InputConfiguration {
     /**
      * Allocate and acquire an instance of the singleton HBaseUtils
      */
-    public HBaseInputConfiguration() {
+    public HBaseInputConfiguration(String srcTableName) {
+
+        this.srcTableName = srcTableName;
         try {
             this.hBaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
                     "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+        }
+
+        try {
+            if (!hBaseUtils.tableExists(srcTableName)) {
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.MISSING_HBASE_TABLE,
+                        "GRAPHBUILDER ERROR: " + srcTableName + " table does not exist", LOG);
+            }
+        } catch (IOException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "GRAPHBUILDER ERROR: IO exception when attempting to read HBase table " + srcTableName, LOG, e);
         }
     }
 
@@ -77,22 +89,13 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
         srcTableName = cmd.getOptionValue(GBHTableConfig.config.getProperty("CMD_TABLE_OPTNAME"));
 
-        // Check if input table exists
-
-        try {
-            if (!hBaseUtils.tableExists(srcTableName)) {
-                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.MISSING_HBASE_TABLE,
-                        "GRAPHBUILDER ERROR: " + srcTableName + " table does not exist", LOG);
-            }
-        } catch (IOException e) {
-            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
-                    "Could not read input HBase Table named: " + srcTableName, LOG, e);
-        }
-
         configuration.set("SRCTABLENAME", srcTableName);
+
 
         scan.setCaching(GBHTableConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
+
+        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", cmd.hasOption("flattenlists"));
     }
 
     /**
