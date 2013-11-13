@@ -192,7 +192,6 @@ public class HBaseReaderMapperTest {
         verifyPairSecond(writables.get(3), "VERTEX", null, vertex);
     }
 
-    @Ignore // POR is to move null checks to the tokenizers, not to the base mapper write
     @Test
     public final void verify_null_src_in_edge_logs_null_pointer_exception() throws Exception {
         //set the return value on the getRecordTypeHBaseRow private method
@@ -224,7 +223,7 @@ public class HBaseReaderMapperTest {
                 mapDriver.getCounters().findCounter(BaseMapper.getEdgeWriteErrorCounter()).getValue());
     }
 
-    @Ignore // POR is to move null checks to the tokenizers, not to the base mapper write
+
     @Test
     public final void verify_null_dst_in_edge_logs_null_pointer_exception() throws Exception {
         //set the return value on the getRecordTypeHBaseRow private method
@@ -253,7 +252,7 @@ public class HBaseReaderMapperTest {
                 mapDriver.getCounters().findCounter(BaseMapper.getEdgeWriteErrorCounter()).getValue());
     }
 
-    @Ignore // POR is to move null checks to the tokenizers, not to the base mapper write
+
     @Test
     public final void test_null_label_in_edge_logs_null_pointer_exception() throws Exception {
         //set the return value on the getRecordTypeHBaseRow private method
@@ -280,7 +279,6 @@ public class HBaseReaderMapperTest {
                 mapDriver.getCounters().findCounter(BaseMapper.getEdgeWriteErrorCounter()).getValue());
     }
 
-    @Ignore // POR is to move null checks to the tokenizers, not to the base mapper write
     @Test
     public final void test_null_vertex_id_logs_null_pointer_exception() throws Exception {
         //set the return value on the getRecordTypeHBaseRow private method

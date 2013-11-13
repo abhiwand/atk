@@ -151,7 +151,7 @@ public class ParseJson {
      * @param args command line arguments from the user
      * @return hadoop config ready to give to the job
      */
-    public static Configuration setConfig(String[] args) throws IOException {
+    public static Configuration setConfig(String[] args) {
         Configuration conf = HBaseConfiguration.create();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
         CommandLine cmd = parseArgs(otherArgs);

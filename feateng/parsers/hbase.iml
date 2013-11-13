@@ -14,21 +14,7 @@
     <orderEntry type="library" name="Maven: log4j:log4j:1.2.16" level="project" />
     <orderEntry type="library" name="Maven: org.apache.hadoop:hadoop-core:0.20-append-r1057313" level="project" />
     <orderEntry type="library" name="Maven: org.apache.zookeeper:zookeeper:3.3.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.hbase:hbase:0.94.1" level="project" />
-    <orderEntry type="library" name="Maven: com.yammer.metrics:metrics-core:2.1.2" level="project" />
-    <orderEntry type="library" name="Maven: commons-configuration:commons-configuration:1.6" level="project" />
-    <orderEntry type="library" name="Maven: commons-collections:commons-collections:3.2.1" level="project" />
-    <orderEntry type="library" name="Maven: commons-digester:commons-digester:1.8" level="project" />
-    <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils:1.7.0" level="project" />
-    <orderEntry type="library" name="Maven: commons-beanutils:commons-beanutils-core:1.8.0" level="project" />
-    <orderEntry type="library" name="Maven: commons-io:commons-io:2.1" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.avro:avro-ipc:1.5.3" level="project" />
-    <orderEntry type="library" name="Maven: org.jboss.netty:netty:3.2.4.Final" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.velocity:velocity:1.7" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-core-asl:1.8.8" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.8.8" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-jaxrs:1.8.8" level="project" />
-    <orderEntry type="library" name="Maven: org.codehaus.jackson:jackson-xc:1.8.8" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.hbase:hbase:0.91.0-SNAPSHOT" level="project" />
   </component>
 </module>
 

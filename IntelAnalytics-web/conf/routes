@@ -1,0 +1,21 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+GET         /                     controllers.Application.index
+POST        /register             controllers.Register.register
+POST        /login                controllers.Login.login
+GET         /logout               controllers.Application.logout
+
+GET         /ipython              controllers.Python.ipython
+GET         /documentation        controllers.Python.documentation
+GET         /cookies        controllers.Application.cookies
+GET         /privacy        controllers.Application.privacy
+
+#file notifications
+POST        /files/create         controllers.File.create
+POST        /files/delete         controllers.File.delete
+
+#GET        /logout               controllers.Application.register
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /assets/*file         controllers.Assets.at(path="/public", file)

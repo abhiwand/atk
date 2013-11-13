@@ -28,12 +28,12 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>imahout</artifactId>
   <packaging>jar</packaging>
-  <name>Intel Tribeca iMahout </name>
+  <name>IntelAnalytics iMahout </name>
   <url>http://maven.apache.org</url>
 
  <parent>
 	<groupId>com.intel.hadoop</groupId>
-	<artifactId>tribeca</artifactId>
+	<artifactId>IntelAnalytics</artifactId>
 	<relativePath>../pom.xml</relativePath>  
 	<version>0.5-SNAPSHOT</version>
   </parent>
