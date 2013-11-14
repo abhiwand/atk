@@ -5617,7 +5617,8 @@ html {
   height: 100%; }
 
 body {
-  background-color: #fff;
+  background-image: url("../images/bg_patterns/bg.png"); 
+
   width: 100%;
   overflow-x: hidden; }
   body.boxed {
