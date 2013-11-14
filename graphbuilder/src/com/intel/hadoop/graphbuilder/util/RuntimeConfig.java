@@ -1,7 +1,7 @@
 package com.intel.hadoop.graphbuilder.util;
 
 
-import com.intel.hadoop.graphbuilder.job.AbstractCreateGraphJob;
+import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -84,7 +84,7 @@ public class RuntimeConfig {
         return hadoopConf;
     }
 
-    public AbstractCreateGraphJob addConfig(AbstractCreateGraphJob conf){
+    public GraphConstructionPipeline addConfig(GraphConstructionPipeline conf){
         for(Map.Entry<String, String> option : hadoopConf.getValByRegex("^graphbuilder.").entrySet()){
             String key = option.getKey();
             String value = option.getValue();
