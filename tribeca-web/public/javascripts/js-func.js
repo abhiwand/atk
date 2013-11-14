@@ -24,11 +24,13 @@ jQuery.validator.addMethod("accept", function(value, element) {
 		rules: {
 			name: {
 				required: true,
-				minlength: 3
+				minlength: 3,
+				maxlength: 254
 			},
             organization_name: {
 				required: true,
-				minlength: 3
+				minlength: 3,
+				maxlength: 254
 			},
 			role: {
 				required: true,
@@ -38,11 +40,13 @@ jQuery.validator.addMethod("accept", function(value, element) {
 			},
 			whatTools: {
 				required: true,
-				minlength: 3
+				minlength: 3,
+				maxlength: 254
 			},
 			whyParticipate: {
 				required: true,
-				minlength: 3
+				minlength: 3,
+				maxlength: 254
 			},
 			support_subject: {
 				required: true,
@@ -76,7 +80,8 @@ jQuery.validator.addMethod("accept", function(value, element) {
             organization_email: {
 			    required: true,
 			    minlength: 6,
-				email: true
+				email: true,
+				maxlength: 254
 			}, 
 			/*country: {
 				required: true
@@ -114,7 +119,7 @@ jQuery.validator.addMethod("accept", function(value, element) {
 			},
 			maxlength:{
 				required:true,
-				maxlength:4
+				maxlength:254
 			}, 
 			nowhitespace:{
 				required:true,
