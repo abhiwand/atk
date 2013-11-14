@@ -25,7 +25,7 @@
                               <tr><th>Name</th><th>Size</th></tr>
                           </thead>
                             <tbody >
-                            @if(!user.clusterId.isEmpty){
+                            @if(!user.clusterId.isEmpty && user.clusterId.get != ""){
                                 @for(file <- S3.getObjectList(user.clusterId.get.toString)){
                                     <tr class=''>
                                         <td>@S3.formatName(file.getKey)</td>
@@ -43,15 +43,15 @@
           <div class='row'>
                   <div class='col-sm-12'>
                     <div id="dropzone">
-                         @if(!user.clusterId.isEmpty){
+                         @if(!user.clusterId.isEmpty && user.clusterId.get != ""){
                         <form id="uploadForm" @*class="dropzone dz-clickable"*@ action="https://@{S3.getBucketName}.s3.amazonaws.com/" method="post" enctype="multipart/form-data">
                             @defining(S3.getPolicy(user.clusterId.get.toString())){ implicit policy =>
-                            <input type="hidden" name="key" value="@S3.uploadDirectory(user.clusterId.get.toString))${filename}">
+                            <input type="hidden" name="key" value="@S3.uploadDirectory(user.clusterId.get.toString)${filename}">
                             <input type="hidden" name="AWSAccessKeyId" value="@baseAccessKey">
                             <input type="hidden" name="acl" value="private">
-                            <!--<input type="hidden" name="success_action_redirect" value="http://localhost/s3">-->
                             <input type="hidden" name="policy" value="@policy">
                             <input type="hidden" name="signature" value="@S3.getSignature">
+
                             }
                             <!--<input type="hidden" name="Content-Type" value="image/jpeg">*-->
                           <div>

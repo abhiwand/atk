@@ -157,7 +157,7 @@ object S3 {
       "conditions" -> Json.arr(Json.obj("bucket" -> getBucketName),
         Json.arr("starts-with", "$key", uploadDirectory(userIdentifier)),
         Json.obj("acl" -> "private"),
-        //Json.obj("success_action_redirect" -> SUCCESS_ACTION_REDIRECT),
+        //Json.obj("success_action_redirect" -> "https://localhost/"),
         //Json.arr("starts-with", "$Content-Type", ""),
         Json.arr("content-length-range", 0, MAX_SIZE))
     )
