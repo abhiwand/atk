@@ -60,10 +60,17 @@ ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/etc/tribeca/hb
 ln -sf %{_sysconfdir}/hadoop/conf/hadoop-env.sh %{buildroot}/etc/tribeca/hadoop-env.sh
 ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}/etc/tribeca/hadoop-site.xml
 
-
 %clean
 
 rm -rf $RPM_BUILD_ROOT
+
+%post
+$RPM_BUILD_ROOT/usr/lib/tribeca/install_pyenv.sh #install virtual python
+ln -sf /usr/lib/IntelAnalytics/virtpy/bin/activate %{_bindir}/virtpy
+
+%postun
+rm -rf /usr/lib/IntelAnalytics/virtpy #remove vitual python 
+rm %{_bindir}/virtpy
 
 %files
 
