@@ -46,7 +46,7 @@ class CookieGenerator {
         if(secret.isEmpty) checkEmptySecret = "empty" else checkEmptySecret = secret
         val cookieName = "username-" + ipythonUrl.replace(":", "-")
         val value = create_signed_value(secret, cookieName, "username")
-        Cookie(cookieName, value, Some(SECONDS_PER_HOUR * 8), "/", Some("localhost"), false, false)
+        Cookie(cookieName, value, Some(SECONDS_PER_HOUR * 8), "/", Some(Play.application.configuration.getString("ipython.cookieDomain").get), false, false)
     }
 
     /**
