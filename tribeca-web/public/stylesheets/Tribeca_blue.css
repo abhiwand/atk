@@ -5614,10 +5614,10 @@ body {
     $CONTENT
 \*------------------------------------*/
 html {
-  height: 100%; }
+  height: 100%;
+  background-color: #fff; }
 
 body {
-  background-image: url("../images/bg_patterns/bg.png"); 
 
   width: 100%;
   overflow-x: hidden; }

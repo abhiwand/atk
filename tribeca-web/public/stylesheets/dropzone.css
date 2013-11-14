@@ -177,7 +177,7 @@ file 411 lines (405 sloc) 11.668 kb
     border: 1px solid rgba(0, 0, 0, 0.03);
     border-radius: 5px 5px 5px 5px;
     min-height: 160px;
-    padding: 45px 23px 23px;
+    padding: 45px 23px 45px;
     text-align: center;
 }
 .dropzone .dz-default.dz-message {
