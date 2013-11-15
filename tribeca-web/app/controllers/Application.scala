@@ -36,12 +36,8 @@ object Application extends Controller {
     Redirect("/").withNewSession
   }
 
-  var privacy = ActionWithSession{ request =>
-    Ok(views.html.privacy("Privacy", request.user._1))
-  }
-
-  var cookies = ActionWithSession{ request =>
-    Ok(views.html.cookies("Privacy", request.user._1))
+  var termsOfUse = ActionWithSession{ request =>
+    Ok(views.html.termsOfUse("Terms of Use", request.user._1))
   }
 
 
