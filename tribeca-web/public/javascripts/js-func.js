@@ -16,7 +16,7 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 
 jQuery.validator.addMethod("accept", function(value, element) {
     return value.trim().toLocaleLowerCase() == "I Agree".trim().toLowerCase();
-}, 'Please accept the agreement');
+}, 'You must type the words "I agree" to accept the agreement.');
 
 	registrationForm = $( form ).validate({
 		/*** here are the validation rules. the elements are get by name attribute ( <input type="field" name="firstname" /> ) ***/
@@ -213,10 +213,7 @@ jQuery.validator.addMethod("accept", function(value, element) {
 			gender: {
 				required: "Please select your gender"
 			},
-			terms: {
-				required: "You must agree to the terms of use",
-				equalTo: "You must type 'I agree'"
-			}
+			
 		}	
 	});
 
