@@ -1,5 +1,5 @@
 import unittest
-from IntelAnalytics.mapreducelogutil import MapReduceLogUtil
+from intel_analytics.mapreducelogutil import MapReduceLogUtil
 
 
 class TestLogUtil(unittest.TestCase):

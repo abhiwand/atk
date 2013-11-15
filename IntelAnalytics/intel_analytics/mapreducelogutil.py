@@ -1,5 +1,7 @@
-from mapreduceprogress import MapReduceProgress
 import re
+
+from intel_analytics.mapreduceprogress import MapReduceProgress
+
 
 class MapReduceLogUtil:
 
