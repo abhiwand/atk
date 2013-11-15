@@ -141,7 +141,8 @@
 
 .carousel-blur .big, .carousel-blur .normal {
     color: #FFFFFF;
-    text-shadow: 3px 3px 12px #000000;
+ /*   text-shadow: 3px 3px 12px #000000; */
+    text-shadow:1px 2px 3px rgba(0,0,0,0.5); 
 }
 
 
@@ -535,4 +536,35 @@ button.close {
 
 ul, li {
     padding-bottom: 10px;
+}
+
+.emboss { 
+    font-size:4em; 
+    padding:50px; 
+    font-weight:bold; 
+    display:block;
+}
+
+.light { 
+    color:#FFFFFF; 
+    text-shadow:0px -1px 0px rgba(0,0,0,0.9); 
+}
+
+.dark { 
+    color:#000000; 
+    text-shadow:0px 1px 0px rgba(255,255,255,0.1); 
+}
+
+.lightAgain { 
+    color:#FFFFFF; 
+    position:relative; 
+}
+
+.lightAgain:before {
+    content: attr(title);
+    position:absolute;
+    color:rgba(0,0,0,0.1);
+    top:-1px;
+    left:-1px;
+    padding:50px;
 }
