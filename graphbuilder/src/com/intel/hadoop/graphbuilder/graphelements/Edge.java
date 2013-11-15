@@ -18,13 +18,10 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.graphconstruction.EdgeKey;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-
-import com.intel.hadoop.graphbuilder.util.HashUtil;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -141,8 +138,8 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
      * Get the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID and its label
      * @return  the triple of the edge's source vertex ID, destination vertex ID and its label
      */
-    public EdgeKey getEdgeID() {
-        return new EdgeKey(this.src, this.dst, this.label);
+    public EdgeID getEdgeID() {
+        return new EdgeID(this.src, this.dst, this.label);
     }
 
     /**
