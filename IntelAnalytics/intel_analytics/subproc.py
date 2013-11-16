@@ -6,6 +6,8 @@ import time
 
 from threading import Thread
 from subprocess import PIPE, Popen
+from reportservice import ReportService
+from progressreportstrategy import ProgressReportStrategy
 
 SIGTERM_TO_SIGKILL_SECS = 2 # seconds to wait before send the big kill
 
@@ -36,13 +38,19 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
     """
 
     # non-blocking invocation of subprocess
-    p = Popen(args, shell=shell, stderr=PIPE)
+    p = Popen(args, shell=shell, stderr=PIPE, stdout=PIPE)
+    reportService = ReportService()
+    reportService.setReportStrategy(ProgressReportStrategy())
 
     # spawn thread to consume subprocess's STDERR in non-blocking manner
     err_txt = []
-    t = Thread(target=_append_output, args=(p.stderr, err_txt))
-    t.daemon = True # thread dies with the called process
-    t.start()
+    te = Thread(target=_process_error_output, args=(p.stderr, err_txt, reportService))
+    te.daemon = True # thread dies with the called process
+    te.start()
+
+    #to = Thread(target=_report_output, args=(p.stdout, reportService))
+    #to.daemon = True # thread dies with the called process
+    #to.start()
 
     rc = None
     if heartbeat > 0:
@@ -65,11 +73,17 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
         raise Exception("Error {0}: {1}".format(rc,msg))
 
 
-def _append_output(out, list):
+def _report_output(out, reportService):
+    for line in iter(out.readline, b''):
+        reportService.reportLine(line)
+    out.close()
+
+def _process_error_output(out, list, reportService):
     """
     continously reads from stream and appends to list of strings
     """
     for line in iter(out.readline, b''):
+        reportService.reportLine(line)
         list.append(line)
     out.close()
 
