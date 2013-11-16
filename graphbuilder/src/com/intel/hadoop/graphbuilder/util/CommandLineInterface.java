@@ -10,13 +10,18 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * General command line parsing utility for graph builder.
+ * General command line parsing utility for graph builder. Uses the Hadoop generic options parser to parse config files.
+ * reserved options -conf, -D, -fs, -jt, -files, -libjars, -archives already used by the Hadoop generic options parser.
+ * don't use any of the reserved options to avoid conflicts.
  *
  * <p>
- *     <code>-conf</code>   specifies the configuration file
+ *     <code>-conf path/to/config/file</code>   specifies the configuration file
+ *     <code>-DmySingleConfigName=mySingleConfigValue</code>   specifies the configuration file
+ *     or
+ *     <code>-D mySingleConfigName=mySingleConfigValue</code>   specifies the configuration file
  * </p>
  */
-public class CommandLineInterface {
+public class CommandLineInterface{
 
     private static final Logger  LOG           = Logger.getLogger(CommandLineInterface.class);
     private static final String  GENERIC_ERROR = "Error parsing options";
@@ -26,6 +31,7 @@ public class CommandLineInterface {
     private GenericOptionsParser genericOptionsParser;
 
     /**
+     * wrapper to the regular hasOption command line class
      * does this command line have the specified option?
      * @param option  name of option being requested
      * @return  true iff the command line has the option
@@ -35,6 +41,7 @@ public class CommandLineInterface {
     }
 
     /**
+     * wrapper to the regular getOptionValue command line class
      * Get value of option from command line
      * @param option name of option whose value is requested
      * @return value of the option as specified by the command line
@@ -80,7 +87,6 @@ public class CommandLineInterface {
         CommandLineParser parser = new PosixParser();
 
         try {
-
             cmd = parser.parse(options, genericOptionsParser.getRemainingArgs());
         }
         catch (ParseException e){
@@ -89,8 +95,10 @@ public class CommandLineInterface {
 
             }else if(e instanceof MissingOptionException){
                 showHelpOption(getFirstMissingOptionFromException(e));
+
             }else if(e instanceof MissingArgumentException){
                 showHelpMissingArgument(getMissingArgumentFromException(e));
+
             } else {
                 showHelp("Error parsing option string.");
             }
@@ -106,7 +114,7 @@ public class CommandLineInterface {
         parseArgs(args);
         options.getRequiredOptions().iterator();
         List<String> opts = options.getRequiredOptions();
-        for( String option: opts){
+        for(String option: opts){
             if (!cmd.hasOption(option)) {
                 showHelpOption(option);
             }
@@ -191,6 +199,10 @@ public class CommandLineInterface {
 
     public void setOptions(Options options) {
         this.options = options;
+    }
+
+    public void removeOptions() {
+        this.options = null;
     }
 
     public void setOption(Option option) {

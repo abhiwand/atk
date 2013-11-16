@@ -111,6 +111,7 @@ public class TableToGraphDB {
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("FLATTEN_LISTS_OPTNAME"))
                 .withDescription("Flag that expends lists into multiple items. " )
                 .create("F"));
+
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
                 .withDescription("Specify the columns which are directed edge tokens; " +
                         "Example: --" + GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
