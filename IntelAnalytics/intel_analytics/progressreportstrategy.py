@@ -1,21 +1,23 @@
 from reportstrategy import ReportStrategy
 from mapreducelogutil import MapReduceLogUtil
 from progress import Progress
+from intel_analytics.mapreduceprogressbar import MapReduceProgressBar
+
+from intel_analytics.mapreduceprogress import MapReduceProgress
 MINIMUM_PROGRESS = 1
 
 class ProgressReportStrategy(ReportStrategy):
 
 
     def __init__(self):
+        self.jobProgressList = []
         self.logUtil = MapReduceLogUtil()
-        self.mapperProgressbar = Progress("mapper progress")
-        self.mapperProgressbar._repr_html_()
-        self.reducerProgressbar = Progress("reducer progress")
-        self.reducerProgressbar._repr_html_()
+        progressBar = MapReduceProgressBar()
 
         # make the progress bar starts from 1 percent so it is visible
-        self.mapperProgressbar.update(MINIMUM_PROGRESS)
-        self.reducerProgressbar.update(MINIMUM_PROGRESS)
+        progressBar.mapperProgressbar.update(MINIMUM_PROGRESS)
+        progressBar.reducerProgressbar.update(MINIMUM_PROGRESS)
+        self.jobProgressList.append(progressBar)
 
     def report(self, line):
         progress = self.logUtil.findProgress(line)
@@ -29,5 +31,22 @@ class ProgressReportStrategy(ReportStrategy):
             if(reducerProgress == 0):
                 reducerProgress = MINIMUM_PROGRESS
 
-            self.mapperProgressbar.update(mapperProgress)
-            self.reducerProgressbar.update(reducerProgress)
+            if(self.jobProgressList[-1].getMapperProgressBarValue() == 100
+            and self.jobProgressList[-1].getReducerProgressBarValue() == 100):
+                self.jobProgressList.append(MapReduceProgressBar())
+
+
+            self.jobProgressList[-1].mapperProgressbar.update(mapperProgress)
+            self.jobProgressList[-1].reducerProgressbar.update(reducerProgress)
+
+    def getTotalMapReduceJobCounts(self):
+        return len(self.jobProgressList)
+
+    def getAllMapReduceJobsProgressList(self):
+        progressList = []
+
+        for bar in self.jobProgressList:
+            progress = MapReduceProgress(bar.getMapperProgressBarValue(), bar.getReducerProgressBarValue())
+            progressList.append(progress)
+
+        return progressList
