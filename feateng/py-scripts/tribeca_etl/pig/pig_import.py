@@ -14,7 +14,6 @@ def main(argv):
     
 
     cmd_line_args = parser.parse_args()
-    print cmd_line_args
 
     features = [(f.strip()) for f in cmd_line_args.schema_information.split(',')]#schema_information will be like 'timestamp, item_id, method, src_tms, event_type, dst_tms, duration'
     hbase_constructor_args, pig_schema_info, feature_types = generate_pig_schema(features)

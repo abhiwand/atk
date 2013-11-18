@@ -15,7 +15,6 @@ def main(argv):
     parser.add_argument('-p', '--parallelism', dest='degree_of_parallelism', help='degree of parallelism (number of reducers in MR jobs)', required=True, type=int)
 
     cmd_line_args = parser.parse_args()
-    print cmd_line_args
     
     pig_statements = []
     pig_statements.append("REGISTER lib/elephant-bird-hadoop-compat-4.2.jar")
