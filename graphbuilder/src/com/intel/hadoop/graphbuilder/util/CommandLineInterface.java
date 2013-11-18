@@ -25,10 +25,12 @@ public class CommandLineInterface{
 
     private static final Logger  LOG           = Logger.getLogger(CommandLineInterface.class);
     private static final String  GENERIC_ERROR = "Error parsing options";
+    private static final Option HELP_OPTION = OptionBuilder.withLongOpt("help").withDescription("").create("h");
     private Options              options       = new Options();
     private CommandLine          cmd           = null;
     private RuntimeConfig        runtimeConfig = RuntimeConfig.getInstance();
     private GenericOptionsParser genericOptionsParser;
+
 
     /**
      * wrapper to the regular hasOption command line class
@@ -57,25 +59,21 @@ public class CommandLineInterface{
      */
     public CommandLine parseArgs(String[] args) {
 
-        for (int i = 0; i < args.length;i++) {
-            if (args[i].equals("-conf")) {
-                if (i + 1 == args.length) {
-                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                            "-conf argument given but no file path specified!", LOG);
-                } else if (!new File(args[i+1]).exists()) {
-                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CANNOT_FIND_CONFIG_FILE,
-                            "Configuration file " + args[i+1] + " cannot be found.", LOG);
-                }
-            }
-        }
-
-        //send the command line options to hadoop parse args to get runtime config options first
+        //send the command line options through the hadoop parser the config options first
 
         try {
             genericOptionsParser = new GenericOptionsParser(args);
         } catch (IOException e) {
             // show help and terminate the process
             showHelp("Error parsing hadoop generic options.");
+        }
+
+        //make sure the config exist when it's specified
+        if(genericOptionsParser.getCommandLine().hasOption("conf") &&
+                !new File(genericOptionsParser.getCommandLine().getOptionValue("conf")).exists()){
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CANNOT_FIND_CONFIG_FILE,
+                    "Configuration file " + genericOptionsParser.getCommandLine().getOptionValue("conf") +
+                            " cannot be found.", LOG);
         }
 
         //load all the grahpbuilder configs into the runtime class
@@ -110,7 +108,7 @@ public class CommandLineInterface{
      * Make sure that all required options are present in raw arguments..
      * @param args  raw arguments as string array
      */
-    public void checkCli(String[] args) {
+    public CommandLine checkCli(String[] args) {
         parseArgs(args);
         options.getRequiredOptions().iterator();
         List<String> opts = options.getRequiredOptions();
@@ -122,6 +120,7 @@ public class CommandLineInterface{
                 showOptionParsed(option);
             }
         }
+        return getCmd();
     }
 
     /**
@@ -199,6 +198,7 @@ public class CommandLineInterface{
 
     public void setOptions(Options options) {
         this.options = options;
+        this.options.addOption(HELP_OPTION);
     }
 
     public void removeOptions() {
