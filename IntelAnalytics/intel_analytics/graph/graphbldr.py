@@ -131,7 +131,8 @@ class PropertyGraphBuilder(GraphBuilder):
         """
         Parameters:
         edges: List of tuples of tuples and lists
-        Example: register_edges([(('src', 'tgt', 'label'), ['ep1', 'ep2']), (), ()])
+        Example:
+         register_edges([(('src', 'tgt', 'label'), ['ep1', 'ep2']), (), ()])
         """
         for edge in edges:
             if len(edge) != 2:

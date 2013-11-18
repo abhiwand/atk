@@ -31,10 +31,6 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     """
     Provides a set of graph builders for a particular table
     """
-    def __init__(self, table):
-        super(TitanGraphBuilderFactory, self).__init__()
-        self._table = table
-
     def get_graphbuilder(graph_type, table):
         if graph_type is GraphTypes.Bipartite:
             return HBase2TitanBipartiteGraphBuilder(table)
