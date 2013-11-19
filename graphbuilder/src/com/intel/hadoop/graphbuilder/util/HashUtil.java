@@ -30,11 +30,11 @@ public class HashUtil {
    * @param o2
    * @return the hash value of a pair of objects.
    */
-  public static int hashpair(Object o1, Object o2) {
+  public static int hashPair(Object o1, Object o2) {
     return combine(combine(0, o1), o2);
   }
 
-  public static int hashtriple(Object o1, Object o2, Object o3) {
+  public static int hashTriple(Object o1, Object o2, Object o3) {
     return combine(combine(combine(0, o1), o2),o3);
   }
 

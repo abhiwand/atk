@@ -3,28 +3,29 @@ import subprocess
 import re
 import random
 import string
-
 import sys
 
 from intel_analytics.config import global_config as config
 from intel_analytics.table.bigdataframe import BigDataFrame
 from intel_analytics.table.framebldr import FrameBuilder
-from builtin_functions import EvalFunctions
+from intel_analytics.table.builtin_functions import EvalFunctions
 from schema import ETLSchema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
-
+from intel_analytics.logger import stdout_logger as logger
 
 #for quick testing
 local_run = True
 DATAFRAME_NAME_PREFIX_LENGTH=5 #table name prefix length, names are generated with a rand prefix
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 feateng_home = os.path.join(base_script_path, '../','..', 'feateng')
-etl_scripts_path = os.path.join(feateng_home, 'py-scripts', 'intel_analytics', 'etl', 'pig')
-pig_log4j_path = os.path.join(feateng_home, 'conf','pig_log4j.properties')
-print 'Using',pig_log4j_path
-
+etl_scripts_path = config['pig_py_scripts']
+pig_log4j_path = os.path.join(os.environ['SOURCE_CODE'], 'IntelAnalytics', 'conf','pig_log4j.properties')
+logger.debug('Using %s '% pig_log4j_path)
+             
 os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
-os.environ["JYTHONPATH"] = os.path.join(feateng_home, "py-scripts")#required to ship jython scripts with pig
+os.environ["JYTHONPATH"] = os.path.join(os.environ['SOURCE_CODE'], 'IntelAnalytics', 'intel_analytics')#required to ship jython scripts with pig
+
+logger.debug('$JYTHONPATH %s' % os.environ["JYTHONPATH"])
 
 class Imputation:
     MEAN = 1
@@ -94,10 +95,9 @@ class HBaseTable(object):
 
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
-                                           config['hbase_column_family'])
+                                           [config['hbase_column_family']])
 
-        script_path = os.path.join(config['etl_py_scripts_path'],
-                                   'pig_transform.py')
+        script_path = os.path.join(etl_scripts_path, 'pig_transform.py')
 
         args = get_pig_args()
 
@@ -169,8 +169,7 @@ class HBaseTable(object):
         if column_name and (column_name not in etl_schema.feature_names):
             raise HBaseTableException("Column %s does not exist" % (column_name))
 
-        script_path = os.path.join(config['etl_py_scripts_path'],
-                                   'pig_transform.py')
+        script_path = os.path.join(etl_scripts_path, 'pig_clean.py')
 
         args = get_pig_args()
 
@@ -191,7 +190,7 @@ class HBaseTable(object):
         # need to delete/create output table so that we can write the transformed features
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(output_table ,
-                                           config['hbase_column_family'])
+                                           [config['hbase_column_family']])
 
         print args
         return_code = subprocess.call(args)
@@ -229,8 +228,6 @@ class HBaseTable(object):
 
 
 class HBaseFrameBuilder(FrameBuilder):
-    def __init__(self, table):
-        super(HBaseFrameBuilder, self).__init__(table)
 
     #-------------------------------------------------------------------------
     # Create BigDataFrames
@@ -266,7 +263,7 @@ class HBaseFrameBuilder(FrameBuilder):
         # need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(df_name,
-                                           config['hbase_column_family'])
+                                           [config['hbase_column_family']])
         return_code = subprocess.call(args)
         if return_code:
             raise Exception('Could not import CSV file')

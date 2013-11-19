@@ -54,12 +54,17 @@ class Config(object):
         if srcfile is None:
             srcfile=self.srcfile
         self.default_props = Properties()
-        with open(srcfile, 'r') as src:
+        #with open(srcfile, 'r') as src: Pig uses jython 2.5, so with is not there!
+        src = open(srcfile, 'r')
+        try:
             template = Template(src.read())
             env_keys = get_keys_from_template(template)
             env_vars = get_env_vars(env_keys)
             lines = template.substitute(env_vars).split(os.linesep)
             self.default_props.load_lines(lines)
+        finally:
+            src.close()
+        
         self.reset()
 
     def reset(self):

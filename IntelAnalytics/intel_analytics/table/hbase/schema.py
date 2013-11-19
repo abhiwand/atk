@@ -2,7 +2,7 @@ import re
 
 from intel_analytics.config import global_config as config
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
-
+from intel_analytics.logger import stdout_logger as logger
 
 class ETLSchema:
     def __init__(self):
@@ -44,16 +44,19 @@ class ETLSchema:
         schema_table = config['hbase_schema_table']
         with ETLHBaseClient() as hbase_client:
             #create if etl schema table doesn't exist
+            
+            logger.debug('creating etl schema table ' + schema_table + " with column family: " + config['hbase_column_family']) 
+            
             if not hbase_client.table_exists(schema_table):
                 hbase_client.drop_create_table(schema_table,
-                                               config['hbase_column_family'])
+                                               [config['hbase_column_family']])
                 
             #check if an entry already exists in ETL_SCHEMA
             row = hbase_client.get(schema_table, table_name)
             if len(row) > 0:#there is an entry for this table in ETL_SCHEMA, overwrite it
 #                 print "An entry already exists in %s for table %s, overwriting it" % (CONFIG_PARAMS['etl-schema-table'], table_name)
                 hbase_client.delete(schema_table, table_name)
-
+                
             data_dict = {}
             for i,feature_name in enumerate(self.feature_names):
                 feature_type = self.feature_types[i]

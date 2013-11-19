@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 
 public class TripleTest {
     @Test
@@ -99,7 +100,7 @@ public class TripleTest {
     }
 
     @Test
-    public void testEquals() throws Exception {
+    public void testEqualsAndHash() throws Exception {
         Triple<Object, Object, Object> tripNulls1 = new Triple(null, null, null);
         Triple<Object, Object, Object> tripNulls2 = new Triple(null, null, null);
 
@@ -119,6 +120,11 @@ public class TripleTest {
         assertFalse(tripInts0.equals((tripInts1)));
         assertFalse(tripInts0.equals((tripInts2)));
         assertFalse(tripInts0.equals((tripInts3)));
+
+        assertFalse(tripInts0.equals(null));
+
+        assertNotNull(tripInts0.hashCode());
+        assert(tripInts0.hashCode() == tripInts0a.hashCode());
     }
 
     @Test

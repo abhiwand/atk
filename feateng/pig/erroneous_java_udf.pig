@@ -1,7 +1,7 @@
-parsed_val = LOAD 'hbase://shaw_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:timestamp etl-cf:item_id etl-cf:method etl-cf:src_tms etl-cf:event_type etl-cf:dst_tms etl-cf:duration', '-loadKey true') 
-	as (key:chararray, timestamp:chararray, item_id:chararray, method:chararray, src_tms:chararray, event_type:chararray, dst_tms:chararray, duration:chararray);
+-- if you run this script in local mode, make sure /tmp/worldbank.csv exists on local FS
+REGISTER /home/user/pig-0.12.0/contrib/piggybank/java/piggybank.jar;
+REGISTER target/Intel-FeatureEngineering-0.0.1-SNAPSHOT.jar
 
-REGISTER ../target/TRIB-FeatureEngineering-0.0.1-SNAPSHOT.jar
-squared_duration = FOREACH parsed_val GENERATE com.tribeca.etl.ErroneousEvalFunc(duration);
-dump squared_duration;
-
+logs = LOAD '/tmp/worldbank.csv' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',', 'NO_MULTILINE', 'NOCHANGE', 'SKIP_INPUT_HEADER') AS (country:chararray,year:chararray,co2_emission:double,electric_consumption:double,energy_use:double,fertility:double,gni:double,internet_users:double,life_expectancy:double,military_expenses:double,population: double,hiv_prevelence:double);
+squared_co2_emission = FOREACH logs GENERATE com.intel.pig.udf.ErroneousEvalFunc(co2_emission);
+dump squared_co2_emission;

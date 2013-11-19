@@ -1,10 +1,9 @@
 import subprocess
 import os
-
 import sys
 
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
-from intel_analytics.table.hbase.argparse_lib import ArgumentParser
+from intel_analytics.table.pig.argparse_lib import ArgumentParser
 from intel_analytics.config import global_config as config
 
 
@@ -32,7 +31,7 @@ def main(argv):
     # need to delete/create output table so that we can write the transformed features
     with ETLHBaseClient() as hbase_client:
         hbase_client.drop_create_table(cmd_line_args.output,
-                                       config['hbase_column_family'])
+                                       [config['hbase_column_family']])
     
     import_json_script_path = os.path.join(config['pig_py_scripts'],
                                            'pig_import_json.py')

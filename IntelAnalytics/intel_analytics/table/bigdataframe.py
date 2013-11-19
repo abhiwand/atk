@@ -1,8 +1,7 @@
 """
 BigDataFrame
 """
-
-from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory
+import sys
 
 class BigDataFrameException(Exception):
     pass
@@ -20,7 +19,6 @@ class BigDataFrame(object):
         Parameters
         ----------
         table : Table
-        graphbuilders: A factory of graph builder libraries to construct graphs at scale from HBase tables to Titan graph database
         """
         #if not isinstance(table, Table):
         #    raise Exception("bad table given to Constructor")
@@ -32,7 +30,6 @@ class BigDataFrame(object):
         self.origin_table_name=self._table.table_name
         self.lineage=[]
         self.lineage.append(self._table.table_name)
-        self._graphbuilder_factory_class = TitanGraphBuilderFactory
 
     def __str__(self):
         buf = 'BigDataFrame{ '
@@ -288,9 +285,13 @@ class BigDataFrame(object):
         transformation_args: list
             the arguments for the transformation to apply
         """
-        self._table.transform(column_name, new_column_name, transformation, keep_source_column, transformation_args)
-        self.lineage.append(self._table.table_name)
-
+        try:
+            self._table.transform(column_name, new_column_name, transformation, keep_source_column, transformation_args)
+            self.lineage.append(self._table.table_name)
+        except Exception:
+            trace = sys.exc_info()[2]
+            raise BigDataFrameException("transform exception"), None, trace
+                
     #TODO - how to pass UDFs through to mapreduce
     def apply(self, column_name, func, output_type):
 
@@ -478,8 +479,13 @@ class BigDataFrame(object):
         head : String
         """
         # for IPython, consider dumping 2D array (NDarray) for pretty-print
-        self._table.head(n)
-
+        
+        
+        try:
+            self._table.head(n)
+        except Exception:
+            trace = sys.exc_info()[2]
+            raise BigDataFrameException("head exception"), None, trace
 
         # How do I manually create a row? (not doing)
 
@@ -551,7 +557,6 @@ class BigDataFrame(object):
         raise BigDataFrameException("Not implemented")
 
 
-
     def dropna(self, how='any', column_name=None):
     #         def dropna(self, how='any', thresh=None, subset=None):
         """
@@ -568,10 +573,13 @@ class BigDataFrame(object):
         #             require that many non-NA values, else drop row
         #         subset : array-like
         #             considers only the given columns in the check, None means all
-        self._table.dropna(how, column_name)
-        self.lineage.append(self._table.table_name)
-
-
+        try:
+            self._table.dropna(how, column_name)
+            self.lineage.append(self._table.table_name)
+        except Exception:
+            trace = sys.exc_info()[2]
+            raise BigDataFrameException("dropna exception"), None, trace
+        
     def fillna(self, column_name, value):
         """
         Fills in the NA with given value
@@ -583,8 +591,15 @@ class BigDataFrame(object):
         value : Imputation
             the fill value
         """
-        self._table.fillna(column_name, value)
-        self.lineage.append(self._table.table_name)
+        
+        try:
+            self._table.fillna(column_name, value)
+            self.lineage.append(self._table.table_name)
+        except Exception:
+            trace = sys.exc_info()[2]
+            raise BigDataFrameException("fillna exception"), None, trace
+                
+        
 
     def impute(self, column_name, how):
         """
@@ -599,8 +614,13 @@ class BigDataFrame(object):
         """
         # Imputation will be an enumeration of supported operations, like
         # Imputation.AVG or something
-        self._table.impute(column_name, how)
-        self.lineage.append(self._table.table_name)
+        
+        try:
+            self._table.impute(column_name, how)
+            self.lineage.append(self._table.table_name)
+        except Exception:
+            trace = sys.exc_info()[2]
+            raise BigDataFrameException("impute exception"), None, trace
 
 
         # just use our String/Math Manip functions for now
@@ -614,18 +634,3 @@ class BigDataFrame(object):
         #    the imputation operation
         #"""
         #print "Not implemented"
-
-    def get_graphbuilder(self, graph_type):
-        """
-        Returns a graphbuilder for this BigDataFrame
-
-        Parameters
-        ----------
-        graph_type : GraphTypes.*
-            Class indicating the type of graph, like GraphTypes.Property
-            or GraphTypes.Bipartite
-        """
-        return self._graphbuilder_factory_class.\
-            get_graphbuilder(graph_type, self._table)
-
-
