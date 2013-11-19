@@ -6,10 +6,13 @@ import math
 import csv
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_script_path, '..'))
+sys.path.append(os.path.join(base_script_path, '..', '..', 'feateng' ,'py-scripts'))
+print sys.path
 from intel_analytics.etl.hbase_client import ETLHBaseClient
 from intel_analytics.etl.config import CONFIG_PARAMS
 from intel_analytics.etl.functions import EvalFunctions
-from intel_analytics.etl.core import *
+from tribeca.core import *
+
 
 worldbank_data_csv_path = os.path.join(base_script_path, '..', '..', 'test-data/worldbank.csv')
 cols = ['etl-cf:country', 'etl-cf:year', 'etl-cf:co2_emission', 'etl-cf:co2_emission', 

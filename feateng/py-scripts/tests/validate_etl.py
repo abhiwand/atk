@@ -35,9 +35,6 @@ print '###########################'
 # test transform functionality
 subprocess.call(['python', os.path.join(test_scripts_path, 'test_transform_API.py')])
 
-#test cleaning functionality
-subprocess.call(['python', os.path.join(test_scripts_path, 'test_cleaning_API.py')])
- 
 #test string functions
 subprocess.call(['python', os.path.join(test_scripts_path, 'test_string_functions.py')])
 
