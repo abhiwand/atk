@@ -4,6 +4,7 @@ package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.util.CommonCommandLineOptions;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -84,7 +85,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
      */
     public void updateConfigurationForMapper(Configuration configuration, CommandLine cmd) {
 
-        srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        srcTableName = cmd.getOptionValue(CommonCommandLineOptions.Option.table.get());
 
         configuration.set("SRCTABLENAME", srcTableName);
 

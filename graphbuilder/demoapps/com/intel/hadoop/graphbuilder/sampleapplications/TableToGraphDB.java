@@ -2,7 +2,6 @@
 
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
@@ -132,7 +131,7 @@ public class TableToGraphDB {
         ConstructionPipeline job                 = new TableToGraphDB().new ConstructionPipeline();
         job = (ConstructionPipeline) commandLineInterface.addConfig(job);
 
-        String srcTableName = cmd.getOptionValue(GBHTableConfiguration.CMD_TABLE_OPTNAME);
+        String srcTableName = cmd.getOptionValue(CommonCommandLineOptions.Option.table.get());
 
         HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
         HBaseGraphBuildingRule buildingRule     = new HBaseGraphBuildingRule(cmd);

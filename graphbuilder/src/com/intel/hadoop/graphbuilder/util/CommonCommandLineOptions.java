@@ -24,12 +24,12 @@ public class CommonCommandLineOptions {
     private static final String FLATTEN_LISTS_OPTION_NAME = HBaseCommandLineOptions.FLATTEN_LISTS_OPTION_NAME;
 
     public enum Option{
-        titanAppend(APPEND), table(CMD_TABLE_OPTION_NAME);
+        titanAppend(APPEND), table(CMD_TABLE_OPTION_NAME), edges(CMD_EDGES_OPTION_NAME),
+        directedEdges(CMD_DIRECTED_EDGES_OPTION_NAME), vertices(CMD_VERTICES_OPTION_NAME),
+        flatten(FLATTEN_LISTS_OPTION_NAME);
 
         private final String longName;
         Option(String longName){this.longName = longName;}
         public String get(){return this.longName;}
     }
-
-
 }

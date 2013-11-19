@@ -297,7 +297,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         if (hbaseUtils.tableExists(titanTableName)) {
             //if (cmd.hasOption(CommonCommandLineOptions.Option.titanAppend.get())) {
-            if (cmd.hasOption(TitanCommandLineOptions.APPEND)) {
+            if (cmd.hasOption(CommonCommandLineOptions.Option.titanAppend.get())) {
             LOG.info("WARNING:  hbase table " + titanTableName +
                      " already exists. Titan will append new graph to existing data.");
             } else {

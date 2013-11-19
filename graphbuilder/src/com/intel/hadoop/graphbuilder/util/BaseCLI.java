@@ -16,13 +16,13 @@ import org.apache.commons.cli.OptionBuilder;
  */
 public class BaseCLI {
 
-    private static final String CMD_EDGES_OPTION_NAME = CommonCommandLineOptions.CMD_EDGES_OPTION_NAME;
-    private static final String CMD_DIRECTED_EDGES_OPTION_NAME = CommonCommandLineOptions.CMD_DIRECTED_EDGES_OPTION_NAME;
-    private static final String CMD_TABLE_OPTION_NAME = CommonCommandLineOptions.CMD_TABLE_OPTION_NAME;
-    private static final String CMD_VERTICES_OPTION_NAME = CommonCommandLineOptions.CMD_VERTICES_OPTION_NAME;
-    private static final String FLATTEN_LISTS_OPTION_NAME = CommonCommandLineOptions.FLATTEN_LISTS_OPTION_NAME;
+    private static final String CMD_EDGES_OPTION_NAME = CommonCommandLineOptions.Option.edges.get();
+    private static final String CMD_DIRECTED_EDGES_OPTION_NAME = CommonCommandLineOptions.Option.directedEdges.get();
+    private static final String CMD_TABLE_OPTION_NAME = CommonCommandLineOptions.Option.table.get();
+    private static final String CMD_VERTICES_OPTION_NAME = CommonCommandLineOptions.Option.vertices.get();
+    private static final String FLATTEN_LISTS_OPTION_NAME = CommonCommandLineOptions.Option.flatten.get();
 
-    private static final String TITAN_APPEND = CommonCommandLineOptions.APPEND;
+    private static final String TITAN_APPEND = CommonCommandLineOptions.Option.titanAppend.get();
 
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),

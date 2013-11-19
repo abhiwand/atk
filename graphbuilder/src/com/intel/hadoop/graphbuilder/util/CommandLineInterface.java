@@ -40,7 +40,6 @@ public class CommandLineInterface{
     private RuntimeConfig        runtimeConfig = RuntimeConfig.getInstance();
     private GenericOptionsParser genericOptionsParser;
 
-
     /**
      * wrapper to the regular hasOption command line class
      * does this command line have the specified option?
