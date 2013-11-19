@@ -1,10 +1,9 @@
 import subprocess
 import os
-
 import sys
 
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
-from intel_analytics.table.hbase.argparse_lib import ArgumentParser
+from intel_analytics.table.pig.argparse_lib import ArgumentParser
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.config import global_config as config
 
@@ -50,7 +49,7 @@ def main(argv):
         #updated as the same keys are used while writing the output
         if not hbase_client.table_exists(cmd_line_args.output):          
             hbase_client.drop_create_table(cmd_line_args.output,
-                                           config['hbase_column_family'])
+                                           [config['hbase_column_family']])
         
     if cmd_line_args.feature_to_clean and cmd_line_args.feature_to_clean not in etl_schema.feature_names:
         raise Exception("Feature %s does not exist in table %s " % (cmd_line_args.feature_to_clean, cmd_line_args.input))

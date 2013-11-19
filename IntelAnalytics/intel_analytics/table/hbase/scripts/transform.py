@@ -1,13 +1,11 @@
 import subprocess
 import os
-
 import sys
 
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
-from intel_analytics.table.hbase.argparse_lib import ArgumentParser
+from intel_analytics.table.pig.argparse_lib import ArgumentParser
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.config import global_config as config
-
 
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 
@@ -103,9 +101,9 @@ def main(argv):
         #create if output table doesn't exist
         if not hbase_client.table_exists(cmd_line_args.output):          
             hbase_client.drop_create_table(cmd_line_args.output,
-                                           config['hbase_column_family'])
+                                           [config['hbase_column_family']])
     
-    transform_script_path = os.path.join(config('pig_py_scripts'),
+    transform_script_path = os.path.join(config['pig_py_scripts'],
                                          'pig_transform.py')
         
     args = ['pig']
