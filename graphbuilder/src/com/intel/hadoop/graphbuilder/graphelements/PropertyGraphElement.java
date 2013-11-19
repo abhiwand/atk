@@ -132,8 +132,12 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
             PropertyMap pm = new PropertyMap();
 
             vertex.configure(vid, pm);
-            vertex.readFields(input);
 
+            try {
+                vertex.readFields(input);
+            } catch (IOException e) {
+                throw e;
+            }
         } else {
 
                 VidType source = createVid();
@@ -143,7 +147,12 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
                 PropertyMap pm    = new PropertyMap();
 
                 edge.configure(source, target, label, pm);
-                edge.readFields(input);
+
+                try {
+                    edge.readFields(input);
+                } catch (IOException e) {
+                    throw e;
+                }
         }
     }
 
