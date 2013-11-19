@@ -92,8 +92,6 @@ public class TableToTextGraph {
     /**
      * This function checks whether required tablename, vertices, vertex properties
      * edges and edge properties are specified as command line arguments
-     *
-     * @param cmd
      */
     private static void checkCli(CommandLine cmd) {
 

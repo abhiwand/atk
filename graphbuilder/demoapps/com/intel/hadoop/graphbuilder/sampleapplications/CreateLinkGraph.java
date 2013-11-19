@@ -119,7 +119,6 @@ public class CreateLinkGraph {
     /**
      * Main method for creating the link graph
      * @param args raw command line
-     * @throws Exception
      */
 
     public static void main(String[] args) {

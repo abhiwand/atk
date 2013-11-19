@@ -121,7 +121,6 @@ public class TableToGraphDB {
      * Main method for feature table to graph database construction
      *
      * @param args Command line arguments
-     * @throws Exception
      */
 
     public static void main(String[] args)  {

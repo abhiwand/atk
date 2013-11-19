@@ -137,7 +137,6 @@ public class CreateWordCountGraph {
     /**
      * The main method for creating wordcount graph.
      * @param args  raw command line from user
-     * @throws Exception
      */
 
     public static void main(String[] args)  {

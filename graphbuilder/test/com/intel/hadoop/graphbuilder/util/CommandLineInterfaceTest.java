@@ -43,12 +43,12 @@ public class CommandLineInterfaceTest {
     private CommandLineInterface spiedCLI;
     private Options options;
     private Option optionOne =  OptionBuilder.withLongOpt("one").withDescription("sample option one").hasArgs()
-            .withArgName("Edge-Column-Name").create("1");;
+            .withArgName("Edge-Column-Name").create("1");
     private Option optionTwo = OptionBuilder.withLongOpt("two").withDescription("sample option two").hasArgs().isRequired()
             .withArgName("Edge-Column-Name").create("2");
 
 
-    HashMap<String, String> hadoopOptions = new HashMap<String, String>();
+    private HashMap<String, String> hadoopOptions = new HashMap<String, String>();
 
     @Before
     public void setUp() throws Exception {
@@ -84,7 +84,7 @@ public class CommandLineInterfaceTest {
     public void test_TableToGraphDB_cli_options() throws Exception {
 
         //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <String, String>();
+        HashMap<String, String> cliArgs = new HashMap <>();
         cliArgs.put("t", "kd_sample_data");
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
@@ -100,7 +100,7 @@ public class CommandLineInterfaceTest {
     public void test_TableToTextGraph_cli_options() throws Exception {
 
         //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <String, String>();
+        HashMap<String, String> cliArgs = new HashMap <>();
         cliArgs.put("t", "kd_sample_data");
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
@@ -116,7 +116,7 @@ public class CommandLineInterfaceTest {
     public void test_CreateWordCountGraph_cli_options() throws Exception {
 
         //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <String, String>();
+        HashMap<String, String> cliArgs = new HashMap <>();
         cliArgs.put("i", "kd_sample_data");
         cliArgs.put("o", "cf:name=cf:age,cf:dept");
         cliArgs.put("t", "");
@@ -131,7 +131,7 @@ public class CommandLineInterfaceTest {
     public void test_CreateLinkGraph_cli_options() throws Exception {
 
         //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <String, String>();
+        HashMap<String, String> cliArgs = new HashMap <>();
         cliArgs.put("i", "kd_sample_data");
         cliArgs.put("o", "cf:name=cf:age,cf:dept");
         cliArgs.put("t", "");
@@ -196,7 +196,7 @@ public class CommandLineInterfaceTest {
      * @return a string array that mimics the main input args array
      */
     public String[] getRandomizedCommandLine(HashMap<String, String> hadoopArgs, HashMap<String, String> gbArgs){
-        ArrayList<String> args = new ArrayList<String>();
+        ArrayList<String> args = new ArrayList<>();
         int maxCount = hadoopArgs.size()*2;
 
         //randomize the hadoop options first since they always have to be first
@@ -246,9 +246,9 @@ public class CommandLineInterfaceTest {
     private void testParsedOptions(Option option, String expected, CommandLineInterface cli){
         if( spiedCLI.hasOption(option.getOpt()) && spiedCLI.hasOption(option.getLongOpt())){
             assertTrue(String.format("check the parsed value against the short option: %s", option.getOpt()),
-                    cli.getOptionValue(option.getOpt()) == expected);
+                    cli.getOptionValue(option.getOpt()).equals(expected));
             assertTrue(String.format("check the parsed value against the long option: %s", option.getOpt()),
-                    cli.getOptionValue(option.getLongOpt()) == expected);
+                    cli.getOptionValue(option.getLongOpt()).equals(expected));
         } else {
             fail();
         }
