@@ -30,6 +30,11 @@ class GraphBuilderFactory(object):
     def __init__(self):
         pass
 
+    @abc.abstractmethod
+    def get_graphbuilder(self, graph_type, table):
+        pass
+
+
 
 class GraphBuilder(object):
     """

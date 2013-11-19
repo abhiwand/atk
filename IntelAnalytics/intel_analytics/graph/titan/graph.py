@@ -31,6 +31,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     """
     Provides a set of graph builders for a particular table
     """
+    @staticmethod
     def get_graphbuilder(graph_type, table):
         if graph_type is GraphTypes.Bipartite:
             return HBase2TitanBipartiteGraphBuilder(table)

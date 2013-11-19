@@ -35,13 +35,47 @@ def get_env_vars(names):
     return vars
 
 def get_keys_from_template(template):
-    # pull the required keys from the template
+    """
+    Screens a template for all the keys requires for substitution
+    """
     from collections import defaultdict
     d = defaultdict(lambda : None)
     template.substitute(d)
     keys = d.keys()
     keys.sort()
     return keys
+
+def get_graphbuilder(graph_type, frame):
+    """
+    Returns a graphbuilder for given BigDataFrame
+
+    Parameters
+    ----------
+    graph_type : GraphTypes.*
+        Class indicating the type of graph, like GraphTypes.Property
+        or GraphTypes.Bipartite
+    frame : BigDataFrame
+        table instance for which the graph will be built
+    """
+    factory = get_class(global_config['py_graphbuilder_factory_class_path'])
+    return factory.get_graphbuilder(graph_type, frame)
+
+def get_class(class_path):
+    """
+    Dynamically imports and returns a class according to the given path
+    """
+    module_path, class_name = class_path.rsplit(".", 1)
+
+    try:
+        module = __import__(module_path, fromlist=[class_name])
+    except ImportError:
+        raise ValueError("Module '{0}' could not be imported ".format(module_path))
+    try:
+        attr = getattr(module, class_name)
+    except ImportError:
+        raise ValueError("Error trying to find '{0}' in module '{1}'"
+        .format(class_name, module_path))
+    return attr
 
 
 class Config(object):
