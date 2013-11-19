@@ -51,7 +51,7 @@ function usage()
     [--workdir <str> ]      // work home, e.g. \`pwd\`/../..
     [--credentials <str> ]  // directory with credentials
     [--use-placement-group] // use placement group for nodes within a cluster
-    [--no-public-ip-for-slave ] // do not allow slave nodes to have public ip
+    [--use-public-ip-for-slave ] // allow slave nodes to have public ip
     [--no-dryrun]           // really launch instance
     [--help ]               // print this message
 "
@@ -95,7 +95,7 @@ function IA_create_dump()
 _RET=""
 dryrun=yes
 cpgroup="no"
-cpublic="yes"
+cpublic="no"
 
 # Check inputs
 while [ $# -gt 0 ]
@@ -137,7 +137,7 @@ do
             cpgroup="yes"
             shift 1
             ;;
-        --no-public-ip-for-slave)
+        --use-public-ip-for-slave)
             cpublic="yes"
             shift 1
             ;;
