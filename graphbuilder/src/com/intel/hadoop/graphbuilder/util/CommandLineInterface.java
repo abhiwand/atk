@@ -53,6 +53,12 @@ public class CommandLineInterface{
         return cmd.getOptionValue(option);
     }
 
+
+    /**
+     * simple wrapper to reduce the length of the call in the demo app.
+     * @param job the GraphConstructionPipeline(hadoop) job we will attach our config too
+     * @return the same GraphConstructionPipeline(hadoop) job with our config
+     */
     public GraphConstructionPipeline addConfig(GraphConstructionPipeline job){
         return this.getRuntimeConfig().addConfig(job);
     }
