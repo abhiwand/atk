@@ -3,7 +3,14 @@ Common Graph Builder classes
 """
 
 import abc
+from intel_analytics.config import global_config, dynamic_import
 
+
+__all__ = ['get_graphbuilder',
+           'GraphTypes',
+           'GraphTypes.Bipartite',
+           'GraphTypes.Property'
+           ]
 
 class GraphTypes:
     """
@@ -209,4 +216,30 @@ class GraphBuilderEdge:
 
     def has_label(self):
         return bool(self.label)
+
+
+def get_graphbuilder(graph_type, frame):
+    """
+    Returns a graphbuilder for given BigDataFrame
+
+    Parameters
+    ----------
+    graph_type : GraphTypes.*
+        Class indicating the type of graph, like GraphTypes.Property
+        or GraphTypes.Bipartite
+    frame : BigDataFrame
+        table instance for which the graph will be built
+    """
+    factory_class = _get_graphbuilder_factory_class()
+    return factory_class.get_graphbuilder(graph_type, frame)
+
+# dynamically and lazily load the correct graphbuilder factory,
+# according to config
+graphbuilder_factory_class = None
+def _get_graphbuilder_factory_class():
+    global graphbuilder_factory_class
+    if graphbuilder_factory_class is None:
+        graphbuilder_factory_class = dynamic_import(
+            global_config['py_graphbuilder_factory_class_path'])
+    return graphbuilder_factory_class
 

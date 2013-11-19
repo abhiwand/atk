@@ -45,36 +45,22 @@ def get_keys_from_template(template):
     keys.sort()
     return keys
 
-def get_graphbuilder(graph_type, frame):
+# todo: move dynamic_import to a more general utils module:
+def dynamic_import(attr_path):
     """
-    Returns a graphbuilder for given BigDataFrame
-
-    Parameters
-    ----------
-    graph_type : GraphTypes.*
-        Class indicating the type of graph, like GraphTypes.Property
-        or GraphTypes.Bipartite
-    frame : BigDataFrame
-        table instance for which the graph will be built
+    Dynamically imports and returns a attribute according to the given path
     """
-    factory = get_class(global_config['py_graphbuilder_factory_class_path'])
-    return factory.get_graphbuilder(graph_type, frame)
-
-def get_class(class_path):
-    """
-    Dynamically imports and returns a class according to the given path
-    """
-    module_path, class_name = class_path.rsplit(".", 1)
+    module_path, attr_name = attr_path.rsplit(".", 1)
 
     try:
-        module = __import__(module_path, fromlist=[class_name])
+        module = __import__(module_path, fromlist=[attr_name])
     except ImportError:
         raise ValueError("Module '{0}' could not be imported ".format(module_path))
     try:
-        attr = getattr(module, class_name)
+        attr = getattr(module, attr_name)
     except ImportError:
         raise ValueError("Error trying to find '{0}' in module '{1}'"
-        .format(class_name, module_path))
+        .format(attr_name, module_path))
     return attr
 
 
