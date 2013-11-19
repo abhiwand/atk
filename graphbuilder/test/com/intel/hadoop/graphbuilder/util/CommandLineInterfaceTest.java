@@ -1,6 +1,8 @@
 package com.intel.hadoop.graphbuilder.util;
 
 
+import com.intel.hadoop.graphbuilder.sampleapplications.CreateLinkGraph;
+import com.intel.hadoop.graphbuilder.sampleapplications.CreateWordCountGraph;
 import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
 import com.intel.hadoop.graphbuilder.sampleapplications.TableToTextGraph;
 import org.apache.commons.cli.Option;
@@ -11,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
@@ -23,13 +26,15 @@ import static junit.framework.Assert.assertTrue;
 //import static org.mockito.Mockito.doCallRealMethod;
 //import static org.mockito.Mockito.verify;
 import static junit.framework.Assert.fail;
+//import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.*;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(RuntimeConfig.class)
+@PrepareForTest(GraphBuilderExit.class)
 public class CommandLineInterfaceTest {
+    private final static int MAX_RANDOM_RETRIES = 50;
 
     private final static String configFile = System.getProperty("user.dir") + "/resources/test/graphbuilder.xml";
     private final static String outputPath = System.getProperty("user.dir") + "/resources/test/output";
@@ -42,10 +47,11 @@ public class CommandLineInterfaceTest {
     private Option optionTwo = OptionBuilder.withLongOpt("two").withDescription("sample option two").hasArgs().isRequired()
             .withArgName("Edge-Column-Name").create("2");
 
+
     HashMap<String, String> hadoopOptions = new HashMap<String, String>();
 
     @Before
-    public void setUp(){
+    public void setUp() throws Exception {
         CommandLineInterface cli = new CommandLineInterface();
         spiedCLI = spy(cli);
 
@@ -55,10 +61,16 @@ public class CommandLineInterfaceTest {
         options.addOption(optionTwo);
 
 
-
         hadoopOptions.put("-conf", configFile);
         hadoopOptions.put("-D", "test=0");
 
+        PowerMockito.mockStatic(GraphBuilderExit.class);
+
+        PowerMockito.doNothing().when(GraphBuilderExit.class,
+                method(GraphBuilderExit.class, "graphbuilderExitNoException", StatusCode.class))
+                .withArguments(any(StatusCode.class));
+
+        PowerMockito.doNothing().when(spiedCLI).showHelp(any(String.class));
     }
 
     @After
@@ -69,7 +81,7 @@ public class CommandLineInterfaceTest {
     }
 
     @Test
-    public void test_TableToGraphDB_cli_options(){
+    public void test_TableToGraphDB_cli_options() throws Exception {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <String, String>();
@@ -85,7 +97,7 @@ public class CommandLineInterfaceTest {
     }
 
     @Test
-    public void test_TableToTextGraph_cli_options(){
+    public void test_TableToTextGraph_cli_options() throws Exception {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <String, String>();
@@ -100,37 +112,32 @@ public class CommandLineInterfaceTest {
         testDemoApp(TableToTextGraph.class, cliArgs);
     }
 
-    private void testDemoApp(Class klass, HashMap<String, String> demoAppCliArgs){
-        CommandLineInterface demoAppCliOptions = Whitebox.getInternalState(klass, "commandLineInterface");
-        spiedCLI.setOptions(demoAppCliOptions.getOptions());
+    @Test
+    public void test_CreateWordCountGraph_cli_options() throws Exception {
 
-        //test 100 random random command lines
-        for(int count = 100; count >0; count--){
-            //give me a sample command line in random order. the only restriction is that the hadoop options have to be
-            //first
-            String[] commandLineArgs = getRandomizedCommandLine((HashMap<String,String>)hadoopOptions.clone(), (HashMap<String,String>)demoAppCliArgs.clone());
+        //the options for the demo app
+        HashMap<String, String> cliArgs = new HashMap <String, String>();
+        cliArgs.put("i", "kd_sample_data");
+        cliArgs.put("o", "cf:name=cf:age,cf:dept");
+        cliArgs.put("t", "");
+        cliArgs.put("a", "");
+        cliArgs.put("d", "dictionary path");
+        cliArgs.put("s", "stop words");
 
-            //check the command line against our options
-            spiedCLI.checkCli(commandLineArgs);
+        testDemoApp(CreateWordCountGraph.class, cliArgs);
+    }
 
-            //this test the remaining arguments after it was parsed by the hadoop generic options parser
-            //testRemainingHadoopArgs(10, spiedCLI);
+    @Test
+    public void test_CreateLinkGraph_cli_options() throws Exception {
 
-            Iterator<Option> optionIterator = demoAppCliOptions.getOptions().getOptions().iterator();
-            int remaining = 0;
-            while(optionIterator.hasNext()){
-                Option next = optionIterator.next();
-                if(next.hasArg()){
-                    remaining += 2;
-                    testParsedOptions(next, demoAppCliArgs.get(next.getOpt()), spiedCLI);
-                }else{
-                    remaining++;
-                    assertTrue(spiedCLI.hasOption(next.getOpt()));
-                }
-            }
+        //the options for the demo app
+        HashMap<String, String> cliArgs = new HashMap <String, String>();
+        cliArgs.put("i", "kd_sample_data");
+        cliArgs.put("o", "cf:name=cf:age,cf:dept");
+        cliArgs.put("t", "");
+        cliArgs.put("a", "");
 
-            testRemainingHadoopArgs(remaining, spiedCLI);
-        }
+        testDemoApp(CreateLinkGraph.class, cliArgs);
     }
 
     @Test
@@ -255,5 +262,50 @@ public class CommandLineInterfaceTest {
     private void testRemainingHadoopArgs(int remaining, CommandLineInterface cli){
         assertEquals(String.format("look for the remaining args in this case we should have: %d ", remaining), remaining,
                 cli.getGenericOptionsParser().getRemainingArgs().length);
+    }
+
+    /**
+     * bootstrapping for testing a demo app. it will pull all the private static option configs and used them to verify
+     * that it got parsed and that the correct number of args remain after the hadoop generic options config
+     * @param klass the class of the demo app we will test
+     * @param demoAppCliArgs hash map with the user command line args <option name, command line value>
+     */
+    private void testDemoApp(Class klass, HashMap<String, String> demoAppCliArgs) throws Exception {
+        CommandLineInterface demoAppCliOptions = Whitebox.getInternalState(klass, "commandLineInterface");
+
+        //all demo apps that use command line interface have a help option adding it by default
+        demoAppCliArgs.put("h", "");
+
+        spiedCLI.setOptions(demoAppCliOptions.getOptions());
+
+        //run n number of cli test
+        for(int count = MAX_RANDOM_RETRIES; count >0; count--){
+            //give me a sample command line in random order. the only restriction is that the hadoop options have to be
+            //first
+            String[] commandLineArgs = getRandomizedCommandLine((HashMap<String,String>)hadoopOptions.clone(),
+                    (HashMap<String,String>)demoAppCliArgs.clone());
+
+            //check the command line against our options
+            spiedCLI.checkCli(commandLineArgs);
+
+            //iterate through all the options to test if they got parsed correctly
+            Iterator<Option> optionIterator = demoAppCliOptions.getOptions().getOptions().iterator();
+
+            //our counter to test the remaining args. all arguments - hadoop arguments = remaining arguments
+            int remaining = 0;
+            while(optionIterator.hasNext()){
+                Option next = optionIterator.next();
+                if(next.hasArg()){
+                    remaining += 2;
+                    testParsedOptions(next, demoAppCliArgs.get(next.getOpt()), spiedCLI);
+                }else{
+                    remaining++;
+                    assertTrue(spiedCLI.hasOption(next.getOpt()));
+                }
+            }
+
+            //this test the remaining arguments after it was parsed by the hadoop generic options parser
+            testRemainingHadoopArgs(remaining, spiedCLI);
+        }
     }
 }

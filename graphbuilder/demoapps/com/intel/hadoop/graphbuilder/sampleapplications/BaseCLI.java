@@ -17,7 +17,7 @@ public class BaseCLI {
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),
         directedEdge(CLI_DIRECTED_EDGE_OPTION), flattenList(CLI_FLATTEN_LIST_OPTION),
-        titanAppend(CLI_TITAN_APPEND_OPTION), outputPath(CLI_OUTPUT_PATH_OPTION);
+        titanAppend(CLI_TITAN_APPEND_OPTION), outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION);
 
         private final Option option;
         Options(Option option){this.option = option;}
@@ -35,6 +35,13 @@ public class BaseCLI {
 
     public static final Option CLI_OUTPUT_PATH_OPTION = OptionBuilder.withLongOpt("out").withDescription("output path")
             .hasArg().create("o");
+
+    public static final Option CLI_INPUT_PATH_OPTION = OptionBuilder.withLongOpt("in")
+            .withDescription("input path")
+            .hasArgs()
+            .isRequired()
+            .withArgName("input path")
+            .create("i");
 
     public static final Option CLI_HBASE_TABLE_NAME_OPTION = OptionBuilder.withLongOpt(CMD_TABLE_OPTNAME)
             .withDescription("HBase table name")

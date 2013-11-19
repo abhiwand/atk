@@ -102,7 +102,7 @@ public class TableToTextGraph {
 
         if (!(cmd.hasOption(GBHTableConfiguration.CMD_EDGES_OPTNAME)) &&
                 !(cmd.hasOption(GBHTableConfiguration.CMD_DIRECTED_EDGES_OPTNAME))) {
-            commandLineInterface.showHelp("Please add column family and names for (directed) edges and (directed) edge properties");
+            commandLineInterface.showError("Please add column family and names for (directed) edges and (directed) edge properties");
         }
 
     }
@@ -143,13 +143,16 @@ public class TableToTextGraph {
 
         //parse all the command line arguments and check for required fields
         CommandLine cmd = commandLineInterface.checkCli(args);
-        //run it through our program specific logic
+
+        //run it through our app specific logic
         checkCli(cmd);
 
 
         String srcTableName = commandLineInterface.getOptionValue(GBHTableConfiguration.CMD_TABLE_OPTNAME);
 
         ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
+        job = (ConstructionPipeline) commandLineInterface.addConfig(job);
+
         HBaseInputConfiguration      inputConfiguration  = new HBaseInputConfiguration(srcTableName);
         HBaseGraphBuildingRule buildingRule        = new HBaseGraphBuildingRule(commandLineInterface.getCmd());
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();

@@ -81,34 +81,30 @@ public class CreateWordCountGraph {
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
-        options.addOption(OptionBuilder.withLongOpt("in")
-                .withDescription("input path")
-                .hasArgs()
-                .isRequired()
-                .withArgName("input path")
-                .create("i"));
-        options.addOption(OptionBuilder.withLongOpt("out")
-                .withDescription("output path")
-                .hasArgs()
-                .withArgName("output path")
-                .create("o"));
+
+        options.addOption(BaseCLI.Options.inputPath.get());
+
+        options.addOption(BaseCLI.Options.outputPath.get());
+
         options.addOption(OptionBuilder.withLongOpt("titan")
                 .withDescription("select Titan for graph storage")
-                .withArgName("titan ")
+                .withArgName("titan")
                 .create("t"));
-        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
-                .withDescription("Append Graph to Current Graph at Specified Titan Table")
-                .create("a"));
+
+        options.addOption(BaseCLI.Options.titanAppend.get());
+
         options.addOption(OptionBuilder.withLongOpt("dictionary")
                 .withDescription("dictionary path")
                 .hasArgs()
                 .withArgName("dictionary path")
                 .create("d"));
+
         options.addOption(OptionBuilder.withLongOpt("stopwords")
                 .withDescription("stop words path")
                 .hasArgs()
                 .withArgName("stop words path")
                 .create("s"));
+
         commandLineInterface.setOptions(options);
     }
 
@@ -123,16 +119,16 @@ public class CreateWordCountGraph {
         CommandLine cmd = commandLineInterface.parseArgs(args);
 
         if (cmd.hasOption("out") && cmd.hasOption("titan")) {
-            commandLineInterface.showHelp("You cannot simultaneously specify a file and Titan for the output.");
+            commandLineInterface.showError("You cannot simultaneously specify a file and Titan for the output.");
         } else if (!cmd.hasOption("titan") && cmd.hasOption(TitanCommandLineOptions.APPEND)) {
-            commandLineInterface.showHelp("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
+            commandLineInterface.showError("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
         } else if (cmd.hasOption("out")) {
             outputPath = cmd.getOptionValue("out");
             LOG.info("output path: " + outputPath);
         } else if (cmd.hasOption("titan")) {
             titanAsDataSink = true;
         } else {
-            commandLineInterface.showHelp("An output path is required");
+            commandLineInterface.showError("An output path is required");
         }
 
     }
@@ -144,13 +140,14 @@ public class CreateWordCountGraph {
      */
 
     public static void main(String[] args)  {
-        commandLineInterface.checkCli(args);
+        CommandLine cmd = commandLineInterface.checkCli(args);
+        //application specific argument checks
         checkCli(args);
 
         Timer timer = new Timer();
 
         ConstructionPipeline job = new CreateWordCountGraph().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.getRuntimeConfig().addConfig(job);
+        job = (ConstructionPipeline) commandLineInterface.addConfig(job);
 
         if (commandLineInterface.hasOption("d")) {
             String dictionaryPath = commandLineInterface.getOptionValue("dictionary");
@@ -179,7 +176,7 @@ public class CreateWordCountGraph {
 
         LOG.info("============= Creating Word Count Graph ===================");
         timer.start();
-        job.run(inputConfiguration, graphBuildingRule, outputConfiguration, commandLineInterface.getCmd());
+        job.run(inputConfiguration, graphBuildingRule, outputConfiguration, cmd);
         LOG.info("========== Done Creating Word Count Graph  ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

@@ -132,19 +132,12 @@ public class TableToGraphDB {
 
         Timer timer = new Timer();
 
-        commandLineInterface.checkCli(args);
-        if (null == commandLineInterface.getCmd()) {
-            commandLineInterface.showHelp("Error parsing command line options");
-            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                    "Error parsing command line options", LOG);
-        }
-
-        CommandLine cmd = commandLineInterface.getCmd();
+        CommandLine cmd = commandLineInterface.checkCli(args);
 
         ConstructionPipeline job                 = new TableToGraphDB().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.getRuntimeConfig().addConfig(job);
+        job = (ConstructionPipeline) commandLineInterface.addConfig(job);
 
-        String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        String srcTableName = cmd.getOptionValue(GBHTableConfiguration.CMD_TABLE_OPTNAME);
 
         HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
         HBaseGraphBuildingRule buildingRule     = new HBaseGraphBuildingRule(cmd);

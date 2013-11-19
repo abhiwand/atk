@@ -1,7 +1,12 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
-<!-- Put site-specific property overrides in this file. -->
+<!-- sample config file for graphbuilder.
+     These options can also be specified in the hadoop options config file if you would like to avoid specifying it on
+     the command line.
+     Individual options can be specified on the
+     command line with -D, -DmyProperty=myPropertyValue or -D myProperty=myPropertyValue
+ -->
 
 <configuration>
   <property>
