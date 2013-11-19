@@ -595,6 +595,11 @@ ul, li {
     margin-right: auto;
     margin-top: 200px;
     padding: 10px;
-    width: auto;
-    z-index: 1050;
+    width: 500px;
+    z-index: 1050;}
+  @media (min-width: 308px) and (max-width: 591px) {
+    .modal-dialog-pending {
+      width: 250px; } }
 }
+
+

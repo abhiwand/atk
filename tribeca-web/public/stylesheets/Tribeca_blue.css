@@ -7701,12 +7701,12 @@ body.boxed .carousel-blur .flex-direction-nav .flex-next {
 
 .carousel-blur, .carousel-blur .item {
   height: 788px; }
-  @media (min-width: 768px) and (max-width: 991px) {
+  @media (min-width: 308px) and (max-width: 591px) {
     .carousel-blur, .carousel-blur .item {
-      height: 393px; } }
-  @media (min-width: 992px) {
+      height: 593px; } }
+  @media (min-width: 592px) {
     .carousel-blur, .carousel-blur .item {
-      height: 937px; } }
+      height: 987px; } }
   @media (min-height: 992px) {
     .carousel-blur, .carousel-blur .item {
       height: 1080px; } }
