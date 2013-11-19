@@ -27,10 +27,10 @@ import com.intel.hadoop.graphbuilder.pipeline.input.text.TextFileInputConfigurat
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.linkgraph.LinkGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
+import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
@@ -124,7 +124,7 @@ public class CreateLinkGraph {
 
     public static void main(String[] args) {
         CommandLine cmd = commandLineInterface.checkCli(args);
-        //application specific argument checks
+        //check the parsed option against some custom logic
         checkCli(cmd);
 
         Timer timer = new Timer();

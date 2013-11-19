@@ -1,4 +1,4 @@
-package com.intel.hadoop.graphbuilder.sampleapplications;
+package com.intel.hadoop.graphbuilder.util;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;

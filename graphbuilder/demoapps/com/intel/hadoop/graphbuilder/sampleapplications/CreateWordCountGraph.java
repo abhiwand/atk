@@ -27,6 +27,7 @@ import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptio
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.wordcountgraph.WordCountGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
+import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import org.apache.commons.cli.CommandLine;
