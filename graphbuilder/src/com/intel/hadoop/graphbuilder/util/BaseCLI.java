@@ -7,11 +7,11 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class BaseCLI {
 
-    private static final String CMD_EDGES_OPTNAME = GBHTableConfiguration.CMD_EDGES_OPTNAME;
-    private static final String CMD_DIRECTED_EDGES_OPTNAME = GBHTableConfiguration.CMD_DIRECTED_EDGES_OPTNAME;
-    private static final String CMD_TABLE_OPTNAME = GBHTableConfiguration.CMD_TABLE_OPTNAME;
-    private static final String CMD_VERTICES_OPTNAME = GBHTableConfiguration.CMD_VERTICES_OPTNAME;
-    private static final String FLATTEN_LISTS_OPTNAME = GBHTableConfiguration.FLATTEN_LISTS_OPTNAME;
+    private static final String CMD_EDGES_OPTION_NAME = GBHTableConfiguration.CMD_EDGES_OPTNAME;
+    private static final String CMD_DIRECTED_EDGES_OPTION_NAME = GBHTableConfiguration.CMD_DIRECTED_EDGES_OPTNAME;
+    private static final String CMD_TABLE_OPTION_NAME = GBHTableConfiguration.CMD_TABLE_OPTNAME;
+    private static final String CMD_VERTICES_OPTION_NAME = GBHTableConfiguration.CMD_VERTICES_OPTNAME;
+    private static final String FLATTEN_LISTS_OPTION_NAME = GBHTableConfiguration.FLATTEN_LISTS_OPTNAME;
     private static final String TITAN_APPEND = TitanCommandLineOptions.APPEND;
 
     public enum Options{
@@ -25,7 +25,7 @@ public class BaseCLI {
     }
 
     //shared options amongst the demo apps no reason duplicate these configs all over the place
-    private static final Option CLI_FLATTEN_LIST_OPTION = OptionBuilder.withLongOpt(FLATTEN_LISTS_OPTNAME)
+    private static final Option CLI_FLATTEN_LIST_OPTION = OptionBuilder.withLongOpt(FLATTEN_LISTS_OPTION_NAME)
             .withDescription("Flag that expends lists into multiple items. " )
             .create("F");
 
@@ -43,32 +43,32 @@ public class BaseCLI {
             .withArgName("input path")
             .create("i");
 
-    private static final Option CLI_HBASE_TABLE_NAME_OPTION = OptionBuilder.withLongOpt(CMD_TABLE_OPTNAME)
+    private static final Option CLI_HBASE_TABLE_NAME_OPTION = OptionBuilder.withLongOpt(CMD_TABLE_OPTION_NAME)
             .withDescription("HBase table name")
             .hasArgs()
             .isRequired()
             .withArgName("HBase table name")
             .create("t");
 
-    private static final Option CLI_VERTEX_OPTION  = OptionBuilder.withLongOpt(CMD_VERTICES_OPTNAME)
+    private static final Option CLI_VERTEX_OPTION  = OptionBuilder.withLongOpt(CMD_VERTICES_OPTION_NAME)
             .withDescription("Specify the columns which are vertex tokens and vertex properties" +
-                    "Example: --" + CMD_VERTICES_OPTNAME + "\"<vertex_col>=[<vertex_prop1>,...]\"")
+                    "Example: --" + CMD_VERTICES_OPTION_NAME + "\"<vertex_col>=[<vertex_prop1>,...]\"")
             .hasArgs()
             .isRequired()
             .withArgName("Vertex-Column-Name")
             .create("v");
 
-    private static final Option CLI_EDGE_OPTION = OptionBuilder.withLongOpt(CMD_EDGES_OPTNAME)
+    private static final Option CLI_EDGE_OPTION = OptionBuilder.withLongOpt(CMD_EDGES_OPTION_NAME)
             .withDescription("Specify the HTable columns which are undirected edge tokens; " +
-                    "Example: --" + CMD_EDGES_OPTNAME + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
+                    "Example: --" + CMD_EDGES_OPTION_NAME + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
                     "Note: Edge labels must be unique")
             .hasArgs()
             .withArgName("Edge-Column-Name")
             .create("e");
 
-    private static final Option CLI_DIRECTED_EDGE_OPTION = OptionBuilder.withLongOpt(CMD_DIRECTED_EDGES_OPTNAME)
+    private static final Option CLI_DIRECTED_EDGE_OPTION = OptionBuilder.withLongOpt(CMD_DIRECTED_EDGES_OPTION_NAME)
             .withDescription("Specify the columns which are directed edge tokens; " +
-                    "Example: --" + CMD_DIRECTED_EDGES_OPTNAME + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
+                    "Example: --" + CMD_DIRECTED_EDGES_OPTION_NAME + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
                     "Note: Edge labels must be unique")
             .hasArgs()
             .withArgName("Edge-Column-Name")
