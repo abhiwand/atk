@@ -96,8 +96,8 @@ public class TableToTextGraph {
      */
     private static void checkCli(CommandLine cmd) {
 
-        if (!(cmd.hasOption(HBaseCommandLineOptions.CMD_EDGES_OPTION_NAME)) &&
-                !(cmd.hasOption(HBaseCommandLineOptions.CMD_DIRECTED_EDGES_OPTION_NAME))) {
+        if (!(cmd.hasOption(CommonCommandLineOptions.Option.edges.get())) &&
+                !(cmd.hasOption(CommonCommandLineOptions.Option.directedEdges.get()))) {
             commandLineInterface.showError("Please add column family and names for (directed) edges and (directed) edge properties");
         }
 
