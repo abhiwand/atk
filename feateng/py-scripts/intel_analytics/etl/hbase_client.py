@@ -1,8 +1,7 @@
+from thrift.transport import TSocket
+from thrift.protocol import TBinaryProtocol
+from hbase import Hbase 
 import happybase
-
-from intel_analytics.table.hbase import Hbase
-from intel_analytics.config import global_config as config
-
 
 """
 Usage will be like:
@@ -11,14 +10,24 @@ with ETLHBaseClient(hbase_host) as hbase_client:
 """
 class ETLHBaseClient:
     
-    def __init__(self, hbase_host=config['hbase_host']):
+    def __init__(self, hbase_host):
         self.hbase_host = hbase_host
 
-    def is_table_readable(self, table_name):
-        try:
-            return self.connection.is_table_enabled(table_name)
-        except:
-            return False
+    def table_exists(self, table_name):
+        return table_name in self.connection.tables()
+
+    def put(self, table_name, row_key, data_dict):
+        table = self.connection.table(table_name)
+        table.put(row_key, data_dict)
+        
+    def get(self, table_name, row_key):
+        table = self.connection.table(table_name)
+        return table.row(row_key)
+    
+    def delete(self, table_name, row_key):
+        table = self.connection.table(table_name)
+        table.delete(row_key)        
+    
     """
     first drops the table with the given name and then creates a new table with the given name and column families
     table_name: table name to drop & create
@@ -41,10 +50,9 @@ class ETLHBaseClient:
     """
     def get_column_names(self, table_name, column_family_descriptors):
         table = self.connection.table(table_name)
-        scanner = table.scan()
-        single_row = scanner.next()
-        data_dictionary = single_row[1]
-        return data_dictionary.keys()
+        for key, data in table.scan():
+            return data.keys()
+        return None    
   
     def __enter__(self):
         self.connection = happybase.Connection(self.hbase_host)        

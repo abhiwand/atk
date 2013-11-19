@@ -1,26 +1,22 @@
-import os
-import ast
-
 import sys
-
+import os
 from org.apache.pig.scripting import Pig
-from intel_analytics.config import global_config as config
-from intel_analytics.table.hbase_table.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
-from intel_analytics.table.hbase_table import pig_helpers
-from intel_analytics.table.hbase.builtin_functions import available_builtin_functions
-
+from intel_analytics.etl.config import CONFIG_PARAMS
+from intel_analytics.etl.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
+from intel_analytics.etl import pig_helpers
+from intel_analytics.etl import functions
+import ast
 
 def generate_hbase_store_args(features, cmd_line_args):
     hbase_store_args = ''#for storing, we need to update the transformed field's name when storing
-    cf = config['hbase_column_family']
     for i, f in enumerate(features):
         if cmd_line_args.feature_to_transform == f:
             if cmd_line_args.keep_original_feature:#should also write the original feature to output
-                hbase_store_args += '%s ' % ((cf+f))
+                hbase_store_args += '%s ' % ((CONFIG_PARAMS['etl-column-family']+f))
         else:
-            hbase_store_args += '%s ' % ((cf+f))
+            hbase_store_args += '%s ' % ((CONFIG_PARAMS['etl-column-family']+f))
     
-    hbase_store_args += (cf+cmd_line_args.new_feature_name)
+    hbase_store_args += (CONFIG_PARAMS['etl-column-family']+cmd_line_args.new_feature_name)
     return hbase_store_args
 
 def generate_transform_statement(features, cmd_line_args):
@@ -61,7 +57,7 @@ def main(argv):
     parser.add_argument('-f', '--feature', dest='feature_to_transform', help='the feature to apply transformation to', required=True)
     parser.add_argument('-i', '--input', dest='input', help='the input HBase table', required=True)
     parser.add_argument('-o', '--output', dest='output', help='the output HBase table', required=True)
-    parser.add_argument('-t', '--transformation', dest='transformation_function', help='transformation function to apply to given feature. Available transformations: %s' % (available_builtin_functions) , required=True)
+    parser.add_argument('-t', '--transformation', dest='transformation_function', help='transformation function to apply to given feature. Available transformations: %s' % (functions.AVAILABLE_FUNCTIONS) , required=True)
     parser.add_argument('-a', '--transformation-args', dest='transformation_function_args', help='Transformation function arguments as a list, e.g., -a [\"substring\",0]')
     parser.add_argument('-n', '--new-feature-name', dest='new_feature_name', help='create a new feature with the given name and with the values obtained from the transformation', required=True)
     parser.add_argument('-k', '--keep-original', dest='keep_original_feature', help='whether to keep the original feature (specified with -f) when writing the transformed output', action='store_true', default=False)
@@ -86,9 +82,9 @@ def main(argv):
     #don't forget to add the key we read from hbase, we read from hbase like .... as (key:chararray, ... remaining_features ...), see below
     features.insert(0, 'key')
         
-    if cmd_line_args.transformation_function not in available_builtin_functions:
-        raise Exception("%s is not supported. Supported functions are %s" % (cmd_line_args.transformation_function, available_builtin_functions))
-
+    if cmd_line_args.transformation_function not in functions.AVAILABLE_FUNCTIONS:
+        raise Exception("%s is not supported. Supported functions are %s" % (cmd_line_args.transformation_function, functions.AVAILABLE_FUNCTIONS)) 
+    
     if cmd_line_args.transformation_function == "STND":
         cmd_line_args.is_standardization = True
     else:
@@ -98,8 +94,7 @@ def main(argv):
     pig_statements.append("REGISTER %s/contrib/piggybank/java/piggybank.jar; -- POW is in piggybank.jar" % (os.environ.get('PIG_HOME')))#Pig binary sets the PIG_HOME env. variable when we run the script
     
     if cmd_line_args.is_standardization:#need datafu jar for standardization, which needs VAR UDF
-        pig_statements.append("REGISTER %s; -- for the VAR UDF" %
-                              (config['datafu_jar']))
+        pig_statements.append("REGISTER %s; -- for the VAR UDF" % (CONFIG_PARAMS['datafu-jar']))
         pig_statements.append("DEFINE VAR datafu.pig.stats.VAR();")
         
     pig_statements.append("hbase_data = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s', '-loadKey true') as (key:chararray, %s);" \

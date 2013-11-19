@@ -1,15 +1,24 @@
+import os
+import subprocess
+import re
+import random
+import string
 
-import os, sys, subprocess, re
+import sys
+
 from intel_analytics.config import global_config as config
+from intel_analytics.table.bigdataframe import BigDataFrame
+from intel_analytics.table.framebldr import FrameBuilder
 from builtin_functions import EvalFunctions
 from schema import ETLSchema
-from hbase_client import ETLHBaseClient
+from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
+
 
 #for quick testing
 local_run = True
 DATAFRAME_NAME_PREFIX_LENGTH=5 #table name prefix length, names are generated with a rand prefix
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-feateng_home = os.path.join(base_script_path,'..','..', 'feateng')
+feateng_home = os.path.join(base_script_path, '../','..', 'feateng')
 etl_scripts_path = os.path.join(feateng_home, 'py-scripts', 'intel_analytics', 'etl', 'pig')
 pig_log4j_path = os.path.join(feateng_home, 'conf','pig_log4j.properties')
 print 'Using',pig_log4j_path
@@ -223,106 +232,49 @@ class HBaseFrameBuilder(FrameBuilder):
     def __init__(self, table):
         super(HBaseFrameBuilder, self).__init__(table)
 
+    #-------------------------------------------------------------------------
+    # Create BigDataFrames
+    #-------------------------------------------------------------------------
     def build_from_csv(self, file, schema=None, skip_header=False):
-        pass
-    def build_from_json(self, file, schema=None):
-        pass
-    def build_from_xml(self, file, schema=None):
-        pass
+        #create some random table name
+        #we currently don't bother the user to specify table names
+        df_name = file.replace("/", "_")
+        df_name = df_name.replace(".", "_")
+        dataframe_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))
+        df_name = dataframe_prefix + df_name
+        hbase_table = HBaseTable(df_name) #currently we support hbase, TODO: where to read table type?
+        new_frame = BigDataFrame(hbase_table)
 
-#-----------------------------------------------------------------------------
-# Create BigDataFrames
-#-----------------------------------------------------------------------------
+        #save the schema of the dataset to import
+        etl_schema = ETLSchema()
+        etl_schema.populate_schema(schema)
+        etl_schema.save_schema(df_name)
 
-def read_csv(file, schema=None, skip_header=False):
-    """
-    Reads CSV (comma-separated-value) file and loads into a table
+        feature_names_as_str = ",".join(etl_schema.feature_names)
+        feature_types_as_str = ",".join(etl_schema.feature_types)
+        script_path = os.path.join(etl_scripts_path,'pig_import_csv.py')
 
-    Parameters
-    ----------
-    file : string
-        path to file
-    schema : string
-        TODO:
+        args = get_pig_args()
 
-    TODO: others parameters for the csv parser
-
-    Returns
-    -------
-    frame : BigDataFrame
-    """
-
-    #create some random table name
-    #we currently don't bother the user to specify table names
-    df_name = file.replace("/", "_")
-    df_name = df_name.replace(".", "_")
-    dataframe_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))
-    df_name = dataframe_prefix + df_name
-    hbase_table = HBaseTable(df_name) #currently we support hbase, TODO: where to read table type?
-    new_frame = BigDataFrame(hbase_table)
-
-    #save the schema of the dataset to import
-    etl_schema = ETLSchema()
-    etl_schema.populate_schema(schema)
-    etl_schema.save_schema(df_name)
-
-    feature_names_as_str = ",".join(etl_schema.feature_names)
-    feature_types_as_str = ",".join(etl_schema.feature_types)
-
-    script_path = os.path.join(etl_scripts_path,'pig_import_csv.py')
-
-    args = get_pig_args()
-
-    args += [script_path, '-i', file, '-o', df_name,
+        args += [script_path, '-i', file, '-o', df_name,
              '-f', feature_names_as_str, '-t', feature_types_as_str]
 
-    if skip_header:
-        args += ['-k']
+        if skip_header:
+            args += ['-k']
 
-    print args
-    # need to delete/create output table so that we can write the transformed features
-    with ETLHBaseClient(CONFIG_PARAMS['hbase-host']) as hbase_client:
-        hbase_client.drop_create_table(df_name , [CONFIG_PARAMS['etl-column-family']])
-    return_code = subprocess.call(args)
-    if return_code:
-        raise BigDataFrameException('Could not import CSV file')
+        print args
+        # need to delete/create output table to write the transformed features
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(df_name,
+                                           config['hbase_column_family'])
+        return_code = subprocess.call(args)
+        if return_code:
+            raise Exception('Could not import CSV file')
 
-    return new_frame
+        return new_frame
 
-def read_json(file, schema=None):
-    """
-    Reads JSON (www.json.org) file and loads into a table
+    def build_from_json(self, file, schema=None):
+        raise Exception("Not implemented")
+    def build_from_xml(self, file, schema=None):
+        raise Exception("Not implemented")
 
-    Parameters
-    ----------
-    file : string
-        path to file
-    schema : string
-        TODO:
-
-    TODO: others parameters for the parser
-
-    Returns
-    -------
-    frame : BigDataFrame
-    """
-    raise BigDataFrameException("Not implemented")
-
-def read_xml(file, schema=None):
-    """
-    Reads XML file and loads into a table
-
-    Parameters
-    ----------
-    file : string
-        path to file
-    schema : string
-        TODO:
-
-    TODO: others parameters for the parser
-
-    Returns
-    -------
-    frame : BigDataFrame
-    """
-    raise BigDataFrameException("Not implemented")

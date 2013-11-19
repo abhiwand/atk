@@ -14,7 +14,6 @@ class BigDataFrame(object):
     Proxy for large 2D container to work with table data at scale
     """
 
-
     def __init__(self, table):
         """
         (internal constructor)
@@ -56,7 +55,7 @@ class BigDataFrame(object):
     # TODO - Save/Restore/Export
     #----------------------------------------------------------------------
 
-    def to_csv(filename, include_header=True, include_schema=True):
+    def to_csv(self, filename, include_header=True, include_schema=True):
         """
         Serialize the current state of the table to a CSV file
 
@@ -74,7 +73,7 @@ class BigDataFrame(object):
         # HDFS (or S3) to client
         raise BigDataFrameException("Not implemented")
 
-    def to_json(file, include_schema=True):
+    def to_json(self, filename, include_schema=True):
         """
         Serialize the current state of the table to an XML file
 
@@ -89,7 +88,7 @@ class BigDataFrame(object):
         raise BigDataFrameException("Not implemented")
 
 
-    def to_xml(file, include_schema=True):
+    def to_xml(self, filename, include_schema=True):
         """
         Serialize the current state of the table to an XML file
 
@@ -627,6 +626,6 @@ class BigDataFrame(object):
             or GraphTypes.Bipartite
         """
         return self._graphbuilder_factory_class.\
-            get_graphbuilder(graph_type, self.table)
+            get_graphbuilder(graph_type, self._table)
 
 
