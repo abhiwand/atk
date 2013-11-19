@@ -92,11 +92,11 @@ def build(table_name, vertex_list, edge_list, is_directed):
     # retrieve
     try:
         # restart rexster
-        rexster_kill_command = get_rexster_kill_command()
-        call(rexster_kill_command)
+        #rexster_kill_command = get_rexster_kill_command()
+        #call(rexster_kill_command)
         rexster_cfg_file = titan_config.write_rexster_cfg(table_name)
-        rexster_start_command = get_rexster_start_command(rexster_cfg_file)
-        call(rexster_start_command)
+        #rexster_start_command = get_rexster_start_command(rexster_cfg_file)
+        #call(rexster_start_command)
     except ValueError:
         raise ValueError('ERROR: Failed to restart rexster server')
 
@@ -163,19 +163,19 @@ def get_rexster_server_uri(table_name):
         global_config['rexster_bulbs_port'],
         table_name)
 
-def get_rexster_start_command(rexster_config_file):
-    return [
-        global_config['rexster_start_script'],
-        '-s',
-        '-c',
-        rexster_config_file,
-        '&'  # not sure that will fly?
-    ]
-
-def get_rexster_kill_command():
-    return [
-        global_config['rexster_kill_script']
-    ]
+#def get_rexster_start_command(rexster_config_file):
+#    return [
+#        global_config['rexster_start_script'],
+#        '-s',
+#        '-c',
+#        rexster_config_file,
+#        '&'  # not sure that will fly?
+#    ]
+#
+#def get_rexster_kill_command():
+#    return [
+#        global_config['rexster_kill_script']
+#    ]
 
 # validate the config can supply the necessary parameters
 missing = []
@@ -186,11 +186,11 @@ except KeyError as e: missing.append(str(e))
 try: get_rexster_server_uri('')
 except KeyError as e: missing.append(str(e))
 
-try: get_rexster_start_command('')
-except KeyError as e: missing.append(str(e))
+#try: get_rexster_start_command('')
+#except KeyError as e: missing.append(str(e))
 
-try: get_rexster_kill_command()
-except KeyError as e: missing.append(str(e))
+#try: get_rexster_kill_command()
+#except KeyError as e: missing.append(str(e))
 
 if len(missing) > 0:
     global_config.raise_missing_parameters_error(missing)

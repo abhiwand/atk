@@ -1,4 +1,5 @@
 from time import strftime
+import os
 
 __all__ = [ 'titan_config']
 
@@ -24,8 +25,14 @@ class TitanConfig(object):
         filename : string
             full path of the config file created
         """
-        return self._write_cfg(tablename, stream,
-                               "graphbuilder", gb_keys, self._write_gb)
+        self.config['titan_storage_tablename'] = tablename
+        filename = os.path.join(self.config['titan_cfg_folder'],
+                                "graphbuilder_" + tablename+".xml")
+        return self._write_cfg(tablename,
+                               stream,
+                               filename,
+                               gb_keys,
+                               self._write_gb)
 
     def write_rexster_cfg(self, tablename, stream=None):
         """
@@ -43,24 +50,22 @@ class TitanConfig(object):
         filename : string
             full path of the config file created
         """
-        return self._write_cfg(tablename, stream,
-                               "rextser", rexster_keys, self._write_rexster)
+        return self._write_cfg(tablename,
+                               stream,
+                               self.config['rexster_xml'],
+                               rexster_keys,
+                               self._write_rexster)
 
 
-    def _write_cfg(self, tablename, stream, cfgname, keys, func):
+    def _write_cfg(self, tablename, stream, filename, keys, func):
         if tablename is None: raise Exception("tablename is None")
 
-        full_tablename = _get_full_tablename(tablename)
-        self.props['titan_storage_tablename'] = full_tablename;
-
-        self.verify(keys)
+        self.config.verify(keys)
 
         if stream is not None:
             func(stream)
             return ""
         else:
-            cfg_dst_folder = self.props['titan_cfg_folder']
-            filename = cfg_dst_folder + "/" + cfgname + full_tablename+".xml"
             with open(filename, 'w') as out:
                 func(out)
             return filename
@@ -69,16 +74,13 @@ class TitanConfig(object):
         _write_header(out, "GraphBuilder")
         out.write("<configuration>\n")
         for k in gb_keys:
-            _write_gb_prop(out, k, self.props[k])
+            _write_gb_prop(out, k, self.config[k])
         out.write("</configuration>\n")
 
     def _write_rexster(self, out):
         _write_header(out, "Rexster")
-        out.write(rexster_template.substitute(self.props))
+        out.write(rexster_template.substitute(self.config))
 
-
-def _get_full_tablename(tablename):
-    return id + "_" + tablename
 
 def _write_header(out, cfg_name):
     out.write("<!-- ")
