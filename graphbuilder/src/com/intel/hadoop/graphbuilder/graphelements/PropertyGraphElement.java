@@ -31,12 +31,25 @@ import org.apache.hadoop.io.WritableComparable;
  * Abstract union type of {@code Vertex} and {@code Edge}. Used as intermediate
  * map output value to hold either a vertex or an edge.
  *
+ * <p> This type is abstract only because a constructor for {@code VidType} is needed</p>
+ *
  * @param <VidType>
  */
 
 public abstract class PropertyGraphElement<VidType extends WritableComparable<VidType>>
         implements Writable {
 
+
+
+    /**
+     * Abstract method for the {@code VidType} constructor.
+     * @return  a new {@code VidType} object
+     */
+    public abstract VidType createVid();
+
+    /**
+     * Flag to communicate if the property graph element in question is a vertex, an edge, or yet unassigned.
+     */
     public enum GraphElementType {
         NULL_ELEMENT,
         VERTEX,
@@ -47,12 +60,15 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     private Vertex           vertex;
     private Edge             edge;
 
+    /**
+     * Default constructor. Allocates both the edge and vertex fields, flags the element as {@code NULL_ELEMENT}.
+     */
     public PropertyGraphElement() {
+        graphElementType = GraphElementType.NULL_ELEMENT;
         vertex = new Vertex<VidType>();
         edge   = new Edge<VidType>();
     }
 
-    public abstract VidType createVid();
 
     /**
      * Initialize the value.
@@ -97,6 +113,11 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
         return edge;
     }
 
+    /**
+     * Read a property graph element from an input stream.
+     * @param input
+     * @throws IOException
+     */
     @Override
     public void readFields(DataInput input) throws IOException {
 
@@ -106,11 +127,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
 
             VidType vid = null;
 
-            try {
-                vid = createVid();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            vid = createVid();
 
             PropertyMap pm = new PropertyMap();
 
@@ -118,23 +135,23 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
             vertex.readFields(input);
 
         } else {
-            try {
 
                 VidType source = createVid();
                 VidType target = createVid();
 
-                StringType      label = new StringType();
+                StringType  label = new StringType();
                 PropertyMap pm    = new PropertyMap();
 
                 edge.configure(source, target, label, pm);
                 edge.readFields(input);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
         }
     }
 
+    /**
+     * Write a property graph element to an output stream.
+     * @param output
+     * @throws IOException
+     */
     @Override
     public void write(DataOutput output) throws IOException {
 
@@ -149,6 +166,10 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
         }
     }
 
+    /**
+     * Convert a property graph element to a string.
+     * @return
+     */
     @Override
     public String toString() {
         switch (graphElementType) {

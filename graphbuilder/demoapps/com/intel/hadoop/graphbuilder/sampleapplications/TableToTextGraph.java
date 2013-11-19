@@ -187,29 +187,6 @@ public class TableToTextGraph {
     }
 
     /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-        /**
-         * This method allows bidirectional edges (do not clean them).
-         * @return  false
-         */
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return false;
-        }
-
-        /**
-         * This method uses hbase.
-         * @return  true
-         */
-        @Override
-        public boolean shouldUseHBase() {
-            return true;
-        }
-    }
-
-    /**
      * Main method for feature table to text graph construction
      *
      * @param args Command line arguments
@@ -223,14 +200,16 @@ public class TableToTextGraph {
         CommandLine cmd = checkCli(args);
         String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
 
-        ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
+        GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
+
         HBaseInputConfiguration      inputConfiguration  = new HBaseInputConfiguration(srcTableName);
-        HBaseGraphBuildingRule buildingRule        = new HBaseGraphBuildingRule(cmd);
+        HBaseGraphBuildingRule       buildingRule        = new HBaseGraphBuildingRule(cmd);
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
 
         LOG.info("============= Creating graph from hbase ==================");
         timer.start();
-        job.run( inputConfiguration,buildingRule, outputConfiguration, cmd);
+        pipeline.run(inputConfiguration, buildingRule,
+                GraphConstructionPipeline.BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES, outputConfiguration, cmd);
         LOG.info("========== Done creating graph from hbase ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }
