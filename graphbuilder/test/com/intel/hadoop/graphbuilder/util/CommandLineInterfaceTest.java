@@ -66,10 +66,12 @@ public class CommandLineInterfaceTest {
 
         PowerMockito.mockStatic(GraphBuilderExit.class);
 
+        //stub out the exit call so our test keep running
         PowerMockito.doNothing().when(GraphBuilderExit.class,
                 method(GraphBuilderExit.class, "graphbuilderExitNoException", StatusCode.class))
                 .withArguments(any(StatusCode.class));
 
+        //stub out the show help call to keep crud off the command line
         PowerMockito.doNothing().when(spiedCLI).showHelp(any(String.class));
     }
 
