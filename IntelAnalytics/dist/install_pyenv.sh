@@ -153,6 +153,28 @@ if check zmq; then
 fi
 ins pyjavaproperties
 
+# add pydoop to do hdfs, or mapred in python directly
+if check pydoop; then
+   echo $hdr Install pydoop
+   yum -y install boost-devel
+   # ZY: need HADOOP_HOME and JAVA_HOME to build pydoop
+   # for 0.5 release, hadoop is at /home/hadoop/IntelAnalytics
+   HADOOP_HOME=/home/hadoop/IntelAnalytics/hadoop JAVA_HOME=/usr/lib/jvm/java pip install pydoop
+   # ZY: work-around, pydoop installer somehow ignores the virtenv
+   pkgs=${PYTHON_VIRTUALENV}/lib/python2.7/site-packages
+   ls ${pkgs}/pydoop* &> /dev/null
+   if [ $? -ne 0 ]; then
+        pushd ${pkgs}
+        for f in /usr/lib/python2.7/site-packages/pydoop*
+        do
+            echo $hdr Create symlink to ${f} at ${pkgs}
+            ln -s ${f}
+        done
+        popd
+   fi
+   test pydoop
+fi
+
 echo $hdr Python Virtual Environment Installation complete
 echo $hdr "To activate enter: 'source $PYTHON_VIRTUALENV/bin/activate'"
 
