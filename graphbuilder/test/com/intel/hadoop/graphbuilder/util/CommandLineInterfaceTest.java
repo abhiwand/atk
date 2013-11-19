@@ -22,11 +22,7 @@ import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-//import static org.mockito.Matchers.any;
-//import static org.mockito.Mockito.doCallRealMethod;
-//import static org.mockito.Mockito.verify;
 import static junit.framework.Assert.fail;
-//import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.*;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
@@ -34,7 +30,7 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(GraphBuilderExit.class)
 public class CommandLineInterfaceTest {
-    private final static int MAX_RANDOM_RETRIES = 50;
+    private final static int MAX_RANDOM_RETRIES = 10;
 
     private final static String configFile = System.getProperty("user.dir") + "/resources/test/graphbuilder.xml";
     private final static String outputPath = System.getProperty("user.dir") + "/resources/test/output";
@@ -187,7 +183,6 @@ public class CommandLineInterfaceTest {
         testRemainingHadoopArgs(4, spiedCLI);
         testParsedOptions(optionOne, "we parsed -one", spiedCLI);
         testParsedOptions(optionTwo, "we parsed -two", spiedCLI);
-        System.out.print("");
     }
 
     /**

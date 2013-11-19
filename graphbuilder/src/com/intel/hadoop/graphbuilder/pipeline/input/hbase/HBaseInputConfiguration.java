@@ -89,7 +89,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
         configuration.set("SRCTABLENAME", srcTableName);
 
 
-        scan.setCaching(GBHTableConfiguration.config.getPropertyInt("HBASE_CACHE_SIZE"));
+        scan.setCaching(HBaseConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
 
         configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", cmd.hasOption("flattenlists"));

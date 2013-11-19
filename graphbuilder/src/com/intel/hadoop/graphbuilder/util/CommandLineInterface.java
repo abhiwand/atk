@@ -11,16 +11,24 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * General command line parsing utility for graph builder. Uses the Hadoop generic options parser to parse config files.
- * reserved options -conf, -D, -fs, -jt, -files, -libjars, -archives already used by the Hadoop generic options parser.
- * don't use any of the reserved options to avoid conflicts.
+ * General command line parsing utility for graph builder. This CLI class is a wrapper around the GenericOptionsParser
+ * and the apache commons cli PosixParser. Manages and centralizes much of the error checking and parsers instantiation
+ * to one class versus having it distributed across all the demo apps.
  *
+ * Uses the Hadoop generic options parser to parse config files.
+ * reserved options -conf, -D, -fs, -jt, -files, -libjars, and -archives are already used by the Hadoop generic options parser.
+ * don't use any of the reserved options to avoid conflicts. All the hadoop generic options must be placed before any
+ * app specific options.
+ *
+ * Usage:
  * <p>
  *     <code>-conf path/to/config/file</code>   specifies the configuration file
- *     <code>-DmySingleConfigName=mySingleConfigValue</code>   specifies the configuration file
+ *     <code>-DmySingleConfigName=mySingleConfigValue</code> specifies individual config property
  *     or
- *     <code>-D mySingleConfigName=mySingleConfigValue</code>   specifies the configuration file
+ *     <code>-D mySingleConfigName=mySingleConfigValue</code>specifies individual config property
  * </p>
+ * @see GenericOptionsParser
+ * @see PosixParser
  */
 public class CommandLineInterface{
 

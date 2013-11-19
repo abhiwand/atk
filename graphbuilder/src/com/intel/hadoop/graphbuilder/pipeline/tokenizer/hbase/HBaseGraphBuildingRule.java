@@ -1,6 +1,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
@@ -100,16 +101,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                     "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
-        srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        srcTableName = cmd.getOptionValue(HBaseCommandLineOptions.CMD_TABLE_OPTION_NAME);
 
         vertexRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME")));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(HBaseCommandLineOptions.CMD_TABLE_OPTION_NAME));
 
         edgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME")));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(HBaseCommandLineOptions.CMD_EDGES_OPTION_NAME));
 
         directedEdgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME")));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(HBaseCommandLineOptions.CMD_DIRECTED_EDGES_OPTION_NAME));
 
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();

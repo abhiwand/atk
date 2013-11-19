@@ -1,18 +1,28 @@
 package com.intel.hadoop.graphbuilder.util;
 
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
+
+/**
+ * A nice wrapper to grab all the commonly used CLI options. Easily referenced by the enum so it's easy to get the list of
+ * options in any code editor.
+ *
+ * Usage:
+ *
+ * BaseCLI.Options.inputPath.get()
+ *
+ * @see CommandLineInterface
+ */
 public class BaseCLI {
 
-    private static final String CMD_EDGES_OPTION_NAME = GBHTableConfiguration.CMD_EDGES_OPTNAME;
-    private static final String CMD_DIRECTED_EDGES_OPTION_NAME = GBHTableConfiguration.CMD_DIRECTED_EDGES_OPTNAME;
-    private static final String CMD_TABLE_OPTION_NAME = GBHTableConfiguration.CMD_TABLE_OPTNAME;
-    private static final String CMD_VERTICES_OPTION_NAME = GBHTableConfiguration.CMD_VERTICES_OPTNAME;
-    private static final String FLATTEN_LISTS_OPTION_NAME = GBHTableConfiguration.FLATTEN_LISTS_OPTNAME;
-    private static final String TITAN_APPEND = TitanCommandLineOptions.APPEND;
+    private static final String CMD_EDGES_OPTION_NAME = CommonCommandLineOptions.CMD_EDGES_OPTION_NAME;
+    private static final String CMD_DIRECTED_EDGES_OPTION_NAME = CommonCommandLineOptions.CMD_DIRECTED_EDGES_OPTION_NAME;
+    private static final String CMD_TABLE_OPTION_NAME = CommonCommandLineOptions.CMD_TABLE_OPTION_NAME;
+    private static final String CMD_VERTICES_OPTION_NAME = CommonCommandLineOptions.CMD_VERTICES_OPTION_NAME;
+    private static final String FLATTEN_LISTS_OPTION_NAME = CommonCommandLineOptions.FLATTEN_LISTS_OPTION_NAME;
+
+    private static final String TITAN_APPEND = CommonCommandLineOptions.APPEND;
 
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),

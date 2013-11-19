@@ -49,18 +49,15 @@ public class GBHTableConfiguration {
     public static final String DECN_CONF_NAME = "DirectedEdgeColNames";
     public static final String VERTEX_PROP_COLFAMILY = "VertexPropertyCF";
     public static final String VERTEX_PROP_IDCOLQUALIFIER = "VertexID";
-    public static final String CMD_EDGES_OPTNAME = "edges";
+
+    /*public static final String CMD_EDGES_OPTNAME = "edges";
     public static final String CMD_DIRECTED_EDGES_OPTNAME = "directedEdges";
     public static final String CMD_TABLE_OPTNAME = "tablename";
     public static final String CMD_VERTICES_OPTNAME = "vertices";
-    public static final String FLATTEN_LISTS_OPTNAME = "flattenlists";
-
-
-    public static final int    HBASE_CACHE_SIZE            = 500;
-    public static final String TITAN_HBASE_TABLENAME       = "GBTitan";
-    public static final String TITAN_HBASE_STORAGE_TIMEOUT = "10000";
+    public static final String FLATTEN_LISTS_OPTNAME = "flattenlists";*/
 
     public static final String HBASE_COLUMN_SEPARATOR           = ":";
+
     public static final String TRIBECA_GRAPH_PROPERTY_SEPARATOR = "_";
     public static final String NULLKEY                          = "NULLKEY";
 
