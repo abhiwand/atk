@@ -8,3 +8,7 @@ class MapReduceProgress:
 
     def getReducerProgress(self):
         return self.reducerProgress
+
+    def getTotalProgress(self):
+        return int((self.mapperProgress + self.reducerProgress) * 0.5)
+
