@@ -68,7 +68,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      * @param vid vertex ID
      * @param label vertex Label
      */
-    public Vertex(VertexIdType vid, StringType label) {
+    public Vertex(VertexIdType vid, String label) {
         this.vertexId    = vid;
         this.properties  = new PropertyMap();
         this.vertexLabel = new StringType(label);
@@ -131,7 +131,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      */
     @Override
     public final String toString() {
-        if (this.vertexLabel.isempty()) {
+        if (this.vertexLabel.isEmpty()) {
             return this.vertexId.toString() + "\t" + this.properties.toString();
         } else {
             return this.vertexId.toString() + "\t" + this.vertexLabel.toString() + "\t" + properties.toString();
