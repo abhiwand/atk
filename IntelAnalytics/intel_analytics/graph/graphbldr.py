@@ -7,6 +7,7 @@ from intel_analytics.config import global_config, dynamic_import
 
 
 __all__ = ['get_graphbuilder',
+           'get_graph',
            'GraphTypes',
            'GraphTypes.Bipartite',
            'GraphTypes.Property'
@@ -33,13 +34,19 @@ class GraphBuilderFactory(object):
     """
     Abstract class for the various graph build factories (i.e. one for Titan)
     """
+    __metaclass__ = abc.ABCMeta
+
     #todo: implement when builder discrimination is required
     def __init__(self):
         pass
 
     @abc.abstractmethod
-    def get_graphbuilder(self, graph_type, table):
-        pass
+    def get_graphbuilder(self, graph_type, source):
+        raise Exception("Not overridden")
+
+    @abc.abstractmethod
+    def get_graph(self, graph_name):
+        raise Exception("Not overridden")
 
 
 
@@ -50,11 +57,15 @@ class GraphBuilder(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, table):
-        self._table = table
+    def __init__(self, source=None):
+        self.register_source(source)
+        pass
+
+    def register_source(self, source):
+        self._source = source
 
     @abc.abstractmethod
-    def build(self):
+    def build(self, graph_name):
         pass
 
 class BipartiteGraphBuilder(GraphBuilder):
@@ -64,25 +75,25 @@ class BipartiteGraphBuilder(GraphBuilder):
     __metaclass__ = abc.ABCMeta
 
 
-    def __init__(self, table):
-        super(BipartiteGraphBuilder, self).__init__(table)
-        self.vertex_list = []
+    def __init__(self, source=None):
+        super(BipartiteGraphBuilder, self).__init__(source)
+        self._vertex_list = []
 
     @abc.abstractmethod
-    def build(self):
+    def build(self, graph_name):
         pass
 
-    def register_vertex(self, key, properties):
+    def register_vertex(self, key, properties=None):
         """
         register_vertex('id')
         register_vertex('id', ['name', 'age', 'dept'])
         """
-        if len(self.vertex_list) > 2:
+        if len(self._vertex_list) > 2:
             raise ValueError(
                 "ERROR: Attempt to register more than two vertex sources " + \
                 "for a bipartite graph; check vertex registration or switch" + \
                 "to a property graph builder")
-        self.vertex_list.append(GraphBuilderVertex(key, properties))
+        self._vertex_list.append(GraphBuilderVertex(key, properties))
 
     def register_vertices(self, vertices):
         """
@@ -96,27 +107,28 @@ class BipartiteGraphBuilder(GraphBuilder):
                 raise ValueError("ERROR: Incorrect vertex tuple: " + str(entry))
             self.register_vertex(entry[0], entry[1])
 
+
 class PropertyGraphBuilder(GraphBuilder):
     """
     Abstract class for py property graph builders
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, table):
-        super(PropertyGraphBuilder, self).__init__(table)
-        self.vertex_list = []
-        self.edge_list = []
+    def __init__(self, source=None):
+        super(PropertyGraphBuilder, self).__init__(source)
+        self._vertex_list = []
+        self._edge_list = []
 
     @abc.abstractmethod
-    def build(self):
+    def build(self, graph_name):
         pass
 
-    def register_vertex(self, key, properties):
+    def register_vertex(self, key, properties=None):
         """
         register_vertex('id')
         register_vertex('id', ['name', 'age', 'dept'])
         """
-        self.vertex_list.append(GraphBuilderVertex(key, properties))
+        self._vertex_list.append(GraphBuilderVertex(key, properties))
 
     def register_vertices(self, vertices):
         """
@@ -130,14 +142,14 @@ class PropertyGraphBuilder(GraphBuilder):
                 raise ValueError("ERROR: Incorrect vertex tuple: " + str(entry))
             self.register_vertex(entry[0], entry[1])
 
-    def register_edge(self, edge_tuple, properties):
+    def register_edge(self, edge_tuple, properties=None):
         """
         Parameters:
         edge: Tuple of source, target and label
         properties: List of property sources
         Example: register_edge(('src', 'tgt', 'label'), ['ep1', 'ep2'])
         """
-        self.edge_list.append(GraphBuilderEdge(edge_tuple, properties))
+        self._edge_list.append(GraphBuilderEdge(edge_tuple, properties))
 
     def register_edges(self, edges):
         """
@@ -218,28 +230,32 @@ class GraphBuilderEdge:
         return bool(self.label)
 
 
-def get_graphbuilder(graph_type, frame):
+def get_graphbuilder(graph_type, source=None):
     """
-    Returns a graphbuilder for given BigDataFrame
+    Returns a graphbuilder for given graph type
 
     Parameters
     ----------
     graph_type : GraphTypes.*
         Class indicating the type of graph, like GraphTypes.Property
         or GraphTypes.Bipartite
-    frame : BigDataFrame
-        table instance for which the graph will be built
     """
     factory_class = _get_graphbuilder_factory_class()
-    return factory_class.get_graphbuilder(graph_type, frame)
+    return factory_class.get_graphbuilder(graph_type, source)
+
+def get_graph(graph_name):
+    factory_class = _get_graphbuilder_factory_class()
+    return factory_class.get_graph(graph_name)
+
 
 # dynamically and lazily load the correct graphbuilder factory,
 # according to config
-graphbuilder_factory_class = None
+graphbuilder_factory = None
 def _get_graphbuilder_factory_class():
-    global graphbuilder_factory_class
-    if graphbuilder_factory_class is None:
+    global graphbuilder_factory
+    if graphbuilder_factory is None:
         graphbuilder_factory_class = dynamic_import(
             global_config['py_graphbuilder_factory_class_path'])
-    return graphbuilder_factory_class
+        graphbuilder_factory = graphbuilder_factory_class.get_instance()
+    return graphbuilder_factory
 
