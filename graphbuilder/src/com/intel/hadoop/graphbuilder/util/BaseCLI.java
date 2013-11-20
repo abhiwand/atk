@@ -23,11 +23,16 @@ public class BaseCLI {
     private static final String FLATTEN_LISTS_OPTION_NAME = CommonCommandLineOptions.Option.flatten.get();
 
     private static final String TITAN_APPEND = CommonCommandLineOptions.Option.titanAppend.get();
+    private static final String TITAN_STORAGE = CommonCommandLineOptions.Option.titanStorage.get();
+
+    private static final String CMD_OUTPUT_OPTION_NAME = CommonCommandLineOptions.Option.output.get();
+    private static final String CMD_INPUT_OPTION_NAME = CommonCommandLineOptions.Option.input.get();
 
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),
         directedEdge(CLI_DIRECTED_EDGE_OPTION), flattenList(CLI_FLATTEN_LIST_OPTION),
-        titanAppend(CLI_TITAN_APPEND_OPTION), outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION);
+        titanAppend(CLI_TITAN_APPEND_OPTION), titanStorage(CLI_TITAN_STORAGE_OPTION),
+        outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION);
 
         private final Option option;
         Options(Option option){this.option = option;}
@@ -35,6 +40,11 @@ public class BaseCLI {
     }
 
     //shared options amongst the demo apps no reason duplicate these configs all over the place
+    private static final Option CLI_TITAN_STORAGE_OPTION = OptionBuilder.withLongOpt(TITAN_STORAGE)
+            .withDescription("select Titan for graph storage")
+            .withArgName("titan")
+            .create("t");
+
     private static final Option CLI_FLATTEN_LIST_OPTION = OptionBuilder.withLongOpt(FLATTEN_LISTS_OPTION_NAME)
             .withDescription("Flag that expends lists into multiple items. " )
             .create("F");
@@ -43,12 +53,14 @@ public class BaseCLI {
             .withDescription("Append Graph to Current Graph at Specified Titan Table")
             .create("a");
 
-    private static final Option CLI_OUTPUT_PATH_OPTION = OptionBuilder.withLongOpt("out").withDescription("output path")
-            .hasArg().create("o");
+    private static final Option CLI_OUTPUT_PATH_OPTION = OptionBuilder.withLongOpt(CMD_OUTPUT_OPTION_NAME)
+            .withDescription("output path")
+            .hasArg()
+            .create("o");
 
-    private static final Option CLI_INPUT_PATH_OPTION = OptionBuilder.withLongOpt("in")
+    private static final Option CLI_INPUT_PATH_OPTION = OptionBuilder.withLongOpt(CMD_INPUT_OPTION_NAME)
             .withDescription("input path")
-            .hasArgs()
+            .hasArg()
             .isRequired()
             .withArgName("input path")
             .create("i");

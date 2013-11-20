@@ -15,6 +15,7 @@ public class CommonCommandLineOptions {
 
     //titan command line options
     private static final String APPEND = TitanCommandLineOptions.APPEND;
+    private static final String STORE_IN_TITAN = TitanCommandLineOptions.STORE_IN_TITAN;
 
     //hbase command line options
     private static final String CMD_EDGES_OPTION_NAME = HBaseCommandLineOptions.CMD_EDGES_OPTION_NAME;
@@ -23,10 +24,14 @@ public class CommonCommandLineOptions {
     private static final String CMD_VERTICES_OPTION_NAME = HBaseCommandLineOptions.CMD_VERTICES_OPTION_NAME;
     private static final String FLATTEN_LISTS_OPTION_NAME = HBaseCommandLineOptions.FLATTEN_LISTS_OPTION_NAME;
 
+    //general options
+    private static final String CMD_OUTPUT_OPTION_NAME = "out";
+    private static final String CMD_INPUT_OPTION_NAME = "in";
+
     public enum Option{
-        titanAppend(APPEND), table(CMD_TABLE_OPTION_NAME), edges(CMD_EDGES_OPTION_NAME),
+        titanAppend(APPEND), titanStorage(STORE_IN_TITAN), table(CMD_TABLE_OPTION_NAME), edges(CMD_EDGES_OPTION_NAME),
         directedEdges(CMD_DIRECTED_EDGES_OPTION_NAME), vertices(CMD_VERTICES_OPTION_NAME),
-        flatten(FLATTEN_LISTS_OPTION_NAME);
+        flatten(FLATTEN_LISTS_OPTION_NAME), input(CMD_INPUT_OPTION_NAME), output(CMD_OUTPUT_OPTION_NAME);
 
         private final String longName;
         Option(String longName){this.longName = longName;}

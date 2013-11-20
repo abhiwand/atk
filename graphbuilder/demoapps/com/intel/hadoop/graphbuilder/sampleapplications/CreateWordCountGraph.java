@@ -87,10 +87,7 @@ public class CreateWordCountGraph {
 
         options.addOption(BaseCLI.Options.outputPath.get());
 
-        options.addOption(OptionBuilder.withLongOpt("titan")
-                .withDescription("select Titan for graph storage")
-                .withArgName("titan")
-                .create("t"));
+        options.addOption(BaseCLI.Options.titanStorage.get());
 
         options.addOption(BaseCLI.Options.titanAppend.get());
 
@@ -119,14 +116,17 @@ public class CreateWordCountGraph {
 
         CommandLine cmd = commandLineInterface.parseArgs(args);
 
-        if (cmd.hasOption("out") && cmd.hasOption("titan")) {
+        String outputPathOpt = CommonCommandLineOptions.Option.output.get();
+        String titanStorageOpt = CommonCommandLineOptions.Option.titanStorage.get();
+
+        if (cmd.hasOption(outputPathOpt) && cmd.hasOption(titanStorageOpt)) {
             commandLineInterface.showError("You cannot simultaneously specify a file and Titan for the output.");
-        } else if (!cmd.hasOption("titan") && cmd.hasOption(CommonCommandLineOptions.Option.titanAppend.get())) {
+        } else if (!cmd.hasOption(titanStorageOpt) && cmd.hasOption(CommonCommandLineOptions.Option.titanAppend.get())) {
             commandLineInterface.showError("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
-        } else if (cmd.hasOption("out")) {
-            outputPath = cmd.getOptionValue("out");
+        } else if (cmd.hasOption(outputPathOpt)) {
+            outputPath = cmd.getOptionValue(outputPathOpt);
             LOG.info("output path: " + outputPath);
-        } else if (cmd.hasOption("titan")) {
+        } else if (cmd.hasOption(titanStorageOpt)) {
             titanAsDataSink = true;
         } else {
             commandLineInterface.showError("An output path is required");
