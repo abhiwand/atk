@@ -1,6 +1,7 @@
 from distutils.core import setup
-setup(name='python-intel_analtyics',
-      description = 'Intel Tribeca Analytics Platform',
+setup(name='python-intel_analytics',
+      description = 'Intel Analytics Platform',
       version='0.5',
-      packages=['intel_analytics']
+      packages=['intel_analytics'],
+      platforms = ['any']
       )
