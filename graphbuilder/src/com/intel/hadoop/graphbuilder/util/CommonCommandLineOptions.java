@@ -3,7 +3,6 @@ package com.intel.hadoop.graphbuilder.util;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
-import org.apache.commons.cli.Option;
 
 /**
  * one stop shop for all the command line option long names (ie tablename for -t) that gets referenced in
@@ -15,7 +14,7 @@ public class CommonCommandLineOptions {
 
     //titan command line options
     private static final String APPEND = TitanCommandLineOptions.APPEND;
-    private static final String STORE_IN_TITAN = TitanCommandLineOptions.STORE_IN_TITAN;
+    private static final String STORE_IN_TITAN = TitanCommandLineOptions.STORE;
 
     //hbase command line options
     private static final String CMD_EDGES_OPTION_NAME = HBaseCommandLineOptions.CMD_EDGES_OPTION_NAME;
