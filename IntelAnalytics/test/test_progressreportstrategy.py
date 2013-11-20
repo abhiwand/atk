@@ -49,7 +49,7 @@ class TestProgressReportStrategy(unittest.TestCase):
         progress = self.progressReportStrategy.getAllMapReduceJobsProgressList()[-1]
         self.assertEquals(33, progress.getMapperProgress())
         self.assertEquals(0, progress.getReducerProgress())
-        self.assertEquals(16, progress.getTotalProgress())
+        self.assertEquals(16.5, progress.getTotalProgress())
 
     def test_second_job_completion(self):
         self.progressReportStrategy = ProgressReportStrategy()

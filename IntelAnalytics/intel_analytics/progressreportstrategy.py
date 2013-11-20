@@ -4,19 +4,19 @@ from progress import Progress
 
 from intel_analytics.mapreduceprogress import MapReduceProgress
 
-class ProgressReportStrategy(ReportStrategy):
 
+class ProgressReportStrategy(ReportStrategy):
     def __init__(self):
         self.jobProgressList = []
         self.logUtil = MapReduceLogUtil()
 
     def report(self, line):
         progress = self.logUtil.findProgress(line)
-        if(progress != None):
+        if progress is not None:
             mapperProgress = progress.getMapperProgress()
             reducerProgress = progress.getReducerProgress()
 
-            if(len(self.jobProgressList) == 0 or self.jobProgressList[-1].value == 100):
+            if len(self.jobProgressList) == 0 or self.jobProgressList[-1].value == 100:
                 self.jobProgressList.append(self.getNewProgressBar("Progress"))
 
             totalProgressValue = (mapperProgress + reducerProgress) * 0.5
