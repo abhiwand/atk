@@ -2,7 +2,7 @@ import re
 
 from mapreduceprogress import MapReduceProgress
 
-
+"""Utility class for exploring map reduce job log"""
 class MapReduceLogUtil:
 
     def findProgress(self, lineValue):
