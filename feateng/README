@@ -2,51 +2,54 @@
 SETTING UP THE ENVIRONMENT
 ==========================
 	Set the environment variables:
-		export PIG_PATH=/home/user/nezih-experiments/pig-0.11.1
-		export PATH=$PIG_PATH/bin:$PATH
-		export JYTHONPATH=py-scripts/                         ---> REQUIRED TO SHIP THE argparse_lib.py module to the worker nodes
+		source feateng/feateng-env.sh
 	
-	Link $PIG_HOME/pig-0.11.1/lib/jython-standalone-2.5.3.jar from $HADOOP_HOME/lib & restart Hadoop
+	Link $PIG_HOME/lib/jython-standalone-2.5.3.jar from $HADOOP_HOME/lib & restart Hadoop
 		Go to $HADOOP_HOME/lib and run: ln -s $PIG_HOME/lib/jython-standalone-2.5.3.jar
 	
 	Install our Python dependencies:
 		thrift: https://pypi.python.org/pypi/thrift/0.9.1
 		happybase: https://pypi.python.org/pypi/happybase/
+		
+	Make sure HBase thrift server is running: 
+		cd $HBASE_HOME/bin 
+	    ./hbase-daemon.sh start thrift -threadpool
 	
 ==========================
 RUNNING THE SCRIPTS
 ==========================
 Import some datasets:
-	python py-scripts/import.py -i /tmp/sample_shaw.log -o shaw_table -l '\n' -p 32 -c custom-parsers/shaw_udfs.py -s 'timestamp,event_type,method,duration,item_id,src_tms,dst_tms'
-	python py-scripts/import_csv.py -i /tmp/test.csv -o dummy_table -p 32 -s 'f1,f2,f3,f4' (If your CSV contains a header line as the first line you can skip loading that line with the -k flag)
-	python py-scripts/import_json.py  -i /tmp/test.json -o test_json_import -p 4
+	python py-scripts/import.py -i /tmp/sample.log -o log_table -l '\n' -c my_custom_udf.py -s 'f_1:chararray,f_2:double'
+	python py-scripts/import_csv.py -i /tmp/test.csv -o dummy_table -s 'f1:chararray,f2:chararray,f3:double,f4:long' -k (-k flag is used to skip the header of the CSV file)
+	python py-scripts/import_csv.py -i /tmp/us_states.csv -o us_states -s 'state_name:chararray' -k
+	python py-scripts/import_csv.py -i /tmp/test.tsv -o dummy_table -d '\t' -s 'f1:chararray,f2:chararray,f3:double,f4:long' -k # To run a tab separated file specify the delimeter as \t
+	python py-scripts/import_json.py -i /tmp/test.json -o test_json_import
 	
 Then clean the dataset:
-	python py-scripts/clean.py -f duration -i shaw_table -o shaw_cleaned -p 32 [drops all missing values, to replace them use -r [VALUE | avg]] 
+	python py-scripts/clean.py -f feature_to_clean -i input_table -o output_table [drops all missing values, to replace them use -r [VALUE | avg]]
+	python py-scripts/clean.py  -i dummy_table -o dummy_table_cleaned -s all [drop a record if all features are missing/drop empty records]
+	python py-scripts/clean.py  -i dummy_table -o dummy_table_cleaned -s any [drop a record if any of its features is missing/drop empty records]
 
 Then run some transforms:
-	python py-scripts/transform.py -i shaw_table -o shaw_table_transformed -f duration -p 32 -t EXP -n exp_duration
-	python py-scripts/transform.py -i shaw_table -o shaw_table_transformed -f duration -p 32 -t LOG10 -n log10_duration
-	python py-scripts/transform.py -i shaw_table -o shaw_table_transformed -f duration -p 32 -t POW -a 2 -n duration_squared
-	python py-scripts/transform.py -i shaw_table -o shaw_table_transformed -f duration -p 32 -t STND -n normalized_duration
+	python py-scripts/transform.py -i input_table -o input_table_transformed -f feature_to_transform -t EXP -n transformed_feature_name
+	python py-scripts/transform.py -i input_table -o input_table_transformed -f feature_to_transform -t LOG10 -n transformed_feature_name
+	python py-scripts/transform.py -i input_table -o input_table_transformed -f feature_to_transform -t org.apache.pig.piggybank.evaluation.math.POW -a 2 -n transformed_feature_name
+	python py-scripts/transform.py -i input_table -o input_table_transformed -f feature_to_transform -t STND -n transformed_feature_name
 	(If you want to also have the original feature (specified with -f) to be written to output, specify an extra -k flag to the transform.py script.)
 	
 	If you want to update the input table instead of creating a new output table, just specify the same output table with the input table:
-	python py-scripts/transform.py -i shaw_table -o shaw_table -f duration -p 32 -t LOG10 -n log10_duration -k
+	python py-scripts/transform.py -i input_table -o input_table -f feature_to_transform -t LOG10 -n transformed_feature_name -k
 	
 	Let's apply another transform to a derived feature
-	python py-scripts/transform.py -i shaw_table_transformed -o shaw_table_multiple_transforms -f log10_duration -p 64 -t EXP -n some_other_feature
+	python py-scripts/transform.py -i input_table_transformed -o input_table_multiple_transforms -f feature_to_transform -t EXP -n transformed_feature_name
 	
 	see -s and -d flags of transform.py which may be useful for showing the available features and derived features in a dataset:
-	python py-scripts/transform.py -i shaw_table_transformed -s
-	python py-scripts/transform.py -i shaw_table -o shaw_table_transformed -d
+	python py-scripts/transform.py -i input_table_transformed -s
+	python py-scripts/transform.py -i input_table -o input_table_transformed -d
 	
-Validate the transformation result:
-	First run a transformation with -k to keep the original feature in the output table:
-		python py-scripts/transform.py -i shaw_table -o shaw_table_transformed -f duration -p 32 -t LOG10 -n log10_duration -k
-	Then validate the output:
-		python py-scripts/tests/validate_transform.py -f duration -i shaw_table_transformed -t LOG10 -n log10_duration
-	Similarly for other transformations.
+To run the validation tests:
+	cd source_code/feateng
+	python feateng/py-scripts/tests/validate_etl.py
 		
 For a demo of the Python API usage see py-scripts/demo.py [This is experimental, we still work on our API design]
 
@@ -83,9 +86,6 @@ To run the scripts at the top level directory:
 ==========================
 OTHER NOTES
 ==========================
-	Tested on Hadoop 1.0.1 and pig-0.11.1.
-	We depend on datafu-0.0.10.jar (https://github.com/linkedin/datafu). We have already put datafu-0.0.10.jar under feature_engineering/lib
-	If you run 'mvn clean package' directly TestErrorHandling.testErroneousJavaUDF() will fail since that test case registers the 'target/TRIB-FeatureEngineering-0.0.1-SNAPSHOT.jar'
-	in the tested pig script. So you need to first skip tests during mvn packaging with 'mvn clean package -DskipTests -P tribeca-one', and then run the tests with 'mvn test -P tribeca-one -Dsurefire.useFile=false'.
-	To run individual tests: mvn -Dtest=TestShawETL test
-	To show stack traces use -Dsurefire.useFile=false 
+	Tested on Hadoop 1.0.1 and pig-0.12.0
+	We depend on datafu-0.0.10.jar (https://github.com/linkedin/datafu). We have already put datafu-0.0.10.jar under feateng/lib
+	To get rid of jython logging: export PIG_OPTS="-Dpython.verbose=error"
