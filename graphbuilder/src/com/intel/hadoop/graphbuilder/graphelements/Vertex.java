@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.graphelements;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.types.StringType;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -40,12 +41,14 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
 
     private VertexIdType vertexId;
     private PropertyMap  properties;
+    private StringType   vertexLabel;
 
     /**
      * Default constructor. Creates an placeholder vertex.
      */
     public Vertex() {
-        this.properties = new PropertyMap();
+        this.properties  = new PropertyMap();
+        this.vertexLabel = new StringType();
     }
 
     /**
@@ -54,8 +57,21 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      * @param vid vertex ID
      */
     public Vertex(VertexIdType vid) {
-        this.vertexId   = vid;
-        this.properties = new PropertyMap();
+        this.vertexId    = vid;
+        this.properties  = new PropertyMap();
+        this.vertexLabel = new StringType();
+    }
+
+    /**
+     * Create a vertex with given vertex ID.
+     *
+     * @param vid vertex ID
+     * @param label vertex Label
+     */
+    public Vertex(VertexIdType vid, StringType label) {
+        this.vertexId    = vid;
+        this.properties  = new PropertyMap();
+        this.vertexLabel = new StringType(label);
     }
 
     /**
@@ -66,6 +82,13 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
         return vertexId;
     }
 
+    /**
+ * Return the label of the vertex.
+     * @return the label of the vertex
+     */
+    public StringType getVertexLabel() {
+        return this.vertexLabel;
+    }
     /**
      * Overwrite the ID and property map of the vertex.
      * @param vid new vertex ID
@@ -108,7 +131,11 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      */
     @Override
     public final String toString() {
-        return vertexId.toString() + "\t" + properties.toString();
+        if (this.vertexLabel.isempty()) {
+            return this.vertexId.toString() + "\t" + this.properties.toString();
+        } else {
+            return this.vertexId.toString() + "\t" + this.vertexLabel.toString() + "\t" + properties.toString();
+        }
     }
 
     /**
@@ -119,6 +146,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     @Override
     public void readFields(DataInput input) throws IOException {
         vertexId.readFields(input);
+        vertexLabel.readFields(input);
         this.properties.readFields(input);
     }
 
@@ -130,6 +158,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     @Override
     public void write(DataOutput output) throws IOException {
         vertexId.write(output);
+        vertexLabel.write(output);
         properties.write(output);
     }
 }
