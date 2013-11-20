@@ -159,7 +159,13 @@ if check pydoop; then
    yum -y install boost-devel
    # ZY: need HADOOP_HOME and JAVA_HOME to build pydoop
    # for 0.5 release, hadoop is at /home/hadoop/IntelAnalytics
-   HADOOP_HOME=/home/hadoop/IntelAnalytics/hadoop JAVA_HOME=/usr/lib/jvm/java pip install pydoop
+   if [ -z "${HADOOP_HOME}" ]; then
+        HADOOP_HOME=/home/hadoop/IntelAnalytics/hadoop
+   fi
+   if [ -z "${JAVA_HOME}" ]; then
+        JAVA_HOME=/usr/lib/jvm/java pip install pydoop
+   fi
+   HADOOP_HOME=${HADOOP_HOME} JAVA_HOME=${JAVA_HOME} pip install pydoop
    # ZY: work-around, pydoop installer somehow ignores the virtenv
    pkgs=${PYTHON_VIRTUALENV}/lib/python2.7/site-packages
    ls ${pkgs}/pydoop* &> /dev/null
