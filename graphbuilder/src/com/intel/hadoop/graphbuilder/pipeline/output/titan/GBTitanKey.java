@@ -14,7 +14,7 @@ public class GBTitanKey {
     private boolean  isUnique;
 
     /**
-     * Construct a new Titan key from a string name.
+     * Construct a new Titan key from a string name and set other fields to default values.
      *
      * <p> Default values:
      * <ul>
@@ -35,7 +35,7 @@ public class GBTitanKey {
     }
 
     /**
-     * Construct a new Titan key.
+     * Construct a new Titan key with full specification of all fields - no default values will be provided.
      * @param dataType
      * @param isEdgeIndex
      * @param isVertexIndex
