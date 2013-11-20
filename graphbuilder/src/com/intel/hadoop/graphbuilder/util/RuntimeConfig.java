@@ -2,7 +2,6 @@ package com.intel.hadoop.graphbuilder.util;
 
 
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanConfig;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -129,10 +128,6 @@ public class RuntimeConfig {
                 config.put(pair.getKey().toString(), pair.getValue().toString());
             }
         }
-    }
-
-    public void addConfig(String key, String value) {
-        config.put(key, value);
     }
 
     public Integer getPropertyInt(String property) {

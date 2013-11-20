@@ -17,15 +17,12 @@
 
 package com.intel.hadoop.graphbuilder.util;
 
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanConfig;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.graphdb.types.TypeAttribute;
 import com.tinkerpop.blueprints.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.log4j.Logger;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -76,9 +73,6 @@ public class GraphDatabaseConnector {
         }
         return null;
     }
-
-
-
 
     public static void checkTitanInstallation() {
         BaseConfiguration c = new BaseConfiguration();
