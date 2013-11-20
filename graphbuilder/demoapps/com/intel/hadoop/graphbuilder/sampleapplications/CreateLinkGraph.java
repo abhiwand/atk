@@ -142,8 +142,10 @@ public class CreateLinkGraph {
         ConstructionPipeline job = new CreateLinkGraph().new ConstructionPipeline();
         job = (ConstructionPipeline) commandLineInterface.getRuntimeConfig().addConfig(job);
 
+        String inputPathName = commandLineInterface.getOptionValue("in");
+
         WikiPageInputFormat        format             = new WikiPageInputFormat();
-        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
+        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format, inputPathName);
         GraphBuildingRule          buildingRule       = new LinkGraphBuildingRule();
 
         OutputConfiguration outputConfiguration = null;

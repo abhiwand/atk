@@ -175,7 +175,11 @@ public class TableToGraphDB {
         String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
 
         HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
-        HBaseGraphBuildingRule buildingRule     = new HBaseGraphBuildingRule(cmd);
+
+        inputConfiguration.setFlattenLists(cmd.hasOption(GBHTableConfiguration.FLATTEN_LISTS_OPTNAME));
+
+
+        HBaseGraphBuildingRule   buildingRule        = new HBaseGraphBuildingRule(cmd);
         TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
 
         LOG.info("============= Creating graph from feature table ==================");

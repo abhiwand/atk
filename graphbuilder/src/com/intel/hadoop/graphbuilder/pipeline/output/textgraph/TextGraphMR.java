@@ -258,11 +258,11 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
         // set the configuration per the input
 
-        inputConfiguration.updateConfigurationForMapper(conf, cmd);
+        inputConfiguration.updateConfigurationForMapper(conf);
 
         // update the configuration per the graphBuildingRule
 
-        graphBuildingRule.updateConfigurationForTokenizer(conf, cmd);
+        graphBuildingRule.updateConfigurationForTokenizer(conf);
 
         // create job from configuration and initialize MR parameters
 
@@ -271,7 +271,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
         // configure mapper  and input
 
-        inputConfiguration.updateJobForMapper(job, cmd);
+        inputConfiguration.updateJobForMapper(job);
 
         job.setMapOutputKeyClass(IntWritable.class);
         job.setMapOutputValueClass(mapValueType.getClass());

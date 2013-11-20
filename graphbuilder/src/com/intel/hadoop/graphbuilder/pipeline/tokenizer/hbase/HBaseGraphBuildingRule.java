@@ -227,6 +227,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             List<String> propertyColNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
 
             returnValue &= hBaseUtils.columnHasValidFamily(srcVertexColName, srcTableName);
+
             if (returnValue == false) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "GRAPHBUILDER FAILURE: " + srcVertexColName + " does not belong to a valid column family of table "
@@ -257,10 +258,9 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      * Store the edge and vertex generation rules in the job configuration for use by the MR time graph tokenizer.
      *
      * @param configuration reference to the job configuration in which rules for tokenizer will be stored
-     * @param cmd           the command line options provided by the user
      * @see HBaseTokenizer
      */
-    public void updateConfigurationForTokenizer(Configuration configuration, CommandLine cmd) {
+    public void updateConfigurationForTokenizer(Configuration configuration) {
         packVertexRulesIntoConfiguration(configuration, vertexRules);
         packEdgeRulesIntoConfiguration(configuration, edgeRules);
         packDirectedEdgeRulesIntoConfiguration(configuration, directedEdgeRules);

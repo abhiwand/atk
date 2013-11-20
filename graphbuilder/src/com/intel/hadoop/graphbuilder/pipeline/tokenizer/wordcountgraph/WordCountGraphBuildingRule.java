@@ -61,9 +61,8 @@ public class WordCountGraphBuildingRule implements GraphBuildingRule {
     /**
      * Update the MR job configuration with state needed by the {@code WordCountGraphTokenizer}
      * @param conf  job configuration that will store the state and be passed to the {@code WordCountGraphTokenizer}
-     * @param cmd  the command line options provided by the user
      */
-    public void updateConfigurationForTokenizer(Configuration conf, CommandLine cmd) {
+    public void updateConfigurationForTokenizer(Configuration conf) {
     }
 
     /**

@@ -164,8 +164,9 @@ public class CreateWordCountGraph {
             LOG.info("Stopwords path: " + stopwordsPath);
         }
 
+        String                     inputPathName      = commandLineInterface.getOptionValue("in");
         TextInputFormat            format             = new WikiPageInputFormat();
-        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
+        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format, inputPathName);
         WordCountGraphBuildingRule graphBuildingRule  = new WordCountGraphBuildingRule();
 
         OutputConfiguration outputConfiguration = null;

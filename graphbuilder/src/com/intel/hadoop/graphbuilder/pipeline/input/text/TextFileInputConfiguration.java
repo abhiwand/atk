@@ -29,32 +29,30 @@ public class TextFileInputConfiguration implements InputConfiguration {
 
     private static final Logger LOG = Logger.getLogger(TextFileInputConfiguration.class);
 
-    private TextInputFormat     inputFormat;
-    private Class               MapperClass = TextParsingMapper.class;
+    private TextInputFormat inputFormat;
+    private Class           MapperClass = TextParsingMapper.class;
+    private Path            inputPath;
 
 
-    private TextFileInputConfiguration() {
-    }
-
-    public TextFileInputConfiguration(TextInputFormat inputFormat) {
+    public TextFileInputConfiguration(TextInputFormat inputFormat, String inputPathString) {
         this.inputFormat = inputFormat;
+        this.inputPath   = new Path(inputPathString);
+
     }
 
     public boolean usesHBase() {
         return false;
     }
 
-    public void  updateConfigurationForMapper (Configuration configuration, CommandLine cmd)  {
+    public void  updateConfigurationForMapper (Configuration configuration)  {
     }
 
-    public void  updateJobForMapper(Job job, CommandLine cmd) {
+    public void  updateJobForMapper(Job job) {
         job.setMapperClass(MapperClass);
         job.setInputFormatClass(inputFormat.getClass());
 
-        String inputPath  = cmd.getOptionValue("in");
-
         try {
-            FileInputFormat.addInputPath(job, new Path(inputPath));
+            FileInputFormat.addInputPath(job, inputPath );
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
                     "Unable to set input path " + inputPath, LOG, e);

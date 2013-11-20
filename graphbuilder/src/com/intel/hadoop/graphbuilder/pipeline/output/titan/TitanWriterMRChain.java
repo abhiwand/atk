@@ -341,11 +341,11 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         // set the configuration per the input
 
-        inputConfiguration.updateConfigurationForMapper(conf, cmd);
+        inputConfiguration.updateConfigurationForMapper(conf);
 
         // update the configuration per the tokenizer
 
-        graphBuildingRule.updateConfigurationForTokenizer(conf, cmd);
+        graphBuildingRule.updateConfigurationForTokenizer(conf);
 
         // create loadVerticesJob from configuration and initialize MR parameters
 
@@ -354,7 +354,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         // configure mapper  and input
 
-        inputConfiguration.updateJobForMapper(loadVerticesJob, cmd);
+        inputConfiguration.updateJobForMapper(loadVerticesJob);
 
         loadVerticesJob.setMapOutputKeyClass(IntWritable.class);
         loadVerticesJob.setMapOutputValueClass(mapValueType.getClass());

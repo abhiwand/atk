@@ -41,6 +41,8 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     private HBaseUtils hBaseUtils   = null;
     private String     srcTableName = null;
+    private boolean    flattenLists = false;
+
     private Scan       scan         = new Scan();
 
     private Class      mapperClass  = HBaseReaderMapper.class;
@@ -51,6 +53,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
     public HBaseInputConfiguration(String srcTableName) {
 
         this.srcTableName = srcTableName;
+
         try {
             this.hBaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
@@ -69,6 +72,10 @@ public class HBaseInputConfiguration implements InputConfiguration {
         }
     }
 
+    public void setFlattenLists(boolean flattenLists) {
+        this.flattenLists = flattenLists;
+    }
+
     /**
      * This input configuration uses hbase.
      * @return  {@literal true }
@@ -80,11 +87,9 @@ public class HBaseInputConfiguration implements InputConfiguration {
     /**
      * Perform setup tasks with hbase.
      * @param configuration configuration being prepared for graph construction job
-     * @param cmd  user provided command line
      */
-    public void updateConfigurationForMapper(Configuration configuration, CommandLine cmd) {
 
-        srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+    public void updateConfigurationForMapper(Configuration configuration) {
 
         configuration.set("SRCTABLENAME", srcTableName);
 
@@ -92,15 +97,14 @@ public class HBaseInputConfiguration implements InputConfiguration {
         scan.setCaching(GBHTableConfiguration.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
 
-        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", cmd.hasOption("flattenlists"));
+        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", flattenLists);
     }
 
     /**
      * Initialize the table mapper job.
      * @param job  Map reduce job in preparation for graph construction
-     * @param cmd  User provided command line
      */
-    public void updateJobForMapper(Job job, CommandLine cmd) {
+    public void updateJobForMapper(Job job) {
         try {
             TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, PropertyGraphElement.class, job);
         } catch (IOException e) {

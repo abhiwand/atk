@@ -224,7 +224,11 @@ public class TableToTextGraph {
         String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
 
         ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
+
         HBaseInputConfiguration      inputConfiguration  = new HBaseInputConfiguration(srcTableName);
+
+        inputConfiguration.setFlattenLists(cmd.hasOption(GBHTableConfiguration.FLATTEN_LISTS_OPTNAME));
+
         HBaseGraphBuildingRule buildingRule        = new HBaseGraphBuildingRule(cmd);
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
 

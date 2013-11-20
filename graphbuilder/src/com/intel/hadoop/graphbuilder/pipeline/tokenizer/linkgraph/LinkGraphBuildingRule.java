@@ -61,9 +61,8 @@ public class LinkGraphBuildingRule implements GraphBuildingRule {
     /**
      * Update the MR configuration for use by the {@code LinkGraphTokenizer}
      * @param conf hadoop configuration being updated
-     * @param cmd  the command line options provided by the user
      */
-    public void updateConfigurationForTokenizer(Configuration conf, CommandLine cmd) {
+    public void updateConfigurationForTokenizer(Configuration conf) {
     }
 
     /**
