@@ -4,6 +4,10 @@
 <!-- sample config file for graphbuilder.
      These options can also be specified in the hadoop options config file if you would like to avoid specifying it on
      the command line.
+
+     the config file can be specified on the command line with
+     -conf path/to/config/xml/file
+
      Individual options can be specified on the
      command line with -D, -DmyProperty=myPropertyValue or -D myProperty=myPropertyValue
  -->
@@ -20,7 +24,7 @@
 
  <property>
 	<name>graphbuilder.titan.storage_tablename</name>
-	<value>rodoradTitan</value>
+	<value>myTableName</value>
 </property>
 
 <property>
