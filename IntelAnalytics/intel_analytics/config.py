@@ -10,10 +10,7 @@ import os
 
 __all__ = ['global_config', 'Config', "get_keys_from_template"]
 
-
-# todo: figure out the correct way to get these next two:
-id = 'user0'
-
+# todo: figure out the correct way to get this:
 properties_file = '/'.join([os.getenv('INTEL_ANALYTICS_HOME', os.getcwd()),
                             'intel_analytics',
                             'intel_analytics.properties'])
@@ -22,18 +19,19 @@ def get_env_vars(names):
     """
     returns a dict of requested os env variables
     """
-    vars = {}
+    env_vars = {}
     missing = []
     for name in names:
         value = os.environ.get(name)
         if value is None:
             missing.append(name)
         else:
-            vars[name] = value
+            env_vars[name] = value
     if len(missing) > 0:
         raise Exception("Environment vars not set: " + ", ".join(missing))
-    return vars
+    return env_vars
 
+# todo: move get_keys_from_template to a more general utils module:
 def get_keys_from_template(template):
     """
     Screens a template for all the keys requires for substitution
@@ -55,7 +53,7 @@ def dynamic_import(attr_path):
     try:
         module = __import__(module_path, fromlist=[attr_name])
     except ImportError:
-        raise ValueError("Module '{0}' could not be imported ".format(module_path))
+        raise ValueError("Could not import module '{0}'".format(module_path))
     try:
         attr = getattr(module, attr_name)
     except ImportError:
