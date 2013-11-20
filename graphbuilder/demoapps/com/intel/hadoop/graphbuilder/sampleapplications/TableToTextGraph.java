@@ -125,8 +125,8 @@ public class TableToTextGraph {
 
         String srcTableName = commandLineInterface.getOptionValue(CommonCommandLineOptions.Option.table.get());
 
-        ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.addConfig(job);
+        /*ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
+        job = (ConstructionPipeline) commandLineInterface.addConfig(job);*/
 
         HBaseInputConfiguration      inputConfiguration  = new HBaseInputConfiguration(srcTableName);
         HBaseGraphBuildingRule       buildingRule        = new HBaseGraphBuildingRule(cmd);

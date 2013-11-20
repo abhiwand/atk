@@ -2,6 +2,7 @@
 
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
@@ -107,6 +108,8 @@ public class TableToGraphDB {
 
         options.addOption(BaseCLI.Options.edge.get());
 
+        options.addOption(BaseCLI.Options.directedEdge.get());
+
         options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.CMD_KEYS_OPTNAME)
                 .withDescription("Specify keys, please. " +
                         TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP)
@@ -114,7 +117,6 @@ public class TableToGraphDB {
                 .withArgName("Keys" +
                         "")
                 .create("k"));
-        options.addOption(BaseCLI.Options.directedEdge.get());
 
         commandLineInterface.setOptions(options);
     }
@@ -130,8 +132,6 @@ public class TableToGraphDB {
         Timer timer = new Timer();
 
         CommandLine cmd = commandLineInterface.checkCli(args);
-
-        CommandLine cmd = commandLineInterface.getCmd();
 
         GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
         commandLineInterface.getRuntimeConfig().addConfig(pipeline);
