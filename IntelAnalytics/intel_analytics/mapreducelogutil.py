@@ -6,6 +6,11 @@ from mapreduceprogress import MapReduceProgress
 class MapReduceLogUtil:
 
     def findProgress(self, lineValue):
+        """
+        explore map reduce output based on input line
+        :param lineValue: a input line. can be from stdout
+        :return: map reduce progress object
+        """
         pattern = re.compile(r".*?mapred.JobClient:.*?map.*?([0-9]*?%).*?reduce.*?([0-9]*?%)")
         match = re.match(pattern, lineValue)
         if not match:
