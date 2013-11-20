@@ -3,13 +3,20 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
 
+import java.util.HashMap;
+
 public class TitanConfig {
 
-    public static final String TITAN_STORAGE_BACKEND            = "hbase";
-    public static final String TITAN_STORAGE_HOSTNAME           = "localhost";
-    public static final String TITAN_STORAGE_TABLENAME          = "titan";
-    public static final String TITAN_STORAGE_PORT               = "2181";
-    public static final String TITAN_STORAGE_CONNECTION_TIMEOUT = "10000";
+    private static HashMap<String, String> defaultConfigMap  = new HashMap<>();
+    static {
+        // Default Titan Settings
+        defaultConfigMap.put("TITAN_STORAGE_BACKEND",           "hbase");
+        defaultConfigMap.put("TITAN_STORAGE_HOSTNAME",          "localhost");
+        defaultConfigMap.put("TITAN_STORAGE_TABLENAME",         "titan");
+        defaultConfigMap.put("TITAN_STORAGE_PORT",              "2181");
+        defaultConfigMap.put("TITAN_STORAGE_CONNECTION-TIMEOUT","10000");
+    }
 
-    public static final RuntimeConfig config = RuntimeConfig.getInstance(TitanConfig.class);
+    public static RuntimeConfig config = RuntimeConfig.getInstanceWithDefaultConfig(defaultConfigMap);
+
 }

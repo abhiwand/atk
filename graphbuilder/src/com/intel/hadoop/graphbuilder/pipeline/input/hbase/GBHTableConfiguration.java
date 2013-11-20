@@ -55,8 +55,6 @@ public class GBHTableConfiguration {
 
 
     public static final int    HBASE_CACHE_SIZE            = 500;
-    public static final String TITAN_HBASE_TABLENAME       = "GBTitan";
-    public static final String TITAN_HBASE_STORAGE_TIMEOUT = "10000";
 
     public static final String HBASE_COLUMN_SEPARATOR           = ":";
     public static final String TRIBECA_GRAPH_PROPERTY_SEPARATOR = "_";

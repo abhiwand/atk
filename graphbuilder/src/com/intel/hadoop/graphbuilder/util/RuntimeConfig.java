@@ -2,6 +2,7 @@ package com.intel.hadoop.graphbuilder.util;
 
 
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanConfig;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -9,6 +10,7 @@ import org.apache.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -28,6 +30,13 @@ public class RuntimeConfig {
         createInstance(klass);
         return uniqueInstanceOfRuntimeConfig;
     }
+
+    public static synchronized RuntimeConfig getInstanceWithDefaultConfig(HashMap<String, String> defaultConfigs) {
+        getInstance();
+        uniqueInstanceOfRuntimeConfig.addConfigMap(defaultConfigs);
+        return uniqueInstanceOfRuntimeConfig;
+    }
+
 
     public static synchronized void createInstance(Class klass){
         if (uniqueInstanceOfRuntimeConfig == null) {
@@ -111,6 +120,21 @@ public class RuntimeConfig {
         }
     }
 
+    public void addConfigMap(HashMap<String, String> configMap) {
+        Iterator it = configMap.entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            if (pair.getValue() != null && !config.containsKey(pair.getKey().toString())) {
+                config.put(pair.getKey().toString(), pair.getValue().toString());
+            }
+        }
+    }
+
+    public void addConfig(String key, String value) {
+        config.put(key, value);
+    }
+
     public Integer getPropertyInt(String property) {
         return Integer.parseInt(properties.getProperty(property, config.get(property)));
     }
@@ -121,6 +145,23 @@ public class RuntimeConfig {
 
     public String getProperty(String property) {
         return getPropertyString(property);
+    }
+
+    public HashMap<String, String> getAllConfigUnderNamespace(String prefix) {
+        HashMap<String, String> filteredConfigMap = new HashMap<>();
+        Iterator it = config.entrySet().iterator();
+
+        while (it.hasNext()) {
+            Map.Entry configPair = (Map.Entry) it.next();
+            String storedKey = configPair.getKey().toString();
+            // If storedKey starts with prefix, it implies config belongs to the namespace
+            if (storedKey.indexOf(prefix) == 0) {
+                String configKey = storedKey.substring(prefix.length()).toLowerCase().replace('_', '.');
+                String configValue = getProperty(storedKey);
+                filteredConfigMap.put(configKey,configValue);
+            }
+        }
+        return filteredConfigMap;
     }
 
     private void reflectSetConfigHash(Class klass) {

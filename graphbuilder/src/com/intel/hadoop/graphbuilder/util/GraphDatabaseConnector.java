@@ -17,12 +17,18 @@
 
 package com.intel.hadoop.graphbuilder.util;
 
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanConfig;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.graphdb.types.TypeAttribute;
 import com.tinkerpop.blueprints.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.log4j.Logger;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 
 /**
  *  Class for handling graph database connections:
@@ -41,6 +47,7 @@ public class GraphDatabaseConnector {
      *                                        open an unsupported graph databse
      */
 
+
     public static TitanGraph open(String graphDB, org.apache.commons.configuration.Configuration configuration,
                                   org.apache.hadoop.conf.Configuration hadoopConfig)
             throws UnsupportedOperationException, NullPointerException {
@@ -48,17 +55,12 @@ public class GraphDatabaseConnector {
         runtimeConfig.loadConfig(hadoopConfig);
 
         if ("titan".equals(graphDB)) {
+            Iterator it = TitanConfig.config.getAllConfigUnderNamespace("TITAN_").entrySet().iterator();
 
-            configuration.setProperty("storage.backend",   TitanConfig.config.getProperty("TITAN_STORAGE_BACKEND"));
-            configuration.setProperty("storage.hostname",  TitanConfig.config.getProperty("TITAN_STORAGE_HOSTNAME"));
-            configuration.setProperty("storage.tablename", TitanConfig.config.getProperty("TITAN_STORAGE_TABLENAME"));
-            configuration.setProperty("storage.port",      TitanConfig.config.getProperty("TITAN_STORAGE_PORT"));
-
-            configuration.setProperty("storage.connection-timeout",
-                                      TitanConfig.config.getProperty("TITAN_STORAGE_CONNECTION_TIMEOUT"));
-
-            configuration.setProperty("ids.block-size",                "50000");
-            configuration.setProperty("storage.batch-loading",         "true");
+            while (it.hasNext()) {
+                Map.Entry pair = (Map.Entry) it.next();
+                configuration.setProperty(pair.getKey().toString(), pair.getValue().toString());
+            }
 
             return TitanFactory.open(configuration);
 
@@ -74,6 +76,9 @@ public class GraphDatabaseConnector {
         }
         return null;
     }
+
+
+
 
     public static void checkTitanInstallation() {
         BaseConfiguration c = new BaseConfiguration();
