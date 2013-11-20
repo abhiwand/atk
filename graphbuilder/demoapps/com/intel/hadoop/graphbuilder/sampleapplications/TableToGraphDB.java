@@ -131,7 +131,7 @@ public class TableToGraphDB {
         ConstructionPipeline job                 = new TableToGraphDB().new ConstructionPipeline();
         job = (ConstructionPipeline) commandLineInterface.addConfig(job);
 
-        String srcTableName = cmd.getOptionValue(CommonCommandLineOptions.Option.table.get());
+        String srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
         HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
         HBaseGraphBuildingRule buildingRule     = new HBaseGraphBuildingRule(cmd);

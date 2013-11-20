@@ -1,32 +1,43 @@
 package com.intel.hadoop.graphbuilder.util;
 
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
 
 /**
- * A nice wrapper to grab all the commonly used CLI options. Easily referenced by the enum so it's easy to get the list of
- * options in any code editor.
+ * A nice wrapper to grab all the commonly used CLI options like input path and output path. Is also a centralized place
+ * for the options LongOpt name which gets used by the demo apps, configs, and the tokenizer
  *
- * Usage:
- *
- * BaseCLI.Options.inputPath.get()
+ * <p><b>Usage:</b>
+ * <p>
+ * <br />
+ * BaseCLI.Options.inputPath.get() get the base input option
+ * <br />
+ * BaseCLI.Options.inputPath.getLongOpt() get the long option name used to extract values from the CommandLine object
+ * </p>
+ * </p>
  *
  * @see CommandLineInterface
+ * @see org.apache.commons.cli.CommandLine
  */
 public class BaseCLI {
 
-    private static final String CMD_EDGES_OPTION_NAME = CommonCommandLineOptions.Option.edges.get();
-    private static final String CMD_DIRECTED_EDGES_OPTION_NAME = CommonCommandLineOptions.Option.directedEdges.get();
-    private static final String CMD_TABLE_OPTION_NAME = CommonCommandLineOptions.Option.table.get();
-    private static final String CMD_VERTICES_OPTION_NAME = CommonCommandLineOptions.Option.vertices.get();
-    private static final String FLATTEN_LISTS_OPTION_NAME = CommonCommandLineOptions.Option.flatten.get();
+    //hbase command line options
+    private static final String CMD_EDGES_OPTION_NAME = HBaseCommandLineOptions.CMD_EDGES_OPTION_NAME;
+    private static final String CMD_DIRECTED_EDGES_OPTION_NAME = HBaseCommandLineOptions.CMD_DIRECTED_EDGES_OPTION_NAME;
+    private static final String CMD_TABLE_OPTION_NAME = HBaseCommandLineOptions.CMD_TABLE_OPTION_NAME;
+    private static final String CMD_VERTICES_OPTION_NAME = HBaseCommandLineOptions.CMD_VERTICES_OPTION_NAME;
+    private static final String FLATTEN_LISTS_OPTION_NAME = HBaseCommandLineOptions.FLATTEN_LISTS_OPTION_NAME;
 
-    private static final String TITAN_APPEND = CommonCommandLineOptions.Option.titanAppend.get();
-    private static final String TITAN_STORAGE = CommonCommandLineOptions.Option.titanStorage.get();
+    //titan option long names
+    private static final String TITAN_APPEND = TitanCommandLineOptions.APPEND;
+    private static final String TITAN_STORAGE = TitanCommandLineOptions.STORE;
 
-    private static final String CMD_OUTPUT_OPTION_NAME = CommonCommandLineOptions.Option.output.get();
-    private static final String CMD_INPUT_OPTION_NAME = CommonCommandLineOptions.Option.input.get();
+    //general options
+    private static final String CMD_OUTPUT_OPTION_NAME = "out";
+    private static final String CMD_INPUT_OPTION_NAME = "in";
 
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),
@@ -37,6 +48,7 @@ public class BaseCLI {
         private final Option option;
         Options(Option option){this.option = option;}
         public Option get(){return this.option;}
+        public String getLongOpt(){return this.option.getLongOpt();}
     }
 
     //shared options amongst the demo apps no reason duplicate these configs all over the place
