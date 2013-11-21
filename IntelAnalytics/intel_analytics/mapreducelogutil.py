@@ -28,6 +28,7 @@ class MapReduceProgress:
         """
         self.mapper_progress = mapper_progress
         self.reducer_progress = reducer_progress
+        self._total_progress = (self.mapper_progress + self.reducer_progress) * 0.5
 
     @property
     def total_progress(self):
@@ -36,4 +37,8 @@ class MapReduceProgress:
         and reducer progress
         :return total progress:
         """
-        return (self.mapper_progress + self.reducer_progress) * 0.5
+        return self._total_progress
+
+    @total_progress.setter
+    def total_progress(self, val):
+        self._total_progress = val
