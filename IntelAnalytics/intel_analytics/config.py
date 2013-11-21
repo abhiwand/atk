@@ -7,6 +7,7 @@ Provides the 'global_config' singleton
 from pyjavaprops import Properties
 from string import Template
 import os
+import importlib
 
 __all__ = ['global_config', 'Config', "get_keys_from_template"]
 
@@ -51,7 +52,7 @@ def dynamic_import(attr_path):
     module_path, attr_name = attr_path.rsplit(".", 1)
 
     try:
-        module = __import__(module_path, fromlist=[attr_name])
+        module = importlib.import_module(module_path)
     except ImportError:
         raise ValueError("Could not import module '{0}'".format(module_path))
     try:

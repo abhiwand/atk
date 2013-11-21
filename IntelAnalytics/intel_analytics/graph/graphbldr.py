@@ -255,7 +255,7 @@ def _get_graphbuilder_factory_class():
     global graphbuilder_factory
     if graphbuilder_factory is None:
         graphbuilder_factory_class = dynamic_import(
-            global_config['py_graphbuilder_factory_class_path'])
+            global_config['py_graphbuilder_factory_class'])
         graphbuilder_factory = graphbuilder_factory_class.get_instance()
     return graphbuilder_factory
 
