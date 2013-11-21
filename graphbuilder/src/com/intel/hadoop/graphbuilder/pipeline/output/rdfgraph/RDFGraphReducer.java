@@ -1,20 +1,20 @@
-/* Copyright (C) 2012 Intel Corporation.
- *     All rights reserved.
- *           
+/* Copyright (C) 2013 Intel Corporation.
+*     All rights reserved.
+*
  *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- * For more about this software visit:
- *      http://www.01.org/GraphBuilder 
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+* For more about this software visit:
+*      http://www.01.org/GraphBuilder
  */
 
 package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
@@ -22,8 +22,10 @@ package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
@@ -42,32 +44,9 @@ import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.log4j.Logger;
 
-
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.vocabulary.OWL;
-import org.openrdf.model.vocabulary.RDF;
-import org.openrdf.model.vocabulary.RDFS;
-import org.openrdf.model.vocabulary.XMLSchema;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.BooleanQuery;
-import org.openrdf.query.GraphQuery;
-import org.openrdf.query.GraphQueryResult;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResult;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.impl.DatasetImpl;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryResult;
+import org.apache.jena.riot.RDFDataMgr;
 import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.ntriples.NTriplesWriter;
-import org.openrdf.rio.rdfxml.RDFXMLWriter;
+import com.hp.hpl.jena.rdf.model.Model;
 
 /**
  * The Reducer class applies user defined {@code Functional}s to reduce
@@ -97,6 +76,15 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
     private static enum Counters {
         NUM_VERTICES,
         NUM_EDGES
+    }
+
+    private static final Map<String, String> RDFNamespaceMap;
+    static {
+        RDFNamespaceMap = new HashMap<String, String>();
+        RDFNamespaceMap.put("OWL", "http://www.w3.org/2002/07/owl#");
+        RDFNamespaceMap.put("RDFS", "http://www.w3.org/2000/01/rdf-schema#");
+        RDFNamespaceMap.put("RDF", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+        RDFNamespaceMap.put("XMLSchema", "http://www.w3.org/2001/XMLSchema#");
     }
 
     @Override
@@ -246,15 +234,15 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
 
         Iterator<Entry<Object, Writable>> vertexIterator = vertexPropertiesMap.entrySet().iterator();
 
-        outPath = new String("vdata/ntriples");
+        outPath = new String("vdata/rdftriples");
 
         while (vertexIterator.hasNext()) {
 
             Entry v     = vertexIterator.next();
-            toRdf();
-            Text  value = new Text(v.getKey().toString() + "\t" + v.getValue().toString());
+            //Text  value = new Text(v.getKey().toString() + "\t" + v.getValue().toString());
+            Text  text  = vertexToRdf(v.getKey().toString(), (PropertyMap) v.getValue());
 
-            multipleOutputs.write(NullWritable.get(), value, outPath);
+            multipleOutputs.write(NullWritable.get(), text, outPath);
             vertexCount++;
         }
 
@@ -264,16 +252,20 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
 
         Iterator<Entry<EdgeID, Writable>> edgeIterator = edgePropertiesMap.entrySet().iterator();
 
-        outPath = new String("edata/ntriples");
+        outPath = new String("edata/rdftriples");
 
         while (edgeIterator.hasNext()) {
 
             Entry<EdgeID, Writable> e = edgeIterator.next();
 
-            Text value = new Text(e.getKey().getSrc() + "\t" + e.getKey().getDst() + "\t" + e.getKey().getLabel()
-                    + "\t" + e.getValue().toString());
+            //Text value = new Text(e.getKey().getSrc() + "\t" + e.getKey().getDst() + "\t" + e.getKey().getLabel()
+            //        + "\t" + e.getValue().toString());
+            Text text = edgeToRdf(e.getKey().getSrc().toString(),
+                                  e.getKey().getDst().toString(),
+                                  e.getKey().getLabel().toString(),
+                    (PropertyMap) e.getValue());
 
-            multipleOutputs.write(NullWritable.get(), value, outPath);
+            multipleOutputs.write(NullWritable.get(), text, outPath);
             edgeCount++;
         }
 
@@ -281,15 +273,33 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
     }
 
     /**
-     * @param vertex
-     * @param format 
+     * @param key Vertex key
+     * @param propertyMap
      *
      */
-    void toRdf(Entry vertex, RDFFormat format) {
-        Text key = vertex.getKey().toString();
-        Text value = vertex.getValue().toString();
+    Text vertexToRdf(String key, PropertyMap propertyMap) {
+        Model model = ModelFactory.createDefaultModel();
+        URI uri = URI;
+        Resource r1 = model.createResource("");
+        Resource r2 = model.createResource();
 
+        RDFDataMgr.write(os, model, RDFFormat.NTRIPLES);
 
+        return null;
+    }
+
+    /**
+     * @param source
+     * @param target
+     * @param label
+     * @param propertyMap
+     *
+     */
+    Text edgeToRdf(String source, String target, String label, PropertyMap propertyMap) {
+        Model model = RDFDataMgr.loadModel("D.ttl");
+        RDFDataMgr.write(System.out, model, RDFFormat.NTRIPLES);
+
+        return null;
     }
 
     @Override

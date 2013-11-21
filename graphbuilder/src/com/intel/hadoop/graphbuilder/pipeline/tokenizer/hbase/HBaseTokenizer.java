@@ -1,4 +1,21 @@
-
+/* Copyright (C) 2013 Intel Corporation.
+*     All rights reserved.
+*
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+* For more about this software visit:
+*      http://www.01.org/GraphBuilder
+ */
 
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
@@ -153,7 +170,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 vertexPropColMap.put(vertexIdColumnName, vertexPropertiesColumnNames);
         }
 
-        LOG.info("TRIBECA_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
+        LOG.info("INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
 
 
         String[] rawEdgeRules         = HBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
@@ -299,7 +316,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                     vertexList.add(vertex);
                 } else {
 
-                    LOG.warn("TRIBECA_WARN: Null vertex in " + columnName + ", row " + row.toString());
+                    LOG.warn("WARN: Null vertex in " + columnName + ", row " + row.toString());
                     context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
                 }
             }
@@ -340,7 +357,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                             property = edgeAttributes[countEdgeAttr].replaceAll(
                                     GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                    GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                                    GBHTableConfiguration.config.getProperty("GRAPH_PROPERTY_SEPARATOR"));
 
                             if (property != null) {
                                 edge.setProperty(property, new StringType(propertyValue));
@@ -369,7 +386,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                                 property = edgeAttributes[countEdgeAttr].replaceAll(
                                         GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                        GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                                        GBHTableConfiguration.config.getProperty("GRAPH_PROPERTY_SEPARATOR"));
 
                                 if (property != null) {
                                     opposingEdge.setProperty(property, new StringType(propertyValue));
