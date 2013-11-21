@@ -1,8 +1,7 @@
-from reportstrategy import ReportStrategy
-from mapreducelogutil import MapReduceLogUtil
+from intel_analytics.mapreducelogutil import MapReduceProgress
+from intel_analytics.jobreportservice import ReportStrategy
+from mapreducelogutil import find_progress
 from progress import Progress
-
-from intel_analytics.mapreduceprogress import MapReduceProgress
 
 """
 Subclass of ReportStrategy which captures map reduce job progress
@@ -11,10 +10,9 @@ and displays it in progress bar
 class ProgressReportStrategy(ReportStrategy):
     def __init__(self):
         self.job_progress_list = []
-        self.log_util = MapReduceLogUtil()
 
     def report(self, line):
-        progress = self.log_util.find_progress(line)
+        progress = find_progress(line)
         if progress is not None:
             mapper_progress = progress.mapper_progress
             reducer_progress = progress.reducer_progress
