@@ -6,22 +6,23 @@ commands.
 class JobReportService:
 
     def __init__(self):
-        self.report_strategy = None
+        self.report_strategy_list = []
 
-    def set_report_strategy(self, report_strategy):
+    def add_report_strategy(self, report_strategy):
         """
         assign a strategy instance to be use
         :param report_strategy:
         """
-        self.report_strategy = report_strategy
+        self.report_strategy_list.append(report_strategy)
 
     def report_line(self, line):
         """
         giving report with the assigned strategy for single input line
         :param line:
         """
-        if self.report_strategy:
-            self.report_strategy.report(line)
+        for strategy in self.report_strategy_list:
+            if strategy:
+                strategy.report(line)
 
     def report_lines(self, lines):
         """
@@ -29,7 +30,7 @@ class JobReportService:
         :param lines:
         """
         for line in lines:
-            self.report_strategy.report(line)
+            self.report_strategy_list.report(line)
 
 """
 Base report strategy class. It defines the signature
