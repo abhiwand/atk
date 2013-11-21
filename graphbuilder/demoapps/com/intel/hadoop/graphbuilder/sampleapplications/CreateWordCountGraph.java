@@ -175,7 +175,8 @@ public class CreateWordCountGraph {
             outputConfiguration = new TitanOutputConfiguration();
         }
         else {
-            outputConfiguration = new TextGraphOutputConfiguration();
+            String outputPathName = commandLineInterface.getOptionValue("o");
+            outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
         }
 
         LOG.info("============= Creating Word Count Graph ===================");

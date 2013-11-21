@@ -221,7 +221,8 @@ public class TableToTextGraph {
         Timer timer = new Timer();
 
         CommandLine cmd = checkCli(args);
-        String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        String srcTableName   = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        String outputPathName = cmd.getOptionValue(cmd.getOptionValue("o"));
 
         ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
 
@@ -229,8 +230,9 @@ public class TableToTextGraph {
 
         inputConfiguration.setFlattenLists(cmd.hasOption(GBHTableConfiguration.FLATTEN_LISTS_OPTNAME));
 
-        HBaseGraphBuildingRule buildingRule        = new HBaseGraphBuildingRule(cmd);
-        TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
+        HBaseGraphBuildingRule buildingRule = new HBaseGraphBuildingRule(cmd);
+
+        TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
 
         LOG.info("============= Creating graph from hbase ==================");
         timer.start();

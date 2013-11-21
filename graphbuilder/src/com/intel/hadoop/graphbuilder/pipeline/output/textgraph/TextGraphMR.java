@@ -82,9 +82,11 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
     private HBaseUtils hbaseUtils = null;
     private boolean    usingHBase = false;
+    private String     outputPathName;
 
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
+
 
     private PropertyGraphElement mapValueType;
     private Class                vidClass;
@@ -95,6 +97,13 @@ public class TextGraphMR extends GraphGenerationMRJob {
     private Functional edgeReducerFunction;
     private boolean    cleanBidirectionalEdge;
 
+    /**
+     * The constructor. It requires the pathname for the output as an argument.
+     * @param outputPathName  the pathname as a String
+     */
+    public TextGraphMR(String outputPathName) {
+        this.outputPathName = outputPathName;
+    }
 
     /**
      * Set-up time routine that connects raw data ({@code inputConfiguration} and the graph generations rule
@@ -234,13 +243,13 @@ public class TextGraphMR extends GraphGenerationMRJob {
      * @throws InterruptedException
      */
 
+    // dev todo:  the cmd parameter is deprecated and not used any more by this method ---
+    // it has not yet been eliminated because it has not been eliminated from the GraphGenerationMRJob abstract class
+    // which is blocked by getting the command lines out of the other reducers
+    @Override
     public void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException {
 
-        String outputPath = cmd.getOptionValue("out");
-
         // Set required parameters in configuration
-
-        String test = graphBuildingRule.getClass().getName();
 
         conf.set("GraphTokenizer", graphBuildingRule.getGraphTokenizerClass().getName());
         conf.setBoolean("noBiDir", cleanBidirectionalEdge);
@@ -290,14 +299,14 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
         LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
 
-        FileOutputFormat.setOutputPath(job, new Path(outputPath));
+        FileOutputFormat.setOutputPath(job, new Path(outputPathName));
 
         // fired up and ready to go!
 
         LOG.info("=========== Job: Creating vertex list and edge list from input data, saving as text file ===========");
 
         LOG.info("input: " + inputConfiguration.getDescription());
-        LOG.info("Output = " + outputPath);
+        LOG.info("Output = " + outputPathName);
 
         LOG.info("InputFormat = " + inputConfiguration.getDescription());
         LOG.info("GraphTokenizerFromString = " + graphBuildingRule.getClass().getName());

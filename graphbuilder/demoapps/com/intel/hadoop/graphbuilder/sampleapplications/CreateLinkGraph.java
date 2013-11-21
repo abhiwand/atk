@@ -130,7 +130,6 @@ public class CreateLinkGraph {
     /**
      * Main method for creating the link graph
      * @param args raw command line
-     * @throws Exception
      */
 
     public static void main(String[] args) {
@@ -153,7 +152,8 @@ public class CreateLinkGraph {
         if (titanAsDataSink) {
             outputConfiguration = new TitanOutputConfiguration();
         } else {
-            outputConfiguration = new TextGraphOutputConfiguration();
+            String outputPathName = commandLineInterface.getOptionValue("o");
+            outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
         }
 
         LOG.info("========== Creating link graph ================");
