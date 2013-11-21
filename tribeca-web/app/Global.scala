@@ -8,6 +8,7 @@ import scala.Some
 import scala.Some
 import play.api.Play.current
 import services.aws.S3
+import controllers._
 
 
 object Global extends GlobalSettings{
@@ -38,13 +39,16 @@ object Global extends GlobalSettings{
     S3.createBucket()
   }
 
-  /*try this on prod with elb infront of it
   override def onRouteRequest(request: RequestHeader): Option[Handler] = {
-    if (Play.isDev && !request.headers.get("x-forwarded-proto").getOrElse("").contains("https")) {
+    //check if the aws health checker is hitting the server
+    val elbHealthChecker = request.headers.get("User-Agent").getOrElse("").contains("ELB-HealthChecker")
+
+    //only force https on prod mode when User-Agent header is anything but aws health check
+    if (Play.isProd &&  !elbHealthChecker && !request.headers.get("X-Forwarded-Proto").getOrElse("").contains("https")) {
       Some(controllers.Application.redirect)
     } else {
       super.onRouteRequest(request)
     }
-  }*/
+  }
 
 }

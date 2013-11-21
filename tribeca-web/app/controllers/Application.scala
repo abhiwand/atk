@@ -40,9 +40,8 @@ object Application extends Controller {
     Ok(views.html.termsOfUse("Terms of Use", request.user._1))
   }
 
-
-  /*try in aws with elb in front of the server
   def redirect = Action { implicit request =>
-    MovedPermanently("https://" + request.host + request.uri).withHeaders("x-forwarded-proto" -> "https")
-  }*/
+    //redirect the request to https
+    MovedPermanently("https://" + request.host + request.uri).withHeaders("X-Forwarded-Proto" -> "https")
+  }
 }
