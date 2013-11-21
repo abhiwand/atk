@@ -1,3 +1,3 @@
 cd ../../IntelAnalytics                 
-python setup.py bdist_rpm          
+python setup.py bdist          
 mv dist/*.rpm ../scripts/rpm/RPMS
