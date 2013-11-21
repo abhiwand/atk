@@ -163,7 +163,7 @@ if check pydoop; then
         HADOOP_HOME=/home/hadoop/IntelAnalytics/hadoop
    fi
    if [ -z "${JAVA_HOME}" ]; then
-        JAVA_HOME=/usr/lib/jvm/java pip install pydoop
+        JAVA_HOME=/usr/lib/jvm/java
    fi
    HADOOP_HOME=${HADOOP_HOME} JAVA_HOME=${JAVA_HOME} pip install pydoop
    # ZY: work-around, pydoop installer somehow ignores the virtenv
