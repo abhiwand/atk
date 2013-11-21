@@ -34,8 +34,11 @@ object Global extends GlobalSettings{
   }
 
   override def onStart(app : play.api.Application){
-    //create s3 bucket to hold user files
-    S3.createBucket()
+    //don't create the s3 bucket in test mode
+    if(!Play.isTest){
+      //create s3 bucket to hold user files
+      S3.createBucket()
+    }
   }
 
   /*try this on prod with elb infront of it
