@@ -9,15 +9,18 @@ and displays it in progress bar
 """
 class ProgressReportStrategy(ReportStrategy):
     def __init__(self):
-        self.job_progress_list = []
+        self.job_progress_bar_list = []
+        self.progress_list = []
 
     def report(self, line):
         progress = find_progress(line)
         if progress:
-            if len(self.job_progress_list) == 0 or self.job_progress_list[-1].value >= 100:
-                self.job_progress_list.append(self.get_new_progress_bar("Progress"))
+            if len(self.job_progress_bar_list) == 0 or self.job_progress_bar_list[-1].value >= 100:
+                self.job_progress_bar_list.append(self.get_new_progress_bar("Progress"))
+                self.progress_list.append(progress)
 
-            self.job_progress_list[-1].update(progress.total_progress)
+            self.job_progress_bar_list[-1].update(progress.total_progress)
+            self.progress_list[-1] = progress
 
     def get_total_map_reduce_job_count(self):
         """
@@ -26,23 +29,14 @@ class ProgressReportStrategy(ReportStrategy):
         in the first phase, this method will return 1. In the second phase, this
         method will return 2:
         """
-        return len(self.job_progress_list)
+        return len(self.job_progress_bar_list)
 
     def get_all_map_reduce_jobs_progress_list(self):
         """
         :return list of progress for all the known map reduce job in the
         current job submission:
         """
-        progress_list = []
-
-        for bar in self.job_progress_list:
-            total_progress_value = bar.value
-            mapper_progress = min(100, 2 * total_progress_value)
-            reducer_progress = 2 * total_progress_value - mapper_progress
-            progress = MapReduceProgress(mapper_progress, reducer_progress)
-            progress_list.append(progress)
-
-        return progress_list
+        return self.progress_list
 
     def get_new_progress_bar(self, title):
         """
