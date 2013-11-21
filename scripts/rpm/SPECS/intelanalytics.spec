@@ -45,7 +45,7 @@ cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 
 #chmod 755 %{buildroot}/usr/bin/tribeca-gremlin
 
-ln -sf %{_sysconfdir}/tribeca %{buildroot}/usr/lib/IntelAnalytics/conf
+ln -sf %{_sysconfdir}/IntelAnalytics %{buildroot}/usr/lib/IntelAnalytics/conf
 ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-env.sh %{buildroot}/etc/IntelAnalytics/hbase-env.sh
 ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/etc/IntelAnalytics/hbase-site.xml
 ln -sf %{_sysconfdir}/hadoop/conf/hadoop-env.sh %{buildroot}/etc/IntelAnalytics/hadoop-env.sh
