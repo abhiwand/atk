@@ -20,7 +20,7 @@ class JobReportService:
         giving report with the assigned strategy for single input line
         :param line:
         """
-        if self.report_strategy is not None:
+        if self.report_strategy:
             self.report_strategy.report(line)
 
     def report_lines(self, lines):

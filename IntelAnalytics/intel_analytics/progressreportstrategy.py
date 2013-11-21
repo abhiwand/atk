@@ -13,15 +13,11 @@ class ProgressReportStrategy(ReportStrategy):
 
     def report(self, line):
         progress = find_progress(line)
-        if progress is not None:
-            mapper_progress = progress.mapper_progress
-            reducer_progress = progress.reducer_progress
-
-            if len(self.job_progress_list) == 0 or self.job_progress_list[-1].value == 100:
+        if progress:
+            if len(self.job_progress_list) == 0 or self.job_progress_list[-1].value >= 100:
                 self.job_progress_list.append(self.get_new_progress_bar("Progress"))
 
-            total_progress_value = (mapper_progress + reducer_progress) * 0.5
-            self.job_progress_list[-1].update(total_progress_value)
+            self.job_progress_list[-1].update(progress.total_progress)
 
     def get_total_map_reduce_job_count(self):
         """
