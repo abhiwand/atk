@@ -16,14 +16,14 @@ class TestLogUtil(unittest.TestCase):
     def test_valid_line_1(self):
         logUtil = MapReduceLogUtil()
         progress = logUtil.find_progress("13/11/14 14:36:05 INFO mapred.JobClient:  map 100% reduce 33%")
-        self.assertEquals(100, progress.get_mapper_progress())
-        self.assertEquals(33, progress.get_reducer_progress())
+        self.assertEquals(100, progress.mapper_progress)
+        self.assertEquals(33, progress.reducer_progress)
 
     def test_valid_line_2(self):
         logUtil = MapReduceLogUtil()
         progress = logUtil.find_progress("13/11/14 14:36:05 INFO mapred.JobClient:  map 0% reduce 0%")
-        self.assertEquals(0, progress.get_mapper_progress())
-        self.assertEquals(0, progress.get_reducer_progress())
+        self.assertEquals(0, progress.mapper_progress)
+        self.assertEquals(0, progress.reducer_progress)
 
     def test_reading_from_file(self):
         logUtil = MapReduceLogUtil()
@@ -35,8 +35,8 @@ class TestLogUtil(unittest.TestCase):
                     currentProgress = progress
                     #print("map:" + str(progress.getMapperProgress()) + ", reduce:" + str(progress.getReducerProgress()))
 
-        self.assertEquals(100, currentProgress.get_mapper_progress())
-        self.assertEquals(100, currentProgress.get_reducer_progress())
+        self.assertEquals(100, currentProgress.mapper_progress)
+        self.assertEquals(100, currentProgress.reducer_progress)
 
 
 

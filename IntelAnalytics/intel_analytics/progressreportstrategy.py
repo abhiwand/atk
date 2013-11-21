@@ -16,8 +16,8 @@ class ProgressReportStrategy(ReportStrategy):
     def report(self, line):
         progress = self.log_util.find_progress(line)
         if progress is not None:
-            mapper_progress = progress.get_mapper_progress()
-            reducer_progress = progress.get_reducer_progress()
+            mapper_progress = progress.mapper_progress
+            reducer_progress = progress.reducer_progress
 
             if len(self.job_progress_list) == 0 or self.job_progress_list[-1].value == 100:
                 self.job_progress_list.append(self.get_new_progress_bar("Progress"))
