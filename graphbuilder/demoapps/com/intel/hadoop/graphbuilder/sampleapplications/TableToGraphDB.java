@@ -8,6 +8,7 @@ import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptio
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRuleCommandLineOptions;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -108,7 +109,7 @@ public class TableToGraphDB {
                 .withArgName("Edge-Column-Name")
                 .create("e"));
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("FLATTEN_LISTS_OPTNAME"))
+        options.addOption(OptionBuilder.withLongOpt(HBaseGraphBuildingRuleCommandLineOptions.FLATTEN_LISTS_OPTNAME)
                 .withDescription("Flag that expends lists into multiple items. " )
                 .create("F"));
         options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
@@ -173,13 +174,12 @@ public class TableToGraphDB {
         job = (ConstructionPipeline) commandLineInterface.getRuntimeConfig().addConfig(job);
 
         String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
-
         HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
 
-        inputConfiguration.setFlattenLists(cmd.hasOption(GBHTableConfiguration.FLATTEN_LISTS_OPTNAME));
 
+        HBaseGraphBuildingRule buildingRule = new HBaseGraphBuildingRule(cmd);
+        buildingRule.setFlattenLists(cmd.hasOption(HBaseGraphBuildingRuleCommandLineOptions.FLATTEN_LISTS_OPTNAME));
 
-        HBaseGraphBuildingRule   buildingRule        = new HBaseGraphBuildingRule(cmd);
         TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
 
         LOG.info("============= Creating graph from feature table ==================");

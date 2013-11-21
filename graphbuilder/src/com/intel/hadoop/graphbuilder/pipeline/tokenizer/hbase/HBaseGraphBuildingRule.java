@@ -78,6 +78,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     private String[] vertexRules;
     private String[] edgeRules;
     private String[] directedEdgeRules;
+    private boolean  flattenLists = false;
 
     private Class vidClass = StringType.class;
     private Class<? extends GraphTokenizer>  tokenizerClass = HBaseTokenizer.class;
@@ -119,6 +120,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         generateEdgeSchemata();
         generateVertexSchemata();
+    }
+
+    /**
+     * Set the option to flatten lists.
+     * <p>When this option is set, string lists serialized as {string1,string2,...stringn} expand into n different
+     * strings string1, ... stringn when used as vertex IDs</p>
+     * @param flattenLists {@code boolean}
+     */
+    public void setFlattenLists(boolean flattenLists) {
+        this.flattenLists = flattenLists;
     }
 
     /**
@@ -264,6 +275,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
         packVertexRulesIntoConfiguration(configuration, vertexRules);
         packEdgeRulesIntoConfiguration(configuration, edgeRules);
         packDirectedEdgeRulesIntoConfiguration(configuration, directedEdgeRules);
+        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", flattenLists);
     }
 
     /**

@@ -41,7 +41,6 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     private HBaseUtils hBaseUtils   = null;
     private String     srcTableName = null;
-    private boolean    flattenLists = false;
 
     private Scan       scan         = new Scan();
 
@@ -72,10 +71,6 @@ public class HBaseInputConfiguration implements InputConfiguration {
         }
     }
 
-    public void setFlattenLists(boolean flattenLists) {
-        this.flattenLists = flattenLists;
-    }
-
     /**
      * This input configuration uses hbase.
      * @return  {@literal true }
@@ -96,8 +91,6 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
         scan.setCaching(GBHTableConfiguration.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
-
-        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", flattenLists);
     }
 
     /**

@@ -7,6 +7,7 @@ import com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphOutputCo
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRuleCommandLineOptions;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.intel.hadoop.graphbuilder.util.Timer;
@@ -95,7 +96,7 @@ public class TableToTextGraph {
                 .withArgName("Edge-Column-Name")
                 .create("e"));
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("FLATTEN_LISTS_OPTNAME"))
+        options.addOption(OptionBuilder.withLongOpt(HBaseGraphBuildingRuleCommandLineOptions.FLATTEN_LISTS_OPTNAME)
                 .withDescription("Flag that expends lists into multiple items. " )
                 .create("F"));
 
@@ -130,7 +131,7 @@ public class TableToTextGraph {
 
         Options options          = createOptions();
         String      srcTableName = null;
-        String      outTableName = null;
+        String      outPathName  = null;
         CommandLine cmd          = null;
 
         try {
@@ -145,8 +146,8 @@ public class TableToTextGraph {
             }
 
             if (cmd.hasOption("o")) {
-                outTableName = cmd.getOptionValue("o");
-                LOG.info("Output path: " + outTableName);
+                outPathName  = cmd.getOptionValue("o");
+                LOG.info("Output path: " + outPathName );
             } else {
                 exitWithHelp(options, "An output path is required", StatusCode.BAD_COMMAND_LINE);
             }
@@ -222,15 +223,14 @@ public class TableToTextGraph {
 
         CommandLine cmd = checkCli(args);
         String srcTableName   = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
-        String outputPathName = cmd.getOptionValue(cmd.getOptionValue("o"));
+        String outputPathName = cmd.getOptionValue("o");
 
-        ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
+        ConstructionPipeline job = new TableToTextGraph().new ConstructionPipeline();
 
-        HBaseInputConfiguration      inputConfiguration  = new HBaseInputConfiguration(srcTableName);
-
-        inputConfiguration.setFlattenLists(cmd.hasOption(GBHTableConfiguration.FLATTEN_LISTS_OPTNAME));
+        HBaseInputConfiguration inputConfiguration = new HBaseInputConfiguration(srcTableName);
 
         HBaseGraphBuildingRule buildingRule = new HBaseGraphBuildingRule(cmd);
+        buildingRule.setFlattenLists(cmd.hasOption(HBaseGraphBuildingRuleCommandLineOptions.FLATTEN_LISTS_OPTNAME));
 
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
 
