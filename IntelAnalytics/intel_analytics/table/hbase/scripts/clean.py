@@ -38,8 +38,8 @@ def main(argv):
     etl_schema.load_schema(cmd_line_args.input)
     etl_schema.save_schema(cmd_line_args.output)
     
-    feature_names_as_str = ",".join(etl_schema.feature_names)
-    feature_types_as_str = ",".join(etl_schema.feature_types)
+    feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+    feature_types_as_str = etl_schema.get_feature_types_as_CSV()
     
     with ETLHBaseClient() as hbase_client:
         if not hbase_client.table_exists(cmd_line_args.input):

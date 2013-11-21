@@ -23,7 +23,7 @@ class BigDataFrame(object):
         #if not isinstance(table, Table):
         #    raise Exception("bad table given to Constructor")
         if table is None:
-            raise Exception("BigDataFrame Constructor requires non-None table")
+            raise BigDataFrameException("BigDataFrame Constructor requires non-None table")
 
         self._table = table
         #this holds the original table that we imported the data, will be used for understanding which features are derived or not

@@ -55,4 +55,10 @@ class ETLSchemaTest(unittest.TestCase):
         print '###########################'            
 
 if __name__ == '__main__':
-    unittest.main()        
+    try:
+      rc = unittest.main()  
+      sys.exit(rc)
+    except Exception, e:
+      print e
+      sys.exit(1)
+              
