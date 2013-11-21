@@ -4,6 +4,7 @@ import org.junit.runner._
 
 import play.api.test._
 import play.api.test.Helpers._
+import models._
 
 /**
  * Add your spec here.
@@ -15,8 +16,10 @@ class ApplicationSpec extends Specification {
 
   "Application" should {
 
-    "send 404 on a bad request" in new WithApplication{
-      route(FakeRequest(GET, "/boum")) must beNone
+    "send 404 on a bad request" in {
+      running(FakeApplication()) {
+        route(FakeRequest(GET, "/boum")) must beNone
+      }
     }
 
     "render the index page" in new WithApplication{
@@ -24,7 +27,6 @@ class ApplicationSpec extends Specification {
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
-      contentAsString(home) must contain ("Your new application is ready.")
     }
   }
 }
