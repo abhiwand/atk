@@ -40,7 +40,7 @@ def call(args, heartbeat=0, output_report_strategy=None, timeout=0, shell=False)
     # non-blocking invocation of subprocess
     p = Popen(args, shell=shell, stderr=PIPE, stdout=PIPE)
     reportService = JobReportService()
-    reportService.set_report_strategy(output_report_strategy)
+    reportService.add_report_strategy(output_report_strategy)
 
     # spawn thread to consume subprocess's STDERR in non-blocking manner
     err_txt = []
