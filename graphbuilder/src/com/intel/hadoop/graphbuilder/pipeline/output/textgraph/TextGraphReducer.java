@@ -24,10 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -57,7 +54,7 @@ import org.apache.log4j.Logger;
  * </p>
  */
 
-public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement, NullWritable, Text> {
+public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, NullWritable, Text> {
 
     private static final Logger LOG = Logger.getLogger(TextGraphReducer.class);
 
@@ -110,24 +107,23 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
     }
 
     @Override
-    public void reduce(IntWritable key, Iterable<PropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
         HashMap<EdgeID, Writable>     edgePropertiesMap       = new HashMap();
         HashMap<Object,  Writable>     vertexPropertiesMap     = new HashMap();
 
-        Iterator<PropertyGraphElement> valueIterator           = values.iterator();
+        Iterator<SerializedPropertyGraphElement> valueIterator           = values.iterator();
 
         while (valueIterator.hasNext()) {
 
-            PropertyGraphElement next = valueIterator.next();
+            SerializedPropertyGraphElement next = valueIterator.next();
 
             // Apply reduce on vertex
 
-            if (next.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
-
-                Object vertexId = next.vertex().getVertexId();
-                Vertex vertex   = next.vertex();
+            if (next.graphElement().isVertex()) {
+                Vertex vertex   = (Vertex) next.graphElement();
+                Object vertexId = vertex.getVertexId();
 
                 if (vertexPropertiesMap.containsKey(vertexId)) {
 
@@ -163,8 +159,8 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
                 // Apply reduce on edges, remove self and (or merge) duplicate edges.
                 // Optionally remove bidirectional edge.
 
-                Edge<?> edge    = next.edge();
-                EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
+                Edge    edge   = (Edge) next.graphElement();
+                EdgeID  edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
 
                 if (edge.isSelfEdge()) {
                     // self edges are omitted

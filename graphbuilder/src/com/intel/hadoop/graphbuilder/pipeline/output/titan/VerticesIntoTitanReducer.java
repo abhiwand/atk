@@ -2,6 +2,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
@@ -15,7 +16,6 @@ import com.thinkaurelius.titan.core.TitanElement;
 import com.thinkaurelius.titan.core.TitanGraph;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.*;
@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
  * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
  */
 
-public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphElement, IntWritable, PropertyGraphElement> {
+public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> {
 
     private static final Logger LOG = Logger.getLogger(VerticesIntoTitanReducer.class);
 
@@ -54,7 +54,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
 
     private HashMap<Object, Long>  vertexNameToTitanID;
     private IntWritable            outKey;
-    private PropertyGraphElement   outValue;
+    private SerializedPropertyGraphElement outValue;
     private Class                  outClass;
 
     private final KeyFunction keyFunction = new DestinationVertexKeyFunction();
@@ -84,7 +84,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
         outKey   = new IntWritable();
 
         try {
-            outValue   = (PropertyGraphElement) outClass.newInstance();
+            outValue   = (SerializedPropertyGraphElement) outClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Cannot instantiate new reducer output value ( " + outClass.getName() + ")", LOG, e);
@@ -132,22 +132,22 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
     }
 
     @Override
-    public void reduce(IntWritable key, Iterable<PropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
         HashMap<EdgeID, Writable>     edgeSet       = new HashMap();
-        HashMap<Object, Writable>      vertexSet     = new HashMap();
-        Iterator<PropertyGraphElement> valueIterator = values.iterator();
+        HashMap<Object, Writable>     vertexSet     = new HashMap();
+        Iterator<SerializedPropertyGraphElement> valueIterator = values.iterator();
 
         while (valueIterator.hasNext()) {
 
-            PropertyGraphElement next = valueIterator.next();
+            SerializedPropertyGraphElement next = valueIterator.next();
 
             // Apply reduce on vertex
 
-            if (next.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
-
-                Object vid = next.vertex().getVertexId();
+            if (next.graphElement().isVertex()) {
+                Vertex vertex = (Vertex) next.graphElement();
+                Object vid = vertex.getVertexId();
 
                 if (vertexSet.containsKey(vid)) {
 
@@ -155,7 +155,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
 
                     if (vertexReducerFunction != null) {
                         vertexSet.put(vid,
-                                vertexReducerFunction.reduce(next.vertex().getProperties(),
+                                vertexReducerFunction.reduce(vertex.getProperties(),
                                 vertexSet.get(vid)));
                     } else {
 
@@ -165,7 +165,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) vertexSet.get(vid);
-                        existingPropertyMap.mergeProperties(next.vertex().getProperties());
+                        existingPropertyMap.mergeProperties(vertex.getProperties());
                     }
                 } else {
 
@@ -173,10 +173,10 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
 
                     if (vertexReducerFunction != null) {
                         vertexSet.put(vid,
-                                vertexReducerFunction.reduce(next.vertex().getProperties(),
+                                vertexReducerFunction.reduce(vertex.getProperties(),
                                         vertexReducerFunction.identityValue()));
                     } else {
-                        vertexSet.put(vid, next.vertex().getProperties());
+                        vertexSet.put(vid, vertex.getProperties());
                     }
                 }
             } else {
@@ -184,7 +184,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                 // Apply reduce on edges, remove self and (or merge) duplicate edges.
                 // Optionally remove bidirectional edge.
 
-                Edge<?> edge    = next.edge();
+                Edge   edge   = (Edge) next.graphElement();
                 EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
 
                 if (edge.isSelfEdge()) {
@@ -262,7 +262,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
             propertyMap.setProperty("TitanID", new LongType(vertexId));
             vertex.configure((WritableComparable) v.getKey(), propertyMap);
 
-            outValue.init(PropertyGraphElement.GraphElementType.VERTEX, vertex);
+            outValue.init(vertex);
             outKey.set(keyFunction.getVertexKey(vertex));
 
             context.write(outKey, outValue);
@@ -297,7 +297,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
 
             edge.configure((WritableComparable)  src, (WritableComparable)  dst, new StringType(label), propertyMap);
 
-            outValue.init(PropertyGraphElement.GraphElementType.EDGE, edge);
+            outValue.init(edge);
             outKey.set(keyFunction.getEdgeKey(edge));
 
             context.write(outKey, outValue);

@@ -1,14 +1,14 @@
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.conf.Configuration;
@@ -46,12 +46,12 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(HBaseReaderMapper.class)
 public class HBaseReaderMapperTest {
-    private MapDriver<ImmutableBytesWritable, Result, IntWritable, PropertyGraphElement> mapDriver;
+    private MapDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement> mapDriver;
     private HBaseReaderMapper hBaseReaderMapper;
     private HBaseReaderMapper spiedHBaseReaderMapper;
     private Configuration conf = new Configuration();
     private Mapper.Context mapperContextMock;
-    private PropertyGraphElementStringTypeVids valueClass;
+    private SerializedPropertyGraphElementStringTypeVids valueClass;
     private Logger loggerMock;
     private ImmutableBytesWritable key;
     private RecordTypeHBaseRow recordTypeHBaseRow;
@@ -90,7 +90,7 @@ public class HBaseReaderMapperTest {
         loggerMock = mock(Logger.class);
         Whitebox.setInternalState(HBaseReaderMapper.class, "LOG", loggerMock);
 
-        valueClass = mock(PropertyGraphElementStringTypeVids.class);
+        valueClass = mock(SerializedPropertyGraphElementStringTypeVids.class);
         mapperContextMock = mock(Mapper.Context.class);
 
         conf = new Configuration();
@@ -111,18 +111,18 @@ public class HBaseReaderMapperTest {
         HBaseGraphBuildingRule.packDirectedEdgeRulesIntoConfiguration(conf, directedEdgeRules);
 
         //mapper context mocks
-        Class valClass = PropertyGraphElementStringTypeVids.class;
+        Class valClass = SerializedPropertyGraphElementStringTypeVids.class;
         PowerMockito.when(mapperContextMock.getMapOutputValueClass()).thenReturn(valClass);
 
         baseMapper = new BaseMapper(mapperContextMock, conf, loggerMock);
         spiedBaseMapper = spy(baseMapper);
         PowerMockito.whenNew(BaseMapper.class).withAnyArguments().thenReturn(spiedBaseMapper);
 
-        spiedBaseMapper.setValClass(PropertyGraphElementStringTypeVids.class);
+        spiedBaseMapper.setValClass(SerializedPropertyGraphElementStringTypeVids.class);
         doNothing().when(spiedBaseMapper).setValClass(any(Class.class));
 
-        spiedBaseMapper.setMapVal(PropertyGraphElementStringTypeVids.class.newInstance());
-        doNothing().when(spiedBaseMapper).setMapVal(any(PropertyGraphElement.class));
+        spiedBaseMapper.setMapVal(SerializedPropertyGraphElementStringTypeVids.class.newInstance());
+        doNothing().when(spiedBaseMapper).setMapVal(any(SerializedPropertyGraphElement.class));
 
         //set up the spied HbaseReaderMapper
         hBaseReaderMapper = new HBaseReaderMapper();
@@ -155,7 +155,7 @@ public class HBaseReaderMapperTest {
         mapDriver.withConfiguration(conf).withInput(key, result);
 
         //run test
-        List<Pair<IntWritable, PropertyGraphElement>> writables = mapDriver.run();
+        List<Pair<IntWritable, SerializedPropertyGraphElement>> writables = mapDriver.run();
 
         //check the output of the mapper in this case with the input we should get 4 writes
         assertTrue("check for four writes", writables.size() == 4);
@@ -380,25 +380,32 @@ public class HBaseReaderMapperTest {
      * @param edge             the edge object to verify against
      * @param vertex           the vertex object to verify against
      */
-    public final void verifyPairSecond(Pair<IntWritable, PropertyGraphElement> pair, String graphElementType,
+    public final void verifyPairSecond(Pair<IntWritable, SerializedPropertyGraphElement> pair, String graphElementType,
                                        Edge<StringType> edge, Vertex<StringType> vertex) {
 
-        assertEquals("Veryfiy Type", graphElementType, pair.getSecond().graphElementType().toString());
-        if (pair.getSecond().graphElementType().toString().equals("EDGE")) {
-            assertTrue(pair.getSecond().edge().getSrc().equals(edge.getSrc()));
-            assertTrue(pair.getSecond().edge().getDst().equals(edge.getDst()));
-            assertTrue(pair.getSecond().edge().getEdgeLabel().equals(edge.getEdgeLabel()));
-            for (Writable writable : pair.getSecond().edge().getProperties().getPropertyKeys()) {
+        if (graphElementType.equals("EDGE")) {
+            assert(pair.getSecond().graphElement().isEdge());
+        } else {
+            assert(pair.getSecond().graphElement().isVertex());
+        }
+
+        if (pair.getSecond().graphElement().isEdge()) {
+            Edge edgeFromPair = (Edge) pair.getSecond().graphElement();
+            assertTrue(edgeFromPair.getSrc().equals(edge.getSrc()));
+            assertTrue(edgeFromPair.getDst().equals(edge.getDst()));
+            assertTrue(edgeFromPair.getEdgeLabel().equals(edge.getEdgeLabel()));
+            for (Writable writable : edgeFromPair.getProperties().getPropertyKeys()) {
                 String key = ((StringType) writable).get();
-                String value = ((StringType) pair.getSecond().edge().getProperty(key)).get();
+                String value = ((StringType) edgeFromPair.getProperty(key)).get();
                 assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value),
                         ((StringType) edge.getProperty(key)).get().equals(value));
             }
-        } else if (pair.getSecond().graphElementType().toString().equals("VERTEX")) {
-            assertTrue("", pair.getSecond().vertex().getVertexId().equals(vertex.getVertexId()));
-            for (Writable writable : pair.getSecond().vertex().getProperties().getPropertyKeys()) {
+        } else if (pair.getSecond().graphElement().isVertex()) {
+            Vertex vertexFromPair = (Vertex) pair.getSecond().graphElement();
+            assertTrue("", vertexFromPair.getVertexId().equals(vertex.getVertexId()));
+            for (Writable writable : vertexFromPair.getProperties().getPropertyKeys()) {
                 String key = ((StringType) writable).get();
-                String value = ((StringType) pair.getSecond().vertex().getProperty(key)).get();
+                String value = ((StringType) vertexFromPair.getProperty(key)).get();
                 assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value),
                         ((StringType) vertex.getProperty(key)).get().equals(value));
             }

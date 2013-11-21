@@ -3,7 +3,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -102,7 +102,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
      */
     public void updateJobForMapper(Job job, CommandLine cmd) {
         try {
-            TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, PropertyGraphElement.class, job);
+            TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, SerializedPropertyGraphElement.class, job);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
                     "Could not initialize table mapper job", LOG, e);

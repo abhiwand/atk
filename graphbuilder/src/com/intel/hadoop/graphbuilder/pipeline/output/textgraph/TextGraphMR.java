@@ -26,7 +26,7 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.Eleme
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -86,7 +86,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
 
-    private PropertyGraphElement mapValueType;
+    private SerializedPropertyGraphElement mapValueType;
     private Class                vidClass;
 
     private final Class          keyFuncClass = ElementIdKeyFunction.class;
@@ -168,18 +168,18 @@ public class TextGraphMR extends GraphGenerationMRJob {
     /**
      *Set the value class for the property graph elements coming from the mapper/tokenizer.
      *
-     * <p> The class is one of the instantiations of {@code PropertyGraphElement}, determined the vertex ID type</p>
+     * <p> The class is one of the instantiations of {@code SerializedPropertyGraphElement}, determined the vertex ID type</p>
      *
      * @param valueClass the intermediate value class
-     * @see PropertyGraphElement
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementLongTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids
      */
 
     @Override
     public void setValueClass(Class valueClass) {
         try {
-            this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
+            this.mapValueType = (SerializedPropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
@@ -194,7 +194,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
      * <p>This can either be a {@code StringType} or {@code LongType}, which are writable encapsulations of the
      * {@code String} and {@code Long} types, respectively. </p>
      * @param vidClass the class of the vertex IDs
-     * @see PropertyGraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement
      * @see com.intel.hadoop.graphbuilder.types.StringType
      * @see com.intel.hadoop.graphbuilder.types.LongType
      */
