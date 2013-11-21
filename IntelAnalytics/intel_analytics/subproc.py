@@ -40,7 +40,7 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
     # non-blocking invocation of subprocess
     p = Popen(args, shell=shell, stderr=PIPE, stdout=PIPE)
     reportService = ReportService()
-    reportService.setReportStrategy(ProgressReportStrategy())
+    reportService.set_report_strategy(ProgressReportStrategy())
 
     # spawn thread to consume subprocess's STDERR in non-blocking manner
     err_txt = []
@@ -75,7 +75,7 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
 
 def _report_output(out, reportService):
     for line in iter(out.readline, b''):
-        reportService.reportLine(line)
+        reportService.report_line(line)
     out.close()
 
 def _process_error_output(out, list, reportService):
@@ -83,7 +83,7 @@ def _process_error_output(out, list, reportService):
     continously reads from stream and appends to list of strings
     """
     for line in iter(out.readline, b''):
-        reportService.reportLine(line)
+        reportService.report_line(line)
         list.append(line)
     out.close()
 

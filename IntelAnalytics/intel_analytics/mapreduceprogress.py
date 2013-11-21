@@ -3,32 +3,32 @@ representation of map reduce job progress
 """
 class MapReduceProgress:
 
-    def __init__(self, mapperProgress, reducerProgress):
+    def __init__(self, mapper_progress, reducer_progress):
         """
         initialize map reduce progress instance
-        :param mapperProgress:
-        :param reducerProgress:
+        :param mapper_progress:
+        :param reducer_progress:
         """
-        self.mapperProgress = mapperProgress
-        self.reducerProgress = reducerProgress
+        self.mapper_progress = mapper_progress
+        self.reducer_progress = reducer_progress
 
-    def getMapperProgress(self):
+    def get_mapper_progress(self):
         """
         :return mapper progress:
         """
-        return self.mapperProgress
+        return self.mapper_progress
 
-    def getReducerProgress(self):
+    def get_reducer_progress(self):
         """
         :return reducer progress:
         """
-        return self.reducerProgress
+        return self.reducer_progress
 
-    def getTotalProgress(self):
+    def get_total_progress(self):
         """
         Calculate total progress based on current mapper
         and reducer progress
         :return total progress:
         """
-        return (self.mapperProgress + self.reducerProgress) * 0.5
+        return (self.mapper_progress + self.reducer_progress) * 0.5
 

@@ -4,24 +4,24 @@ which can be from for example stdout or stderr from executing
 commands.
 """
 class ReportService:
-    def setReportStrategy(self, reportStrategy):
+    def set_report_strategy(self, report_strategy):
         """
         assign a strategy instance to be use
-        :param reportStrategy:
+        :param report_strategy:
         """
-        self.reportStrategy = reportStrategy
+        self.report_strategy = report_strategy
 
-    def reportLine(self, line):
+    def report_line(self, line):
         """
         giving report with the assigned strategy for single input line
         :param line:
         """
-        self.reportStrategy.report(line)
+        self.report_strategy.report(line)
 
-    def reportLines(self, lines):
+    def report_lines(self, lines):
         """
         giving reports for multiple input lines
         :param lines:
         """
         for line in lines:
-            self.reportStrategy.report(line)
+            self.report_strategy.report(line)
