@@ -153,7 +153,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 vertexPropColMap.put(vertexIdColumnName, vertexPropertiesColumnNames);
         }
 
-        LOG.info("TRIBECA_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
+        LOG.info("GRAPHBUILDER_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
 
 
         String[] rawEdgeRules         = HBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
@@ -299,7 +299,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                     vertexList.add(vertex);
                 } else {
 
-                    LOG.warn("TRIBECA_WARN: Null vertex in " + columnName + ", row " + row.toString());
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
                     context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
                 }
             }
@@ -340,7 +340,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                             property = edgeAttributes[countEdgeAttr].replaceAll(
                                     GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                    GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                                    GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
 
                             if (property != null) {
                                 edge.setProperty(property, new StringType(propertyValue));
@@ -369,7 +369,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                                 property = edgeAttributes[countEdgeAttr].replaceAll(
                                         GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                        GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
 
                                 if (property != null) {
                                     opposingEdge.setProperty(property, new StringType(propertyValue));
