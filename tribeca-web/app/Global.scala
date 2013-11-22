@@ -41,7 +41,7 @@ object Global extends GlobalSettings{
 
   override def doFilter(action: EssentialAction): EssentialAction = EssentialAction { request =>
     action.apply(request).map(_.withHeaders(
-      "X-Frame-Options" -> "ALLOW-FROM SAMEORIGIN"
+      "X-Frame-Options" -> "SAMEORIGIN"
     ))
   }
 
