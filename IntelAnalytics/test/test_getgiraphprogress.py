@@ -15,6 +15,7 @@ class TestGetGiraphProgress(unittest.TestCase):
         self.assertEquals(0, progress.mapper_progress)
         self.assertEquals(0, progress.reducer_progress)
         self.assertEquals(0, progress.total_progress)
+        self.assertEquals("Step 2", strategy.get_next_step_title())
 
     def test_first_phase_middle(self):
         strategy = GiraphProgressReportStrategy()
@@ -25,6 +26,7 @@ class TestGetGiraphProgress(unittest.TestCase):
         self.assertEquals(33, progress.mapper_progress)
         self.assertEquals(0, progress.reducer_progress)
         self.assertEquals(33, progress.total_progress)
+        self.assertEquals("Step 2", strategy.get_next_step_title())
 
     def test_first_phase_complete(self):
         strategy = GiraphProgressReportStrategy()
@@ -33,29 +35,27 @@ class TestGetGiraphProgress(unittest.TestCase):
         progress = strategy.get_all_map_reduce_jobs_progress_list()[0]
         self.assertEquals(2, strategy.get_total_map_reduce_job_count())
         self.assertEquals(100, progress.mapper_progress)
-        self.assertEquals(0, progress.reducer_progress)
         self.assertEquals(100, progress.total_progress)
 
-        progress2 = strategy.get_all_map_reduce_jobs_progress_list()[1]
-        self.assertEquals(0, progress2.mapper_progress)
-        self.assertEquals(0, progress2.reducer_progress)
-        self.assertEquals(0, progress2.total_progress)
+        # in giraph, progress reaches 100% will automatically generate the next progress bar
+        # therefore, progress bar 1 finishes will generate progress bar 2,
+        # the next set will therefore be progress bar 3
+        self.assertEquals("Step 3", strategy.get_next_step_title())
 
     def test_second_phase_complete(self):
         strategy = GiraphProgressReportStrategy()
         strategy.report("13/11/21 11:34:21 INFO mapred.JobClient:  map 33% reduce 0%")
         strategy.report("13/11/21 11:34:23 INFO mapred.JobClient:  map 100% reduce 0%")
         strategy.report("13/11/21 11:34:26 INFO mapred.JobClient: Job complete: job_201311191412_0063")
-        progress = strategy.get_all_map_reduce_jobs_progress_list()[0]
+        progress_step_1 = strategy.get_all_map_reduce_jobs_progress_list()[0]
+        progress_step_2 = strategy.get_all_map_reduce_jobs_progress_list()[0]
         self.assertEquals(2, strategy.get_total_map_reduce_job_count())
-        self.assertEquals(100, progress.mapper_progress)
-        self.assertEquals(0, progress.reducer_progress)
-        self.assertEquals(100, progress.total_progress)
+        self.assertEquals(100, progress_step_1.mapper_progress)
+        self.assertEquals(100, progress_step_1.total_progress)
+        self.assertEquals(100, progress_step_2.mapper_progress)
+        self.assertEquals(100, progress_step_2.total_progress)
+        self.assertEquals("Step 3", strategy.get_next_step_title())
 
-        progress2 = strategy.get_all_map_reduce_jobs_progress_list()[1]
-        self.assertEquals(100, progress2.mapper_progress)
-        self.assertEquals(100, progress2.reducer_progress)
-        self.assertEquals(100, progress2.total_progress)
 
     def test_get_giraph_complete_message(self):
         strategy = GiraphProgressReportStrategy()
