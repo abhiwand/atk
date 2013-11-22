@@ -41,5 +41,37 @@ class ConfigSpec extends Specification {
 }
 
 class S3CopierSpec extends Specification {
+  "Queue monitor" should {
+    "receive messages" {
 
+    }
+
+    "ignore messages for other clusters" {
+
+    }
+
+    "ignore messages for other buckets" {
+
+    }
+
+    "destroy messages if they've been processed" {
+
+    }
+  }
+
+  "Status generator" should {
+    "generate status files" {
+
+    }
+
+    "update status files as copy progresses" {
+
+    }
+  }
+
+  "Copier" should {
+    "copy files from S3 to HDFS" {
+
+    }
+  }
 }
