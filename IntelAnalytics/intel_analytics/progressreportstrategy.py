@@ -1,4 +1,3 @@
-from intel_analytics.mapreducelogutil import MapReduceProgress
 from intel_analytics.jobreportservice import ReportStrategy
 from mapreducelogutil import find_progress
 from progress import Progress
@@ -12,11 +11,22 @@ class ProgressReportStrategy(ReportStrategy):
         self.job_progress_bar_list = []
         self.progress_list = []
 
+        # show this bar for initialization
+        self.initialization_progressbar = self.get_new_progress_bar("Initialization")
+        self.initialization_progressbar._enable_animation()
+        self.initialization_progressbar.update(100)
+
+    def get_next_step_title(self):
+        return "Step " + str(len(self.job_progress_bar_list) + 1)
+
     def report(self, line):
         progress = find_progress(line)
         if progress:
-            if len(self.job_progress_bar_list) == 0 or self.job_progress_bar_list[-1].value >= 100:
-                self.job_progress_bar_list.append(self.get_new_progress_bar("Progress"))
+            if len(self.progress_list) == 0:
+                self.initialization_progressbar._disable_animation()
+
+            if len(self.progress_list) == 0 or self.job_progress_bar_list[-1].value >= 100:
+                self.job_progress_bar_list.append(self.get_new_progress_bar(self.get_next_step_title()))
                 self.progress_list.append(progress)
 
             self.job_progress_bar_list[-1].update(progress.total_progress)
