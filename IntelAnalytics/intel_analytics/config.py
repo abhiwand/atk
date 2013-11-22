@@ -11,10 +11,9 @@ import importlib
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
-# todo: figure out the correct way to get this:
-properties_file = '/'.join([os.getenv('INTEL_ANALYTICS_HOME', os.getcwd()),
-                            'intel_analytics',
-                            'intel_analytics.properties'])
+properties_file = os.path.join(
+    os.getenv('INTEL_ANALYTICS_PYTHON', os.path.dirname(__file__)),
+    'intel_analytics.properties')
 
 
 def get_env_vars(names):
@@ -73,7 +72,29 @@ class Config(object):
         if srcfile is not None:
             self.load(srcfile)
 
+    def __getitem__(self, item):
+        return self.props[item]
+
+    def __setitem__(self, key, value):
+        self.props[key] = value
+
+    def __delitem__(self, key):
+        del self.props[key]
+
+    def __repr__(self):
+        r = []
+        items = self.props.items()
+        items.sort()
+        for k, v in items:
+            r.append(k + "=" + v)
+        return "\n".join(r)
+
     def load(self, srcfile=None):
+        """
+        Initializes the config from a file
+
+        If srcfile is None, the previously loaded file is reloaded.
+        """
         srcfile = srcfile or self.srcfile
         if srcfile is None:
             raise Exception('Configuration source file not specified')
@@ -101,41 +122,31 @@ class Config(object):
         self.reset()
 
     def reset(self):
+        """
+        Restores the config to the last file load
+        """
         self.props = dict(self.default_props)
 
     def verify(self, keys):
+        """
+        Verifies the config contains the given keys; raises Exception otherwise
+        """
         missing = []
         for k in keys:
             if k not in self.props:
                 missing.append(k)
         if len(missing) > 0:
-            self.raise_missing_parameters_error(missing)
+            raise Exception("Configuration " +
+                            "based on file '" + (self.srcfile or "(None)") +
+                            "' is missing parameters: " + ", ".join(missing))
 
     def verify_template(self, template):
+        """
+        Verifies config contains the keys necessary to satisfy given template
+        """
         keys = get_keys_from_template(template)
         self.verify(keys)
 
-    def __getitem__(self, item):
-        return self.props[item]
-
-    def __setitem__(self, key, value):
-        self.props[key] = value
-
-    def __delitem__(self, key):
-        del self.props[key]
-
-    def __repr__(self):
-        r = []
-        items = self.props.items()
-        items.sort()
-        for k, v in items:
-            r.append(k + "=" + v)
-        return "\n".join(r)
-
-    def raise_missing_parameters_error(self, missing):
-        m = missing if isinstance(missing, str) else ", ".join(missing)
-        raise Exception("Configuration file '" + self.srcfile +
-                        "' is missing parameters: " + m)
 
 # Global Config Singleton
 try:
