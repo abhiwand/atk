@@ -4,25 +4,12 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 
-public class GraphElement implements GraphElementTypeCallback {
+public class GraphElement {
     private GraphElementId graphElementId;
+    private GraphElementObject graphElementObject;
     public GraphElement() {
+        graphElementObject = new GraphElementObject();
         graphElementId = new GraphElementId();
-    }
-
-    @Override
-    public Edge edge(PropertyGraphElement propertyGraphElement) {
-        return propertyGraphElement.edge();
-    }
-
-    @Override
-    public Vertex vertex(PropertyGraphElement propertyGraphElement) {
-        return propertyGraphElement.vertex();
-    }
-
-    @Override
-    public Object nullElement(PropertyGraphElement propertyGraphElement) {
-        return null;
     }
 
     public <T> T getCallback(PropertyGraphElement propertyGraphElement, GraphElementTypeCallback graphElementTypeSwitchCallback){
@@ -38,8 +25,8 @@ public class GraphElement implements GraphElementTypeCallback {
         return this.getCallback(propertyGraphElement, this.graphElementId);
     }
 
-    public Object getType(PropertyGraphElement propertyGraphElement){
-        return this.getCallback(propertyGraphElement, this);
+    public Object get(PropertyGraphElement propertyGraphElement){
+        return this.getCallback(propertyGraphElement, this.graphElementObject);
     }
 
     public boolean isEdge(PropertyGraphElement propertyGraphElement){

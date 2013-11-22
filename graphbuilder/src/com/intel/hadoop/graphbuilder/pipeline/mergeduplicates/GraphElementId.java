@@ -15,13 +15,13 @@ public class GraphElementId implements GraphElementTypeCallback {
 
     @Override
     public EdgeID edge(PropertyGraphElement propertyGraphElement) {
-        Edge edge = (Edge)graphElement.getType(propertyGraphElement);
+        Edge edge = (Edge)graphElement.get(propertyGraphElement);
         return new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
     }
 
     @Override
     public Object vertex(PropertyGraphElement propertyGraphElement) {
-        Vertex vertex = (Vertex)graphElement.getType(propertyGraphElement);
+        Vertex vertex = (Vertex)graphElement.get(propertyGraphElement);
         return vertex.getVertexId();
     }
 
