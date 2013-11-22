@@ -7,7 +7,6 @@ Provides the 'global_config' singleton
 from pyjavaprops import Properties
 from string import Template
 import os
-import importlib
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -54,7 +53,9 @@ def dynamic_import(attr_path):
     module_path, attr_name = attr_path.rsplit(".", 1)
 
     try:
-        module = importlib.import_module(module_path)
+        # import importlib
+        # module = importlib.import_module(module_path) --requires 2.7
+        module = __import__(module_path, fromlist=[attr_name])
     except ImportError:
         raise ValueError("Could not import module '{0}'".format(module_path))
     try:
@@ -69,6 +70,8 @@ class Config(object):
 
     def __init__(self, srcfile=None):
         self.srcfile = srcfile
+        self.default_props = {}
+        self.props = {}
         if srcfile is not None:
             self.load(srcfile)
 
@@ -99,12 +102,12 @@ class Config(object):
         if srcfile is None:
             raise Exception('Configuration source file not specified')
 
-        self.default_props = Properties()
         lines = []
         #with open(srcfile, 'r') as src: Pig uses jython 2.5, so can't use with
         src = open(srcfile, 'r')
         try:
             while 1:
+                # not the most efficient algo, but need to strip comments first
                 line = src.readline()
                 if not line:
                     break
@@ -117,7 +120,10 @@ class Config(object):
         env_keys = get_keys_from_template(template)
         env_vars = get_env_vars(env_keys)
         lines = template.substitute(env_vars).split(os.linesep)
-        self.default_props.load_lines(lines)
+        default_props = Properties()
+        default_props.load_lines(lines)
+        # delay assignment to self until now, after error possibilities
+        self.default_props = default_props
         self.srcfile = srcfile
         self.reset()
 

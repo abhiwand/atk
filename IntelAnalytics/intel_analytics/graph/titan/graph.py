@@ -4,7 +4,7 @@ Titan-specific graph implementation
 
 __all__ = []
 
-from intel_analytics.graph.graphbldr import \
+from intel_analytics.graph.biggraph import \
     PropertyGraphBuilder, BipartiteGraphBuilder,\
     GraphBuilderEdge, GraphBuilderFactory, GraphTypes
 
@@ -19,12 +19,13 @@ from bulbs.config import Config as bulbsConfig
 
 import json
 
-#class TitanGraph(object):   # TODO: inherit BigGraph
+#class TitanGraph(object):   # TODO: inherit BigGraph later
 #    """
 #    proxy for a graph stored in Titan
 #    """
 #    def __init__(self):
 #        self.ml = TitanGiraphMachineLearning(self)
+
 
 class TitanNameRegistry(object):
     """
@@ -51,7 +52,7 @@ class TitanNameRegistry(object):
     def get_graph_name(self, titan_table_name):
         try:
             return (key for key,value in self._titan_table_names.items()
-                    if value==titan_table_name).next()
+                    if value == titan_table_name).next()
         except StopIteration:
             raise ValueError("Could not find graph name to titan table '"
                              + titan_table_name + "'")
@@ -90,7 +91,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
         self._active_titan_table_name = None
         self._name_registry = TitanNameRegistry()
 
-    def get_graphbuilder(self, graph_type, source=None):
+    def get_graph_builder(self, graph_type, source=None):
         if graph_type is GraphTypes.Bipartite:
             return HBase2TitanBipartiteGraphBuilder(source)
         elif graph_type is GraphTypes.Property:
@@ -137,11 +138,11 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
 
     @staticmethod
     def get_instance():
-        global titan_graphbuilder_factory
-        return titan_graphbuilder_factory
+        global titan_graph_builder_factory
+        return titan_graph_builder_factory
 
 # global singleton instance
-titan_graphbuilder_factory = TitanGraphBuilderFactory()
+titan_graph_builder_factory = TitanGraphBuilderFactory()
 
 
 class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
@@ -155,14 +156,14 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
         s = "Source: " \
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
-            s += '\nVertices:\n' \
-              + '\n'.join(map(lambda x: vertex_str(x,True), self._vertex_list))
+            s += '\nVertices:\n' + \
+                '\n'.join(map(lambda x: vertex_str(x, True), self._vertex_list))
         return s
 
     def build(self, graph_name):
         if len(self._vertex_list) != 2:
-            raise ValueError("ERROR: bipartite graph construction requires " +
-               "2 vertex sources; " + str(len(self._vertex_list)) + " detected")
+            raise ValueError("ERROR: bipartite graph construction requires 2 " +
+                "vertex sources; " + str(len(self._vertex_list)) + " detected")
 
         # create the one edge source for bipartite
         edge_list = [GraphBuilderEdge(
@@ -187,10 +188,10 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
             s += '\nVertices:\n'\
-              + '\n'.join(map(lambda x: vertex_str(x,True), self._vertex_list))
+                + '\n'.join(map(lambda x: vertex_str(x,True), self._vertex_list))
         if len(self._edge_list) > 0:
             s += '\nEdges\n'\
-              + '\n'.join(map(lambda x: edge_str(x,True), self._edge_list))
+                + '\n'.join(map(lambda x: edge_str(x,True), self._edge_list))
         return s
 
     def build(self, graph_name):
@@ -199,6 +200,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                      self._vertex_list,
                      self._edge_list,
                      is_directed=True)
+
 
 def build(graph_name, source, vertex_list, edge_list, is_directed):
     # validate column sources
@@ -217,45 +219,48 @@ def build(graph_name, source, vertex_list, edge_list, is_directed):
         is_directed)
     call(build_command)
 
-    titan_graphbuilder_factory._name_registry.\
+    titan_graph_builder_factory._name_registry.\
         register_graph_name(graph_name, titan_table_name)
 
-    return titan_graphbuilder_factory.get_graph(graph_name)
+    return titan_graph_builder_factory.get_graph(graph_name)
 
 
 def generate_titan_table_name(prefix, source):
     source_table_name = get_table_name_from_source(source)
     return prefix + "_" + source_table_name
 
+
 def get_table_name_from_source(source):
     try:
-        return source._table.table_name # most likely a BigDataFrame
+        return source._table.table_name  # most likely a BigDataFrame
     except:
         # so what did we get?
         raise Exception("Could not get table name from source")
 
+
 def vertex_str(vertex, public=False):
     """
-    get string for vertex to use in command call to graphbuilder
+    get string for vertex to use in command call to graph_builder
     """
     column_family = global_config['hbase_column_family']
     s = (column_family + vertex.key) if public is False else vertex.key
     if len(vertex.properties) > 0:
         s += '=' + ','.join(
-            (map(lambda p : column_family + ':' + p, vertex.properties))
+            (map(lambda p: column_family + ':' + p, vertex.properties))
             if public is False else vertex.properties)
     return s
 
+
 def edge_str(edge, public=False):
     """
-    get string for edge to use in command call to graphbuilder
+    get string for edge to use in command call to graph_builder
     """
     column_family = global_config['hbase_column_family']
     s = ("{0}{1},{0}{2},{3}" if public is False else "{1},{2},{3}") \
             .format(column_family, edge.source, edge.target, edge.label)
     if len(edge.properties) > 0:
-        s += '=' +  ','.join(
-            (map(lambda p : column_family + ':' + p, edge.properties))
+        s += '=' + ','.join(
+            (map(lambda p: column_family + ':' + p, edge.properties))
             if public is False else edge.properties)
     return s
 
@@ -263,28 +268,33 @@ def edge_str(edge, public=False):
 # static templates and commands, validated against config on load
 
 from string import Template
+
+
 def get_template(config, template_str):
     template = Template(template_str)
     config.verify_template(template)
     return template
 
+
 def fill_template(template, config, args):
     return template.substitute(config).format(*args)
+
 
 def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list,
                          is_directed):
     return [global_config['hadoop'],
             'jar',
-            global_config['graphbuilder_jar'],
-            global_config['graphbuilder_class'],
+            global_config['graph_builder_jar'],
+            global_config['graph_builder_class'],
             '-conf',
             gb_conf_file,
             '-t',
             table_name,
             '-v',
-            '"' + ' '.join(map(lambda v : vertex_str(v), vertex_list)) + '"',
+            '"' + ' '.join(map(lambda v: vertex_str(v), vertex_list)) + '"',
             '-d' if is_directed is True else '-e',
-            '"' + ' '.join(map(lambda e : edge_str(e), edge_list)) + '"']
+            '"' + ' '.join(map(lambda e: edge_str(e), edge_list)) + '"']
+
 
 def get_rexster_server_uri(table_name):
     return '{0}:{1}/graphs/{2}'.format(
@@ -294,12 +304,27 @@ def get_rexster_server_uri(table_name):
 
 # validate the config can supply the necessary parameters
 missing = []
-try: get_gb_build_command('', '', [], [], False)
-except KeyError as e: missing.append(str(e))
+try:
+    get_gb_build_command('', '', [], [], False)
+except KeyError as e:
+    missing.append(str(e))
 
-try: get_rexster_server_uri('')
-except KeyError as e: missing.append(str(e))
+try:
+    get_rexster_server_uri('')
+except KeyError as e:
+    missing.append(str(e))
 
 if len(missing) > 0:
-    global_config.raise_missing_parameters_error(missing)
+    import sys
+    sys.stderr.write("""
+WARNING - Global Configuration is missing parameters for graph functionality:
+  {0}
 
+Many graph operations will fail.  Two options:
+
+  1. edit file {1} and then do >>> global_config.load()
+
+  2. enter values dynamically, ex.
+         >>> global_config['missing_key'] = 'missing_value'
+""".format(', '.join(missing), global_config.srcfile))
+    sys.stderr.flush()
