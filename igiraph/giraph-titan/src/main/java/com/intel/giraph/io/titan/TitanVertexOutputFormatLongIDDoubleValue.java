@@ -23,28 +23,24 @@
 package com.intel.giraph.io.titan;
 
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.intel.mahout.math.TwoVectorWritable;
 import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanTransaction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
-import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CURRENT_VERTEX;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EXPECTED_SIZE_OF_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_GRAPH;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.REAL_SIZE_OF_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_TX_NOT_OPEN;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPERTY_MISMATCH;
 
 /**
@@ -52,22 +48,21 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPE
  * to Titan.
  * <p/>
  * Each Vertex is with <code>Long</code> id,
- * and <code>TwoVector</code> values.
+ * and <code>Double</code> values.
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value
  * @param <E> Edge value
  */
-
-public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
-    V extends TwoVectorWritable, E extends Writable>
+public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
+    V extends DoubleWritable, E extends Writable>
     extends TextVertexOutputFormat<I, V, E> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-        .getLogger(TitanVertexOutputFormatLongIDVectorValue.class);
+        .getLogger(TitanVertexOutputFormatLongIDDoubleValue.class);
 
 
     /**
@@ -83,7 +78,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new TitanLongIDTwoVectorValueWriter();
+        return new TitanLongIDTwoDoubleValueWriter();
     }
 
     /**
@@ -91,16 +86,12 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanLongIDTwoVectorValueWriter extends TextVertexWriterToEachLine {
+    protected class TitanLongIDTwoDoubleValueWriter extends TextVertexWriterToEachLine {
 
         /**
          * TitanFactory to write back results
          */
         private TitanGraph graph = null;
-        /**
-         * TitanTransaction to write back results
-         */
-        private TitanTransaction tx = null;
         /**
          * Vertex properties to filter
          */
@@ -110,14 +101,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
         public void initialize(TaskAttemptContext context) throws IOException,
             InterruptedException {
             super.initialize(context);
-            LOG.info("===initialize===");
             this.graph = TitanGraphWriter.open(context);
-            tx = graph.newTransaction();
-            if (tx == null) {
-                LOG.error(TITAN_TX_NOT_OPEN);
-                throw new RuntimeException(TITAN_TX_NOT_OPEN);
-            }
-            LOG.info(OPENED_GRAPH);
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
         }
 
@@ -127,16 +111,11 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
 
             long vertexId = vertex.getId().get();
             com.tinkerpop.blueprints.Vertex bluePrintVertex = this.graph.getVertex(vertexId);
-            Vector vector = vertex.getValue().getPosteriorVector();
-
-            if (vector.size() == vertexPropertyKeyList.length) {
-                for (int i = 0; i < vector.size(); i++) {
-                    bluePrintVertex.setProperty(vertexPropertyKeyList[i], Double.toString(vector.getQuick(i)));
-                    //bluePrintVertex.setProperty(vertexPropertyKeyList[i], vector.getQuick(i));
-                }
+            if (1 == vertexPropertyKeyList.length) {
+                bluePrintVertex.setProperty(vertexPropertyKeyList[0], vertex.getValue().toString());
                 //  LOG.info("saved " + vertexId);
             } else {
-                LOG.error(VERTEX_PROPERTY_MISMATCH + EXPECTED_SIZE_OF_VERTEX_PROPERTY + vector.size() +
+                LOG.error(VERTEX_PROPERTY_MISMATCH + EXPECTED_SIZE_OF_VERTEX_PROPERTY + "1" +
                     REAL_SIZE_OF_VERTEX_PROPERTY + vertexPropertyKeyList.length);
                 throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
                     CURRENT_VERTEX + vertex.getId());

@@ -23,12 +23,16 @@
 package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.lda.CVB0LDAComputation;
-import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAMasterCompute;
 import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAAggregatorWriter;
+import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAMasterCompute;
 import com.intel.giraph.io.VertexData4LDAWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4LDA;
-import com.thinkaurelius.titan.core.*;
+import com.intel.mahout.math.DoubleWithVectorWritable;
+import com.thinkaurelius.titan.core.TitanEdge;
+import com.thinkaurelius.titan.core.TitanKey;
+import com.thinkaurelius.titan.core.TitanLabel;
+import com.thinkaurelius.titan.core.TitanTransaction;
+import com.thinkaurelius.titan.core.TitanVertex;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
@@ -36,6 +40,7 @@ import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -43,50 +48,42 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Iterator;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
-import org.apache.log4j.Logger;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 /**
- * Test TitanVertexOutputFormatPropertyGraph4LDA which
- * writes back Giraph algorithm results to Titan for LDA algorithms.
- * <p/>
- * Features <code>VertexData4LDAWritable</code> vertex values and
- * <code>DoubleWithVectorWritable</code> out-edge info.
- * <p/>
- * Each vertex follows this format:
- * (<vertex id>, <vertex valueVector>, <vertex property>,
- * ((<dest vertex id>, <edge value>, <edge property>), ...))
- * <p/>
- * Here is an example of left-side vertex, with vertex id 1,
- * vertex value 4,3 marked as "d", and two edges.
- * First edge has a destination vertex 2, edge value 2.1.
- * Second edge has a destination vertex 3, edge value 0.7.
- * [1,[4,3],[d],[[2,2.1,[]],[3,0.7,[]]]]
+ * This class is for testing TitanHBaseVertexInputFormatPropertyGraph4LDA
+ * and TitanVertexOutputFormatPropertyGraph4LDA
+ * The test contains the following steps:
+ * firstly load a graph to Titan/HBase,
+ * then read out the graph via  TitanHBaseVertexInputFormatPropertyGraph4LDA,
+ * then run algorithm with input data,
+ * finally write back results to Titan via TitanVertexOutputFormatPropertyGraph4LDA
  */
-public class TitanVertexOutputFormatPropertyGraph4LDATest {
+public class TitanVertexFormatPropertyGraph4LDATest {
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-            .getLogger(TitanVertexOutputFormatPropertyGraph4LDATest.class);
+        .getLogger(TitanVertexFormatPropertyGraph4LDATest.class);
 
     public TitanTestGraph graph = null;
     public TitanTransaction tx = null;
-    private GiraphConfiguration giraphConf;
-    private GraphDatabaseConfiguration titanConfig;
+    private GiraphConfiguration giraphConf = null;
+    private GraphDatabaseConfiguration titanConfig = null;
     private ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> conf;
 
     @Before
@@ -126,7 +123,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDATest {
         conf = new ImmutableClassesGiraphConfiguration(giraphConf);
 
         BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
-                GIRAPH_TITAN.get(giraphConf));
+            GIRAPH_TITAN.get(giraphConf));
         titanConfig = new GraphDatabaseConfiguration(baseConfig);
         open();
 
@@ -134,7 +131,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDATest {
 
     //@Ignore
     @Test
-    public void TitanVertexOutputFormatPropertyGraph4LDATest() throws Exception {
+    public void VertexFormatPropertyGraph4LDATest() throws Exception {
         /*
         String[] graph = new String[] {
                 "[0,[],[d],[[6,2,[]],[8,1,[]]]]",
@@ -152,17 +149,17 @@ public class TitanVertexOutputFormatPropertyGraph4LDATest {
         */
 
         double[][] expectedValues = new double[][]{
-                {0.34330578417595814, 0.03307608753257313, 0.6236181282914688},
-                {0.23566890200157475, 0.012958157794674302, 0.7513729402037509},
-                {0.8257527740877763, 0.1392818338203528, 0.034965392091870946},
-                {0.9276499121921703, 0.05457343457808104, 0.01777665322974867},
-                {0.026942351988061924, 0.7936753899650367, 0.17938225804690128},
-                {0.017954584867493708, 0.9229842037339282, 0.05906121139857818},
-                {0.17403206195690205, 0.010823843975648704, 0.4326990116083441},
-                {0.7185121532451695, 0.06932005707999805, 0.013316968112006687},
-                {0.0880306604961593, 0.010531015401042884, 0.43444275445561503},
-                {0.009445300727080892, 0.48194149633720995, 0.031159478346300173},
-                {0.009979824206784269, 0.42738358794031034, 0.0883817882566642}
+            {0.34330578417595814, 0.03307608753257313, 0.6236181282914688},
+            {0.23566890200157475, 0.012958157794674302, 0.7513729402037509},
+            {0.8257527740877763, 0.1392818338203528, 0.034965392091870946},
+            {0.9276499121921703, 0.05457343457808104, 0.01777665322974867},
+            {0.026942351988061924, 0.7936753899650367, 0.17938225804690128},
+            {0.017954584867493708, 0.9229842037339282, 0.05906121139857818},
+            {0.17403206195690205, 0.010823843975648704, 0.4326990116083441},
+            {0.7185121532451695, 0.06932005707999805, 0.013316968112006687},
+            {0.0880306604961593, 0.010531015401042884, 0.43444275445561503},
+            {0.009445300727080892, 0.48194149633720995, 0.031159478346300173},
+            {0.009979824206784269, 0.42738358794031034, 0.0883817882566642}
         };
 
 
@@ -282,7 +279,7 @@ public class TitanVertexOutputFormatPropertyGraph4LDATest {
     @After
     public void done() throws IOException {
         close();
-        System.out.println("***Done with TitanVertexOutputFormatPropertyGraph4LDATest****");
+        System.out.println("***Done with VertexFormatPropertyGraph4LDATest****");
     }
 
     private void open() {
@@ -290,15 +287,17 @@ public class TitanVertexOutputFormatPropertyGraph4LDATest {
         tx = graph.newTransaction();
         if (tx == null) {
             LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
+            throw new RuntimeException(
+                "execute: Failed to create Titan transaction!");
         }
     }
 
     public void close() {
-        if (null != tx && tx.isOpen()){
+        if (null != tx && tx.isOpen()) {
             tx.rollback();
         }
 
-        if (null != graph){
+        if (null != graph) {
             graph.shutdown();
         }
     }

@@ -23,9 +23,10 @@
 package com.intel.giraph.io.titan;
 
 import com.google.common.base.Preconditions;
-import com.intel.giraph.io.VertexData4LDAWritable;
-import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
-import com.intel.mahout.math.DoubleWithVectorWritable;
+import com.intel.giraph.io.EdgeDataWritable;
+import com.intel.giraph.io.EdgeDataWritable.EdgeType;
+import com.intel.giraph.io.VertexData4CGDWritable;
+import com.intel.giraph.io.VertexDataWritable.VertexType;
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
@@ -43,6 +44,7 @@ import org.apache.mahout.math.Vector;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
@@ -51,25 +53,25 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERT
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 
 /**
- * GiraphVertexLoaderPropertyGraph4LDA loads vertex from Titan.
- * Features <code>VertexData4LDAWritable</code> vertex values and
- * <code>DoubleWithVectorWritable</code> out-edge info.
+ * Vertex Loader to read vertex from Titan.
+ * Features <code>VertexData</code> vertex values and
+ * <code>EdgeData</code> out-edge info.
  * <p/>
  * Each vertex follows this format:
  * (<vertex id>, <vertex valueVector>, <vertex property>,
  * ((<dest vertex id>, <edge value>, <edge property>), ...))
  * <p/>
  * Here is an example of left-side vertex, with vertex id 1,
- * vertex value 4,3 marked as "d", and two edges.
- * First edge has a destination vertex 2, edge value 2.1.
- * Second edge has a destination vertex 3, edge value 0.7.
- * [1,[4,3],[d],[[2,2.1,[]],[3,0.7,[]]]]
+ * vertex value 4,3 marked as "l", and two edges.
+ * First edge has a destination vertex 2, edge value 2.1, marked as "tr".
+ * Second edge has a destination vertex 3, edge value 0.7,marked as "va".
+ * [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
-public class GiraphVertexLoaderPropertyGraph4LDA {
+public class GiraphVertexLoaderPropertyGraph4CFCGD {
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderPropertyGraph4LDA.class);
+    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderPropertyGraph4CFCGD.class);
     /**
      * whether it is Titan system type
      */
@@ -81,11 +83,15 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
     /**
      * Giraph Vertex
      */
-    private Vertex<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> vertex = null;
+    private Vertex<LongWritable, VertexData4CGDWritable, EdgeDataWritable> vertex = null;
     /**
      * Property key for Vertex Type
      */
     private final String vertexTypePropertyKey;
+    /**
+     * Property key for Edge Type
+     */
+    private final String edgeTypePropertyKey;
     /**
      * HashMap of configured vertex properties
      */
@@ -101,20 +107,25 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
     /**
      * vertex value
      */
-    private VertexData4LDAWritable vertexValueVector = null;
+    private VertexData4CGDWritable vertexValueVector = null;
     /**
      * the vertex type
      */
-    private VertexType vertexType = null;
+    private VertexType vertexType = VertexType.NONE;
+    /**
+     * the edge type
+     */
+    private EdgeType edgeType = EdgeType.NONE;
+
 
     /**
-     * GiraphVertexLoaderPropertyGraph4LDA Constructor with ID
+     * GiraphVertexLoaderPropertyGraph4CFCGD Constructor with ID
      *
      * @param conf Giraph configuration
      * @param id   vertex id
      */
-    public GiraphVertexLoaderPropertyGraph4LDA(final ImmutableClassesGiraphConfiguration conf,
-                                               final long id) {
+    public GiraphVertexLoaderPropertyGraph4CFCGD(final ImmutableClassesGiraphConfiguration conf,
+                                                 final long id) {
         /**
          * Vertex properties to filter
          */
@@ -132,6 +143,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
         edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
         edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
         vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
+        edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
         int size = vertexPropertyKeyList.length;
         for (int i = 0; i < size; i++) {
             vertexPropertyKeyValues.put(vertexPropertyKeyList[i], i);
@@ -145,11 +157,12 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
             edgeLabelValues.put(edgeLabelList[i], i);
         }
 
+
         // set up vertex Value
         vertex = conf.createVertex();
         double[] data = new double[size];
         Vector vector = new DenseVector(data);
-        vertexValueVector = new VertexData4LDAWritable(vertexType, vector.clone());
+        vertexValueVector = new VertexData4CGDWritable(vertexType, vector.clone(), vector.clone(), vector.clone());
         vertex.initialize(new LongWritable(id), vertexValueVector);
         vertexId = id;
     }
@@ -298,22 +311,23 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                     final double vertexValue = Double.parseDouble(vertexValueObject.toString());
                     Vector vector = vertexValueVector.getVector();
                     vector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
-                    vertex.setValue(new VertexData4LDAWritable(vertexType, vector));
+                    vertex.setValue(new VertexData4CGDWritable(vertexType, vector, vector.clone(), vector.clone()));
                 } else if (propertyName.equals(vertexTypePropertyKey)) {
                     final Object vertexTypeObject = this.value;
                     Vector priorVector = vertexValueVector.getVector();
 
                     String vertexTypeString = vertexTypeObject.toString();
-                    if (vertexTypeString.equals("d")) {
-                        vertexType = VertexType.DOC;
-                    } else if (vertexTypeString.equals("w")) {
-                        vertexType = VertexType.WORD;
+                    if (vertexTypeString.equals("l")) {
+                        vertexType = VertexType.LEFT;
+                    } else if (vertexTypeString.equals("r")) {
+                        vertexType = VertexType.RIGHT;
                     } else {
                         LOG.error("Vertex type string: %s isn't supported." + vertexTypeString);
                         throw new IllegalArgumentException(String.format(
                             "Vertex type string: %s isn't supported.", vertexTypeString));
                     }
-                    vertex.setValue(new VertexData4LDAWritable(vertexType, priorVector));
+                    vertex.setValue(new VertexData4CGDWritable(vertexType, priorVector,
+                        priorVector.clone(), priorVector.clone()));
                 }
             } else {
                 Preconditions.checkArgument(this.type.isEdgeLabel());
@@ -328,12 +342,25 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                                 if (edgePropertyKeyValues.containsKey(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
                                     edgeValue = Double.parseDouble(edgeValueObject.toString());
+                                } else if (edgeTypePropertyKey.equals(entry.getKey())) {
+                                    final Object edgeTypeObject = entry.getValue();
+                                    edgeTypeString = edgeTypeObject.toString();
+                                    if (edgeTypeString.equals("tr")) {
+                                        edgeType = EdgeType.TRAIN;
+                                    } else if (edgeTypeString.equals("va")) {
+                                        edgeType = EdgeType.VALIDATE;
+                                    } else if (edgeTypeString.equals("te")) {
+                                        edgeType = EdgeType.TEST;
+                                    } else {
+                                        LOG.error("Edge type string: %s isn't supported." + edgeTypeString);
+                                        throw new IllegalArgumentException(String.format(
+                                            "Edge type string: %s isn't supported.", edgeTypeString));
+                                    }
                                 }
                             }
-                            Edge<LongWritable, DoubleWithVectorWritable> edge = EdgeFactory.create(
-                                new LongWritable(this.otherVertexID), new DoubleWithVectorWritable(
-                                    edgeValue, new DenseVector()));
-
+                            Edge<LongWritable, EdgeDataWritable> edge = EdgeFactory.create(
+                                new LongWritable(this.otherVertexID), new EdgeDataWritable(
+                                    edgeType, edgeValue));
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();

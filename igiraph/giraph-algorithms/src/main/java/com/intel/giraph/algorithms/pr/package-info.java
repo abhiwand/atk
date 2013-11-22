@@ -20,8 +20,4 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-/**
- * Package of configuration constants for data transmission between Titan and Giraph.
- */
-package com.intel.giraph.io.titan.conf;
-
+package com.intel.giraph.algorithms.pr;

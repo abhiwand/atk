@@ -25,13 +25,12 @@ package com.intel.giraph.io.titan;
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanTransaction;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 
@@ -39,6 +38,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 
 /**
@@ -53,13 +53,13 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTE
  * @param <E> Edge value
  */
 public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
-        V extends DistanceMapWritable, E extends NullWritable>
-        extends TextVertexOutputFormat<I, V, E> {
+    V extends DistanceMapWritable, E extends NullWritable>
+    extends TextVertexOutputFormat<I, V, E> {
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-            .getLogger(TitanVertexOutputFormatLongIDDistanceMap.class);
+        .getLogger(TitanVertexOutputFormatLongIDDistanceMap.class);
 
 
     /**
@@ -90,34 +90,16 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
          */
         private TitanGraph graph = null;
         /**
-         * TitanTransaction to write back results
-         */
-        private TitanTransaction tx = null;
-        /**
          * Vertex properties to filter
          */
         private String[] vertexPropertyKeyList = null;
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
-                InterruptedException {
+            InterruptedException {
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
-            tx = graph.newTransaction();
-            if (tx == null) {
-                LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
-            }
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
-            for (int i = 0; i < vertexPropertyKeyList.length; i++) {
-                if (!tx.containsType(vertexPropertyKeyList[i])) {
-                    LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
-                    this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
-                }
-            }
-            if (tx.isOpen()) {
-                tx.commit();
-            }
-
         }
 
         @Override
@@ -149,7 +131,7 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
         public void close(TaskAttemptContext context) throws IOException, InterruptedException {
             this.graph.commit();
             this.graph.shutdown();
-            LOG.info("closed graph.");
+            LOG.info(CLOSED_GRAPH);
             super.close(context);
         }
     }

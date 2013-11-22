@@ -24,13 +24,14 @@ package com.intel.giraph.io.titan;
 
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_GRAPH_NOT_OPEN;
 
 /**
  * The titan graph writer which connects Giraph to Titan
@@ -41,7 +42,7 @@ public class TitanGraphWriter {
      * LOG class
      */
     private static final Logger LOG = Logger
-            .getLogger(TitanGraphWriter.class);
+        .getLogger(TitanGraphWriter.class);
 
     /**
      * Do not instantiate
@@ -57,18 +58,39 @@ public class TitanGraphWriter {
         TitanGraph graph = null;
 
         org.apache.commons.configuration.Configuration configuration =
-                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                        GIRAPH_TITAN.get(context.getConfiguration()));
+            GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                GIRAPH_TITAN.get(context.getConfiguration()));
 
         graph = TitanFactory.open(configuration);
 
         if (null != graph) {
             return graph;
         } else {
-            LOG.fatal("IGIRAPH ERROR: Unable to open titan graph");
-            System.exit(-1);
-            return null;
+            LOG.fatal(TITAN_GRAPH_NOT_OPEN);
+            throw new RuntimeException(TITAN_GRAPH_NOT_OPEN);
         }
+    }
 
+    /**
+     * @param config Immutable Giraph Configuration
+     * @return TitanGraph Titan graph to which Giraph write results
+     */
+    public static TitanGraph open(ImmutableClassesGiraphConfiguration config) throws IOException {
+        TitanGraph graph = null;
+
+        org.apache.commons.configuration.Configuration configuration =
+            GiraphToTitanGraphFactory.generateTitanConfiguration(config,
+                GIRAPH_TITAN.get(config));
+
+        graph = TitanFactory.open(configuration);
+
+        if (null != graph) {
+            return graph;
+        } else {
+            LOG.fatal(TITAN_GRAPH_NOT_OPEN);
+            throw new RuntimeException(TITAN_GRAPH_NOT_OPEN);
+        }
     }
 }
+
+
