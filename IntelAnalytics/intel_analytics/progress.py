@@ -1,7 +1,5 @@
 import uuid
-import time
 from IPython.display import HTML, Javascript, display
-from threading import Thread
 
 
 class Progress:
