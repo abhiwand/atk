@@ -40,11 +40,6 @@ mkdir -p $RPM_BUILD_ROOT/etc/IntelAnalytics
 
 cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 
-#cp $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/bin/tribeca-gremlin $RPM_BUILD_ROOT/usr/bin/tribeca-gremlin 
-#echo "(cd /usr/lib/IntelAnalytics && bin/tribeca-gremlin)" > %{buildroot}/usr/bin/tribeca-gremlin
-
-#chmod 755 %{buildroot}/usr/bin/tribeca-gremlin
-
 ln -sf %{_sysconfdir}/IntelAnalytics %{buildroot}/usr/lib/IntelAnalytics/conf
 ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-env.sh %{buildroot}/etc/IntelAnalytics/hbase-env.sh
 ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/etc/IntelAnalytics/hbase-site.xml
@@ -58,7 +53,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 
-#%{_bindir}/tribeca-gremlin
 %{_exec_prefix}/lib/IntelAnalytics
 %{_sysconfdir}/IntelAnalytics
 
