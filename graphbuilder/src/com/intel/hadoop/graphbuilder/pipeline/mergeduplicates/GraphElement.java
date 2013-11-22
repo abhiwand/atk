@@ -1,8 +1,6 @@
 package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 
 public class GraphElement {
     private GraphElementId graphElementId;
@@ -12,7 +10,7 @@ public class GraphElement {
         graphElementId = new GraphElementId();
     }
 
-    public <T> T getCallback(PropertyGraphElement propertyGraphElement, GraphElementTypeCallback graphElementTypeSwitchCallback){
+    public <T> T typeCallback(PropertyGraphElement propertyGraphElement, GraphElementTypeCallback graphElementTypeSwitchCallback){
         if(isEdge(propertyGraphElement)){
             return graphElementTypeSwitchCallback.edge(propertyGraphElement);
         }else if(isVertex(propertyGraphElement)){
@@ -22,11 +20,11 @@ public class GraphElement {
     }
 
     public Object getId(PropertyGraphElement propertyGraphElement){
-        return this.getCallback(propertyGraphElement, this.graphElementId);
+        return this.typeCallback(propertyGraphElement, this.graphElementId);
     }
 
     public Object get(PropertyGraphElement propertyGraphElement){
-        return this.getCallback(propertyGraphElement, this.graphElementObject);
+        return this.typeCallback(propertyGraphElement, this.graphElementObject);
     }
 
     public boolean isEdge(PropertyGraphElement propertyGraphElement){

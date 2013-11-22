@@ -5,30 +5,11 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import java.util.Iterator;
 
 public class GraphElements {
-    /*private final List<MyEventListener> listeners;
-
-    *//*public GraphElements() {
-        listeners = new CopyOnWriteArrayList<MyEventListener>();
-    }*/
-
     public Object getGraphElementId(PropertyGraphElement propertyGraphElement){
         GraphElementTypeCallback id = new GraphElementId();
         return graphElementTypeCallback(propertyGraphElement, id);
 
     }
-
-    /*public void addMyEventListener(MyEventListener listener) {
-        listeners.add(listener);
-    }
-    public void removeMyEventListener(MyEventListener listener) {
-        listeners.remove(listener);
-    }
-    void fireEvent() {
-        MyEvent event = new MyEvent(this);
-        for (MyEventListener listener : listeners) {
-            listener.handleEvent(event);
-        }
-    }*/
 
     public boolean isEdge(PropertyGraphElement propertyGraphElement){
         return isGraphElementType(propertyGraphElement, PropertyGraphElement.GraphElementType.EDGE);
