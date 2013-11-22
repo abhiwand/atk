@@ -57,13 +57,6 @@ ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}/etc/IntelAnalytic
 
 rm -rf $RPM_BUILD_ROOT
 
-%post
-$RPM_BUILD_ROOT/usr/lib/IntelAnalytics/install_pyenv.sh #install virtual python
-ln -sf /usr/lib/IntelAnalytics/virtpy/bin/activate %{_bindir}/virtpy
-
-%postun
-rm -rf /usr/lib/IntelAnalytics/virtpy #remove vitual python 
-rm %{_bindir}/virtpy
 
 %files
 

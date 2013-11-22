@@ -28,6 +28,7 @@ fi
 
 project_name=IntelAnalytics
 source_folder=$project_name-$TRIBECA_VERSION
+devel_folder=$project_name-devel-$TRIBECA_VERSION
 src=../../../$project_name
 rm -rf $source_folder
 
@@ -35,5 +36,16 @@ mkdir $source_folder
 cp -R $src/target/*.jar $source_folder
 cp -R $src/bin $source_folder
 cp -R $src/dist/* $source_folder
-tar czvf $source_folder.tar.gz $source_folder
+cp -R $src/intel_analytics $source_folder
+pushd $source_folder 
+tar czvf intel_analytics.tar.gz intel_analytics
+rm -rf intel_analytics
 popd
+mkdir $devel_folder
+cp $source_folder/install_pyenv.sh $devel_folder/
+cp $source_folder/intel_analytics.tar.gz $devel_folder/
+
+tar czvf $source_folder.tar.gz $source_folder
+tar czvf $devel_folder.tar.gz $devel_folder
+popd
+

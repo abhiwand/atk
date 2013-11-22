@@ -44,10 +44,10 @@ if ! hash $py27 2>/dev/null; then
     pushd $py
 
     echo $hdr Install development tools
-    yum -y groupinstall "Development tools"
+#    yum -y groupinstall "Development tools"
 
     echo $hdr Install lib dependecies
-    yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel
+#    yum -y install zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel
 
     echo $hdr Configure and make altinstall
     ./configure --prefix=$python_dst
@@ -118,7 +118,7 @@ ins numpy
 # scipy has extra dependencies
 if check scipy; then
    echo $hdr Install scipy
-   yum -y install blas-devel lapack-devel
+#   yum -y install blas-devel lapack-devel
    pip install scipy
    test scipy
 fi
@@ -132,8 +132,8 @@ ins mrjob
 # matplotlib has extra dependencies
 if check matplotlib; then
   echo $hdr Install matplotlib
-  yum -y install yum-utils #required for yum-builddep
-  yum-builddep -y python-matplotlib
+#  yum -y install yum-utils #required for yum-builddep
+ # yum-builddep -y python-matplotlib
   ins matplotlib
   test matplotlib
 fi
@@ -146,7 +146,7 @@ ins happybase
 # zmq has extra dependencies
 if check zmq; then
    echo $hdr Install zmq
-   yum -y install libffi-devel
+#   yum -y install libffi-devel
    pip install cffi
    pip install pyzmq
    test zmq
