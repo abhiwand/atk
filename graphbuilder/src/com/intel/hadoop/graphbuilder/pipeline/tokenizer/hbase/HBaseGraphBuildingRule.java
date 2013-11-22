@@ -99,16 +99,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                     "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
-        srcTableName = cmd.getOptionValue(BaseCLI.LongOpt.table.get());
+        srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
         vertexRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.LongOpt.vertices.get()));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
 
         edgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.LongOpt.edges.get()));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
 
         directedEdgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.LongOpt.directedEdges.get()));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
 
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();
