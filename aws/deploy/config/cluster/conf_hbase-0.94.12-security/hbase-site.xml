@@ -47,6 +47,10 @@
     </description>
   </property>
   <property>
+    <name>hbase.snapshot.enabled</name>
+    <value>true</value>
+  </property>
+  <property>
     <name>dfs.client.read.shortcircuit</name>
     <value>true</value>
   </property>
