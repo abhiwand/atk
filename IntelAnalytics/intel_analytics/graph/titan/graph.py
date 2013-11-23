@@ -210,10 +210,11 @@ def build(graph_name, source, vertex_list, edge_list, is_directed):
 
     # build
     titan_table_name = generate_titan_table_name(graph_name, source)
+    hbase_table_name = get_table_name_from_source(source)
     gb_conf_file = titan_config.write_gb_cfg(titan_table_name)
     build_command = get_gb_build_command(
         gb_conf_file,
-        titan_table_name,
+        hbase_table_name,
         vertex_list,
         edge_list,
         is_directed)
@@ -282,7 +283,7 @@ def fill_template(template, config, args):
 
 def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list,
                          is_directed):
-    return [global_config['hadoop'],
+    return ['hadoop',
             'jar',
             global_config['graph_builder_jar'],
             global_config['graph_builder_class'],
