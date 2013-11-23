@@ -55,7 +55,7 @@ class HBaseTableException(Exception):
 
 class HBaseTable(object):
     """
-    Table Implementation for HBase
+    Table Implementation for HBase.
     """
     def __init__(self, table_name):
         """
@@ -63,9 +63,9 @@ class HBaseTable(object):
         Parameters
         ----------
         connection : happybase.Connection
-            connection to HBase
+            The connection to HBase.
         table_name : String
-            name of table in Hbase
+            The name of table in Hbase.
         """
         self.table_name = table_name
         # TODO : Hard-coded column family name must be removed later and
@@ -217,7 +217,7 @@ class HBaseTable(object):
 
     def get_schema(self):
         """
-        Returns the list of column names/types
+        Returns the list of column names and types.
         """
         columns=[]
         etl_schema = ETLSchema()
