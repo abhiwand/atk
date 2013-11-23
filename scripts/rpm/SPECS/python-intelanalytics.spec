@@ -6,7 +6,7 @@ License: Apache
 
 Group: Development
 
-Name: IntelAnalytics-devel
+Name: python-intelanalytics
 
 Requires: java >= 1.7, blas,  bzip2-devel,  dog2unix,  freetype-devel,  gcc,  gtk2-devel,  libffi-devel,  libpng-devel,  ncurses-devel,  openssl-devel,  pygtk2-devel,  python-devel,  readline-devel,  sqlite-devel,  tk-devel,  tkinter, atlas, atlas-devel, blas-devel, freetype, freetype-devel, gcc-c++, lapack, lapack-devel, libpng-devel, python-devel, python-setuptools, yum-utils, zlib-devel
 
@@ -14,11 +14,11 @@ Prefix: /usr
 
 Release: 1
 
-Source: IntelAnalytics-devel-%{version}.tar.gz
+Source: python-intelanalytics-%{version}.tar.gz
 
 URL: <TODO>
 
-Buildroot: /tmp/IntelAnalyticsrpm
+Buildroot: /tmp/intelanalyticsrpm
 
 %description
 
@@ -26,7 +26,7 @@ The Intel Graph System Python libraries
 
 %prep
 
-%setup
+%setup -q
 
 %build
 
@@ -34,9 +34,11 @@ The Intel Graph System Python libraries
 
 rm -fr $RPM_BUILD_ROOT
 
-mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
+mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/ipython
 
 cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
+
+ln -sf %{_sysconfdir}/IntelAnalytics %{buildroot}/usr/lib/IntelAnalytics/conf
 
 %clean
 
@@ -46,6 +48,8 @@ ln -sf /usr/lib/IntelAnalytics/virtpy/bin/activate %{_bindir}/virtpy
 
 #untar source to python
 tar xvf /usr/lib/IntelAnalytics/intel_analytics.tar.gz -C /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/
+
+ln -sf /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/intel_analytics/intel_analytics.properties
 
 %postun
 rm -rf /usr/lib/IntelAnalytics/virtpy #remove vitual python 

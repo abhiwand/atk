@@ -18,7 +18,7 @@ Source: intelanalytics-%{version}.tar.gz
 
 URL: <TODO>
 
-Buildroot: /tmp/intelanalyticsrpm
+Buildroot: /tmp/intelanaylticsrpm
 
 %description
 
