@@ -192,7 +192,7 @@ class HBaseTable(object):
 
         # need to delete/create output table so that we can write the transformed features
         with ETLHBaseClient() as hbase_client:
-            hbase_client.drop_create_table(output_table ,
+            hbase_client.drop_create_table(output_table,
                                            [config['hbase_column_family']])
 
         logger.debug(args)
@@ -202,8 +202,18 @@ class HBaseTable(object):
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
 
+        #record old table name for cleaning
+        old_table_name = self.table_name
         self.table_name = output_table # update the table_name
         etl_schema.save_schema(self.table_name) # save the schema for the new table
+        #clean the old table
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.delete_table(old_table_name)
+            #clean the schema entry used by the old table
+            schema_table = config['hbase_schema_table']
+            row = hbase_client.get(schema_table, old_table_name)
+            if len(row) > 0:
+                hbase_client.delete(schema_table, old_table_name)
 
     def dropna(self, how='any', column_name=None):
         output_table = self.table_name + "_dropna"
@@ -268,6 +278,7 @@ class HBaseFrameBuilder(FrameBuilder):
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(df_name,
                                            [config['hbase_column_family']])
+        print ' '.join(map(str, args))
         return_code = subprocess.call(args)
         if return_code:
             raise Exception('Could not import CSV file')
