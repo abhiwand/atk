@@ -1,7 +1,7 @@
 
 package com.intel.hadoop.graphbuilder.util;
 
-import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
@@ -137,7 +137,7 @@ public class HBaseUtils {
                                   Reducer.Context context) throws IOException, InterruptedException {
         Put put = new Put(key);
         put.add(columnFamily, columnQualifier, value);
-        context.write(new Text(GBHTableConfig.config.getProperty("NULLKEY")), put);
+        context.write(new Text(GBHTableConfiguration.config.getProperty("NULLKEY")), put);
         return value;
     }
 
@@ -289,7 +289,7 @@ public class HBaseUtils {
         this.hTableName = tableName;
         Scan scan       = new Scan();
 
-        scan.setCaching(GBHTableConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
+        scan.setCaching(GBHTableConfiguration.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
 
         return scan;

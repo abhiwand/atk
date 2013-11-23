@@ -10,7 +10,7 @@ def get_dirs(path):
   return dirs
 
 
-setup(name='python-intel_analytics',
+setup(name='intel_analytics',
       description = 'Intel Analytics Platform',
       version='0.5',
       packages=get_dirs('intel_analytics'),

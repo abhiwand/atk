@@ -35,8 +35,17 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
 import org.apache.mahout.math.Vector;
+
 import java.io.IOException;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CURRENT_VERTEX;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EXPECTED_SIZE_OF_VERTEX_PROPERTY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_GRAPH;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.REAL_SIZE_OF_VERTEX_PROPERTY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_TX_NOT_OPEN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPERTY_MISMATCH;
 
 /**
  * The Vertex Output Format which writes back Giraph algorithm results
@@ -51,14 +60,14 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTE
  */
 
 public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
-        V extends TwoVectorWritable, E extends Writable>
-        extends TextVertexOutputFormat<I, V, E> {
+    V extends TwoVectorWritable, E extends Writable>
+    extends TextVertexOutputFormat<I, V, E> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-            .getLogger(TitanVertexOutputFormatLongIDVectorValue.class);
+        .getLogger(TitanVertexOutputFormatLongIDVectorValue.class);
 
 
     /**
@@ -99,28 +108,17 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
-                InterruptedException {
+            InterruptedException {
             super.initialize(context);
+            LOG.info("===initialize===");
             this.graph = TitanGraphWriter.open(context);
             tx = graph.newTransaction();
-            LOG.info("opened Titan Graph");
             if (tx == null) {
-                LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
+                LOG.error(TITAN_TX_NOT_OPEN);
+                throw new RuntimeException(TITAN_TX_NOT_OPEN);
             }
+            LOG.info(OPENED_GRAPH);
             vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
-            for (int i = 0; i < vertexPropertyKeyList.length; i++) {
-                if (!tx.containsType(vertexPropertyKeyList[i])) {
-                    LOG.info("create vertex.property in Titan " + vertexPropertyKeyList[i]);
-                    // for titan 0.3.2
-                    //     this.graph.makeType().name().unique(Direction.OUT).dataType(String.class)
-                    //             .makePropertyKey();
-                    //for titan 0.4.0
-                    this.graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
-                }
-            }
-            if (tx.isOpen()) {
-                tx.commit();
-            }
         }
 
 
@@ -136,13 +134,12 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
                     bluePrintVertex.setProperty(vertexPropertyKeyList[i], Double.toString(vector.getQuick(i)));
                     //bluePrintVertex.setProperty(vertexPropertyKeyList[i], vector.getQuick(i));
                 }
-              //  LOG.info("saved " + vertexId);
+                //  LOG.info("saved " + vertexId);
             } else {
-                LOG.error("The number of output vertex property does not match! " +
-                        "The size of vertex value vector is : " + vector.size() +
-                        ", The size of output vertex property is: " + vertexPropertyKeyList.length);
-                throw new IllegalArgumentException("The number of output vertex property does not match. " +
-                        "Current Vertex is: " + vertex.getId());
+                LOG.error(VERTEX_PROPERTY_MISMATCH + EXPECTED_SIZE_OF_VERTEX_PROPERTY + vector.size() +
+                    REAL_SIZE_OF_VERTEX_PROPERTY + vertexPropertyKeyList.length);
+                throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
+                    CURRENT_VERTEX + vertex.getId());
             }
 
             return null;
@@ -150,6 +147,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
 
         /**
          * close
+         *
          * @param context Task attempt context
          * @throws IOException
          */
@@ -157,7 +155,7 @@ public class TitanVertexOutputFormatLongIDVectorValue<I extends LongWritable,
         public void close(TaskAttemptContext context) throws IOException, InterruptedException {
             this.graph.commit();
             this.graph.shutdown();
-            LOG.info("closed graph.");
+            LOG.info(CLOSED_GRAPH);
             super.close(context);
         }
     }

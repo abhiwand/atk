@@ -51,8 +51,8 @@ function usage()
     [--workdir <str> ]      // work home, e.g. \`pwd\`/../..
     [--credentials <str> ]  // directory with credentials
     [--use-placement-group] // use placement group for nodes within a cluster
-    [--no-public-ip-for-slave ] // do not allow slave nodes to have public ip
-    [--no-dryrun]           // do not launch instance
+    [--use-public-ip-for-slave ] // allow slave nodes to have public ip
+    [--no-dryrun]           // really launch instance
     [--help ]               // print this message
 "
     exit 1
@@ -95,7 +95,7 @@ function IA_create_dump()
 _RET=""
 dryrun=yes
 cpgroup="no"
-cpublic="yes"
+cpublic="no"
 
 # Check inputs
 while [ $# -gt 0 ]
@@ -137,7 +137,7 @@ do
             cpgroup="yes"
             shift 1
             ;;
-        --no-public-ip-for-slave)
+        --use-public-ip-for-slave)
             cpublic="yes"
             shift 1
             ;;
@@ -299,11 +299,10 @@ if [ $? -ne 0 ] || [ -z "${_RET}" ]; then
 fi
 
 # - Launch 4 instances into the placement group
-cnnames=(
-"`IA_format_node_name ${cname} 0`" 
-"`IA_format_node_name ${cname} 1`" 
-"`IA_format_node_name ${cname} 2`" 
-"`IA_format_node_name ${cname} 3`")
+for (( i = 0; i < ${csize}; i++ ))
+do
+    cnnames[$i]=`IA_format_node_name ${cname} $i`
+done
 
 # create instances
 for (( i = 0; i < ${csize}; i++ ))
@@ -365,7 +364,7 @@ fi
 # generate hosts file
 if [ "${dryrun}" == "no" ]; then
     # polling wellness of the instances, retry up to 5 times
-    for (( i = 0; i < 5; i++ ))
+    for (( i = 0; i < 10; i++ ))
     do
         # check instance status, max 5 waits, every wait is 10s
         IA_check_instance_status ${cniids[@]}

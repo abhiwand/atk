@@ -22,31 +22,31 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
-
-import org.apache.giraph.edge.Edge;
-import org.apache.giraph.edge.EdgeFactory;
-import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.DenseVector;
-
-import com.intel.mahout.math.TwoVectorWritable;
+import com.google.common.base.Preconditions;
 import com.intel.mahout.math.DoubleWithTwoVectorWritable;
+import com.intel.mahout.math.TwoVectorWritable;
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
-import com.google.common.base.Preconditions;
-
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.edge.Edge;
+import org.apache.giraph.edge.EdgeFactory;
+import org.apache.giraph.graph.Vertex;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.Vector;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
 
 /**
  * Load vertex from Titan
@@ -242,7 +242,8 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
         @Override
         public void setOtherVertexID(final long vertexId) {
             if (vertexId < 0) {
-                LOG.error("negative vertexId");
+                LOG.error(INVALID_VERTEX_ID + vertexId);
+                throw new RuntimeException(INVALID_VERTEX_ID + vertexId);
             }
             this.otherVertexID = vertexId;
         }
@@ -295,21 +296,22 @@ public class GiraphVertexLoaderLongTwoVectorDoubleTwoVector {
                         if (this.direction.equals(Direction.OUT)) {
                             for (final Map.Entry<String, Object> entry : this.properties.entrySet()) {
                                 if (entry.getValue() != null &&
-                                        edgePropertyKeyValues.containsKey(entry.getKey())) {
+                                    edgePropertyKeyValues.containsKey(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
                                     edgeValue = Double.parseDouble(edgeValueObject.toString());
                                 }
                             }
                             Edge<LongWritable, DoubleWithTwoVectorWritable> edge = EdgeFactory.create(
-                                    new LongWritable(this.otherVertexID), new DoubleWithTwoVectorWritable(
-                                        edgeValue, vector.clone(), vector.clone()));
+                                new LongWritable(this.otherVertexID), new DoubleWithTwoVectorWritable(
+                                    edgeValue, vector.clone(), vector.clone()));
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();
                         }
                     }
                 } else {
-                    LOG.error("negative Edge ID.");
+                    LOG.error(INVALID_EDGE_ID + this.relationID);
+                    throw new RuntimeException(INVALID_EDGE_ID + this.relationID);
                 }
 
             }

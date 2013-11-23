@@ -17,7 +17,7 @@
 
 package com.intel.hadoop.graphbuilder.util;
 
-import com.intel.hadoop.graphbuilder.graphconstruction.outputconfiguration.TitanConfig;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanConfig;
 import com.thinkaurelius.titan.core.TitanFactory;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.blueprints.Graph;

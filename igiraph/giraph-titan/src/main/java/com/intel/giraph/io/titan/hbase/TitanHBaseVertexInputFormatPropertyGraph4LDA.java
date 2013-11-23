@@ -22,24 +22,27 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.intel.giraph.io.VertexData4LDAWritable;
+import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
+import com.intel.mahout.math.DoubleWithVectorWritable;
+import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import org.apache.mahout.math.Vector;
-import com.intel.giraph.io.VertexData4LDAWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
-import com.thinkaurelius.titan.diskstorage.Backend;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.Vector;
+
 import java.io.IOException;
+
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_ERROR;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LDA;
 
 /**
@@ -58,14 +61,14 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRA
  * [1,[4,3],[d],[[2,2.1,[]],[3,0.7,[]]]]
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
-        TitanHBaseVertexInputFormat<LongWritable,
-                VertexData4LDAWritable, DoubleWithVectorWritable> {
+    TitanHBaseVertexInputFormat<LongWritable,
+        VertexData4LDAWritable, DoubleWithVectorWritable> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-            .getLogger(TitanHBaseVertexInputFormatPropertyGraph4LDA.class);
+        .getLogger(TitanHBaseVertexInputFormatPropertyGraph4LDA.class);
 
     /**
      * checkInputSpecs
@@ -83,7 +86,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
      */
     @Override
     public void setConf(
-            ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> conf) {
+        ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> conf) {
         GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
@@ -98,7 +101,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
      * @throws RuntimeException
      */
     public VertexReader<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> createVertexReader(
-            InputSplit split, TaskAttemptContext context) throws IOException {
+        InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
 
@@ -108,7 +111,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
      * Uses the RecordReader to get HBase data
      */
     public static class TitanHBaseVertexReader extends
-            HBaseVertexReader<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> {
+        HBaseVertexReader<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> {
         /**
          * reader to parse Titan graph
          */
@@ -145,11 +148,11 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
          */
         @Override
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-                InterruptedException {
+            InterruptedException {
             super.initialize(inputSplit, context);
             this.graphReader = new TitanHBaseGraphReader(
-                    GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                            GIRAPH_TITAN.get(context.getConfiguration())));
+                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                    GIRAPH_TITAN.get(context.getConfiguration())));
         }
 
         /**
@@ -166,17 +169,17 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
 
             if (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> temp = graphReader
-                        .readGiraphVertex(PROPERTY_GRAPH_4_LDA, getConf(), getRecordReader()
-                                .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                .get(edgeStoreFamily));
+                    .readGiraphVertex(PROPERTY_GRAPH_4_LDA, getConf(), getRecordReader()
+                        .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
+                        .get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
                 } else if (getRecordReader().nextKeyValue()) {
                     final Vertex<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> temp1 = graphReader
-                            .readGiraphVertex(PROPERTY_GRAPH_4_LDA, getConf(), getRecordReader()
-                                    .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                    .get(edgeStoreFamily));
+                        .readGiraphVertex(PROPERTY_GRAPH_4_LDA, getConf(), getRecordReader()
+                            .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
+                            .get(edgeStoreFamily));
                     if (null != temp1) {
                         vertex = temp1;
                         return true;
@@ -213,7 +216,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
                 if (cardinality == -1) {
                     cardinality = vector.size();
                 } else {
-                    throw new IllegalArgumentException("Error in input data:" + "different cardinality!");
+                    throw new IllegalArgumentException(INPUT_DATA_ERROR);
                 }
             }
             return vertexValue;

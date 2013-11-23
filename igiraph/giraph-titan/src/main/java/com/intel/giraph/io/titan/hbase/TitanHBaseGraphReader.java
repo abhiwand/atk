@@ -24,14 +24,13 @@ package com.intel.giraph.io.titan.hbase;
 
 import com.google.common.base.Preconditions;
 import com.intel.giraph.io.titan.TitanGraphReader;
-import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.log4j.Logger;
-
-import org.apache.commons.configuration.Configuration;
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry;
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.StaticBufferEntry;
 import com.thinkaurelius.titan.diskstorage.util.StaticByteBuffer;
+import org.apache.commons.configuration.Configuration;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.graph.Vertex;
+import org.apache.log4j.Logger;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
@@ -62,7 +61,7 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
      * <code>Double</code> vertex values, and <code>Float</code> edge
      * weights.
      *
-     * @param  type     : input format type
+     * @param type      : input format type
      * @param conf      : Giraph configuration
      * @param key       : key from HBase input data
      * @param columnMap : columnMap from HBase input data, in
@@ -73,7 +72,7 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
                                    final NavigableMap<byte[], NavigableMap<Long, byte[]>> columnMap) {
 
         return super.readGiraphVertex(type, conf, ByteBuffer.wrap(key), new HBaseMapIterable(
-                columnMap));
+            columnMap));
     }
 
     /**
@@ -146,7 +145,7 @@ public class TitanHBaseGraphReader extends TitanGraphReader {
             if (iterator.hasNext()) {
                 final Map.Entry<byte[], NavigableMap<Long, byte[]>> entry = iterator.next();
                 return new StaticBufferEntry(new StaticByteBuffer(entry.getKey()), new StaticByteBuffer(entry
-                        .getValue().lastEntry().getValue()));
+                    .getValue().lastEntry().getValue()));
             } else {
                 return null;
             }
