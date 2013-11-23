@@ -1,5 +1,5 @@
 """
-Builtin functions that can be applied with the transform method on BigDataFrames
+Builtin functions that can be applied with the transform method on BigDataFrames.
 """
 class EvalFunctions:
     """String functions

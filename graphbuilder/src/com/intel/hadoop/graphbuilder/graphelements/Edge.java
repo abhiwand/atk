@@ -44,7 +44,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     private PropertyMap properties;
 
     /**
-     * Create a placeholder edge.
+     * Creates a placeholder edge.
      */
 
     public Edge() {
@@ -54,9 +54,9 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     /**
      * Creates an edge with given source, destination and label..
      *
-     * @param src vertex ID of the edge's source vertex
-     * @param dst vertex ID of the edge's destination vertex
-     * @param label the edge label
+     * @param src The vertex ID of the edge's source vertex.
+     * @param dst The vertex ID of the edge's destination vertex.
+     * @param label The edge label.
      */
     public Edge(VidType src, VidType dst, StringType label) {
         this.src = src;
@@ -67,9 +67,9 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
 
     /**
      *  Overwrite an edge's fields with the given parameters.
-     *  @param src vertex ID of the edge's source vertex
-     *  @param dst vertex ID of the edge's destination vertex
-     *  @param properties the edge's property map
+     *  @param src The vertex ID of the edge's source vertex.
+     *  @param dst The vertex ID of the edge's destination vertex.
+     *  @param properties The edge's property map.
      */
     public void configure(VidType src, VidType dst, StringType label, PropertyMap properties) {
         this.src        = src;
@@ -80,7 +80,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
 
     /**
      * Get a property from the edge's property map.
-     * @param key lookup key for the value in the edge's property map
+     * @param key The lookup key for the value in the edge's property map.
      */
     public Object getProperty(String key) {
         return properties.getProperty(key);
@@ -89,31 +89,31 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     /**
      * Set an edge property.
      *
-     * This changes the property map of the edge
+     * This changes the property map of the edge.
      *
-     * @param key lookup key for the value in the edge's property map
-     * @param val value to be put in the property map
+     * @param key The lookup key for the value in the edge's property map.
+     * @param val The value to add to the property map.
      */
     public void setProperty(String key, Writable val) {
         properties.setProperty(key, val);
     }
 
     /**
-     * @return the edge label.
+     * @return The edge label.
      */
     public StringType getEdgeLabel() {
         return label;
     }
 
     /**
-     * @return The vertex ID of the edge's source
+     * @return The vertex ID of the edge's source.
      */
     public VidType getSrc() {
         return src;
     }
 
     /**
-     * @return The vertex ID of the edge's destination
+     * @return The vertex ID of the edge's destination.
      */
     public VidType getDst() {
         return dst;
@@ -121,30 +121,30 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
 
     /**
      * Determine if the edge is a loop - that is, if its source and destination are the same vertex.
-     * @return true iff the edge's source and destination are equal
+     * @return True, if the edge's source and destination are equal.
      */
     public boolean isSelfEdge() {
         return Objects.equals(src, dst);
     }
 
     /**
-     * @return the edge's property map
+     * @return The edge's property map.
      */
     public PropertyMap getProperties() {
         return properties;
     }
 
     /**
-     * Get the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID and its label
-     * @return  the triple of the edge's source vertex ID, destination vertex ID and its label
+     * Gets the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID, and its label.
+     * @return  The triple of the edge's source vertex ID, destination vertex ID, and its label.
      */
     public EdgeID getEdgeID() {
         return new EdgeID(this.src, this.dst, this.label);
     }
 
     /**
-     * Convert edge into  string for printing. Properties are tab separated.
-     * @return   string form of the edge
+     * Converts an edge into a string for printing. Properties are tab separated.
+     * @return   The string form of the edge.
      */
     @Override
     public final String toString() {
@@ -153,8 +153,8 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Read an edge from an input stream
-     * @param input the input stream
+     * Reads an edge from an input stream.
+     * @param input The input stream.
      * @throws IOException
      */
     @Override
@@ -166,8 +166,8 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Write an edge to an output stream
-     * @param output the output stream
+     * Writes an edge to an output stream.
+     * @param output The output stream.
      * @throws IOException
      */
     @Override

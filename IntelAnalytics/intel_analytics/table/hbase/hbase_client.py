@@ -3,7 +3,7 @@ import happybase
 
 class ETLHBaseClient:
     """
-    Usage will be like:
+    Usage will be similar to:
     with ETLHBaseClient(hbase_host) as hbase_client:
         # use hbase_client
     """
@@ -28,8 +28,9 @@ class ETLHBaseClient:
     
     def drop_create_table(self, table_name, column_family_descriptors):
         """
-        first drops the table with the given name and then creates a new table with the given name and column families
-        table_name: table name to drop & create
+        First, drops the table with the given name and then creates a new table with the given name and column families.
+        
+		+01
         column_family_descriptors: list of column descriptors
         """
         cf_descriptors = {}
@@ -45,7 +46,7 @@ class ETLHBaseClient:
         
     def get_column_names(self, table_name, column_family_descriptors):
         """
-        return the name of the columns of a table assuming that all the rows have the same number of columns
+        Returns the name of the columns of a table, assuming that all the rows have the same number of columns.
         """
         table = self.connection.table(table_name)
         for key, data in table.scan():
