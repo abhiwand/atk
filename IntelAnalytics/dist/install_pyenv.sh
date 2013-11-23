@@ -4,7 +4,11 @@
 #
 # This script checks for Python2.7 and if not found installs it
 # "alongside" the current python.  It creates a virtual env for
-# Python2.7 and installs all the Tribeca Python dependencies there
+# Python2.7 and installs all the Intel Analytics Python dependencies there
+#
+# This script must be able to install as part of an RPM post install script
+# Do not use any yum calls as this will break the RPM
+# if you have a yum dependency add it to the REQUIRES seciton of the python-intelanalytics.spec
 
 
 # set exit script on any error
@@ -156,7 +160,7 @@ ins pyjavaproperties
 # add pydoop to do hdfs, or mapred in python directly
 if check pydoop; then
    echo $hdr Install pydoop
-   yum -y install boost-devel
+#   yum -y install boost-devel
    # ZY: need HADOOP_HOME and JAVA_HOME to build pydoop
    # for 0.5 release, hadoop is at /home/hadoop/IntelAnalytics
    if [ -z "${HADOOP_HOME}" ]; then
