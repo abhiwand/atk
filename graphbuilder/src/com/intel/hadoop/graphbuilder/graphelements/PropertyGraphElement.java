@@ -28,7 +28,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Abstract union type of {@code Vertex} and {@code Edge}. Used as intermediate
+ * Abstract union type of {@code Vertex} and {@code Edge}. Used as an intermediate
  * map output value to hold either a vertex or an edge.
  *
  * @param <VidType>
@@ -74,7 +74,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     /**
-     * @return the type graphElementType of the value.
+     * @return The type graphElementType of the value.
      */
 
     public GraphElementType graphElementType() {
@@ -82,7 +82,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     /**
-     * @return the vertex value, used only when graphElementType == VERTEX.
+     * @return The vertex value, used only when the graphElementType == VERTEX.
      */
 
     public Vertex<VidType> vertex() {
@@ -90,7 +90,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     /**
-     * @return the vertex value, used only when graphElementType == EDGE.
+     * @return The vertex value, used only when the graphElementType == EDGE.
      */
 
     public Edge<VidType> edge() {
