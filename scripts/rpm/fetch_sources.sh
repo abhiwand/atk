@@ -27,14 +27,14 @@ cp -R $src/target/*.jar $source_folder
 cp -R $src/bin $source_folder
 cp -R $src/dist/* $source_folder
 
+mkdir $python_folder
 cp -R $src/intel_analytics $python_folder
 
 pushd $python_folder
 tar czvf intel_analytics.tar.gz intel_analytics
-rm -rf intel_analytics
+#rm -rf intel_analytics
 popd
 
-mkdir $devel_folder
 cp $source_folder/install_pyenv.sh $python_folder/
 
 tar czvf $source_folder.tar.gz $source_folder
