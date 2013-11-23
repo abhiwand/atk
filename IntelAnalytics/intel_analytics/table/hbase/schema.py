@@ -24,7 +24,7 @@ class ETLSchema:
     
     def load_schema(self, table_name):
         """
-        Loads schema from HBase for the given table
+        Loads schema from HBase for the given table.
         """
         schema_table = config['hbase_schema_table']
         with ETLHBaseClient() as hbase_client:
