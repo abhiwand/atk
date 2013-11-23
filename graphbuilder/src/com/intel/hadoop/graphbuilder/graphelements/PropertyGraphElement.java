@@ -22,6 +22,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementId;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementObject;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementToString;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.Writable;
@@ -47,9 +51,16 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     private Vertex           vertex;
     private Edge             edge;
 
+    private PropertyGraphElementId propertyGraphElementIdCallback;
+    private PropertyGraphElementObject propertyGraphElementObjectCallback;
+    private PropertyGraphElementToString propertyGraphElementToString;
+
     public PropertyGraphElement() {
         vertex = new Vertex<VidType>();
         edge   = new Edge<VidType>();
+        propertyGraphElementIdCallback = new PropertyGraphElementId();
+        propertyGraphElementObjectCallback = new PropertyGraphElementObject();
+        propertyGraphElementToString = new PropertyGraphElementToString();
     }
 
     public abstract VidType createVid();
@@ -151,13 +162,49 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
 
     @Override
     public String toString() {
-        switch (graphElementType) {
-            case VERTEX:
-                return vertex.toString();
-            case EDGE:
-                return edge.toString();
-            default:
-                return new String("null graph element");
+        return this.typeCallback(propertyGraphElementToString);
+    }
+
+    public Object get(){
+        return this.typeCallback(propertyGraphElementObjectCallback);
+    }
+
+    public Object getId(){
+        return this.typeCallback(propertyGraphElementIdCallback);
+    }
+
+    public  <T> T typeCallback(PropertyGraphElementType propertyGraphElementTypeCallback){
+        if(this.isEdge()){
+            return propertyGraphElementTypeCallback.edge(this);
+        }else if(this.isVertex()){
+            return propertyGraphElementTypeCallback.vertex(this);
+        }else if(this.isNull()){
+            return propertyGraphElementTypeCallback.nullElement(this);
+        }
+        return null;
+    }
+
+    public boolean isEdge(){
+        return isGraphElementType(this, PropertyGraphElement.GraphElementType.EDGE);
+    }
+
+    public boolean isVertex(){
+        return isGraphElementType(this, PropertyGraphElement.GraphElementType.VERTEX);
+    }
+
+    public boolean isNull(){
+        if(graphElementType == null){
+            return true;
+        }else{
+            return isGraphElementType(this, PropertyGraphElement.GraphElementType.NULL_ELEMENT);
+        }
+    }
+
+    private boolean isGraphElementType(PropertyGraphElement propertyGraphElement, PropertyGraphElement.GraphElementType graphElementType){
+        if(propertyGraphElement.graphElementType() == graphElementType){
+            return true;
+        }else{
+            return false;
         }
     }
 }
