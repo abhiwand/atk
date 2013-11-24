@@ -79,6 +79,10 @@ for n in `cat ${nodesfile}`; do
     echo "Updating the hosts file on node ${n}..."
     ${dryrun} scp -i ${pemfile} ${hostsfile} ${n}:/tmp/_hosts
     ${dryrun} ssh -t -i ${pemfile} ${n} "sudo mv -f /tmp/_hosts /etc/hosts"
+    # make sure hostname is set up properly
+    n1=`echo $n | awk -F'.' '{print $1}'`
+    echo "Setting hostname for $n to $n1"
+    ${dryrun} ssh -t -i ${pemfile} ${n} "sudo hostname ${n1}; sudo sed -i 's/.localdomain//g' /etc/sysconfig/network"
     # remove the existing .ssh/known_hosts file
     ${dryrun} ssh -t -i ${pemfile} ${n} "sudo rm -f ~/.ssh/known_hosts /home/hadoop/.ssh/known_hosts"
 done
@@ -111,7 +115,7 @@ n=`sed '1q;d' ${nodesfile}`
 csize=`cat ${nodesfile} | wc -l`
 if [ ${csize} -gt 4 ]
 then
-    ${dryrun} ssh -i ${pemfile} hadoop@${n} bash -c "'
+    ${dryrun} ssh -i ${pemfile} ${IA_USR}@${n} bash -c "'
     for ((i = 4; i < ${csize}; i++))
     do
         printf "%02d" ${i} >> hadoop/conf/slaves;
@@ -129,17 +133,37 @@ then
 fi
 
 # start hadoop/hbase, mount is handled by cloud.cfg now in cloud-init
-${dryrun} ssh -i ${pemfile} hadoop@${n} bash -c "'
+${dryrun} ssh -i ${pemfile} ${IA_USR}@${n} bash -c "'
 pushd ~/IntelAnalytics;
 echo ${n}:Formatting hadoop name node on master node...;
 hadoop/bin/hadoop namenode -format;
+sleep 2;
 echo ${n}:Starting hdfs...;
 hadoop/bin/start-dfs.sh;
+sleep 2;
 echo ${n}:Starting mapred...;
 hadoop/bin/start-mapred.sh;
+sleep 2;
 echo ${n}:Starting hbase...;
 hbase/bin/start-hbase.sh;
+sleep 2;
 echo ${n}:Starting hbase thrift...;
 hbase/bin/hbase-daemon.sh start thrift -threadpool;
+sleep 2;
+popd
 '"
-# Add more sanity check if needed, e.g., word-count, titan gods graph
+# Add more sanity check if needed, e.G., word-count, titan gods graph
+${dryrun} ssh -i ${pemfile} ${IA_USR}@${n} bash -c "'
+pushd ~/IntelAnalytics;
+echo ${n}:Hadoop test using word count example...;
+hadoop/bin/hadoop fs -mkdir wc;
+sleep 1;
+hadoop/bin/hadoop fs -put 4300.txt wc;
+sleep 1;
+hadoop/bin/hadoop jar hadoop/hadoop-examples-1.2.1.jar wordcount wc wc.out;
+sleep 2;
+echo ${n}:Load Titan gods graph to hbase...;
+titan/bin/gremlin.sh bin/IntelAnalytics_load.sh;
+sleep 2;
+popd
+'"
