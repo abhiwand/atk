@@ -163,7 +163,13 @@ sleep 1;
 hadoop/bin/hadoop jar hadoop/hadoop-examples-1.2.1.jar wordcount wc wc.out;
 sleep 2;
 echo ${n}:Load Titan gods graph to hbase...;
-titan/bin/gremlin.sh bin/IntelAnalytics_load.sh;
+if [ ! -d `readlink titan/logs` ]; then
+    echo ${n}:Creat Titan logging directory...;
+    mkdir -p `readlink titan/logs`;
+fi
+titan/bin/gremlin.sh bin/IntelAnalytics_load.grem;
+echo ${n}:Start Titan/Rexster server...;
+titan/bin/start-rexstitan.sh;
 sleep 2;
 popd
 '"
