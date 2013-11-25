@@ -1,0 +1,116 @@
+package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.PropertyGraphElement;
+
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
+import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementType;
+import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.util.Functional;
+import org.apache.hadoop.io.Writable;
+
+import java.util.HashMap;
+
+public class PropertyGraphElementPut implements PropertyGraphElementType{
+    private HashMap<EdgeID, Writable> edgeSet;
+    private HashMap<Object, Writable>   vertexSet;
+    private Functional edgeReducerFunction;
+    private Functional vertexReducerFunction;
+    private boolean noBiDir = false;
+
+    private ContainsKey containsKey;
+    PropertyGraphElementPut(){
+        containsKey = new ContainsKey();
+    }
+
+    @Override
+    public <T> T edge(PropertyGraphElement propertyGraphElement, Object ... args) {
+        this.arguments(args);
+
+        EdgeID edgeID = (EdgeID)propertyGraphElement.getId();
+
+        if (((Edge)propertyGraphElement).isSelfEdge()) {
+            // self edges are omitted
+            return null;
+        }
+
+        if(containsKey(propertyGraphElement)){
+            // edge is a duplicate
+
+            if (edgeReducerFunction != null) {
+                edgeSet.put(edgeID, edgeReducerFunction.reduce(propertyGraphElement.getProperties(), edgeSet.get(edgeID)));
+            } else {
+
+                /**
+                 * default behavior is to merge the property maps of duplicate edges
+                 * conflicting key/value pairs get overwritten
+                 */
+
+                PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeID);
+                existingPropertyMap.mergeProperties(propertyGraphElement.getProperties());
+            }
+
+        }else{
+            if (noBiDir && edgeSet.containsKey(edgeID.reverseEdge())) {
+                // in this case, skip the bi-directional edge
+            } else {
+                // edge is either not bi-directional, or we are keeping bi-directional edges
+                if (edgeReducerFunction != null) {
+                    edgeSet.put(edgeID, edgeReducerFunction.reduce(propertyGraphElement.getProperties(),edgeReducerFunction.identityValue()));
+                } else {
+                    edgeSet.put(edgeID, propertyGraphElement.getProperties());
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public <T> T vertex(PropertyGraphElement propertyGraphElement, Object ... args) {
+        this.arguments(args);
+
+        Object vid = propertyGraphElement.getId();
+        if(containsKey(propertyGraphElement)){
+            if (vertexReducerFunction != null) {
+                vertexSet.put(vid,
+                        vertexReducerFunction.reduce(propertyGraphElement.getProperties(),
+                                vertexSet.get(vid)));
+            } else {
+
+                /**
+                 * default behavior is to merge the property maps of duplicate vertices
+                 * conflicting key/value pairs get overwritten
+                 */
+
+                PropertyMap existingPropertyMap = (PropertyMap) vertexSet.get(vid);
+                existingPropertyMap.mergeProperties(propertyGraphElement.getProperties());
+            }
+
+        }else{
+            if (vertexReducerFunction != null) {
+                vertexSet.put(vid, vertexReducerFunction.reduce(
+                        propertyGraphElement.getProperties(),vertexReducerFunction.identityValue()));
+            } else {
+                vertexSet.put(vid, propertyGraphElement.getProperties());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public <T> T nullElement(PropertyGraphElement propertyGraphElement, Object ... args) {
+        return null;
+    }
+
+    private void arguments(Object ... args){
+        edgeSet = (HashMap<EdgeID, Writable>)args[0];
+        vertexSet = (HashMap<Object, Writable>)args[1];
+        edgeReducerFunction = (Functional)args[2];
+        vertexReducerFunction = (Functional)args[3];
+        noBiDir = (boolean)args[4];
+    }
+
+    private boolean containsKey(PropertyGraphElement propertyGraphElement){
+        return (Boolean)propertyGraphElement.typeCallback(containsKey, edgeSet, vertexSet);
+    }
+
+}
