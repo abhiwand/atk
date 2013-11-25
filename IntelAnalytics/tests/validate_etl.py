@@ -27,6 +27,13 @@ print 'Validating ETL scripts'
 print '###########################'
 
 try:
+    
+    #test big data frame API
+    return_code = subprocess.call(['python', os.path.join(test_scripts_path, 'test_bigdataframe.py')])
+    
+    if return_code:
+        raise Exception("BigDataFrame API tests failed") 
+    
     # test transform functionality
     return_code = subprocess.call(['python', os.path.join(test_scripts_path, 'test_transform_API.py')])
      
@@ -50,12 +57,7 @@ try:
      
     if return_code:
         raise Exception("Schema tests failed")    
-    
-    #test big data frame API
-    return_code = subprocess.call(['python', os.path.join(test_scripts_path, 'test_bigdataframe.py')])
-    
-    if return_code:
-        raise Exception("BigDataFrame API tests failed")    
+   
 except:
     traceback.print_exc()
     sys.exit(1)
