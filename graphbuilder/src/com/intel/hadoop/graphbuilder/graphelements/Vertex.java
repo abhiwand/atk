@@ -46,6 +46,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      * Default constructor. Creates an placeholder vertex.
      */
     public Vertex() {
+        super();
         this.properties = new PropertyMap();
     }
 
@@ -75,6 +76,15 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     @Override
     public boolean isVertex() {
         return true;
+    }
+
+    @Override
+    public boolean isNull(){
+        if(vertexId == null){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     /**

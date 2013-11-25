@@ -48,6 +48,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends Property
      */
 
     public Edge() {
+        super();
         this.properties = new PropertyMap();
     }
 
@@ -81,6 +82,21 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends Property
     @Override
     public boolean isVertex() {
         return false;
+    }
+
+    /**
+     * See if this edge is null. If any of the values are nulls the whole thing is null. If we try to write an edge
+     * with any null values it will throw an exception.
+     * @return true/false based upon the null status of the src,dst, and label
+     */
+    @Override
+    public boolean isNull(){
+        if(this.src == null || this.dst == null || this.label == null){
+            return true;
+        }else{
+            return false;
+        }
+
     }
 
     /**

@@ -37,10 +37,13 @@ import org.apache.hadoop.io.WritableComparable;
 public abstract class SerializedPropertyGraphElement<VidType extends WritableComparable<VidType>>
         implements Writable {
 
+
     private PropertyGraphElement graphElement;
+
 
     public SerializedPropertyGraphElement() {
         this.graphElement = null;
+
     }
 
     public abstract VidType createVid();
@@ -57,14 +60,12 @@ public abstract class SerializedPropertyGraphElement<VidType extends WritableCom
 
 
     /**
-     * @return base (unserialized) PropertyGraphElement
+     * @return a vertex or edge property graph element
      */
 
-    public PropertyGraphElement<VidType> graphElement() {
-        return this.graphElement;
+    public PropertyGraphElement graphElement() {
+        return this.graphElement.get();
     }
-
-
 
     @Override
     public void readFields(DataInput input) throws IOException {
@@ -119,16 +120,6 @@ public abstract class SerializedPropertyGraphElement<VidType extends WritableCom
         output.writeBoolean(isVertex);
 
         graphElement.write(output);
-    }
-
-    @Override
-    public String toString() {
-
-        if (graphElement == null) {
-            return new String("null graph element");
-        } else {
-            return graphElement.toString();
-        }
     }
 }
 
