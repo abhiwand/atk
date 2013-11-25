@@ -615,3 +615,7 @@ ul, li {
 .carousel-blur .btn.btn-lg {
     margin: 50px 10px 5px;
 }
+
+.carousel-blur .flex-direction-nav .flex-next, .carousel-blur .flex-direction-nav .flex-prev {
+    top: 41.5%;
+}
