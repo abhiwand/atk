@@ -36,8 +36,8 @@ def main(argv):
     etl_schema.populate_schema(cmd_line_args.schema_information)
     etl_schema.save_schema(cmd_line_args.output)
     
-    feature_names_as_str = ",".join(etl_schema.feature_names)
-    feature_types_as_str = ",".join(etl_schema.feature_types)
+    feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+    feature_types_as_str = etl_schema.get_feature_types_as_CSV()
     
     # need to delete/create output table to write the transformed features
     with ETLHBaseClient() as hbase_client:

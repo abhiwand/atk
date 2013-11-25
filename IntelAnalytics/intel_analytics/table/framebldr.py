@@ -26,7 +26,7 @@ class FrameBuilder(object):
         """
         pass
     @abc.abstractmethod
-    def build_from_json(self, file, schema=None):
+    def build_from_json(self, file):
         """
         Reads JSON (www.json.org) file and loads into a table
 
@@ -34,8 +34,6 @@ class FrameBuilder(object):
         ----------
         file : string
             path to file
-        schema : string
-            TODO:
 
         TODO: others parameters for the parser
 

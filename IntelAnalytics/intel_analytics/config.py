@@ -10,10 +10,10 @@ import os
 
 __all__ = ['global_config', 'Config', "get_keys_from_template"]
 
-# todo: figure out the correct way to get this:
-properties_file = '/'.join([os.getenv('INTEL_ANALYTICS_HOME', os.getcwd()),
-                            'intel_analytics',
-                            'intel_analytics.properties'])
+properties_file = os.path.join(
+    os.getenv('INTEL_ANALYTICS_PYTHON', os.path.dirname(__file__)),
+    'intel_analytics.properties')
+
 
 def get_env_vars(names):
     """

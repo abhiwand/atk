@@ -33,7 +33,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 /**
  * Demonstrates how to handle errors in UDFs. We need to specify an error handler when we define the UDF.
  */
-@MonitoredUDF(errorCallback = MyErrorHandler.class)
+@MonitoredUDF(errorCallback = UDFExceptionHandler.class)
 public class ErroneousEvalFunc extends EvalFunc<Double> {
 
 	@Override

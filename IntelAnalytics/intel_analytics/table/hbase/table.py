@@ -4,6 +4,7 @@ import re
 import random
 import string
 import sys
+import collections
 
 from intel_analytics.config import global_config as config
 from intel_analytics.table.bigdataframe import BigDataFrame
@@ -28,6 +29,14 @@ os.environ["JYTHONPATH"] = os.path.join(os.environ['SOURCE_CODE'], 'IntelAnalyti
 logger.debug('$JYTHONPATH %s' % os.environ["JYTHONPATH"])
 
 class Imputation:
+    """
+    Imputation
+
+    Imputation is replacing missing values in a dataset. See http://en.wikipedia.org/wiki/Imputation_%28statistics%29
+    Currently the only supported imputation method is mean imputation, which replaces all missing values with
+    the mean.
+    """
+    
     MEAN = 1
 
     @staticmethod
@@ -43,7 +52,7 @@ for key, val in Imputation.__dict__.items():
         continue
     available_imputations.append(val)
 
-def get_pig_args():
+def _get_pig_args():
     args=['pig']
     if local_run:
         args += ['-x', 'local']
@@ -84,26 +93,19 @@ class HBaseTable(object):
         #load schema info
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
-        feature_names_as_str = ",".join(etl_schema.feature_names)
-        feature_types_as_str = ",".join(etl_schema.feature_types)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
         if column_name and (column_name not in etl_schema.feature_names):
             raise HBaseTableException("Column %s does not exist" % column_name)
 
-        #generate some table name for transformation output
-        table_name = self.table_name + "-%s" % (transformation_to_apply)
-
-        with ETLHBaseClient() as hbase_client:
-            hbase_client.drop_create_table(table_name,
-                                           [config['hbase_column_family']])
-
         script_path = os.path.join(etl_scripts_path, 'pig_transform.py')
 
-        args = get_pig_args()
+        args = _get_pig_args()
 
         args += [script_path,
                 '-f', column_name, '-i', self.table_name,
-                '-o', table_name, '-t', transformation_to_apply,
+                '-o', self.table_name, '-t', transformation_to_apply,
                 '-u', feature_names_as_str, '-r', feature_types_as_str,
                 '-n', new_column_name]
 
@@ -113,18 +115,18 @@ class HBaseTable(object):
         if keep_source_column:
             args += ['-k']
 
-        print args
+        logger.debug(args)
 
         return_code = subprocess.call(args)
 
         if return_code:
             raise HBaseTableException('Could not apply transformation')
 
-        self.table_name = table_name
         #need to update schema here as it's difficult to pass the updated schema info from jython to python
         if not keep_source_column:
             etl_schema.feature_names.remove(column_name)
         etl_schema.feature_names.append(new_column_name)
+        
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types
         etl_schema.feature_types.append('bytearray')
@@ -136,8 +138,9 @@ class HBaseTable(object):
            header_printed = False
            nrows_read = 0
            for key, data in table.scan():
-               columns = data.keys()
-               items = data.items()
+               orderedData = collections.OrderedDict(sorted(data.items()))
+               columns = orderedData.keys()
+               items = orderedData.items()
                if not header_printed:
                    sys.stdout.write("--------------------------------------------------------------------\n")
                    for i, column in enumerate(columns):
@@ -153,7 +156,7 @@ class HBaseTable(object):
                    else:
                        sys.stdout.write("%s"%(value))
                    if i != len(items)-1:
-                       sys.stdout.write("\t")
+                       sys.stdout.write("  |  ")
                sys.stdout.write("\n")
                nrows_read+=1
                if nrows_read >= n:
@@ -163,15 +166,15 @@ class HBaseTable(object):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
 
-        feature_names_as_str = ",".join(etl_schema.feature_names)
-        feature_types_as_str = ",".join(etl_schema.feature_types)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
         if column_name and (column_name not in etl_schema.feature_names):
             raise HBaseTableException("Column %s does not exist" % (column_name))
 
         script_path = os.path.join(etl_scripts_path, 'pig_clean.py')
 
-        args = get_pig_args()
+        args = _get_pig_args()
 
         args += [script_path, '-i', self.table_name,
                          '-o', output_table, '-n', feature_names_as_str,
@@ -189,17 +192,28 @@ class HBaseTable(object):
 
         # need to delete/create output table so that we can write the transformed features
         with ETLHBaseClient() as hbase_client:
-            hbase_client.drop_create_table(output_table ,
+            hbase_client.drop_create_table(output_table,
                                            [config['hbase_column_family']])
 
-        print args
+        logger.debug(args)
+        
         return_code = subprocess.call(args)
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
 
+        #record old table name for cleaning
+        old_table_name = self.table_name
         self.table_name = output_table # update the table_name
         etl_schema.save_schema(self.table_name) # save the schema for the new table
+        #clean the old table
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.delete_table(old_table_name)
+            #clean the schema entry used by the old table
+            schema_table = config['hbase_schema_table']
+            row = hbase_client.get(schema_table, old_table_name)
+            if len(row) > 0:
+                hbase_client.delete(schema_table, old_table_name)
 
     def dropna(self, how='any', column_name=None):
         output_table = self.table_name + "_dropna"
@@ -219,11 +233,11 @@ class HBaseTable(object):
         """
         Returns the list of column names/types
         """
-        columns=[]
+        columns = {}
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
         for i, column_name in enumerate(etl_schema.feature_names):
-            columns.append('%s:%s' % (column_name, etl_schema.feature_types[i]))
+            columns[column_name] = etl_schema.feature_types[i]
         return columns
 
 
@@ -246,12 +260,12 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema = ETLSchema()
         etl_schema.populate_schema(schema)
         etl_schema.save_schema(df_name)
-
-        feature_names_as_str = ",".join(etl_schema.feature_names)
-        feature_types_as_str = ",".join(etl_schema.feature_types)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+        
         script_path = os.path.join(etl_scripts_path,'pig_import_csv.py')
 
-        args = get_pig_args()
+        args = _get_pig_args()
 
         args += [script_path, '-i', file, '-o', df_name,
              '-f', feature_names_as_str, '-t', feature_types_as_str]
@@ -259,7 +273,7 @@ class HBaseFrameBuilder(FrameBuilder):
         if skip_header:
             args += ['-k']
 
-        print args
+        logger.debug(args)
         # need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(df_name,
@@ -270,7 +284,42 @@ class HBaseFrameBuilder(FrameBuilder):
 
         return new_frame
 
-    def build_from_json(self, file, schema=None):
+    def build_from_json(self, file):
+        #create some random table name
+        #we currently don't bother the user to specify table names
+        df_name = file.replace("/", "_")
+        df_name = df_name.replace(".", "_")
+        dataframe_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))
+        df_name = dataframe_prefix + df_name
+        hbase_table = HBaseTable(df_name) #currently we support hbase, TODO: where to read table type?
+        new_frame = BigDataFrame(hbase_table)
+
+        schema='json:chararray'#dump all records as chararray
+        
+        #save the schema of the dataset to import
+        etl_schema = ETLSchema()
+        etl_schema.populate_schema(schema)
+        etl_schema.save_schema(df_name)
+
+        script_path = os.path.join(etl_scripts_path,'pig_import_json.py')
+
+        args = _get_pig_args()
+
+        args += [script_path, '-i', file, '-o', df_name]
+
+        logger.debug(args)
+        
+#         need to delete/create output table to write the transformed features
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(df_name,
+                                           [config['hbase_column_family']])
+        return_code = subprocess.call(args)
+        
+        if return_code:
+            raise Exception('Could not import CSV file')
+
+        return new_frame
+            
         raise Exception("Not implemented")
     def build_from_xml(self, file, schema=None):
         raise Exception("Not implemented")
