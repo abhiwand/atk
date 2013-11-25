@@ -17,7 +17,7 @@
 *      http://www.01.org/GraphBuilder
  */
 
-package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
+package com.intel.hadoop.graphbuilder.pipeline.tokenizer.rdf;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
@@ -26,6 +26,7 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsche
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.VertexSchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
@@ -82,14 +83,14 @@ import java.util.List;
  * </p>
  * </p>
  *
- * @see GraphBuildingRule
- * @see PropertyGraphSchema
- * @see HBaseTokenizer
+ * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule
+ * @see com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema
+ * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer
  */
 
-public class HBaseGraphBuildingRule implements GraphBuildingRule {
+public class RDFGraphBuildingRule implements GraphBuildingRule {
 
-    private static final Logger LOG = Logger.getLogger(HBaseGraphBuildingRule.class);
+    private static final Logger LOG = Logger.getLogger(RDFGraphBuildingRule.class);
 
     private PropertyGraphSchema graphSchema;
     private HBaseUtils hBaseUtils;
@@ -109,7 +110,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      *
      * @param cmd The user specified command line.
      */
-    public HBaseGraphBuildingRule(CommandLine cmd) {
+    public RDFGraphBuildingRule(CommandLine cmd) {
 
         this.graphSchema = new PropertyGraphSchema();
         try {
@@ -199,7 +200,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         for (String vertexRule : vertexRules) {
 
-            String vidColumn = HBaseGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
+            String vidColumn = RDFGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
 
             returnValue &= hBaseUtils.columnHasValidFamily(vidColumn, srcTableName);
 
@@ -210,7 +211,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             }
 
             String[] vertexPropertiesColumnNames =
-                    HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
+                    RDFGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
 
             for (String columnName : vertexPropertiesColumnNames) {
                 returnValue &= hBaseUtils.columnHasValidFamily(columnName, srcTableName);
@@ -240,10 +241,10 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         for (String edgeRule : edgeRules) {
 
-            String srcVertexColName = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(edgeRule);
-            String tgtVertexColName = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(edgeRule);
+            String srcVertexColName = RDFGraphBuildingRule.getSrcColNameFromEdgeRule(edgeRule);
+            String tgtVertexColName = RDFGraphBuildingRule.getDstColNameFromEdgeRule(edgeRule);
 
-            List<String> propertyColNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
+            List<String> propertyColNames = RDFGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
 
             returnValue &= hBaseUtils.columnHasValidFamily(srcVertexColName, srcTableName);
             if (returnValue == false) {
@@ -277,7 +278,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      *
      * @param configuration reference to the job configuration in which rules for tokenizer will be stored
      * @param cmd           the command line options provided by the user
-     * @see HBaseTokenizer
+     * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer
      */
     public void updateConfigurationForTokenizer(Configuration configuration, CommandLine cmd) {
         packVertexRulesIntoConfiguration(configuration, vertexRules);
@@ -289,7 +290,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      * The class of the MR-time graph tokenizer.
      *
      * @return The class of the MR-time graph tokenizer.
-     * @see HBaseTokenizer
+     * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer
      */
     public Class<? extends GraphTokenizer> getGraphTokenizerClass() {
         return this.tokenizerClass;
@@ -308,7 +309,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      * Get the schema of property graphs generated by this graph construction rule.
      *
      * @return The schema of property graphs generated by this graph construction rule.
-     * @see PropertyGraphSchema
+     * @see com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema
      */
     public PropertyGraphSchema getGraphSchema() {
         return graphSchema;
@@ -320,7 +321,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             VertexSchema vertexSchema = new VertexSchema();
 
-            String[] columnNames = HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
+            String[] columnNames = RDFGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
 
             for (String vertexPropertyColumnName : columnNames) {
                 PropertySchema propertySchema = new PropertySchema(vertexPropertyColumnName, String.class);
@@ -335,8 +336,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         for (String edgeRule : edgeRules) {
 
-            List<String> columnNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
-            String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(edgeRule);
+            List<String> columnNames = RDFGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
+            String label = RDFGraphBuildingRule.getLabelFromEdgeRule(edgeRule);
 
             EdgeSchema edgeSchema = new EdgeSchema(label);
 
@@ -352,8 +353,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         for (String directedEdgeRule : directedEdgeRules) {
 
-            List<String> columnNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(directedEdgeRule);
-            String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(directedEdgeRule);
+            List<String> columnNames = RDFGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(directedEdgeRule);
+            String label = RDFGraphBuildingRule.getLabelFromEdgeRule(directedEdgeRule);
 
             EdgeSchema edgeSchema = new EdgeSchema(label);
 
@@ -390,7 +391,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      *
      * @param configuration The job configuration into which the vertex rules have been stored.
      * @return array of strings, each encoding a vertex rule
-     * @see HBaseTokenizer
+     * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer
      */
     public static String[] unpackVertexRulesFromConfiguration(Configuration configuration) {
         String separators = "\\" + GBHTableConfiguration.config.getProperty("COL_NAME_SEPARATOR");
@@ -441,7 +442,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      *
      * @param configuration The job configuration into which the edge rules have been stored.
      * @return array of strings, each encoding a edge rule
-     * @see HBaseTokenizer
+     * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer
      */
 
     public static String[] unpackEdgeRulesFromConfiguration(Configuration configuration) {
@@ -467,7 +468,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      *
      * @param configuration The job configuration into which the edge rules have been stored.
      * @return array of strings, each encoding a edge rule
-     * @see HBaseTokenizer
+     * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer
      */
 
     public static String[] unpackDirectedEdgeRulesFromConfiguration(Configuration configuration) {

@@ -122,7 +122,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
                 GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
                         "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
             }
-            this.conf       = hbaseUtils.getConfiguration();
+            this.conf = hbaseUtils.getConfiguration();
         } else {
             this.conf = new Configuration();
         }

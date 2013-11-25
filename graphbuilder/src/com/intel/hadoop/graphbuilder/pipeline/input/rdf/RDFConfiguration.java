@@ -24,24 +24,10 @@ import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
 /**
  * Class holding all static strings
  */
-public class RDFInputConfiguration {
-
-    public enum Counters {
-        HTABLE_ROWS_READ,
-        HTABLE_COLS_READ,
-        HTABLE_COLS_IGNORED,
-        HTABLE_ROWS_WRITTEN,
-        HTABLE_COLS_WRITTEN,
-        VERTICES_WRITTEN,
-        VERTEX_PROPERTIES_WRITTEN,
-        HTABLE_COL_READ_ERROR,
-        ERROR,
-    };
-
-    // Column name separator cannot be ":" because HBase uses ":" as the
-    // separator between column family and qualifier
+public class RDFConfiguration {
 
     public static final String CMD_RDF_NAMESPACE = "namespace";
+    public static RuntimeConfig config = RuntimeConfig.getInstance(RDFConfiguration.class);
 
-    public static RuntimeConfig config = RuntimeConfig.getInstance(RDFInputConfiguration.class);
+
 }
