@@ -1,10 +1,7 @@
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
@@ -33,7 +30,7 @@ import java.util.Map;
  * </p>
  */
 
-public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphElement, IntWritable, PropertyGraphElement> {
+public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> {
     private static final Logger LOG = Logger.getLogger(EdgesIntoTitanReducer.class);
     private TitanGraph            graph;
     private HashMap<Object, Long> vertexNameToTitanID;
@@ -89,22 +86,22 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
      * @throws InterruptedException
      */
     @Override
-    public void reduce(IntWritable key, Iterable<PropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
         HashMap<EdgeID, Writable> edgePropertyTable  = new HashMap();
 
-        Iterator<PropertyGraphElement> valueIterator = values.iterator();
+        Iterator<SerializedPropertyGraphElement> valueIterator = values.iterator();
 
         while (valueIterator.hasNext()) {
 
-            PropertyGraphElement nextElement = valueIterator.next();
+            PropertyGraphElement nextElement = valueIterator.next().graphElement();
 
             // Apply reduce on vertex
 
-            if (nextElement.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
+            if (nextElement.isVertex()) {
 
-                Vertex vertex = nextElement.vertex();
+                Vertex vertex = (Vertex) nextElement;
 
                 Object      vertexId      = vertex.getVertexId();
                 PropertyMap propertyMap   = vertex.getProperties();
@@ -117,7 +114,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
                 // Apply reduce on edges, remove self and (or merge) duplicate edges.
                 // Optionally remove bidirectional edge.
 
-                Edge<?> edge    = nextElement.edge();
+                Edge   edge   = (Edge) nextElement;
                 EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
 
                 edgePropertyTable.put(edgeID, edge.getProperties());

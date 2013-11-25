@@ -11,7 +11,7 @@ public class PropertyGraphElementLongTypeVidsTest {
 
     @Test
     public void testCreateVid() {
-        PropertyGraphElementLongTypeVids elt = new PropertyGraphElementLongTypeVids();
+        SerializedPropertyGraphElementLongTypeVids elt = new SerializedPropertyGraphElementLongTypeVids();
 
         assertNotNull(elt);
 

@@ -36,7 +36,8 @@ import java.util.Objects;
  *
  * @param <VertexIdType> the type of vertex id.
  */
-public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> implements Writable {
+public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
+        extends PropertyGraphElement implements Writable {
 
     private VertexIdType vertexId;
     private PropertyMap  properties;
@@ -45,6 +46,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      * Default constructor. Creates an placeholder vertex.
      */
     public Vertex() {
+        super();
         this.properties = new PropertyMap();
     }
 
@@ -56,6 +58,33 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     public Vertex(VertexIdType vid) {
         this.vertexId   = vid;
         this.properties = new PropertyMap();
+    }
+
+    /**
+     * This is not an edge.
+     * @return  {@code false}
+     */
+    @Override
+    public boolean isEdge() {
+        return false;
+    }
+
+    /**
+     * This is not a vertex.
+     * @return  {@code true}
+     */
+    @Override
+    public boolean isVertex() {
+        return true;
+    }
+
+    @Override
+    public boolean isNull(){
+        if(vertexId == null){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     /**

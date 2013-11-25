@@ -1,7 +1,0 @@
-timestamp,chararray
-event_type,chararray
-method,chararray
-duration,double
-item_id,chararray
-src_tms,chararray
-dst_tms,chararray

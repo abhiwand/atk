@@ -1,9 +1,9 @@
 package com.intel.hadoop.graphbuilder.pipeline.input;
 
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -35,7 +35,7 @@ public class BaseMapper {
 
     private Logger               log;
     private IntWritable          mapKey;
-    private PropertyGraphElement mapVal;
+    private SerializedPropertyGraphElement mapVal;
     private Class                valClass;
     private GraphTokenizer       tokenizer;
     private KeyFunction          keyFunction;
@@ -72,14 +72,14 @@ public class BaseMapper {
         setValClass(context.getMapOutputValueClass());
 
         try {
-            setMapVal((PropertyGraphElement) valClass.newInstance());
+            setMapVal((SerializedPropertyGraphElement) valClass.newInstance());
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot instantiate map value class (" + PropertyGraphElement.class.getName() + " )", log, e);
+                    "Cannot instantiate map value class (" + SerializedPropertyGraphElement.class.getName() + " )", log, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating map value class ("
-                            + PropertyGraphElement.class.getName() + " )", log, e);
+                            + SerializedPropertyGraphElement.class.getName() + " )", log, e);
         }
 
         setMapKey(new IntWritable());
@@ -132,12 +132,12 @@ public class BaseMapper {
      * increment the correct error Counter either the Vertex or Edge error counter.
      *
      * @param context the current context for the mapper
-     * @param val     the PropertyGraphElement that through the error
+     * @param val     the SerializedPropertyGraphElement that through the error
      */
-    protected void incrementErrorCounter(Mapper.Context context, PropertyGraphElement val) {
-        if (val.graphElementType().equals(PropertyGraphElement.GraphElementType.EDGE)) {
+    protected void incrementErrorCounter(Mapper.Context context, SerializedPropertyGraphElement val) {
+        if (val.graphElement().isEdge()) {
             context.getCounter(getEdgeWriteErrorCounter()).increment(1);
-        } else if (val.graphElementType().equals(PropertyGraphElement.GraphElementType.VERTEX)) {
+        } else if (val.graphElement().isVertex()) {
             context.getCounter(getVertexWriteErrorCounter()).increment(1);
         }
     }
@@ -150,7 +150,7 @@ public class BaseMapper {
      * @param key     the vertex/edge key  to write
      * @param val     the property graph element to write either vertex/edge
      */
-    protected void contextWrite(Mapper.Context context, IntWritable key, PropertyGraphElement val) {
+    protected void contextWrite(Mapper.Context context, IntWritable key, SerializedPropertyGraphElement val) {
         try {
             context.write(key, val);
         } catch (IOException e) {
@@ -176,7 +176,7 @@ public class BaseMapper {
 
                 Edge edge = edgeIterator.next();
 
-                mapVal.init(PropertyGraphElement.GraphElementType.EDGE, edge);
+                mapVal.init(edge);
                 mapKey.set(keyFunction.getEdgeKey(edge));
 
                 contextWrite(context, mapKey, mapVal);
@@ -200,7 +200,7 @@ public class BaseMapper {
 
                 Vertex vertex = vertexIterator.next();
 
-                mapVal.init(PropertyGraphElement.GraphElementType.VERTEX, vertex);
+                mapVal.init(vertex);
                 mapKey.set(keyFunction.getVertexKey(vertex));
 
                 contextWrite(context, mapKey, mapVal);
@@ -215,7 +215,7 @@ public class BaseMapper {
         this.mapKey = mapKey;
     }
 
-    public void setMapVal(PropertyGraphElement mapVal) {
+    public void setMapVal(SerializedPropertyGraphElement mapVal) {
         this.mapVal = mapVal;
     }
 

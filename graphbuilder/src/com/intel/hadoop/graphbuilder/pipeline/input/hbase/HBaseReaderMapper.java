@@ -17,9 +17,9 @@
 
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -33,7 +33,7 @@ import org.apache.log4j.Logger;
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper
  */
-public class HBaseReaderMapper extends TableMapper<IntWritable, PropertyGraphElement> {
+public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedPropertyGraphElement> {
     private static final Logger LOG = Logger.getLogger(HBaseReaderMapper.class);
 
     private BaseMapper baseMapper;
