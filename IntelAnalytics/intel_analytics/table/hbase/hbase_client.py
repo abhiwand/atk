@@ -26,21 +26,21 @@ class ETLHBaseClient:
         table = self.connection.table(table_name)
         table.delete(row_key)        
     
+    def delete_table(self, table_name):
+        if self.table_exists(table_name):
+            self.connection.delete_table(table_name, disable=True)
+
     def drop_create_table(self, table_name, column_family_descriptors):
         """
         first drops the table with the given name and then creates a new table with the given name and column families
         table_name: table name to drop & create
         column_family_descriptors: list of column descriptors
         """
+        self.delete_table(table_name)
+
         cf_descriptors = {}
         for cfd in column_family_descriptors:
             cf_descriptors[cfd]=None#no options for the column families, can add later
-        
-        try:        
-            self.connection.delete_table(table_name, disable=True)
-        except:#output table may not exist so exception may be thrown
-            pass
-        
         self.connection.create_table(table_name, cf_descriptors)
         
     def get_column_names(self, table_name, column_family_descriptors):

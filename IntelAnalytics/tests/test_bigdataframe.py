@@ -39,14 +39,61 @@ class BigDataFrameTest(unittest.TestCase):
                    if data[k] != '':
                        all_null = False
                        break
-               self.assertEqual(all_null, False)                          
+               self.assertEqual(all_null, False)       
+               
+    def validate_json_extract(self, table):
+        with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
+            table = hbase_client.connection.table(table)
+            for key, data in table.scan():#we only have a single row, validate all columns
+                self.assertEqual(data[CONFIG_PARAMS['hbase_column_family'] + 'first_book_author'], 'Nigel Rees', '')
+                self.assertEqual(data[CONFIG_PARAMS['hbase_column_family'] + 'first_book_empty_field'], '', '')
+                self.assertEqual(data[CONFIG_PARAMS['hbase_column_family'] + 'first_books_price'], '8.95', '')
+                self.assertEqual(data[CONFIG_PARAMS['hbase_column_family'] + 'first_books_integer_field'], '2', '')
+                self.assertEqual(data[CONFIG_PARAMS['hbase_column_family'] + 'first_books_boolean_field'], 'true', '')
+                self.assertEqual(data[CONFIG_PARAMS['hbase_column_family'] + 'first_price_data'], '8.95', '')
+                self.assertEqual(data[CONFIG_PARAMS['hbase_column_family'] + 'expensive_books'], '{"author":"Evelyn Waugh","title":"Sword of Honour","category":"fiction","price":12.99,"isbn":"0-553-21311-3"}', '')
+                self.assertEqual(data[CONFIG_PARAMS['hbase_column_family'] + 'category'], 'fiction', '')
                    
     def test(self):
         print '###########################'
         print 'Validating BigDataFrame API'
         print '###########################'
-                
+        
         temp_tables = []
+        
+        #first validate json import
+        test_json='{ "store": {"book": [{ "category": "reference", "empty_field":"", "boolean_field": true, "null_field": null, "integer_field": 2,"author": "Nigel Rees","title": "Sayings of the Century", "price": 8.95},{ "category": "fiction","author": "Evelyn Waugh", "title": "Sword of Honour", "price": 12.99,"isbn": "0-553-21311-3"}],"bicycle": {"color": "red","price": 19.95}}}'
+        fp = open('/tmp/test.json', 'w')
+        fp.write(test_json)
+        fp.close()        
+        
+        big_frame = HBaseFrameBuilder().build_from_json('/tmp/test.json')
+        big_frame.head()
+        
+        big_frame.transform('json', 'first_book_author', EvalFunctions.Json.EXTRACT_FIELD, keep_source_column=True, transformation_args=["$.store.book[0].author"])
+        big_frame.head()
+        
+        big_frame.transform('json', 'first_book_empty_field', EvalFunctions.Json.EXTRACT_FIELD, keep_source_column=True, transformation_args=["$.store.book[0].empty_field"])
+        
+        big_frame.transform('json', 'first_books_price', EvalFunctions.Json.EXTRACT_FIELD, keep_source_column=True, transformation_args=["$.store.book[0].price"])
+        big_frame.head()
+        
+        big_frame.transform('json', 'first_books_integer_field', EvalFunctions.Json.EXTRACT_FIELD, keep_source_column=True, transformation_args=["$.store.book[0].integer_field"])
+        big_frame.head()
+        
+        big_frame.transform('json', 'first_books_boolean_field', EvalFunctions.Json.EXTRACT_FIELD, keep_source_column=True, transformation_args=["$.store.book[0].boolean_field"])
+        big_frame.head()
+        
+        big_frame.transform('json', 'first_price_data', EvalFunctions.Json.EXTRACT_FIELD, keep_source_column=True, transformation_args=["$..price[0]"])
+        big_frame.head()
+        
+        big_frame.transform('json', 'expensive_books', EvalFunctions.Json.EXTRACT_FIELD, keep_source_column=True, transformation_args=["$.store.book[?(@.price > 10)]"])
+        big_frame.head()
+        
+        big_frame.transform('expensive_books', 'category', EvalFunctions.Json.EXTRACT_FIELD, keep_source_column=True, transformation_args=["$.category"])
+        big_frame.head()
+        
+        self.validate_json_extract(big_frame._table.table_name)
         
         data_set = ['name,age,salary',
         'john,23,100',

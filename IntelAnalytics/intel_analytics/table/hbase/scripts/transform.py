@@ -59,8 +59,8 @@ def main(argv):
     etl_schema = ETLSchema()
     etl_schema.load_schema(cmd_line_args.input)
     
-    feature_names_as_str = ",".join(etl_schema.feature_names)
-    feature_types_as_str = ",".join(etl_schema.feature_types)
+    feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+    feature_types_as_str = etl_schema.get_feature_types_as_CSV()
     
     #print the schema info from the input hbase table
     if cmd_line_args.print_schema:
