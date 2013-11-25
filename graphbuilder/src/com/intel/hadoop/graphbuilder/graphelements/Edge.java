@@ -36,7 +36,7 @@ import java.util.Objects;
  *
  * @param <VidType> the type of vertex id.
  */
-public class Edge<VidType extends WritableComparable<VidType>> implements Writable {
+public class Edge<VidType extends WritableComparable<VidType>>  extends PropertyGraphElement implements Writable {
 
     private VidType     src;
     private VidType     dst;
@@ -63,6 +63,24 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
         this.dst = dst;
         this.label = label;
         this.properties = new PropertyMap();
+    }
+
+    /**
+     * This is an edge.
+     * @return  {@code true}
+     */
+    @Override
+    public boolean isEdge() {
+        return true;
+    }
+
+    /**
+     * This is not a vertex.
+     * @return  {@code false}
+     */
+    @Override
+    public boolean isVertex() {
+        return false;
     }
 
     /**

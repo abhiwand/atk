@@ -20,10 +20,10 @@ package com.intel.hadoop.graphbuilder.pipeline.input.text;
 
 import java.io.IOException;
 
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -39,7 +39,7 @@ import org.apache.log4j.Logger;
  * @see KeyFunction
  */
 
-public class TextParsingMapper extends Mapper<LongWritable, Text, IntWritable, PropertyGraphElement> {
+public class TextParsingMapper extends Mapper<LongWritable, Text, IntWritable, SerializedPropertyGraphElement> {
 
     private static final Logger LOG = Logger.getLogger(TextParsingMapper.class);
 

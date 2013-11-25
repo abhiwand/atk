@@ -3,8 +3,10 @@
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.util.*;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Scan;
@@ -82,12 +84,12 @@ public class HBaseInputConfiguration implements InputConfiguration {
      */
     public void updateConfigurationForMapper(Configuration configuration, CommandLine cmd) {
 
-        srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
+        srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
 
         configuration.set("SRCTABLENAME", srcTableName);
 
 
-        scan.setCaching(HBaseConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
+        scan.setCaching(GBHTableConfiguration.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
 
         configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", cmd.hasOption("flattenlists"));
@@ -100,7 +102,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
      */
     public void updateJobForMapper(Job job, CommandLine cmd) {
         try {
-            TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, PropertyGraphElement.class, job);
+            TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, SerializedPropertyGraphElement.class, job);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
                     "Could not initialize table mapper job", LOG, e);

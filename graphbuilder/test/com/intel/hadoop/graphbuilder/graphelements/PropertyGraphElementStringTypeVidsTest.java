@@ -9,7 +9,7 @@ import static junit.framework.Assert.assertNotNull;
 public class PropertyGraphElementStringTypeVidsTest {
     @Test
     public void testCreateVid() {
-        PropertyGraphElementStringTypeVids elt = new PropertyGraphElementStringTypeVids();
+        SerializedPropertyGraphElementStringTypeVids elt = new SerializedPropertyGraphElementStringTypeVids();
 
         assertNotNull(elt);
 

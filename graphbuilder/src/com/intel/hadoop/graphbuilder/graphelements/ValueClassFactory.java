@@ -18,20 +18,18 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.StringType;
 
 /**
- * A Factory class that creates a concrete {@code PropertyGraphElement}
+ * A Factory class that creates a concrete {@code SerializedPropertyGraphElement}
  * which is used in {@code TextGraphMR} as the intermediate value type.
  */
 public class ValueClassFactory {
 
     /**
      * @param  vidClassName
-     * @return a Class which inherits {@code PropertyGraphElement} and
+     * @return a Class which inherits {@code SerializedPropertyGraphElement} and
      *         overrides {@code createVid} to return the correct vertex ID class.
      * @throws IllegalArgumentException
      */
@@ -39,9 +37,9 @@ public class ValueClassFactory {
     public static Class getValueClassByVidClassName(String vidClassName) throws IllegalArgumentException {
 
         if (vidClassName.equals(StringType.class.getName())) {
-            return PropertyGraphElementStringTypeVids.class;
+            return SerializedPropertyGraphElementStringTypeVids.class;
         } else if (vidClassName.equals(LongType.class.getName())) {
-            return PropertyGraphElementLongTypeVids.class;
+            return SerializedPropertyGraphElementLongTypeVids.class;
         } else {
             throw new IllegalArgumentException("Illegal vertex ID class " + vidClassName);
         }
