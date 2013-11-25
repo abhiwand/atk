@@ -32,6 +32,9 @@ class EvalFunctions:
         POW=1003
         EXP=1004
         STND=1005 #STND: standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization)
+        
+    class Json:
+        EXTRACT_FIELD=2000
 
     @staticmethod
     def to_string(x):
@@ -60,12 +63,14 @@ class EvalFunctions:
             EvalFunctions.Math.LOG10: 'LOG10',
             EvalFunctions.Math.POW: 'org.apache.pig.piggybank.evaluation.math.POW',
             EvalFunctions.Math.EXP: 'EXP',    
-            EvalFunctions.Math.STND: 'STND'     
-           
+            EvalFunctions.Math.STND: 'STND',
+            
+            EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON'
         }[x]
 
 string_functions = []
 math_functions = []  
+json_functions = []
 available_builtin_functions = []#used for validation, does the user try to call a valid function? 
 for key,val in EvalFunctions.String.__dict__.items():
     if key == '__module__' or key == '__doc__':
@@ -75,7 +80,13 @@ for key,val in EvalFunctions.String.__dict__.items():
 for key,val in EvalFunctions.Math.__dict__.items():
     if key == '__module__' or key == '__doc__':
         continue
-    math_functions.append(EvalFunctions.to_string(val))    
+    math_functions.append(EvalFunctions.to_string(val))  
+    
+for key,val in EvalFunctions.Json.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    json_functions.append(EvalFunctions.to_string(val)) 
 
 available_builtin_functions.extend(string_functions)
 available_builtin_functions.extend(math_functions)
+available_builtin_functions.extend(json_functions)

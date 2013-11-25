@@ -35,13 +35,15 @@ def main(argv):
     
     import_json_script_path = os.path.join(config['pig_py_scripts'],
                                            'pig_import_json.py')
-
+    
     args = ['pig']
     
     if should_run_local_mode:
         args += ['-x', 'local']
             
     args += [import_json_script_path, '-i', cmd_line_args.input, '-o', cmd_line_args.output]
+    
+    print args
     subprocess.call(args)
 
 if __name__ == "__main__":

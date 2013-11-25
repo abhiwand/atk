@@ -22,14 +22,18 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.pig.udf;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.backend.hadoop.executionengine.physicalLayer.util.MonitoredUDFExecutor.ErrorCallback;
 
-public class MyErrorHandler extends ErrorCallback {
+public class UDFExceptionHandler extends ErrorCallback {
+	private static final Log log = LogFactory.getLog(UDFExceptionHandler.class);
 
 	@SuppressWarnings("unchecked")
 	public static void handleError(EvalFunc evalFunc, Exception e) {
 		System.out.println("gotcha, skipping exception");
-//		e.printStackTrace();
+		log.error(evalFunc + " failed.", e);
+		throw new RuntimeException(e);
 	}
 }
