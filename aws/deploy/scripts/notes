@@ -1,5 +1,113 @@
 Cluster Creation
 ================
+First make sure you understand what you want and which VPC you want
+to bring your clusters up.
+
+A. To Create Cluser inside VPC "IntelAnalytics" vpc-c84049aa
+================================================================
+
+Example, creatinga cluster with id 9 of 4 nodes
+1. ssh into the IntelAnalytics-Admin node
+
+2. cd ~/intel/IntelAnalytics/deploy/0.5/scripts
+
+3. setup cluster creation home directory
+ export IA_HOME=`pwd`/../..
+
+4. setup credentials file path
+> export IA_CREDENTIALS=~/intel/credentials
+
+5. create the cluster
+> ./IntelAnalytics_cluster_create.sh --cluster-id 9 --cluster-size 4 --no-dryrun
+
+6. Verify the .nodes and .hosts file generated in ../clusters
+> cat ../clusters/IntelAnalytics-9-4.nodes
+> cat ../clusters/IntelAnalytics-9-4.hosts
+
+Also, go to AWS Web console to observer if all instances are created properly.
+The instances are tagged, in the above case, as "IntelAnalytics-9-4-master, -node01,
+-node02, node03," respectively.
+
+7. The cluster is already up and running, now, 7. configure the cluster for hadoop
+> ./IntelAnalytics_cluster_configure.sh \
+--nodes-file ../clusters/IntelAnalytics-9-4.nodes \
+--hosts-file ../clusters/IntelAnalytics-9-4.hosts \
+--pem-file ~/intel/credentials/IntelAnalytics_User.pem
+
+DONE
+
+B. To Create Cluser inside VPC "GAOQA" vpc-a53b32c7
+================================================================
+The steps are the same, but instead of using ./IntelAnalytics_cluster_create.sh, we
+will us the wrapper script ./IntelAnalytics_GAOQA.sh. Below, onl yteh
+
+Example, creatinga cluster with id 9 of 4 nodes
+1. ssh into the GAOQA-Admin node
+
+2. cd ~/intel/IntelAnalytics/deploy/0.5/scripts
+
+3. setup cluster creation home directory
+ export IA_HOME=`pwd`/../..
+
+4. setup credentials file path
+> export IA_CREDENTIALS=~/intel/credentials
+
+5. create the cluster
+> ./IntelAnalytics_GAOQA.sh create --cluster-id 9 --cluster-size 4 --no-dryrun
+
+6. Verify the .nodes and .hosts file generated in ../clusters
+> cat ../clusters/GAOQA-9-4.nodes
+> cat ../clusters/GAOQA-9-4.hosts
+
+Also, go to AWS Web console to observer if all instances are created properly.
+The instances are tagged, in the above case, as "GAOQA-9-4-master, -node01,
+-node02, node03," respectively.
+
+7. The cluster is already up and running, now, 7. configure the cluster for hadoop
+> ./IntelAnalytics_GAOQA.sh configure \
+--nodes-file ../clusters/GAOQA-9-4.nodes \
+--hosts-file ../clusters/GAOQA-9-4.hosts \
+--pem-file ~/intel/credentials/GAOQA_User.pem
+
+DONE
+
+C. To Create Cluser inside VPC "GAODev" vpc-3a99d652
+================================================================
+The steps are the same, but instead of using ./IntelAnalytics_cluster_create.sh, we
+will us the wrapper script ./IntelAnalytics_GAODev.sh. Below, onl yteh
+
+Example, creatinga cluster with id 9 of 4 nodes
+1. ssh into the GAODev-Admin node
+
+2. cd ~/intel/IntelAnalytics/deploy/0.5/scripts
+
+3. setup cluster creation home directory
+ export IA_HOME=`pwd`/../..
+
+4. setup credentials file path
+> export IA_CREDENTIALS=~/intel/credentials
+
+5. create the cluster
+> ./IntelAnalytics_GAODev.sh create --cluster-id 9 --cluster-size 4 --no-dryrun
+
+6. Verify the .nodes and .hosts file generated in ../clusters
+> cat ../clusters/GAODev-9-4.nodes
+> cat ../clusters/GAODev-9-4.hosts
+
+Also, go to AWS Web console to observer if all instances are created properly.
+The instances are tagged, in the above case, as "GAODev-9-4-master, -node01,
+-node02, node03," respectively.
+
+7. The cluster is already up and running, now, 7. configure the cluster for hadoop
+> ./IntelAnalytics_GAODev.sh configure \
+--nodes-file ../clusters/GAODev-9-4.nodes \
+--hosts-file ../clusters/GAODev-9-4.hosts \
+--pem-file ~/intel/credentials/GAODev_User.pem
+
+DONE
+
+Further Nodes On the Cluster Creation on IntelAnalytics VPC
+================================================================
 IntelAnalytics_cluster_env.sh
 - global variables for creating a AWS cluster of IntelAnalytics
 
