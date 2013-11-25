@@ -49,9 +49,9 @@
         <script-engine>
             <name>gremlin-groovy</name>
             <reset-threshold>-1</reset-threshold>
-            <init-scripts>conf/init.groovy</init-scripts>
-            <imports>com.tinkerpop.rexster.client.*</imports>
-            <static-imports>java.lang.Math.PI</static-imports>
+            <init-scripts></init-scripts>
+            <imports>com.tinkerpop.rexster.client.*,com.thinkaurelius.titan.core.*,com.thinkaurelius.titan.core.attribute.*,com.thinkaurelius.titan.core.util.*,org.apache.commons.configuration.*</imports>
+            <static-imports>com.thinkaurelius.titan.core.attribute.Geo.*,com.thinkaurelius.titan.core.attribute.Text.*,com.thinkaurelius.titan.core.TypeMaker.UniquenessConsistency.*,com.tinkerpop.blueprints.Query.Compare.*,java.lang.Math.PI</static-imports>
         </script-engine>
     </script-engines>
     <security>
