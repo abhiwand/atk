@@ -1,15 +1,17 @@
 """
-Calls "subprocess"
+Invoke subprocess calls with polling to check progress.
 """
 
 import time
 
 from threading import Thread
 from subprocess import PIPE, Popen
+from jobreportservice import JobReportService
+from progressreportstrategy import ProgressReportStrategy
 
 SIGTERM_TO_SIGKILL_SECS = 2 # seconds to wait before send the big kill
 
-def call(args, heartbeat=0, func=None, timeout=0, shell=False):
+def call(args, heartbeat=0, output_report_strategy=None, timeout=0, shell=False):
     """
     Runs the command described by args in a subprocess, with or without polling
 
@@ -36,13 +38,15 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
     """
 
     # non-blocking invocation of subprocess
-    p = Popen(args, shell=shell, stderr=PIPE)
+    p = Popen(args, shell=shell, stderr=PIPE, stdout=PIPE)
+    reportService = JobReportService()
+    reportService.add_report_strategy(output_report_strategy)
 
     # spawn thread to consume subprocess's STDERR in non-blocking manner
     err_txt = []
-    t = Thread(target=_append_output, args=(p.stderr, err_txt))
-    t.daemon = True # thread dies with the called process
-    t.start()
+    te = Thread(target=_process_error_output, args=(p.stderr, err_txt, reportService))
+    te.daemon = True # thread dies with the called process
+    te.start()
 
     rc = None
     if heartbeat > 0:
@@ -54,22 +58,29 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
             countdown -= heartbeat
             if countdown == 0:
                 _timeout_abort(p, ' '.join(args), timeout)
-            if func is not None:
-                func()
+
             rc = p.poll()
     else:
         rc = p.wait() # block on subprocess
+
+    # wait for thread to finish in no more than 10 seconds
+    te.join(10)
 
     if rc != 0:
         msg = ''.join(err_txt) if len(err_txt) > 0 else "(no msg provided)"
         raise Exception("Error {0}: {1}".format(rc,msg))
 
+def _report_output(out, reportService):
+    for line in iter(out.readline, b''):
+        reportService.report_line(line)
+    out.close()
 
-def _append_output(out, list):
+def _process_error_output(out, list, reportService):
     """
     continously reads from stream and appends to list of strings
     """
     for line in iter(out.readline, b''):
+        reportService.report_line(line)
         list.append(line)
     out.close()
 
