@@ -7,6 +7,7 @@ Provides the 'global_config' singleton
 from pyjavaprops import Properties
 from string import Template
 import os
+import json
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -64,6 +65,55 @@ def dynamic_import(attr_path):
         raise ValueError("Error trying to find '{0}' in module '{1}'"
                          .format(attr_name, module_path))
     return attr
+
+
+class NameRegistry(object):
+    """
+    Maintains map of user-given names to internal names, persisted to a file
+    """
+    def __init__(self, filename):
+        self.filename = filename
+        filedir = os.path.dirname(filename)
+        if not os.path.exists(filedir):
+            os.makedirs(filedir)
+        self._load_map()
+
+    def register_name(self, name, internal_name):
+        self._internal_names[name] = internal_name
+        self._persist_map()
+
+    def get_names(self):
+        return self._internal_names.keys()
+
+    def get_internal_name(self, name):
+        return self._internal_names[name]
+
+    def get_name(self, internal_name):
+        try:
+            return (key for key,value in self._internal_names.items()
+                    if value == internal_name).next()
+        except StopIteration:
+            raise ValueError("Could not match name '{0}'".format(internal_name))
+
+    # todo: make persist_map and load_map thread-safe
+    def _persist_map(self):
+        try:
+            with os.fdopen(os.open(self.filename, os.O_WRONLY | os.O_CREAT),
+                           'w') as dst:
+                json.dump(self._internal_names, dst)
+        except IOError:
+            #todo: log...
+            raise Exception("Could not open names file for writing.  " +
+                            "Check permissions for: " + self.filename)
+
+    def _load_map(self):
+        try:
+            with open(self.filename, 'r') as src:
+                self._internal_names = json.load(src)
+        except:
+            #todo: log...
+            self._internal_names = {}
+            self._persist_map()
 
 
 class Config(object):

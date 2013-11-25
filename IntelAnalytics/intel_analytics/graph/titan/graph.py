@@ -11,14 +11,14 @@ from intel_analytics.graph.biggraph import \
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 from intel_analytics.graph.titan.config import titan_config
 from intel_analytics.subproc import call
-from intel_analytics.config import global_config
+from intel_analytics.config import NameRegistry, global_config
 
 from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import DEBUG
 from bulbs.config import Config as bulbsConfig
 
-import json
 import os
+
 
 #class TitanGraph(object):   # TODO: inherit BigGraph later
 #    """
@@ -26,63 +26,6 @@ import os
 #    """
 #    def __init__(self):
 #        self.ml = TitanGiraphMachineLearning(self)
-
-
-class TitanNameRegistry(object):
-    """
-    Maintains map of user-given names to titan-hbase names, persisted to a file
-    """
-    def __init__(self):
-        self._load_map()
-
-    def register_graph_name(self, graph_name, titan_table_name):
-        self._titan_table_names[graph_name] = titan_table_name
-        self._persist_map()
-        pass
-
-    def get_graph_names(self):
-        return self._titan_table_names.keys()
-
-    def get_titan_table_name(self, graph_name):
-        try:
-            return self._titan_table_names[graph_name]
-        except KeyError:
-            raise KeyError("Could not find titan table name for graph '"
-                           + graph_name + "'")
-
-    def get_graph_name(self, titan_table_name):
-        try:
-            return (key for key,value in self._titan_table_names.items()
-                    if value == titan_table_name).next()
-        except StopIteration:
-            raise ValueError("Could not find graph name to titan table '"
-                             + titan_table_name + "'")
-
-    # todo: make persist_map and load_map thread-safe
-    def _persist_map(self):
-        dstpath = global_config['titan_conf_folder']
-        if not os.path.exists(dstpath):
-            os.makedirs(dstpath)
-        dstfile = os.path.join(dstpath, global_config['titan_names_file'])
-        try:
-            with os.fdopen(os.open(dstfile, os.O_WRONLY | os.O_CREAT,
-                                   mode=int("0777", 8)), 'w') as dst:
-                json.dump(self._titan_table_names, dst)
-        except IOError:
-            #todo: log...
-            raise Exception("Could not open graph names file for writing.  " +
-                            "Check if path exists: " + dstfile)
-
-    def _load_map(self):
-        srcfile = os.path.join(global_config['titan_conf_folder'],
-                               global_config['titan_names_file'])
-        try:
-            with open(srcfile, 'r') as src:
-                self._titan_table_names = json.load(src)
-        except:
-            #todo: log...
-            self._titan_table_names = {}
-            self._persist_map()
 
 
 #-----------------------------------------------------------------------------
@@ -95,7 +38,9 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def __init__(self):
         super(TitanGraphBuilderFactory, self).__init__()
         self._active_titan_table_name = None
-        self._name_registry = TitanNameRegistry()
+        self._name_registry = NameRegistry(
+            os.path.join(global_config['conf_folder'],
+                         global_config['titan_names_file']))
 
     def get_graph_builder(self, graph_type, source=None):
         if graph_type is GraphTypes.Bipartite:
@@ -106,11 +51,15 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
             raise Exception("Unsupported graph type: " + str(graph_type))
 
     def get_graph(self, graph_name):
-        titan_table_name = self._name_registry.get_titan_table_name(graph_name)
+        try:
+            titan_table_name = self._name_registry.get_internal_name(graph_name)
+        except KeyError:
+            raise KeyError("Could not find titan table name for graph '"
+                       + graph_name + "'")
         return self._get_graph(graph_name, titan_table_name)
 
     def get_graph_names(self):
-        return self._name_registry.get_graph_names()
+        return self._name_registry.get_names()
 
     def activate_graph(self, graph):
         self._activate_titan_table(graph.titan_table_name)
@@ -119,7 +68,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def get_active_graph_name(self):
         if self._active_titan_table_name is None:
             return ""
-        return self._name_registry.get_graph_name(self._active_titan_table_name)
+        return self._name_registry.get_name(self._active_titan_table_name)
 
     def _activate_titan_table(self, titan_table_name):
         """changes rexster's configuration to point to given graph
@@ -227,7 +176,7 @@ def build(graph_name, source, vertex_list, edge_list, is_directed):
     call(build_command)
 
     titan_graph_builder_factory._name_registry.\
-        register_graph_name(graph_name, titan_table_name)
+        register_name(graph_name, titan_table_name)
 
     return titan_graph_builder_factory.get_graph(graph_name)
 
