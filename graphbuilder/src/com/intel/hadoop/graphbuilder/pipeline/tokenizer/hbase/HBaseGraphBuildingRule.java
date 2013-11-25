@@ -323,7 +323,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             for (String columnName : columnNames) {
                 String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }
@@ -340,7 +340,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             for (String columnName : columnNames) {
                 String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }
