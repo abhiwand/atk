@@ -18,6 +18,7 @@ from bulbs.config import DEBUG
 from bulbs.config import Config as bulbsConfig
 
 import json
+import os
 
 #class TitanGraph(object):   # TODO: inherit BigGraph later
 #    """
@@ -59,9 +60,13 @@ class TitanNameRegistry(object):
 
     # todo: make persist_map and load_map thread-safe
     def _persist_map(self):
-        dstfile = global_config['titan_names_file']
+        dstpath = global_config['titan_conf_folder']
+        if not os.path.exists(dstpath):
+            os.makedirs(dstpath)
+        dstfile = os.path.join(dstpath, global_config['titan_names_file'])
         try:
-            with open(dstfile, 'w') as dst:
+            with os.fdopen(os.open(dstfile, os.O_WRONLY | os.O_CREAT,
+                                   int("0777", 8)), 'w') as dst:
                 json.dump(self._titan_table_names, dst)
         except IOError:
             #todo: log...
@@ -69,7 +74,8 @@ class TitanNameRegistry(object):
                             "Check if path exists: " + dstfile)
 
     def _load_map(self):
-        srcfile = global_config['titan_names_file']
+        srcfile = os.path.join(global_config['titan_conf_folder'],
+                               global_config['titan_names_file'])
         try:
             with open(srcfile, 'r') as src:
                 self._titan_table_names = json.load(src)
