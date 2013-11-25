@@ -66,7 +66,7 @@ class TitanNameRegistry(object):
         dstfile = os.path.join(dstpath, global_config['titan_names_file'])
         try:
             with os.fdopen(os.open(dstfile, os.O_WRONLY | os.O_CREAT,
-                                   int("0777", 8)), 'w') as dst:
+                                   mode=int("0777", 8)), 'w') as dst:
                 json.dump(self._titan_table_names, dst)
         except IOError:
             #todo: log...
@@ -79,7 +79,7 @@ class TitanNameRegistry(object):
         try:
             with open(srcfile, 'r') as src:
                 self._titan_table_names = json.load(src)
-        except IOError:
+        except:
             #todo: log...
             self._titan_table_names = {}
             self._persist_map()
@@ -196,7 +196,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
             s += '\nVertices:\n'\
                 + '\n'.join(map(lambda x: vertex_str(x,True), self._vertex_list))
         if len(self._edge_list) > 0:
-            s += '\nEdges\n'\
+            s += '\nEdges:\n'\
                 + '\n'.join(map(lambda x: edge_str(x,True), self._edge_list))
         return s
 
@@ -335,3 +335,13 @@ Many graph operations will fail.  Two options:
          >>> global_config['missing_key'] = 'missing_value'
 """.format(', '.join(missing), global_config.srcfile))
     sys.stderr.flush()
+
+
+class DummyBigDataFrame(object):
+    def __init__(self, name):
+        self._table = DummyHBaseTable(name)
+
+
+class DummyHBaseTable(object):
+    def __init__(self, name):
+        self.table_name = name
