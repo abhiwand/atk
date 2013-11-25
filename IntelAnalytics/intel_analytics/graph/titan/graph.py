@@ -135,7 +135,6 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
         self._activate_titan_table(titan_table_name)
         rexster_server_uri = get_rexster_server_uri(titan_table_name)
         bulbs_config = bulbsConfig(rexster_server_uri)
-        bulbs_config.set_logger(DEBUG)
         titan_graph = bulbsGraph(bulbs_config)
         titan_graph.user_graph_name = graph_name
         titan_graph.titan_table_name = titan_table_name
