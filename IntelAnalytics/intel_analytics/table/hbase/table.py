@@ -278,7 +278,6 @@ class HBaseFrameBuilder(FrameBuilder):
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(df_name,
                                            [config['hbase_column_family']])
-        print ' '.join(map(str, args))
         return_code = subprocess.call(args)
         if return_code:
             raise Exception('Could not import CSV file')
