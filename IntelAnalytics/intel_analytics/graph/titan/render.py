@@ -32,7 +32,8 @@ def traverse(vertex, depth, vertex_filter = _true, edge_filter = _true):
 	if v.eid in found or not vertex_filter(v):
 	    continue
         found.add(v.eid)
-	edges = [e for e in v.outE() or [] if d > 0 and edge_filter(e)]
+	edges = [e for e in v.outE() or [] 
+			if d > 0 and edge_filter(e) and vertex_filter(e.inV())]
 	next = [(e.inV(), d - 1) for e in edges]
 	todo.extend(next)
 	yield (v,edges)
@@ -51,7 +52,7 @@ def vertex_to_json(vertex, edges, vertex_label = 'name', edge_formatter = edge_t
     node = {'id': vertex.eid, 
 		'name':vertex.data().get(vertex_label) or str(vertex.eid), 
 		'data': vertex.data(), 
-		'adjacencies':map(edge_to_json, edges) }
+		'adjacencies':map(edge_formatter, edges) }
     return node
 
 def _traversal_to_json(vertex_edge_list,
@@ -179,6 +180,10 @@ function init(){
           lineWidth:1.5
         },
 
+        Label: {
+          overridable: true
+        },
+        
         onBeforeCompute: function(node){
             Log.write("centering " + node.name + "...");
             //Add the relation list in the right column.
@@ -199,29 +204,6 @@ function init(){
                 });
             };
         },
-        //Change some label dom properties.
-        //This method is called each time a label is plotted.
-        onPlaceLabel: function(domElement, node){
-            var style = domElement.style;
-            style.display = '';
-            style.cursor = 'pointer';
-
-            if (node._depth <= 1) {
-                style.fontSize = "0.8em";
-                style.color = "#222";
-            
-            } else if(node._depth == 2){
-                style.fontSize = "0.7em";
-                style.color = "#494949";
-            
-            } else {
-                style.display = 'none';
-            }
-
-            var left = parseInt(style.left);
-            var w = domElement.offsetWidth;
-            style.left = (left - w / 2) + 'px';
-        }
     });
     //load JSON data
     rgraph.loadJSON(json);
