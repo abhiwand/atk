@@ -22,6 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 package com.intel.pig.udf;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -62,14 +63,15 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 		String query = (String) input.get(1);
 
 		Object queryResult = null;
-		
-		try{
-			queryResult= with(inString).get(query);
-		}catch(IllegalArgumentException e){
-            warn("Failed to process input; error - " + e.getMessage(), PigWarning.UDF_WARNING_1);
-            return null;
+
+		try {
+			queryResult = with(inString).get(query);
+		} catch (IllegalArgumentException e) {
+			warn("Failed to process input; error - " + e.getMessage(),
+					PigWarning.UDF_WARNING_1);
+			return null;
 		}
-		
+
 		/* null fields are supported in json */
 		if (queryResult == null) {
 			return new DataByteArray("");
@@ -91,17 +93,16 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 		} else if (queryResult instanceof Long) {
 			Long result = (Long) queryResult;
 			return new DataByteArray(String.valueOf(result));
-		}
-		else if (queryResult instanceof BigInteger) {
+		} else if (queryResult instanceof BigInteger) {
 			BigInteger result = (BigInteger) queryResult;
 			return new DataByteArray(result.toString());
 		} else if (queryResult instanceof BigDecimal) {
 			BigDecimal result = (BigDecimal) queryResult;
 			return new DataByteArray(result.toString());
 		} else if (queryResult instanceof List) {
-			
+
 			List result = (List) queryResult;
-			System.out.println("got a list result "  + result.size());
+			System.out.println("got a list result " + result.size());
 			/*
 			 * we only let the query expression to return a single primitive
 			 * value
@@ -125,7 +126,7 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 			errorMessage = "The query returned a type that is not supported: "
 					+ queryResult.getClass();
 		}
-		
+
 		System.out.println("throwing illegalarg ex");
 
 		throw new IllegalArgumentException(errorMessage);
