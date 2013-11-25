@@ -5,15 +5,15 @@ import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 
-public class GraphElementId implements GraphElementTypeCallback {
+public class GraphElementId  {
 
-    private GraphElement graphElement;
+    private GraphElementObject graphElement;
 
     public GraphElementId() {
-        this.graphElement = new GraphElement();
+        this.graphElement = new GraphElementObject();
     }
 
-    @Override
+   /* @Override
     public EdgeID edge(PropertyGraphElement propertyGraphElement) {
         Edge edge = (Edge)graphElement.get(propertyGraphElement);
         return new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
@@ -28,5 +28,5 @@ public class GraphElementId implements GraphElementTypeCallback {
     @Override
     public Object nullElement(PropertyGraphElement propertyGraphElement) {
         return null;
-    }
+    }*/
 }

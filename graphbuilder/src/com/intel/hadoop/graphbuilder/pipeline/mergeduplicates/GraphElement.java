@@ -6,8 +6,8 @@ public class GraphElement {
     private GraphElementId graphElementId;
     private GraphElementObject graphElementObject;
     public GraphElement() {
-        graphElementObject = new GraphElementObject();
-        graphElementId = new GraphElementId();
+        //graphElementObject = new GraphElementObject();
+        //graphElementId = new GraphElementId();
     }
 
     public <T> T typeCallback(PropertyGraphElement propertyGraphElement, GraphElementTypeCallback graphElementTypeSwitchCallback){
@@ -19,9 +19,9 @@ public class GraphElement {
         return null;
     }
 
-    public Object getId(PropertyGraphElement propertyGraphElement){
+    /*public Object getId(PropertyGraphElement propertyGraphElement){
         return this.typeCallback(propertyGraphElement, this.graphElementId);
-    }
+    }*/
 
     public Object get(PropertyGraphElement propertyGraphElement){
         return this.typeCallback(propertyGraphElement, this.graphElementObject);

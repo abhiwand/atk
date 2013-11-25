@@ -5,13 +5,7 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import java.util.Iterator;
 
 public class GraphElements {
-    public Object getGraphElementId(PropertyGraphElement propertyGraphElement){
-        GraphElementTypeCallback id = new GraphElementId();
-        return graphElementTypeCallback(propertyGraphElement, id);
-
-    }
-
-    public boolean isEdge(PropertyGraphElement propertyGraphElement){
+   /* public boolean isEdge(PropertyGraphElement propertyGraphElement){
         return isGraphElementType(propertyGraphElement, PropertyGraphElement.GraphElementType.EDGE);
     }
 
@@ -30,37 +24,33 @@ public class GraphElements {
             return false;
         }
 
-    }
+    }*/
 
-    public <T> T graphElementTypeCallback(PropertyGraphElement propertyGraphElement, GraphElementTypeCallback graphElementTypeSwitch){
+   /* public <T> T graphElementTypeCallback(PropertyGraphElement propertyGraphElement, GraphElementTypeCallback graphElementTypeSwitch){
         if(isEdge(propertyGraphElement)){
             return graphElementTypeSwitch.edge(propertyGraphElement);
         }else if(isVertex(propertyGraphElement)){
             return graphElementTypeSwitch.vertex(propertyGraphElement);
         }
         return null;
-    }
+    }*/
 
     public void mergeDuplicates(Iterable<PropertyGraphElement> values){
-        GraphElement graphElement = new GraphElement();
+        //GraphElement graphElement = new GraphElement();
         Iterator<PropertyGraphElement> valueIterator = values.iterator();
 
         for(PropertyGraphElement propertyGraphElement: values){
             //null element check
-            if(isNull(propertyGraphElement)){
+            if(propertyGraphElement.isNull()){
                 continue;
             }
 
 
-            Object id = graphElement.getId(propertyGraphElement);
+            Object id = propertyGraphElement.getId();
 
 
 
-            if(isVertex(propertyGraphElement)){
 
-            }else if(isEdge(propertyGraphElement)){
-
-            }
         }
     }
 }

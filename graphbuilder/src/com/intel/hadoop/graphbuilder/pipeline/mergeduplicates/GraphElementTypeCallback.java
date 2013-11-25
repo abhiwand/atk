@@ -8,4 +8,5 @@ public interface GraphElementTypeCallback {
     public <T> T vertex(PropertyGraphElement propertyGraphElement);
     public <T> T nullElement(PropertyGraphElement propertyGraphElement);
 
+
 }
