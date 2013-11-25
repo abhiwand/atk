@@ -37,13 +37,13 @@ public class XMLInputFormat extends TextInputFormat {
     private static final Logger LOG = Logger.getLogger(XMLInputFormat.class);
 
     /**
-     * Define start tag of a complete input entry.
+     * Defines the start tag of a complete input entry.
      */
 
     public static final String START_TAG_KEY = "xmlinput.start";
 
     /**
-     * Define end tag of a complete input entry.
+     * Defines the end tag of a complete input entry.
      */
 
     public static final String END_TAG_KEY = "xmlinput.end";
@@ -66,9 +66,9 @@ public class XMLInputFormat extends TextInputFormat {
     }
 
     /**
-     * RecordReader for XML documents Recognizes begin-of-document and
-     * end-of-document tags only: Returning text object of everything in between
-     * delimiters
+     * RecordReader for XML documents recognizes begin-of-document and
+     * end-of-document tags only: Returning a text object of everything in between
+     * the delimiters.
      */
 
     public static class XMLRecordReader extends RecordReader<LongWritable, Text> {
