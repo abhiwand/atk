@@ -6,7 +6,7 @@ import string
 import sys
 import collections
 
-from intel_analytics.config import global_config as config
+from intel_analytics.config import NameRegistry, global_config as config
 from intel_analytics.table.bigdataframe import BigDataFrame
 from intel_analytics.table.framebldr import FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
@@ -66,7 +66,7 @@ class HBaseTable(object):
     """
     Table Implementation for HBase
     """
-    def __init__(self, table_name):
+    def __init__(self, name, table_name):
         """
         (internal constructor)
         Parameters
@@ -76,7 +76,9 @@ class HBaseTable(object):
         table_name : String
             name of table in Hbase
         """
+        self.name = name
         self.table_name = table_name
+
         # TODO : Hard-coded column family name must be removed later and
         #  read from Table
         #self.column_family_name = config['hbase_column_family']
@@ -263,7 +265,7 @@ class HBaseFrameBuilder(FrameBuilder):
         df_name = df_name.replace(".", "_")
         dataframe_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))
         df_name = dataframe_prefix + df_name
-        hbase_table = HBaseTable(df_name) #currently we support hbase, TODO: where to read table type?
+        hbase_table = HBaseTable(dataframe_prefix, df_name) #currently we support hbase, TODO: where to read table type?
         new_frame = BigDataFrame(hbase_table)
 
         #save the schema of the dataset to import
@@ -333,3 +335,37 @@ class HBaseFrameBuilder(FrameBuilder):
     def build_from_xml(self, file, schema=None):
         raise Exception("Not implemented")
 
+
+class HBaseFrameBuilderFactory(object):
+    def __init__(self):
+        super(HBaseFrameBuilderFactory, self).__init__()
+        self._name_registry = NameRegistry(
+            os.path.join(config['conf_folder'],
+                         config['hbase_names_file']))
+
+    def get_frame_builder(self):
+        return HBaseFrameBuilder()
+
+    def get_frame(self, frame_name):
+        try:
+            hbase_table_name = self._name_registry.get_internal_name(frame_name)
+        except KeyError:
+            raise KeyError("Could not stored table for '" + frame_name + "'")
+        return self._get_frame(frame_name, hbase_table_name)
+
+    def get_graph_names(self):
+        return self._name_registry.get_names()
+
+    def _get_frame(self, frame_name, hbase_table_name):
+        hbase_table = HBaseTable(frame_name, hbase_table_name)
+        new_frame = BigDataFrame(hbase_table)
+        return new_frame
+
+    @staticmethod
+    def get_instance():
+        global hbase_frame_builder_factory
+        return hbase_frame_builder_factory
+
+
+#global singleton instance
+hbase_frame_builder_factory = HBaseFrameBuilderFactory()
