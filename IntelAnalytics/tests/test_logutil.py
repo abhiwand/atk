@@ -23,7 +23,7 @@ class TestLogUtil(unittest.TestCase):
 
     def test_reading_from_file(self):
         currentProgress = None
-        with open("../test/MapReduceLogSample", "r") as logFile:
+        with open("../tests/MapReduceLogSample", "r") as logFile:
             for line in logFile:
                 progress = find_progress(line)
                 if(progress != None):
