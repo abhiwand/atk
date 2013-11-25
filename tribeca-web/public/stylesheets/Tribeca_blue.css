@@ -7582,8 +7582,9 @@ body.boxed .carousel-blur .flex-direction-nav .flex-next {
     text-align: center;
     list-style: none;
     z-index: 999;
-    bottom: 108px;
-    height: 20px; }
+    bottom: 278px;
+    height: 20px;
+    display: none; }
     .carousel-blur .flex-control-paging li {
       display: inline-block;
       margin: 2px; }

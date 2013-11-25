@@ -603,3 +603,15 @@ ul, li {
 }
 
 
+#leftpad {
+    margin-left: 50px;
+}
+
+.btn-contrast.btn-bordered {
+    border-color: #0071C5;
+    color: #fff;
+}
+
+.carousel-blur .btn.btn-lg {
+    margin: 50px 10px 5px;
+}
