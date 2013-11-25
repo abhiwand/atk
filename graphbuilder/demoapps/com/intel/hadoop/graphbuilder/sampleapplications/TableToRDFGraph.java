@@ -22,7 +22,7 @@ package com.intel.hadoop.graphbuilder.sampleapplications;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.input.rdf.RDFInputConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.input.rdf.RDFConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph.RDFGraphOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -124,11 +124,11 @@ public class TableToRDFGraph {
                 .hasArgs()
                 .withArgName("Edge-Column-Name")
                 .create("d"));
-        options.addOption(OptionBuilder.withLongOpt(RDFInputConfiguration.CMD_RDF_NAMESPACE))
+        options.addOption(OptionBuilder.withLongOpt(RDFConfiguration.config.getProperty("CMD_RDF_NAMESPACE"))
                 .withDescription("Specify the RDF namespace [OWL | RDFS | RDF | XMLSchema] for vertices")
                 .hasArgs()
                 .withArgName("RDF-Namespace")
-                .create("n");
+                .create("n"));
 
         return options;
     }
@@ -138,7 +138,7 @@ public class TableToRDFGraph {
         LOG.fatal(message);
 
         HelpFormatter h = new HelpFormatter();
-        h.printHelp("TableToTextGraph", options);
+        h.printHelp("TableToRDFGraph", options);
 
         GraphBuilderExit.graphbuilderFatalExitNoException(statusCode, message, LOG);
     }
@@ -254,6 +254,7 @@ public class TableToRDFGraph {
 
         ConstructionPipeline job                         = new TableToRDFGraph().new ConstructionPipeline();
         HBaseInputConfiguration inputConfiguration       = new HBaseInputConfiguration(srcTableName);
+        // GraphBuildingRules handle the syntax checks for command line arguments
         HBaseGraphBuildingRule buildingRule              = new HBaseGraphBuildingRule(cmd);
         RDFGraphOutputConfiguration outputConfiguration  = new RDFGraphOutputConfiguration();
 
