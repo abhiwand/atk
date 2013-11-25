@@ -36,7 +36,7 @@ def main(argv):
     
     final_relation_to_store = 'cleaned_data'
     if cmd_line_args.feature_to_clean:
-        if feature_type_dict[cmd_line_args.feature_to_clean] == 'chararray':#chararray checks are done using empty strings instead of NULLs
+        if feature_type_dict[cmd_line_args.feature_to_clean] == 'chararray' or feature_type_dict[cmd_line_args.feature_to_clean] == 'bytearray':#chararray checks are done using empty strings instead of NULLs
             pig_statements.append("cleaned_data = FILTER parsed_val BY (%s != '');" % (cmd_line_args.feature_to_clean))
             pig_statements.append("null_relation = FILTER parsed_val BY (%s == '');" % (cmd_line_args.feature_to_clean))
         else:
@@ -48,7 +48,7 @@ def main(argv):
             for i, feature in enumerate(features):
               if feature == 'key':#skip the hbase row key
                   continue
-              if feature_type_dict[feature] == 'chararray':
+              if feature_type_dict[feature] == 'chararray' or feature_type_dict[feature] == 'bytearray':
                   clean_statement += "(%s != '')" % (feature)#chararray checks are done using empty strings instead of NULLs
               else:
                   clean_statement += "(%s is not NULL)" % (feature)
@@ -58,7 +58,7 @@ def main(argv):
             for i, feature in enumerate(features):
               if feature == 'key':#skip the hbase row key
                   continue                
-              if feature_type_dict[feature] == 'chararray':
+              if feature_type_dict[feature] == 'chararray' or feature_type_dict[feature] == 'bytearray':
                   clean_statement += "(%s == '')" % (feature)#chararray checks are done using empty strings instead of NULLs
               else:
                   clean_statement += "(%s is NULL)" % (feature)

@@ -16,7 +16,7 @@ from intel_analytics.logger import stdout_logger as logger
 
 #for quick testing
 local_run = True
-DATAFRAME_NAME_PREFIX_LENGTH=5 #table name prefix length, names are generated with a rand prefix
+DATAFRAME_NAME_PREFIX_LENGTH=50 #table name prefix length, names are generated with a rand prefix
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 feateng_home = os.path.join(base_script_path, '../','..', 'feateng')
 etl_scripts_path = config['pig_py_scripts']
@@ -24,7 +24,7 @@ pig_log4j_path = os.path.join(os.environ['SOURCE_CODE'], 'IntelAnalytics', 'conf
 logger.debug('Using %s '% pig_log4j_path)
              
 os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
-os.environ["JYTHONPATH"] = os.path.join(os.environ['SOURCE_CODE'], 'IntelAnalytics', 'intel_analytics')#required to ship jython scripts with pig
+os.environ["JYTHONPATH"] = os.path.join(os.environ['SOURCE_CODE'], 'IntelAnalytics')#required to ship jython scripts with pig
 
 logger.debug('$JYTHONPATH %s' % os.environ["JYTHONPATH"])
 
@@ -86,10 +86,11 @@ class HBaseTable(object):
                   column_name,
                   new_column_name,
                   transformation,
-                  keep_source_column=False,
                   transformation_args=None):
         transformation_to_apply = EvalFunctions.to_string(transformation)
-
+        
+        #by default all transforms are now in-place
+        keep_source_column=True#For in-place transformations the source/original feature has to be kept
         #load schema info
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -216,15 +217,15 @@ class HBaseTable(object):
                 hbase_client.delete(schema_table, old_table_name)
 
     def dropna(self, how='any', column_name=None):
-        output_table = self.table_name + "_dropna"
+        output_table = self._create_random_table_name()
         self.__drop(output_table, column_name=column_name, how=how, replace_with=None)
 
     def fillna(self, column_name, value):
-        output_table = self.table_name + "_fillna"
+        output_table = self._create_random_table_name()
         self.__drop(output_table, column_name=column_name, how=None, replace_with=value)
 
     def impute(self, column_name, how):
-        output_table = self.table_name + "_impute"
+        output_table = self._create_random_table_name()
         if how not in available_imputations:
             raise HBaseTableException('Please specify a support imputation method. %d is not supported' % (how))
         self.__drop(output_table, column_name=column_name, how=None, replace_with=Imputation.to_string(how))
@@ -239,6 +240,15 @@ class HBaseTable(object):
         for i, column_name in enumerate(etl_schema.feature_names):
             columns[column_name] = etl_schema.feature_types[i]
         return columns
+
+    def _create_random_table_name(self):
+        name_postfix = self.table_name[DATAFRAME_NAME_PREFIX_LENGTH:]
+        while True:
+            rand_name_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))    
+            with ETLHBaseClient() as hbase_client:
+                new_table_name = rand_name_prefix + name_postfix
+                if not hbase_client.table_exists(new_table_name):
+                    return new_table_name    
 
 
 class HBaseFrameBuilder(FrameBuilder):
@@ -316,11 +326,10 @@ class HBaseFrameBuilder(FrameBuilder):
         return_code = subprocess.call(args)
         
         if return_code:
-            raise Exception('Could not import CSV file')
+            raise Exception('Could not import JSON file')
 
         return new_frame
             
-        raise Exception("Not implemented")
     def build_from_xml(self, file, schema=None):
         raise Exception("Not implemented")
 
