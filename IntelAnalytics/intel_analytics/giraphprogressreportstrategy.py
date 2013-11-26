@@ -11,7 +11,7 @@ class GiraphProgressReportStrategy(ProgressReportStrategy):
     def report(self, line):
         progress = find_progress(line)
 
-        if progress:
+        if progress and len(self.progress_list) < 2:
             if len(self.progress_list) == 0:
                 self.initialization_progressbar._disable_animation()
                 self.progress_list.append(MapReduceProgress(0, 0))
