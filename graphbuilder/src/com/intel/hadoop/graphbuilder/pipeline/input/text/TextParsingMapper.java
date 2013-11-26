@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Intel Corporation.
+/* Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *           
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,8 +32,8 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 /**
- * Mapper that processes Text values (with long keys), applies a string-based parser to the text and
- * emits property graph elements.
+ * The Mapper that processes Text values (with long keys), applies a string-based parser to the text,
+ * and emits property graph elements.
  *
  * @see GraphTokenizer
  * @see KeyFunction

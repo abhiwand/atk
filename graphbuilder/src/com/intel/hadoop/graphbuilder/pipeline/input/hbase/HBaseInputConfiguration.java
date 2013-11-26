@@ -1,4 +1,19 @@
-
+/* Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *
+ */
 
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
@@ -20,8 +35,8 @@ import java.io.IOException;
 /**
  * This class handles the set-up time configuration when the raw input is an Hbase table.
  *
- * For graph construction tasks that require multiple chained MR jobs, this class affects only the first MR job,
- * as that is the first mapper that deals with raw input.
+ * For graph construction tasks that require multiple chained MR jobs, this class affects only the 
+ * first MR job, as that is the first mapper that deals with raw input.
  *
  * <ul>
  * <li> It provides a handle to the mapper class used to read hbase tables ({@code HBaseReaderMapper}).</li>
@@ -110,7 +125,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
     }
 
     /**
-     * The class of the mapper used.
+     * Returns the class of the mapper used.
      * @return {@code HBaseReaderMapper.class}
      * @see HBaseReaderMapper
      */
