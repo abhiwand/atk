@@ -118,14 +118,18 @@ class NameRegistry(object):
         return self._internal_names.keys()
 
     def get_internal_name(self, name):
-        return self._internal_names[name]
+        try:
+            return self._internal_names[name]
+        except:
+            return None
 
     def get_name(self, internal_name):
         try:
             return (key for key, value in self._internal_names.items()
                     if value == internal_name).next()
         except StopIteration:
-            raise ValueError("Could not match name '{0}'".format(internal_name))
+            return None
+           #raise ValueError("Could not match name '{0}'".format(internal_name))
 
     def items(self):
         return self._internal_names.items()
