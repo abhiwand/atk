@@ -36,10 +36,14 @@ import play.api.Play
  * Singleton object to provide google oauth services.
  */
 object GooglePlus {
-    val clientId = Play.application.configuration.getString("oauth.google.client_id").get//"141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
-    val clientSecret = Play.application.configuration.getString("oauth.google.secret").get//"0fp9P9isYAz_vrlyA9I1Jk_j"
-    val tokenVerifyUrl = Play.application.configuration.getString("oauth.google.token_verify_url").get// "https://www.googleapis.com/oauth2/v1/tokeninfo"
-    val userInfoUrl = Play.application.configuration.getString("oauth.google.user_info_url").get//"https://www.googleapis.com/oauth2/v1/userinfo"
+    val clientId = Play.application.configuration.getString("oauth.google.client_id").get
+    //"141308260505-jf332k2mi49jggi2cugf08vk17u9s9rk.apps.googleusercontent.com"
+    val clientSecret = Play.application.configuration.getString("oauth.google.secret").get
+    //"0fp9P9isYAz_vrlyA9I1Jk_j"
+    val tokenVerifyUrl = Play.application.configuration.getString("oauth.google.token_verify_url").get
+    // "https://www.googleapis.com/oauth2/v1/tokeninfo"
+    val userInfoUrl = Play.application.configuration.getString("oauth.google.user_info_url").get
+    //"https://www.googleapis.com/oauth2/v1/userinfo"
     val scope = Play.application.configuration.getString("oauth.google.scope").get
     val apiKey = Play.application.configuration.getString("oauth.google.api_key").get
 
@@ -48,9 +52,14 @@ object GooglePlus {
     implicit val validateUserInfo = Json.reads[GoogleUserInfo]
 
     def getJavascriptOauthParams(): String = {
-      Json.stringify(Json.obj("clientId" -> clientId, "scope" -> scope, "apiKey" -> apiKey ))
+        Json.stringify(Json.obj("clientId" -> clientId, "scope" -> scope, "apiKey" -> apiKey))
     }
 
+    /**
+     * Check whether the client id is valid.
+     * @param idToValidate
+     * @return
+     */
     def validateClientId(idToValidate: String): Boolean = {
         if (idToValidate == clientId) {
             true
@@ -59,6 +68,11 @@ object GooglePlus {
         }
     }
 
+    /**
+     * Validate that the google auth response data is valid.
+     * @param authData
+     * @return
+     */
     def validateTokenResponseData(authData: JsValue): Option[TokenResponse] = {
         authData.validate[ValidateTokenResponseData](validateTokenResponseData).map {
             case (validResponse) =>
@@ -71,37 +85,48 @@ object GooglePlus {
         return None
     }
 
-  var validate:Option[TokenResponse] = _
-    def validateToken(auth: JsValue): Option[UserInfo] = {
-    validate = validateTokenResponseData(auth)
+    var validate: Option[TokenResponse] = _
 
-      val responseFuture = WS.url(tokenVerifyUrl).withQueryString("access_token" -> validate.get.access_token).get()
+    /**
+     * Validate the google access token.
+     * @param auth
+     * @return
+     */
+    def validateToken(auth: JsValue): Option[UserInfo] = {
+        validate = validateTokenResponseData(auth)
+
+        val responseFuture = WS.url(tokenVerifyUrl).withQueryString("access_token" -> validate.get.access_token).get()
         val resultFuture = responseFuture map {
             response =>
                 response.status match {
                     case 200 =>
                         Json.parse(response.body).validate[ValidateTokenJson](validateTokenJson).map {
                             case (validateTokenJson) =>
-                              if(validateClientId(validateTokenJson.audience) &&  validateTokenJson.email.equals(validate.get.email)){
-                                validateTokenJson
-                              }
+                                if (validateClientId(validateTokenJson.audience) && validateTokenJson.email.equals(validate.get.email)) {
+                                    validateTokenJson
+                                }
                         }
                     case _ =>
-                      ValidateTokenJson("","","","",0,"",false,"")
+                        ValidateTokenJson("", "", "", "", 0, "", false, "")
                 }
         }
 
         //this makes it a synchronous request
         val result = Await.result(resultFuture, 60 seconds)
 
-        if(result.isInstanceOf[play.api.libs.json.JsSuccess[ValidateTokenJson]]){
-          val jsSuccess = result.asInstanceOf[play.api.libs.json.JsSuccess[ValidateTokenJson]]
-          Some(UserInfo("", jsSuccess.get.email, "", ""))
-        } else{
-          None
+        if (result.isInstanceOf[play.api.libs.json.JsSuccess[ValidateTokenJson]]) {
+            val jsSuccess = result.asInstanceOf[play.api.libs.json.JsSuccess[ValidateTokenJson]]
+            Some(UserInfo("", jsSuccess.get.email, "", ""))
+        } else {
+            None
         }
     }
 
+    /**
+     * Verify data match google user info schema.
+     * @param body
+     * @return
+     */
     def validateUserInfo(body: JsValue): Option[UserInfo] = {
 
         body.validate[GoogleUserInfo](validateUserInfo).map {
@@ -111,6 +136,11 @@ object GooglePlus {
         None
     }
 
+    /**
+     * Get user info by token string.
+     * @param token
+     * @return
+     */
     def getUserInfo(token: String): Option[UserInfo] = {
         val responseFuture = WS.url(userInfoUrl).withQueryString("access_token" -> token).get()
         val resultFuture = responseFuture map {
