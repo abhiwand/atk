@@ -65,29 +65,29 @@ class BigDataFrameTest(unittest.TestCase):
         fp = open('/tmp/test.json', 'w')
         fp.write(test_json)
         fp.close()        
-        
-        big_frame = HBaseFrameBuilder().build_from_json('/tmp/test.json')
+         
+        big_frame = HBaseFrameBuilder().build_from_json('test_json', '/tmp/test.json')
         big_frame.head()
-        
+         
         big_frame.transform('json', 'first_book_author', EvalFunctions.Json.EXTRACT_FIELD, transformation_args=["store.book[0].author"])
         big_frame.head()
-        
+         
         big_frame.transform('json', 'first_book_empty_field', EvalFunctions.Json.EXTRACT_FIELD, transformation_args=["store.book[0].empty_field"])
-        
+         
         big_frame.transform('json', 'first_books_price', EvalFunctions.Json.EXTRACT_FIELD, transformation_args=["store.book[0].price"])
         big_frame.head()
-        
+         
         big_frame.transform('json', 'first_books_integer_field', EvalFunctions.Json.EXTRACT_FIELD, transformation_args=["store.book[0].integer_field"])
         big_frame.head()
-        
+         
         big_frame.transform('json', 'first_books_boolean_field', EvalFunctions.Json.EXTRACT_FIELD, transformation_args=["store.book[0].boolean_field"])
         big_frame.head()
-        
+         
         big_frame.transform('json', 'first_price_data_greater_than_10', EvalFunctions.Json.EXTRACT_FIELD, transformation_args=["store.book.findAll{book -> book.price>10}[0].price"])
         big_frame.head()
-        
+         
         big_frame.transform('json', 'category', EvalFunctions.Json.EXTRACT_FIELD, transformation_args=["store.book[1].category"])
-        
+         
         self.validate_json_extract(big_frame._table.table_name)
         
         data_set = ['name,age,salary',
@@ -110,7 +110,7 @@ class BigDataFrameTest(unittest.TestCase):
         self.validate_nonnull(big_frame._table.table_name, 'age')
         temp_tables.extend(big_frame.lineage)
          
-        big_frame = HBaseFrameBuilder().build_from_csv('test_dropna_salary', 'tmp/clean_test.csv', schema, True, overwrite=True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_dropna_salary', '/tmp/clean_test.csv', schema, True, overwrite=True)
         big_frame.dropna(column_name='salary')
         self.validate_nonnull(big_frame._table.table_name, 'salary')
         temp_tables.extend(big_frame.lineage)

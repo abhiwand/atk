@@ -46,6 +46,10 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False):
     te = Thread(target=_process_error_output, args=(p.stderr, err_txt, reportService))
     te.daemon = True # thread dies with the called process
     te.start()
+    
+    to = Thread(target=_report_output, args=(p.stdout, reportService))
+    to.daemon = True # thread dies with the called process
+    to.start()
 
     rc = None
     if heartbeat > 0:
@@ -64,11 +68,13 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False):
 
     # wait for thread to finish in no more than 10 seconds
     te.join(10)
+    to.join(10)
 
     if rc != 0:
         msg = ''.join(err_txt) if len(err_txt) > 0 else "(no msg provided)"
         print rc, msg
     #    raise Exception("Error {0}: {1}".format(rc,msg))
+    return rc
 
 def _report_output(out, reportService):
     for line in iter(out.readline, b''):

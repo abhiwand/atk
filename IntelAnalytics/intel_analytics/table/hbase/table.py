@@ -1,5 +1,4 @@
 import os
-import subprocess
 import re
 import random
 import string
@@ -16,6 +15,11 @@ from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import ProgressReportStrategy
 
+try:
+    from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
+except ImportError, e:
+    from intel_analytics.jobreportservice import PrintReportStrategy as progress_report_strategy
+        
 #for quick testing
 local_run = True
 DATAFRAME_NAME_PREFIX_LENGTH=50 #table name prefix length, names are generated with a rand prefix
@@ -117,7 +121,7 @@ class HBaseTable(object):
 
         logger.debug(args)
 
-        return_code = call(args, ProgressReportStrategy())
+        return_code = call(args, report_strategy=progress_report_strategy())
 
         if return_code:
             raise HBaseTableException('Could not apply transformation')
@@ -132,36 +136,72 @@ class HBaseTable(object):
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
-    def head(self, n=10):
+    def _get_first_N(self, n):
+        first_N_rows = []
         with ETLHBaseClient() as hbase_client:
            table = hbase_client.connection.table(self.table_name)
-           header_printed = False
            nrows_read = 0
            for key, data in table.scan():
                orderedData = collections.OrderedDict(sorted(data.items()))
-               columns = orderedData.keys()
-               items = orderedData.items()
-               if not header_printed:
-                   sys.stdout.write("--------------------------------------------------------------------\n")
-                   for i, column in enumerate(columns):
-                       sys.stdout.write("%s"%(re.sub(config['hbase_column_family'],'',column)))
-                       if i != len(columns)-1:
-                           sys.stdout.write("\t")
-                   sys.stdout.write("\n--------------------------------------------------------------------\n")
-                   header_printed = True
-
-               for i,(column,value) in enumerate(items):
-                   if value == '' or value==None:
-                       sys.stdout.write("NA")
-                   else:
-                       sys.stdout.write("%s"%(value))
-                   if i != len(items)-1:
-                       sys.stdout.write("  |  ")
-               sys.stdout.write("\n")
+               first_N_rows.append(orderedData)
                nrows_read+=1
                if nrows_read >= n:
                    break
-
+        return first_N_rows
+    
+    def head(self, n=10):
+        header_printed = False
+        first_N_rows = self._get_first_N(n)
+        for orderedData in first_N_rows:
+           columns = orderedData.keys()
+           items = orderedData.items()
+           if not header_printed:
+               sys.stdout.write("--------------------------------------------------------------------\n")
+               for i, column in enumerate(columns):
+                   header = re.sub(config['hbase_column_family'],'',column)
+                   sys.stdout.write("%s"%(header))
+                   if i != len(columns)-1:
+                       sys.stdout.write("\t")
+               sys.stdout.write("\n--------------------------------------------------------------------\n")
+               header_printed = True
+             
+           for i,(column,value) in enumerate(items):
+               if value == '' or value==None:
+                   sys.stdout.write("NA")
+               else:
+                   sys.stdout.write("%s"%(value))
+                       
+               if i != len(items)-1:
+                   sys.stdout.write("  |  ")
+           sys.stdout.write("\n")
+               
+    def to_html(self, nRows=10):
+        header_printed = False
+        first_N_rows = self._get_first_N(nRows)
+        html_table='<table border="1">'
+        for orderedData in first_N_rows:
+           columns = orderedData.keys()
+           items = orderedData.items()
+           
+           if not header_printed:
+               html_table+='<tr>'
+               for i, column in enumerate(columns):
+                   header = re.sub(config['hbase_column_family'],'',column)
+                   html_table+='<th>%s</th>' % header
+               html_table+='</tr>'
+               header_printed = True
+             
+           html_table+='<tr>'
+           for i,(column,value) in enumerate(items):
+               if value == '' or value==None:
+                   html_table+='<td>NA</td>'
+               else:
+                   html_table+=("<td>%s</td>" % (value))
+           html_table+='</tr>'
+                   
+        html_table+='</table>'
+        return html_table
+    
     def __drop(self, output_table, column_name=None, how=None, replace_with=None):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -196,6 +236,7 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
         logger.debug(args)
+        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
 
         return_code = call(args, ProgressReportStrategy())
 
@@ -292,7 +333,9 @@ class HBaseFrameBuilder(FrameBuilder):
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-        return_code = subprocess.call(args)
+
+        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
+        
         if return_code:
             raise Exception('Could not import CSV file')
 
@@ -325,7 +368,8 @@ class HBaseFrameBuilder(FrameBuilder):
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-        return_code = subprocess.call(args)
+            
+        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
         
         if return_code:
             raise Exception('Could not import JSON file')
