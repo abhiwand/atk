@@ -39,3 +39,7 @@ of reporting job status for input
 class ReportStrategy:
     def report(self, line):
         pass
+    
+class PrintReportStrategy:
+    def report(self, line):
+        print line    
