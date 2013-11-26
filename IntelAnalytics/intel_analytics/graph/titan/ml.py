@@ -235,8 +235,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         pr_cmd = ' '.join(map(str, pr_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        call(pr_cmd, heartbeat=1, shell=True)
         time_str = self.get_time()
+        call(pr_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'pr-convergence-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -340,10 +340,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         apl_cmd = ' '.join(map(str, apl_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
+        time_str = self.get_time()
         call(apl_cmd, heartbeat=1, shell=True)
         report = {'graph_name': self._graph.user_graph_name,
-               'time_run': time_str
-               }
+                  'time_run': time_str
+                  }
         self._graph.report = report
         return self._graph
 
@@ -429,10 +430,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             anchor_threshold,
             output_path
         )
-        time_str = self.get_time()
         lp_cmd = ' '.join(map(str, lp_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
+        time_str = self.get_time()
         call(lp_cmd, heartbeat=1, shell=True)
         report = {'graph_name': self._graph.user_graph_name,
                'time_run': time_str,
@@ -551,8 +552,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         lda_cmd = ' '.join(map(str, lda_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        call(lda_cmd, heartbeat=1, shell=True)
         time_str = self.get_time()
+        call(lda_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'lda-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -718,8 +719,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         als_cmd = ' '.join(map(str, als_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        call(als_cmd, heartbeat=1, shell=True)
         time_str = self.get_time()
+        call(als_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'als-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -889,8 +890,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         cgd_cmd = ' '.join(map(str, cgd_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        call(cgd_cmd, heartbeat=1, shell=True)
         time_str = self.get_time()
+        call(cgd_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'cgd-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -1068,8 +1069,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         gd_cmd = ' '.join(map(str, gd_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        call(gd_cmd, heartbeat=1, shell=True)
         time_str = self.get_time()
+        call(gd_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'gd-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
