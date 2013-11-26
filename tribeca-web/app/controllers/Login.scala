@@ -36,10 +36,10 @@ import play.api.mvc.SimpleResult
  */
 object Login extends Controller {
 
-    private abstract class LoginActionResponse
-    private case class SuccessfullyLoginResponse(sessionId: String) extends LoginActionResponse
-    private case class FailToValidateResponse() extends LoginActionResponse
-    private case class GeneralErrorResponse(errorCode: Int) extends LoginActionResponse
+    abstract class LoginActionResponse
+    case class SuccessfullyLoginResponse(sessionId: String) extends LoginActionResponse
+    case class FailToValidateResponse() extends LoginActionResponse
+    case class GeneralErrorResponse(errorCode: Int) extends LoginActionResponse
 
     var simpleResult: SimpleResult = Ok
 

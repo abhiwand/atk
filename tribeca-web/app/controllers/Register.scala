@@ -42,10 +42,10 @@ import play.api.Play.current
  */
 object Register extends Controller {
 
-    private abstract class RegisterActionResponse
-    private case class SuccessfullyRegisterResponse(sessionId: String) extends RegisterActionResponse
-    private case class FailToValidateResponse() extends RegisterActionResponse
-    private case class GeneralErrorResponse() extends RegisterActionResponse
+    abstract class RegisterActionResponse
+    case class SuccessfullyRegisterResponse(sessionId: String) extends RegisterActionResponse
+    case class FailToValidateResponse() extends RegisterActionResponse
+    case class GeneralErrorResponse() extends RegisterActionResponse
 
     var json: JsValue = _
     var auth: Authorize = _
