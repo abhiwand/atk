@@ -42,3 +42,17 @@ class MapReduceProgress:
     @total_progress.setter
     def total_progress(self, val):
         self._total_progress = val
+        
+        
+"""
+Pig doesn't log JobClient's output, instead the MapReduceLauncher class prints the progress
+"""  
+pig_progress_output_pattern = re.compile(r".*?MapReduceLauncher  - ([0-9]*?%)")
+def get_pig_progress(line_value):
+    match = re.match(pig_progress_output_pattern, line_value)
+    if not match:
+        return None
+    else:
+        pig_progress = int(match.group(1)[:-1])
+        return pig_progress
+    

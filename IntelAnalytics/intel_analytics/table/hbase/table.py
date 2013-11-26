@@ -1,19 +1,24 @@
 import os
-import subprocess
 import re
 import random
 import string
 import sys
 import collections
 
-from intel_analytics.config import NameRegistry, global_config as config
-from intel_analytics.table.bigdataframe import BigDataFrame
-from intel_analytics.table.framebldr import FrameBuilder
+from intel_analytics.config import NameRegistry, \
+    global_config as config, get_time_str
+from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
 from schema import ETLSchema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
+from intel_analytics import subproc
 
+try:
+    from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
+except ImportError, e:
+    from intel_analytics.jobreportservice import PrintReportStrategy as progress_report_strategy
+        
 #for quick testing
 local_run = True
 DATAFRAME_NAME_PREFIX_LENGTH=50 #table name prefix length, names are generated with a rand prefix
@@ -66,21 +71,18 @@ class HBaseTable(object):
     """
     Table Implementation for HBase
     """
-    def __init__(self, table_name):
+    def __init__(self, table_name, file_name):
         """
         (internal constructor)
         Parameters
         ----------
-        connection : happybase.Connection
-            connection to HBase
         table_name : String
             name of table in Hbase
+        file_name : String
+            name of file from which this table came
         """
         self.table_name = table_name
-        # TODO : Hard-coded column family name must be removed later and
-        #  read from Table
-        #self.column_family_name = config['hbase_column_family']
-        #self.connection = connection
+        self.file_name = file_name
 
     def transform(self,
                   column_name,
@@ -118,7 +120,7 @@ class HBaseTable(object):
 
         logger.debug(args)
 
-        return_code = subprocess.call(args)
+        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
 
         if return_code:
             raise HBaseTableException('Could not apply transformation')
@@ -133,36 +135,72 @@ class HBaseTable(object):
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
-    def head(self, n=10):
+    def _get_first_N(self, n):
+        first_N_rows = []
         with ETLHBaseClient() as hbase_client:
            table = hbase_client.connection.table(self.table_name)
-           header_printed = False
            nrows_read = 0
            for key, data in table.scan():
                orderedData = collections.OrderedDict(sorted(data.items()))
-               columns = orderedData.keys()
-               items = orderedData.items()
-               if not header_printed:
-                   sys.stdout.write("--------------------------------------------------------------------\n")
-                   for i, column in enumerate(columns):
-                       sys.stdout.write("%s"%(re.sub(config['hbase_column_family'],'',column)))
-                       if i != len(columns)-1:
-                           sys.stdout.write("\t")
-                   sys.stdout.write("\n--------------------------------------------------------------------\n")
-                   header_printed = True
-
-               for i,(column,value) in enumerate(items):
-                   if value == '' or value==None:
-                       sys.stdout.write("NA")
-                   else:
-                       sys.stdout.write("%s"%(value))
-                   if i != len(items)-1:
-                       sys.stdout.write("  |  ")
-               sys.stdout.write("\n")
+               first_N_rows.append(orderedData)
                nrows_read+=1
                if nrows_read >= n:
                    break
-
+        return first_N_rows
+    
+    def head(self, n=10):
+        header_printed = False
+        first_N_rows = self._get_first_N(n)
+        for orderedData in first_N_rows:
+           columns = orderedData.keys()
+           items = orderedData.items()
+           if not header_printed:
+               sys.stdout.write("--------------------------------------------------------------------\n")
+               for i, column in enumerate(columns):
+                   header = re.sub(config['hbase_column_family'],'',column)
+                   sys.stdout.write("%s"%(header))
+                   if i != len(columns)-1:
+                       sys.stdout.write("\t")
+               sys.stdout.write("\n--------------------------------------------------------------------\n")
+               header_printed = True
+             
+           for i,(column,value) in enumerate(items):
+               if value == '' or value==None:
+                   sys.stdout.write("NA")
+               else:
+                   sys.stdout.write("%s"%(value))
+                       
+               if i != len(items)-1:
+                   sys.stdout.write("  |  ")
+           sys.stdout.write("\n")
+               
+    def to_html(self, nRows=10):
+        header_printed = False
+        first_N_rows = self._get_first_N(nRows)
+        html_table='<table border="1">'
+        for orderedData in first_N_rows:
+           columns = orderedData.keys()
+           items = orderedData.items()
+           
+           if not header_printed:
+               html_table+='<tr>'
+               for i, column in enumerate(columns):
+                   header = re.sub(config['hbase_column_family'],'',column)
+                   html_table+='<th>%s</th>' % header
+               html_table+='</tr>'
+               header_printed = True
+             
+           html_table+='<tr>'
+           for i,(column,value) in enumerate(items):
+               if value == '' or value==None:
+                   html_table+='<td>NA</td>'
+               else:
+                   html_table+=("<td>%s</td>" % (value))
+           html_table+='</tr>'
+                   
+        html_table+='</table>'
+        return html_table
+    
     def __drop(self, output_table, column_name=None, how=None, replace_with=None):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -198,7 +236,7 @@ class HBaseTable(object):
 
         logger.debug(args)
         
-        return_code = subprocess.call(args)
+        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
@@ -256,20 +294,16 @@ class HBaseFrameBuilder(FrameBuilder):
     #-------------------------------------------------------------------------
     # Create BigDataFrames
     #-------------------------------------------------------------------------
-    def build_from_csv(self, file, schema=None, skip_header=False):
-        #create some random table name
-        #we currently don't bother the user to specify table names
-        df_name = file.replace("/", "_")
-        df_name = df_name.replace(".", "_")
-        dataframe_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))
-        df_name = dataframe_prefix + df_name
-        hbase_table = HBaseTable(df_name)
+    def build_from_csv(self, frame_name, file_name,
+                       schema=None, skip_header=False, overwrite=False):
+        table_name = self._create_table_name(frame_name, overwrite)
+        hbase_table = HBaseTable(table_name, file_name)
         new_frame = BigDataFrame(hbase_table)
 
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
         etl_schema.populate_schema(schema)
-        etl_schema.save_schema(df_name)
+        etl_schema.save_schema(table_name)
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
         
@@ -277,7 +311,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        args += [script_path, '-i', file, '-o', df_name,
+        args += [script_path, '-i', file_name, '-o', table_name,
              '-f', feature_names_as_str, '-t', feature_types_as_str]
 
         if skip_header:
@@ -286,22 +320,21 @@ class HBaseFrameBuilder(FrameBuilder):
         logger.debug(args)
         # need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
-            hbase_client.drop_create_table(df_name,
+            hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-        return_code = subprocess.call(args)
+
+        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
+        
         if return_code:
             raise Exception('Could not import CSV file')
 
         return new_frame
 
-    def build_from_json(self, file):
+    def build_from_json(self, frame_name, file_name, overwrite=False):
         #create some random table name
         #we currently don't bother the user to specify table names
-        df_name = file.replace("/", "_")
-        df_name = df_name.replace(".", "_")
-        dataframe_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))
-        df_name = dataframe_prefix + df_name
-        hbase_table = HBaseTable(df_name) #currently we support hbase, TODO: where to read table type?
+        table_name = self._create_table_name(frame_name, overwrite)
+        hbase_table = HBaseTable(table_name, file_name)
         new_frame = BigDataFrame(hbase_table)
 
         schema='json:chararray'#dump all records as chararray
@@ -309,50 +342,70 @@ class HBaseFrameBuilder(FrameBuilder):
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
         etl_schema.populate_schema(schema)
-        etl_schema.save_schema(df_name)
+        etl_schema.save_schema(table_name)
 
         script_path = os.path.join(etl_scripts_path,'pig_import_json.py')
 
         args = _get_pig_args()
 
-        args += [script_path, '-i', file, '-o', df_name]
+        args += [script_path, '-i', file_name, '-o', table_name]
 
         logger.debug(args)
         
 #         need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
-            hbase_client.drop_create_table(df_name,
+            hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-        return_code = subprocess.call(args)
+            
+        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
         
         if return_code:
             raise Exception('Could not import JSON file')
 
         return new_frame
             
-    def build_from_xml(self, file, schema=None):
+    def build_from_xml(self, frame_name, file_name, schema=None):
         raise Exception("Not implemented")
+
+
+    def _create_table_name(self, frame_name, overwrite):
+        table_name =  hbase_frame_builder_factory.name_registry. \
+            get_internal_name(frame_name)
+        if table_name is not None:
+            if overwrite:
+                # delete existing table
+                #todo: raise Exception("Overwrite not implemented")
+                pass
+            else:
+                raise Exception("Frame '" + frame_name
+                                + "' already exists.  Try override=True")
+        table_name = frame_name + get_time_str()
+        hbase_frame_builder_factory. \
+            name_registry.register_name(frame_name, table_name)
+        return table_name
 
 
 class HBaseFrameBuilderFactory(object):
     def __init__(self):
         super(HBaseFrameBuilderFactory, self).__init__()
-        self._name_registry = NameRegistry(
-            os.path.join(config['conf_folder'],
-                         config['hbase_names_file']))
+        table_names_file = os.path.join(config['conf_folder'],
+                                        config['hbase_names_file'])
+        #print "Initializing name registry for Frame Builder Factory with " \
+        #      + table_names_file
+        self.name_registry = NameRegistry(table_names_file)
 
     def get_frame_builder(self):
         return HBaseFrameBuilder()
 
     def get_frame(self, frame_name):
         try:
-            hbase_table_name = self._name_registry.get_internal_name(frame_name)
+            hbase_table_name = self.name_registry.get_internal_name(frame_name)
         except KeyError:
             raise KeyError("Could not stored table for '" + frame_name + "'")
         return self._get_frame(frame_name, hbase_table_name)
 
-    def get_graph_names(self):
-        return self._name_registry.get_names()
+    def get_frame_names(self):
+        return self.name_registry.get_names()
 
     def _get_frame(self, frame_name, hbase_table_name):
         hbase_table = HBaseTable(frame_name, hbase_table_name)

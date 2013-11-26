@@ -489,12 +489,12 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
                 output.writeBytes("========================Learning Progress====================\n");
-            } else if (realStep >0 && (realStep % (2 * learningCurveOutputInterval)) == 1) {
+            } else if (realStep >0 && (realStep % (2 * learningCurveOutputInterval)) == 0) {
                 // output learning progress
                 double trainCost = Double.parseDouble(map.get(SUM_TRAIN_COST));
                 double validateRmse = Double.parseDouble(map.get(SUM_VALIDATE_ERROR));
                 double testRmse = Double.parseDouble(map.get(SUM_TEST_ERROR));
-                output.writeBytes("superstep = " + superstep + "\t");
+                output.writeBytes("superstep = " + realStep + "\t");
                 output.writeBytes("cost(train) = " + trainCost + "\t");
                 output.writeBytes("rmse(validate) = " + validateRmse + "\t");
                 output.writeBytes("rmse(test) = " + testRmse + "\n");
