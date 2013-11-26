@@ -42,9 +42,14 @@ import play.api.Play.current
  */
 object Register extends Controller {
 
+    private abstract class RegisterActionResponse
+    private case class SuccessfullyRegisterResponse(sessionId: String) extends RegisterActionResponse
+    private case class FailToValidateResponse() extends RegisterActionResponse
+    private case class GeneralErrorResponse() extends RegisterActionResponse
+
     var json: JsValue = _
     var auth: Authorize = _
-    var response: (Int, Option[String]) = (0, None)
+    var response: RegisterActionResponse = _
     /**
      * register user to the system.
      */
@@ -66,11 +71,11 @@ object Register extends Controller {
                 }
             )
 
-            response._1 match {
-                case StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get).withCookies(getRegisteredCookie)
-                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+            response match {
+                case successfulResponse: SuccessfullyRegisterResponse => Redirect("/ipython").withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(getRegisteredCookie)
+                case failedResponse: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
                     "/", None, true, false))
-                case _ => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
+                case generalErrorResponse: GeneralErrorResponse => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
                     "/", None, true, false)).withCookies(getRegisteredCookie)
             }
         }
@@ -79,13 +84,13 @@ object Register extends Controller {
     }
 
     /**
-     *
+     * Get registration response.
      * @param Authorization info
      * @return tuple of (status code, session Id)
      */
-    def getResponse(registrationForm: RegistrationFormMapping, auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): (Int, Option[String]) = {
+    def getResponse(registrationForm: RegistrationFormMapping, auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): RegisterActionResponse = {
         if (auth.validateToken() == None || auth.validateUserInfo() == None)
-            return (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
+            return FailToValidateResponse()
 
         val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true,
           Some(Play.application.configuration.getString("ipython.url").get),
@@ -95,12 +100,12 @@ object Register extends Controller {
         if (result.login == 1) {
             val sessionId = sessionGen.create(result.uid)
             if (sessionId == None)
-                (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
+                FailToValidateResponse()
             else
-                (StatusCodes.LOGIN, Some(sessionId.get))
+                SuccessfullyRegisterResponse(sessionId.get)
         }
         else
-            (result.errorCode, None)
+            GeneralErrorResponse()
     }
 
     /**
