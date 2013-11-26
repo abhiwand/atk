@@ -12,7 +12,7 @@ c = get_config()
 # c.NotebookApp.mathjax_url = ''
 
 # The IP address the notebook server will listen on.
-c.NotebookApp.ip = '*'
+c.NotebookApp.ip = '127.0.0.1'
 
 # The port the notebook server will listen on.
 c.NotebookApp.port = 8888
