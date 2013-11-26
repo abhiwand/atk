@@ -206,8 +206,9 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
         except:
             pass
         try:
-            table = hbase_client.connection.table(CONFIG_PARAMS['etl-schema-table'])
+            table = hbase_client.connection.table(CONFIG_PARAMS['hbase_schema_table'])
             table.delete(temp)#also remove the schema info
+            print 'deleted schema information for table',temp
         except:
             pass
                     
