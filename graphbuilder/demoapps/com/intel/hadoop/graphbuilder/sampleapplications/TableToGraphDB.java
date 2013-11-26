@@ -110,13 +110,7 @@ public class TableToGraphDB {
 
         options.addOption(BaseCLI.Options.directedEdge.get());
 
-        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.CMD_KEYS_OPTNAME)
-                .withDescription("Specify keys, please. " +
-                        TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP)
-                .hasArgs()
-                .withArgName("Keys" +
-                        "")
-                .create("k"));
+        options.addOption(BaseCLI.Options.titanKeyIndex.get());
 
         commandLineInterface.setOptions(options);
     }

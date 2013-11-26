@@ -450,8 +450,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         String keyCommandLine = new String("");
 
-        if (cmd.hasOption(TitanCommandLineOptions.CMD_KEYS_OPTNAME)) {
-            keyCommandLine = cmd.getOptionValue(TitanCommandLineOptions.CMD_KEYS_OPTNAME);
+        if (cmd.hasOption(BaseCLI.Options.titanKeyIndex.getLongOpt())) {
+            keyCommandLine = cmd.getOptionValue(BaseCLI.Options.titanKeyIndex.getLongOpt());
         }
 
         initTitanGraph(keyCommandLine);
