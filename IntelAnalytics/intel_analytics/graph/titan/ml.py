@@ -4,7 +4,7 @@ Titan-base Giraph Machine Learning
 from intel_analytics.subproc import call
 #from intel_analytics.progressreportstrategy import ProgressReportStrategy
 #from intel_analytics.giraphprogressreportstrategy import GiraphProgressReportStrategy
-from intel_analytics.config import global_config
+from intel_analytics.config import global_config, get_time_str
 import matplotlib as mpl
 mpl.use('Agg')
 #from pylab import *  # MATLAB-like API
@@ -88,14 +88,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                          '; then hadoop fs -rmr -skipTrash ' + output_path + '; fi'
         call(del_cmd, heartbeat=1, shell=True)
 
-    def get_time(self):
-        """
-        get current time stamp
-        """
-        ts = time.time()
-        time_str = datetime.datetime.fromtimestamp(ts).strftime('_%Y-%m-%d-%H-%M-%S')
-        return time_str
-
     def get_report(self, output_path, file_name, time_str):
         """
         get learning curve/convergence progress report
@@ -156,7 +148,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         lbp_cmd = ' '.join(map(str, lbp_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
+        time_str = get_time_str()
         call(lbp_cmd, heartbeat=1, shell=True)
         report = {'graph_name': self._graph.user_graph_name,
                'time_run': time_str,
@@ -259,7 +251,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         print pr_cmd
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
+        time_str = get_time_str()
         call(pr_cmd, heartbeat=1, shell=True, output_report_strategy=None)
         report_file = self.get_report(output_path, 'pr-convergence-report_0', time_str)
         #find progress info
@@ -364,7 +356,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         apl_cmd = ' '.join(map(str, apl_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
+        time_str = get_time_str()
         call(apl_cmd, heartbeat=1, shell=True)
         report = {'graph_name': self._graph.user_graph_name,
                   'time_run': time_str
@@ -457,7 +449,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         lp_cmd = ' '.join(map(str, lp_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
+        time_str = get_time_str()
         call(lp_cmd, heartbeat=1, shell=True)
         report = {'graph_name': self._graph.user_graph_name,
                'time_run': time_str,
@@ -576,7 +568,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         lda_cmd = ' '.join(map(str, lda_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
+        time_str = get_time_str()
         call(lda_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'lda-learning-report_0', time_str)
         #find progress info
@@ -744,7 +736,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         print als_cmd
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
+        time_str = get_time_str()
         call(als_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'als-learning-report_0', time_str)
         #find progress info
@@ -915,7 +907,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         cgd_cmd = ' '.join(map(str, cgd_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
+        time_str = get_time_str()
         call(cgd_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'cgd-learning-report_0', time_str)
         #find progress info
@@ -1094,7 +1086,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         gd_cmd = ' '.join(map(str, gd_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
+        time_str = get_time_str()
         call(gd_cmd, heartbeat=1, shell=True)
         report_file = self.get_report(output_path, 'gd-learning-report_0', time_str)
         #find progress info

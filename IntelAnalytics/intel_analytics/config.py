@@ -8,6 +8,8 @@ from pyjavaprops import Properties
 from StringIO import StringIO
 from string import Template
 import os
+import time
+import datetime
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -15,6 +17,14 @@ properties_file = os.path.join(
     os.getenv('INTEL_ANALYTICS_PYTHON', os.path.dirname(__file__)),
     'intel_analytics.properties')
 
+
+def get_time_str(self):
+    """
+    get current time stamp
+    """
+    ts = time.time()
+    time_str = datetime.datetime.fromtimestamp(ts).strftime('_%Y-%m-%d-%H-%M-%S')
+    return time_str
 
 def get_env_vars(names):
     """

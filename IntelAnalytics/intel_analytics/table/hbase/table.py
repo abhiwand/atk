@@ -6,7 +6,8 @@ import string
 import sys
 import collections
 
-from intel_analytics.config import NameRegistry, global_config as config
+from intel_analytics.config import NameRegistry, \
+    global_config as config, get_time_str
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
 from schema import ETLSchema
@@ -249,9 +250,6 @@ class HBaseTable(object):
 
 class HBaseFrameBuilder(FrameBuilder):
 
-    def get_time_str(self):
-        return "121212time"
-
     #-------------------------------------------------------------------------
     # Create BigDataFrames
     #-------------------------------------------------------------------------
@@ -332,11 +330,12 @@ class HBaseFrameBuilder(FrameBuilder):
         if table_name is not None:
             if overwrite:
                 # delete existing table
-                raise Exception("Overwrite not implemented")
+                #todo: raise Exception("Overwrite not implemented")
+                pass
             else:
                 raise Exception("Frame '" + frame_name
                                 + "' already exists.  Try override=True")
-        table_name = ''.join([self.get_time_str(), '_', frame_name])
+        table_name = frame_name + get_time_str()
         hbase_frame_builder_factory. \
             name_registry.register_name(frame_name, table_name)
         return table_name
@@ -345,9 +344,11 @@ class HBaseFrameBuilder(FrameBuilder):
 class HBaseFrameBuilderFactory(object):
     def __init__(self):
         super(HBaseFrameBuilderFactory, self).__init__()
-        self.name_registry = NameRegistry(
-            os.path.join(config['conf_folder'],
-                         config['hbase_names_file']))
+        table_names_file = os.path.join(config['conf_folder'],
+                                        config['hbase_names_file'])
+        #print "Initializing name registry for Frame Builder Factory with " \
+        #      + table_names_file
+        self.name_registry = NameRegistry(table_names_file)
 
     def get_frame_builder(self):
         return HBaseFrameBuilder()
