@@ -7,6 +7,8 @@ import java.util.HashMap;
 
 public class TitanConfig {
 
+    public static final String GB_ID_FOR_TITAN = "_gb_ID";
+
     private static HashMap<String, String> defaultConfigMap  = new HashMap<>();
     static {
         // Default Titan configuration for Graphbuilder
@@ -20,5 +22,4 @@ public class TitanConfig {
     }
 
     public static RuntimeConfig config = RuntimeConfig.getInstanceWithDefaultConfig(defaultConfigMap);
-
 }

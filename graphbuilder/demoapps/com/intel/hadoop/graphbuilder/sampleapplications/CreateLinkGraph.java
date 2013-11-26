@@ -112,22 +112,6 @@ public class CreateLinkGraph {
     }
 
     /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldUseHBase() {
-            return false;
-        }
-    }
-
-    /**
      * Main method for creating the link graph
      * @param args raw command line
      * @throws Exception
@@ -139,8 +123,8 @@ public class CreateLinkGraph {
 
         Timer timer = new Timer();
 
-        ConstructionPipeline job = new CreateLinkGraph().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.getRuntimeConfig().addConfig(job);
+        GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
+        commandLineInterface.getRuntimeConfig().addConfig(pipeline);
 
         WikiPageInputFormat        format             = new WikiPageInputFormat();
         TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
@@ -156,7 +140,9 @@ public class CreateLinkGraph {
 
         LOG.info("========== Creating link graph ================");
         timer.start();
-        job.run(inputConfiguration, buildingRule, outputConfiguration, commandLineInterface.getCmd());
+        pipeline.run(inputConfiguration, buildingRule,
+                GraphConstructionPipeline.BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES, outputConfiguration,
+                commandLineInterface.getCmd());
         LOG.info("========== Done creating link graph ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

@@ -39,11 +39,9 @@ public class GraphDatabaseConnector {
     /**
      * @param graphDB                         Identifier of the target graph database,  "titan" for now
      *                                        "allegrograph" and "neo4j" are placeholders
-     * @param configuration                   Configuration required to create a graph
      * @throws UnsupportedOperationException  when it cannot open the graph database, particular, if you try to
      *                                        open an unsupported graph databse
      */
-
 
     public static TitanGraph open(String graphDB, org.apache.commons.configuration.Configuration configuration,
                                   org.apache.hadoop.conf.Configuration hadoopConfig)
@@ -58,7 +56,6 @@ public class GraphDatabaseConnector {
                 Map.Entry pair = (Map.Entry) it.next();
                 configuration.setProperty(pair.getKey().toString(), pair.getValue().toString());
             }
-
             return TitanFactory.open(configuration);
 
         } else if ("allegrograph".equals(graphDB)) {
