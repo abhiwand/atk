@@ -23,6 +23,12 @@ TEST_TRANSFORM_TABLE='worldbank_csv_transformed'
 TEST_STND_TABLE='test_standardization_dataset_csv'
 TEST_STND_TRANSFORM_TABLE='test_standardization_dataset_csv_transformed'
 
+TEST_TABLES = []
+TEST_TABLES.append(TEST_TABLE)
+TEST_TABLES.append(TEST_TRANSFORM_TABLE)
+TEST_TABLES.append(TEST_STND_TABLE)
+TEST_TABLES.append(TEST_STND_TRANSFORM_TABLE)
+
 print '###########################'
 print 'Validating Transform Functions'
 print '###########################'
@@ -193,22 +199,18 @@ print "Validated the STND transform"
                         
 #cleanup test tables
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
-    try:
-        hbase_client.connection.delete_table(TEST_TABLE, disable=True)
-    except:
-        pass
-    try:
-        hbase_client.connection.delete_table(TEST_TRANSFORM_TABLE, disable=True)
-    except:
-        pass
-    try:
-        hbase_client.connection.delete_table(TEST_STND_TABLE, disable=True)
-    except:
-        pass
-    try:
-        hbase_client.connection.delete_table(TEST_STND_TRANSFORM_TABLE, disable=True)
-    except:
-        pass
+    for temp in TEST_TABLES:
+        try:
+            hbase_client.connection.delete_table(temp, disable=True)
+            print 'deleted table',temp
+        except:
+            pass
+        try:
+            table = hbase_client.connection.table(CONFIG_PARAMS['etl-schema-table'])
+            table.delete(temp)#also remove the schema info
+        except:
+            pass
+                    
 print '###########################'
 print 'DONE Validating Transform Functions'
 print '###########################'    
