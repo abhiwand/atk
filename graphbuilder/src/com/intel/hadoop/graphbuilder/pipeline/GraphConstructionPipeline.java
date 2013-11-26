@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.io.IOException;
 
 /**
- * An abstract class that connects the input configuration, tokenizer and output configuration
+ * An abstract class that connects the input configuration, tokenizer, and output configuration
  * to generate a graph stored in the raw form as specified by the input configuration, using
  * the rules of the tokenizer and outputting the graph per the output configuration.
  *
