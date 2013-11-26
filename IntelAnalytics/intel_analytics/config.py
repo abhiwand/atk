@@ -8,6 +8,8 @@ from pyjavaprops import Properties
 from StringIO import StringIO
 from string import Template
 import os
+import time
+import datetime
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -15,6 +17,14 @@ properties_file = os.path.join(
     os.getenv('INTEL_ANALYTICS_PYTHON', os.path.dirname(__file__)),
     'intel_analytics.properties')
 
+
+def get_time_str():
+    """
+    get current time stamp
+    """
+    ts = time.time()
+    time_str = datetime.datetime.fromtimestamp(ts).strftime('_%Y-%m-%d-%H-%M-%S')
+    return time_str
 
 def get_env_vars(names):
     """
@@ -118,14 +128,18 @@ class NameRegistry(object):
         return self._internal_names.keys()
 
     def get_internal_name(self, name):
-        return self._internal_names[name]
+        try:
+            return self._internal_names[name]
+        except:
+            return None
 
     def get_name(self, internal_name):
         try:
             return (key for key, value in self._internal_names.items()
                     if value == internal_name).next()
         except StopIteration:
-            raise ValueError("Could not match name '{0}'".format(internal_name))
+            return None
+           #raise ValueError("Could not match name '{0}'".format(internal_name))
 
     def items(self):
         return self._internal_names.items()

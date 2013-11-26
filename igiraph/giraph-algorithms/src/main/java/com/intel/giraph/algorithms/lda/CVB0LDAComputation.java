@@ -513,7 +513,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
             }
             if (realStep > 0) {
                 // output learning progress
-                output.writeBytes("superstep = " + superstep + "\t");
+                output.writeBytes("superstep = " + realStep + "\t");
                 if (costEval) {
                     double cost = Double.parseDouble(map.get(SUM_COST));
                     output.writeBytes("cost = " + cost + "\t");
