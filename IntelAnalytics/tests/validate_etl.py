@@ -7,6 +7,8 @@ import sys
 import subprocess
 import commands
 import math
+import traceback
+
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_script_path, '..'))
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
@@ -24,24 +26,43 @@ print '###########################'
 print 'Validating ETL scripts'
 print '###########################'
 
-# test transform functionality
-subprocess.call(['python', os.path.join(test_scripts_path, 'test_transform_API.py')])
+try:
+    
+    #test big data frame API
+    return_code = subprocess.call(['python', os.path.join(test_scripts_path, 'test_bigdataframe.py')])
+    
+    if return_code:
+        raise Exception("BigDataFrame API tests failed") 
+    
+    # test transform functionality
+    return_code = subprocess.call(['python', os.path.join(test_scripts_path, 'test_transform_API.py')])
+     
+    if return_code:
+        raise Exception("Transform tests failed")
+     
+    # test transform functionality
+    return_code = subprocess.call(['python', os.path.join(test_scripts_path, 'test_cleaning_API.py')])
+     
+    if return_code:
+        raise Exception("Clean tests failed")    
+    
+    #test string functions
+    return_code = subprocess.call(['python', os.path.join(test_scripts_path, 'test_string_functions.py')])
+     
+    if return_code:
+        raise Exception("String tests failed")    
+     
+    #test schema functions
+    return_code = subprocess.call(['python', os.path.join(test_scripts_path, 'test_schema_support.py')])
+     
+    if return_code:
+        raise Exception("Schema tests failed")    
+   
+except:
+    traceback.print_exc()
+    sys.exit(1)
 
-# test transform functionality
-subprocess.call(['python', os.path.join(test_scripts_path, 'test_cleaning_API.py')])
 
-#test string functions
-subprocess.call(['python', os.path.join(test_scripts_path, 'test_string_functions.py')])
-
-#test math functions
-subprocess.call(['python', os.path.join(test_scripts_path, 'test_math_functions.py')])
-
-#test schema functions
-subprocess.call(['python', os.path.join(test_scripts_path, 'test_schema_support.py')])
-
-#test big data frame API
-subprocess.call(['python', os.path.join(test_scripts_path, 'test_bigdataframe.py')])
- 
 print '#################################'
 print 'Done validating ETL scripts'
 print '#################################'

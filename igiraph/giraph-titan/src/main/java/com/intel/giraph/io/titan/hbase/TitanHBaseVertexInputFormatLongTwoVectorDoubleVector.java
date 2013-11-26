@@ -22,24 +22,27 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
+import com.intel.mahout.math.DoubleWithVectorWritable;
+import com.intel.mahout.math.TwoVectorWritable;
+import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-import com.thinkaurelius.titan.diskstorage.Backend;
-import org.apache.hadoop.hbase.util.Bytes;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import org.apache.mahout.math.Vector;
-import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.Vector;
+
 import java.io.IOException;
+
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_ERROR;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_VECTOR;
 
 /**
@@ -50,13 +53,13 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VEC
  * and <code>DoubleVector</code> edge weights.
  */
 public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
-        TitanHBaseVertexInputFormat<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> {
+    TitanHBaseVertexInputFormat<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-            .getLogger(TitanHBaseVertexInputFormatLongTwoVectorDoubleVector.class);
+        .getLogger(TitanHBaseVertexInputFormatLongTwoVectorDoubleVector.class);
 
     /**
      * checkInputSpecs
@@ -74,7 +77,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
      */
     @Override
     public void setConf(
-            ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> conf) {
+        ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> conf) {
         GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
@@ -89,7 +92,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
      * @throws RuntimeException
      */
     public VertexReader<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> createVertexReader(
-            InputSplit split, TaskAttemptContext context) throws IOException {
+        InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
 
@@ -99,7 +102,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
      * Uses the RecordReader to get HBase data
      */
     public static class TitanHBaseVertexReader extends
-            HBaseVertexReader<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> {
+        HBaseVertexReader<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> {
         /**
          * reader to parse Titan graph
          */
@@ -136,11 +139,11 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
          */
         @Override
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-                InterruptedException {
+            InterruptedException {
             super.initialize(inputSplit, context);
             this.graphReader = new TitanHBaseGraphReader(
-                    GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                            GIRAPH_TITAN.get(context.getConfiguration())));
+                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                    GIRAPH_TITAN.get(context.getConfiguration())));
         }
 
         /**
@@ -157,17 +160,17 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
 
             if (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> temp = graphReader
-                        .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_VECTOR, getConf(), getRecordReader()
-                                .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                .get(edgeStoreFamily));
+                    .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_VECTOR, getConf(), getRecordReader()
+                        .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
+                        .get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
                 } else if (getRecordReader().nextKeyValue()) {
                     final Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> temp1 = graphReader
-                            .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_VECTOR, getConf(), getRecordReader()
-                                    .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                    .get(edgeStoreFamily));
+                        .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_VECTOR, getConf(), getRecordReader()
+                            .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
+                            .get(edgeStoreFamily));
                     if (null != temp1) {
                         vertex = temp1;
                         return true;
@@ -204,7 +207,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
                 if (cardinality == 0) {
                     cardinality = priorVector.size();
                 } else {
-                    throw new IllegalArgumentException("Error in input data:" + "different cardinality!");
+                    throw new IllegalArgumentException(INPUT_DATA_ERROR);
                 }
             }
             return vertexValue;

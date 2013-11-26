@@ -22,24 +22,27 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.intel.giraph.io.EdgeDataWritable;
+import com.intel.giraph.io.VertexDataWritable;
+import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
+import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import org.apache.mahout.math.Vector;
-import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.VertexDataWritable;
-import com.thinkaurelius.titan.diskstorage.Backend;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.Vector;
+
 import java.io.IOException;
+
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_ERROR;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
 
 
@@ -59,13 +62,13 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRA
  * [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
-        TitanHBaseVertexInputFormat<LongWritable, VertexDataWritable, EdgeDataWritable> {
+    TitanHBaseVertexInputFormat<LongWritable, VertexDataWritable, EdgeDataWritable> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-            .getLogger(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
+        .getLogger(TitanHBaseVertexInputFormatPropertyGraph4CF.class);
 
     /**
      * checkInputSpecs
@@ -83,7 +86,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      */
     @Override
     public void setConf(
-            ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable> conf) {
+        ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable> conf) {
         GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
@@ -98,7 +101,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      * @throws RuntimeException
      */
     public VertexReader<LongWritable, VertexDataWritable, EdgeDataWritable> createVertexReader(
-            InputSplit split, TaskAttemptContext context) throws IOException {
+        InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
 
@@ -108,7 +111,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      * Uses the RecordReader to get HBase data
      */
     public static class TitanHBaseVertexReader extends
-            HBaseVertexReader<LongWritable, VertexDataWritable, EdgeDataWritable> {
+        HBaseVertexReader<LongWritable, VertexDataWritable, EdgeDataWritable> {
         /**
          * reader to parse Titan graph
          */
@@ -145,11 +148,11 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          */
         @Override
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-                InterruptedException {
+            InterruptedException {
             super.initialize(inputSplit, context);
             this.graphReader = new TitanHBaseGraphReader(
-                    GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                            GIRAPH_TITAN.get(context.getConfiguration())));
+                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                    GIRAPH_TITAN.get(context.getConfiguration())));
         }
 
         /**
@@ -166,17 +169,17 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
 
             if (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> temp = graphReader
-                        .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
-                                .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                .get(edgeStoreFamily));
+                    .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
+                        .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
+                        .get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
                 } else if (getRecordReader().nextKeyValue()) {
                     final Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> temp1 = graphReader
-                            .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
-                                    .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                                    .get(edgeStoreFamily));
+                        .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
+                            .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
+                            .get(edgeStoreFamily));
                     if (null != temp1) {
                         vertex = temp1;
                         return true;
@@ -213,7 +216,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
                 if (cardinality == -1) {
                     cardinality = vector.size();
                 } else {
-                    throw new IllegalArgumentException("Error in input data:" + "different cardinality!");
+                    throw new IllegalArgumentException(INPUT_DATA_ERROR);
                 }
             }
             return vertexValue;

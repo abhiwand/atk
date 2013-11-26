@@ -63,21 +63,6 @@ public class CreateWordCountGraph {
     private static final   Logger  LOG             = Logger.getLogger(CreateWordCountGraph.class);
     private static         boolean titanAsDataSink = false;
 
-    /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return true;
-        }
-
-        @Override
-        public boolean shouldUseHBase() {
-            return false;
-        }
-    }
-
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
@@ -149,18 +134,18 @@ public class CreateWordCountGraph {
 
         Timer timer = new Timer();
 
-        ConstructionPipeline job = new CreateWordCountGraph().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.getRuntimeConfig().addConfig(job);
+        GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
+        commandLineInterface.getRuntimeConfig().addConfig(pipeline);
 
         if (commandLineInterface.hasOption("d")) {
             String dictionaryPath = commandLineInterface.getOptionValue("dictionary");
-            job.addUserOpt("Dictionary", dictionaryPath);
+            pipeline.addUserOpt("Dictionary", dictionaryPath);
             LOG.info("Dictionary path: " + dictionaryPath);
         }
 
         if (commandLineInterface.hasOption("s")) {
             String stopwordsPath = commandLineInterface.getOptionValue("stopwords");
-            job.addUserOpt("Dictionary", stopwordsPath);
+            pipeline.addUserOpt("Dictionary", stopwordsPath);
             LOG.info("Stopwords path: " + stopwordsPath);
         }
 
@@ -181,7 +166,9 @@ public class CreateWordCountGraph {
 
         LOG.info("============= Creating Word Count Graph ===================");
         timer.start();
-        job.run(inputConfiguration, graphBuildingRule, outputConfiguration, commandLineInterface.getCmd());
+        pipeline.run(inputConfiguration, graphBuildingRule,
+                GraphConstructionPipeline.BiDirectionalHandling.REMOVE_BIDIRECTIONALEDGES,
+                outputConfiguration, commandLineInterface.getCmd());
         LOG.info("========== Done Creating Word Count Graph  ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

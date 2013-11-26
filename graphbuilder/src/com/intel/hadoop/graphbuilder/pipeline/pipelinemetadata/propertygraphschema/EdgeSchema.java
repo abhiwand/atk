@@ -14,11 +14,6 @@ public class EdgeSchema {
 
     private String label;
 
-    private EdgeSchema() {
-        label            = null;
-        propertySchemata = new ArrayList<PropertySchema>();
-    }
-
     public EdgeSchema(String label) {
         this.label       = label;
         propertySchemata = new ArrayList<PropertySchema>();

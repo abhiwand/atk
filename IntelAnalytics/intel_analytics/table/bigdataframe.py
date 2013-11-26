@@ -23,7 +23,7 @@ class BigDataFrame(object):
         #if not isinstance(table, Table):
         #    raise Exception("bad table given to Constructor")
         if table is None:
-            raise Exception("BigDataFrame Constructor requires non-None table")
+            raise BigDataFrameException("BigDataFrame Constructor requires non-None table")
 
         self._table = table
         #this holds the original table that we imported the data, will be used for understanding which features are derived or not
@@ -267,7 +267,7 @@ class BigDataFrame(object):
     #----------------------------------------------------------------------
 
 
-    def transform(self, column_name, new_column_name, transformation, keep_source_column=False, transformation_args=None):
+    def transform(self, column_name, new_column_name, transformation, transformation_args=None):
 
         """
         Applies a built-in transformation function to the given column
@@ -280,13 +280,11 @@ class BigDataFrame(object):
             name for the new column that will be created as a result of applying the transformation
         transformation : enumeration
             transformation to apply
-        keep_source_column: boolean
-            whether to keep the given column in the output of the transformation
         transformation_args: list
             the arguments for the transformation to apply
         """
         try:
-            self._table.transform(column_name, new_column_name, transformation, keep_source_column, transformation_args)
+            self._table.transform(column_name, new_column_name, transformation, transformation_args)
             self.lineage.append(self._table.table_name)
         except Exception:
             trace = sys.exc_info()[2]

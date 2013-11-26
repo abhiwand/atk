@@ -94,6 +94,7 @@ def main(argv):
         cmd_line_args.is_standardization = False
 
     pig_statements = []
+    pig_statements.append("REGISTER %s;" % (config['feat_eng_jar']))
     pig_statements.append("REGISTER %s/contrib/piggybank/java/piggybank.jar; -- POW is in piggybank.jar" % (os.environ.get('PIG_HOME')))#Pig binary sets the PIG_HOME env. variable when we run the script
     
     if cmd_line_args.is_standardization:#need datafu jar for standardization, which needs VAR UDF
