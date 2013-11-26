@@ -6,13 +6,15 @@ import string
 import sys
 import collections
 
-from intel_analytics.config import NameRegistry, \
+from intel_analytics.config import Registry, \
     global_config as config, get_time_str
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
 from schema import ETLSchema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
+from intel_analytics.subproc import call
+from intel_analytics.report import ProgressReportStrategy
 
 #for quick testing
 local_run = True
@@ -115,7 +117,7 @@ class HBaseTable(object):
 
         logger.debug(args)
 
-        return_code = subprocess.call(args)
+        return_code = call(args, ProgressReportStrategy())
 
         if return_code:
             raise HBaseTableException('Could not apply transformation')
@@ -194,24 +196,23 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
         logger.debug(args)
-        
-        return_code = subprocess.call(args)
+
+        return_code = call(args, ProgressReportStrategy())
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
 
-        #record old table name for cleaning
-        old_table_name = self.table_name
+        try:
+            HBaseTable.delete_table(self.table_name)
+        except:
+            raise HBaseTableException('Could not clean the dataset')
+
+        key = hbase_frame_builder_factory.\
+            name_registry.get_key(self.table_name)
         self.table_name = output_table # update the table_name
         etl_schema.save_schema(self.table_name) # save the schema for the new table
-        #clean the old table
-        with ETLHBaseClient() as hbase_client:
-            hbase_client.delete_table(old_table_name)
-            #clean the schema entry used by the old table
-            schema_table = config['hbase_schema_table']
-            row = hbase_client.get(schema_table, old_table_name)
-            if len(row) > 0:
-                hbase_client.delete(schema_table, old_table_name)
+        hbase_frame_builder_factory. \
+            name_registry.register(key, self.table_name)
 
     def dropna(self, how='any', column_name=None):
         output_table = self._create_random_table_name()
@@ -245,7 +246,19 @@ class HBaseTable(object):
             with ETLHBaseClient() as hbase_client:
                 new_table_name = rand_name_prefix + name_postfix
                 if not hbase_client.table_exists(new_table_name):
-                    return new_table_name    
+                    return new_table_name
+
+    @classmethod
+    def delete_table(cls, victim_table_name):
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.delete_table(victim_table_name)
+            hbase_frame_builder_factory.\
+                name_registry.unregister_value(victim_table_name)
+            #clean the schema entry used by the old table
+            schema_table = config['hbase_schema_table']
+            row = hbase_client.get(schema_table, victim_table_name)
+            if len(row) > 0:
+                hbase_client.delete(schema_table, victim_table_name)
 
 
 class HBaseFrameBuilder(FrameBuilder):
@@ -256,8 +269,6 @@ class HBaseFrameBuilder(FrameBuilder):
     def build_from_csv(self, frame_name, file_name,
                        schema=None, skip_header=False, overwrite=False):
         table_name = self._create_table_name(frame_name, overwrite)
-        hbase_table = HBaseTable(table_name, file_name)
-        new_frame = BigDataFrame(hbase_table)
 
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
@@ -285,7 +296,8 @@ class HBaseFrameBuilder(FrameBuilder):
         if return_code:
             raise Exception('Could not import CSV file')
 
-        return new_frame
+        hbase_table = HBaseTable(table_name, file_name)
+        return BigDataFrame(hbase_table)
 
     def build_from_json(self, frame_name, file_name, overwrite=False):
         #create some random table name
@@ -323,21 +335,24 @@ class HBaseFrameBuilder(FrameBuilder):
     def build_from_xml(self, frame_name, file_name, schema=None):
         raise Exception("Not implemented")
 
-
     def _create_table_name(self, frame_name, overwrite):
-        table_name =  hbase_frame_builder_factory.name_registry. \
-            get_internal_name(frame_name)
+        table_name =  hbase_frame_builder_factory.name_registry[frame_name]
+        if table_name is not None:
+            if not overwrite:
+                raise Exception("Frame '" + frame_name
+                                + "' already exists.  Try override=True")
+        return frame_name + get_time_str()
+
+    def _register_table_name(self, frame_name, overwrite):
+        table_name =  hbase_frame_builder_factory.name_registry[frame_name]
         if table_name is not None:
             if overwrite:
-                # delete existing table
-                #todo: raise Exception("Overwrite not implemented")
-                pass
+                HBaseTable.delete_table(table_name)
             else:
                 raise Exception("Frame '" + frame_name
                                 + "' already exists.  Try override=True")
-        table_name = frame_name + get_time_str()
         hbase_frame_builder_factory. \
-            name_registry.register_name(frame_name, table_name)
+            name_registry.register(frame_name, table_name)
         return table_name
 
 
@@ -348,20 +363,20 @@ class HBaseFrameBuilderFactory(object):
                                         config['hbase_names_file'])
         #print "Initializing name registry for Frame Builder Factory with " \
         #      + table_names_file
-        self.name_registry = NameRegistry(table_names_file)
+        self.name_registry = Registry(table_names_file)
 
     def get_frame_builder(self):
         return HBaseFrameBuilder()
 
     def get_frame(self, frame_name):
         try:
-            hbase_table_name = self.name_registry.get_internal_name(frame_name)
+            hbase_table_name = self.name_registry[frame_name]
         except KeyError:
             raise KeyError("Could not stored table for '" + frame_name + "'")
         return self._get_frame(frame_name, hbase_table_name)
 
     def get_frame_names(self):
-        return self.name_registry.get_names()
+        return self.name_registry.keys()
 
     def _get_frame(self, frame_name, hbase_table_name):
         hbase_table = HBaseTable(frame_name, hbase_table_name)

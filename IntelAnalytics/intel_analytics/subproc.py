@@ -6,12 +6,11 @@ import time
 
 from threading import Thread
 from subprocess import PIPE, Popen
-from jobreportservice import JobReportService
-from progressreportstrategy import ProgressReportStrategy
+from intel_analytics.report import JobReportService
 
 SIGTERM_TO_SIGKILL_SECS = 2 # seconds to wait before send the big kill
 
-def call(args, heartbeat=0, output_report_strategy=None, timeout=0, shell=False):
+def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False):
     """
     Runs the command described by args in a subprocess, with or without polling
 
@@ -29,9 +28,9 @@ def call(args, heartbeat=0, output_report_strategy=None, timeout=0, shell=False)
 
     args : list of strings describing the command
 
-    heartbeat : if > 0, then poll every hb seconds
+    report_strategy: ReportStrategy
 
-    func : if heartbeat > 0, then this method is called at every heartbeat
+    heartbeat : if > 0, then poll every hb seconds
 
     timeout : if > 0, then raise an Exception if execution of the cmd exceeds
         that many seconds.
@@ -40,7 +39,7 @@ def call(args, heartbeat=0, output_report_strategy=None, timeout=0, shell=False)
     # non-blocking invocation of subprocess
     p = Popen(args, shell=shell, stderr=PIPE, stdout=PIPE)
     reportService = JobReportService()
-    reportService.add_report_strategy(output_report_strategy)
+    reportService.add_report_strategy(report_strategy)
 
     # spawn thread to consume subprocess's STDERR in non-blocking manner
     err_txt = []

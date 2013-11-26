@@ -5,6 +5,8 @@ from intel_analytics.subproc import call
 #from intel_analytics.progressreportstrategy import ProgressReportStrategy
 #from intel_analytics.giraphprogressreportstrategy import GiraphProgressReportStrategy
 from intel_analytics.config import global_config, get_time_str
+from intel_analytics.report import ProgressReportStrategy, find_progress,\
+    MapReduceProgress
 import matplotlib as mpl
 mpl.use('Agg')
 #from pylab import *  # MATLAB-like API
@@ -13,8 +15,7 @@ import matplotlib.pyplot as plt
 #from IPython.display import display
 #import numpy as np
 import re
-import time
-import datetime
+
 
 
 class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
@@ -1199,4 +1200,44 @@ class BeliefPropagation(object):  #TODO: eventually inherit from base Algo class
     BeliefPropagationResults class if necessary
     """
     pass
+
+
+job_completion_pattern = re.compile(r".*?mapred.JobClient: Job complete")
+
+
+class GiraphProgressReportStrategy(ProgressReportStrategy):
+
+    def report(self, line):
+        progress = find_progress(line)
+
+        if progress:
+            if len(self.progress_list) == 0:
+                self.initialization_progressbar._disable_animation()
+                self.progress_list.append(MapReduceProgress(0, 0))
+                self.job_progress_bar_list.append(self.get_new_progress_bar(self.get_next_step_title()))
+
+            # giraph is a mapper only job
+            progressGiraph = MapReduceProgress(progress.mapper_progress, 0)
+            self.job_progress_bar_list[-1].update(progressGiraph.mapper_progress)
+            progressGiraph.total_progress = progressGiraph.mapper_progress
+            self.progress_list[-1] = progressGiraph
+
+            # mapper job finishes, create second progress bar automatically since
+            # giraph does not print any message indicating beginning of the second phase
+            if progress.mapper_progress == 100:
+                self.job_progress_bar_list.append(self.get_new_progress_bar(self.get_next_step_title()))
+                self.job_progress_bar_list[-1].update(100)
+                self.job_progress_bar_list[-1]._enable_animation()
+                self.progress_list.append(MapReduceProgress(0, 0))
+
+        if self._is_computation_complete(line):
+            self.progress_list[-1] = MapReduceProgress(100, 100)
+            self.job_progress_bar_list[-1]._disable_animation()
+
+    def _is_computation_complete(self, line):
+        match = re.match(job_completion_pattern, line)
+        if match:
+            return True
+        else:
+            return False
 

@@ -11,11 +11,11 @@ from intel_analytics.graph.biggraph import \
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 from intel_analytics.graph.titan.config import titan_config
 from intel_analytics.subproc import call
-from intel_analytics.config import NameRegistry, global_config
+from intel_analytics.config import Registry, global_config
 
 from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import Config as bulbsConfig
-from intel_analytics.progressreportstrategy import ProgressReportStrategy
+from intel_analytics.report import ProgressReportStrategy
 
 import os
 
@@ -38,7 +38,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def __init__(self):
         super(TitanGraphBuilderFactory, self).__init__()
         self._active_titan_table_name = None
-        self._name_registry = NameRegistry(
+        self._name_registry = Registry(
             os.path.join(global_config['conf_folder'],
                          global_config['titan_names_file']))
 

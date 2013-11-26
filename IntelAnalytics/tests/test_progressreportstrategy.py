@@ -1,9 +1,8 @@
 import unittest
-from intel_analytics.progressreportstrategy import ProgressReportStrategy
+from intel_analytics.report import ProgressReportStrategy
 
 
 class TestProgressReportStrategy(unittest.TestCase):
-
 
     def test_start_with_0_job(self):
         self.progressReportStrategy = ProgressReportStrategy()
