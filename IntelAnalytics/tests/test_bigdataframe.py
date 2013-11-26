@@ -105,47 +105,47 @@ class BigDataFrameTest(unittest.TestCase):
 
         schema = 'name:chararray,age:int,salary:int'
         
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_dropna_age', '/tmp/clean_test.csv', schema, True, overwrite=True)
         big_frame.dropna(column_name='age')
         self.validate_nonnull(big_frame._table.table_name, 'age')
         temp_tables.extend(big_frame.lineage)
          
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_dropna_salary', 'tmp/clean_test.csv', schema, True, overwrite=True)
         big_frame.dropna(column_name='salary')
         self.validate_nonnull(big_frame._table.table_name, 'salary')
         temp_tables.extend(big_frame.lineage)
          
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_dropna_any', '/tmp/clean_test.csv', schema, True, overwrite=True)
         big_frame.dropna(how='any')
         self.validate_all_nonnull(big_frame._table.table_name)
         temp_tables.extend(big_frame.lineage)
          
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_dropna_all', '/tmp/clean_test.csv', schema, True, overwrite=True)
         big_frame.dropna(how='all')
         self.validate_no_allnull(big_frame._table.table_name)
         temp_tables.extend(big_frame.lineage)
          
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_fillna_age', '/tmp/clean_test.csv', schema, True, overwrite=True)
         big_frame.fillna('age', '9999')
         self.validate_nonnull(big_frame._table.table_name, 'age')
         temp_tables.extend(big_frame.lineage)
          
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_impute_salary', '/tmp/clean_test.csv', schema, True, overwrite=True)
         big_frame.impute('salary', Imputation.MEAN)
         self.validate_nonnull(big_frame._table.table_name, 'salary')
         temp_tables.extend(big_frame.lineage)
         
         #failure cases
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_dropna_col_doesnt_exist', '/tmp/clean_test.csv', schema, True, overwrite=True)
         self.assertRaises(BigDataFrameException,big_frame.dropna, column_name='col_doesnt_exist')
         temp_tables.extend(big_frame.lineage)
         
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_dropna_any_ignore', '/tmp/clean_test.csv', schema, True, overwrite=True)
         big_frame.dropna(how='any', column_name='age')#should ignore the how parameter and clean age
         self.validate_nonnull(big_frame._table.table_name, 'age')
         temp_tables.extend(big_frame.lineage)
         
-        big_frame = HBaseFrameBuilder().build_from_csv('/tmp/clean_test.csv', schema, True)
+        big_frame = HBaseFrameBuilder().build_from_csv('test_fillna_col_doesnt_exist', '/tmp/clean_test.csv', schema, True, overwrite=True)
         self.assertRaises(BigDataFrameException, big_frame.fillna, 'col_doesnt_exist', '{}\"sss')
         temp_tables.extend(big_frame.lineage)  
 
