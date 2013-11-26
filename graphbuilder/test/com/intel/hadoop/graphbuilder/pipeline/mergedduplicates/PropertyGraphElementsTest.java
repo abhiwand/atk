@@ -108,7 +108,7 @@ public class PropertyGraphElementsTest extends GraphQueryTestSuite  {
 
         PowerMockito.when(context.getConfiguration().getBoolean("noBiDir", false)).thenReturn(false);
 
-        graph = (TitanGraph) graphTest.generateGraph();
+        //graph = (TitanGraph) graphTest.generateGraph();
         spiedGraph = spy(graph);
 
 
