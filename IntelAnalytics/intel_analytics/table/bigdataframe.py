@@ -99,6 +99,18 @@ class BigDataFrame(object):
         #TODO: use a JSON schema (or XML XSD or DTD?) --embed in the same
         #      file, similar to header?
         raise BigDataFrameException("Not implemented")
+    
+    
+    def to_html(self, nRows=10):
+        """
+        Get the first nRows as an HTML table
+
+        Parameters
+        ----------
+        nRows : int
+            number of rows to retrieve in the HTML table
+        """
+        return self._table.to_html(nRows)  
 
 
     #----------------------------------------------------------------------
