@@ -5,9 +5,9 @@ Provides the 'global_config' singleton
 """
 
 from pyjavaprops import Properties
+from StringIO import StringIO
 from string import Template
 import os
-#import json <-- breaks jython
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -70,16 +70,48 @@ def dynamic_import(attr_path):
 class NameRegistry(object):
     """
     Maintains map of user-given names to internal names, persisted to a file
+
+    A dictionary that is persisted to a file, with function names
+    to guide usage
     """
     def __init__(self, filename):
         self.filename = filename
+        self._internal_names = {}
         filedir = os.path.dirname(filename)
-        if not os.path.exists(filedir):
+        if filedir and not os.path.exists(filedir):
             os.makedirs(filedir)
-#         self._load_map()
+        try:
+            src = open(self.filename, 'r')
+        except:
+            #todo: log...
+            self._persist_map()
+            return
+        try:
+            while 1:
+                line = src.readline()
+                if not line:
+                    break
+                line = line.strip()
+                if len(line) > 0 and line[0] != '!' and line[0] != '#':
+                    (k, v) = line.split('=', 1)
+                    self._internal_names[k] = v
+        finally:
+            src.close()
+
+    def __repr__(self):
+        out = StringIO()
+        try:
+            self._write_dict(out)
+            return out.getvalue()
+        finally:
+            out.close()
 
     def register_name(self, name, internal_name):
         self._internal_names[name] = internal_name
+        self._persist_map()
+
+    def unregister_name(self, name):
+        del self._internal_names[name]
         self._persist_map()
 
     def get_names(self):
@@ -90,30 +122,33 @@ class NameRegistry(object):
 
     def get_name(self, internal_name):
         try:
-            return (key for key,value in self._internal_names.items()
+            return (key for key, value in self._internal_names.items()
                     if value == internal_name).next()
         except StopIteration:
             raise ValueError("Could not match name '{0}'".format(internal_name))
 
-#     # todo: make persist_map and load_map thread-safe
-#     def _persist_map(self):
-#         try:
-#             with os.fdopen(os.open(self.filename, os.O_WRONLY | os.O_CREAT),
-#                            'w') as dst:#-->breaks jython
-#                 json.dump(self._internal_names, dst)
-#         except IOError:
-#             #todo: log...
-#             raise Exception("Could not open names file for writing.  " +
-#                             "Check permissions for: " + self.filename)
+    def items(self):
+        return self._internal_names.items()
 
-#     def _load_map(self):
-#         try:
-#             with open(self.filename, 'r') as src:#-->breaks jython
-#                 self._internal_names = json.load(src)
-#         except:
-#             #todo: log...
-#             self._internal_names = {}
-#             self._persist_map()
+    # todo: make persist_map and load_map thread-safe
+    def _persist_map(self):
+        try:
+            dst = open(self.filename, 'w')
+            try:
+                self._write_dict(dst)
+            finally:
+                dst.close()
+        except IOError:
+            #todo: log...
+            raise Exception("Could not open names file for writing.  " +
+                            "Check permissions for: " + self.filename)
+
+    def _write_dict(self, out):
+        for k, v in sorted(self._internal_names.items()):
+            out.write(k)
+            out.write('=')
+            out.write(v)
+            out.write(os.linesep)
 
 
 class Config(object):
