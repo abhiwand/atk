@@ -221,11 +221,16 @@ function init(){
     //append information about the root relations in the right column
     //$jit.id('inner-details').innerHTML = rgraph.graph.getNode(rgraph.root).data.relation;
 }
-if ($('#jit')) {
+
+function run() {
+  if (typeof($jit) != 'undefined') {
     init();
-} else {
-    $('#jit').on('ready', init);
+  } else {
+    setTimeout(run, 1000);
+  }
 }
+run();
+
 })();
 		""" % (id,json.dumps(nodes),id)))
 
