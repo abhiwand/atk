@@ -68,7 +68,8 @@ def call(args, heartbeat=0, output_report_strategy=None, timeout=0, shell=False)
 
     if rc != 0:
         msg = ''.join(err_txt) if len(err_txt) > 0 else "(no msg provided)"
-        raise Exception("Error {0}: {1}".format(rc,msg))
+        print rc, msg
+    #    raise Exception("Error {0}: {1}".format(rc,msg))
 
 def _report_output(out, reportService):
     for line in iter(out.readline, b''):
