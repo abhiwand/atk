@@ -127,7 +127,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     /**
      * Set user defined function for reduce duplicate vertex and edges.
      *
-     * If the use does not specify these function, the default method of merging property lists will be used.s
+     * If the use does not specify these function, the default method of merging property lists will be used.
      *
      * @param vertexReducerFunction   user specified function for reducing duplicate vertices
      * @param edgeReducerFunction     user specified function for reducing duplicate edges

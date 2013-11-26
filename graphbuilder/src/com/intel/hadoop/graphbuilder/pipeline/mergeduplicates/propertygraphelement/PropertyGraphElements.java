@@ -1,6 +1,8 @@
-package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.PropertyGraphElement;
+package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement;
 
 import com.intel.hadoop.graphbuilder.graphelements.*;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
@@ -14,6 +16,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class PropertyGraphElements {
+    private static final Logger LOG = Logger.getLogger(PropertyGraphElements.class);
     private PropertyGraphElementPut propertyGraphElementPut;
 
     HashMap<EdgeID, Writable>   edgeSet       = new HashMap<>();
@@ -36,7 +40,7 @@ public class PropertyGraphElements {
     private HashMap<Object, Long>  vertexNameToTitanID;
     private IntWritable outKey;
     private SerializedPropertyGraphElement outValue;
-    private Class                  outClass;
+    //private Class                  outClass;
 
     private final KeyFunction keyFunction = new DestinationVertexKeyFunction();
 
@@ -48,20 +52,15 @@ public class PropertyGraphElements {
     }
 
     public PropertyGraphElements(Functional vertexReducerFunction, Functional edgeReducerFunction,
-                                 Reducer.Context context,TitanGraph graph, Class outClass,
-                                 SerializedPropertyGraphElement outValue, Enum edgeCounter,  Enum vertexCounter)
-            throws IllegalAccessException, InstantiationException {
+                                 Reducer.Context context,TitanGraph graph,
+                                 SerializedPropertyGraphElement outValue, Enum edgeCounter,  Enum vertexCounter){
 
         this();
-
         this.vertexReducerFunction = vertexReducerFunction;
         this.edgeReducerFunction = edgeReducerFunction;
-
         this.context = context;
         this.noBiDir = context.getConfiguration().getBoolean("noBiDir", false);
-
         this.graph = graph;
-        this.outClass = outClass;
         this.outKey   = new IntWritable();
         this.outValue   = outValue;
         this.vertexNameToTitanID = new HashMap<Object, Long>();
@@ -70,28 +69,35 @@ public class PropertyGraphElements {
     }
 
 
-
-    public void mergeDuplicates(Iterable<com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement> values)
+    public void mergeDuplicates(Iterable<SerializedPropertyGraphElement> values)
             throws IOException, InterruptedException {
-        Iterator<com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement> valueIterator = values.iterator();
+        Iterator<SerializedPropertyGraphElement> valueIterator = values.iterator();
 
-        for(PropertyGraphElement propertyGraphElement: values){
+        for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
+            PropertyGraphElement propertyGraphElement = serializedPropertyGraphElement.graphElement();
+
             //null element check
             if(propertyGraphElement.isNull()){
                 continue;
             }
-
+            LOG.info("put");
             put(propertyGraphElement);
-
-            System.out.println("bleh");
         }
 
+        LOG.info("write");
         write();
     }
 
     private void put(PropertyGraphElement propertyGraphElement){
-        propertyGraphElement.typeCallback(propertyGraphElementPut, vertexSet, edgeSet, edgeReducerFunction,
+        propertyGraphElement.typeCallback(propertyGraphElementPut, edgeSet, vertexSet, edgeReducerFunction,
                 vertexReducerFunction, noBiDir);
+    }
+
+    protected long getVertexId(com.tinkerpop.blueprints.Vertex  bpVertex){
+        if(bpVertex != null){
+            return ((TitanElement) bpVertex).getID();
+        }
+        return 0L;
     }
 
     private void write() throws IOException, InterruptedException {
@@ -106,19 +112,11 @@ public class PropertyGraphElements {
 
             bpVertex.setProperty("trueName", vertex.getKey().toString());
 
-            PropertyMap propertyMap = (PropertyMap) vertex.getValue();
-
-            for (Writable keyName : propertyMap.getPropertyKeys()) {
-                EncapsulatedObject mapEntry = (EncapsulatedObject) propertyMap.getProperty(keyName.toString());
-
-                bpVertex.setProperty(keyName.toString(), mapEntry.getBaseObject());
-            }
-
-            long vertexId = ((TitanElement) bpVertex).getID();
-
             Vertex tempVertex = new Vertex();
-            propertyMap.setProperty("TitanID", new LongType(vertexId));
-            tempVertex.configure((WritableComparable) vertex.getKey(), propertyMap);
+
+            long vertexId = getVertexId(bpVertex);
+
+            tempVertex.configure((WritableComparable) vertex.getKey(), writeVertexProperties(vertexId, vertex, bpVertex));
 
             outValue.init(tempVertex);
             outKey.set(keyFunction.getVertexKey(tempVertex));
@@ -129,6 +127,7 @@ public class PropertyGraphElements {
 
             vertexCount++;
         }
+
         this.context.getCounter(vertexCounter).increment(vertexCount);
 
         for(Map.Entry<EdgeID, Writable> edge: edgeSet.entrySet()){
@@ -136,15 +135,14 @@ public class PropertyGraphElements {
             Object dst                  = edge.getKey().getDst();
             String label                = edge.getKey().getLabel().toString();
 
-            PropertyMap propertyMap = (PropertyMap) edge.getValue();
-
             long srcTitanId = vertexNameToTitanID.get(src);
 
             Edge tempEdge = new Edge();
 
-            propertyMap.setProperty("srcTitanID", new LongType(srcTitanId));
+            writeEdgeProperties(srcTitanId, edge);
 
-            tempEdge.configure((WritableComparable)  src, (WritableComparable)  dst, new StringType(label), propertyMap);
+            tempEdge.configure((WritableComparable)  src, (WritableComparable)  dst, new StringType(label),
+                    writeEdgeProperties(srcTitanId, edge));
 
             outValue.init(tempEdge);
             outKey.set(keyFunction.getEdgeKey(tempEdge));
@@ -156,4 +154,34 @@ public class PropertyGraphElements {
         this.context.getCounter(edgeCounter).increment(edgeCount);
 
     }
+
+    private PropertyMap writeVertexProperties(long vertexId, Map.Entry<Object, Writable> vertex, com.tinkerpop.blueprints.Vertex bpVertex){
+        PropertyMap propertyMap = (PropertyMap) vertex.getValue();
+        if(propertyMap == null){
+            propertyMap = new PropertyMap();
+        }
+
+        for (Writable keyName : propertyMap.getPropertyKeys()) {
+            EncapsulatedObject mapEntry = (EncapsulatedObject) propertyMap.getProperty(keyName.toString());
+
+            LOG.info("keyname: " + keyName.toString());
+            bpVertex.setProperty(keyName.toString(), mapEntry.getBaseObject());
+
+        }
+
+        propertyMap.setProperty("TitanID", new LongType(vertexId));
+
+        return propertyMap;
+    }
+
+    private PropertyMap writeEdgeProperties(long srcTitanId, Map.Entry<EdgeID, Writable> edge){
+        PropertyMap propertyMap = (PropertyMap) edge.getValue();
+        if(propertyMap == null){
+            propertyMap = new PropertyMap();
+        }
+        propertyMap.setProperty("srcTitanID", new LongType(srcTitanId));
+
+        return propertyMap;
+    }
+
 }

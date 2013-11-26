@@ -3,35 +3,26 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
-import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
-import com.thinkaurelius.titan.core.TitanElement;
 import com.thinkaurelius.titan.core.TitanGraph;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import org.apache.commons.configuration.BaseConfiguration;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 
-import com.intel.hadoop.graphbuilder.types.LongType;
 import org.apache.log4j.Logger;
 
 /**
@@ -63,6 +54,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
         NUM_VERTICES,
         NUM_EDGES
     }
+
+    PropertyGraphElements propertyGraphElements;
 
     /**
      * create the titan graph for saving edges and remove the static open method from setup so it can be mocked
@@ -129,6 +122,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Functional error configuring reducer function", LOG, e);
         }
+
+        initPropertyGraphElements(context);
     }
 
     @Override
@@ -137,9 +132,14 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
 
         HashMap<EdgeID, Writable>     edgeSet       = new HashMap();
         HashMap<Object, Writable>     vertexSet     = new HashMap();
-        Iterator<SerializedPropertyGraphElement> valueIterator = values.iterator();
+        //Iterator<SerializedPropertyGraphElement> valueIterator = values.iterator();
+        System.out.println("merge duplicates in");
 
-        while (valueIterator.hasNext()) {
+        propertyGraphElements.mergeDuplicates(values);
+
+        System.out.println("merge duplicates out");
+
+        /*while (valueIterator.hasNext()) {
 
             SerializedPropertyGraphElement next = valueIterator.next();
 
@@ -159,10 +159,10 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
                                 vertexSet.get(vid)));
                     } else {
 
-                        /**
+                        *//**
                          * default behavior is to merge the property maps of duplicate vertices
                          * conflicting key/value pairs get overwritten
-                         */
+                         *//*
 
                         PropertyMap existingPropertyMap = (PropertyMap) vertexSet.get(vid);
                         existingPropertyMap.mergeProperties(vertex.getProperties());
@@ -200,10 +200,10 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
                         edgeSet.put(edgeID, edgeReducerFunction.reduce(edge.getProperties(), edgeSet.get(edgeID)));
                     } else {
 
-                        /**
+                        *//**
                          * default behavior is to merge the property maps of duplicate edges
                          * conflicting key/value pairs get overwritten
-                         */
+                         *//*
 
                         PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeID);
                         existingPropertyMap.mergeProperties(edge.getProperties());
@@ -228,9 +228,9 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
                     }
                 }
             }
-        }
+        }*/
 
-        int vertexCount = 0;
+       /* int vertexCount = 0;
         int edgeCount   = 0;
 
         // Output vertex records
@@ -305,11 +305,17 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
             edgeCount++;
         }
 
-        context.getCounter(Counters.NUM_EDGES).increment(edgeCount);
+        context.getCounter(Counters.NUM_EDGES).increment(edgeCount);*/
     }
 
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         this.graph.shutdown();
+    }
+
+    private void initPropertyGraphElements(Context context){
+        propertyGraphElements = new PropertyGraphElements(vertexReducerFunction, edgeReducerFunction, context, graph,
+                outValue, Counters.NUM_EDGES, Counters.NUM_VERTICES);
+
     }
 }

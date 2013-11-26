@@ -5,7 +5,7 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 /**
  * Very simple interface that gets called when the property graph element is an edge, vertex or null graph element.
  * This essentially allows us to do a callback based on graph element type and it centralizes the branching on type to a
- * single function in the propertyGraphElement.typeCallback().
+ * single function to propertyGraphElement.typeCallback().
  *
  * <b>For a sample usage look at</b>
  * @see PropertyGraphElement

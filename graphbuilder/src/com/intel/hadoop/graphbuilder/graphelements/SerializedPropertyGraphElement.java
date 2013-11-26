@@ -43,7 +43,10 @@ public abstract class SerializedPropertyGraphElement<VidType extends WritableCom
 
     public SerializedPropertyGraphElement() {
         this.graphElement = null;
+    }
 
+    protected SerializedPropertyGraphElement(PropertyGraphElement graphElement) {
+        this.graphElement = graphElement;
     }
 
     public abstract VidType createVid();

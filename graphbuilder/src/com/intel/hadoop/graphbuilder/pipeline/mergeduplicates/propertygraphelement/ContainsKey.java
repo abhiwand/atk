@@ -1,4 +1,4 @@
-package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.PropertyGraphElement;
+package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;

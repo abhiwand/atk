@@ -9,6 +9,10 @@ import org.apache.hadoop.io.WritableComparable;
 import java.io.DataOutput;
 import java.io.IOException;
 
+/**
+ * base the vertex/edge graph element.
+ * @param <VidType>
+ */
 public abstract class PropertyGraphElement<VidType extends WritableComparable<VidType>> {
 
     public abstract boolean isEdge();
