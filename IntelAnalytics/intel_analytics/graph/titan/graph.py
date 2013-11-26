@@ -14,8 +14,8 @@ from intel_analytics.subproc import call
 from intel_analytics.config import NameRegistry, global_config
 
 from bulbs.titan import Graph as bulbsGraph
-from bulbs.config import DEBUG
 from bulbs.config import Config as bulbsConfig
+from intel_analytics.progressreportstrategy import ProgressReportStrategy
 
 import os
 
@@ -172,7 +172,7 @@ def build(graph_name, source, vertex_list, edge_list, is_directed):
         vertex_list,
         edge_list,
         is_directed)
-    call(build_command)
+    call(build_command, output_report_strategy = ProgressReportStrategy())
 
     titan_graph_builder_factory._name_registry.\
         register_name(graph_name, titan_table_name)

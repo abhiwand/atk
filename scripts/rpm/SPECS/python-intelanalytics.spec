@@ -38,8 +38,6 @@ mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/ipython
 
 cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
 
-ln -sf %{_sysconfdir}/IntelAnalytics %{buildroot}/usr/lib/IntelAnalytics/conf
-
 %clean
 
 %post
