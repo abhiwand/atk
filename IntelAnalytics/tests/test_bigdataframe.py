@@ -158,7 +158,7 @@ class BigDataFrameTest(unittest.TestCase):
                 except:
                     pass
                 try:
-                    table = hbase_client.connection.table(CONFIG_PARAMS['etl-schema-table'])
+                    table = hbase_client.connection.table(CONFIG_PARAMS['hbase_schema_table'])
                     table.delete(temp)#also remove the schema info
                 except:
                     pass
