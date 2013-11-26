@@ -46,7 +46,7 @@ class ETLSchemaTest(unittest.TestCase):
         print 'Cleaning up the test table %s & their schema definition' % (test_table)
         with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
             try:
-                table = hbase_client.connection.table(CONFIG_PARAMS['etl-schema-table'])
+                table = hbase_client.connection.table(CONFIG_PARAMS['hbase_schema_table'])
                 table.delete(test_table)#also remove the schema info
             except:
                 pass
