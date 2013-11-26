@@ -36,11 +36,11 @@ import org.apache.log4j.Logger;
 
 /**
  * This reducer performs the following tasks:
- * - edges are gathered with the source vertices
- * - duplicate edges and vertices are removed
- * - each vertex is loaded into Titan and is tagged with its Titan ID and passed to the next MR job
- *   through the temp file
- * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
+ * - gathers edges with the source vertices.
+ * - removes duplicate edges and vertices.
+ * - loads each vertex into Titan and tags it with its Titan ID, and passes it to the next MR job
+ *   through the temp file.
+ * - tags each edge with the Titan ID of its source vertex and passes it to the next MR job.
  */
 
 public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphElement, IntWritable, PropertyGraphElement> {
@@ -65,9 +65,9 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
     }
 
     /**
-     * create the titan graph for saving edges and remove the static open method from setup so it can be mocked
+     * Creates the Titan graph for saving edges and removes the static open method from setup so it can be mocked-up.
      *
-     * @return TitanGraph for saving edges
+     * @return TitanGraph  For saving edges.
      * @throws IOException
      */
     protected TitanGraph tribecaGraphFactoryOpen(Context context) throws IOException {
@@ -201,8 +201,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                     } else {
 
                         /**
-                         * default behavior is to merge the property maps of duplicate edges
-                         * conflicting key/value pairs get overwritten
+                         * The default behavior is to merge the property maps of duplicate edges,
+                         * conflicting key/value pairs get overwritten.
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeID);
