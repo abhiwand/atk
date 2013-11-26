@@ -74,7 +74,7 @@ object Login extends Controller {
     /**
      *
      * @param Authorization info
-     * @return tuple of (status code, session Id)
+     * @return LoginActionResponse
      */
     def getResponse(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): LoginActionResponse = {
         if (auth.validateToken() == None || auth.validateUserInfo() == None)

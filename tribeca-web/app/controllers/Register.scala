@@ -86,7 +86,7 @@ object Register extends Controller {
     /**
      * Get registration response.
      * @param Authorization info
-     * @return tuple of (status code, session Id)
+     * @return RegisterActionResponse
      */
     def getResponse(registrationForm: RegistrationFormMapping, auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): RegisterActionResponse = {
         if (auth.validateToken() == None || auth.validateUserInfo() == None)
