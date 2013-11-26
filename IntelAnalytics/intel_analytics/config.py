@@ -7,7 +7,7 @@ Provides the 'global_config' singleton
 from pyjavaprops import Properties
 from string import Template
 import os
-import json
+#import json <-- breaks jython
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -76,7 +76,7 @@ class NameRegistry(object):
         filedir = os.path.dirname(filename)
         if not os.path.exists(filedir):
             os.makedirs(filedir)
-        self._load_map()
+#         self._load_map()
 
     def register_name(self, name, internal_name):
         self._internal_names[name] = internal_name
@@ -95,25 +95,25 @@ class NameRegistry(object):
         except StopIteration:
             raise ValueError("Could not match name '{0}'".format(internal_name))
 
-    # todo: make persist_map and load_map thread-safe
-    def _persist_map(self):
-        try:
-            with os.fdopen(os.open(self.filename, os.O_WRONLY | os.O_CREAT),
-                           'w') as dst:
-                json.dump(self._internal_names, dst)
-        except IOError:
-            #todo: log...
-            raise Exception("Could not open names file for writing.  " +
-                            "Check permissions for: " + self.filename)
+#     # todo: make persist_map and load_map thread-safe
+#     def _persist_map(self):
+#         try:
+#             with os.fdopen(os.open(self.filename, os.O_WRONLY | os.O_CREAT),
+#                            'w') as dst:#-->breaks jython
+#                 json.dump(self._internal_names, dst)
+#         except IOError:
+#             #todo: log...
+#             raise Exception("Could not open names file for writing.  " +
+#                             "Check permissions for: " + self.filename)
 
-    def _load_map(self):
-        try:
-            with open(self.filename, 'r') as src:
-                self._internal_names = json.load(src)
-        except:
-            #todo: log...
-            self._internal_names = {}
-            self._persist_map()
+#     def _load_map(self):
+#         try:
+#             with open(self.filename, 'r') as src:#-->breaks jython
+#                 self._internal_names = json.load(src)
+#         except:
+#             #todo: log...
+#             self._internal_names = {}
+#             self._persist_map()
 
 
 class Config(object):
@@ -207,7 +207,7 @@ class Config(object):
 # Global Config Singleton
 try:
     global_config = Config(properties_file)
-except Exception as e:
+except Exception, e:
     import sys
     sys.stderr.write("""
 WARNING - could not load default properties file {0} because:

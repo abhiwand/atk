@@ -66,7 +66,7 @@ class HBaseTable(object):
     """
     Table Implementation for HBase
     """
-    def __init__(self, name, table_name):
+    def __init__(self, table_name):
         """
         (internal constructor)
         Parameters
@@ -76,9 +76,7 @@ class HBaseTable(object):
         table_name : String
             name of table in Hbase
         """
-        self.name = name
         self.table_name = table_name
-
         # TODO : Hard-coded column family name must be removed later and
         #  read from Table
         #self.column_family_name = config['hbase_column_family']
@@ -265,7 +263,7 @@ class HBaseFrameBuilder(FrameBuilder):
         df_name = df_name.replace(".", "_")
         dataframe_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))
         df_name = dataframe_prefix + df_name
-        hbase_table = HBaseTable(dataframe_prefix, df_name) #currently we support hbase, TODO: where to read table type?
+        hbase_table = HBaseTable(df_name)
         new_frame = BigDataFrame(hbase_table)
 
         #save the schema of the dataset to import
