@@ -25,7 +25,7 @@ class ProgressReportStrategy(ReportStrategy):
             if len(self.progress_list) == 0:
                 self.initialization_progressbar._disable_animation()
 
-            if len(self.progress_list) == 0 or self.job_progress_bar_list[-1].value >= 100:
+            if len(self.progress_list) == 0 or self.progress_list[-1].total_progress >= progress.total_progress:
                 self.job_progress_bar_list.append(self.get_new_progress_bar(self.get_next_step_title()))
                 self.progress_list.append(progress)
 
