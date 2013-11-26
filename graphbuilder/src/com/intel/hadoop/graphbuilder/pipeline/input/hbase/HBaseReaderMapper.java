@@ -59,8 +59,9 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, PropertyGraphEle
     }
 
     /**
-     * Maps the input of HTable rows/columns to vertices/edges. Any exception thrown by contex.write inside the
-     * base mapper class will be caught and logged as errors so we can continue to the next record
+     * Maps the input of HTable rows/columns to vertices/edges. Any exception
+     * thrown by context.write inside the base mapper class will be caught
+     * and logged as errors so we can continue to the next record
      *
      * @param row     The row key.
      * @param columns The columns of the row.

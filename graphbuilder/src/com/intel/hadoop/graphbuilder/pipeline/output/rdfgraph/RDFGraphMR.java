@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
+import com.intel.hadoop.graphbuilder.pipeline.input.rdf.RDFConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.ElementIdKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
@@ -257,13 +258,17 @@ public class RDFGraphMR extends GraphGenerationMRJob {
             conf.set("edgeReducerFunction", edgeReducerFunction.getClass().getName());
         }
 
-        // set the configuration per the input
+        // set the configuration per the input, for example set the input
+        // HBase table name if the input type is HBase
 
         inputConfiguration.updateConfigurationForMapper(conf, cmd);
 
         // update the configuration per the graphBuildingRule
 
         graphBuildingRule.updateConfigurationForTokenizer(conf, cmd);
+
+        // Add RDF namespace
+        conf.set(RDFConfiguration.config.getProperty("CMD_RDF_NAMESPACE"), cmd.getOptionValue("n"));
 
         // create job from configuration and initialize MR parameters
 

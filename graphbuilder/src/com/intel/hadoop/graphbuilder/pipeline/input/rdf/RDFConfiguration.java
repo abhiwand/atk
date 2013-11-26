@@ -26,7 +26,7 @@ import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
  */
 public class RDFConfiguration {
 
-    public static final String CMD_RDF_NAMESPACE = "namespace";
+    public static final String CMD_RDF_NAMESPACE = "rdfNamespace";
     public static RuntimeConfig config = RuntimeConfig.getInstance(RDFConfiguration.class);
 
 

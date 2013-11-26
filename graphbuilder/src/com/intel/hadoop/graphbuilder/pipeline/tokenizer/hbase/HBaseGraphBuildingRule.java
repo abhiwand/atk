@@ -186,7 +186,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Check that the vertex generation rules use only  legal column families.
+     * Check that the vertex generation rules use only legal column families.
      * <p/>
      * Because hbase allows different rows to contains different columns under each column family,
      * we cannot validate the full column name against the Hbase table.
@@ -205,7 +205,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             if (returnValue == false) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "GRAPHBUILDER FAILURE: " + vidColumn + " does not belong to a valid column family of table "
+                        "GRAPHBUILDER ERROR: " + vidColumn + " does not belong to a valid column family of table "
                                 + srcTableName, LOG);
             }
 
@@ -216,7 +216,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                 returnValue &= hBaseUtils.columnHasValidFamily(columnName, srcTableName);
                 if (returnValue == false) {
                     GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                            "GRAPHBUILDER FAILURE: " + columnName + " does not belong to a valid column family of table "
+                            "GRAPHBUILDER ERROR: " + columnName + " does not belong to a valid column family of table "
                                     + srcTableName, LOG);
                 }
             }
@@ -248,14 +248,14 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             returnValue &= hBaseUtils.columnHasValidFamily(srcVertexColName, srcTableName);
             if (returnValue == false) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "GRAPHBUILDER FAILURE: " + srcVertexColName + " does not belong to a valid column family of table "
+                        "GRAPHBUILDER ERROR: " + srcVertexColName + " does not belong to a valid column family of table "
                         + srcTableName, LOG);
             }
 
             returnValue &= hBaseUtils.columnHasValidFamily(tgtVertexColName, srcTableName);
             if (returnValue == false) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "GRAPHBUILDER FAILURE: " + tgtVertexColName + " does not belong to a valid column family of table "
+                        "GRAPHBUILDER ERROR: " + tgtVertexColName + " does not belong to a valid column family of table "
                                 + srcTableName, LOG);
             }
 
@@ -263,7 +263,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                 returnValue &= hBaseUtils.columnHasValidFamily(propertyColName, srcTableName);
                 if (returnValue == false) {
                     GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                            "GRAPHBUILDER FAILURE: " + propertyColName + " does not belong to a valid column family of table "
+                            "GRAPHBUILDER ERROR: " + propertyColName + " does not belong to a valid column family of table "
                                     + srcTableName, LOG);
                 }
             }
@@ -489,7 +489,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     /**
      * Obtain vertex ID column name from vertex rule.
      * <p/>
-     * <code>vertex_col1=vertex_prop1,...vertex_coln</code>
+     * <code>[RDF Object],vertex_col1=vertex_prop1,...vertex_coln</code>
      *
      * @return the column name of the vertex ID in the given vertex rule
      */
@@ -497,8 +497,31 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         String[] columnNames = vertexRule.split("\\=");
         String vertexIdColumnName = columnNames[0];
+        if (vertexIdColumnName.contains(",")) {
+            String[] elements  = vertexIdColumnName.split("\\,");
+            vertexIdColumnName = elements[1];
+        }
 
         return vertexIdColumnName;
+    }
+
+     /**
+     * Obtain RDF tag of the vertex from vertex rule.
+     * <p/>
+     * <code>[RDF Object],vertex_col1=vertex_prop1,...vertex_coln</code>
+     *
+     * @return the RDF tag of the vertex in the given vertex rule
+     */
+    public static String getRDFTagFromVertexRule(String vertexRule) {
+
+        String[] columnNames = vertexRule.split("\\=");
+        String vertexIdColumnName = columnNames[0];
+        if (vertexIdColumnName.contains(",")) {
+            String[] elements  = vertexIdColumnName.split("\\,");
+            return elements[0];
+        } else {
+            return null;
+        }
     }
 
     /**

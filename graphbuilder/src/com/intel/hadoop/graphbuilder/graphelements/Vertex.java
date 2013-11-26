@@ -118,6 +118,14 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
         this.properties.setProperty(key, val);
     }
 
+     /**
+     * Set RDF label of the vertex
+      * @param label  the RDF label of the vertex
+      */
+    public void setVertexLabel(StringType label) {
+        this.vertexLabel = label;
+    }
+
     /**
      * Get the property map for the vertex.
      * @return the property map

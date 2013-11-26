@@ -62,7 +62,7 @@ public class GBHTableConfiguration {
     public static final String TITAN_HBASE_STORAGE_TIMEOUT = "10000";
 
     public static final String HBASE_COLUMN_SEPARATOR           = ":";
-    public static final String GRAPH_PROPERTY_SEPARATOR = "_";
+    public static final String GRAPH_PROPERTY_SEPARATOR = ":";
     public static final String NULLKEY                          = "NULLKEY";
 
     public static RuntimeConfig config = RuntimeConfig.getInstance(GBHTableConfiguration.class);
