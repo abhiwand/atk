@@ -32,9 +32,9 @@ class FrameBuilder(object):
    """
     __metaclass__ = abc.ABCMeta
 
-    @abc.abstractmethod
-    def build_empty(self, name):
-        pass
+    # @abc.abstractmethod
+    # def build_empty(self, name):
+    #     pass
 
     @abc.abstractmethod
     def build_from_csv(self, filename, schema=None, skip_header=False):
