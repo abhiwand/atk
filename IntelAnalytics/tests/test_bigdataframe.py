@@ -90,6 +90,8 @@ class BigDataFrameTest(unittest.TestCase):
          
         self.validate_json_extract(big_frame._table.table_name)
         
+        temp_tables.extend(big_frame.lineage)
+        
         data_set = ['name,age,salary',
         'john,23,100',
         'molly,,',
