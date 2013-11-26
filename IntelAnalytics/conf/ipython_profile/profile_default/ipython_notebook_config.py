@@ -14,6 +14,40 @@ c = get_config()
 # The IP address the notebook server will listen on.
 c.NotebookApp.ip = '*'
 
+# The port the notebook server will listen on.
+c.NotebookApp.port = 8888
+
+# Whether to open in a browser after starting. The specific browser used is
+# platform dependent and determined by the python standard library `webbrowser`
+# module, unless it is overridden using the --browser (NotebookApp.browser)
+# configuration option.
+c.NotebookApp.open_browser = False
+
+# The number of additional ports to try if the specified port is not available.
+c.NotebookApp.port_retries = 0
+
+# The random bytes used to secure cookies. By default this is a new random
+# number every time you start the Notebook. Set it to a value in a config file
+# to enable logins to persist across server sessions.
+# 
+# Note: Cookie secrets should be kept private, do not share config files with
+# cookie_secret stored in plaintext (you can read the value from a file).
+
+c.NotebookApp.cookie_secret = 'If you use this as a cookie secret, you are doing it wrong! Put a real cookie secret goes here!'
+
+# Hashed password to use for web authentication.
+# 
+# To generate, type in a python/IPython shell:
+# 
+#   from IPython.lib import passwd; passwd()
+# 
+# The string should be of the form type:salt:hashed-password.
+
+#Here we configure a random, unusable password, since we never want to log in with password.
+import uuid
+passwd = str(uuid.uuid4())
+c.NotebookApp.password = passwd
+
 # The base URL for the notebook server.
 # 
 # Leading and trailing slashes can be omitted, and will automatically be added.
@@ -23,22 +57,7 @@ c.NotebookApp.ip = '*'
 # error.  The default is to append a short message to the usual traceback
 # c.NotebookApp.verbose_crash = False
 
-# The random bytes used to secure cookies. By default this is a new random
-# number every time you start the Notebook. Set it to a value in a config file
-# to enable logins to persist across server sessions.
-# 
-# Note: Cookie secrets should be kept private, do not share config files with
-# cookie_secret stored in plaintext (you can read the value from a file).
-c.NotebookApp.cookie_secret = cookie secret needed! #''
 
-# The number of additional ports to try if the specified port is not available.
-# c.NotebookApp.port_retries = 50
-
-# Whether to open in a browser after starting. The specific browser used is
-# platform dependent and determined by the python standard library `webbrowser`
-# module, unless it is overridden using the --browser (NotebookApp.browser)
-# configuration option.
-c.NotebookApp.open_browser = False
 
 # The notebook manager class to use.
 # c.NotebookApp.notebook_manager_class = 'IPython.html.services.notebooks.filenbmanager.FileNotebookManager'
@@ -51,8 +70,6 @@ c.NotebookApp.open_browser = False
 # Leading and trailing slashes can be omitted, and will automatically be added.
 # c.NotebookApp.base_kernel_url = '/'
 
-# The port the notebook server will listen on.
-# c.NotebookApp.port = 8888
 
 # Whether to overwrite existing config files when copying
 # c.NotebookApp.overwrite = False
@@ -67,7 +84,7 @@ c.NotebookApp.open_browser = False
 # c.NotebookApp.enable_mathjax = True
 
 # The full path to an SSL/TLS certificate file.
-c.NotebookApp.certfile = certfile path needed! # u''
+#c.NotebookApp.certfile = certfile path needed! # u''
 
 # Path to an extra config file to load.
 # 
@@ -92,15 +109,6 @@ c.NotebookApp.certfile = certfile path needed! # u''
 # Set the log level by value or name.
 # c.NotebookApp.log_level = 30
 
-# Hashed password to use for web authentication.
-# 
-# To generate, type in a python/IPython shell:
-# 
-#   from IPython.lib import passwd; passwd()
-# 
-# The string should be of the form type:salt:hashed-password.
-c.NotebookApp.password = password needed here! #u''
-
 # The Logging format template
 # c.NotebookApp.log_format = '[%(name)s]%(highlevel)s %(message)s'
 
@@ -122,7 +130,7 @@ c.NotebookApp.password = password needed here! #u''
 # Whether to trust or not X-Scheme/X-Forwarded-Proto and X-Real-Ip/X-Forwarded-
 # For headerssent by the upstream reverse proxy. Neccesary if the proxy handles
 # SSL
-# c.NotebookApp.trust_xheaders = False
+c.NotebookApp.trust_xheaders = True
 
 # Whether to install the default config files into the profile dir. If a new
 # profile is being created, and IPython contains config files for that profile,
@@ -131,7 +139,7 @@ c.NotebookApp.password = password needed here! #u''
 # c.NotebookApp.copy_config_files = False
 
 # The full path to a private key file for usage with SSL/TLS.
-c.NotebookApp.keyfile = keyfile path needed! #u''
+#c.NotebookApp.keyfile = u''
 
 # Supply overrides for the tornado.web.Application that the IPython notebook
 # uses.
@@ -550,7 +558,7 @@ c.NotebookApp.keyfile = keyfile path needed! #u''
 #------------------------------------------------------------------------------
 
 # The directory to use for notebooks.
-# c.NotebookManager.notebook_dir = u'/usr/lib/IntelAnalytics'
+c.NotebookManager.notebook_dir = u'/usr/lib/IntelAnalytics/ipython'
 
 #------------------------------------------------------------------------------
 # FileNotebookManager configuration
@@ -571,4 +579,4 @@ c.NotebookApp.keyfile = keyfile path needed! #u''
 # c.FileNotebookManager.save_script = False
 
 # The directory to use for notebooks.
-# c.FileNotebookManager.notebook_dir = u'/usr/lib/IntelAnalytics'
+c.FileNotebookManager.notebook_dir = u'/usr/lib/IntelAnalytics/ipython'
