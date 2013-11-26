@@ -62,7 +62,8 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
 
     if rc != 0:
         msg = ''.join(err_txt) if len(err_txt) > 0 else "(no msg provided)"
-        raise Exception("Error {0}: {1}".format(rc,msg))
+        print rc, msg
+    #    raise Exception("Error {0}: {1}".format(rc,msg))
 
 
 def _append_output(out, list):

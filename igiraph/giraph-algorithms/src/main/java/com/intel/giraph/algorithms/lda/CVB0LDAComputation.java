@@ -474,7 +474,14 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
             }
 
             boolean costEval = getConf().getBoolean(COST_EVAL, false);
-            if (superstep == 1) {
+            int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
+            int realStep = 0;
+            if (superstep >= 1) {
+                realStep = (int) superstep - 1;
+            } else if (superstep == -1) {
+                realStep = maxSupersteps;
+            }
+            if (superstep == 0) {
                 // output graph statistics
                 long numDocVertices = Long.parseLong(map.get(SUM_DOC_VERTEX_COUNT));
                 long numWordVertices = Long.parseLong(map.get(SUM_WORD_VERTEX_COUNT));
@@ -489,31 +496,30 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
                 float alpha = getConf().getFloat(ALPHA, 0.1f);
                 float beta = getConf().getFloat(BETA, 0.1f);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
-                int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
                 float minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
-                output.writeUTF("LDA Configuration:\n");
-                output.writeUTF(String.format("numTopics: %d%n", numTopics));
-                output.writeUTF(String.format("alpha: %f%n", alpha));
-                output.writeUTF(String.format("beta: %f%n", beta));
-                output.writeUTF(String.format("convergenceThreshold: %f%n", convergenceThreshold));
-                output.writeUTF(String.format("maxSupersteps: %d%n", maxSupersteps));
-                output.writeUTF(String.format("maxVal: %f%n", maxVal));
-                output.writeUTF(String.format("minVal: %f%n", minVal));
-                output.writeUTF(String.format("evaluateCost: %b%n", costEval));
-                output.writeUTF("\n");
-                output.writeUTF("Learning Progress:\n");
+                output.writeBytes("======================LDA Configuration====================\n");
+                output.writeBytes("numTopics: " + numTopics + "\n");
+                output.writeBytes("alpha: " + alpha + "\n");
+                output.writeBytes("beta: " + beta + "\n");
+                output.writeBytes("convergenceThreshold: n" + convergenceThreshold + "\n");
+                output.writeBytes("maxSupersteps: " +  maxSupersteps + "\n");
+                output.writeBytes("maxVal: " +  maxVal + "\n");
+                output.writeBytes("minVal: " + minVal + "\n");
+                output.writeBytes("evaluateCost: " + costEval + "\n");
+                output.writeBytes("-------------------------------------------------------------\n");
+                output.writeBytes("\n");
+                output.writeBytes("========================Learning Progress====================\n");
             }
-            if (superstep >= 1) {
+            if (realStep > 0) {
                 // output learning progress
-                output.writeUTF(String.format("superstep=%d", superstep));
+                output.writeBytes("superstep = " + superstep + "\t");
                 if (costEval) {
                     double cost = Double.parseDouble(map.get(SUM_COST));
-                    output.writeUTF(String.format("cost=%f", cost));
+                    output.writeBytes("cost = " + cost + "\t");
                 }
                 double maxDelta = Double.parseDouble(map.get(MAX_DELTA));
-                output.writeUTF(String.format("maxDelta=%f", maxDelta));
-                output.writeUTF("\n");
+                output.writeBytes("maxDelta = " + maxDelta + "\n");
             }
             output.flush();
         }
