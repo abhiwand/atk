@@ -9,10 +9,7 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsche
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import com.intel.hadoop.graphbuilder.util.CommonCommandLineOptions;
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.HBaseUtils;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
+import com.intel.hadoop.graphbuilder.util.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
@@ -102,16 +99,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                     "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
-        srcTableName = cmd.getOptionValue(CommonCommandLineOptions.Option.table.get());
+        srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
         vertexRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(CommonCommandLineOptions.Option.vertices.get()));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
 
         edgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(CommonCommandLineOptions.Option.edges.get()));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
 
         directedEdgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(CommonCommandLineOptions.Option.directedEdges.get()));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
 
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();

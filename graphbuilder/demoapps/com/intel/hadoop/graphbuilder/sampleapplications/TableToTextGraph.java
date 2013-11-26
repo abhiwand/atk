@@ -2,8 +2,6 @@
 
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
@@ -96,8 +94,8 @@ public class TableToTextGraph {
      */
     private static void checkCli(CommandLine cmd) {
 
-        if (!(cmd.hasOption(CommonCommandLineOptions.Option.edges.get())) &&
-                !(cmd.hasOption(CommonCommandLineOptions.Option.directedEdges.get()))) {
+        if (!(cmd.hasOption(BaseCLI.Options.edge.getLongOpt())) &&
+                !(cmd.hasOption(BaseCLI.Options.directedEdge.getLongOpt()))) {
             commandLineInterface.showError("Please add column family and names for (directed) edges and (directed) edge properties");
         }
 
@@ -123,7 +121,7 @@ public class TableToTextGraph {
         checkCli(cmd);
 
 
-        String srcTableName = commandLineInterface.getOptionValue(CommonCommandLineOptions.Option.table.get());
+        String srcTableName = commandLineInterface.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
         /*ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
         job = (ConstructionPipeline) commandLineInterface.addConfig(job);*/
