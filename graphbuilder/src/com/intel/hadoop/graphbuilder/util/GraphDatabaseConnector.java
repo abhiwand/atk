@@ -36,19 +36,17 @@ public class GraphDatabaseConnector {
     /**
      * @param graphDB                         Identifier of the target graph database,  "titan" for now
      *                                        "allegrograph" and "neo4j" are placeholders
-     * @param configuration                   Configuration required to create a graph
      * @throws UnsupportedOperationException  when it cannot open the graph database, particular, if you try to
      *                                        open an unsupported graph databse
      */
 
-    public static TitanGraph open(String graphDB, org.apache.commons.configuration.Configuration configuration,
-                                  org.apache.hadoop.conf.Configuration hadoopConfig)
+    public static TitanGraph open(String graphDB, org.apache.hadoop.conf.Configuration hadoopConfig)
             throws UnsupportedOperationException, NullPointerException {
 
         runtimeConfig.loadConfig(hadoopConfig);
 
         if ("titan".equals(graphDB)) {
-
+            BaseConfiguration configuration = new BaseConfiguration();
             configuration.setProperty("storage.backend",   TitanConfig.config.getProperty("TITAN_STORAGE_BACKEND"));
             configuration.setProperty("storage.hostname",  TitanConfig.config.getProperty("TITAN_STORAGE_HOSTNAME"));
             configuration.setProperty("storage.tablename", TitanConfig.config.getProperty("TITAN_STORAGE_TABLENAME"));
@@ -76,11 +74,10 @@ public class GraphDatabaseConnector {
     }
 
     public static void checkTitanInstallation() {
-        BaseConfiguration c = new BaseConfiguration();
         Graph             g = null;
 
         try {
-            g = GraphDatabaseConnector.open("titan", c, null);
+            g = GraphDatabaseConnector.open("titan", null);
             if (g == null) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.TITAN_ERROR,
                         "Unable to connect to Titan", LOG);

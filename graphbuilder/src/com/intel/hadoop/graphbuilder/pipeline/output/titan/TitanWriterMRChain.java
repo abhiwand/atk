@@ -11,6 +11,8 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsche
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.types.LongType;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.*;
 import com.thinkaurelius.titan.core.KeyMaker;
 import com.thinkaurelius.titan.core.TitanGraph;
@@ -239,62 +241,78 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      * @throws IOException
      */
     private TitanGraph graphFactoryOpen(Configuration configuration) throws IOException {
-        BaseConfiguration titanConfig = new BaseConfiguration();
 
-        return GraphDatabaseConnector.open("titan", titanConfig, configuration);
+        return GraphDatabaseConnector.open("titan", configuration);
     }
 
-
+    /*
+     * This private method does the parsing of the command line -keys option into  a list of
+     * GBTitanKey objects.
+     *
+     * The -keys option takes a comma separated list of key rules.
+     *
+     * A key rule is:  <property name>;<option_1>; ... <option_n>
+     * where the options are datatype specifiers, flags to use the key for indexing edges and/or vertices,
+     * or a uniqueness bit,  per the definitions in TitanCommandLineOptions.
+     *
+     * Example:
+     *    -keys  cf:userId;String;U;V,cf:eventId;E;Long
+     *
+     *    will generate a key for property cf:UserId that is a unique vertex index taking String values,
+     *    and a key for property cf:eventId that is an edge index taking Long values
+     */
     private List<GBTitanKey> parseKeyCommandLine(String keyCommandLine) {
 
         ArrayList<GBTitanKey> gbKeyList = new ArrayList<GBTitanKey>();
 
-        String[] keyRules     = keyCommandLine.split("\\,");
+        if (keyCommandLine.length() > 0) {
 
-        for (String keyRule : keyRules) {
-            String[] ruleProperties = keyRule.split(";");
+            String[] keyRules = keyCommandLine.split("\\,");
 
-            if (ruleProperties.length > 0 ) {
-                String propertyName = ruleProperties[0];
+            for (String keyRule : keyRules) {
+                String[] ruleProperties = keyRule.split(";");
 
-                GBTitanKey gbTitanKey = new GBTitanKey(propertyName);
+                if (ruleProperties.length > 0) {
+                    String propertyName = ruleProperties[0];
 
-                for (int i = 1; i < ruleProperties.length; i++) {
-                    String ruleModifier = ruleProperties[i];
+                    GBTitanKey gbTitanKey = new GBTitanKey(propertyName);
 
-                    if (ruleModifier.equals(TitanCommandLineOptions.STRING_DATATYPE)) {
-                        gbTitanKey.setDataType(String.class);
-                    } else if (ruleModifier.equals(TitanCommandLineOptions.INT_DATATYPE)) {
-                        gbTitanKey.setDataType(Integer.class);
-                    } else if (ruleModifier.equals(TitanCommandLineOptions.LONG_DATATYPE)) {
-                        gbTitanKey.setDataType(Long.class);
-                    } else if (ruleModifier.equals(TitanCommandLineOptions.DOUBLE_DATATYPE)) {
-                        gbTitanKey.setDataType(Double.class);
-                    } else if (ruleModifier.equals(TitanCommandLineOptions.FLOAT_DATATYPE)) {
-                        gbTitanKey.setDataType(Float.class);
-                    } else if (ruleModifier.equals(TitanCommandLineOptions.VERTEX_INDEXING)) {
-                        gbTitanKey.setIsVertexIndex(true);
-                    } else if (ruleModifier.equals(TitanCommandLineOptions.EDGE_INDEXING)) {
-                        gbTitanKey.setIsEdgeIndex(true);
-                    }  else if (ruleModifier.equals(TitanCommandLineOptions.UNIQUE)) {
-                        gbTitanKey.setIsUnique(true);
-                    }  else if (ruleModifier.equals(TitanCommandLineOptions.NOT_UNIQUE)) {
-                        gbTitanKey.setIsUnique(false);
-                    } else {
-                        GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                                "Error declaring keys.  " + ruleModifier + " is not a valid option.\n" +
-                                        TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP, LOG);
+                    for (int i = 1; i < ruleProperties.length; i++) {
+                        String ruleModifier = ruleProperties[i];
+
+                        if (ruleModifier.equals(TitanCommandLineOptions.STRING_DATATYPE)) {
+                            gbTitanKey.setDataType(String.class);
+                        } else if (ruleModifier.equals(TitanCommandLineOptions.INT_DATATYPE)) {
+                            gbTitanKey.setDataType(Integer.class);
+                        } else if (ruleModifier.equals(TitanCommandLineOptions.LONG_DATATYPE)) {
+                            gbTitanKey.setDataType(Long.class);
+                        } else if (ruleModifier.equals(TitanCommandLineOptions.DOUBLE_DATATYPE)) {
+                            gbTitanKey.setDataType(Double.class);
+                        } else if (ruleModifier.equals(TitanCommandLineOptions.FLOAT_DATATYPE)) {
+                            gbTitanKey.setDataType(Float.class);
+                        } else if (ruleModifier.equals(TitanCommandLineOptions.VERTEX_INDEXING)) {
+                            gbTitanKey.setIsVertexIndex(true);
+                        } else if (ruleModifier.equals(TitanCommandLineOptions.EDGE_INDEXING)) {
+                            gbTitanKey.setIsEdgeIndex(true);
+                        } else if (ruleModifier.equals(TitanCommandLineOptions.UNIQUE)) {
+                            gbTitanKey.setIsUnique(true);
+                        } else if (ruleModifier.equals(TitanCommandLineOptions.NOT_UNIQUE)) {
+                            gbTitanKey.setIsUnique(false);
+                        } else {
+                            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                                    "Error declaring keys.  " + ruleModifier + " is not a valid option.\n" +
+                                            TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP, LOG);
+                        }
                     }
+
+                    // Titan requires that unique properties be vertex indexed
+
+                    if (gbTitanKey.isUnique()) {
+                        gbTitanKey.setIsVertexIndex(true);
+                    }
+
+                    gbKeyList.add(gbTitanKey);
                 }
-
-                // Titan requires that unique properties be vertex indexed
-
-
-                if (gbTitanKey.isUnique()) {
-                    gbTitanKey.setIsVertexIndex(true);
-                }
-
-                gbKeyList.add(gbTitanKey);
             }
         }
 
@@ -309,7 +327,18 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         HashMap<String, TitanKey> keyMap = new HashMap<String, TitanKey>();
 
-        TitanKey gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(String.class).indexed(Vertex.class).unique().make();
+        TitanKey gbIdKey = null;
+
+        if (vidClass == LongType.class) {
+            gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(Long.class)
+                    .indexed(Vertex.class).unique().make();
+        } else if (vidClass == StringType.class) {
+            gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(String.class)
+                    .indexed(Vertex.class).unique().make();
+        } else {
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "Vertex ID Class is not legal class, StrinGtype or LongType.", LOG);
+        }
 
         keyMap.put(TitanConfig.GB_ID_FOR_TITAN, gbIdKey);
 
@@ -417,7 +446,15 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         String intermediateDataFileName = "graphbuilder_temp_file-" + random().toString();
         Path   intermediateDataFilePath = new Path("/tmp/" + intermediateDataFileName);
 
-        String keyCommandLine = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_KEYS_OPTNAME"));
+        // nls todo: one more reason to move CLI processing to the top level and use proper parameter interfaces
+        // in the main body of the code
+
+        String keyCommandLine = new String("");
+
+        if (cmd.hasOption(TitanCommandLineOptions.CMD_KEYS_OPTNAME)) {
+            keyCommandLine = cmd.getOptionValue(TitanCommandLineOptions.CMD_KEYS_OPTNAME);
+        }
+
         initTitanGraph(keyCommandLine);
 
         runReadInputLoadVerticesMRJob(intermediateDataFilePath, cmd);
