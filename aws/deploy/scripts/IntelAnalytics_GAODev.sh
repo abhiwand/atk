@@ -19,8 +19,9 @@ fi
 op=$1
 shift 1
 case ${op} in
-cluster_create | cluster_configure | genhosts | genhosts_for_all)
-    ./IntelAnalytics_${op}.sh $@
+create | configure | genhosts | genhosts_for_all)
+    ./IntelAnalytics_cluster_${op}.sh $@
+
     ;;
 *)
     echo "Unknown op: ${op}!"

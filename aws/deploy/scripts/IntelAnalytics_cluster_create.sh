@@ -45,9 +45,9 @@ function usage()
     echo "Usage: $(basename $0) 
     --cluster-id <id>       // valid range for id is [1, 40]
     [--cluster-size <n> ]   // default to n=4
-    [--build <nn> ]         // nn is AMI build number, 00,01 etc
-    [--version <rev> ]      // rev is the product relsease version
-    [--ec2adm <str> ]       // ec2 adm name
+    [--build <Build.nn> ]   // build version as "Build.01", "Build.02", etc
+    [--version <rev> ]      // rev is the product relsease version, default to 0.5
+    [--ec2adm <str> ]       // ec2 adm name, whose adw key is used to issue ec2 commands
     [--workdir <str> ]      // work home, e.g. \`pwd\`/../..
     [--credentials <str> ]  // directory with credentials
     [--use-placement-group] // use placement group for nodes within a cluster
