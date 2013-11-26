@@ -36,15 +36,15 @@ rm -fr $RPM_BUILD_ROOT
 
 mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 mkdir -p $RPM_BUILD_ROOT/usr/bin
-mkdir -p $RPM_BUILD_ROOT/etc/IntelAnalytics
+mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/conf
 
 cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 
-ln -sf %{_sysconfdir}/IntelAnalytics %{buildroot}/usr/lib/IntelAnalytics/conf
-ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-env.sh %{buildroot}/etc/IntelAnalytics/hbase-env.sh
-ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/etc/IntelAnalytics/hbase-site.xml
-ln -sf %{_sysconfdir}/hadoop/conf/hadoop-env.sh %{buildroot}/etc/IntelAnalytics/hadoop-env.sh
-ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}/etc/IntelAnalytics/hadoop-site.xml
+#ln -sf %{buildroot}/usr/lib/IntelAnalytics/conf %{_sysconfdir}/IntelAnalytics
+ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-env.sh %{buildroot}/usr/lib/IntelAnalytics/conf/hbase-env.sh
+ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/usr/lib/IntelAnalytics/conf/hbase-site.xml
+ln -sf %{_sysconfdir}/hadoop/conf/hadoop-env.sh %{buildroot}/usr/lib/IntelAnalytics/conf/hadoop-env.sh
+ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}/usr/lib/IntelAnalytics/conf/hadoop-site.xml
 
 
 %clean
@@ -54,6 +54,6 @@ rm -rf $RPM_BUILD_ROOT
 %files
 
 %{_exec_prefix}/lib/IntelAnalytics
-%{_sysconfdir}/IntelAnalytics
+#%{_sysconfdir}/IntelAnalytics
 
 
