@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Intel Corporation.
+/* Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *           
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -44,15 +44,15 @@ import org.apache.log4j.Logger;
 
 /**
  * The Reducer class applies user defined {@code Functional}s to reduce
- * duplicate edges and vertices. If no such {@code Functional} is provide, it
+ * duplicate edges and vertices. If the user does not provide any {@code Functional}, it
  * outputs the first instance and discards the rest with the same identifier. It
- * also discards self edges: v - > v. An option for discard bidirectional edge
+ * also discards self edges: v - > v. An option for discarding bidirectional edges
  * is provided by {@code setCleanBidirectionalEdges(boolean)}.
  * <p>
  * Output directory structure:
  * <ul>
- * <li>$outputdir/edata contains edge data output</li>
- * <li>$outputdir/vdata contains vertex data output</li>
+ * <li>$outputdir/edata Contains the edge data output.</li>
+ * <li>$outputdir/vdata Contains the vertex data output.</li>
  * </ul>
  * </p>
  */
@@ -122,7 +122,7 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
 
             PropertyGraphElement next = valueIterator.next();
 
-            // Apply reduce on vertex
+            // Apply reduce on vertex.
 
             if (next.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
 
@@ -131,7 +131,7 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
 
                 if (vertexPropertiesMap.containsKey(vertexId)) {
 
-                    // vertexId denotes a duplicate vertex
+                    // vertexId denotes a duplicate vertex.
 
                     if (vertexReducerFunction != null) {
                         vertexPropertiesMap.put(vertexId,
@@ -140,8 +140,8 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
                     } else {
 
                         /**
-                         * default behavior is to merge the property maps of duplicate vertices
-                         * conflicting key/value pairs get overwritten
+                         * The default behavior is to merge the property maps of duplicate vertices
+                         * conflicting key/value pairs to get overwritten.
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) vertexPropertiesMap.get(vertexId);
@@ -149,7 +149,7 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
                     }
                 } else {
 
-                    // vertexId denotes a NON-duplicate vertex
+                    // vertexId denotes a NON-duplicate vertex.
 
                     if (vertexReducerFunction != null) {
                         vertexPropertiesMap.put(vertexId,
@@ -167,7 +167,7 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
                 EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
 
                 if (edge.isSelfEdge()) {
-                    // self edges are omitted
+                    // Self edges are omitted.
                     continue;
                 }
 
@@ -182,8 +182,8 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
                                                                                   edgePropertiesMap.get(edgeID)));
                     } else {
                         /**
-                         * default behavior is to merge the property maps of duplicate edges
-                         * conflicting key/value pairs get overwritten
+                         * The default behavior is to merge the property maps of duplicate vertices
+                         * conflicting key/value pairs to get overwritten.
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) edgePropertiesMap.get(edgeID);
