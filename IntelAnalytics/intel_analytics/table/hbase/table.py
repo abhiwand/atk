@@ -20,11 +20,11 @@ DATAFRAME_NAME_PREFIX_LENGTH=50 #table name prefix length, names are generated w
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 feateng_home = os.path.join(base_script_path, '../','..', 'feateng')
 etl_scripts_path = config['pig_py_scripts']
-pig_log4j_path = os.path.join(config['SOURCE_CODE'], 'IntelAnalytics', 'conf','pig_log4j.properties')
+pig_log4j_path = os.path.join(os.environ['SOURCE_CODE'], 'IntelAnalytics', 'conf','pig_log4j.properties')
 logger.debug('Using %s '% pig_log4j_path)
              
 os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
-os.environ["JYTHONPATH"] = os.path.join(config['SOURCE_CODE'], 'IntelAnalytics')#required to ship jython scripts with pig
+os.environ["JYTHONPATH"] = os.path.join(os.environ['SOURCE_CODE'], 'IntelAnalytics')#required to ship jython scripts with pig
 
 logger.debug('$JYTHONPATH %s' % os.environ["JYTHONPATH"])
 
