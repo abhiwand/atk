@@ -36,7 +36,7 @@ import play.api.db.slick.DB
 object Users {
 
     /**
-     *
+     * register the user.
      * @param user
      * @param registrationForm
      * @param statementGenerator
@@ -47,7 +47,7 @@ object Users {
     }
 
     /**
-     *
+     * log in the user.
      * @param email
      * @param statementGenerator
      * @return
@@ -58,7 +58,7 @@ object Users {
 
 
     /**
-     *
+     * generate an anonymous user.
      * @return
      */
     def anonymousUser(): UserRow = {
@@ -66,7 +66,7 @@ object Users {
     }
 
     /**
-     *
+     * check whether user with the specific email exists.
      * @param email
      * @return
      */
@@ -80,7 +80,7 @@ object Users {
     }
 
     /**
-     *
+     * create a user entry in the table.
      * @param user
      * @return
      */
@@ -90,7 +90,7 @@ object Users {
     }
 
     /**
-     *
+     * get user info by id.
      * @param uid
      * @return
      */
@@ -99,7 +99,7 @@ object Users {
     }
 
     /**
-     *
+     * get user info by email.
      * @param email
      * @return
      */

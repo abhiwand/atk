@@ -45,7 +45,9 @@ object Register extends Controller {
     var json: JsValue = _
     var auth: Authorize = _
     var response: (Int, Option[String]) = (0, None)
-
+    /**
+     * register user to the system.
+     */
     var register = Action {
         request => {
             Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
@@ -101,6 +103,10 @@ object Register extends Controller {
             (result.errorCode, None)
     }
 
+    /**
+     * get cookie to indicate that the user has registered.
+     * @return cookie
+     */
   def getRegisteredCookie:Cookie = {
     Cookie("registered", "true", Some(3600),"/", None, true, false)
   }

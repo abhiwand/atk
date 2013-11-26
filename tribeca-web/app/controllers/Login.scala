@@ -40,6 +40,9 @@ object Login extends Controller {
 
     var simpleResult: SimpleResult = Ok
 
+    /**
+     * get login result and return to user
+     */
     var login = Action(parse.json) {
         request => {
             val auth = new Authorize(request.body, Providers.GooglePlus)
@@ -47,7 +50,13 @@ object Login extends Controller {
         }
     }
 
-
+    /**
+     * get login result from database.
+     * @param auth
+     * @param sessionGen
+     * @param statementGenerator
+     * @return
+     */
     def getResult(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): SimpleResult = {
 
         val response = getResponse(auth, sessionGen, statementGenerator)

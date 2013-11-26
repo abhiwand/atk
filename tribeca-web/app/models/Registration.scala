@@ -23,13 +23,11 @@
 
 package models
 
-import play.api.libs.json.{Json, JsValue}
 import play.api.data._
 import play.api.data.Forms._
 import play.api.Play.current
 import play.api.db.slick.Config.driver.simple._
 import play.api.db.slick.DB
-import models.database.{Registration, SessionRow}
 
 
 case class RegistrationFormMapping(name:String,organization_name: String, organization_phone: String,

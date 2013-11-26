@@ -35,7 +35,7 @@ import play.api.Play.current
 object Python extends Controller {
 
     /**
-     * direct to ipython page
+     * direct to ipython page.
      */
     var ipython = Authenticated {
         request =>
@@ -43,6 +43,9 @@ object Python extends Controller {
               .withCookies(new CookieGenerator createCookie(request.user._1.secret.getOrElse(""), request.user._1.ipythonUrl.getOrElse("")))
     }
 
+    /**
+     * direct to documentation page.
+     */
     var documentation = Authenticated{ request =>
       Ok(views.html.documentation("documentation", request.user._1))
     }

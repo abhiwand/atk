@@ -46,7 +46,7 @@ package object StatusCodes {
     )
 
     /**
-     *
+     * get json status code.
      * @param code
      * @return
      */
