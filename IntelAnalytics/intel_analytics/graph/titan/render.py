@@ -6,7 +6,31 @@ from threading import Thread
 from itertools import islice
 
 
-__all__ = ['render_radial', 'vertex_to_json', 'edge_to_json', 'traverse']
+__all__ = ['render_radial', 'vertex_to_json', 'edge_to_json', 'traverse', 'set_data', 'get_data', 'set_name',
+            'get_name', 'set_format']
+
+def set_data(js, **kwargs):
+  """Updates the ['data'] dictionary on the JSON object"""
+  js['data'].update(kwargs)
+
+def set_name(js, name):
+  """Sets the ['name'] property on the JSON object"""
+  js['name'] = name
+    
+def get_name(js):
+  """Gets the ['name'] property on the JSON object"""
+  return js['name']
+    
+def get_data(js, name):
+  """Gets the named value from the ['data'] dictionary on the JSON object."""
+  return js['data'].get(name)
+
+def set_format(js, **kwargs):
+  """Sets formats in the ['data'] dictionary. Keyword arguments will appear
+     in the data dictionary with '$' prepended."""
+  for (k,v) in kwargs.items():
+    js['data']['$' + k] = v
+        
 
 def _true(x):
     return True
@@ -221,11 +245,16 @@ function init(){
     //append information about the root relations in the right column
     //$jit.id('inner-details').innerHTML = rgraph.graph.getNode(rgraph.root).data.relation;
 }
-if ($('#jit')) {
+
+function run() {
+  if (typeof($jit) != 'undefined') {
     init();
-} else {
-    $('#jit').on('ready', init);
+  } else {
+    setTimeout(run, 1000);
+  }
 }
+run();
+
 })();
 		""" % (id,json.dumps(nodes),id)))
 

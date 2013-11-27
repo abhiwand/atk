@@ -21,16 +21,15 @@ package com.intel.hadoop.graphbuilder.sampleapplications;
 import com.intel.hadoop.graphbuilder.pipeline.input.text.textinputformats.WikiPageInputFormat;
 import com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.OutputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.text.TextFileInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.linkgraph.LinkGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
+import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
@@ -67,22 +66,13 @@ public class CreateLinkGraph {
 
         Options options = new Options();
 
-        options.addOption(OptionBuilder.withLongOpt("in")
-                .withDescription("input path")
-                .hasArgs()
-                .isRequired()
-                .withArgName("input path")
-                .create("i"));
-        //options.addOption("o", "out",   true,  "output path");
-        options.addOption(OptionBuilder.withLongOpt("out")
-                .withDescription("output path")
-                .hasArgs()
-                .withArgName("output path")
-                .create("o"));
-        options.addOption("t", "titan", false, "select Titan for graph storage");
-        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
-                .withDescription("Append Graph to Current Graph at Specified Titan Table")
-                .create("a"));
+        options.addOption(BaseCLI.Options.inputPath.get());
+
+        options.addOption(BaseCLI.Options.outputPath.get());
+
+        options.addOption(BaseCLI.Options.titanStorage.get());
+
+        options.addOption(BaseCLI.Options.titanAppend.get());
 
         commandLineInterface.setOptions(options);
     }
@@ -92,22 +82,23 @@ public class CreateLinkGraph {
      * are specified as command line arguments
      *
      */
-    private static void checkCli(String[] args) {
+    private static void checkCli(CommandLine cmd) {
         String outputPath = null;
 
-        CommandLine cmd = commandLineInterface.parseArgs(args);
+        String outputPathOpt = BaseCLI.Options.outputPath.getLongOpt();
+        String titanStorageOpt = BaseCLI.Options.titanStorage.getLongOpt();
 
-        if (cmd.hasOption("out") && cmd.hasOption("titan")) {
-            commandLineInterface.showHelp("You cannot simultaneously specify a file and Titan for the output.");
-        } else if (!cmd.hasOption("titan") && cmd.hasOption(TitanCommandLineOptions.APPEND)) {
-            commandLineInterface.showHelp("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
-        } else if (cmd.hasOption("out")) {
-            outputPath = cmd.getOptionValue("out");
+        if (cmd.hasOption(outputPathOpt) && cmd.hasOption(titanStorageOpt)) {
+            commandLineInterface.showError("You cannot simultaneously specify a file and Titan for the output.");
+        } else if (!cmd.hasOption(titanStorageOpt) && cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
+            commandLineInterface.showError("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
+        } else if (cmd.hasOption(outputPathOpt)) {
+            outputPath = cmd.getOptionValue(outputPathOpt);
             LOG.info("output path: " + outputPath);
-        } else if (cmd.hasOption("titan")) {
+        } else if (cmd.hasOption(titanStorageOpt)) {
             titanAsDataSink = true;
         } else {
-            commandLineInterface.showHelp("An output path is required");
+            commandLineInterface.showError("An output path is required");
         }
     }
 
@@ -117,13 +108,14 @@ public class CreateLinkGraph {
      */
 
     public static void main(String[] args) {
-        commandLineInterface.checkCli(args);
-        checkCli(args);
+        CommandLine cmd = commandLineInterface.checkCli(args);
+        //check the parsed option against some custom logic
+        checkCli(cmd);
 
         Timer timer = new Timer();
 
         GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
-        commandLineInterface.getRuntimeConfig().addConfig(pipeline);
+        commandLineInterface.addConfig(pipeline);
 
         String inputPathName = commandLineInterface.getOptionValue("in");
 

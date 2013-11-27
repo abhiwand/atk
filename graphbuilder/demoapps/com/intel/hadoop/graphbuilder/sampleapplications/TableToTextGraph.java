@@ -2,15 +2,13 @@
 
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRuleCommandLineOptions;
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
-import com.intel.hadoop.graphbuilder.util.Timer;
+
+import com.intel.hadoop.graphbuilder.util.*;
+
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
@@ -73,118 +71,35 @@ public class TableToTextGraph {
 
     private static final Logger LOG = Logger.getLogger(TableToTextGraph.class);
 
-    private static Options createOptions() {
-
+    private static CommandLineInterface commandLineInterface = new CommandLineInterface();
+    static {
         Options options = new Options();
-        options.addOption("h", "help", false, "");
-        options.addOption("o", "out", true, "output path");
-        options.addOption("t", GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"), true, "HBase table name");
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME"))
-                .withDescription("Specify the columns which are vertex tokens and vertex properties" +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME") + "\"<vertex_col>=[<vertex_prop1>,...]\"")
-                .hasArgs()
-                .isRequired()
-                .withArgName("Vertex-Column-Name")
-                .create("v"));
+        options.addOption(BaseCLI.Options.outputPath.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))
-                .withDescription("Specify the columns which are undirected edge tokens; " +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                        "Note: Edge labels must be unique")
-                .hasArgs()
-                .withArgName("Edge-Column-Name")
-                .create("e"));
+        options.addOption(BaseCLI.Options.hbaseTable.get());
 
-        options.addOption(OptionBuilder.withLongOpt(HBaseGraphBuildingRuleCommandLineOptions.FLATTEN_LISTS_OPTNAME)
-                .withDescription("Flag that expends lists into multiple items. " )
-                .create("F"));
+        options.addOption(BaseCLI.Options.flattenList.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
-                .withDescription("Specify the columns which are directed edge tokens; " +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                        "Note: Edge labels must be unique")
-                .hasArgs()
-                .withArgName("Edge-Column-Name")
-                .create("d"));
-        return options;
+        options.addOption(BaseCLI.Options.vertex.get());
+
+        options.addOption(BaseCLI.Options.edge.get());
+
+        options.addOption(BaseCLI.Options.directedEdge.get());
+
+        commandLineInterface.setOptions(options);
     }
-
-    private static void exitWithHelp(Options options, String message, StatusCode statusCode) {
-
-        LOG.fatal(message);
-
-        HelpFormatter h = new HelpFormatter();
-        h.printHelp("TableToTextGraph", options);
-
-        GraphBuilderExit.graphbuilderFatalExitNoException(statusCode, message, LOG);
-    }
-
 
     /**
      * This function checks whether required tablename, vertices, vertex properties
      * edges and edge properties are specified as command line arguments
-     *
-     * @param args Command line parameters
      */
-    private static CommandLine checkCli(String[] args) {
 
-        Options options          = createOptions();
-        String      srcTableName = null;
-        String      outPathName  = null;
-        CommandLine cmd          = null;
-
-        try {
-            CommandLineParser parser = new PosixParser();
-            cmd                      = parser.parse(options, args);
-
-            if (cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"))) {
-                srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
-                LOG.info("Table Name: " + srcTableName);
-            } else {
-                exitWithHelp(options, "A table name is required.", StatusCode.BAD_COMMAND_LINE);
-            }
-
-            if (cmd.hasOption("o")) {
-                outPathName  = cmd.getOptionValue("o");
-                LOG.info("Output path: " + outPathName );
-            } else {
-                exitWithHelp(options, "An output path is required", StatusCode.BAD_COMMAND_LINE);
-            }
-
-            if (cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME"))) {
-                for (String v : cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME"))) {
-                    LOG.info("Vertices: " + v);
-                }
-            } else {
-                exitWithHelp(options, "Please add column family and names for vertices and vertex properties",
-                        StatusCode.BAD_COMMAND_LINE);
-            }
-
-            if (cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))) {
-                for (String e : cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))) {
-                    LOG.info("Edges: " + e);
-                }
-            }
-
-            if (cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))) {
-                for (String e : cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))) {
-                    LOG.info("Edges: " + e);
-                }
-            }
-
-            if (!(cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))) &&
-                    !(cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME")))) {
-                exitWithHelp(options, "Please add column family and names for (directed) edges and (directed) edge properties",
-                        StatusCode.BAD_COMMAND_LINE);
-            }
-
-        } catch (ParseException e) {
-            exitWithHelp(options, "Parsing exception when parsing command line.", StatusCode.BAD_COMMAND_LINE);
+    private static void checkCli(CommandLine cmd) {
+        if (!(cmd.hasOption(BaseCLI.Options.edge.getLongOpt())) &&
+                !(cmd.hasOption(BaseCLI.Options.directedEdge.getLongOpt()))) {
+            commandLineInterface.showError("Please add column family and names for (directed) edges and (directed) edge properties");
         }
-
-        assert(cmd != null);
-        return cmd;
     }
 
     /**
@@ -198,18 +113,22 @@ public class TableToTextGraph {
 
         Timer timer = new Timer();
 
-        CommandLine cmd = checkCli(args);
-        String srcTableName   = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
-        String outputPathName = cmd.getOptionValue("o");
+        //parse all the command line arguments and check for required fields
+        CommandLine cmd = commandLineInterface.checkCli(args);
 
-        HBaseInputConfiguration inputConfiguration = new HBaseInputConfiguration(srcTableName);
+        //run it through our app specific logic
+        checkCli(cmd);
 
-        HBaseGraphBuildingRule buildingRule = new HBaseGraphBuildingRule(cmd);
-        buildingRule.setFlattenLists(cmd.hasOption(HBaseGraphBuildingRuleCommandLineOptions.FLATTEN_LISTS_OPTNAME));
+        String srcTableName   = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
+        String outputPathName = cmd.getOptionValue(BaseCLI.Options.outputPath.getLongOpt());
+
+        GraphConstructionPipeline    pipeline            = new GraphConstructionPipeline();
+        HBaseInputConfiguration      inputConfiguration  = new HBaseInputConfiguration(srcTableName);
+
+        HBaseGraphBuildingRule       buildingRule        = new HBaseGraphBuildingRule(cmd);
+        buildingRule.setFlattenLists(cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt()));
 
         TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
-
-        GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
 
         LOG.info("============= Creating graph from hbase ==================");
         timer.start();
