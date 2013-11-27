@@ -7,6 +7,7 @@ from intel_analytics.config import global_config, dynamic_import
 
 __all__ = ['get_frame_builder',
            'get_frame',
+           'get_frame_names',
            'BigDataFrame'
            ]
 
@@ -41,8 +42,7 @@ class FrameBuilder(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def build_from_csv(self, frame_name, file_name,
-                       schema=None, skip_header=False):
+    def build_from_csv(self, frame_name, file_name, schema, skip_header=False):
         """
         Reads CSV (comma-separated-value) file and loads into a table
 
@@ -113,7 +113,14 @@ def get_frame(frame_name):
     Returns a previously created frame
     """
     factory_class = _get_frame_builder_factory_class()
-    return factory_class.get_graph(frame_name)
+    return factory_class.get_frame(frame_name)
+
+def get_frame_names():
+    """
+    Returns a previously created frame
+    """
+    factory_class = _get_frame_builder_factory_class()
+    return factory_class.get_frame_names()
 
 
 # dynamically and lazily load the correct frame_builder factory,
@@ -141,7 +148,7 @@ class BigDataFrame(object):
     Proxy for large 2D container to work with table data at scale
     """
 
-    def __init__(self, table):
+    def __init__(self, name, table):
         """
         (internal constructor)
         Parameters
@@ -150,12 +157,16 @@ class BigDataFrame(object):
         """
         #if not isinstance(table, Table):
         #    raise Exception("bad table given to Constructor")
+        if name is None:
+            raise BigDataFrameException("BigDataFrame Constructor requires non-None name")
         if table is None:
             raise BigDataFrameException("BigDataFrame Constructor requires non-None table")
 
+        self.name = name
         self._table = table
         #this holds the original table that we imported the data, will be used for understanding which features are derived or not
-        self.origin_table_name=self._table.table_name
+        self._original_table_name = self._table.table_name
+        self.source_file = self._table.file_name
         self.lineage=[]
         self.lineage.append(self._table.table_name)
 
@@ -166,9 +177,6 @@ class BigDataFrame(object):
                 buf+='%s:%s ' % (key, self.__dict__[key])
         buf += '}'
         return buf
-
-    def get_table_name(self):
-        return self._table.table_name
 
     def get_schema(self):
         """

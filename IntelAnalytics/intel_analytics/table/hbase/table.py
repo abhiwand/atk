@@ -21,7 +21,11 @@ except ImportError, e:
     from intel_analytics.report import PrintReportStrategy as progress_report_strategy
         
 #for quick testing
-local_run = True
+try:
+    local_run = config['local_run'].lower().strip() == 'true'
+except:
+    local_run = False
+
 DATAFRAME_NAME_PREFIX_LENGTH=50 #table name prefix length, names are generated with a rand prefix
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 feateng_home = os.path.join(base_script_path, '../','..', 'feateng')
@@ -307,8 +311,8 @@ class HBaseFrameBuilder(FrameBuilder):
     #-------------------------------------------------------------------------
     # Create BigDataFrames
     #-------------------------------------------------------------------------
-    def build_from_csv(self, frame_name, file_name,
-                       schema=None, skip_header=False, overwrite=False):
+    def build_from_csv(self, frame_name, file_name, schema,
+                       skip_header=False, overwrite=False):
         table_name = self._create_table_name(frame_name, overwrite)
 
         #save the schema of the dataset to import
@@ -328,7 +332,7 @@ class HBaseFrameBuilder(FrameBuilder):
         if skip_header:
             args += ['-k']
 
-        logger.debug(args)
+        logger.debug(' '.join(args))
         # need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
@@ -340,14 +344,15 @@ class HBaseFrameBuilder(FrameBuilder):
             raise Exception('Could not import CSV file')
 
         hbase_table = HBaseTable(table_name, file_name)
-        return BigDataFrame(hbase_table)
+        self._register_table_name(frame_name, table_name, overwrite)
+        return BigDataFrame(frame_name, hbase_table)
 
     def build_from_json(self, frame_name, file_name, overwrite=False):
         #create some random table name
         #we currently don't bother the user to specify table names
         table_name = self._create_table_name(frame_name, overwrite)
         hbase_table = HBaseTable(table_name, file_name)
-        new_frame = BigDataFrame(hbase_table)
+        new_frame = BigDataFrame(frame_name, hbase_table)
 
         schema='json:chararray'#dump all records as chararray
         
@@ -387,11 +392,11 @@ class HBaseFrameBuilder(FrameBuilder):
                                 + "' already exists.  Try override=True")
         return frame_name + get_time_str()
 
-    def _register_table_name(self, frame_name, overwrite):
-        table_name =  hbase_frame_builder_factory.name_registry[frame_name]
-        if table_name is not None:
+    def _register_table_name(self, frame_name, table_name, overwrite):
+        tmp_name =  hbase_frame_builder_factory.name_registry[frame_name]
+        if tmp_name is not None:
             if overwrite:
-                HBaseTable.delete_table(table_name)
+                HBaseTable.delete_table(tmp_name)
             else:
                 raise Exception("Frame '" + frame_name
                                 + "' already exists.  Try override=True")
@@ -424,7 +429,7 @@ class HBaseFrameBuilderFactory(object):
 
     def _get_frame(self, frame_name, hbase_table_name):
         hbase_table = HBaseTable(frame_name, hbase_table_name)
-        new_frame = BigDataFrame(hbase_table)
+        new_frame = BigDataFrame(frame_name, hbase_table)
         return new_frame
 
     @staticmethod

@@ -253,7 +253,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = get_time_str()
-        call(pr_cmd, heartbeat=1, shell=True, output_report_strategy=None)
+        call(pr_cmd, heartbeat=1, shell=True, report_strategy=None)
         report_file = self.get_report(output_path, 'pr-convergence-report_0', time_str)
         #find progress info
         with open(report_file) as result:
