@@ -94,7 +94,7 @@ object Users {
      * @param uid
      * @return tuple of (userRow, whiteListRow)
      */
-    def readByUid(uid: Long, getUserCommand: GetUserDetailsCommand): Option[(database.UserRow, database.WhiteListRow)] = {
+    def readByUid(uid: Long, getUserCommand: GetUserDetailsCommand): Option[UserDetails] = {
         getUserCommand.executeById(uid)
     }
 

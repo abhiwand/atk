@@ -25,6 +25,7 @@ package models.database
 
 import models.database
 
+case class UserDetails(userInfo: UserRow, whitelistEntry: WhiteListRow)
 
 /**
  * Command to find user by id
@@ -35,7 +36,7 @@ trait GetUserDetailsCommand {
      * @param uid
      * @return tuple of (userRow, whitelListRow)
      */
-    def executeById(uid: Long): Option[(database.UserRow, database.WhiteListRow)]
+    def executeById(uid: Long): Option[UserDetails]
 
     /**
      * get user details by email
