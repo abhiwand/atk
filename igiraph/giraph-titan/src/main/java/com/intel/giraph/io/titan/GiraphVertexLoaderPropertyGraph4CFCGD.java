@@ -309,6 +309,7 @@ public class GiraphVertexLoaderPropertyGraph4CFCGD {
                 if (vertexPropertyKeyValues.containsKey(propertyName)) {
                     final Object vertexValueObject = this.value;
                     final double vertexValue = Double.parseDouble(vertexValueObject.toString());
+                    vertexType = vertexValueVector.getType();
                     Vector vector = vertexValueVector.getVector();
                     vector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
                     vertex.setValue(new VertexData4CGDWritable(vertexType, vector, vector.clone(), vector.clone()));

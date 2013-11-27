@@ -545,12 +545,12 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
                 long trainEdges = Long.parseLong(map.get(SUM_TRAIN_EDGES));
                 long validateEdges = Long.parseLong(map.get(SUM_VALIDATE_EDGES));
                 long testEdges = Long.parseLong(map.get(SUM_TEST_EDGES));
-                output.writeUTF("Graph Statistics:\n");
-                output.writeUTF(String.format("Number of vertices: %d (left: %d, right: %d)%n",
-                    leftVertices + rightVertices, leftVertices, rightVertices));
-                output.writeUTF(String.format("Number of edges: %d (train: %d, validate: %d, test: %d)%n",
-                    trainEdges + validateEdges + testEdges, trainEdges, validateEdges, testEdges));
-                output.writeUTF("\n");
+                output.writeBytes("Graph Statistics:\n");
+                output.writeBytes("Number of vertices: " + (leftVertices + rightVertices) +
+                    " (left: " + leftVertices + ", right: " + rightVertices + ")\n");
+                output.writeBytes("Number of edges: " + (trainEdges + validateEdges + testEdges) +
+                    " (train: " + trainEdges + ", validate: " + validateEdges + ", test: " +
+                    testEdges + ")\n");
                 // output cgd configuration
                 int featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
                 float lambda = getConf().getFloat(LAMBDA, 0f);

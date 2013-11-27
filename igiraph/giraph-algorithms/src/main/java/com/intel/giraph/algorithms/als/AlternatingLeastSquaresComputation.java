@@ -465,9 +465,9 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 long validateEdges = Long.parseLong(map.get(SUM_VALIDATE_EDGES));
                 long testEdges = Long.parseLong(map.get(SUM_TEST_EDGES));
                 output.writeBytes("Graph Statistics:\n");
-                output.writeBytes("Number of vertices: " + leftVertices + rightVertices +
+                output.writeBytes("Number of vertices: " + (leftVertices + rightVertices) +
                     ", (left: " + rightVertices + ", right: " +  rightVertices + ")\n");
-                output.writeBytes("Number of edges: " + trainEdges + validateEdges + testEdges +
+                output.writeBytes("Number of edges: " + (trainEdges + validateEdges + testEdges) +
                     " (train: " + trainEdges + ", validate: " + validateEdges +
                     ", test: )" + testEdges + ")\n");
                 // output ALS configuration
