@@ -1,5 +1,5 @@
 import unittest
-from intel_analytics.mapreducelogutil import find_progress
+from intel_analytics.report import find_progress
 
 
 class TestLogUtil(unittest.TestCase):

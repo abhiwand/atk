@@ -1,5 +1,5 @@
 import unittest
-from intel_analytics.giraphprogressreportstrategy import GiraphProgressReportStrategy
+from intel_analytics.graph.titan.ml import GiraphProgressReportStrategy
 
 class TestGetGiraphProgress(unittest.TestCase):
 
