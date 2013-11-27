@@ -19,16 +19,14 @@
 
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
-import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
-import com.intel.hadoop.graphbuilder.util.Timer;
+
+import com.intel.hadoop.graphbuilder.util.*;
+
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
@@ -87,6 +85,28 @@ import org.apache.log4j.Logger;
  *     seniority in that department.
  * </p>
  *
+ * <p>
+ *  TO SPECIFY KEYS FOR DATABASE INDICES:
+ *  <code>-keys <key rule 1>,<key rule 2>, ... <key rule n></code>
+ *  where a key rule is a ; separated list beginning with a column name and including the following options:
+ *  <ul>
+ *    <li>{@code String} selects String datatype for the key's values <default value></li>
+ *    <li>{@code Float} selects Float datatype for the key's values</li>
+ *    <li>{@code Double} selects Double datatype for the key's values</li>
+ *    <li>{@code Integer} selects Integer datatype for the key's values</li>
+ *    <li>{@code Long} selects Long datatype for the key's value</li>
+ *    <li>{@code E} marks the key to be used as an edge index</li>
+ *    <li>{@code V} marks the kye to be used as a vertex index (edge and vertex indexing are not exclusive)</li>
+ *     <li>{@code U} marks the key as taking values unique to each vertex</li>
+ *    <li> {@code NU} marks the key as taking values that are not necessarily unique to each vertex</li>
+ *</ul>
+ * </p>
+ *
+ * <p>
+ *  EXAMPLE:
+ *  <code>-keys cf:name;V;U,cf:tenure:E;V;Integer</code>
+ * </p>
+ *
  */
 
 public class TableToGraphDB {
@@ -96,108 +116,54 @@ public class TableToGraphDB {
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
-        options.addOption("h", "help", false, "");
 
-        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
-                .withDescription("Append Graph to Current Graph at Specified Titan Table")
-                .create("a"));
+        options.addOption(BaseCLI.Options.titanAppend.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"))
-                .withDescription("HBase table name")
-                .hasArgs()
-                .isRequired()
-                .withArgName("HBase table name")
-                .create("t"));
+        options.addOption(BaseCLI.Options.flattenList.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME"))
-                .withDescription("Specify the HBase columns which are vertex tokens and vertex properties" +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME") + "\"<vertex_col>=[<vertex_prop1>,...]\"")
-                .hasArgs()
-                .isRequired()
-                .withArgName("Vertex-Column-Name")
-                .create("v"));
+        options.addOption(BaseCLI.Options.hbaseTable.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))
-                .withDescription("Specify the HTable columns which are undirected edge tokens; " +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                        "Note: Edge labels must be unique")
-                .hasArgs()
-                .withArgName("Edge-Column-Name")
-                .create("e"));
+        options.addOption(BaseCLI.Options.vertex.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("FLATTEN_LISTS_OPTNAME"))
-                .withDescription("Flag that expends lists into multiple items. " )
-                .create("F"));
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
-                .withDescription("Specify the columns which are directed edge tokens; " +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                        "Note: Edge labels must be unique")
-                .hasArgs()
-                .withArgName("Edge-Column-Name")
-                .create("d"));
+        options.addOption(BaseCLI.Options.edge.get());
 
+        options.addOption(BaseCLI.Options.directedEdge.get());
+
+        options.addOption(BaseCLI.Options.titanKeyIndex.get());
 
         commandLineInterface.setOptions(options);
-    }
-
-    /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-
-        /**
-         * Should bidirectional edges be removed?
-         *
-         * @return   false:  this graph construction method allows bidirectional edges
-         */
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return false;
-        }
-
-        /**
-         * Does this graph construction method use hbase?
-         *
-         * @return  true: this graph construction method uses hbase
-         */
-        @Override
-        public boolean shouldUseHBase() {
-            return true;
-        }
     }
 
     /**
      * Main method for feature table to graph database construction
      *
      * @param args Command line arguments
-     * @throws Exception
      */
 
     public static void main(String[] args)  {
 
         Timer timer = new Timer();
 
-        commandLineInterface.checkCli(args);
-        if (null == commandLineInterface.getCmd()) {
-            commandLineInterface.showHelp("Error parsing command line options");
-            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                    "GRAPHBUILDER_ERROR: Error parsing command line options", LOG);
-        }
+        CommandLine cmd = commandLineInterface.checkCli(args);
 
-        CommandLine cmd = commandLineInterface.getCmd();
+        GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
+        commandLineInterface.getRuntimeConfig().addConfig(pipeline);
 
-        ConstructionPipeline job                 = new TableToGraphDB().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.getRuntimeConfig().addConfig(job);
 
-        String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        String srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
         HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
-        HBaseGraphBuildingRule buildingRule     = new HBaseGraphBuildingRule(cmd);
+
+        HBaseGraphBuildingRule buildingRule = new HBaseGraphBuildingRule(cmd);
+        buildingRule.setFlattenLists(cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt()));
+
         TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
 
         LOG.info("============= Creating graph from feature table ==================");
         timer.start();
-        job.run(inputConfiguration, buildingRule, outputConfiguration, cmd);
+        pipeline.run(inputConfiguration, buildingRule,
+                GraphConstructionPipeline.BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES,
+                outputConfiguration, cmd);
         LOG.info("========== Done creating graph from feature table ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

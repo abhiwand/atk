@@ -28,9 +28,14 @@ import models.RegistrationFormMapping
 import java.sql.{ResultSet, Types}
 import play.api.Play.current
 
-
+/**
+ * Implementation of registration logic
+ */
 object DBRegisterCommand extends RegisterCommand {
 
+    /**
+     * see RegisterCommand
+     */
     def execute(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator): RegistrationOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
@@ -66,9 +71,9 @@ object DBRegisterCommand extends RegisterCommand {
     }
 
     /**
-     *
-     * @param rs
-     * @return
+     * find uid from result set
+     * @param rs result set
+     * @return uid
      */
     private def getUidFromResultSet(rs: ResultSet): Int = {
         var uid = 0

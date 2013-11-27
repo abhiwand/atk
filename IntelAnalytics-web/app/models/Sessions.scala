@@ -35,9 +35,7 @@ object Sessions extends SessionGenerator {
     var table = database.SessionTable
 
     /**
-     *
-     * @param sessionId
-     * @return
+     * see SessionGenerator.
      */
     def getById(sessionId: String): Query[database.SessionTable.type, database.SessionRow] = DB.withSession {
         implicit session: scala.slick.session.Session =>
@@ -45,9 +43,7 @@ object Sessions extends SessionGenerator {
     }
 
     /**
-     *
-     * @param uid
-     * @return
+     * see SessionGenerator.
      */
     def create(uid: Long): Option[String] = DB.withSession {
         implicit session: scala.slick.session.Session =>
@@ -60,9 +56,7 @@ object Sessions extends SessionGenerator {
     }
 
     /**
-     *
-     * @param sessionId
-     * @return
+     * see SessionGenerator.
      */
     def read(sessionId: String): Option[database.SessionRow] = DB.withSession {
         implicit session: scala.slick.session.Session =>
@@ -75,9 +69,7 @@ object Sessions extends SessionGenerator {
     }
 
     /**
-     *
-     * @param userSession
-     * @return
+     * see SessionGenerator.
      */
     def update(userSession: models.database.SessionRow) = DB.withSession {
         implicit session: scala.slick.session.Session =>
@@ -86,9 +78,7 @@ object Sessions extends SessionGenerator {
     }
 
     /**
-     *
-     * @param sessionId
-     * @return
+     * see SessionGenerator.
      */
     def delete(sessionId: String) = DB.withSession {
         implicit session: scala.slick.session.Session =>
@@ -97,8 +87,7 @@ object Sessions extends SessionGenerator {
     }
 
     /**
-     *
-     * @return
+     * get random session id.
      */
     def createSessionId(): String = {
         java.util.UUID.randomUUID().toString()

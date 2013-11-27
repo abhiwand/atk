@@ -1,10 +1,12 @@
 $(window).load(function(){
+    messages.getMessagesHtml();
+
     if($.cookie("approvalPending") != undefined && $.cookie("approvalPending") != ""){
-        $("#approvalPending").removeClass("hidden")
+        $("#confirmationModal").modal('show')
         $.removeCookie("approvalPending")
     }
     if($.cookie("authenticationFailed") != undefined && $.cookie("authenticationFailed") != ""){
-        $("#authenticationFailed").removeClass("hidden")
+        messages.showAuthFailed()
         $.removeCookie("authenticationFailed")
     }
     if($.cookie("registered") != undefined && $.cookie("registered") != ""){
@@ -13,15 +15,16 @@ $(window).load(function(){
         $("#request-an-invite-modal-slider2").remove();
         $("#request-an-invite-modal-slider3").remove();*/
     }
-    messages.getMessagesHtml();
 })
 
 var messages = {
     approvalPending:"",
     registrationRequired:"",
+    authFailed:"",
     getMessagesHtml: function(){
         messages.approvalPending = $("#approvalPendingParent").html();
         messages.registrationRequired = $("#registrationRequiredParent").html();
+        messages.authFailed = $("#authenticationFailedParent").html();
     },
     showApprovalPending: function(){
         $("#approvalPending").remove();
@@ -32,6 +35,12 @@ var messages = {
         $("#registrationRequired").remove();
         $("body").append(messages.registrationRequired)
         $("#registrationRequired").removeClass("hidden")
+    },
+    showAuthFailed: function(){
+        $("#authenticationFailed").remove();
+        $("body").append(messages.authFailed)
+        $("#authenticationFailed").removeClass("hidden")
     }
+
 
 }

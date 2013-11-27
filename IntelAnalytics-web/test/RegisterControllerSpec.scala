@@ -1,4 +1,5 @@
 import controllers.Register
+import controllers.Register.{FailToValidateResponse, GeneralErrorResponse, SuccessfullyRegisterResponse}
 import java.sql.{ResultSet, CallableStatement}
 import models.database.StatementGenerator
 import models._
@@ -39,7 +40,8 @@ class RegisterControllerSpec extends Specification with Mockito {
             val statementGenerator = mock[StatementGenerator]
 
             val result = Register.getResponse(registrationData, auth, sessionGen, statementGenerator)
-            result._1 must beEqualTo(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA)
+
+            result.isInstanceOf[FailToValidateResponse] must beTrue
         }
 
         "User already in white list" in {
@@ -69,7 +71,8 @@ class RegisterControllerSpec extends Specification with Mockito {
                 }
 
                 val result = Register.getResponse(registrationData, auth, sessionGen, dummyStatementGenerator)
-                (result._1 == StatusCodes.LOGIN && result._2 == Some("100")) must beEqualTo(true)
+                result.isInstanceOf[SuccessfullyRegisterResponse] must beTrue
+                "100" must beEqualTo (result.asInstanceOf[SuccessfullyRegisterResponse].sessionId)
             }
 
 
@@ -102,7 +105,7 @@ class RegisterControllerSpec extends Specification with Mockito {
                 }
 
                 val result = Register.getResponse(registrationData, auth, sessionGen, dummyStatementGenerator)
-                (result._1 == 0 && result._2 == None) must beEqualTo(true)
+                result.isInstanceOf[GeneralErrorResponse] must beTrue
             }
         }
 
@@ -134,7 +137,7 @@ class RegisterControllerSpec extends Specification with Mockito {
                 }
 
                 val result = Register.getResponse(registrationData, auth, sessionGen, dummyStatementGenerator)
-                (result._1 == StatusCodes.REGISTRATION_APPROVAL_PENDING && result._2 == None) must beEqualTo(true)
+                result.isInstanceOf[GeneralErrorResponse] must beTrue
             }
         }
 
@@ -165,7 +168,8 @@ class RegisterControllerSpec extends Specification with Mockito {
                 }
 
                 val result = Register.getResponse(registrationData, auth, sessionGen, dummyStatementGenerator)
-                (result._1 == StatusCodes.LOGIN && result._2 == Some("100")) must beEqualTo(true)
+                result.isInstanceOf[SuccessfullyRegisterResponse] must beTrue
+                "100" must beEqualTo (result.asInstanceOf[SuccessfullyRegisterResponse].sessionId)
             }
         }
 

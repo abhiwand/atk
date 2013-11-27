@@ -1,0 +1,7 @@
+g = TitanFactory.open('/home/hadoop/IntelAnalytics/titan/conf/titan-hbase-es.properties')
+GraphOfTheGodsFactory.load(g)
+g.V
+g.E
+g.V.map()
+g.E.map()
+exit

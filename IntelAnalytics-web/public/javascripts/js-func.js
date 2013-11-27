@@ -14,17 +14,23 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
         phone_number.match(/^(1-?)?(\([2-9]\d{2}\)|[2-9]\d{2})-?[2-9]\d{2}-?\d{4}$/);
 }, 'Please enter a valid phone number.');
 
+jQuery.validator.addMethod("accept", function(value, element) {
+    return value.trim().toLocaleLowerCase() == "I Agree".trim().toLowerCase();
+}, 'You must type the words "I agree" to accept the agreement.');
+
 	registrationForm = $( form ).validate({
 		/*** here are the validation rules. the elements are get by name attribute ( <input type="field" name="firstname" /> ) ***/
 		/********************HERE YOU CAN CUSTOMIZE THE STOCK VALIDATION RULES*******************/
 		rules: {
 			name: {
 				required: true,
-				minlength: 3
+				minlength: 3,
+				maxlength: 254
 			},
             organization_name: {
 				required: true,
-				minlength: 3
+				minlength: 3,
+				maxlength: 254
 			},
 			role: {
 				required: true,
@@ -34,11 +40,13 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 			},
 			whatTools: {
 				required: true,
-				minlength: 3
+				minlength: 3,
+				maxlength: 254
 			},
 			whyParticipate: {
 				required: true,
-				minlength: 3
+				minlength: 3,
+				maxlength: 254
 			},
 			support_subject: {
 				required: true,
@@ -72,7 +80,8 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
             organization_email: {
 			    required: true,
 			    minlength: 6,
-				email: true
+				email: true,
+				maxlength: 254
 			}, 
 			/*country: {
 				required: true
@@ -81,7 +90,8 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 				required: true
 			},*/
 			terms:{
-				required:true
+				required:true,
+                accept:true
 			}, 
 			/*url:{
 				required:true, 
@@ -109,7 +119,7 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 			},
 			maxlength:{
 				required:true,
-				maxlength:4
+				maxlength:254
 			}, 
 			nowhitespace:{
 				required:true,
@@ -203,9 +213,7 @@ jQuery.validator.addMethod('phoneUS', function(phone_number, element) {
 			gender: {
 				required: "Please select your gender"
 			},
-			terms: {
-				required: "You must agree to the terms of use"
-			}
+			
 		}	
 	});
 

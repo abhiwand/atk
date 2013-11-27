@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
@@ -27,9 +28,7 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsche
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.HBaseUtils;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
+import com.intel.hadoop.graphbuilder.util.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
@@ -97,6 +96,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     private String[] vertexRules;
     private String[] edgeRules;
     private String[] directedEdgeRules;
+    private boolean  flattenLists = false;
 
     private Class vidClass = StringType.class;
     private Class<? extends GraphTokenizer>  tokenizerClass = HBaseTokenizer.class;
@@ -119,16 +119,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                     "GRAPHBUILDER_ERROR: Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
-        this.srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
-        this.vertexRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME")));
+        vertexRules =
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
 
-        this.edgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME")));
+        edgeRules =
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
 
-        this.directedEdgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME")));
+        directedEdgeRules =
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
 
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();
@@ -138,6 +138,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         generateEdgeSchemata();
         generateVertexSchemata();
+    }
+
+    /**
+     * Set the option to flatten lists.
+     * <p>When this option is set, string lists serialized as {string1,string2,...stringn} expand into n different
+     * strings string1, ... stringn when used as vertex IDs</p>
+     * @param flattenLists {@code boolean}
+     */
+    public void setFlattenLists(boolean flattenLists) {
+        this.flattenLists = flattenLists;
     }
 
     /**
@@ -246,6 +256,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             List<String> propertyColNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
 
             returnValue &= hBaseUtils.columnHasValidFamily(srcVertexColName, srcTableName);
+
             if (returnValue == false) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "GRAPHBUILDER ERROR: " + srcVertexColName + " does not belong to a valid column family of table "
@@ -276,13 +287,13 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      * Store the edge and vertex generation rules in the job configuration for use by the MR time graph tokenizer.
      *
      * @param configuration reference to the job configuration in which rules for tokenizer will be stored
-     * @param cmd           the command line options provided by the user
      * @see HBaseTokenizer
      */
-    public void updateConfigurationForTokenizer(Configuration configuration, CommandLine cmd) {
+    public void updateConfigurationForTokenizer(Configuration configuration) {
         packVertexRulesIntoConfiguration(configuration, vertexRules);
         packEdgeRulesIntoConfiguration(configuration, edgeRules);
         packDirectedEdgeRulesIntoConfiguration(configuration, directedEdgeRules);
+        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", flattenLists);
     }
 
     /**
@@ -342,7 +353,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             for (String columnName : columnNames) {
                 String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("GRAPH_PROPERTY_SEPARATOR"));
+                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }
@@ -359,7 +370,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             for (String columnName : columnNames) {
                 String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("GRAPH_PROPERTY_SEPARATOR"));
+                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }

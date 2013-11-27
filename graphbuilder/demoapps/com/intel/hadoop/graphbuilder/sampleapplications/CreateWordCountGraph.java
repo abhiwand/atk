@@ -23,10 +23,10 @@ import com.intel.hadoop.graphbuilder.pipeline.input.text.TextFileInputConfigurat
 import com.intel.hadoop.graphbuilder.pipeline.input.text.textinputformats.WikiPageInputFormat;
 import com.intel.hadoop.graphbuilder.pipeline.output.OutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphOutputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.wordcountgraph.WordCountGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
+import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import org.apache.commons.cli.CommandLine;
@@ -63,42 +63,18 @@ public class CreateWordCountGraph {
     private static final   Logger  LOG             = Logger.getLogger(CreateWordCountGraph.class);
     private static         boolean titanAsDataSink = false;
 
-    /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return true;
-        }
-
-        @Override
-        public boolean shouldUseHBase() {
-            return false;
-        }
-    }
-
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
-        options.addOption(OptionBuilder.withLongOpt("in")
-                .withDescription("input path")
-                .hasArgs()
-                .isRequired()
-                .withArgName("input path")
-                .create("i"));
-        options.addOption(OptionBuilder.withLongOpt("out")
-                .withDescription("output path")
-                .hasArgs()
-                .withArgName("output path")
-                .create("o"));
-        options.addOption(OptionBuilder.withLongOpt("titan")
-                .withDescription("select Titan for graph storage")
-                .withArgName("titan ")
-                .create("t"));
-        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
-                .withDescription("Append Graph to Current Graph at Specified Titan Table")
-                .create("a"));
+
+        options.addOption(BaseCLI.Options.inputPath.get());
+
+        options.addOption(BaseCLI.Options.outputPath.get());
+
+        options.addOption(BaseCLI.Options.titanStorage.get());
+
+        options.addOption(BaseCLI.Options.titanAppend.get());
+
         options.addOption(OptionBuilder.withLongOpt("dictionary")
                 .withDescription("dictionary path")
                 .hasArgs()
@@ -122,17 +98,20 @@ public class CreateWordCountGraph {
 
         CommandLine cmd = commandLineInterface.parseArgs(args);
 
-        if (cmd.hasOption("out") && cmd.hasOption("titan")) {
-            commandLineInterface.showHelp("You cannot simultaneously specify a file and Titan for the output.");
-        } else if (!cmd.hasOption("titan") && cmd.hasOption(TitanCommandLineOptions.APPEND)) {
-            commandLineInterface.showHelp("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
-        } else if (cmd.hasOption("out")) {
-            outputPath = cmd.getOptionValue("out");
+        String outputPathOpt = BaseCLI.Options.outputPath.getLongOpt();
+        String titanStorageOpt = BaseCLI.Options.titanStorage.getLongOpt();
+
+        if (cmd.hasOption(outputPathOpt) && cmd.hasOption(titanStorageOpt)) {
+            commandLineInterface.showError("You cannot simultaneously specify a file and Titan for the output.");
+        } else if (!cmd.hasOption(titanStorageOpt) && cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
+            commandLineInterface.showError("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
+        } else if (cmd.hasOption(outputPathOpt)) {
+            outputPath = cmd.getOptionValue(outputPathOpt);
             LOG.info("output path: " + outputPath);
-        } else if (cmd.hasOption("titan")) {
+        } else if (cmd.hasOption(titanStorageOpt)) {
             titanAsDataSink = true;
         } else {
-            commandLineInterface.showHelp("An output path is required");
+            commandLineInterface.showError("An output path is required");
         }
 
     }
@@ -140,32 +119,33 @@ public class CreateWordCountGraph {
     /**
      * The main method for creating wordcount graph.
      * @param args  raw command line from user
-     * @throws Exception
      */
 
     public static void main(String[] args)  {
-        commandLineInterface.checkCli(args);
+        CommandLine cmd = commandLineInterface.checkCli(args);
+        //application specific argument checks
         checkCli(args);
 
         Timer timer = new Timer();
 
-        ConstructionPipeline job = new CreateWordCountGraph().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.getRuntimeConfig().addConfig(job);
+        GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
+        commandLineInterface.getRuntimeConfig().addConfig(pipeline);
 
         if (commandLineInterface.hasOption("d")) {
             String dictionaryPath = commandLineInterface.getOptionValue("dictionary");
-            job.addUserOpt("Dictionary", dictionaryPath);
+            pipeline.addUserOpt("Dictionary", dictionaryPath);
             LOG.info("Dictionary path: " + dictionaryPath);
         }
 
         if (commandLineInterface.hasOption("s")) {
             String stopwordsPath = commandLineInterface.getOptionValue("stopwords");
-            job.addUserOpt("Dictionary", stopwordsPath);
+            pipeline.addUserOpt("Dictionary", stopwordsPath);
             LOG.info("Stopwords path: " + stopwordsPath);
         }
 
+        String                     inputPathName      = commandLineInterface.getOptionValue("in");
         TextInputFormat            format             = new WikiPageInputFormat();
-        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
+        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format, inputPathName);
         WordCountGraphBuildingRule graphBuildingRule  = new WordCountGraphBuildingRule();
 
         OutputConfiguration outputConfiguration = null;
@@ -174,12 +154,15 @@ public class CreateWordCountGraph {
             outputConfiguration = new TitanOutputConfiguration();
         }
         else {
-            outputConfiguration = new TextGraphOutputConfiguration();
+            String outputPathName = commandLineInterface.getOptionValue("o");
+            outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
         }
 
         LOG.info("============= Creating Word Count Graph ===================");
         timer.start();
-        job.run(inputConfiguration, graphBuildingRule, outputConfiguration, commandLineInterface.getCmd());
+        pipeline.run(inputConfiguration, graphBuildingRule,
+                GraphConstructionPipeline.BiDirectionalHandling.REMOVE_BIDIRECTIONALEDGES,
+                outputConfiguration, commandLineInterface.getCmd());
         LOG.info("========== Done Creating Word Count Graph  ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

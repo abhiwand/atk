@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.util;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseConfig;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
@@ -307,7 +308,7 @@ public class HBaseUtils {
         this.hTableName = tableName;
         Scan scan       = new Scan();
 
-        scan.setCaching(GBHTableConfiguration.config.getPropertyInt("HBASE_CACHE_SIZE"));
+        scan.setCaching(HBaseConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
 
         return scan;

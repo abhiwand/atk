@@ -2,49 +2,45 @@ package models
 import scala.slick.lifted.Query
 
 /**
- * Created with IntelliJ IDEA.
- * User: schen55
- * Date: 11/6/13
- * Time: 11:06 AM
- * To change this template use File | Settings | File Templates.
+ * Generate session object
  */
 trait SessionGenerator {
     /**
-     *
+     * get session by id.
      * @param sessionId
-     * @return
+     * @return tutple of (session)
      */
     def getById(sessionId: String): Query[database.SessionTable.type, database.SessionRow]
 
     /**
-     *
+     * create session.
      * @param uid
-     * @return
+     * @return session id
      */
     def create(uid: Long): Option[String]
 
     /**
-     *
+     * get session info.
      * @param sessionId
-     * @return
+     * @return sessionRow
      */
     def read(sessionId: String): Option[database.SessionRow]
 
     /**
-     *
+     * update session info.
      * @param userSession
      * @return
      */
     def update(userSession: models.database.SessionRow)
 
     /**
-     *
+     * delete session.
      * @param sessionId
      * @return
      */
     def delete(sessionId: String)
     /**
-     *
+     * generate session id.
      * @return
      */
     def createSessionId(): String

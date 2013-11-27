@@ -26,8 +26,8 @@ public class TextGraphOutputConfiguration implements OutputConfiguration {
     private GraphGenerationMRJob graphGenerationMRJob;
 
 
-    public TextGraphOutputConfiguration() {
-        graphGenerationMRJob = new TextGraphMR();
+    public TextGraphOutputConfiguration(String outputPathName) {
+        graphGenerationMRJob = new TextGraphMR(outputPathName);
     }
 
     public GraphGenerationMRJob getGraphGenerationMRJob() {

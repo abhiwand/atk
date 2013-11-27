@@ -179,7 +179,11 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 }
         }
 
+<<<<<<< HEAD
         LOG.info("GRAPHBUILDER INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
+=======
+        LOG.info("GRAPHBUILDER_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
+>>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
 
 
         String[] rawEdgeRules         = HBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
@@ -372,7 +376,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                             property = edgeAttributes[countEdgeAttr].replaceAll(
                                     GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                    GBHTableConfiguration.config.getProperty("GRAPH_PROPERTY_SEPARATOR"));
+                                    GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
 
                             if (property != null) {
                                 edge.setProperty(property, new StringType(propertyValue));
@@ -401,7 +405,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                                 property = edgeAttributes[countEdgeAttr].replaceAll(
                                         GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                        GBHTableConfiguration.config.getProperty("GRAPH_PROPERTY_SEPARATOR"));
+                                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
 
                                 if (property != null) {
                                     opposingEdge.setProperty(property, new StringType(propertyValue));

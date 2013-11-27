@@ -47,10 +47,9 @@ public interface GraphBuildingRule {
      * during MR time.
      *
      * @param configuration  reference to the job configuration in which params for tokenizer will be stored
-     * @param cmd  the command line options provided by the use
      */
 
-    public void    updateConfigurationForTokenizer (Configuration configuration, CommandLine cmd);
+    public void    updateConfigurationForTokenizer (Configuration configuration);
 
     /**
      * Obtain the type information for the graphs this method can generate.

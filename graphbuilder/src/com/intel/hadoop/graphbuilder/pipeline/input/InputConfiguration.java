@@ -39,9 +39,9 @@ import org.apache.hadoop.mapreduce.Job;
 
 public interface InputConfiguration {
 
-    public void    updateConfigurationForMapper (Configuration configuration, CommandLine cmd);
+    public void    updateConfigurationForMapper (Configuration configuration);
 
-    public void    updateJobForMapper(Job job, CommandLine cmd);
+    public void    updateJobForMapper(Job job);
 
     public boolean usesHBase();
 

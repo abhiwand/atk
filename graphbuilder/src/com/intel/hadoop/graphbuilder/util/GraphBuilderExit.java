@@ -38,4 +38,8 @@ public class GraphBuilderExit {
         System.err.println(statusCode.getMessage());
         System.exit(statusCode.getStatus());
     }
+
+    public static void graphbuilderExitNoException(StatusCode statusCode) {
+        System.exit(statusCode.getStatus());
+    }
 }

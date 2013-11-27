@@ -25,7 +25,7 @@ package controllers
 
 import play.api.mvc._
 import scala.concurrent.Future
-import models.database.{DBGetUserDetailsCommand, WhiteListRow, UserRow}
+import models.database.{UserDetails, DBGetUserDetailsCommand, WhiteListRow, UserRow}
 import models.Users
 import models.Whitelists
 import play.api.Play
@@ -70,9 +70,9 @@ object Session extends Controller {
     }
 
 
-    class AuthenticatedRequest[A](val user: (UserRow, WhiteListRow), request: Request[A]) extends WrappedRequest[A](request)
+    class AuthenticatedRequest[A](val user: UserDetails, request: Request[A]) extends WrappedRequest[A](request)
 
-    class ActionWithSession[A](val user: (UserRow, WhiteListRow), request: Request[A]) extends WrappedRequest[A](request)
+    class ActionWithSession[A](val user: UserDetails, request: Request[A]) extends WrappedRequest[A](request)
 
     object ActionWithSession extends ActionBuilder[ActionWithSession] {
         def invokeBlock[A](request: Request[A], block: (ActionWithSession[A]) => Future[SimpleResult]) = {
@@ -84,15 +84,15 @@ object Session extends Controller {
                         //get user info
                         val u = Users.readByUid(validatedSession.get.uid, DBGetUserDetailsCommand)
                         if (u == None)
-                            block(new ActionWithSession((Users.anonymousUser(), Whitelists.anonymousWhitelist()), request))
+                            block(new ActionWithSession(UserDetails(Users.anonymousUser(), Whitelists.anonymousWhitelist()), request))
                         else
                         //continue with the request
                             block(new ActionWithSession(u.get, request))
                     } else {
-                        block(new ActionWithSession((Users.anonymousUser(), Whitelists.anonymousWhitelist()), request))
+                        block(new ActionWithSession(UserDetails(Users.anonymousUser(), Whitelists.anonymousWhitelist()), request))
                     }
             } getOrElse {
-                block(new ActionWithSession((Users.anonymousUser(), Whitelists.anonymousWhitelist()), request))
+                block(new ActionWithSession(UserDetails(Users.anonymousUser(), Whitelists.anonymousWhitelist()), request))
             }
         }
     }
@@ -107,7 +107,7 @@ object Session extends Controller {
                         //get user info
                         val u = Users.readByUid(validatedSession.get.uid, DBGetUserDetailsCommand)
                         //continue with the request
-                        if (u == None || u.get._2.email.isEmpty || u.get._2.uid.get == 0) {
+                        if (u == None || u.get.whitelistEntry.email.isEmpty || u.get.whitelistEntry.uid.get == 0) {
                             Future.successful(Redirect("/"))
                         } else {
                             block(new AuthenticatedRequest(u.get, request))

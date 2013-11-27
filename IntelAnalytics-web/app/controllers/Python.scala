@@ -35,19 +35,18 @@ import play.api.Play.current
 object Python extends Controller {
 
     /**
-     * direct to ipython page
+     * direct to ipython page.
      */
     var ipython = Authenticated {
         request =>
-
-            var url = request.user._1.ipythonUrl.getOrElse("")
-            url = url.replace(":", "-")
-
-            Ok(views.html.ipython("Ipython", request.user._1))
-              .withCookies(new CookieGenerator createCookie(request.user._1.secret.getOrElse(""), url))
+            Ok(views.html.ipython("Ipython", request.user.userInfo))
+              .withCookies(new CookieGenerator createCookie(request.user.userInfo.secret.getOrElse(" "), request.user.userInfo.ipythonUrl.getOrElse(" ")))
     }
 
+    /**
+     * direct to documentation page.
+     */
     var documentation = Authenticated{ request =>
-      Ok(views.html.documentation("documentation", request.user._1))
+      Ok(views.html.documentation("documentation", request.user.userInfo))
     }
 }

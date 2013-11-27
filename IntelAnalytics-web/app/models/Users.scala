@@ -36,21 +36,21 @@ import play.api.db.slick.DB
 object Users {
 
     /**
-     *
+     * register the user.
      * @param user
      * @param registrationForm
      * @param statementGenerator
-     * @return
+     * @return register action output
      */
     def register(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator, registerCommand: RegisterCommand): RegistrationOutput = {
         registerCommand.execute(user, registrationForm, statementGenerator)
     }
 
     /**
-     *
+     * log in the user.
      * @param email
      * @param statementGenerator
-     * @return
+     * @return login action output
      */
     def login(email: String, statementGenerator: StatementGenerator, loginCommand: LoginCommand): LoginOutput = {
         loginCommand.execute(email, statementGenerator)
@@ -58,17 +58,17 @@ object Users {
 
 
     /**
-     *
-     * @return
+     * generate an anonymous user.
+     * @return anonymouse user instance
      */
     def anonymousUser(): UserRow = {
         UserRow(Some(0), "", "", "", false, None, None, None)
     }
 
     /**
-     *
+     * check whether user with the specific email exists.
      * @param email
-     * @return
+     * @return flag to indicate found or not found
      */
     def exists(email: String, getUserCommand: GetUserDetailsCommand): Boolean = {
 
@@ -80,7 +80,7 @@ object Users {
     }
 
     /**
-     *
+     * create a user entry in the table.
      * @param user
      * @return
      */
@@ -90,18 +90,18 @@ object Users {
     }
 
     /**
-     *
+     * get user info by id.
      * @param uid
-     * @return
+     * @return tuple of (userRow, whiteListRow)
      */
-    def readByUid(uid: Long, getUserCommand: GetUserDetailsCommand): Option[(database.UserRow, database.WhiteListRow)] = {
+    def readByUid(uid: Long, getUserCommand: GetUserDetailsCommand): Option[UserDetails] = {
         getUserCommand.executeById(uid)
     }
 
     /**
-     *
+     * get user info by email.
      * @param email
-     * @return
+     * @return user info
      */
     def readByEmail(email: String, getUserCommand: GetUserDetailsCommand): Option[database.UserRow] = {
         getUserCommand.executeByEmail(email)

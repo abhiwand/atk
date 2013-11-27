@@ -51,7 +51,11 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
      * @return TitanGraph for saving edges
      * @throws IOException
      */
+<<<<<<< HEAD
     private TitanGraph GraphFactoryOpen(Context context) throws IOException {
+=======
+    private TitanGraph getTitanGraphInstance (Context context) throws IOException {
+>>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
         BaseConfiguration titanConfig = new BaseConfiguration();
         return GraphDatabaseConnector.open("titan", titanConfig, context.getConfiguration());
     }
@@ -68,7 +72,11 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
 
         this.vertexNameToTitanID = new HashMap<Object, Long>();
 
+<<<<<<< HEAD
         this.graph               = GraphFactoryOpen(context);
+=======
+        this.graph               = getTitanGraphInstance(context);
+>>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
     }
 
     /**

@@ -33,20 +33,21 @@ import play.api.db.slick.DB
 
 object DBGetUserDetailsCommand extends GetUserDetailsCommand {
     /**
-     *
-     * @param uid
-     * @return
+     * see GetUserDetailsCommand
      */
-    def executeById(uid: Long): Option[(UserRow, WhiteListRow)] = DB.withSession {
+    def executeById(uid: Long): Option[UserDetails] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val users = getByUid(uid).list
             if (users.length > 0) {
-                Some(users.last)
+                Some(UserDetails(users.last._1, users.last._2))
             } else {
                 None
             }
     }
 
+    /**
+     * see executeById
+     */
     def executeByEmail(email: String): Option[UserRow] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val getResult = getByEmail(email).list
@@ -58,7 +59,7 @@ object DBGetUserDetailsCommand extends GetUserDetailsCommand {
     }
 
     /**
-     *
+     * find user info by querying table with id
      * @param uid
      * @return
      */
@@ -68,7 +69,7 @@ object DBGetUserDetailsCommand extends GetUserDetailsCommand {
     }
 
     /**
-     *
+     * find user info by querying table with email
      * @param email
      * @return
      */

@@ -4,7 +4,6 @@
 @import play.api.Play.current
 
 @mainLoggedIn(message, user) {
-
     <div id='main-content'>
 
         <div id='main-content-upload'>
@@ -12,9 +11,8 @@
                 <div class="row" >
                     <div class='col-sm-12'>
 
-
                         <div class="row-fluid">
-                         <iframe id='ipython' src="https://@user.ipythonUrl"></iframe>
+                            <iframe id='ipython' src="http://@user.ipythonUrl" ></iframe>
                         </div>
                         <a href ='#'>
                             <button type="button" class="btn btn-primary btn-lg btn-block">That was awesome. Export it!</button>
