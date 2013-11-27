@@ -28,7 +28,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.intel.hadoop</groupId>
-  <artifactId>tribeca</artifactId>
+  <artifactId>IntelAnalytics</artifactId>
   <packaging>pom</packaging>
 	<version>0.5-SNAPSHOT</version>
   <name>IntelAnalytics Parent</name>
@@ -43,7 +43,7 @@
 
     <dep.accumulo.version>1.4.0</dep.accumulo.version>
     <dep.airline.version>0.5</dep.airline.version>
-    <dep.aurelius.version>0.4.0</dep.aurelius.version>
+    <dep.aurelius.version>0.4.1</dep.aurelius.version>
     <dep.base64.version>2.3.8</dep.base64.version>
     <dep.cli-parser.version>1.1</dep.cli-parser.version>
     <dep.codehaus-jackson.version>1.8.0</dep.codehaus-jackson.version>
@@ -453,8 +453,8 @@
     <module>graphbuilder</module>
     <module>imahout</module>
     <module>igiraph</module> 
-    <module>tribeca</module>
+    <module>IntelAnalytics</module>
     <module>feateng</module>
-    <module>tribeca-web</module>
+    <module>IntelAnalytics-web</module>
   </modules>
 </project>

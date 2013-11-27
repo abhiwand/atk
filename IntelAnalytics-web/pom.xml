@@ -1,0 +1,91 @@
+<!--
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2013 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>intelanalytics-saas</artifactId>
+  <packaging>pom</packaging>
+  <name>IntelAnalytics SaaS Application</name>
+  <url>http://maven.apache.org</url>
+
+ <parent>
+	<groupId>com.intel.hadoop</groupId>
+	<artifactId>IntelAnalytics</artifactId>
+	<relativePath>../pom.xml</relativePath>  
+	<version>0.5-SNAPSHOT</version>
+  </parent>
+<build>
+  <plugins>
+	<plugin>
+	  <artifactId>exec-maven-plugin</artifactId>
+	  <groupId>org.codehaus.mojo</groupId>
+	  <version>1.2.1</version>
+	  <executions>
+	    <execution>
+	      <id>play-compile</id>
+	      <phase>compile</phase>
+	      <goals>
+		<goal>exec</goal>
+	      </goals>
+	  <configuration>
+	    <executable>play</executable>
+	    <arguments>
+	      <argument>compile</argument>
+	    </arguments>
+	  </configuration>
+	    </execution>
+	    <execution>
+	      <id>play-test</id>
+	      <phase>test</phase>
+	      <goals>
+		<goal>exec</goal>
+	      </goals>
+	  <configuration>
+	    <executable>play</executable>
+	    <arguments>
+	      <argument>-Dconfig.resource=dev</argument>
+	      <argument>test</argument>
+	    </arguments>
+	  </configuration>
+	    </execution>
+	    <execution>
+	      <id>play-dist</id>
+	      <phase>package</phase>
+	      <goals>
+		<goal>exec</goal>
+	      </goals>
+  	      <configuration>
+	        <executable>play</executable>
+	        <arguments>
+		  <argument>dist</argument>
+	        </arguments>
+	      </configuration>
+            </execution>
+          </executions>
+	</plugin>
+  </plugins>
+</build>
+</project>

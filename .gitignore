@@ -20,6 +20,8 @@ largegit.sh
 *.iml
 *.rpm
 *.tar.gz
+*.class
+*.pyc
 git
 BUILD
 download
@@ -28,3 +30,4 @@ download
 *.swo
 *.swp
 dist
+/bin

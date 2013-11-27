@@ -22,21 +22,23 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
+import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
+import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
-import com.intel.giraph.io.DistanceMapWritable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
-import com.thinkaurelius.titan.diskstorage.Backend;
-import org.apache.hadoop.hbase.util.Bytes;
+
 import java.io.IOException;
+
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
 
@@ -47,7 +49,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANC
  * and <code>Null</code> edge weights.
  */
 public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
-        TitanHBaseVertexInputFormat<LongWritable, DistanceMapWritable, NullWritable> {
+    TitanHBaseVertexInputFormat<LongWritable, DistanceMapWritable, NullWritable> {
 
     /**
      * LOG class
@@ -94,7 +96,7 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
      * Uses the RecordReader to return HBase data
      */
     public static class TitanHBaseVertexReader extends
-            HBaseVertexReader<LongWritable, DistanceMapWritable, NullWritable> {
+        HBaseVertexReader<LongWritable, DistanceMapWritable, NullWritable> {
         /**
          * Graph Reader to parse data in Titan Graph semantics
          */
@@ -125,11 +127,11 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
          */
         @Override
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-                InterruptedException {
+            InterruptedException {
             super.initialize(inputSplit, context);
             this.graphReader = new TitanHBaseGraphReader(
-                    GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
-                            GIRAPH_TITAN.get(context.getConfiguration())));
+                GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+                    GIRAPH_TITAN.get(context.getConfiguration())));
         }
 
         /**
@@ -146,15 +148,15 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
 
             if (getRecordReader().nextKeyValue()) {
                 final Vertex temp = graphReader.readGiraphVertex(LONG_DISTANCE_MAP_NULL, getConf(),
-                        getRecordReader().getCurrentKey().copyBytes(),
-                        getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
+                    getRecordReader().getCurrentKey().copyBytes(),
+                    getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
                 } else if (getRecordReader().nextKeyValue()) {
                     final Vertex temp1 = graphReader.readGiraphVertex(LONG_DISTANCE_MAP_NULL, getConf(),
-                            getRecordReader().getCurrentKey().copyBytes(),
-                            getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
+                        getRecordReader().getCurrentKey().copyBytes(),
+                        getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
                     if (null != temp1) {
                         vertex = temp1;
                         return true;
@@ -173,7 +175,7 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
          */
         @Override
         public Vertex<LongWritable, DistanceMapWritable, NullWritable> getCurrentVertex() throws IOException,
-                InterruptedException {
+            InterruptedException {
             return vertex;
         }
 

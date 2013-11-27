@@ -90,7 +90,7 @@ public class Triple<A, B, C> {
 
     @Override
     public int hashCode() {
-        return HashUtil.hashtriple(a,b,c);
+        return HashUtil.hashTriple(a, b, c);
     }
 
     @Override

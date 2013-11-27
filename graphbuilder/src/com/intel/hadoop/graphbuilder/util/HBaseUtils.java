@@ -1,7 +1,8 @@
 
 package com.intel.hadoop.graphbuilder.util;
 
-import com.intel.hadoop.graphbuilder.graphconstruction.inputmappers.GBHTableConfig;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseConfig;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.*;
@@ -52,19 +53,14 @@ public class HBaseUtils {
     /**
      *  Return the unique instance of HBaseUtils, create one if there isn't one already
      *
+     *  @throws IOException
+     *
      */
 
-    public static synchronized HBaseUtils getInstance() {
+    public static synchronized HBaseUtils getInstance() throws IOException {
 
         if (uniqueInstanceOfHBaseUtils == null) {
-            try {
                 uniqueInstanceOfHBaseUtils = new HBaseUtils();
-            } catch (IOException e) {
-                LOG.fatal("Cannot allocate the HBaseUtils object. Check hbase connection.");
-                e.printStackTrace();
-                System.exit(1);
-            }
-        } else {
         }
 
         return uniqueInstanceOfHBaseUtils;
@@ -142,7 +138,7 @@ public class HBaseUtils {
                                   Reducer.Context context) throws IOException, InterruptedException {
         Put put = new Put(key);
         put.add(columnFamily, columnQualifier, value);
-        context.write(new Text(GBHTableConfig.config.getProperty("NULLKEY")), put);
+        context.write(new Text(GBHTableConfiguration.config.getProperty("NULLKEY")), put);
         return value;
     }
 
@@ -184,8 +180,8 @@ public class HBaseUtils {
             try {
                 returnValue = tableContainsColumnFamily(tableName, columnFamilyName);
             } catch (IOException e) {
-                LOG.fatal("Unhandled IO exception.");
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                        "GRAPHBUILDER FAILURE: unhandled IO exception while validating column family with hbase.", LOG, e);
             }
         }
 
@@ -220,8 +216,9 @@ public class HBaseUtils {
             if (admin.isTableDisabled(this.hTableName)) {
                 admin.deleteTable(this.hTableName);
             } else {
-                LOG.fatal("GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it");
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                        "GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it",
+                        LOG);
             }
         }
 
@@ -233,7 +230,7 @@ public class HBaseUtils {
         }
 
         admin.createTable(htd);
-        LOG.info("TRIBECA_INFO: " + this.hTableName + " table created");
+        LOG.info("GRAPHBUILDER_INFO: " + this.hTableName + " table created");
 
         if (!admin.tableExists(this.hTableName)) {
             throw new IOException("GRAPHBUILDER ERROR: Failed to create table " + this.hTableName);
@@ -262,8 +259,9 @@ public class HBaseUtils {
             if (admin.isTableDisabled(this.hTableName)) {
                 admin.deleteTable(this.hTableName);
             } else {
-                LOG.fatal("GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it");
-                System.exit(1);
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                        "GRAPHBUILDER ERROR: Unable to delete existing table " + this.hTableName + ". Please delete it",
+                        LOG);
             }
         }
 
@@ -274,7 +272,7 @@ public class HBaseUtils {
 
         admin.createTable(htd);
 
-        LOG.info("TRIBECA_INFO: " + this.hTableName + " table created");
+        LOG.info("GRAPHBUILDER_INFO: " + this.hTableName + " table created");
 
         if (!admin.tableExists(this.hTableName)) {
             throw new IOException("GRAPHBUILDER ERROR: Failed to create table " + this.hTableName);
@@ -292,7 +290,7 @@ public class HBaseUtils {
         this.hTableName = tableName;
         Scan scan       = new Scan();
 
-        scan.setCaching(GBHTableConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
+        scan.setCaching(HBaseConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
 
         return scan;

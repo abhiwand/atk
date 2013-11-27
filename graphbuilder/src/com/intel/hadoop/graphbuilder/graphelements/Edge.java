@@ -23,38 +23,41 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
-import com.intel.hadoop.graphbuilder.util.HashUtil;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
 /**
- * Represents an Edge object with getSrc, getDst vertex id and edge data.
- * 
- * @param <VidType>
- *          the type of vertex id.
+ * Represents an Edge object with a source, destination, label and a  (possibly empty) property map.
+ * <p>
+ * This class is mutable. See the {@code configure} and {@code setProperty} methods.
+ * </p>
+ *
+ * @param <VidType> the type of vertex id.
  */
-public class Edge<VidType extends WritableComparable<VidType>> implements Writable{
+public class Edge<VidType extends WritableComparable<VidType>> implements Writable {
 
-    private VidType src;
-    private VidType dst;
-    private StringType label;
+    private VidType     src;
+    private VidType     dst;
+    private StringType  label;
     private PropertyMap properties;
 
-  /** Default constructor. Creates an empty edge. */
+    /**
+     * Create a placeholder edge.
+     */
+
     public Edge() {
         this.properties = new PropertyMap();
     }
 
     /**
-    * Creates an edge with given getSrc, getDst and edge data.
-    *
-    * @param src
-    * @param dst
-    * @param label
-    */
+     * Creates an edge with given source, destination and label..
+     *
+     * @param src vertex ID of the edge's source vertex
+     * @param dst vertex ID of the edge's destination vertex
+     * @param label the edge label
+     */
     public Edge(VidType src, VidType dst, StringType label) {
         this.src = src;
         this.dst = dst;
@@ -63,32 +66,38 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     *
+     *  Overwrite an edge's fields with the given parameters.
+     *  @param src vertex ID of the edge's source vertex
+     *  @param dst vertex ID of the edge's destination vertex
+     *  @param properties the edge's property map
      */
-    public void configure(VidType src, VidType dst, StringType label, PropertyMap properties)
-    {
-        this.src = src;
-        this.dst = dst;
-        this.label = label;
+    public void configure(VidType src, VidType dst, StringType label, PropertyMap properties) {
+        this.src        = src;
+        this.dst        = dst;
+        this.label      = label;
         this.properties = properties;
     }
 
     /**
-     * get an edge property
+     * Get a property from the edge's property map.
+     * @param key lookup key for the value in the edge's property map
      */
-    public Object getProperty(String key)
-    {
+    public Object getProperty(String key) {
         return properties.getProperty(key);
     }
 
     /**
-     * set an edge property
+     * Set an edge property.
+     *
+     * This changes the property map of the edge
+     *
+     * @param key lookup key for the value in the edge's property map
+     * @param val value to be put in the property map
      */
-    public Edge setProperty(String key, Writable val)
-    {
+    public void setProperty(String key, Writable val) {
         properties.setProperty(key, val);
-        return this;
     }
+
     /**
      * @return the edge label.
      */
@@ -97,59 +106,57 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-    * @return getSrc vertex id.
-    */
+     * @return The vertex ID of the edge's source
+     */
     public VidType getSrc() {
         return src;
     }
 
     /**
-    * @return getDst vertex id.
-    */
+     * @return The vertex ID of the edge's destination
+     */
     public VidType getDst() {
         return dst;
     }
 
     /**
-     * @return boolean : is this edge a self-edge? (loop).
+     * Determine if the edge is a loop - that is, if its source and destination are the same vertex.
+     * @return true iff the edge's source and destination are equal
      */
     public boolean isSelfEdge() {
         return Objects.equals(src, dst);
     }
+
     /**
-     * @return the property map
+     * @return the edge's property map
      */
-    public PropertyMap getProperties()
-    {
+    public PropertyMap getProperties() {
         return properties;
     }
 
-    @Override
-    public final boolean equals(Object obj) {
-        if (obj instanceof Edge) {
-          Edge other = (Edge) obj;
-          return (src.equals(other.src)
-                  && dst.equals(other.dst)
-                  && label.equals(other.label)
-                  && properties.equals(other.properties));
-        } else {
-          return false;
-        }
+    /**
+     * Get the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID and its label
+     * @return  the triple of the edge's source vertex ID, destination vertex ID and its label
+     */
+    public EdgeID getEdgeID() {
+        return new EdgeID(this.src, this.dst, this.label);
     }
 
-  @Override
-  public final int hashCode() {
-    return HashUtil.hashtriple(src, dst, label);
-  }
+    /**
+     * Convert edge into  string for printing. Properties are tab separated.
+     * @return   string form of the edge
+     */
+    @Override
+    public final String toString() {
+        return src.toString() + "\t" + dst.toString() + "\t"
+                + label.toString() + "\t" + properties.toString();
+    }
 
-  @Override
-  public final String toString() {
-    return src.toString() + "\t" + dst.toString() + "\t"
-           + label.toString() + "\t" + properties.toString();
-  }
-
-
-
+    /**
+     * Read an edge from an input stream
+     * @param input the input stream
+     * @throws IOException
+     */
     @Override
     public void readFields(DataInput input) throws IOException {
         src.readFields(input);
@@ -158,12 +165,16 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
         properties.readFields(input);
     }
 
+    /**
+     * Write an edge to an output stream
+     * @param output the output stream
+     * @throws IOException
+     */
     @Override
     public void write(DataOutput output) throws IOException {
-
-            src.write(output);
-            dst.write(output);
-            label.write(output);
-            properties.write(output);
+        src.write(output);
+        dst.write(output);
+        label.write(output);
+        properties.write(output);
     }
 }

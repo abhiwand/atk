@@ -7,7 +7,7 @@ source IntelAnalytics_common_env.sh
 
 # existing AMI Names (with build version, can override 
 if [ -z "${IA_AMI_BUILD}" ]; then
-    IA_AMI_BUILD="Build.02"
+    IA_AMI_BUILD="Build.05"
 fi
 export IA_AMI_VERSION="${IA_VERSION}-${IA_AMI_BUILD}"
 export IA_AMI_MASTER="${IA_NAME}-Master-${IA_AMI_VERSION}"
@@ -22,7 +22,9 @@ export IA_INSTANCE_TYPE=cc2.8xlarge
 
 # Default IAM group and user
 export IA_IAM_GROUP=${IA_NAME}_Public
-export IA_IAM_USER=${IA_NAME}_User
+if [ -z "${IA_IAM_USER}" ]; then
+    export IA_IAM_USER=${IA_NAME}_User
+fi
 
 # The current requirements on supported clusters are
 # - max 40 clusters
@@ -34,8 +36,6 @@ export IA_CLUSTER_ID_MAX=40
 export IA_CLUSTER_SIZE_MIN=4
 export IA_CLUSTER_SIZE_MAX=20
 export IA_CLUSTER_SIZE_INC=4
-# The pre-generated cluster CIDR file
-export IA_CLUSTER_CIDR=${IA_NAME}_cidr.txt
 
 # These are pre-existing shared resources, we can also 
 if [ -z "${IA_SUBNET}" ]; then
@@ -57,7 +57,7 @@ if [ -z "${IA_SGROUP_ADMSSH}" ]; then
 fi
 # default port range for hadoop
 if [ -z "${IA_SGROUP_HADOOP_PORT_MIN}" ]; then
-    export IA_SGROUP_HADOOP_PORT_MIN=8000
+    export IA_SGROUP_HADOOP_PORT_MIN=0
 fi
 if [ -z "${IA_SGROUP_HADOOP_PORT_MAX}" ]; then
     export IA_SGROUP_HADOOP_PORT_MAX=65535
@@ -68,6 +68,15 @@ fi
 if [ -z "${IA_SGROUP_HTTPS_PORT}" ]; then
     export IA_SGROUP_HTTPS_PORT=443
 fi
+# The pre-generated cluster CIDR file
+if [ -z "${IA_CLUSTER_CIDR}" ]; then
+    export IA_CLUSTER_CIDR=${IA_TAG}_cidr.txt
+fi
+if [ ! -f "${IA_CLUSTER_CIDR}" ]; then
+    echo "Did not find cluster \"${IA_TAG}\" CIDR list file \"${IA_CLUSTER_CIDR}\"!!"
+    exit 1
+fi
+
 # sunet status
 export IA_AWS_PENDING="pending"
 export IA_AWS_AVAILABLE="available"
@@ -129,7 +138,7 @@ function IA_check_cluster_cidr()
 # get cluster name
 function IA_format_cluster_name()
 {
-    echo ${IA_NAME}-$1
+    echo ${IA_TAG}-$1
 }
 
 function IA_format_node_name_role()
@@ -166,7 +175,7 @@ function IA_format_node_hostname()
 # get ami id by name
 function IA_get_ami()
 {
-    echo `ec2-describe-images ${IA_EC2_OPTS_TAG} -F "name=${1}" -o self | grep IMAGE | awk '{print $2}'`
+    echo `ec2-describe-images ${IA_EC2_OPTS} -F "name=${1}" -o self | grep IMAGE | awk '{print $2}'`
 }
 
 # get instance type

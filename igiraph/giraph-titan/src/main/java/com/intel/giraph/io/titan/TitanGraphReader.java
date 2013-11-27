@@ -22,29 +22,32 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import org.apache.giraph.graph.Vertex;
-
+import com.thinkaurelius.titan.diskstorage.StaticBuffer;
 import com.thinkaurelius.titan.diskstorage.keycolumnvalue.Entry;
 import com.thinkaurelius.titan.diskstorage.util.StaticByteBuffer;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph;
+import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
 import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
 import com.thinkaurelius.titan.graphdb.transaction.StandardTransactionBuilder;
-import com.thinkaurelius.titan.diskstorage.StaticBuffer;
-import com.thinkaurelius.titan.graphdb.database.idhandling.IDHandler;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.log4j.Logger;
 import org.apache.commons.configuration.Configuration;
-
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_FLOAT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_VECTOR;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LDA;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.graph.Vertex;
+import org.apache.log4j.Logger;
 
 import java.nio.ByteBuffer;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_FLOAT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_VECTOR;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VALID_PROPERTY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_TITAN_TX;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF_CGD;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LDA;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_TX_NOT_OPEN;
 
 /**
  * The backend agnostic Titan graph reader for pulling a graph of Titan and into
@@ -72,7 +75,9 @@ public class TitanGraphReader extends StandardTitanGraph {
         super(new GraphDatabaseConfiguration(configuration));
         this.tx = newTransaction(new StandardTransactionBuilder(this.getConfiguration(), this));
         if (this.tx == null) {
-            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
+            throw new RuntimeException(TITAN_TX_NOT_OPEN);
+        } else {
+            LOG.info(OPENED_TITAN_TX);
         }
     }
 
@@ -99,7 +104,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();
                     } catch (NullPointerException e) {
-                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                        LOG.info(NO_VALID_PROPERTY);
                     }
                 }
                 return loader1.getVertex();
@@ -114,7 +119,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();
                     } catch (NullPointerException e) {
-                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                        LOG.info(NO_VALID_PROPERTY);
                     }
                 }
                 return loader2.getVertex();
@@ -130,7 +135,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();
                     } catch (NullPointerException e) {
-                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                        LOG.info(NO_VALID_PROPERTY);
                     }
                 }
                 return loader3.getVertex();
@@ -146,7 +151,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();
                     } catch (NullPointerException e) {
-                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                        LOG.info(NO_VALID_PROPERTY);
                     }
                 }
                 return loader4.getVertex();
@@ -163,7 +168,7 @@ public class TitanGraphReader extends StandardTitanGraph {
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();
                     } catch (NullPointerException e) {
-                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                        LOG.info(NO_VALID_PROPERTY);
                     }
                 }
                 return loader5.getVertex();
@@ -180,10 +185,27 @@ public class TitanGraphReader extends StandardTitanGraph {
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();
                     } catch (NullPointerException e) {
-                        LOG.info("Skip this entry because no valid property for Giraph to read");
+                        LOG.info(NO_VALID_PROPERTY);
                     }
                 }
                 return loader6.getVertex();
+
+            case PROPERTY_GRAPH_4_CF_CGD:
+                final GiraphVertexLoaderPropertyGraph4CFCGD
+                        loader7 = new GiraphVertexLoaderPropertyGraph4CFCGD(
+                            conf, vertexId);
+
+                for (final Entry data : entries) {
+                    try {
+                        final GiraphVertexLoaderPropertyGraph4CFCGD.RelationFactory factory = loader7
+                                .getFactory();
+                        super.edgeSerializer.readRelation(factory, data, tx);
+                        factory.build();
+                    } catch (NullPointerException e) {
+                        LOG.info(NO_VALID_PROPERTY);
+                    }
+                }
+                return loader7.getVertex();
 
             default:
                 break;
