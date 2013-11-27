@@ -151,16 +151,16 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
 
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Could not instantiate reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Could not instantiate reducer functions", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when instantiating reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer functions", LOG, e);
         } catch (ClassNotFoundException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Class not found exception when instantiating reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Class not found exception when instantiating reducer functions", LOG, e);
         } catch (Functional.FunctionalConfigurationError e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Configuration error when configuring reducer functionals.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Configuration error when configuring reducer functionals.", LOG, e);
         }
     }
 
@@ -184,13 +184,13 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
                 Object vertexId = next.vertex().getVertexId();
                 Vertex vertex   = next.vertex();
 		
-		// track the RDF labels of vertices
+    		    // track the RDF labels of vertices
 
-		if (vertex.getVertexLabel() != null) {
-		    if (!vertexLabelMap.containsKey(vertexId)) {
-		        vertexLabelMap.put(vertexId, vertex.getVertexLabel());
-		    }
-		}
+        		if (vertex.getVertexLabel() != null) {
+	        	    if (!vertexLabelMap.containsKey(vertexId)) {
+		                vertexLabelMap.put(vertexId, vertex.getVertexLabel());
+		            }
+    	    	}
 
                 if (vertexPropertiesMap.containsKey(vertexId)) {
 

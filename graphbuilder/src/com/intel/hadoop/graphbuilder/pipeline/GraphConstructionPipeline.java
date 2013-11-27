@@ -101,13 +101,13 @@ public abstract class GraphConstructionPipeline<VidType extends WritableComparab
             graphGenerationMRJob.run(cmd);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
-                    "IO Exception during map-reduce job execution.", LOG, e);
+                    "GRAPHBUILDER_ERROR: IO Exception during map-reduce job execution.", LOG, e);
         }  catch (ClassNotFoundException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Class not found exception during map-reduce job execution.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Class not found exception during map-reduce job execution.", LOG, e);
         }  catch (InterruptedException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
-                    "Interruption during map-reduce job execution.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Interruption during map-reduce job execution.", LOG, e);
         }
     }
 }

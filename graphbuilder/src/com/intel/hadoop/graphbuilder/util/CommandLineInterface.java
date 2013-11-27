@@ -76,7 +76,7 @@ public class CommandLineInterface {
                             "-conf argument given but no file path specified!", LOG);
                 } else if (!new File(args[i+1]).exists()) {
                     GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CANNOT_FIND_CONFIG_FILE,
-                            "Configuration file " + args[i+1] + " cannot be found.", LOG);
+                            "GRAPHBUILDER_ERROR: Configuration file " + args[i+1] + " cannot be found.", LOG);
                 }
             }
         }
@@ -205,7 +205,7 @@ public class CommandLineInterface {
         HelpFormatter h = new HelpFormatter();
         h.printHelp(error, options);
         GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                "Unable to process command line.", LOG);
+                "GRAPHBUILDER_ERROR: Unable to process command line.", LOG);
     }
 
     public void setOptions(Options options) {

@@ -117,7 +117,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             this.hbaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
-                    "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
         this.conf = hbaseUtils.getConfiguration();
@@ -144,10 +144,10 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             }
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Unable to instantiate reducer functions.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Unable to instantiate reducer functions.", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when instantiating reducer functions.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer functions.", LOG, e);
         }
     }
 
@@ -179,10 +179,10 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
         }
     }
 
@@ -297,11 +297,11 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         if (hbaseUtils.tableExists(titanTableName)) {
             if (cmd.hasOption(TitanCommandLineOptions.APPEND)) {
-            LOG.info("WARNING:  hbase table " + titanTableName +
+            LOG.info("GRAPHBUILDER_WARN:  hbase table " + titanTableName +
                      " already exists. Titan will append new graph to existing data.");
             } else {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "GRAPHBUILDER FAILURE: hbase table " + titanTableName +
+                        "GRAPHBUILDER_FAILURE: hbase table " + titanTableName +
                                 " already exists. Use -a option if you wish to append new graph to existing data.", LOG);
             }
         }
@@ -426,7 +426,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             FileInputFormat.addInputPath(writeEdgesJob, intermediateDataFilePath);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
-                    "Cannot access temporary edge file.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot access temporary edge file.", LOG, e);
         }
 
         writeEdgesJob.setOutputFormatClass(org.apache.hadoop.mapreduce.lib.output.NullOutputFormat.class);

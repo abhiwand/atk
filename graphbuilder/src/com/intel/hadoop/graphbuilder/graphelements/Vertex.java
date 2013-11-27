@@ -119,8 +119,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
      /**
-     * Set RDF label of the vertex
-      * @param label  the RDF label of the vertex
+     * Set label of the vertex (RDF label in case of RDF graphs)
+      * @param label  the label of the vertex
       */
     public void setVertexLabel(StringType label) {
         this.vertexLabel = label;

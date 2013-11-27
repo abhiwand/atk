@@ -172,8 +172,8 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
                 try {
                 bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
                 } catch (IllegalArgumentException e) {
-                    LOG.fatal("Could not add edge property; probably a schema error. The label on the edge is  " + label);
-                    LOG.fatal("The property on the edge is " + propertyKey.toString());
+                    LOG.fatal("GRAPHBUILDER_ERROR: Could not add edge property; probably a schema error. The label on the edge is  " + label);
+                    LOG.fatal("GRAPHBUILDER_ERROR: The property on the edge is " + propertyKey.toString());
                     LOG.fatal(e.getMessage());
                     e.printStackTrace();
                     System.exit(1);

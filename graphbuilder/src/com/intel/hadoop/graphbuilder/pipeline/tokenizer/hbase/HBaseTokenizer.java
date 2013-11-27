@@ -331,7 +331,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                     vertexList.add(vertex);
                 } else {
 
-                    LOG.warn("WARN: Null vertex in " + columnName + ", row " + row.toString());
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
                     context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
                 }
             }

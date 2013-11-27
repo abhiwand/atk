@@ -87,10 +87,10 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
             outValue   = (PropertyGraphElement) outClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot instantiate new reducer output value ( " + outClass.getName() + ")", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot instantiate new reducer output value ( " + outClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when instantiating reducer output value ( " + outClass.getName() + ")",
+                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer output value ( " + outClass.getName() + ")",
                     LOG, e);
         }
 

@@ -181,7 +181,7 @@ public class TableToGraphDB {
         if (null == commandLineInterface.getCmd()) {
             commandLineInterface.showHelp("Error parsing command line options");
             GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                    "Error parsing command line options", LOG);
+                    "GRAPHBUILDER_ERROR: Error parsing command line options", LOG);
         }
 
         CommandLine cmd = commandLineInterface.getCmd();

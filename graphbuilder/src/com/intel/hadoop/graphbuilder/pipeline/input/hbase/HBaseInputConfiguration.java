@@ -72,7 +72,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
             this.hBaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
-                    "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
         try {
@@ -122,7 +122,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
             TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, PropertyGraphElement.class, job);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
-                    "Could not initialize table mapper job", LOG, e);
+                    "GRAPHBUILDER_ERROR: Could not initialize table mapper job", LOG, e);
         }
     }
 

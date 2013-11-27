@@ -104,7 +104,7 @@ public class CreateLinkGraph {
             commandLineInterface.showHelp("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
         } else if (cmd.hasOption("out")) {
             outputPath = cmd.getOptionValue("out");
-            LOG.info("output path: " + outputPath);
+            LOG.info("GRAPHBUILDER_INFO: output path: " + outputPath);
         } else if (cmd.hasOption("titan")) {
             titanAsDataSink = true;
         } else {

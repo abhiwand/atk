@@ -94,7 +94,7 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
             builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
-                    "Cannot configure XML parser for Link Graph tokenization", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot configure XML parser for Link Graph tokenization", LOG, e);
         }
 
         XPathFactory xPathFactory = XPathFactory.newInstance();
@@ -132,13 +132,13 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
 
         } catch (SAXException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
-                    "Could not parse document", LOG, e);
+                    "GRAPHBUILDER_ERROR: Could not parse document", LOG, e);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
-                    "IO exception while parsing document", LOG, e);
+                    "GRAPHBUILDER_ERROR: IO exception while parsing document", LOG, e);
         } catch (XPathExpressionException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
-                    "Could not parse document", LOG, e);
+                    "GRAPHBUILDER_ERROR: Could not parse document", LOG, e);
         }
     }
 

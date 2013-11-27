@@ -77,7 +77,7 @@ public class XMLInputFormat extends TextInputFormat {
         }
         catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
-                    "Unable to create xml record reader.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Unable to create xml record reader.", LOG, e);
         }
 
         return xmlRecordReader;
@@ -137,13 +137,13 @@ public class XMLInputFormat extends TextInputFormat {
             FileSystem fs = file.getFileSystem(this.conf);
 
             if (codec != null) {
-                LOG.info("Reading compressed file...");
+                LOG.info("GRAPHBUILDER_INFO: Reading compressed file...");
 
                 fsIn = new DataInputStream(codec.createInputStream(fs.open(file)));
 
                 end = Long.MAX_VALUE;
             } else {
-                LOG.info("Reading uncompressed file...");
+                LOG.info("GRAPHBUILDER_INFO: Reading uncompressed file...");
 
                 FSDataInputStream fileIn = fs.open(file);
 
@@ -195,7 +195,7 @@ public class XMLInputFormat extends TextInputFormat {
 
                             if (pos != ((Seekable) fsIn).getPos()) {
                                 // throw new RuntimeException("bytes consumed error!");
-                                LOG.info("bytes conusmed error: " + String.valueOf(pos)
+                                LOG.info("GRAPHBUILDER_INFO: bytes conusmed error: " + String.valueOf(pos)
                                         + " != " + String.valueOf(((Seekable) fsIn).getPos()));
                             }
                         }

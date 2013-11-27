@@ -120,7 +120,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
                 this.hbaseUtils = HBaseUtils.getInstance();
             } catch (IOException e) {
                 GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
-                        "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+                        "GRAPHBUILDER_ERROR: Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
             }
             this.conf       = hbaseUtils.getConfiguration();
         } else {
@@ -148,10 +148,10 @@ public class TextGraphMR extends GraphGenerationMRJob {
             }
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot instantiate reducer functions.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot instantiate reducer functions.", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when instantiating reducer functions.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer functions.", LOG, e);
         }
     }
 
@@ -183,10 +183,10 @@ public class TextGraphMR extends GraphGenerationMRJob {
             this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
         }
     }
 
