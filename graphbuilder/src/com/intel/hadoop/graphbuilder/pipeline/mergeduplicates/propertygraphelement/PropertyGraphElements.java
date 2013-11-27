@@ -107,16 +107,36 @@ public class PropertyGraphElements {
         for(Map.Entry<Object, Writable> vertex: vertexSet.entrySet()){
 
             // Major operation - vertex is added to Titan and a new ID is assigned to it
-
             com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
 
             bpVertex.setProperty("trueName", vertex.getKey().toString());
 
-            Vertex tempVertex = new Vertex();
+            PropertyMap propertyMap = (PropertyMap) vertex.getValue();
+
+
+
+
+
+            for (Writable keyName : propertyMap.getPropertyKeys()) {
+                EncapsulatedObject mapEntry = (EncapsulatedObject) propertyMap.getProperty(keyName.toString());
+
+                bpVertex.setProperty(keyName.toString(), mapEntry.getBaseObject());
+            }
+
 
             long vertexId = getVertexId(bpVertex);
 
-            tempVertex.configure((WritableComparable) vertex.getKey(), writeVertexProperties(vertexId, vertex, bpVertex));
+
+
+
+            //bpVertex.setProperty("trueName", vertex.getKey().toString());
+
+
+
+            //tempVertex.configure((WritableComparable) vertex.getKey(), writeVertexProperties(vertexId, vertex, bpVertex));
+            Vertex tempVertex = new Vertex();
+            propertyMap.setProperty("TitanID", new LongType(vertexId));
+            tempVertex.configure((WritableComparable) vertex.getKey(), propertyMap);
 
             outValue.init(tempVertex);
             outKey.set(keyFunction.getVertexKey(tempVertex));
