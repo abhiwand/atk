@@ -8,6 +8,7 @@ class Progress:
         self.id = str(uuid.uuid4())
         self.max_value = max_value
         self.value = 0
+        self.is_in_alert = False
 
     def _repr_html_(self):
         pb = HTML(
@@ -35,4 +36,9 @@ class Progress:
 
     def _disable_animation(self):
         display(Javascript("$('#%s span').last().removeClass(\"progress-striped active\")" % self.id))
+
+    def alert(self):
+        self._disable_animation()
+        display(Javascript("$('#%s span').last().addClass(\"progress-danger\")" % self.id))
+        self.is_in_alert = True
 
