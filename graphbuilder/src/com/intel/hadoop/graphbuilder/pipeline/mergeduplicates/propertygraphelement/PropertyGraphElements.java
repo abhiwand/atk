@@ -80,6 +80,7 @@ public class PropertyGraphElements {
             if(propertyGraphElement.isNull()){
                 continue;
             }
+
             LOG.info("put");
             put(propertyGraphElement);
         }
@@ -104,8 +105,54 @@ public class PropertyGraphElements {
         int vertexCount = 0;
         int edgeCount   = 0;
 
-        for(Map.Entry<Object, Writable> vertex: vertexSet.entrySet()){
 
+        LOG.info("top vertex set");
+
+        Iterator<Map.Entry<Object, Writable>> vertexIterator = vertexSet.entrySet().iterator();
+
+
+        while (vertexIterator.hasNext()) {
+
+            Map.Entry v     = vertexIterator.next();
+            LOG.info("key: " + v.getKey().toString());
+            // Major operation - vertex is added to Titan and a new ID is assigned to it
+
+            com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
+
+            bpVertex.setProperty("trueName", v.getKey().toString());
+
+            PropertyMap propertyMap = (PropertyMap) v.getValue();
+
+            for (Writable keyName : propertyMap.getPropertyKeys()) {
+                EncapsulatedObject mapEntry = (EncapsulatedObject) propertyMap.getProperty(keyName.toString());
+
+                bpVertex.setProperty(keyName.toString(), mapEntry.getBaseObject());
+            }
+
+            long vertexId = ((TitanElement) bpVertex).getID();
+
+            Vertex vertex = new Vertex();
+            propertyMap.setProperty("TitanID", new LongType(vertexId));
+            vertex.configure((WritableComparable) v.getKey(), propertyMap);
+
+            outValue.init(vertex);
+            outKey.set(keyFunction.getVertexKey(vertex));
+
+            context.write(outKey, outValue);
+
+            vertexNameToTitanID.put(v.getKey(), vertexId);
+
+            vertexCount++;
+        }
+
+
+        /*Iterator<Map.Entry<Object, Writable>> vertexIterator = vertexSet.entrySet().iterator();
+
+
+        while (vertexIterator.hasNext()) {
+
+            Map.Entry vertex    = vertexIterator.next();
+            LOG.info("ITER ");
             // Major operation - vertex is added to Titan and a new ID is assigned to it
             com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
 
@@ -146,8 +193,8 @@ public class PropertyGraphElements {
             vertexNameToTitanID.put(vertex.getKey(), vertexId);
 
             vertexCount++;
-        }
-
+        }*/
+        LOG.info("bottom vertex set");
         this.context.getCounter(vertexCounter).increment(vertexCount);
 
         for(Map.Entry<EdgeID, Writable> edge: edgeSet.entrySet()){
