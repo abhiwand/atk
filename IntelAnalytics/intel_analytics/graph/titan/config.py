@@ -27,7 +27,7 @@ class TitanConfig(object):
         """
         self.config['titan_storage_tablename'] = tablename
         filename = os.path.join(self.config['conf_folder'],
-                                "graphbuilder_" + tablename+".xml")
+                                "graphbuilder_titan.xml")
         return self._write_cfg(tablename,
                                stream,
                                filename,

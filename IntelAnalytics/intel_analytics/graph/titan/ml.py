@@ -176,7 +176,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         anchor_threshold,
         output):
 
-        return [global_config['hadoop'],
+        return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
@@ -300,7 +300,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
             ):
 
-        return [global_config['hadoop'],
+        return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
@@ -378,7 +378,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
             ):
 
-        return [global_config['hadoop'],
+        return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
@@ -481,7 +481,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
             ):
 
-        return [global_config['hadoop'],
+        return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
@@ -631,7 +631,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
            ):
 
-        return [global_config['hadoop'],
+        return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
@@ -802,7 +802,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
            ):
 
-        return [global_config['hadoop'],
+        return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
@@ -978,7 +978,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
            ):
 
-        return [global_config['hadoop'],
+        return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
@@ -1162,7 +1162,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
            ):
 
-        return [global_config['hadoop'],
+        return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
