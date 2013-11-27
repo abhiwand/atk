@@ -10,6 +10,9 @@ class ReportStrategy(object):
     def report(self, line):
         pass
 
+    def handle_error(self, error_code, error_message):
+        pass
+
 
 class PrintReportStrategy(ReportStrategy):
     def report(self, line):
@@ -71,6 +74,12 @@ class ProgressReportStrategy(ReportStrategy):
         progress_bar = Progress(title)
         progress_bar._repr_html_()
         return progress_bar
+
+    def handle_error(self, error_code, error_message):
+        if(len(self.job_progress_bar_list) == 0):
+            self.initialization_progressbar.alert()
+        else:
+            self.job_progress_bar_list[-1].alert()
 
 
 mr_progress_output_pattern = re.compile(r".*?mapred.JobClient:.*?map.*?([0-9]*?%).*?reduce.*?([0-9]*?%)")

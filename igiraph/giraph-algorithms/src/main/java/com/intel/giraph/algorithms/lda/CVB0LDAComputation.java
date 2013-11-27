@@ -486,11 +486,10 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
                 long numDocVertices = Long.parseLong(map.get(SUM_DOC_VERTEX_COUNT));
                 long numWordVertices = Long.parseLong(map.get(SUM_WORD_VERTEX_COUNT));
                 long numEdges = getConf().getLong(NUM_EDGES, 0L);
-                output.writeUTF("Graph Statistics:\n");
-                output.writeUTF(String.format("Number of vertices: %d (doc: %d, word: %d)%n",
-                    numDocVertices + numWordVertices, numDocVertices, numWordVertices));
-                output.writeUTF(String.format("Number of edges: %d%n", numEdges));
-                output.writeUTF("\n");
+                output.writeBytes("Graph Statistics:\n");
+                output.writeBytes("Number of vertices: " + (numDocVertices + numWordVertices) +
+                    " (doc: " + numDocVertices + ", word: " + numWordVertices + ")\n");
+                output.writeBytes("Number of edges: " + numEdges + "\n");
                 // output LDA configuration
                 int numTopics = getConf().getInt(NUM_TOPICS, 10);
                 float alpha = getConf().getFloat(ALPHA, 0.1f);
