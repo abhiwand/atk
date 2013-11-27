@@ -81,13 +81,13 @@ def _report_output(out, reportService):
         reportService.report_line(line)
     out.close()
 
-def _process_error_output(out, list, reportService):
+def _process_error_output(out, string_list, reportService):
     """
     continously reads from stream and appends to list of strings
     """
     for line in iter(out.readline, b''):
         reportService.report_line(line)
-        list.append(line)
+        string_list.append(line)
     out.close()
 
 def _timeout_abort(process, cmd, timeout):

@@ -2,13 +2,18 @@ import re
 from progress import Progress
 
 
-class ReportStrategy:
+class ReportStrategy(object):
     """
     Base report strategy class. It defines the signature
     of reporting job status for input
     """
     def report(self, line):
         pass
+
+
+class PrintReportStrategy(ReportStrategy):
+    def report(self, line):
+        print line
 
 
 class ProgressReportStrategy(ReportStrategy):
@@ -112,6 +117,18 @@ class MapReduceProgress(object):
     def total_progress(self, val):
         self._total_progress = val
 
+#Pig doesn't log JobClient's output, instead the MapReduceLauncher class prints the progress
+pig_progress_output_pattern = re.compile(r".*?MapReduceLauncher  - ([0-9]*?%)")
+
+def get_pig_progress(line_value):
+    match = re.match(pig_progress_output_pattern, line_value)
+    if not match:
+        return None
+    else:
+        pig_progress = int(match.group(1)[:-1])
+        return pig_progress
+
+
 class JobReportService:
     """
     Class for giving report based on input string values,
@@ -144,5 +161,5 @@ class JobReportService:
         :param lines:
         """
         for line in lines:
-            self.report_strategy_list.report(line)
+            self.report_line(line)
 

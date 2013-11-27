@@ -1,7 +1,6 @@
 import re
 
-from mapreducelogutil import get_pig_progress
-from intel_analytics.jobreportservice import ReportStrategy
+from intel_analytics.report import ReportStrategy, get_pig_progress
 from progress import Progress
 
 job_completion_pattern = re.compile(r".*?MapReduceLauncher - 100% complete")

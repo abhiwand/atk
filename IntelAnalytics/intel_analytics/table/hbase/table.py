@@ -18,7 +18,7 @@ from intel_analytics.report import ProgressReportStrategy
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
 except ImportError, e:
-    from intel_analytics.jobreportservice import PrintReportStrategy as progress_report_strategy
+    from intel_analytics.report import PrintReportStrategy as progress_report_strategy
         
 #for quick testing
 local_run = True
@@ -236,7 +236,7 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
         logger.debug(args)
-        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=progress_report_strategy())
 
         return_code = call(args, ProgressReportStrategy())
 
@@ -334,7 +334,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
 
-        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=progress_report_strategy())
         
         if return_code:
             raise Exception('Could not import CSV file')
@@ -369,7 +369,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
             
-        return_code = subproc.call(args, output_report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=progress_report_strategy())
         
         if return_code:
             raise Exception('Could not import JSON file')
