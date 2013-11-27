@@ -16,10 +16,10 @@ object File {
     request.body.validate[FileUpload](fileUpload).map{
       case(file) =>
         //create the que
-        val queueUrl = SQS.createQueue(request.user._1.clusterId.getOrElse("waitingForClusterId"))
+        val queueUrl = SQS.createQueue(request.user.userInfo.clusterId.getOrElse("waitingForClusterId"))
         //create the json object to send
         val message = Json.obj("create" -> Json.obj("bucket" -> services.aws.S3.BUCKET, "path" ->
-          (S3.uploadDirectory(request.user._1.uid.get.toString) + file.name), "size" -> file.size))
+          (S3.uploadDirectory(request.user.userInfo.uid.get.toString) + file.name), "size" -> file.size))
         //stringify the json to send to queue
         SQS.setMessage(queueUrl, Json.stringify(message))
         Ok(Json.obj("ok" -> ""))
@@ -33,7 +33,7 @@ object File {
       case(file) =>
         //check file name  on the users dir s3
         breakable {
-          for(s3Object <- S3.getObjectList(request.user._1.uid.get.toString)){
+          for(s3Object <- S3.getObjectList(request.user.userInfo.uid.get.toString)){
             if(s3Object.getKey.split("/").last.trim.toLowerCase.equals(file.name.trim.toLowerCase)){
               S3.deleteObject(s3Object.getKey)
               break
@@ -41,8 +41,8 @@ object File {
         }}
 
         //send message to s3
-        val queueUrl = SQS.createQueue(request.user._1.clusterId.getOrElse("waitingForClusterId"))
-        val message = Json.obj("delete" -> Json.obj("bucket" -> services.aws.S3.BUCKET, "path" -> (S3.uploadDirectory(request.user._1.uid.get.toString) + file.name)))
+        val queueUrl = SQS.createQueue(request.user.userInfo.clusterId.getOrElse("waitingForClusterId"))
+        val message = Json.obj("delete" -> Json.obj("bucket" -> services.aws.S3.BUCKET, "path" -> (S3.uploadDirectory(request.user.userInfo.uid.get.toString) + file.name)))
         SQS.setMessage(queueUrl, Json.stringify(message))
         Ok(Json.obj("file"->file.name))
     }.getOrElse {

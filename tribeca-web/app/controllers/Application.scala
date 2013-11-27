@@ -29,7 +29,7 @@ import controllers.Session._
 object Application extends Controller {
 
   var index = ActionWithSession { request =>
-    Ok(views.html.index("Home", request.user._1))
+    Ok(views.html.index("Home", request.user.userInfo))
   }
 
   var logout = Action{
@@ -37,7 +37,7 @@ object Application extends Controller {
   }
 
   var termsOfUse = ActionWithSession{ request =>
-    Ok(views.html.termsOfUse("Terms of Use", request.user._1))
+    Ok(views.html.termsOfUse("Terms of Use", request.user.userInfo))
   }
 
   def redirect = Action { implicit request =>

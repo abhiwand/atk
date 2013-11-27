@@ -35,11 +35,11 @@ object DBGetUserDetailsCommand extends GetUserDetailsCommand {
     /**
      * see GetUserDetailsCommand
      */
-    def executeById(uid: Long): Option[(UserRow, WhiteListRow)] = DB.withSession {
+    def executeById(uid: Long): Option[UserDetails] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val users = getByUid(uid).list
             if (users.length > 0) {
-                Some(users.last)
+                Some(UserDetails(users.last._1, users.last._2))
             } else {
                 None
             }
