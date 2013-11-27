@@ -1,0 +1,6 @@
+g = TitanFactory.open('/home/hadoop/IntelAnalytics/titan/conf/titan-hbase-es.properties')
+g.V
+g.E
+g.V.map()
+g.E.map()
+exit

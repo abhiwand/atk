@@ -22,35 +22,33 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
-
-import org.apache.giraph.edge.Edge;
-import org.apache.giraph.edge.EdgeFactory;
-import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.DenseVector;
-
+import com.google.common.base.Preconditions;
 import com.intel.giraph.io.VertexData4LDAWritable;
 import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
 import com.intel.mahout.math.DoubleWithVectorWritable;
-
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
-import com.google.common.base.Preconditions;
-
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.edge.Edge;
+import org.apache.giraph.edge.EdgeFactory;
+import org.apache.giraph.graph.Vertex;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.Vector;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 
 /**
  * GiraphVertexLoaderPropertyGraph4LDA loads vertex from Titan.
@@ -257,7 +255,8 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
         @Override
         public void setOtherVertexID(final long vertexId) {
             if (vertexId < 0) {
-                LOG.error("negative vertexId");
+                LOG.error(INVALID_VERTEX_ID + vertexId);
+                throw new RuntimeException(INVALID_VERTEX_ID + vertexId);
             }
             this.otherVertexID = vertexId;
         }
@@ -312,7 +311,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                     } else {
                         LOG.error("Vertex type string: %s isn't supported." + vertexTypeString);
                         throw new IllegalArgumentException(String.format(
-                                "Vertex type string: %s isn't supported.", vertexTypeString));
+                            "Vertex type string: %s isn't supported.", vertexTypeString));
                     }
                     vertex.setValue(new VertexData4LDAWritable(vertexType, priorVector));
                 }
@@ -332,8 +331,8 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                                 }
                             }
                             Edge<LongWritable, DoubleWithVectorWritable> edge = EdgeFactory.create(
-                                    new LongWritable(this.otherVertexID), new DoubleWithVectorWritable(
-                                        edgeValue, new DenseVector()));
+                                new LongWritable(this.otherVertexID), new DoubleWithVectorWritable(
+                                    edgeValue, new DenseVector()));
 
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {
@@ -341,7 +340,8 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                         }
                     }
                 } else {
-                    LOG.error("negative Edge ID.");
+                    LOG.error(INVALID_EDGE_ID + this.relationID);
+                    throw new RuntimeException(INVALID_EDGE_ID + this.relationID);
                 }
 
             }

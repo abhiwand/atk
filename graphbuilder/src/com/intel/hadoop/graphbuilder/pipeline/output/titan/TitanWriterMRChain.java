@@ -240,9 +240,10 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      * @return TitanGraph for saving edges
      * @throws IOException
      */
-    private TitanGraph graphFactoryOpen(Configuration configuration) throws IOException {
+    private TitanGraph getTitanGraphInstance(Configuration configuration) throws IOException {
+        BaseConfiguration titanConfig = new BaseConfiguration();
 
-        return GraphDatabaseConnector.open("titan", configuration);
+        return GraphDatabaseConnector.open("titan", titanConfig, configuration);
     }
 
     /*
@@ -386,7 +387,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         TitanGraph graph = null;
 
         try {
-            graph = graphFactoryOpen(conf);
+            graph = getTitanGraphInstance(conf);
+
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
                     "GRAPHBUILDER FAILURE: Unhandled IO exception while attempting to connect to Titan.",  LOG, e);

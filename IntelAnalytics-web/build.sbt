@@ -1,4 +1,4 @@
-name := "tribeca-web"
+name := "intelanalytics-web"
 
 version := "1.0-SNAPSHOT"
 

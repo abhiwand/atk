@@ -69,14 +69,15 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
         NUM_EDGES
     }
 
-    /*
-     * create the titan graph for saving edges and remove the static open method from setup so it can be mocked
+    /**
+     * Create the titan graph for saving edges and remove the static open method from setup so it can be mocked
      *
      * @return TitanGraph for saving edges
      * @throws IOException
      */
-    private TitanGraph tribecaGraphFactoryOpen(Context context) throws IOException {
-        return GraphDatabaseConnector.open("titan", context.getConfiguration());
+    private TitanGraph getTitanGraphInstance (Context context) throws IOException {
+        BaseConfiguration titanConfig = new BaseConfiguration();
+        return GraphDatabaseConnector.open("titan", titanConfig, context.getConfiguration());
     }
 
     /**
@@ -107,7 +108,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
 
         this.vertexNameToTitanID = new HashMap<Object, Long>();
 
-        this.graph = tribecaGraphFactoryOpen(context);
+        this.graph = getTitanGraphInstance(context);
         assert (null != this.graph);
 
         this.noBiDir = conf.getBoolean("noBiDir", false);

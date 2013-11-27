@@ -230,7 +230,7 @@ public class HBaseUtils {
         }
 
         admin.createTable(htd);
-        LOG.info("TRIBECA_INFO: " + this.hTableName + " table created");
+        LOG.info("GRAPHBUILDER_INFO: " + this.hTableName + " table created");
 
         if (!admin.tableExists(this.hTableName)) {
             throw new IOException("GRAPHBUILDER ERROR: Failed to create table " + this.hTableName);
@@ -272,7 +272,7 @@ public class HBaseUtils {
 
         admin.createTable(htd);
 
-        LOG.info("TRIBECA_INFO: " + this.hTableName + " table created");
+        LOG.info("GRAPHBUILDER_INFO: " + this.hTableName + " table created");
 
         if (!admin.tableExists(this.hTableName)) {
             throw new IOException("GRAPHBUILDER ERROR: Failed to create table " + this.hTableName);
