@@ -40,7 +40,7 @@ object Python extends Controller {
     var ipython = Authenticated {
         request =>
             Ok(views.html.ipython("Ipython", request.user.userInfo))
-              .withCookies(new CookieGenerator createCookie(request.user.userInfo.secret.getOrElse(""), request.user.userInfo.ipythonUrl.getOrElse("")))
+              .withCookies(new CookieGenerator createCookie(request.user.userInfo.secret.getOrElse(" "), request.user.userInfo.ipythonUrl.getOrElse(" ")))
     }
 
     /**

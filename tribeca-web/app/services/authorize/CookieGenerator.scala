@@ -42,7 +42,7 @@ class CookieGenerator {
     private val SECONDS_PER_HOUR = 3600
 
     def createCookie(secret: String, ipythonUrl: String): Cookie = {
-        var checkEmptySecret = "";
+        var checkEmptySecret = " ";
         if(secret.isEmpty) checkEmptySecret = "empty" else checkEmptySecret = secret
         val cookieName = "username-" + ipythonUrl.replace(":", "-")
         val value = create_signed_value(secret, cookieName, "username")
