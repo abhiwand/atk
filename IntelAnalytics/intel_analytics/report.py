@@ -172,3 +172,12 @@ class JobReportService:
         for line in lines:
             self.report_line(line)
 
+    def handle_error(self, error_code, error_message):
+        """
+        handle error condition
+        :param line:
+        """
+        for strategy in self.report_strategy_list:
+            if strategy:
+                strategy.handle_error(error_code, error_message)
+
