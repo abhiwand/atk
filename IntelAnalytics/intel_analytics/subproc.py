@@ -74,6 +74,8 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False):
         msg = ''.join(err_txt) if len(err_txt) > 0 else "(no msg provided)"
         print rc, msg
     #    raise Exception("Error {0}: {1}".format(rc,msg))
+
+    reportService.handle_error(rc, msg)
     return rc
 
 def _report_output(out, reportService):
