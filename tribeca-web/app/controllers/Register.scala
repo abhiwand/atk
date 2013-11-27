@@ -92,9 +92,8 @@ object Register extends Controller {
         if (auth.validateToken() == None || auth.validateUserInfo() == None)
             return FailToValidateResponse()
 
-        val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true,
-          Some(Play.application.configuration.getString("ipython.url").get),
-          Some(Play.application.configuration.getString("ipython.secret").get), None)
+
+        val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true, None, None, None)
         val result = Users.register(u, registrationForm, statementGenerator, DBRegisterCommand)
 
         if (result.login == 1) {
