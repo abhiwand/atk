@@ -49,7 +49,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRA
 /**
  * TitanHBaseVertexInputFormatPropertyGraph4CFCGD loads vertex
  * Features <code>VertexData4CGD</code> vertex values and
- * <code>EdgeData</code> out-edge info.
+ * <code>EdgeDataWritable</code> out-edge info.
  * <p/>
  * Each vertex follows this format:
  * (<vertex id>, <vertex valueVector>, <vertex property>,

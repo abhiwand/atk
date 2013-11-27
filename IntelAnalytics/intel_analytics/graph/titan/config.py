@@ -26,8 +26,8 @@ class TitanConfig(object):
             full path of the config file created
         """
         self.config['titan_storage_tablename'] = tablename
-        filename = os.path.join(self.config['titan_cfg_folder'],
-                                "graphbuilder_" + tablename+".xml")
+        filename = os.path.join(self.config['conf_folder'],
+                                "graphbuilder_titan.xml")
         return self._write_cfg(tablename,
                                stream,
                                filename,
@@ -220,7 +220,7 @@ rexster_keys.sort()
 #--------------------------------------------------------------------------
 # GraphBuilder
 #--------------------------------------------------------------------------
-gb_keys = ['titan_cfg_folder']
+gb_keys = ['conf_folder']
 for k in ['hostname', 'tablename', 'backend', 'port', 'connection_timeout']:
     gb_keys.append('titan_storage_' + k)
 gb_keys.sort()
