@@ -13,7 +13,6 @@ from schema import ETLSchema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
-from intel_analytics.report import ProgressReportStrategy
 
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
@@ -240,9 +239,8 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
         logger.debug(args)
+        
         return_code = call(args, report_strategy=progress_report_strategy())
-
-        return_code = call(args, ProgressReportStrategy())
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
