@@ -2,16 +2,16 @@
 Titan-base Giraph Machine Learning
 """
 from intel_analytics.subproc import call
-#from intel_analytics.progressreportstrategy import ProgressReportStrategy
-#from intel_analytics.giraphprogressreportstrategy import GiraphProgressReportStrategy
+from intel_analytics.giraphprogressreportstrategy import GiraphProgressReportStrategy
 from intel_analytics.config import global_config
 import matplotlib as mpl
 mpl.use('Agg')
-#from pylab import *  # MATLAB-like API
-import matplotlib.pyplot as plt
 #matplotlib object-oriented api
+import matplotlib.pyplot as plt
 #from IPython.display import display
 #import numpy as np
+# MATLAB-like API
+#from pylab import *
 import re
 import time
 import datetime
@@ -27,6 +27,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._table_name = graph.titan_table_name
         #pagerank_graph"
         #"small_netflix_titan_graph"
+        #"small_lda_titan_graph"
+        #"ivy_titan4_bi"
+        #"small_apl_titan_graph"
 
     def plot_progress_curve(self,
                             data_x,
@@ -86,7 +89,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         del_cmd = 'if hadoop fs -test -e ' + output_path + \
                          '; then hadoop fs -rmr -skipTrash ' + output_path + '; fi'
-        call(del_cmd, heartbeat=1, shell=True)
+        call(del_cmd, shell=True)
 
     def get_time(self):
         """
@@ -102,7 +105,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         report_file = global_config['giraph_report_dir'] + '/' + self._table_name + time_str + '_report.txt'
         cmd = 'hadoop fs -get ' + output_path + '/' + file_name + ' ' + report_file
-        call(cmd, heartbeat=1, shell=True)
+        call(cmd, shell=True)
         return report_file
 
     def belief_prop(self,
@@ -157,7 +160,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = self.get_time()
-        call(lbp_cmd, heartbeat=1, shell=True)
+        call(lbp_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
         report = {'graph_name': self._graph.user_graph_name,
                'time_run': time_str,
                'max_superstep': max_supersteps,
@@ -191,8 +194,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_vertex_property_list'] + input_vertex_property_list,
-                global_config['giraph_param_input_edge_property_list'] + input_edge_property_list,
+                global_config['giraph_param_input_vertex_property_list'] + global_config['hbase_column_family'] +
+                input_vertex_property_list,
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_belief_propagation_class'],
@@ -260,7 +265,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = self.get_time()
-        call(pr_cmd, heartbeat=1, shell=True, output_report_strategy=None)
+        call(pr_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'pr-convergence-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -313,7 +318,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + input_edge_property_list,
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_page_rank_class'],
@@ -365,7 +371,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = self.get_time()
-        call(apl_cmd, heartbeat=1, shell=True)
+        call(apl_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
         report = {'graph_name': self._graph.user_graph_name,
                   'time_run': time_str
                   }
@@ -458,7 +464,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = self.get_time()
-        call(lp_cmd, heartbeat=1, shell=True)
+        call(lp_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
         report = {'graph_name': self._graph.user_graph_name,
                'time_run': time_str,
                'max_superstep': max_supersteps,
@@ -493,8 +499,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_vertex_property_list'] + input_vertex_property_list,
-                global_config['giraph_param_input_edge_property_list'] + input_edge_property_list,
+                global_config['giraph_param_input_vertex_property_list'] + global_config['hbase_column_family'] +
+                input_vertex_property_list,
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_belief_propagation_class'],
@@ -517,7 +525,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
-            edge_type,
             max_supersteps=global_config['giraph_latent_dirichlet_allocation_max_supersteps'],
             alpha=global_config['giraph_latent_dirichlet_allocation_alpha'],
             beta=global_config['giraph_latent_dirichlet_allocation_beta'],
@@ -562,7 +569,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
-            edge_type,
             max_supersteps,
             alpha,
             beta,
@@ -574,10 +580,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
         )
         lda_cmd = ' '.join(map(str, lda_command))
+        print lda_cmd
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = self.get_time()
-        call(lda_cmd, heartbeat=1, shell=True)
+        call(lda_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'lda-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -621,7 +628,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
-            edge_type,
             max_supersteps,
             alpha,
             beta,
@@ -643,11 +649,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + input_edge_property_list,
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
-                global_config['giraph_param_vertex_type'] + vertex_type,
-                global_config['giraph_param_edge_type'] + edge_type,
+                global_config['giraph_param_vertex_type'] + global_config['hbase_column_family'] +
+                vertex_type,
                 global_config['giraph_latent_dirichlet_allocation_class'],
                 '-mc',
                 global_config['giraph_latent_dirichlet_allocation_class'] + '\$' + global_config['giraph_latent_dirichlet_allocation_master_compute'],
@@ -745,7 +752,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = self.get_time()
-        call(als_cmd, heartbeat=1, shell=True)
+        call(als_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'als-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -813,12 +820,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + input_edge_property_list,
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_param_output_bias'] + bias_on,
-                global_config['giraph_param_vertex_type'] + vertex_type,
-                global_config['giraph_param_edge_type'] + edge_type,
+                global_config['giraph_param_vertex_type'] + global_config['hbase_column_family'] +
+                vertex_type,
+                global_config['giraph_param_edge_type'] + global_config['hbase_column_family_edge'] +
+                edge_type,
                 global_config['giraph_alternative_least_square_class'],
                 '-mc',
                 global_config['giraph_alternative_least_square_class'] + '\$' + global_config['giraph_alternative_least_square_master_compute'],
@@ -916,7 +926,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = self.get_time()
-        call(cgd_cmd, heartbeat=1, shell=True)
+        call(cgd_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'cgd-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -986,12 +996,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + input_edge_property_list,
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_param_output_bias'] + bias_on,
-                global_config['giraph_param_vertex_type'] + vertex_type,
-                global_config['giraph_param_edge_type'] + edge_type,
+                global_config['giraph_param_vertex_type'] + global_config['hbase_column_family'] +
+                vertex_type,
+                global_config['giraph_param_edge_type'] + global_config['hbase_column_family_edge'] +
+                edge_type,
                 global_config['giraph_conjugate_gradient_descent_class'],
                 '-mc',
                 global_config['giraph_conjugate_gradient_descent_class'] + '\$' + global_config['giraph_conjugate_gradient_descent_master_compute'],
@@ -1095,7 +1108,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = self.get_time()
-        call(gd_cmd, heartbeat=1, shell=True)
+        call(gd_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'gd-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -1167,12 +1180,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + input_edge_property_list,
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_param_output_bias'] + bias_on,
-                global_config['giraph_param_vertex_type'] + vertex_type,
-                global_config['giraph_param_edge_type'] + edge_type,
+                global_config['giraph_param_vertex_type'] + global_config['hbase_column_family'] +
+                vertex_type,
+                global_config['giraph_param_edge_type'] + global_config['hbase_column_family_edge'] +
+                edge_type,
                 global_config['giraph_gradient_descent_class'],
                 '-mc',
                 global_config['giraph_gradient_descent_class'] + '\$' + global_config['giraph_gradient_descent_master_compute'],
