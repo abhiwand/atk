@@ -24,7 +24,7 @@ fi
 
 if [ -z "${PIG_HOME}" ]; then
 	export PIG_HOME=${INTEL_ANALYTICS_HADOOP_HOME}/pig
-	export PATH=${PATH}:${HBASE_HOME}/bin
+	export PATH=${PATH}:${PIG_HOME}/bin
 fi
 
 if [ -z "${TITAN_HOME}" ]; then
