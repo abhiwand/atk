@@ -51,7 +51,9 @@ public class GBHTableConfiguration {
     public static final String HBASE_COLUMN_SEPARATOR           = ":";
 
     public static final String TRIBECA_GRAPH_PROPERTY_SEPARATOR = "_";
+
     public static final String GRAPHBUILDER_PROPERTY_SEPARATOR = "_";
+
     public static final String NULLKEY                          = "NULLKEY";
 
     public static RuntimeConfig config = RuntimeConfig.getInstance(GBHTableConfiguration.class);
