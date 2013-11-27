@@ -8,6 +8,7 @@ from intel_analytics.config import global_config, dynamic_import
 
 __all__ = ['get_graph_builder',
            'get_graph',
+           'get_graph_names',
            'GraphTypes',
            'BigGraph'
 ]
@@ -53,6 +54,9 @@ class GraphBuilderFactory(object):
     def get_graph(self, graph_name):
         raise Exception("Not overridden")
 
+    @abc.abstractmethod
+    def get_graph_names(self):
+        raise Exception("Not overridden")
 
 class GraphBuilder(object):
     """
@@ -261,6 +265,12 @@ def get_graph(graph_name):
     factory_class = _get_graph_builder_factory_class()
     return factory_class.get_graph(graph_name)
 
+def get_graph_names():
+    """
+    Returns list of graph names
+    """
+    factory_class = _get_graph_builder_factory_class()
+    return factory_class.get_graph_names()
 
 # dynamically and lazily load the correct graph_builder factory,
 # according to config

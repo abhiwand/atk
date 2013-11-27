@@ -11,11 +11,12 @@ from intel_analytics.graph.biggraph import \
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 from intel_analytics.graph.titan.config import titan_config
 from intel_analytics.subproc import call
-from intel_analytics.config import NameRegistry, global_config
+from intel_analytics.config import Registry, global_config
 
 from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import Config as bulbsConfig
-from intel_analytics.progressreportstrategy import ProgressReportStrategy
+from intel_analytics.report import ProgressReportStrategy
+from intel_analytics.logger import stdout_logger as logger
 
 import os
 
@@ -38,7 +39,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def __init__(self):
         super(TitanGraphBuilderFactory, self).__init__()
         self._active_titan_table_name = None
-        self._name_registry = NameRegistry(
+        self._name_registry = Registry(
             os.path.join(global_config['conf_folder'],
                          global_config['titan_names_file']))
 
@@ -52,14 +53,14 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
 
     def get_graph(self, graph_name):
         try:
-            titan_table_name = self._name_registry.get_internal_name(graph_name)
+            titan_table_name = self._name_registry[graph_name]
         except KeyError:
             raise KeyError("Could not find titan table name for graph '"
                        + graph_name + "'")
         return self._get_graph(graph_name, titan_table_name)
 
     def get_graph_names(self):
-        return self._name_registry.get_names()
+        return self._name_registry.keys()
 
     def activate_graph(self, graph):
         self._activate_titan_table(graph.titan_table_name)
@@ -68,7 +69,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def get_active_graph_name(self):
         if self._active_titan_table_name is None:
             return ""
-        return self._name_registry.get_name(self._active_titan_table_name)
+        return self._name_registry.get_key(self._active_titan_table_name)
 
     def _activate_titan_table(self, titan_table_name):
         """changes rexster's configuration to point to given graph
@@ -172,10 +173,11 @@ def build(graph_name, source, vertex_list, edge_list, is_directed):
         vertex_list,
         edge_list,
         is_directed)
-    call(build_command, output_report_strategy = ProgressReportStrategy())
+    logger.debug(' '.join(build_command))
+    call(build_command, report_strategy = ProgressReportStrategy())
 
     titan_graph_builder_factory._name_registry.\
-        register_name(graph_name, titan_table_name)
+        register(graph_name, titan_table_name)
 
     return titan_graph_builder_factory.get_graph(graph_name)
 

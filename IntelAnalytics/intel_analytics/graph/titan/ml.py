@@ -2,8 +2,9 @@
 Titan-base Giraph Machine Learning
 """
 from intel_analytics.subproc import call
-from intel_analytics.giraphprogressreportstrategy import GiraphProgressReportStrategy
-from intel_analytics.config import global_config
+from intel_analytics.config import global_config, get_time_str
+from intel_analytics.report import ProgressReportStrategy, find_progress,\
+    MapReduceProgress
 import matplotlib as mpl
 mpl.use('Agg')
 #matplotlib object-oriented api
@@ -13,8 +14,7 @@ import matplotlib.pyplot as plt
 # MATLAB-like API
 #from pylab import *
 import re
-import time
-import datetime
+
 
 
 class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
@@ -91,14 +91,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                          '; then hadoop fs -rmr -skipTrash ' + output_path + '; fi'
         call(del_cmd, shell=True)
 
-    def get_time(self):
-        """
-        get current time stamp
-        """
-        ts = time.time()
-        time_str = datetime.datetime.fromtimestamp(ts).strftime('_%Y-%m-%d-%H-%M-%S')
-        return time_str
-
     def get_report(self, output_path, file_name, time_str):
         """
         get learning curve/convergence progress report
@@ -159,8 +151,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         lbp_cmd = ' '.join(map(str, lbp_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
-        call(lbp_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
+        time_str = get_time_str()
+        call(lbp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         report = {'graph_name': self._graph.user_graph_name,
                'time_run': time_str,
                'max_superstep': max_supersteps,
@@ -264,8 +256,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         print pr_cmd
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
-        call(pr_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
+        time_str = get_time_str()
+        call(pr_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'pr-convergence-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -370,8 +362,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         apl_cmd = ' '.join(map(str, apl_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
-        call(apl_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
+        time_str = get_time_str()
+        call(apl_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         report = {'graph_name': self._graph.user_graph_name,
                   'time_run': time_str
                   }
@@ -463,8 +455,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         lp_cmd = ' '.join(map(str, lp_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
-        call(lp_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
+        time_str = get_time_str()
+        call(lp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         report = {'graph_name': self._graph.user_graph_name,
                'time_run': time_str,
                'max_superstep': max_supersteps,
@@ -505,11 +497,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
-                global_config['giraph_belief_propagation_class'],
+                global_config['giraph_label_propagation_class'],
                 '-vif',
-                global_config['giraph_belief_propagation_input_format'],
+                global_config['giraph_label_propagation_input_format'],
                 '-vof',
-                global_config['giraph_belief_propagation_output_format'],
+                global_config['giraph_label_propagation_output_format'],
                 '-op',
                 output_path,
                 '-w',
@@ -583,8 +575,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         print lda_cmd
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
-        call(lda_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
+        time_str = get_time_str()
+        call(lda_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'lda-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -751,8 +743,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         print als_cmd
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
-        call(als_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
+        time_str = get_time_str()
+        call(als_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'als-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -925,8 +917,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         cgd_cmd = ' '.join(map(str, cgd_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
-        call(cgd_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
+        time_str = get_time_str()
+        call(cgd_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'cgd-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -1107,8 +1099,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         gd_cmd = ' '.join(map(str, gd_command))
         #delete old output directory if already there
         self.del_old_output(output_path)
-        time_str = self.get_time()
-        call(gd_cmd, shell=True, output_report_strategy=GiraphProgressReportStrategy())
+        time_str = get_time_str()
+        call(gd_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         report_file = self.get_report(output_path, 'gd-learning-report_0', time_str)
         #find progress info
         with open(report_file) as result:
@@ -1223,4 +1215,44 @@ class BeliefPropagation(object):  #TODO: eventually inherit from base Algo class
     BeliefPropagationResults class if necessary
     """
     pass
+
+
+job_completion_pattern = re.compile(r".*?mapred.JobClient: Job complete")
+
+
+class GiraphProgressReportStrategy(ProgressReportStrategy):
+
+    def report(self, line):
+        progress = find_progress(line)
+
+        if progress and len(self.progress_list) < 2:
+            if len(self.progress_list) == 0:
+                self.initialization_progressbar._disable_animation()
+                self.progress_list.append(MapReduceProgress(0, 0))
+                self.job_progress_bar_list.append(self.get_new_progress_bar(self.get_next_step_title()))
+
+            # giraph is a mapper only job
+            progressGiraph = MapReduceProgress(progress.mapper_progress, 0)
+            self.job_progress_bar_list[-1].update(progressGiraph.mapper_progress)
+            progressGiraph.total_progress = progressGiraph.mapper_progress
+            self.progress_list[-1] = progressGiraph
+
+            # mapper job finishes, create second progress bar automatically since
+            # giraph does not print any message indicating beginning of the second phase
+            if progress.mapper_progress == 100:
+                self.job_progress_bar_list.append(self.get_new_progress_bar(self.get_next_step_title()))
+                self.job_progress_bar_list[-1].update(100)
+                self.job_progress_bar_list[-1]._enable_animation()
+                self.progress_list.append(MapReduceProgress(0, 0))
+
+        if self._is_computation_complete(line):
+            self.progress_list[-1] = MapReduceProgress(100, 100)
+            self.job_progress_bar_list[-1]._disable_animation()
+
+    def _is_computation_complete(self, line):
+        match = re.match(job_completion_pattern, line)
+        if match:
+            return True
+        else:
+            return False
 
