@@ -64,5 +64,28 @@ class TestGetGiraphProgress(unittest.TestCase):
         self.assertFalse(strategy._is_computation_complete("13/11/21 11:34:02 INFO common.GiraphTitanUtils: opened Titan Graph"))
         self.assertTrue(strategy._is_computation_complete("13/11/21 11:34:26 INFO mapred.JobClient: Job complete: job_201311191412_0063"))
 
+
+
+    def test_handle_error_in_initialization(self):
+        strategy = GiraphProgressReportStrategy()
+        strategy.handle_error(1, "test error message.")
+        self.assertTrue(strategy.initialization_progressbar.is_in_alert)
+
+    def test_handle_error_in_first_job(self):
+        strategy = GiraphProgressReportStrategy()
+        strategy.report("13/11/14 14:35:58 INFO mapred.JobClient:  map 66% reduce 0%")
+        strategy.handle_error(1, "test error message.")
+        self.assertFalse(strategy.initialization_progressbar.is_in_alert)
+        self.assertTrue(strategy.job_progress_bar_list[0].is_in_alert)
+
+    def test_handle_error_in_second_job(self):
+        strategy = GiraphProgressReportStrategy()
+        strategy.report("13/11/21 11:34:21 INFO mapred.JobClient:  map 33% reduce 0%")
+        strategy.report("13/11/21 11:34:23 INFO mapred.JobClient:  map 100% reduce 0%")
+        strategy.handle_error(1, "test error message.")
+        self.assertFalse(strategy.initialization_progressbar.is_in_alert)
+        self.assertFalse(strategy.job_progress_bar_list[0].is_in_alert)
+        self.assertTrue(strategy.job_progress_bar_list[1].is_in_alert)
+
 if __name__ == '__main__':
     unittest.main()
