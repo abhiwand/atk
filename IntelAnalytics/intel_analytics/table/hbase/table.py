@@ -25,7 +25,6 @@ try:
 except:
     local_run = False
 
-DATAFRAME_NAME_PREFIX_LENGTH=50 #table name prefix length, names are generated with a rand prefix
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 feateng_home = os.path.join(base_script_path, '../','..', 'feateng')
 etl_scripts_path = config['pig_py_scripts']
@@ -245,28 +244,35 @@ class HBaseTable(object):
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
 
+        key = hbase_frame_builder_factory.\
+            name_registry.get_key(self.table_name)
+            
         try:
             HBaseTable.delete_table(self.table_name)
         except:
             raise HBaseTableException('Could not clean the dataset')
 
-        key = hbase_frame_builder_factory.\
-            name_registry.get_key(self.table_name)
         self.table_name = output_table # update the table_name
         etl_schema.save_schema(self.table_name) # save the schema for the new table
         hbase_frame_builder_factory. \
             name_registry.register(key, self.table_name)
 
     def dropna(self, how='any', column_name=None):
-        output_table = self._create_random_table_name()
+        frame_name = hbase_frame_builder_factory.\
+            name_registry.get_key(self.table_name)       
+        output_table = _create_table_name(frame_name, True)
         self.__drop(output_table, column_name=column_name, how=how, replace_with=None)
 
     def fillna(self, column_name, value):
-        output_table = self._create_random_table_name()
+        frame_name = hbase_frame_builder_factory.\
+            name_registry.get_key(self.table_name)        
+        output_table = _create_table_name(frame_name, True)
         self.__drop(output_table, column_name=column_name, how=None, replace_with=value)
 
     def impute(self, column_name, how):
-        output_table = self._create_random_table_name()
+        frame_name = hbase_frame_builder_factory.\
+            name_registry.get_key(self.table_name)        
+        output_table = _create_table_name(frame_name, True)
         if how not in available_imputations:
             raise HBaseTableException('Please specify a support imputation method. %d is not supported' % (how))
         self.__drop(output_table, column_name=column_name, how=None, replace_with=Imputation.to_string(how))
@@ -282,15 +288,6 @@ class HBaseTable(object):
             columns[column_name] = etl_schema.feature_types[i]
         return columns
 
-    def _create_random_table_name(self):
-        name_postfix = self.table_name[DATAFRAME_NAME_PREFIX_LENGTH:]
-        while True:
-            rand_name_prefix = ''.join(random.choice(string.lowercase) for i in xrange(DATAFRAME_NAME_PREFIX_LENGTH))    
-            with ETLHBaseClient() as hbase_client:
-                new_table_name = rand_name_prefix + name_postfix
-                if not hbase_client.table_exists(new_table_name):
-                    return new_table_name
-
     @classmethod
     def delete_table(cls, victim_table_name):
         with ETLHBaseClient() as hbase_client:
@@ -304,6 +301,14 @@ class HBaseTable(object):
                 hbase_client.delete(schema_table, victim_table_name)
 
 
+def _create_table_name(frame_name, overwrite):
+    table_name =  hbase_frame_builder_factory.name_registry[frame_name]
+    if table_name is not None:
+        if not overwrite:
+            raise Exception("Frame '" + frame_name
+                            + "' already exists.")
+    return frame_name + get_time_str()
+    
 class HBaseFrameBuilder(FrameBuilder):
 
     #-------------------------------------------------------------------------
@@ -311,7 +316,7 @@ class HBaseFrameBuilder(FrameBuilder):
     #-------------------------------------------------------------------------
     def build_from_csv(self, frame_name, file_name, schema,
                        skip_header=False, overwrite=False):
-        table_name = self._create_table_name(frame_name, overwrite)
+        table_name = _create_table_name(frame_name, overwrite)
 
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
@@ -348,7 +353,7 @@ class HBaseFrameBuilder(FrameBuilder):
     def build_from_json(self, frame_name, file_name, overwrite=False):
         #create some random table name
         #we currently don't bother the user to specify table names
-        table_name = self._create_table_name(frame_name, overwrite)
+        table_name = _create_table_name(frame_name, overwrite)
         hbase_table = HBaseTable(table_name, file_name)
         new_frame = BigDataFrame(frame_name, hbase_table)
 
@@ -382,14 +387,6 @@ class HBaseFrameBuilder(FrameBuilder):
     def build_from_xml(self, frame_name, file_name, schema=None):
         raise Exception("Not implemented")
 
-    def _create_table_name(self, frame_name, overwrite):
-        table_name =  hbase_frame_builder_factory.name_registry[frame_name]
-        if table_name is not None:
-            if not overwrite:
-                raise Exception("Frame '" + frame_name
-                                + "' already exists.  Try override=True")
-        return frame_name + get_time_str()
-
     def _register_table_name(self, frame_name, table_name, overwrite):
         tmp_name =  hbase_frame_builder_factory.name_registry[frame_name]
         if tmp_name is not None:
@@ -397,7 +394,7 @@ class HBaseFrameBuilder(FrameBuilder):
                 HBaseTable.delete_table(tmp_name)
             else:
                 raise Exception("Frame '" + frame_name
-                                + "' already exists.  Try override=True")
+                                + "' already exists.")
         hbase_frame_builder_factory. \
             name_registry.register(frame_name, table_name)
         return table_name

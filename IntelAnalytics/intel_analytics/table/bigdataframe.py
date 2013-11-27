@@ -3,6 +3,7 @@ BigDataFrame
 """
 import sys
 import abc
+import traceback
 from intel_analytics.config import global_config, dynamic_import
 
 __all__ = ['get_frame_builder',
@@ -434,9 +435,9 @@ class BigDataFrame(object):
         try:
             self._table.transform(column_name, new_column_name, transformation, transformation_args)
             self.lineage.append(self._table.table_name)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("transform exception"), None, trace
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("transform exception " + str(e))
 
     #TODO - how to pass UDFs through to mapreduce
     def apply(self, column_name, func, output_type):
@@ -629,9 +630,9 @@ class BigDataFrame(object):
 
         try:
             self._table.head(n)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("head exception"), None, trace
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("head exception " + str(e))
 
             # How do I manually create a row? (not doing)
 
@@ -722,9 +723,9 @@ class BigDataFrame(object):
         try:
             self._table.dropna(how, column_name)
             self.lineage.append(self._table.table_name)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("dropna exception"), None, trace
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("dropna exception " + str(e))
 
     def fillna(self, column_name, value):
         """
@@ -741,10 +742,9 @@ class BigDataFrame(object):
         try:
             self._table.fillna(column_name, value)
             self.lineage.append(self._table.table_name)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("fillna exception"), None, trace
-
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("fillna exception "+ str(e))
 
 
     def impute(self, column_name, how):
@@ -764,9 +764,9 @@ class BigDataFrame(object):
         try:
             self._table.impute(column_name, how)
             self.lineage.append(self._table.table_name)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("impute exception"), None, trace
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("impute exception "+ str(e))
 
 
             # just use our String/Math Manip functions for now
