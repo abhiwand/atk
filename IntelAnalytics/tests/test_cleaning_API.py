@@ -166,37 +166,37 @@ schema_definition = 'country:chararray,year:chararray,'+\
                     'energy_use:double,fertility:double,gni:double,'+\
                     'internet_users:double,life_expectancy:double,military_expenses:double,'+\
                     'population: double,hiv_prevelence:double'
-big_frame = HBaseFrameBuilder().build_from_csv('/tmp/worldbank.csv', schema_definition, True)
+big_frame = HBaseFrameBuilder().build_from_csv('test_import_worldbank', '/tmp/worldbank.csv', schema_definition, True)
 validate_imported(big_frame)
 temp_tables.extend(big_frame.lineage)
 print "DONE validate_imported"
 
 
-big_frame = HBaseFrameBuilder().build_from_csv('/tmp/worldbank.csv', schema_definition, True)
+big_frame = HBaseFrameBuilder().build_from_csv('test_worldbank_fillna_country', '/tmp/worldbank.csv', schema_definition, True, overwrite=True)
 big_frame.fillna('country', 'MISSING_COUNTRY')
 validate_country_fillna(big_frame)
 temp_tables.extend(big_frame.lineage)
 print "DONE validate_country_fillna"
 
-big_frame = HBaseFrameBuilder().build_from_csv('/tmp/worldbank.csv', schema_definition, True)
+big_frame = HBaseFrameBuilder().build_from_csv('test_worldbank_dropna_country', '/tmp/worldbank.csv', schema_definition, True, overwrite=True)
 big_frame.dropna(column_name='country')
 validate_country_dropna(big_frame)
 temp_tables.extend(big_frame.lineage)
 print "DONE validate_country_dropna"
 
-big_frame = HBaseFrameBuilder().build_from_csv('/tmp/worldbank.csv', schema_definition, True)
+big_frame = HBaseFrameBuilder().build_from_csv('test_worldbank_dropna_any', '/tmp/worldbank.csv', schema_definition, True, overwrite=True)
 big_frame.dropna(how='any')#drop if any of the features is missing
 validate_dropna_any(big_frame)
 temp_tables.extend(big_frame.lineage)
 print "DONE validate_dropna_any"
 
-big_frame = HBaseFrameBuilder().build_from_csv('/tmp/worldbank.csv', schema_definition, True)
+big_frame = HBaseFrameBuilder().build_from_csv('test_worldbank_dropna_all', '/tmp/worldbank.csv', schema_definition, True, overwrite=True)
 big_frame.dropna(how='all')#drop if all features are missing
 validate_dropna_all(big_frame)
 temp_tables.extend(big_frame.lineage)
 print "DONE validate_dropna_all"
 
-big_frame = HBaseFrameBuilder().build_from_csv('/tmp/worldbank.csv', schema_definition, True)
+big_frame = HBaseFrameBuilder().build_from_csv('test_worldbank_impute', '/tmp/worldbank.csv', schema_definition, True, overwrite=True)
 big_frame.impute('internet_users', Imputation.MEAN)
 validate_internet_fillna_avg(big_frame)
 temp_tables.extend(big_frame.lineage)

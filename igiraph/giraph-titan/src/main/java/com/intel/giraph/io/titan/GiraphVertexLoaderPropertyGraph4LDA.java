@@ -297,6 +297,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                     final Object vertexValueObject = this.value;
                     final double vertexValue = Double.parseDouble(vertexValueObject.toString());
                     Vector vector = vertexValueVector.getVector();
+                    vertexType = vertexValueVector.getType();
                     vector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
                     vertex.setValue(new VertexData4LDAWritable(vertexType, vector));
                 } else if (propertyName.equals(vertexTypePropertyKey)) {
@@ -322,7 +323,6 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                     if (edgeLabelValues.containsKey(this.type.getName())) {
                         double edgeValue = 0.0d;
                         if (this.direction.equals(Direction.OUT)) {
-                            String edgeTypeString = null;
                             for (final Map.Entry<String, Object> entry : this.properties.entrySet()) {
                                 Preconditions.checkNotNull(entry.getValue());
                                 if (edgePropertyKeyValues.containsKey(entry.getKey())) {
@@ -333,7 +333,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                             Edge<LongWritable, DoubleWithVectorWritable> edge = EdgeFactory.create(
                                 new LongWritable(this.otherVertexID), new DoubleWithVectorWritable(
                                     edgeValue, new DenseVector()));
-
+                            LOG.info("LDA edge " + vertexId + " to " + this.otherVertexID + " " + edgeValue);
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();
