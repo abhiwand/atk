@@ -17,8 +17,6 @@
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 /**
  * Class holding all static strings
