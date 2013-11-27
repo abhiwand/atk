@@ -1,6 +1,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
@@ -8,9 +9,7 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsche
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.HBaseUtils;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
+import com.intel.hadoop.graphbuilder.util.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
@@ -100,16 +99,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                     "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
-        srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
         vertexRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME")));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
 
         edgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME")));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
 
         directedEdgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME")));
+                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
 
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();

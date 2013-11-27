@@ -434,7 +434,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         String titanTableName = TitanConfig.config.getProperty("TITAN_STORAGE_TABLENAME");
 
         if (hbaseUtils.tableExists(titanTableName)) {
-            if (cmd.hasOption(TitanCommandLineOptions.APPEND)) {
+            if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
             LOG.info("WARNING:  hbase table " + titanTableName +
                      " already exists. Titan will append new graph to existing data.");
             } else {
@@ -452,8 +452,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         String keyCommandLine = new String("");
 
-        if (cmd.hasOption(TitanCommandLineOptions.CMD_KEYS_OPTNAME)) {
-            keyCommandLine = cmd.getOptionValue(TitanCommandLineOptions.CMD_KEYS_OPTNAME);
+        if (cmd.hasOption(BaseCLI.Options.titanKeyIndex.getLongOpt())) {
+            keyCommandLine = cmd.getOptionValue(BaseCLI.Options.titanKeyIndex.getLongOpt());
         }
 
         initTitanGraph(keyCommandLine);

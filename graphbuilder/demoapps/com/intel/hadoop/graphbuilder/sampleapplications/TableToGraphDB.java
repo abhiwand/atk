@@ -2,16 +2,12 @@
 
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
-import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
-import com.intel.hadoop.graphbuilder.util.Timer;
+import com.intel.hadoop.graphbuilder.util.*;
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
@@ -101,53 +97,21 @@ public class TableToGraphDB {
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
-        options.addOption("h", "help", false, "");
 
-        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.APPEND)
-                .withDescription("Append Graph to Current Graph at Specified Titan Table")
-                .create("a"));
+        options.addOption(BaseCLI.Options.titanAppend.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"))
-                .withDescription("HBase table name")
-                .hasArgs()
-                .isRequired()
-                .withArgName("HBase table name")
-                .create("t"));
+        options.addOption(BaseCLI.Options.flattenList.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME"))
-                .withDescription("Specify the HBase columns which are vertex tokens and vertex properties" +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME") + "\"<vertex_col>=[<vertex_prop1>,...]\"")
-                .hasArgs()
-                .isRequired()
-                .withArgName("Vertex-Column-Name")
-                .create("v"));
+        options.addOption(BaseCLI.Options.hbaseTable.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))
-                .withDescription("Specify the HTable columns which are undirected edge tokens; " +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                        "Note: Edge labels must be unique")
-                .hasArgs()
-                .withArgName("Edge-Column-Name")
-                .create("e"));
+        options.addOption(BaseCLI.Options.vertex.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("FLATTEN_LISTS_OPTNAME"))
-                .withDescription("Flag that expends lists into multiple items. " )
-                .create("F"));
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
-                .withDescription("Specify the columns which are directed edge tokens; " +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                        "Note: Edge labels must be unique")
-                .hasArgs()
-                .withArgName("Edge-Column-Name")
-                .create("d"));
+        options.addOption(BaseCLI.Options.edge.get());
 
-        options.addOption(OptionBuilder.withLongOpt(TitanCommandLineOptions.CMD_KEYS_OPTNAME)
-                .withDescription("Specify keys, please. " +
-                        TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP)
-                .hasArgs()
-                .withArgName("Keys" +
-                        "")
-                .create("k"));
+        options.addOption(BaseCLI.Options.directedEdge.get());
+
+        options.addOption(BaseCLI.Options.titanKeyIndex.get());
+
         commandLineInterface.setOptions(options);
     }
 
@@ -155,26 +119,18 @@ public class TableToGraphDB {
      * Main method for feature table to graph database construction
      *
      * @param args Command line arguments
-     * @throws Exception
      */
 
     public static void main(String[] args)  {
 
         Timer timer = new Timer();
 
-        commandLineInterface.checkCli(args);
-        if (null == commandLineInterface.getCmd()) {
-            commandLineInterface.showHelp("Error parsing command line options");
-            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                    "Error parsing command line options", LOG);
-        }
-
-        CommandLine cmd = commandLineInterface.getCmd();
+        CommandLine cmd = commandLineInterface.checkCli(args);
 
         GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
         commandLineInterface.getRuntimeConfig().addConfig(pipeline);
 
-        String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        String srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
         HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
         HBaseGraphBuildingRule buildingRule          = new HBaseGraphBuildingRule(cmd);
