@@ -1,7 +1,5 @@
 import os
 import re
-import random
-import string
 import sys
 import collections
 
@@ -26,7 +24,6 @@ except:
     local_run = False
 
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-feateng_home = os.path.join(base_script_path, '../','..', 'feateng')
 etl_scripts_path = config['pig_py_scripts']
 pig_log4j_path = os.path.join(config['conf_folder'], 'pig_log4j.properties')
 logger.debug('Using %s '% pig_log4j_path)
@@ -301,14 +298,7 @@ class HBaseTable(object):
                 hbase_client.delete(schema_table, victim_table_name)
 
 
-def _create_table_name(frame_name, overwrite):
-    table_name =  hbase_frame_builder_factory.name_registry[frame_name]
-    if table_name is not None:
-        if not overwrite:
-            raise Exception("Frame '" + frame_name
-                            + "' already exists.")
-    return frame_name + get_time_str()
-    
+
 class HBaseFrameBuilder(FrameBuilder):
 
     #-------------------------------------------------------------------------
@@ -435,3 +425,11 @@ class HBaseFrameBuilderFactory(object):
 
 #global singleton instance
 hbase_frame_builder_factory = HBaseFrameBuilderFactory()
+
+
+def _create_table_name(frame_name, overwrite):
+    table_name =  hbase_frame_builder_factory.name_registry[frame_name]
+    if table_name is not None:
+        if not overwrite:
+            raise Exception("Frame '" + frame_name  + "' already exists.")
+    return frame_name + get_time_str()
