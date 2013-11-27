@@ -52,8 +52,8 @@ import com.intel.hadoop.graphbuilder.types.StringType;
  * A {@code GraphTokenizer} that converts a Wiki page (presented as
  * a string) into a set of vertices and edges by the following rule:
  * <ul>
- *     <li>there is a vertex for each page</li>
- *     <li>there is an edge from page1 to page2 if page1 links to page2; the edge is labeled "linksTo"</li>
+ *     <li>There is a vertex for each page.</li>
+ *     <li>There is an edge from page1 to page2 if page1 links to page2; the edge is labeled "linksTo".</li>
  * </ul>
 
  *
@@ -81,7 +81,7 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
     private XPath                  xpath;
 
     /**
-     * Allocates and initializes parser and graph elements store.
+     * Allocates and initializes the parser and graph elements store.
      *
      */
     public LinkGraphTokenizer()  {
@@ -105,15 +105,15 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
     }
 
     /**
-     * Configure the tokenizer from the MR  configuration.
-     * @param configuration   the MR configuration
+     * Configures the tokenizer from the MR  configuration.
+     * @param configuration   The MR configuration.
      */
     @Override
     public void configure(Configuration configuration) {
     }
 
     /**
-     * Generate property graph elements from parsing of a wiki page.
+     * Generates the property graph elements from parsing of a wiki page.
      * @param string  Wikipage presented as a string.
      * @param context  The Hadoop supplied mapper context.
      */
@@ -142,8 +142,8 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
     }
 
     /**
-     * Get the vertex list for the wikipage.
-     * @return   iterator over vertex list
+     * Gets the vertex list for the wikipage.
+     * @return   The iterator over vertex list.
      */
     public Iterator<Vertex<StringType>> getVertices() {
 
@@ -158,9 +158,9 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
     }
 
     /**
-     * Get the edge list for the wikipage.
+     * Gets the edge list for the wikipage.
      *
-     * @return iterator over the edge list
+     * @return The iterator over the edge list.
      */
     @Override
     public Iterator<Edge<StringType>> getEdges() {

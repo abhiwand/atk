@@ -11,7 +11,7 @@ import org.apache.hadoop.conf.Configuration;
 
 
 /**
- * This class manage the set-up time state for the graph construction phase that emits vertices and edges of a link
+ * This class manages the set-up time state for the graph construction phase that emits vertices and edges of a link
  * graph from a wiki page (presented as a string).
  *
  * <p>
@@ -51,24 +51,24 @@ public class LinkGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Get the property graph schmea for the link graph.
-     * @return  the property graph schmea for the link graph
+     * Gets the property graph schmea for the link graph.
+     * @return  The property graph schmea for the link graph.
      */
     public PropertyGraphSchema getGraphSchema() {
         return graphSchema;
     }
 
     /**
-     * Update the MR configuration for use by the {@code LinkGraphTokenizer}
-     * @param conf hadoop configuration being updated
-     * @param cmd  the command line options provided by the user
+     * Updates the MR configuration for use by the {@code LinkGraphTokenizer}.
+     * @param conf The hadoop configuration being updated.
+     * @param cmd  The command line options provided by the user.
      */
     public void updateConfigurationForTokenizer(Configuration conf, CommandLine cmd) {
     }
 
     /**
-     * Get the class of the {@code GraphTokenizer} used to construct the link graph
-     * @return  the class of the {@code GraphTokenizer} used to construct the link graph
+     * Gets the class of the {@code GraphTokenizer} used to construct the link graph.
+     * @return  The class of the {@code GraphTokenizer} used to construct the link graph.
      * @see LinkGraphTokenizer
      */
     public Class<? extends GraphTokenizer> getGraphTokenizerClass() {
@@ -76,8 +76,8 @@ public class LinkGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Get the class of vertex IDs used to construct the link graph.
-     * @return  the class of vertex IDs used to construct the link graph.
+     * Gets the class of vertex IDs used to construct the link graph.
+     * @return  The class of vertex IDs used to construct the link graph.
      * @see StringType
      */
     public Class vidClass() {

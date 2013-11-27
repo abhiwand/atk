@@ -12,14 +12,12 @@ import org.apache.hadoop.conf.Configuration;
 /**
  * This class handles the configuration time aspects of the graph construction rule (graph tokenizer) that converts
  * wiki pages (presented as strings) into the property graph elements of the word count graph.
- * <p/>
  * <p>
  * It is responsible for:
  * <ul>
  * <li> Generating the property graph schema that this graph construction rule generates and other meta-data required
- * at set-up time</li>
+ * at set-up time.</li>
  * </ul>
- * </p>
  * </p>
  *
  * @see GraphBuildingRule
@@ -36,7 +34,7 @@ public class WordCountGraphBuildingRule implements GraphBuildingRule {
      * Allocates and initializes the graph schema for the word count graph.
      *
      * <p>There is one vertex schema: A vertex ID with no properties.</p>
-     * <p>There is one edge schema: It has edge label "contains" and an integer property, "wordCount"</p>
+     * <p>There is one edge schema: It has the edge label "contains" and an integer property, "wordCount".</p>
      */
     public WordCountGraphBuildingRule() {
         graphSchema = new PropertyGraphSchema();
@@ -51,24 +49,24 @@ public class WordCountGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Get the property graph schema for the wordcount graph
-     * @return the property graph schema of the wordcount graph
+     * Gets the property graph schema for the wordcount graph.
+     * @return The property graph schema of the wordcount graph.
      */
     public PropertyGraphSchema getGraphSchema() {
         return graphSchema;
     }
 
     /**
-     * Update the MR job configuration with state needed by the {@code WordCountGraphTokenizer}
-     * @param conf  job configuration that will store the state and be passed to the {@code WordCountGraphTokenizer}
-     * @param cmd  the command line options provided by the user
+     * Updates the MR job configuration with the state needed by the {@code WordCountGraphTokenizer}.
+     * @param conf  The job configuration that will store the state and be passed to the {@code WordCountGraphTokenizer}.
+     * @param cmd   The command line options provided by the user.
      */
     public void updateConfigurationForTokenizer(Configuration conf, CommandLine cmd) {
     }
 
     /**
-     * Get the class of the tokenizer used by the {@code WordCountGraphBuildingRule}
-     * @return the class of the tokenizer used by the {@code WordCountGraphBuildingRule}
+     * Gets the class of the tokenizer used by the {@code WordCountGraphBuildingRule}.
+     * @return The class of the tokenizer used by the {@code WordCountGraphBuildingRule}.
      * @see WordCountGraphTokenizer
      */
     public Class<? extends GraphTokenizer> getGraphTokenizerClass() {
@@ -76,7 +74,7 @@ public class WordCountGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Get the classname of the vertex IDs used by the wordcount graph
+     * Gets the classname of the vertex IDs used by the wordcount graph.
      *
      */
     public Class vidClass() {
