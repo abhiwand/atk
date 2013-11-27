@@ -40,7 +40,7 @@ object Users {
      * @param user
      * @param registrationForm
      * @param statementGenerator
-     * @return
+     * @return register action output
      */
     def register(user: UserRow, registrationForm: RegistrationFormMapping, statementGenerator: StatementGenerator, registerCommand: RegisterCommand): RegistrationOutput = {
         registerCommand.execute(user, registrationForm, statementGenerator)
@@ -50,7 +50,7 @@ object Users {
      * log in the user.
      * @param email
      * @param statementGenerator
-     * @return
+     * @return login action output
      */
     def login(email: String, statementGenerator: StatementGenerator, loginCommand: LoginCommand): LoginOutput = {
         loginCommand.execute(email, statementGenerator)
@@ -59,7 +59,7 @@ object Users {
 
     /**
      * generate an anonymous user.
-     * @return
+     * @return anonymouse user instance
      */
     def anonymousUser(): UserRow = {
         UserRow(Some(0), "", "", "", false, None, None, None)
@@ -68,7 +68,7 @@ object Users {
     /**
      * check whether user with the specific email exists.
      * @param email
-     * @return
+     * @return flag to indicate found or not found
      */
     def exists(email: String, getUserCommand: GetUserDetailsCommand): Boolean = {
 
@@ -92,7 +92,7 @@ object Users {
     /**
      * get user info by id.
      * @param uid
-     * @return
+     * @return tuple of (userRow, whiteListRow)
      */
     def readByUid(uid: Long, getUserCommand: GetUserDetailsCommand): Option[(database.UserRow, database.WhiteListRow)] = {
         getUserCommand.executeById(uid)
@@ -101,7 +101,7 @@ object Users {
     /**
      * get user info by email.
      * @param email
-     * @return
+     * @return user info
      */
     def readByEmail(email: String, getUserCommand: GetUserDetailsCommand): Option[database.UserRow] = {
         getUserCommand.executeByEmail(email)
