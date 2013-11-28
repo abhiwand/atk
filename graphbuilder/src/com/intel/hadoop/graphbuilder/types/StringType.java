@@ -29,7 +29,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Basic string type in the library.
+ * The basic string type in the library.
  */
 public class StringType implements WritableComparable<StringType>, EncapsulatedObject, JSONAware {
 

@@ -28,7 +28,7 @@ import net.minidev.json.JSONValue;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Basic long type in the library.
+ * The basic long type in the library.
  */
 public class LongType implements WritableComparable<LongType>, Mergeable<LongType>, JSONAware, EncapsulatedObject {
 

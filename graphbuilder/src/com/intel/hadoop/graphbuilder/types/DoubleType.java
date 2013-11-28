@@ -28,7 +28,7 @@ import net.minidev.json.JSONValue;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Basic double type in the library.
+ * The basic double type in the library.
  */
 public class DoubleType implements WritableComparable<DoubleType>, Mergeable<DoubleType>, JSONAware,
         EncapsulatedObject {

@@ -10,8 +10,8 @@ import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
  *
  * It has two parts:
  * <ul>
- *     <li>{@code ImmutableBytesWritable row }  the hbase row</li>
- *     <li>{@code Result columns} the columns of the row</li>
+ *     <li>{@code ImmutableBytesWritable row }  The hbase row.</li>
+ *     <li>{@code Result columns} The columns of the row.</li>
  * </ul>
  * @see com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper
  */
@@ -21,7 +21,7 @@ public class RecordTypeHBaseRow {
     private Result                 columns;
 
     /**
-     * Constructor that takes a row and its columns.
+     * A Constructor that takes a row and its columns.
      * @param row
      * @param columns
      */

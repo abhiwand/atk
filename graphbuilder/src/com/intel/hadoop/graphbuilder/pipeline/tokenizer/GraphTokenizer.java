@@ -28,7 +28,7 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import org.apache.hadoop.mapreduce.Mapper;
 
 /**
- * Tokenize the input provided as string into a list of
+ * Tokenizes the input provided as a string to a list of
  * {@code Edge} and {@code Vertex}objects. This should be the
  * first step to implement along with the design of the InputConfiguration of
  * the raw input.
@@ -46,7 +46,7 @@ public interface GraphTokenizer<RecordType, VidType extends WritableComparable<V
     void configure(Configuration configuration);
 
     /**
-     * parses the input record and adds edges and vertices to lists returned by
+     * Parses the input record and adds edges and vertices to lists returned by
      * @code getEdges
      * @code getVertices
      * @param record
@@ -55,12 +55,12 @@ public interface GraphTokenizer<RecordType, VidType extends WritableComparable<V
     void parse(RecordType record, Mapper.Context context);
 
     /**
-     * @return a list of {@code Vertex} extracted from the input.
+     * @return A list of {@code Vertex} extracted from the input.
      */
     Iterator<Vertex<VidType>> getVertices();
 
     /**
-     * @return a list of {@code Edge} extracted from the input.
+     * @return A list of {@code Edge} extracted from the input.
      */
     Iterator<Edge<VidType>> getEdges();
 
