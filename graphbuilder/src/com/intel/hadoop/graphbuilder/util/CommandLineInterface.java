@@ -96,23 +96,7 @@ public class CommandLineInterface{
      */
     public CommandLine parseArgs(String[] args) {
 
-<<<<<<< HEAD
-        for (int i = 0; i < args.length;i++) {
-            if (args[i].equals("-conf")) {
-                if (i + 1 == args.length) {
-                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                            "-conf argument given but no file path specified!", LOG);
-                } else if (!new File(args[i+1]).exists()) {
-                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CANNOT_FIND_CONFIG_FILE,
-                            "GRAPHBUILDER_ERROR: Configuration file " + args[i+1] + " cannot be found.", LOG);
-                }
-            }
-        }
-
-        //send the command line options to hadoop parse args to get runtime config options first
-=======
         //send the command line options through the hadoop parser the config options first
->>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
 
         try {
             genericOptionsParser = new GenericOptionsParser(args);

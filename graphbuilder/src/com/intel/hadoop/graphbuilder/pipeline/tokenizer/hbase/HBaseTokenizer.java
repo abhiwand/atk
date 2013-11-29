@@ -179,12 +179,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 }
         }
 
-<<<<<<< HEAD
-        LOG.info("GRAPHBUILDER INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
-=======
         LOG.info("GRAPHBUILDER_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
->>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
-
 
         String[] rawEdgeRules         = HBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
         String[] rawDirectedEdgeRules = HBaseGraphBuildingRule.unpackDirectedEdgeRulesFromConfiguration(conf);

@@ -1,20 +1,20 @@
 /* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
+ *     All rights reserved.
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *
+ * For more about this software visit:
+ *      http://www.01.org/GraphBuilder
  */
 
 package com.intel.hadoop.graphbuilder.sampleapplications;
@@ -28,6 +28,7 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuilding
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.intel.hadoop.graphbuilder.util.Timer;
+import com.intel.hadoop.graphbuilder.util.*;
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
@@ -90,151 +91,40 @@ public class TableToRDFGraph {
 
     private static final Logger LOG = Logger.getLogger(TableToRDFGraph.class);
 
-    private static Options createOptions() {
-
+    private static CommandLineInterface commandLineInterface = new CommandLineInterface();
+    static {
         Options options = new Options();
-        options.addOption("h", "help", false, "");
-        options.addOption("o", "out", true, "output path");
-        options.addOption("t", GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"), true, "HBase table name");
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME"))
-                .withDescription("Specify the columns which are vertex tokens and vertex properties" +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME") + "\"<vertex_col>=[<vertex_prop1>,...]\"")
-                .hasArgs()
-                .isRequired()
-                .withArgName("Vertex-Column-Name")
-                .create("v"));
+        options.addOption(BaseCLI.Options.outputPath.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))
-                .withDescription("Specify the columns which are undirected edge tokens; " +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                        "Note: Edge labels must be unique")
-                .hasArgs()
-                .withArgName("Edge-Column-Name")
-                .create("e"));
+        options.addOption(BaseCLI.Options.hbaseTable.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("FLATTEN_LISTS_OPTNAME"))
-                .withDescription("Flag that expends lists into multiple items. ")
-                .create("F"));
+        options.addOption(BaseCLI.Options.flattenList.get());
 
-        options.addOption(OptionBuilder.withLongOpt(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))
-                .withDescription("Specify the columns which are directed edge tokens; " +
-                        "Example: --" + GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME") + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                        "Note: Edge labels must be unique")
-                .hasArgs()
-                .withArgName("Edge-Column-Name")
-                .create("d"));
-        options.addOption(OptionBuilder.withLongOpt(RDFConfiguration.config.getProperty("CMD_RDF_NAMESPACE"))
+        options.addOption(BaseCLI.Options.vertex.get());
+
+        options.addOption(BaseCLI.Options.edge.get());
+
+        options.addOption(BaseCLI.Options.directedEdge.get());
+
+	options.addOption(OptionBuilder.withLongOpt(RDFConfiguration.config.getProperty("CMD_RDF_NAMESPACE"))
                 .withDescription("Specify the RDF namespace [OWL | RDFS | RDF | XMLSchema] for vertices")
                 .hasArgs()
                 .withArgName("RDF-Namespace")
                 .create("n"));
 
-        return options;
+        commandLineInterface.setOptions(options);
     }
-
-    private static void exitWithHelp(Options options, String message, StatusCode statusCode) {
-
-        LOG.fatal(message);
-
-        HelpFormatter h = new HelpFormatter();
-        h.printHelp("TableToRDFGraph", options);
-
-        GraphBuilderExit.graphbuilderFatalExitNoException(statusCode, message, LOG);
-    }
-
 
     /**
      * This function checks whether required tablename, vertices, vertex properties
      * edges and edge properties are specified as command line arguments
-     *
-     * @param args Command line parameters
      */
-    private static CommandLine checkCli(String[] args) {
 
-        Options      options      = createOptions();
-        String       srcTableName = null;
-        String       outTableName = null;
-        CommandLine  cmd          = null;
-
-        try {
-            CommandLineParser parser = new PosixParser();
-            cmd                      = parser.parse(options, args);
-
-            if (cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"))) {
-                srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
-                LOG.info("Table Name: " + srcTableName);
-            } else {
-                exitWithHelp(options, "A table name is required.", StatusCode.BAD_COMMAND_LINE);
-            }
-
-            if (cmd.hasOption("o")) {
-                outTableName = cmd.getOptionValue("o");
-                LOG.info("Output path: " + outTableName);
-            } else {
-                exitWithHelp(options, "An output path is required", StatusCode.BAD_COMMAND_LINE);
-            }
-
-            if (cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME"))) {
-                for (String v : cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_VERTICES_OPTNAME"))) {
-                    LOG.info("Vertices: " + v);
-                }
-            } else {
-                exitWithHelp(options, "Please add column family and names for vertices and vertex properties",
-                        StatusCode.BAD_COMMAND_LINE);
-            }
-
-            if (cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))) {
-                for (String e : cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))) {
-                    LOG.info("Edges: " + e);
-                }
-            }
-
-            if (cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))) {
-                for (String e : cmd.getOptionValues(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME"))) {
-                    LOG.info("Edges: " + e);
-                }
-            }
-
-            if (!(cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_EDGES_OPTNAME"))) &&
-                    !(cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_DIRECTED_EDGES_OPTNAME")))) {
-                exitWithHelp(options, "Please add column family and names for (directed) edges and (directed) edge properties",
-                        StatusCode.BAD_COMMAND_LINE);
-            }
-
-            if (!(cmd.hasOption(GBHTableConfiguration.config.getProperty("CMD_RDF_NAMESPACE")))) {
-                exitWithHelp(options, "Please add RDF namespace",
-                        StatusCode.BAD_COMMAND_LINE);
-            }
-
-        } catch (ParseException e) {
-            exitWithHelp(options, "Parsing exception when parsing command line.", StatusCode.BAD_COMMAND_LINE);
-        }
-
-        assert(cmd != null);
-        return cmd;
-    }
-
-    /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-        /**
-         * This method allows bidirectional edges (do not clean them).
-         * @return  false
-         */
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return false;
-        }
-
-        /**
-         * This method uses hbase.
-         * @return  true
-         */
-        @Override
-        public boolean shouldUseHBase() {
-            return true;
+    private static void checkCli(CommandLine cmd) {
+        if (!(cmd.hasOption(BaseCLI.Options.edge.getLongOpt())) &&
+                !(cmd.hasOption(BaseCLI.Options.directedEdge.getLongOpt()))) {
+            commandLineInterface.showError("Please add column family and names for (directed) edges and (directed) edge properties");
         }
     }
 
@@ -249,18 +139,27 @@ public class TableToRDFGraph {
 
         Timer timer = new Timer();
 
-        CommandLine cmd = checkCli(args);
-        String srcTableName = cmd.getOptionValue(GBHTableConfiguration.config.getProperty("CMD_TABLE_OPTNAME"));
+        //parse all the command line arguments and check for required fields
+  
+        CommandLine cmd = commandLineInterface.checkCli(args);
+  
+        //run it through our app specific logic
+ 
+        checkCli(cmd);
 
-        ConstructionPipeline job                         = new TableToRDFGraph().new ConstructionPipeline();
-        HBaseInputConfiguration inputConfiguration       = new HBaseInputConfiguration(srcTableName);
-        // GraphBuildingRules handle the syntax checks for command line arguments
-        HBaseGraphBuildingRule buildingRule              = new HBaseGraphBuildingRule(cmd);
-        RDFGraphOutputConfiguration outputConfiguration  = new RDFGraphOutputConfiguration();
+        String srcTableName   = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
+        String outputPathName = cmd.getOptionValue(BaseCLI.Options.outputPath.getLongOpt());
+
+        GraphConstructionPipeline pipeline         = new GraphConstructionPipeline();
+        HBaseInputConfiguration inputConfiguration = new HBaseInputConfiguration(srcTableName);
+        HBaseGraphBuildingRule buildingRule        = new HBaseGraphBuildingRule(cmd);
+        RDFGraphOutputConfiguration outputConfiguration  = new RDFGraphOutputConfiguration(outputPathName);
 
         LOG.info("============= Creating graph from hbase ==================");
         timer.start();
-        job.run( inputConfiguration,buildingRule, outputConfiguration, cmd);
+        pipeline.run(inputConfiguration, buildingRule,
+                     GraphConstructionPipeline.BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES,
+		     outputConfiguration, cmd);
         LOG.info("========== Done creating graph from hbase ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

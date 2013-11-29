@@ -26,8 +26,8 @@ public class RDFGraphOutputConfiguration implements OutputConfiguration {
     private GraphGenerationMRJob graphGenerationMRJob;
 
 
-    public RDFGraphOutputConfiguration() {
-        graphGenerationMRJob = new RDFGraphMR();
+    public RDFGraphOutputConfiguration(String outputPathName) {
+        graphGenerationMRJob = new RDFGraphMR(outputPathName);
     }
 
     public GraphGenerationMRJob getGraphGenerationMRJob() {

@@ -75,11 +75,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
      * @return TitanGraph for saving edges
      * @throws IOException
      */
-<<<<<<< HEAD
-    protected TitanGraph GraphFactoryOpen(Context context) throws IOException {
-=======
     private TitanGraph getTitanGraphInstance (Context context) throws IOException {
->>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
         BaseConfiguration titanConfig = new BaseConfiguration();
         return GraphDatabaseConnector.open("titan", titanConfig, context.getConfiguration());
     }
@@ -112,11 +108,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
 
         this.vertexNameToTitanID = new HashMap<Object, Long>();
 
-<<<<<<< HEAD
-        this.graph = GraphFactoryOpen(context);
-=======
         this.graph = getTitanGraphInstance(context);
->>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
         assert (null != this.graph);
 
         this.noBiDir = conf.getBoolean("noBiDir", false);

@@ -1,4 +1,21 @@
-
+/* Copyright (C) 2013 Intel Corporation.
+*     All rights reserved.
+*
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+* For more about this software visit:
+*      http://www.01.org/GraphBuilder
+*/
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
@@ -240,11 +257,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      * @return TitanGraph for saving edges
      * @throws IOException
      */
-<<<<<<< HEAD
-    private TitanGraph GraphFactoryOpen(Configuration configuration) throws IOException {
-=======
     private TitanGraph getTitanGraphInstance(Configuration configuration) throws IOException {
->>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
         BaseConfiguration titanConfig = new BaseConfiguration();
 
         return GraphDatabaseConnector.open("titan", titanConfig, configuration);
@@ -391,12 +404,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         TitanGraph graph = null;
 
         try {
-<<<<<<< HEAD
-            graph = GraphFactoryOpen(conf);
-=======
             graph = getTitanGraphInstance(conf);
-
->>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
                     "GRAPHBUILDER FAILURE: Unhandled IO exception while attempting to connect to Titan.",  LOG, e);
@@ -442,13 +450,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         String titanTableName = TitanConfig.config.getProperty("TITAN_STORAGE_TABLENAME");
 
         if (hbaseUtils.tableExists(titanTableName)) {
-<<<<<<< HEAD
-            if (cmd.hasOption(TitanCommandLineOptions.APPEND)) {
-            LOG.info("GRAPHBUILDER_WARN:  hbase table " + titanTableName +
-=======
             if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
             LOG.info("WARNING:  hbase table " + titanTableName +
->>>>>>> 2405513e94c825ea26bdf1fe11be4fd1b28e28dd
                      " already exists. Titan will append new graph to existing data.");
             } else {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,

@@ -96,7 +96,15 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     private Functional vertexReducerFunction;
     private Functional edgeReducerFunction;
     private boolean    cleanBidirectionalEdge;
+    private String     outputPathName;
 
+    /**
+     * The constructor. It requires the pathname for the output as an argument.
+     * @param outputPathName  the pathname as a String
+     */
+    public RDFGraphMR(String outputPathName) {
+        this.outputPathName = outputPathName;
+    }
 
     /**
      * Set-up time routine that connects raw data ({@code inputConfiguration} and the graph generations rule
@@ -238,8 +246,6 @@ public class RDFGraphMR extends GraphGenerationMRJob {
 
     public void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException {
 
-        String outputPath = cmd.getOptionValue("out");
-
         // Set required parameters in configuration
 
         String test = graphBuildingRule.getClass().getName();
@@ -261,11 +267,11 @@ public class RDFGraphMR extends GraphGenerationMRJob {
         // set the configuration per the input, for example set the input
         // HBase table name if the input type is HBase
 
-        inputConfiguration.updateConfigurationForMapper(conf, cmd);
+        inputConfiguration.updateConfigurationForMapper(conf);
 
         // update the configuration per the graphBuildingRule
 
-        graphBuildingRule.updateConfigurationForTokenizer(conf, cmd);
+        graphBuildingRule.updateConfigurationForTokenizer(conf);
 
         // Add RDF namespace
         conf.set(RDFConfiguration.config.getProperty("CMD_RDF_NAMESPACE"), cmd.getOptionValue("n"));
@@ -277,7 +283,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
 
         // configure mapper  and input
 
-        inputConfiguration.updateJobForMapper(job, cmd);
+        inputConfiguration.updateJobForMapper(job);
 
         job.setMapOutputKeyClass(IntWritable.class);
         job.setMapOutputValueClass(mapValueType.getClass());
@@ -296,14 +302,14 @@ public class RDFGraphMR extends GraphGenerationMRJob {
 
         LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
 
-        FileOutputFormat.setOutputPath(job, new Path(outputPath));
+        FileOutputFormat.setOutputPath(job, new Path(this.outputPathName));
 
         // fired up and ready to go!
 
         LOG.info("=========== Job: Creating vertex list and edge list from input data, saving as text file ===========");
 
-        LOG.info("input: " + inputConfiguration.getDescription());
-        LOG.info("Output = " + outputPath);
+        LOG.info("Input: " + inputConfiguration.getDescription());
+        LOG.info("Output = " + this.outputPathName);
 
         LOG.info("InputFormat = " + inputConfiguration.getDescription());
         LOG.info("GraphTokenizerFromString = " + graphBuildingRule.getClass().getName());
