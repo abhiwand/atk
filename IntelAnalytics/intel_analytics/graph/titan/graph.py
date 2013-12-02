@@ -203,7 +203,7 @@ def vertex_str(vertex, public=False):
     s = (column_family + vertex.key) if public is False else vertex.key
     if len(vertex.properties) > 0:
         s += '=' + ','.join(
-            (map(lambda p: column_family + ':' + p, vertex.properties))
+            (map(lambda p: column_family + p, vertex.properties))
             if public is False else vertex.properties)
     return s
 
@@ -216,8 +216,7 @@ def edge_str(edge, public=False):
     s = ("{0}{1},{0}{2},{3}" if public is False else "{1},{2},{3}") \
             .format(column_family, edge.source, edge.target, edge.label)
     if len(edge.properties) > 0:
-        s += '=' + ','.join(
-            (map(lambda p: column_family + ':' + p, edge.properties))
+        s += ',' + ','.join((map(lambda p: column_family + p, edge.properties))
             if public is False else edge.properties)
     return s
 
@@ -248,9 +247,10 @@ def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list,
             '-t',
             table_name,
             '-v',
-            '"' + ' '.join(map(lambda v: vertex_str(v), vertex_list)) + '"',
+            ','.join(map(lambda v: '"' + vertex_str(v) + '"', vertex_list)),
             '-d' if is_directed is True else '-e',
-            '"' + ' '.join(map(lambda e: edge_str(e), edge_list)) + '"']
+            ','.join(map(lambda e: '"' + edge_str(e) + '"', edge_list))
+            ]
 
 
 def get_rexster_server_uri(table_name):
