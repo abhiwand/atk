@@ -174,7 +174,9 @@ def build(graph_name, source, vertex_list, edge_list, is_directed):
         edge_list,
         is_directed)
     logger.debug(' '.join(build_command))
-    call(build_command, report_strategy = ProgressReportStrategy())
+    gb_cmd = ' '.join(map(str, build_command))
+    print gb_cmd
+    call(gb_cmd, shell=True, report_strategy = ProgressReportStrategy())
 
     titan_graph_builder_factory._name_registry.\
         register(graph_name, titan_table_name)
@@ -247,9 +249,9 @@ def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list,
             '-t',
             table_name,
             '-v',
-            ','.join(map(lambda v: '"' + vertex_str(v) + '"', vertex_list)),
+            ', '.join(map(lambda v: '"' + vertex_str(v) + '"', vertex_list)),
             '-d' if is_directed is True else '-e',
-            ','.join(map(lambda e: '"' + edge_str(e) + '"', edge_list))
+            ', '.join(map(lambda e: '"' + edge_str(e) + '"', edge_list))
             ]
 
 
