@@ -26,10 +26,13 @@ function menuMarker(){
     switch (pathName.toLowerCase()){
         case "ipython":
             $("#ipython-page").addClass("active");
+            break;
         case "documentation":
             $("#documentation-page").addClass("active");
-
-
+            break;
+        default:
+            $("#ipython-page").addClass("active");
+            break;
     }
 }
 var messages = {
