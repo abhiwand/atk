@@ -5,6 +5,7 @@ import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import com.thinkaurelius.titan.core.TitanGraph;
@@ -83,7 +84,7 @@ public class PropertyGraphElementsTest{
 
         outValue = mock(SerializedPropertyGraphElement.class);
 
-        graphElements = new PropertyGraphElements(edgeReducerFunction, vertexReducerFunction, context, graph,
+        graphElements = new PropertyGraphElements(new TitanMergedGraphElementWrite(), edgeReducerFunction, vertexReducerFunction, context, graph,
                 outValue, Counters.NUM_EDGES, Counters.NUM_VERTICES );
         spiedGraphElements = spy(graphElements);
     }
@@ -103,6 +104,7 @@ public class PropertyGraphElementsTest{
 
     @Test
     public void test_valid_edge_vertex_with_no_edge_or_vertex_reducer_function() throws Exception {
+
         /*PowerMockito.when(spiedGraphElements,
                 method(PropertyGraphElements.class, "getVertexId", com.tinkerpop.blueprints.Vertex.class))
                 .withArguments(any(com.tinkerpop.blueprints.Vertex.class)).thenReturn(1L);*/

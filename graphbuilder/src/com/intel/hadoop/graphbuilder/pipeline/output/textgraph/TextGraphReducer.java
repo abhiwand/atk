@@ -25,6 +25,8 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 
 import com.intel.hadoop.graphbuilder.graphelements.*;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TextGraphMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -69,6 +71,8 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
         NUM_EDGES
     }
 
+    private PropertyGraphElements propertyGraphElements;
+
     @Override
     public void setup(Context context) {
 
@@ -104,152 +108,26 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Configuration error when configuring reducer functionals.", LOG, e);
         }
+
+        initPropertyGraphElements(context);
     }
 
     @Override
     public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        HashMap<EdgeID, Writable>     edgePropertiesMap       = new HashMap();
-        HashMap<Object,  Writable>     vertexPropertiesMap     = new HashMap();
-
-        Iterator<SerializedPropertyGraphElement> valueIterator           = values.iterator();
-
-        while (valueIterator.hasNext()) {
-
-            SerializedPropertyGraphElement next = valueIterator.next();
-
-            // Apply reduce on vertex
-
-            if (next.graphElement().isVertex()) {
-                Vertex vertex   = (Vertex) next.graphElement();
-                Object vertexId = vertex.getVertexId();
-
-                if (vertexPropertiesMap.containsKey(vertexId)) {
-
-                    // vertexId denotes a duplicate vertex
-
-                    if (vertexReducerFunction != null) {
-                        vertexPropertiesMap.put(vertexId,
-                                vertexReducerFunction.reduce(vertex.getProperties(),
-                                        vertexPropertiesMap.get(vertexId)));
-                    } else {
-
-                        /**
-                         * default behavior is to merge the property maps of duplicate vertices
-                         * conflicting key/value pairs get overwritten
-                         */
-
-                        PropertyMap existingPropertyMap = (PropertyMap) vertexPropertiesMap.get(vertexId);
-                        existingPropertyMap.mergeProperties(vertex.getProperties());
-                    }
-                } else {
-
-                    // vertexId denotes a NON-duplicate vertex
-
-                    if (vertexReducerFunction != null) {
-                        vertexPropertiesMap.put(vertexId,
-                                vertexReducerFunction.reduce(vertex.getProperties(), vertexReducerFunction.identityValue()));
-                    } else {
-                        vertexPropertiesMap.put(vertexId, vertex.getProperties());
-                    }
-                }
-            } else {
-
-                // Apply reduce on edges, remove self and (or merge) duplicate edges.
-                // Optionally remove bidirectional edge.
-
-                Edge    edge   = (Edge) next.graphElement();
-                EdgeID  edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
-
-                if (edge.isSelfEdge()) {
-                    // self edges are omitted
-                    continue;
-                }
-
-                if (edgePropertiesMap.containsKey(edgeID)) {
-
-                    // edge is a duplicate
-                    // default behavior is to not process the duplicate edge,
-                    // but if there is an edge reducer function supplied, it used to combine the edge
-
-                    if (edgeReducerFunction != null) {
-                        edgePropertiesMap.put(edgeID, edgeReducerFunction.reduce(edge.getProperties(),
-                                                                                  edgePropertiesMap.get(edgeID)));
-                    } else {
-                        /**
-                         * default behavior is to merge the property maps of duplicate edges
-                         * conflicting key/value pairs get overwritten
-                         */
-
-                        PropertyMap existingPropertyMap = (PropertyMap) edgePropertiesMap.get(edgeID);
-                        existingPropertyMap.mergeProperties(edge.getProperties());
-
-                    }
-                } else {
-
-                    // edge is a NON-duplicate
-
-                    if (noBiDir && edgePropertiesMap.containsKey(edgeID.reverseEdge())) {
-                        // in this case, skip the bi-directional edge
-                    } else {
-
-                        // edge is either not bi-directional, or we are keeping bi-directional edges
-
-                        if (edgeReducerFunction != null) {
-                            edgePropertiesMap.put(edgeID, edgeReducerFunction.reduce(edge.getProperties(),
-                                                                                      edgeReducerFunction.identityValue()));
-                        } else {
-                            edgePropertiesMap.put(edgeID, edge.getProperties());
-                        }
-                    }
-                }
-            }
-        }
-
-        int vertexCount = 0;
-        int edgeCount   = 0;
-        String outPath  = null;
-
-        // Output vertex records
-
-        Iterator<Entry<Object, Writable>> vertexIterator = vertexPropertiesMap.entrySet().iterator();
-
-        outPath = new String("vdata/part");
-
-        while (vertexIterator.hasNext()) {
-
-            Entry v     = vertexIterator.next();
-            Text  value = new Text(v.getKey().toString() + "\t" + v.getValue().toString());
-
-            multipleOutputs.write(NullWritable.get(), value, outPath);
-            vertexCount++;
-        }
-
-        context.getCounter(Counters.NUM_VERTICES).increment(vertexCount);
-
-        // Output edge records
-
-        Iterator<Entry<EdgeID, Writable>> edgeIterator = edgePropertiesMap.entrySet().iterator();
-
-        outPath = new String("edata/part");
-
-        while (edgeIterator.hasNext()) {
-
-            Entry<EdgeID, Writable> e = edgeIterator.next();
-
-            Text value = new Text(e.getKey().getSrc() + "\t" + e.getKey().getDst() + "\t" + e.getKey().getLabel()
-                    + "\t" + e.getValue().toString());
-
-            multipleOutputs.write(NullWritable.get(), value, outPath);
-            edgeCount++;
-        }
-
-        context.getCounter(Counters.NUM_EDGES).increment(edgeCount);
+        propertyGraphElements.mergeDuplicates(values);
+        propertyGraphElements.write();
     }
 
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         multipleOutputs.close();
+    }
+
+    private void initPropertyGraphElements(Context context){
+        propertyGraphElements = new PropertyGraphElements(new TextGraphMergedGraphElementWrite(), vertexReducerFunction,
+                edgeReducerFunction, context, null, null, Counters.NUM_EDGES, Counters.NUM_VERTICES);
+
     }
 }

@@ -4,6 +4,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -55,7 +56,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
         NUM_EDGES
     }
 
-    PropertyGraphElements propertyGraphElements;
+    private PropertyGraphElements propertyGraphElements;
 
     /**
      * create the titan graph for saving edges and remove the static open method from setup so it can be mocked
@@ -130,182 +131,9 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        HashMap<EdgeID, Writable>     edgeSet       = new HashMap();
-        HashMap<Object, Writable>     vertexSet     = new HashMap();
-        //Iterator<SerializedPropertyGraphElement> valueIterator = values.iterator();
-        System.out.println("merge duplicates in");
-
         propertyGraphElements.mergeDuplicates(values);
+        propertyGraphElements.write();
 
-        System.out.println("merge duplicates out");
-
-        /*while (valueIterator.hasNext()) {
-
-            SerializedPropertyGraphElement next = valueIterator.next();
-
-            // Apply reduce on vertex
-
-            if (next.graphElement().isVertex()) {
-                Vertex vertex = (Vertex) next.graphElement();
-                Object vid = vertex.getVertexId();
-
-                if (vertexSet.containsKey(vid)) {
-
-                    // vid denotes a duplicate vertex
-
-                    if (vertexReducerFunction != null) {
-                        vertexSet.put(vid,
-                                vertexReducerFunction.reduce(vertex.getProperties(),
-                                vertexSet.get(vid)));
-                    } else {
-
-                        *//**
-                         * default behavior is to merge the property maps of duplicate vertices
-                         * conflicting key/value pairs get overwritten
-                         *//*
-
-                        PropertyMap existingPropertyMap = (PropertyMap) vertexSet.get(vid);
-                        existingPropertyMap.mergeProperties(vertex.getProperties());
-                    }
-                } else {
-
-                    // vid denotes a NON-duplicate vertex
-
-                    if (vertexReducerFunction != null) {
-                        vertexSet.put(vid,
-                                vertexReducerFunction.reduce(vertex.getProperties(),
-                                        vertexReducerFunction.identityValue()));
-                    } else {
-                        vertexSet.put(vid, vertex.getProperties());
-                    }
-                }
-            } else {
-
-                // Apply reduce on edges, remove self and (or merge) duplicate edges.
-                // Optionally remove bidirectional edge.
-
-                Edge   edge   = (Edge) next.graphElement();
-                EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
-
-                if (edge.isSelfEdge()) {
-                    // self edges are omitted
-                    continue;
-                }
-
-                if (edgeSet.containsKey(edgeID)) {
-
-                    // edge is a duplicate
-
-                    if (edgeReducerFunction != null) {
-                        edgeSet.put(edgeID, edgeReducerFunction.reduce(edge.getProperties(), edgeSet.get(edgeID)));
-                    } else {
-
-                        *//**
-                         * default behavior is to merge the property maps of duplicate edges
-                         * conflicting key/value pairs get overwritten
-                         *//*
-
-                        PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeID);
-                        existingPropertyMap.mergeProperties(edge.getProperties());
-                    }
-                } else {
-
-                    // edge is a NON-duplicate
-
-                    if (noBiDir && edgeSet.containsKey(edgeID.reverseEdge())) {
-                        // in this case, skip the bi-directional edge
-                    } else {
-
-                        // edge is either not bi-directional, or we are keeping bi-directional edges
-
-                        if (edgeReducerFunction != null) {
-                            edgeSet.put(edgeID,
-                                    edgeReducerFunction.reduce(edge.getProperties(),
-                                            edgeReducerFunction.identityValue()));
-                        } else {
-                            edgeSet.put(edgeID, edge.getProperties());
-                        }
-                    }
-                }
-            }
-        }*/
-
-       /* int vertexCount = 0;
-        int edgeCount   = 0;
-
-        // Output vertex records
-
-        Iterator<Map.Entry<Object, Writable>> vertexIterator = vertexSet.entrySet().iterator();
-
-
-        while (vertexIterator.hasNext()) {
-
-            Map.Entry v     = vertexIterator.next();
-
-            // Major operation - vertex is added to Titan and a new ID is assigned to it
-
-            com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
-
-            bpVertex.setProperty("trueName", v.getKey().toString());
-
-            PropertyMap propertyMap = (PropertyMap) v.getValue();
-
-            for (Writable keyName : propertyMap.getPropertyKeys()) {
-                EncapsulatedObject mapEntry = (EncapsulatedObject) propertyMap.getProperty(keyName.toString());
-
-                bpVertex.setProperty(keyName.toString(), mapEntry.getBaseObject());
-            }
-
-            long vertexId = ((TitanElement) bpVertex).getID();
-
-            Vertex vertex = new Vertex();
-            propertyMap.setProperty("TitanID", new LongType(vertexId));
-            vertex.configure((WritableComparable) v.getKey(), propertyMap);
-
-            outValue.init(vertex);
-            outKey.set(keyFunction.getVertexKey(vertex));
-
-            context.write(outKey, outValue);
-
-            vertexNameToTitanID.put(v.getKey(), vertexId);
-
-            vertexCount++;
-        }
-
-        context.getCounter(Counters.NUM_VERTICES).increment(vertexCount);
-
-        // Output edge records
-
-        Iterator<Map.Entry<EdgeID, Writable>> edgeIterator = edgeSet.entrySet().iterator();
-
-
-        while (edgeIterator.hasNext()) {
-
-            Map.Entry<EdgeID, Writable> e = edgeIterator.next();
-
-            Object src                  = e.getKey().getSrc();
-            Object dst                  = e.getKey().getDst();
-            String label                = e.getKey().getLabel().toString();
-
-            PropertyMap propertyMap = (PropertyMap) e.getValue();
-
-            long srcTitanId = vertexNameToTitanID.get(src);
-
-            Edge edge = new Edge();
-
-            propertyMap.setProperty("srcTitanID", new LongType(srcTitanId));
-
-            edge.configure((WritableComparable)  src, (WritableComparable)  dst, new StringType(label), propertyMap);
-
-            outValue.init(edge);
-            outKey.set(keyFunction.getEdgeKey(edge));
-
-            context.write(outKey, outValue);
-
-            edgeCount++;
-        }
-
-        context.getCounter(Counters.NUM_EDGES).increment(edgeCount);*/
     }
 
     @Override
@@ -314,8 +142,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     }
 
     private void initPropertyGraphElements(Context context){
-        propertyGraphElements = new PropertyGraphElements(vertexReducerFunction, edgeReducerFunction, context, graph,
-                outValue, Counters.NUM_EDGES, Counters.NUM_VERTICES);
+        propertyGraphElements = new PropertyGraphElements(new TitanMergedGraphElementWrite(),vertexReducerFunction,
+                edgeReducerFunction, context, graph, outValue, Counters.NUM_EDGES, Counters.NUM_VERTICES);
 
     }
 }

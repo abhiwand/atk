@@ -26,6 +26,10 @@ public class PropertyGraphElementPut implements PropertyGraphElementType{
     public <T> T edge(PropertyGraphElement propertyGraphElement, Object ... args) {
         this.arguments(args);
 
+        Arguments arguments = new Arguments(args);
+
+        //arguments.get("edgeReducerFunction");
+
         EdgeID edgeID = (EdgeID)propertyGraphElement.getId();
 
         if (((Edge)propertyGraphElement).isSelfEdge()) {
@@ -102,7 +106,7 @@ public class PropertyGraphElementPut implements PropertyGraphElementType{
     }
 
     private void arguments(Object ... args){
-        edgeSet = (HashMap<EdgeID, Writable>)args[0];
+        setEdgeSet(args);
         vertexSet = (HashMap<Object, Writable>)args[1];
         edgeReducerFunction = (Functional)args[2];
         vertexReducerFunction = (Functional)args[3];
@@ -113,4 +117,23 @@ public class PropertyGraphElementPut implements PropertyGraphElementType{
         return (Boolean)propertyGraphElement.typeCallback(containsKey, edgeSet, vertexSet);
     }
 
+    public void setEdgeSet(Object ... args) {
+        edgeSet = (HashMap<EdgeID, Writable>)args[0];
+    }
+
+    public void setVertexSet(HashMap<Object, Writable> vertexSet) {
+        this.vertexSet = vertexSet;
+    }
+
+    public void setEdgeReducerFunction(Functional edgeReducerFunction) {
+        this.edgeReducerFunction = edgeReducerFunction;
+    }
+
+    public void setVertexReducerFunction(Functional vertexReducerFunction) {
+        this.vertexReducerFunction = vertexReducerFunction;
+    }
+
+    public void setNoBiDir(boolean noBiDir) {
+        this.noBiDir = noBiDir;
+    }
 }
