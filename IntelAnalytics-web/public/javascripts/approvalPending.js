@@ -15,8 +15,23 @@ $(window).load(function(){
         $("#request-an-invite-modal-slider2").remove();
         $("#request-an-invite-modal-slider3").remove();*/
     }
+
+    menuMarker();
 })
 
+function menuMarker(){
+    var path = window.location.pathname.split("/");
+    var pathName = path[path.length-1];
+
+    switch (pathName.toLowerCase()){
+        case "ipython":
+            $("#ipython-page").addClass("active");
+        case "documentation":
+            $("#documentation-page").addClass("active");
+
+
+    }
+}
 var messages = {
     approvalPending:"",
     registrationRequired:"",
