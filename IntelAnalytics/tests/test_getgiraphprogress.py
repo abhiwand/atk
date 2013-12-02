@@ -28,6 +28,17 @@ class TestGetGiraphProgress(unittest.TestCase):
         self.assertEquals(33, progress.total_progress)
         self.assertEquals("Step 2", strategy.get_next_step_title())
 
+    def test_1_job_with_repeat_0_progress(self):
+        strategy = GiraphProgressReportStrategy()
+        strategy.report("13/11/21 11:34:03 INFO mapred.JobClient:  map 0% reduce 0%")
+        strategy.report("13/11/21 11:34:03 INFO mapred.JobClient:  map 0% reduce 0%")
+        self.assertEquals(1, strategy.get_total_map_reduce_job_count())
+        progress = strategy.get_all_map_reduce_jobs_progress_list()[0]
+        self.assertEquals(0, progress.mapper_progress)
+        self.assertEquals(0, progress.reducer_progress)
+        self.assertEquals(0, progress.total_progress)
+        self.assertEquals("Step 2", strategy.get_next_step_title())
+
     def test_first_phase_complete(self):
         strategy = GiraphProgressReportStrategy()
         strategy.report("13/11/21 11:34:21 INFO mapred.JobClient:  map 33% reduce 0%")
