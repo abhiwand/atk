@@ -372,6 +372,8 @@ class HBaseFrameBuilder(FrameBuilder):
         if return_code:
             raise Exception('Could not import JSON file')
 
+        self._register_table_name(frame_name, table_name, overwrite)
+        
         return new_frame
             
     def build_from_xml(self, frame_name, file_name, schema=None):
