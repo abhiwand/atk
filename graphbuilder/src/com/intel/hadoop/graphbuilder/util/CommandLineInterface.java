@@ -10,10 +10,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * General command line parsing utility for graph builder.
+ * A general command line parsing utility for graph builder.
  *
  * <p>
- *     <code>-conf</code>   specifies the configuration file
+ *     <code>-conf</code>   specifies the configuration file.
  * </p>
  */
 public class CommandLineInterface {
@@ -26,27 +26,27 @@ public class CommandLineInterface {
     private GenericOptionsParser genericOptionsParser;
 
     /**
-     * does this command line have the specified option?
-     * @param option  name of option being requested
-     * @return  true iff the command line has the option
+     * Does this command line have the specified option?
+     * @param option  The name of option being requested.
+     * @return  true  If the command line has the option.
      */
     public boolean hasOption(String option) {
         return cmd.hasOption(option);
     }
 
     /**
-     * Get value of option from command line
-     * @param option name of option whose value is requested
-     * @return value of the option as specified by the command line
+     * Gets the value of the option from the command line.
+     * @param option The name of option whose value is requested.
+     * @return value The value of the option as specified by the command line.
      */
     public String getOptionValue(String option) {
         return cmd.getOptionValue(option);
     }
 
     /**
-     * Parse raw arguments into {@code CommandLine} object
-     * @param args raw command line arguments as string array
-     * @return  nicely packaged {@code CommandLine} object
+     * Parses the raw arguments into the {@code CommandLine} object.
+     * @param args The raw command line arguments as a string array.
+     * @return  A nicely packaged {@code CommandLine} object.
      */
     public CommandLine parseArgs(String[] args) {
 
@@ -99,8 +99,8 @@ public class CommandLineInterface {
     }
 
     /**
-     * Make sure that all required options are present in raw arguments..
-     * @param args  raw arguments as string array
+     * Makes sure that all required options are present in the raw arguments.
+     * @param args  The raw arguments as a string array.
      */
     public void checkCli(String[] args) {
         parseArgs(args);
@@ -117,23 +117,23 @@ public class CommandLineInterface {
     }
 
     /**
-     * Get Hadoop's generic options parser
-     * @return  Hadoop's generic options parser
+     * Gets Hadoop's generic options parser.
+     * @return  Hadoop's generic options parser.
      */
     public GenericOptionsParser getGenericOptionsParser() {
         return genericOptionsParser;
     }
 
     /**
-     * Displays parsed options given option name.
-     * @param option name of option as string
+     * Displays the parsed options for the given option name.
+     * @param option The name of option as a string.
      */
     public void showOptionParsed(String option){
         LOG.info(String.format("%s: %s", options.getOption(option).getLongOpt(), cmd.getOptionValue(option) ));
     }
 
     /**
-     * Display parsed options.
+     * Displays the parsed options.
      */
     public void showOptionsParsed(){
         Iterator optionss = options.getOptions().iterator();
@@ -146,8 +146,8 @@ public class CommandLineInterface {
     }
 
     /**
-     * Display help  after error message
-     * @param message  error message
+     * Displays help after an error message.
+     * @param message  The error message.
      */
     public void showHelp(String message){
         _showHelp(message);
@@ -211,10 +211,10 @@ public class CommandLineInterface {
     }
 
     /**
-     * Check if the lack of an option caused a parsing exception
-     * @param e      the parse exception that was thrown
-     * @param option the option that should be in the MissingOptionException
-     * @return a boolean on weather or not the String option is the missing option we are looking for
+     * Checks if the lack of an option caused a parsing exception.
+     * @param e      The parse exception that was thrown.
+     * @param option The option that should be in the MissingOptionException.
+     * @return A boolean indicating weather or not the String option is the missing option for which we are looking.
      */
     public static boolean lookForOptionException(ParseException e, String option) {
         MissingOptionException missingOptions = (MissingOptionException) e;
@@ -229,8 +229,8 @@ public class CommandLineInterface {
     }
 
     /**
-     * Convert missing argument exception into string message.
-     * @param ex a ParseException
+     * Converts the missing argument exception into a string message.
+     * @param ex A ParseException.
      */
     public static String getMissingArgumentFromException(ParseException ex){
         MissingArgumentException missingArgumentException;
@@ -249,10 +249,10 @@ public class CommandLineInterface {
     }
 
     /**
-     * Check if an unrecognized option caused a parsing exception.
+     * Checks if an unrecognized option caused a parsing exception.
      *
-     * @param ex the parsing exception
-     * @return name of unrecognized option
+     * @param ex The parsing exception.
+     * @return The name of the unrecognized option.
      */
     public static String getUnrecognizedOptionFromException(ParseException ex){
         UnrecognizedOptionException unrecognizedOption;
@@ -271,9 +271,9 @@ public class CommandLineInterface {
     }
 
     /**
-     * Find the first missing option from a parsing exception
-     * @param ex the parsing exception
-     * @return  name of the first missing option
+     * Finds the first missing option from a parsing exception.
+     * @param ex The parsing exception.
+     * @return  The name of the first missing option.
      */
     public static String getFirstMissingOptionFromException(ParseException ex){
         MissingOptionException missingOptions;

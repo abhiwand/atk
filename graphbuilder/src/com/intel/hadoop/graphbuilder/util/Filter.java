@@ -19,7 +19,7 @@
 package com.intel.hadoop.graphbuilder.util;
 
 /**
- * A String filter is lambda funtion f: string -> string. Filters can be
+ * A String filter is lambda function f: string -> string. Filters can be
  * appended, or composed through the {@code append} function.
  * 
  */

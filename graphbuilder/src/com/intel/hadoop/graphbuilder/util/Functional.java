@@ -22,8 +22,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Writable;
 
 /**
- * Represents a function of type: T2 -> T1 -> T2. Provides interface for getting
- * parameter from Hadoop {@code JobConf}.
+ * Represents a function of type: T2 -> T1 -> T2. Provides the interface for getting
+ * parameters from Hadoop {@code JobConf}.
  * 
  * @param <T1>
  * @param <T2>
