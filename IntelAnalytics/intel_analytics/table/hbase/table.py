@@ -415,7 +415,7 @@ class HBaseFrameBuilderFactory(object):
         return self.name_registry.keys()
 
     def _get_frame(self, frame_name, hbase_table_name):
-        hbase_table = HBaseTable(frame_name, hbase_table_name)
+        hbase_table = HBaseTable(hbase_table_name, ': from database')
         new_frame = BigDataFrame(frame_name, hbase_table)
         return new_frame
 
