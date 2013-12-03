@@ -38,5 +38,11 @@ class PigProgressReportStrategy(ReportStrategy):
         else:
             return False
 
+    def handle_error(self, error_code, error_message):
+        if not self.progress_bar:
+            self.initialization_progressbar.alert()
+        else:
+            self.progress_bar.alert()
+
 
 
