@@ -3,11 +3,7 @@ package com.intel.hadoop.graphbuilder.pipeline;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapreduce.*;
-import org.apache.hadoop.mrunit.MapReduceDriverBase;
-import org.apache.hadoop.mrunit.internal.counters.CounterWrapper;
 import org.apache.hadoop.mrunit.internal.mapreduce.ContextDriver;
-import org.apache.hadoop.mrunit.internal.mapreduce.MockMapContextWrapper;
-import org.apache.hadoop.mrunit.internal.mapreduce.MockReduceContextWrapper;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -15,7 +11,6 @@ import org.apache.hadoop.mrunit.types.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import static org.apache.hadoop.mrunit.internal.util.ArgumentChecker.returnNonNull;
@@ -38,8 +33,8 @@ public class MRD <K1, V1, K2, V2, K3, V3> extends
 
     public static final Log LOG = LogFactory.getLog(MRD.class);
 
-    private MapDriver<K1, V1, K2, V2> mapDriver;
-    private ReduceDriver<K2, V2, K3, V3> reduceDriver;
+    private MapDriver<K1, V1, K2, V2> myMapDriver;
+    private ReduceDriver<K2, V2, K3, V3> myReduceDriver;
 
     @SuppressWarnings("rawtypes")
     private Class<? extends OutputFormat> outputFormatClass;
@@ -48,8 +43,8 @@ public class MRD <K1, V1, K2, V2, K3, V3> extends
 
     MRD(MapDriver<K1, V1, K2, V2> mapper,ReduceDriver<K2, V2, K3, V3> reducer){
         super.setCounters(new Counters());
-        setMapDriver(mapper);
-        setReduceDriver(reducer);
+        setMyMapDriver(mapper);
+        setMyReduceDriver(reducer);
     }
 
     public static <K1, V1, K2, V2, K3, V3> MapReduceDriver<K1, V1, K2, V2, K3, V3> newMapReduceDriver(
@@ -59,10 +54,10 @@ public class MRD <K1, V1, K2, V2, K3, V3> extends
 
     @Override
     public List<Pair<K3, V3>> run() throws IOException {
-        MapDriver<K1, V1, K2, V2> myMapDriver = getMapDriver();
-        ReduceDriver<K2, V2, K3, V3> myReduceDriver = getReduceDriver();
+        MapDriver<K1, V1, K2, V2> myMapDriver = getMyMapDriver();
+        ReduceDriver<K2, V2, K3, V3> myReduceDriver = getMyReduceDriver();
         try {
-            preRunChecks(myMapDriver, getReduceDriver());
+            preRunChecks(myMapDriver, getMyReduceDriver());
             initDistributedCache();
             List<Pair<K2, V2>> mapOutputs = new ArrayList<Pair<K2, V2>>();
             // run map component
@@ -107,7 +102,7 @@ public class MRD <K1, V1, K2, V2, K3, V3> extends
                     }
                 }
 
-                /*final ReduceDriver<K2, V2, OUTKEY, OUTVAL> reduceDriver = ReduceDriver*/
+                /*final ReduceDriver<K2, V2, OUTKEY, OUTVAL> myReduceDriver = ReduceDriver*/
                 reduceDriver1
                         .withCounters(getCounters())
                         .withConfiguration(getConfiguration()).withAll(inputs);
@@ -128,19 +123,19 @@ public class MRD <K1, V1, K2, V2, K3, V3> extends
         }
     }
 
-    public MapDriver<K1, V1, K2, V2> getMapDriver() {
-        return mapDriver;
+    public MapDriver<K1, V1, K2, V2> getMyMapDriver() {
+        return myMapDriver;
     }
 
-    public ReduceDriver<K2, V2, K3, V3> getReduceDriver() {
-        return reduceDriver;
+    public ReduceDriver<K2, V2, K3, V3> getMyReduceDriver() {
+        return myReduceDriver;
     }
 
-    public void setMapDriver(MapDriver<K1, V1, K2, V2> mapDriver) {
-        this.mapDriver = mapDriver;
+    public void setMyMapDriver(MapDriver<K1, V1, K2, V2> myMapDriver) {
+        this.myMapDriver = myMapDriver;
     }
 
-    public void setReduceDriver(ReduceDriver<K2, V2, K3, V3> reduceDriver) {
-        this.reduceDriver = reduceDriver;
+    public void setMyReduceDriver(ReduceDriver<K2, V2, K3, V3> myReduceDriver) {
+        this.myReduceDriver = myReduceDriver;
     }
 }
