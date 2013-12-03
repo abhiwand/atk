@@ -98,7 +98,6 @@ public class HBaseReaderMapperTest {
         conf.set("KeyFunction", SourceVertexKeyFunction.class.getName());
 
         //sample vertex and edge generation rules
-
         String[] vertexRules = new String[1];
         vertexRules[0] = "cf:name=cf:age,cf:dept";
         HBaseGraphBuildingRule.packVertexRulesIntoConfiguration(conf, vertexRules);

@@ -26,10 +26,6 @@ public class PropertyGraphElementPut implements PropertyGraphElementType{
     public <T> T edge(PropertyGraphElement propertyGraphElement, Object ... args) {
         this.arguments(args);
 
-        Arguments arguments = new Arguments(args);
-
-        //arguments.get("edgeReducerFunction");
-
         EdgeID edgeID = (EdgeID)propertyGraphElement.getId();
 
         if (((Edge)propertyGraphElement).isSelfEdge()) {
