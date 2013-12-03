@@ -7,7 +7,7 @@ source IntelAnalytics_common_env.sh
 
 # existing AMI Names (with build version, can override 
 if [ -z "${IA_AMI_BUILD}" ]; then
-    IA_AMI_BUILD="Build.06"
+    IA_AMI_BUILD="Build.07"
 fi
 export IA_AMI_VERSION="${IA_VERSION}-${IA_AMI_BUILD}"
 export IA_AMI_MASTER="${IA_NAME}-Master-${IA_AMI_VERSION}"
