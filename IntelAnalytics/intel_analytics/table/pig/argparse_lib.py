@@ -26,17 +26,17 @@ command-line and writes the result to a file::
 The module contains the following public classes:
 
     - ArgumentParser -- The main entry point for command-line parsing. As the
-        example above shows, the add_argument() method is used to populate
+        example above shows, use the add_argument() method to populate
         the parser with actions for optional and positional arguments. Then
-        the parse_args() method is invoked to convert the args at the
-        command-line into an object with attributes.
+        invoke the parse_args() method to convert the args at the
+        command-line to an object with attributes.
 
     - ArgumentError -- The exception raised by ArgumentParser objects when
         there are errors with the parser's actions. Errors raised while
         parsing the command-line are caught by ArgumentParser and emitted
         as command-line messages.
 
-    - FileType -- A factory for defining types of files to be created. As the
+    - FileType -- A factory for defining the types of files to be created. As the
         example above shows, instances of FileType are typically passed as
         the type= argument of add_argument() calls.
 
@@ -646,7 +646,7 @@ class HelpFormatter(object):
 
 
 class RawDescriptionHelpFormatter(HelpFormatter):
-    """Help message formatter which retains any formatting in descriptions.
+    """Help message formatter, which retains any formatting in the descriptions.
 
     Only the name of this class is considered a public API. All the methods
     provided by the class are considered an implementation detail.
@@ -657,7 +657,7 @@ class RawDescriptionHelpFormatter(HelpFormatter):
 
 
 class RawTextHelpFormatter(RawDescriptionHelpFormatter):
-    """Help message formatter which retains formatting of all help text.
+    """Help message formatter, which retains the formatting of all help text.
 
     Only the name of this class is considered a public API. All the methods
     provided by the class are considered an implementation detail.
@@ -668,7 +668,7 @@ class RawTextHelpFormatter(RawDescriptionHelpFormatter):
 
 
 class ArgumentDefaultsHelpFormatter(HelpFormatter):
-    """Help message formatter which adds default values to argument help.
+    """Help message formatter, which adds the default values to argument help.
 
     Only the name of this class is considered a public API. All the methods
     provided by the class are considered an implementation detail.
@@ -761,8 +761,8 @@ class Action(_AttributeHolder):
 
         - default -- The value to be produced if the option is not specified.
 
-        - type -- The type which the command-line arguments should be converted
-            to, should be one of 'string', 'int', 'float', 'complex' or a
+        - type -- The type to which the command-line arguments should be converted, 
+		    should be one of 'string', 'int', 'float', 'complex', or a
             callable object that accepts a single string argument. If None,
             'string' is assumed.
 
@@ -1119,7 +1119,7 @@ class _SubParsersAction(Action):
 # ==============
 
 class FileType(object):
-    """Factory for creating file object types
+    """A Factory for creating file object types.
 
     Instances of FileType are typically passed as type= arguments to the
     ArgumentParser add_argument() method.
@@ -1162,7 +1162,7 @@ class FileType(object):
 # ===========================
 
 class Namespace(_AttributeHolder):
-    """Simple object for storing attributes.
+    """A simple object for storing attributes.
 
     Implements equality by attribute names and values, and provides a simple
     string representation.
@@ -1538,18 +1538,18 @@ class ArgumentParser(_AttributeHolder, _ActionsContainer):
     """Object for parsing command line strings into Python objects.
 
     Keyword Arguments:
-        - prog -- The name of the program (default: sys.argv[0])
-        - usage -- A usage message (default: auto-generated from arguments)
-        - description -- A description of what the program does
-        - epilog -- Text following the argument descriptions
-        - parents -- Parsers whose arguments should be copied into this one
-        - formatter_class -- HelpFormatter class for printing help messages
-        - prefix_chars -- Characters that prefix optional arguments
+        - prog -- The name of the program (default: sys.argv[0]).
+        - usage -- A usage message (default: auto-generated from arguments).
+        - description -- A description of what the program does.
+        - epilog -- Text following the argument descriptions.
+        - parents -- Parsers whose arguments should be copied into this one.
+        - formatter_class -- HelpFormatter class for printing help messages.
+        - prefix_chars -- Characters that prefix optional arguments.
         - fromfile_prefix_chars -- Characters that prefix files containing
-            additional arguments
-        - argument_default -- The default value for all arguments
-        - conflict_handler -- String indicating how to handle conflicts
-        - add_help -- Add a -h/-help option
+            additional arguments.
+        - argument_default -- The default value for all arguments.
+        - conflict_handler -- A string indicating how to handle conflicts.
+        - add_help -- Add a -h/-help option.
     """
 
     def __init__(self,
