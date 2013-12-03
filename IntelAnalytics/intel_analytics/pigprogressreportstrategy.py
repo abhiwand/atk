@@ -7,15 +7,25 @@ job_completion_pattern = re.compile(r".*?MapReduceLauncher - 100% complete")
 
 class PigProgressReportStrategy(ReportStrategy):
     def __init__(self):
-        progress_bar = Progress("Progress")
-        progress_bar._enable_animation()
-        progress_bar._repr_html_()
-        self.progress_bar = progress_bar
+        # show this bar for initialization
+        self.initialization_progressbar = Progress("Initialization")
+        self.initialization_progressbar._repr_html_()
+        self.initialization_progressbar._enable_animation()
+        self.initialization_progressbar.update(100)
+
+        self.progress_bar = None
                 
     def report(self, line):
         progress = get_pig_progress(line)
 
         if progress:
+            if not self.progress_bar:
+                self.initialization_progressbar._disable_animation()
+                progress_bar = Progress("Progress")
+                progress_bar._enable_animation()
+                progress_bar._repr_html_()
+                self.progress_bar = progress_bar
+
             self.progress_bar.update(progress)
             
         if self._is_computation_complete(line):
@@ -27,6 +37,12 @@ class PigProgressReportStrategy(ReportStrategy):
             return True
         else:
             return False
+
+    def handle_error(self, error_code, error_message):
+        if not self.progress_bar:
+            self.initialization_progressbar.alert()
+        else:
+            self.progress_bar.alert()
 
 
 

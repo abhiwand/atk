@@ -14,7 +14,8 @@ import datetime
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
 properties_file = os.path.join(
-    os.getenv('INTEL_ANALYTICS_PYTHON', os.path.dirname(__file__)),
+    os.getenv('INTEL_ANALYTICS_HOME', os.path.dirname(__file__)),
+    'conf',
     'intel_analytics.properties')
 
 
@@ -70,12 +71,12 @@ def dynamic_import(attr_path):
         # module = importlib.import_module(module_path) --requires 2.7
         module = __import__(module_path, fromlist=[attr_name])
     except ImportError:
-        raise ValueError("Could not import module '{0}'".format(module_path))
+        raise ValueError("Could not import module '%s'" % (module_path,))
     try:
         attr = getattr(module, attr_name)
     except ImportError:
-        raise ValueError("Error trying to find '{0}' in module '{1}'"
-                         .format(attr_name, module_path))
+        raise ValueError("Error trying to find '%s' in module '%s'" %
+                         (attr_name, module_path))
     return attr
 
 
@@ -282,11 +283,11 @@ try:
 except Exception, e:
     import sys
     sys.stderr.write("""
-WARNING - could not load default properties file {0} because:
-  {1}
+WARNING - could not load default properties file %s because:
+  %s
 
 Global Configuration will be empty until property loaded.
 Try global_config.load()
-""".format(properties_file, str(e)))
+""" % (properties_file, e))
     sys.stderr.flush()
     global_config = Config()
