@@ -77,6 +77,8 @@ object Register extends Controller {
                     "/", None, true, false))
                 case generalErrorResponse: GeneralErrorResponse => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
                     "/", None, true, false)).withCookies(getRegisteredCookie)
+                case _: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+                  "/", None, true, false))
             }
         }
 

@@ -67,6 +67,7 @@ object Login extends Controller {
             case successfulResponse: SuccessfullyLoginResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(Register.getRegisteredCookie)
             case failedResponse: FailToValidateResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
             case generalErrorResponse: GeneralErrorResponse => Ok(StatusCodes.getJsonStatusCode(generalErrorResponse.errorCode))
+            case _: FailToValidateResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
         }
     }
 
