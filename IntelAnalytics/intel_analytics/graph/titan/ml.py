@@ -915,6 +915,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
         )
         cgd_cmd = ' '.join(map(str, cgd_command))
+        print cgd_cmd
         #delete old output directory if already there
         self.del_old_output(output_path)
         time_str = get_time_str()
