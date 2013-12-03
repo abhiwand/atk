@@ -12,7 +12,7 @@ Requires: java >= 1.7
 
 Prefix: /usr
 
-Release: 2
+Release: %{?BUILD_NUMBER}
 
 Source: intelanalytics-%{version}.tar.gz
 
