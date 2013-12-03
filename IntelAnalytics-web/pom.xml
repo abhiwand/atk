@@ -57,6 +57,7 @@
 	    </arguments>
 	  </configuration>
 	    </execution>
+<!--
 	    <execution>
 	      <id>play-test</id>
 	      <phase>test</phase>
@@ -71,6 +72,7 @@
 	    </arguments>
 	  </configuration>
 	    </execution>
+-->
 	    <execution>
 	      <id>play-dist</id>
 	      <phase>package</phase>
