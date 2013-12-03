@@ -15,23 +15,11 @@ import java.util.List;
 
 import static org.apache.hadoop.mrunit.internal.util.ArgumentChecker.returnNonNull;
 
-/**
- * Created with IntelliJ IDEA.
- * User: rodorad
- * Date: 12/2/13
- * Time: 6:46 PM
- * To change this template use File | Settings | File Templates.
- */
 
-/*
-public class ReduceDriver<K1, V1, K2, V2> extends
-    ReduceDriverBase<K1, V1, K2, V2, ReduceDriver<K1, V1, K2, V2>> implements
-    ContextDriver {
- */
-public class MRD <K1, V1, K2, V2, K3, V3> extends
+public class GBMapReduceDriver<K1, V1, K2, V2, K3, V3> extends
         MapReduceDriver<K1, V1, K2, V2, K3, V3> implements ContextDriver {
 
-    public static final Log LOG = LogFactory.getLog(MRD.class);
+    public static final Log LOG = LogFactory.getLog(GBMapReduceDriver.class);
 
     private MapDriver<K1, V1, K2, V2> myMapDriver;
     private ReduceDriver<K2, V2, K3, V3> myReduceDriver;
@@ -41,7 +29,7 @@ public class MRD <K1, V1, K2, V2, K3, V3> extends
     @SuppressWarnings("rawtypes")
     private Class<? extends InputFormat> inputFormatClass;
 
-    MRD(MapDriver<K1, V1, K2, V2> mapper,ReduceDriver<K2, V2, K3, V3> reducer){
+    GBMapReduceDriver(MapDriver<K1, V1, K2, V2> mapper, ReduceDriver<K2, V2, K3, V3> reducer){
         super.setCounters(new Counters());
         setMyMapDriver(mapper);
         setMyReduceDriver(reducer);
@@ -49,7 +37,7 @@ public class MRD <K1, V1, K2, V2, K3, V3> extends
 
     public static <K1, V1, K2, V2, K3, V3> MapReduceDriver<K1, V1, K2, V2, K3, V3> newMapReduceDriver(
             final MapDriver<K1, V1, K2, V2> mapper, final ReduceDriver<K2, V2, K3, V3> reducer) {
-        return new MRD<K1, V1, K2, V2, K3, V3>(mapper, reducer);
+        return new GBMapReduceDriver<K1, V1, K2, V2, K3, V3>(mapper, reducer);
     }
 
     @Override

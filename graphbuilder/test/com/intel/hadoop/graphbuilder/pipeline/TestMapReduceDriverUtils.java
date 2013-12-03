@@ -52,7 +52,7 @@ public abstract class TestMapReduceDriverUtils {
     protected VerticesIntoTitanReducer spiedVerticesIntoTitanReducer;
 
     protected MapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> mapReduceDriver;
-    protected MRD<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> mrd;
+    protected GBMapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> gbMapReduceDriver;
     protected PipelineMapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement> pipelineMapReduceDriver;
 
     protected Mapper.Context mapperContextMock;
@@ -127,6 +127,7 @@ public abstract class TestMapReduceDriverUtils {
         newHBaseReaderMapper();
         newConfiguration();
 
+        gbMapReduceDriver = new GBMapReduceDriver(mapDriver, reduceDriver);
 
         mapReduceDriver = MapReduceDriver.newMapReduceDriver(spiedHBaseReaderMapper, spiedVerticesIntoTitanReducer);
         mapReduceDriver.setOutputSerializationConfiguration(conf);
@@ -150,13 +151,13 @@ public abstract class TestMapReduceDriverUtils {
         pipelineMapReduceDriver = PipelineMapReduceDriver.newPipelineMapReduceDriver();
         pipelineMapReduceDriver.*/
 
-        mrd = new MRD(mapDriver, reduceDriver);
+        gbMapReduceDriver = new GBMapReduceDriver(mapDriver, reduceDriver);
 
-        mrd.withConfiguration(conf).withInput(key, result);
+        gbMapReduceDriver.withConfiguration(conf).withInput(key, result);
 
 
 
-        List<Pair<IntWritable, SerializedPropertyGraphElement >> ran = mrd.run();
+        List<Pair<IntWritable, SerializedPropertyGraphElement >> ran = gbMapReduceDriver.run();
         return ran;
     }
 
