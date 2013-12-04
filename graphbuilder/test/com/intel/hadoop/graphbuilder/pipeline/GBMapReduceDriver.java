@@ -53,13 +53,7 @@ public class GBMapReduceDriver<K1, V1, K2, V2, K3, V3> extends
             mapOutputs.addAll(myMapDriver
                     .withCounters(getCounters()).withConfiguration(getConfiguration())
                     .withAll(inputList).withMapInputPath(getMapInputPath()).run());
-            /*if (myCombiner != null) {
-                // User has specified a combiner. Run this and replace the mapper outputs
-                // with the result of the combiner.
-                LOG.debug("Starting combine phase with combiner: " + myCombiner);
-                mapOutputs = new ReducePhaseRunner<K2, V2>().runReduce(
-                        shuffle(mapOutputs), myCombiner);
-            }*/
+
             // Run the reduce phase.
             LOG.debug("Starting reduce phase with reducer: " + myReduceDriver);
             return new ReducePhaseRunner<K3, V3>().runReduce(shuffle(mapOutputs),
