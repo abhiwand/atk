@@ -14,18 +14,18 @@ src=../../../IntelAnalytics
 rm -rf $source_folder
 
 mkdir $source_folder
-cp -R $src/target/*.jar $source_folder
-cp -R $src/bin $source_folder
+shopt -s extglob
+cp -R $src/!(exclude|dist|target|build|src|tests|*.ipynb|ipython|install_pyenv.sh) $source_folder
+cp $src/target/*.jar $source_folder
+rm -rf $source_folder/intel_analytics
 rm -rf $source_folder/bin/*python*
-cp -R $src/dist/* $source_folder
-cp -R $src/conf $source_folder
 rm -rf $source_folder/conf/*python*
+rm -rf $source_folder/conf/intel_analytics.properties
 mkdir $python_folder
 cp -R $src/intel_analytics $python_folder
 
 pushd $python_folder
-tar czvf intel_analytics.tar.gz intel_analytics
-rm -rf intel_analytics
+cp -R $src/intel_analytics .
 popd
 
 cp $source_folder/install_pyenv.sh $python_folder/
