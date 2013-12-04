@@ -124,7 +124,12 @@
        <artifactId>igiraph-algorithms</artifactId>
        <version>${project.version}</version>
     </dependency>
-     <dependency>
+    <dependency>
+       <groupId>${project.groupId}</groupId>
+       <artifactId>feature-engineering</artifactId>
+       <version>${project.version}</version>
+    </dependency>
+    <dependency>
        <groupId>${project.groupId}</groupId>
        <artifactId>igiraph-titan</artifactId>
        <version>${project.version}</version>
