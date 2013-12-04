@@ -156,6 +156,7 @@ if check zmq; then
    test zmq
 fi
 ins pyjavaproperties
+ins mock
 
 # add pydoop to do hdfs, or mapred in python directly
 if check pydoop; then
