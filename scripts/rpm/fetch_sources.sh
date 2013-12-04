@@ -32,6 +32,8 @@ cp $source_folder/install_pyenv.sh $python_folder/
 mkdir $python_folder/bin
 cp -R $src/bin/IntelAnalytics-ipython $python_folder/bin
 mkdir $python_folder/conf
+cp $src/conf/intel_analytics.properties $python_folder/conf
+cp $src/install_pyenv.sh $python_folder
 cp -R $src/conf/ipython_profile $python_folder/conf
 tar czvf $source_folder.tar.gz $source_folder
 tar czvf $python_folder.tar.gz $python_folder
