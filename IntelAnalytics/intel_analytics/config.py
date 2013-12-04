@@ -36,7 +36,7 @@ import datetime
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
 properties_file = os.path.join(
-    os.getenv('INTEL_ANALYTICS_HOME', os.path.dirname(__file__)),
+    os.getenv('INTEL_ANALYTICS_HOME', os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))),
     'conf',
     'intel_analytics.properties')
 
@@ -246,29 +246,33 @@ class Config(object):
         srcfile = srcfile or self.srcfile
         if srcfile is None:
             raise Exception('Configuration source file not specified')
-
-        lines = []
-        #with open(srcfile, 'r') as src: Pig uses jython 2.5, so can't use with
-        src = open(srcfile, 'r')
+        properties = Properties()
+        f = None
         try:
-            while 1:
-                # not the most efficient algo, but need to strip comments first
-                line = src.readline()
-                if not line:
-                    break
-                line = line.strip()
-                if len(line) > 0 and line[0] != '!' and line[0] != '#':
-                    lines.append(line)
+            f = open(srcfile, 'r')
+            properties.load(f)
         finally:
-            src.close()
-        template = Template(os.linesep.join(lines))
-        env_keys = get_keys_from_template(template)
-        env_vars = get_env_vars(env_keys)
-        lines = template.substitute(env_vars).split(os.linesep)
-        default_props = Properties()
-        default_props.load_lines(lines)
+            if f:
+                f.close()
+        subs = os.environ.copy()
+        keys = set(properties.getPropertyDict().copy().keys())
+        #allow 10 levels deep of substitution nesting
+        tries = 1
+        while tries <= 10 and not keys < set(subs.keys()):
+            for (k,v) in properties.getPropertyDict().copy().items():
+                properties[k] = updated = Template(v).safe_substitute(subs)
+                #Add values that don't need further substitution to 
+                #the substitutions that can be used by other properties
+                if not get_keys_from_template(Template(updated)):
+                    subs[k] = properties
+            tries += 1
+        missing = set()
+        for (k,v) in properties.getPropertyDict().items():
+            missing.update(get_keys_from_template(Template(v)))
+        if missing:
+            raise Exception("Could not load configuration: Missing environment variables or properties: " + ", ".join(missing))
         # delay assignment to self until now, after error possibilities
-        self.default_props = default_props
+        self.default_props = properties
         self.srcfile = srcfile
         self.reset()
 
