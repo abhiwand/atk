@@ -1,7 +1,7 @@
 """
-Global configuration class
+The global configuration class.
 
-Provides the 'global_config' singleton
+Provides the 'global_config' singleton.
 """
 
 from pyjavaprops import Properties
@@ -18,7 +18,7 @@ properties_file = '/'.join([os.getenv('INTEL_ANALYTICS_HOME', os.getcwd()),
 
 def get_env_vars(names):
     """
-    returns a dict of requested os env variables
+    Returns a dictionary of the requested OS env variables.
     """
     env_vars = {}
     missing = []
@@ -35,7 +35,7 @@ def get_env_vars(names):
 # todo: move get_keys_from_template to a more general utils module:
 def get_keys_from_template(template):
     """
-    Screens a template for all the keys requires for substitution
+    Screens a template for all of the keys required for substitution.
     """
     from collections import defaultdict
     d = defaultdict(lambda : None)
@@ -47,7 +47,7 @@ def get_keys_from_template(template):
 # todo: move dynamic_import to a more general utils module:
 def dynamic_import(attr_path):
     """
-    Dynamically imports and returns a attribute according to the given path
+    Dynamically imports and returns an attribute according to the given path.
     """
     module_path, attr_name = attr_path.rsplit(".", 1)
 

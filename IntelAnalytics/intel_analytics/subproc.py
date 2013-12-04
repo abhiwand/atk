@@ -1,5 +1,5 @@
 """
-Calls "subprocess"
+Calls "subprocess".
 """
 
 import time
@@ -11,42 +11,42 @@ SIGTERM_TO_SIGKILL_SECS = 2 # seconds to wait before send the big kill
 
 def call(args, heartbeat=0, func=None, timeout=0, shell=False):
     """
-    Runs the command described by args in a subprocess, with or without polling
+    Runs the command described by args in a subprocess, with or without polling.
 
-    Starts a subprocess which runs the command described by args.  It consumes
+    Starts a subprocess, which runs the command described by args.  It consumes
     the subprocess's STDERR and collects its return code.  If called with a
     heartbeat N, then this function will poll the subprocess every N seconds
     to see if the command has completed.
 
-    When subprocess completes, if the return code != 0 then an Exception is
+    When the subprocess completes, if the return code != 0 then an Exception is
     raised containing the return code and the STDERR collected from the
     subprocess.
 
     Parameters
     ----------
 
-    args : list of strings describing the command
+    args : A list of strings describing the command.
 
-    heartbeat : if > 0, then poll every hb seconds
+    heartbeat : If > 0, then poll every hb seconds.
 
-    func : if heartbeat > 0, then this method is called at every heartbeat
+    func : If heartbeat > 0, then this method is called at every heartbeat.
 
-    timeout : if > 0, then raise an Exception if execution of the cmd exceeds
+    timeout : If > 0, then raise an Exception if execution of the cmd exceeds
         that many seconds.
     """
 
-    # non-blocking invocation of subprocess
+    # A non-blocking invocation of the subprocess.
     p = Popen(args, shell=shell, stderr=PIPE)
 
-    # spawn thread to consume subprocess's STDERR in non-blocking manner
+    # Spawns a thread to consume the subprocess's STDERR in a non-blocking manner.
     err_txt = []
     t = Thread(target=_append_output, args=(p.stderr, err_txt))
-    t.daemon = True # thread dies with the called process
+    t.daemon = True # The thread dies with the called process.
     t.start()
 
     rc = None
     if heartbeat > 0:
-        # poll at heartbeat interval
+        # Polls at heartbeat interval.
         rc = p.poll()
         countdown = timeout
         while(rc is None):
@@ -58,7 +58,7 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
                 func()
             rc = p.poll()
     else:
-        rc = p.wait() # block on subprocess
+        rc = p.wait() # block on subprocess.
 
     if rc != 0:
         msg = ''.join(err_txt) if len(err_txt) > 0 else "(no msg provided)"
@@ -67,7 +67,7 @@ def call(args, heartbeat=0, func=None, timeout=0, shell=False):
 
 def _append_output(out, list):
     """
-    continously reads from stream and appends to list of strings
+    Continously reads from the stream and appends to a list of strings.
     """
     for line in iter(out.readline, b''):
         list.append(line)
@@ -76,7 +76,7 @@ def _append_output(out, list):
 def _timeout_abort(process, cmd, timeout):
     """
     Attempts to kill the process (first SIGTERM, then SIGKILL) and raises
-    a timeout exception
+    a timeout exception.
     """
     process.terminate()
     signals = "SIGTERM"
