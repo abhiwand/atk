@@ -46,13 +46,23 @@ if not os.getenv('INTEL_ANALYTICS_HOME'):
     #If we can find a conf folder from here, that's probably home.
     maybe_home = os.path.abspath(os.path.join(_here_folder, ".."))
     maybe_conf = os.path.join(maybe_home, "conf")
-    print maybe_home
     if os.path.exists(maybe_conf):
-        print "setting home"
         os.environ['INTEL_ANALYTICS_HOME'] = maybe_home
+    elif "virtpy" in maybe_home:
+        maybe_home = maybe_home[:maybe_home.index("virtpy")]
+        if os.path.exists(maybe_home):
+            os.environ['INTEL_ANALYTICS_HOME'] = maybe_home
 
 if not os.getenv('HOSTNAME'):
     os.environ['HOSTNAME'] = platform.node()
+
+if not os.getenv('HADOOP_HOME'):
+    if os.path.exists('/home/hadoop/IntelAnalytics/hadoop'):
+        os.environ['HADOOP_HOME'] = '/home/hadoop/IntelAnalytics/hadoop'
+
+if not os.getenv('TITAN_HOME'):
+    if os.path.exists('/home/hadoop/IntelAnalytics/titan-server'):
+        os.environ['TITAN_HOME'] = '/home/hadoop/IntelAnalytics/titan-server'
 
 properties_file = os.path.join(
         os.getenv('INTEL_ANALYTICS_HOME', _here_folder),
