@@ -32,13 +32,32 @@ from string import Template
 import os
 import time
 import datetime
+import platform
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
+_here_folder = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+
+if not os.getenv('INTEL_ANALYTICS_PYTHON'):
+    #If this file is running, we must know where to find our python files...
+    os.environ['INTEL_ANALYTICS_PYTHON'] = _here_folder
+
+if not os.getenv('INTEL_ANALYTICS_HOME'):
+    #If we can find a conf folder from here, that's probably home.
+    maybe_home = os.path.abspath(os.path.join(_here_folder, ".."))
+    maybe_conf = os.path.join(maybe_home, "conf")
+    print maybe_home
+    if os.path.exists(maybe_conf):
+        print "setting home"
+        os.environ['INTEL_ANALYTICS_HOME'] = maybe_home
+
+if not os.getenv('HOSTNAME'):
+    os.environ['HOSTNAME'] = platform.node()
+
 properties_file = os.path.join(
-    os.getenv('INTEL_ANALYTICS_HOME', os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))),
-    'conf',
-    'intel_analytics.properties')
+        os.getenv('INTEL_ANALYTICS_HOME', _here_folder),
+        'conf',
+        'intel_analytics.properties')
 
 
 
