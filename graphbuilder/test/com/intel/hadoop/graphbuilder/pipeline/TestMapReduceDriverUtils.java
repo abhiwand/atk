@@ -4,10 +4,13 @@ import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElemen
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.VerticesIntoTitanReducer;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
+import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.KeyValue;
@@ -25,7 +28,10 @@ import org.apache.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import java.io.IOException;
@@ -33,23 +39,30 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 
 /**
  * An abstract class that can be extended that will hold most of the testing setup need for GB.
  */
+
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(HBaseReaderMapper.class)
 public abstract class TestMapReduceDriverUtils {
     protected Configuration conf;
     protected Logger loggerMock;
 
+    protected Mapper.Context mapContext;
     protected HBaseReaderMapper hBaseReaderMapper;
     protected HBaseReaderMapper spiedHBaseReaderMapper;
     protected MapDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement> mapDriver;
 
-    protected ReduceDriver<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> reduceDriver;
+
+    protected Reducer.Context reduceContext;
     protected VerticesIntoTitanReducer verticesIntoTitanReducer;
     protected VerticesIntoTitanReducer spiedVerticesIntoTitanReducer;
+    protected ReduceDriver<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> reduceDriver;
 
     protected MapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> mapReduceDriver;
     protected GBMapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> gbMapReduceDriver;
@@ -59,6 +72,14 @@ public abstract class TestMapReduceDriverUtils {
     protected Reducer.Context reducerContextMock;
     protected BaseMapper baseMapper;
     protected BaseMapper spiedBaseMapper;
+    protected PropertyGraphElements propertyGraphElements;
+    protected PropertyGraphElements spiedPropertyGraphElements;
+    protected TitanMergedGraphElementWrite titanMergedGraphElementWrite;
+    protected TitanMergedGraphElementWrite spiedTitanMergedGraphElementWrite;
+    protected TitanGraph titanGraph;
+
+    Class klass = SerializedPropertyGraphElementStringTypeVids.class;
+    Class valClass = SerializedPropertyGraphElementStringTypeVids.class;
 
     @BeforeClass
     public static void beforeClass(){
@@ -90,6 +111,12 @@ public abstract class TestMapReduceDriverUtils {
         reducerContextMock = null;
         baseMapper = null;
         spiedBaseMapper = null;
+
+        propertyGraphElements = null;
+        spiedPropertyGraphElements = null;
+        titanMergedGraphElementWrite = null;
+        spiedTitanMergedGraphElementWrite = null;
+        titanGraph = null;
     }
 
     protected VerticesIntoTitanReducer newVerticesIntoTitanReducer(){
@@ -97,6 +124,7 @@ public abstract class TestMapReduceDriverUtils {
             verticesIntoTitanReducer = new VerticesIntoTitanReducer();
             spiedVerticesIntoTitanReducer = spy(verticesIntoTitanReducer);
         }
+
         return spiedVerticesIntoTitanReducer;
     }
 
@@ -111,7 +139,12 @@ public abstract class TestMapReduceDriverUtils {
     protected ReduceDriver newVertexReducer(){
         newVerticesIntoTitanReducer();
 
-        reduceDriver = ReduceDriver.newReduceDriver(verticesIntoTitanReducer);
+        reduceDriver = ReduceDriver.newReduceDriver(spiedVerticesIntoTitanReducer);
+
+        reduceContext = reduceDriver.getContext();
+
+        PowerMockito.when(reduceContext.getMapOutputValueClass()).thenReturn(klass);
+
         return reduceDriver;
     }
 
@@ -119,6 +152,11 @@ public abstract class TestMapReduceDriverUtils {
         newHBaseReaderMapper();
 
         mapDriver = MapDriver.newMapDriver(spiedHBaseReaderMapper);
+
+        mapContext =  mapDriver.getContext();
+
+        PowerMockito.when(mapContext.getMapOutputValueClass()).thenReturn(klass);
+
         return mapDriver;
     }
 
@@ -136,26 +174,9 @@ public abstract class TestMapReduceDriverUtils {
 
     protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runVertexHbaseMR(ImmutableBytesWritable key, Result result) throws IOException {
 
-
-        Mapper.Context mc =  mapDriver.getContext();
-
-        Reducer.Context rc = reduceDriver.getContext();
-
-        Class klass = SerializedPropertyGraphElementStringTypeVids.class;
-
-        PowerMockito.when(rc.getMapOutputValueClass()).thenReturn(klass);
-        PowerMockito.when(mc.getMapOutputValueClass()).thenReturn(klass);
-
-        /*List<Pair<Mapper,Reducer>> pipeline = new ArrayList<Pair<Mapper,Reducer>>();
-        //pipeline.add(new Pair<Mapper, Reducer>(mapDriver,reduceDriver));
-        pipelineMapReduceDriver = PipelineMapReduceDriver.newPipelineMapReduceDriver();
-        pipelineMapReduceDriver.*/
-
         gbMapReduceDriver = new GBMapReduceDriver(mapDriver, reduceDriver);
 
         gbMapReduceDriver.withConfiguration(conf).withInput(key, result);
-
-
 
         List<Pair<IntWritable, SerializedPropertyGraphElement >> ran = gbMapReduceDriver.run();
         return ran;
@@ -196,7 +217,7 @@ public abstract class TestMapReduceDriverUtils {
     protected Mapper.Context newMapperContext(){
         if(mapperContextMock == null){
             mapperContextMock = mock(Mapper.Context.class);
-            Class valClass = SerializedPropertyGraphElementStringTypeVids.class;
+            valClass = SerializedPropertyGraphElementStringTypeVids.class;
             PowerMockito.when(mapperContextMock.getMapOutputValueClass()).thenReturn(valClass);
         }
         return mapperContextMock;
@@ -205,7 +226,7 @@ public abstract class TestMapReduceDriverUtils {
     protected Reducer.Context newReducerContext(){
         if(reducerContextMock == null){
             reducerContextMock = mock(Reducer.Context.class);
-            Class valClass = SerializedPropertyGraphElementStringTypeVids.class;
+            valClass = SerializedPropertyGraphElementStringTypeVids.class;
             PowerMockito.when(reducerContextMock.getMapOutputValueClass()).thenReturn(valClass);
         }
         return reducerContextMock;
@@ -220,7 +241,39 @@ public abstract class TestMapReduceDriverUtils {
         return spiedBaseMapper;
     }
 
+    protected PropertyGraphElements newPropertyGraphElements() throws IllegalAccessException, InstantiationException {
+        newVerticesIntoTitanReducer();
+
+        if(propertyGraphElements == null){
+            titanMergedGraphElementWrite = new TitanMergedGraphElementWrite();
+            spiedTitanMergedGraphElementWrite = spy(titanMergedGraphElementWrite);
+
+            propertyGraphElements = new PropertyGraphElements(spiedTitanMergedGraphElementWrite, null, null, reduceContext, titanGraph,
+                    (SerializedPropertyGraphElement)valClass.newInstance(), verticesIntoTitanReducer.getEdgeCounter(),
+                    verticesIntoTitanReducer.getVertexCounter() );
+
+            spiedPropertyGraphElements = spy(propertyGraphElements);
+
+            verticesIntoTitanReducer.setPropertyGraphElements(spiedPropertyGraphElements);
+        }
+        return spiedPropertyGraphElements;
+    }
+
+    protected Object newMock(Object inst, Class klass){
+        if(inst == null){
+            inst = mock(klass);
+        }
+         return inst;
+    }
+
+    protected TitanGraph newTitanGraphMock(){
+        titanGraph = (TitanGraph) newMock(titanGraph, TitanGraph.class);
+        return titanGraph;
+    }
+
     protected void init() throws Exception {
+        newTitanGraphMock();
+
         newVertexReducer();
         newHbaseMapper();
         newVertexHbaseMR();
@@ -230,6 +283,7 @@ public abstract class TestMapReduceDriverUtils {
         newMapperContext();
         newReducerContext();
         newBaseMapper();
+        newPropertyGraphElements();
     }
 
 

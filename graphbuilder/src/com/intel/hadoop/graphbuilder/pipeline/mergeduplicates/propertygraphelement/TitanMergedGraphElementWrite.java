@@ -36,6 +36,10 @@ public class TitanMergedGraphElementWrite implements MergedGraphElementWrite{
         edgeWrite(edgeSet, edgeCounter, context, graph, outValue, outKey, keyFunction);
     }
 
+    public long getVertexId(com.tinkerpop.blueprints.Vertex bpVertex){
+        return ((TitanElement)bpVertex).getID();
+    }
+
     @Override
     public void vertexWrite(HashMap<Object, Writable> vertexSet,Enum counter, Reducer.Context context, TitanGraph graph,
                             SerializedPropertyGraphElement outValue,
@@ -48,7 +52,7 @@ public class TitanMergedGraphElementWrite implements MergedGraphElementWrite{
 
             bpVertex.setProperty("trueName", vertex.getKey().toString());
 
-            long vertexId = ((TitanElement) bpVertex).getID();
+            long vertexId = getVertexId(bpVertex);//((TitanElement) bpVertex).getID();
 
             Vertex tempVertex = new Vertex();
 
