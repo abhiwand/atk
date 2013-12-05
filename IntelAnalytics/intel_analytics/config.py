@@ -41,6 +41,7 @@ properties_file = os.path.join(
     'intel_analytics.properties')
 
 
+
 def get_time_str():
     """
     get current time stamp
@@ -246,38 +247,29 @@ class Config(object):
         srcfile = srcfile or self.srcfile
         if srcfile is None:
             raise Exception('Configuration source file not specified')
-        properties = Properties()
-        f = None
+
+        lines = []
+        #with open(srcfile, 'r') as src: Pig uses jython 2.5, so can't use with
+        src = open(srcfile, 'r')
         try:
-            f = open(srcfile, 'r')
-            properties.load(f)
+            while 1:
+                # not the most efficient algo, but need to strip comments first
+                line = src.readline()
+                if not line:
+                    break
+                line = line.strip()
+                if len(line) > 0 and line[0] != '!' and line[0] != '#':
+                    lines.append(line)
         finally:
-            if f:
-                f.close()
-        subs = os.environ.copy()
-        todo = properties.getPropertyDict().copy()
-        missing = set()
-        while todo:
-            progress = False
-            for (k,v) in todo.items():
-                template = Template(v)
-                try:
-                    updated = template.substitute(subs)
-                    #Add values that don't need further substitution to 
-                    #the substitutions that can be used by other properties
-                    subs[k] = updated
-                    properties[k] = updated
-                    del todo[k]
-                    progress = True
-                except KeyError:
-                    unsatisfied = get_keys_from_template(template)
-                    missing.update(unsatisfied)
-            if not progress:
-                raise Exception("Could not load configuration: " + 
-                                "Missing environment variables or properties: " + 
-                                ", ".join(missing))
+            src.close()
+        template = Template(os.linesep.join(lines))
+        env_keys = get_keys_from_template(template)
+        env_vars = get_env_vars(env_keys)
+        lines = template.substitute(env_vars).split(os.linesep)
+        default_props = Properties()
+        default_props.load_lines(lines)
         # delay assignment to self until now, after error possibilities
-        self.default_props = properties
+        self.default_props = default_props
         self.srcfile = srcfile
         self.reset()
 
