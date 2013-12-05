@@ -21,16 +21,19 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.pig.EvalFunc;
+import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.pig.data.PropertyGraphElementTuple;
+import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
  * \brief some documentation
  * 
  */
+@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class TORDF extends EvalFunc<Tuple> {
 
 	@Override
