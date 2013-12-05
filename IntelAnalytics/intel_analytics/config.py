@@ -123,11 +123,11 @@ def dynamic_import(attr_path):
         # module = importlib.import_module(module_path) --requires 2.7
         module = __import__(module_path, fromlist=[attr_name])
     except ImportError:
-        raise ValueError("Could not import module '%s'" % (module_path,))
+        raise ImportError("Could not import module '%s'" % (module_path,))
     try:
         attr = getattr(module, attr_name)
     except ImportError:
-        raise ValueError("Error trying to find '%s' in module '%s'" %
+        raise ImportError("Error trying to find '%s' in module '%s'" %
                          (attr_name, module_path))
     return attr
 
