@@ -1,8 +1,7 @@
 --TODO: don't use abs path
-REGISTER '/home/nyigitba/workspace/graphbuilder-2/target/graphbuilder-2.0alpha-with-deps.jar';
 
-DEFINE ExtractJSON com.intel.pig.udf.eval.ExtractJSON();
-DEFINE store_graph com.intel.pig.store.RDFStoreFunc('arguments');
+REGISTER 'target/graphbuilder-2.0alpha-with-deps.jar';
+IMPORT 'pig/intel_gb2.pig';
 
 --JSON example
 json_data = load 'data/tshirts.json' using TextLoader() as (json: chararray);
@@ -25,4 +24,5 @@ tokenized = foreach x generate com.intel.pig.udf.eval.ExtractElement(*);
 describe tokenized;
 dump tokenized;
 
-STORE some_relation INTO '-' USING store_graph();
+-- STORE some_relation INTO '-' USING store_graph();
+-- STORE_GRAPH(final_graph, 'hbase://pagerank_edge_list', 'Titan');

@@ -4,12 +4,13 @@
   <navindex>
     <tab type="mainpage" visible="yes" title="Overview"/>
     <tab type="pages" visible="yes" title="Tutorial" intro=" "/>
-    <tab type="modules" visible="yes" title="" intro=""/>
+    <!--tab type="modules" visible="yes" title="" intro=""/-->
+    <tab type="user" visible="yes" title="Documentation" url="@ref gb_function_doc"/>
     <!--tab type="namespaces" visible="yes" title="">
       <tab type="namespacelist" visible="yes" title="" intro=""/>
       <tab type="namespacemembers" visible="yes" title="" intro=""/>
     </tab-->
-    <tab type="classes" visible="yes" title="Class Documentation">
+    <tab type="classes" visible="yes" title="Javadoc">
       <tab type="classlist" visible="yes" title="" intro=""/>
       <tab type="classindex" visible="$ALPHABETICAL_INDEX" title=""/> 
       <tab type="hierarchy" visible="yes" title="" intro=""/>
