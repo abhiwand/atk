@@ -26,13 +26,13 @@ import commands
 import math
 import os
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_script_path, '..'))
+sys.path.append(os.path.join(base_script_path, '..//'))
 os.environ['PYTHONPATH'] = ':'.join(sys.path)#python scripts that call our pig scripts need this
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.config import global_config as CONFIG_PARAMS
 
-us_states_csv_path = os.path.join(base_script_path, '..', '..', 'feateng', 'test-data/us_states.csv')
-py_scripts_path = os.path.join(base_script_path, '..', 'intel_analytics', 'table' , 'hbase', 'scripts')
+us_states_csv_path = os.path.join(base_script_path, '..//', '..', 'feateng', 'test-data/us_states.csv')
+py_scripts_path = os.path.join(base_script_path, '..//', 'intel_analytics', 'table' , 'hbase', 'scripts')
 
 TEST_TABLE='us_states'
 SUBSTR_LENGTH=3
@@ -233,7 +233,8 @@ print "------------------------------------TESTING IMPORT SCRIPTS---------------
 commands.getoutput('cp %s /tmp/us_states.csv' % (us_states_csv_path))
 print "Copied %s to /tmp/us_states.csv" % (us_states_csv_path)
   
-return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/us_states.csv',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path,
+                                                      '../intel_analytics/table/hbase/scripts/import_csv.py'), '-i', '/tmp/us_states.csv',
                  '-o', TEST_TABLE, '-s', 'state_name:chararray', '-k'])
 
 if return_code:
@@ -245,7 +246,7 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     print "got", data_dict
     assert data_dict[CONFIG_PARAMS['hbase_column_family']+'state_name'] == 'Alabama'
             
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'endswith', '-f', 'state_name', '-n', 'endswith', '-t', 'ENDSWITH', '-a', '["icut"]', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'endswith', '-f', 'state_name', '-n', 'endswith', '-t', 'ENDSWITH', '-a', '["icut"]', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -253,7 +254,7 @@ if return_code:
 validate_endswith()
 print 'Validated ENDSWITH'
 
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'equalsIgnoreCase', '-f', 'state_name', '-n', 'equalsIgnoreCase', '-t', 'EqualsIgnoreCase', '-a', '["connecticut"]', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'equalsIgnoreCase', '-f', 'state_name', '-n', 'equalsIgnoreCase', '-t', 'EqualsIgnoreCase', '-a', '["connecticut"]', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -261,7 +262,7 @@ if return_code:
 validate_equalsignorecase()
 print 'Validated EqualsIgnoreCase'
   
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'indexof', '-f', 'state_name', '-n', 'indexof', '-t', 'INDEXOF', '-a', '["Connecticut",0]', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'indexof', '-f', 'state_name', '-n', 'indexof', '-t', 'INDEXOF', '-a', '["Connecticut",0]', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -269,7 +270,7 @@ if return_code:
 validate_indexof()
 print 'Validated INDEXOF'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'lastindexof', '-f', 'state_name', '-n', 'lastindexof', '-t', 'LAST_INDEX_OF', '-a', '["onnec"]', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'lastindexof', '-f', 'state_name', '-n', 'lastindexof', '-t', 'LAST_INDEX_OF', '-a', '["onnec"]', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -277,7 +278,7 @@ if return_code:
 validate_lastindexof()
 print 'Validated LAST_INDEX_OF'
   
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'lower', '-f', 'state_name', '-n', 'lower', '-t', 'LOWER', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'lower', '-f', 'state_name', '-n', 'lower', '-t', 'LOWER', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -285,7 +286,7 @@ if return_code:
 validate_lower()
 print 'Validated LOWER'
   
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'ltrim', '-f', 'state_name', '-n', 'ltrim', '-t', 'LTRIM', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'ltrim', '-f', 'state_name', '-n', 'ltrim', '-t', 'LTRIM', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -293,7 +294,7 @@ if return_code:
 validate_identical('ltrim')
 print 'Validated LTRIM'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'regex_extract', '-f', 'state_name', '-n', 'regex_extract', '-t', 'REGEX_EXTRACT', '-a', '[r"\\\S*onnec\\\S*",0]', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'regex_extract', '-f', 'state_name', '-n', 'regex_extract', '-t', 'REGEX_EXTRACT', '-a', '[r"\\\S*onnec\\\S*",0]', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -301,7 +302,7 @@ if return_code:
 validate_regexp()
 print 'Validated REGEX_EXTRACT'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'regex_extract_all', '-f', 'state_name', '-n', 'regex_extract_all', '-t', 'REGEX_EXTRACT_ALL', '-a', '[r"(\\\S*onn\\\S*)"]', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'regex_extract_all', '-f', 'state_name', '-n', 'regex_extract_all', '-t', 'REGEX_EXTRACT_ALL', '-a', '[r"(\\\S*onn\\\S*)"]', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -309,7 +310,7 @@ if return_code:
 validate_regextract_all()
 print 'Validated REGEX_EXTRACT_ALL'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'replace', '-f', 'state_name', '-n', 'replace', '-t', 'REPLACE', '-a', '["onnec","xxx"]' , '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'replace', '-f', 'state_name', '-n', 'replace', '-t', 'REPLACE', '-a', '["onnec","xxx"]' , '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -317,7 +318,7 @@ if return_code:
 validate_replace()
 print 'Validated REPLACE'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'rtrim', '-f', 'state_name', '-n', 'rtrim', '-t', 'RTRIM', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'rtrim', '-f', 'state_name', '-n', 'rtrim', '-t', 'RTRIM', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -325,7 +326,7 @@ if return_code:
 validate_identical('rtrim')
 print 'Validated RTRIM'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'startswith', '-f', 'state_name', '-n', 'startswith', '-t', 'STARTSWITH', '-a', '["Connec"]' , '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'startswith', '-f', 'state_name', '-n', 'startswith', '-t', 'STARTSWITH', '-a', '["Connec"]' , '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -333,7 +334,7 @@ if return_code:
 validate_startswith()
 print 'Validated STARTSWITH'
   
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'strsplit', '-f', 'state_name', '-n', 'strsplit', '-t', 'STRSPLIT', '-a', '[" ",2]' , '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'strsplit', '-f', 'state_name', '-n', 'strsplit', '-t', 'STRSPLIT', '-a', '[" ",2]' , '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -341,7 +342,7 @@ if return_code:
 validate_strsplit()
 print 'Validated STRSPLIT'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'substring', '-f', 'state_name', '-n', 'substring', '-t', 'SUBSTRING', '-a', '[0,3]' , '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'substring', '-f', 'state_name', '-n', 'substring', '-t', 'SUBSTRING', '-a', '[0,3]' , '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -349,7 +350,7 @@ if return_code:
 validate_substring()
 print 'Validated SUBSTRING'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'trim', '-f', 'state_name', '-n', 'trim', '-t', 'TRIM', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'trim', '-f', 'state_name', '-n', 'trim', '-t', 'TRIM', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -357,7 +358,7 @@ if return_code:
 validate_identical('trim')
 print 'Validated TRIM'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'upper', '-f', 'state_name', '-n', 'upper', '-t', 'UPPER', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'upper', '-f', 'state_name', '-n', 'upper', '-t', 'UPPER', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -365,7 +366,7 @@ if return_code:
 validate_upper()
 print 'Validated UPPER'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'tokenize', '-f', 'state_name', '-n', 'tokenize', '-t', 'TOKENIZE', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'tokenize', '-f', 'state_name', '-n', 'tokenize', '-t', 'TOKENIZE', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")
@@ -373,7 +374,7 @@ if return_code:
 validate_tokenize()
 print 'Validated TOKENIZE'
  
-args = ['python', os.path.join(py_scripts_path, 'transform.py'), '-i', 'us_states', '-o', 'length', '-f', 'state_name', '-n', 'length', '-t', 'org.apache.pig.piggybank.evaluation.string.LENGTH', '-k']
+args = ['python', os.path.join(py_scripts_path, '../intel_analytics/table/hbase/scripts/transform.py'), '-i', 'us_states', '-o', 'length', '-f', 'state_name', '-n', 'length', '-t', 'org.apache.pig.piggybank.evaluation.string.LENGTH', '-k']
 return_code = subprocess.call(args)
 if return_code:
     raise Exception("Transform script failed!")

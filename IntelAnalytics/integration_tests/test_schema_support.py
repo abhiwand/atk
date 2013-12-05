@@ -27,7 +27,7 @@ import sys
 import string
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_script_path, '..'))
+sys.path.append(os.path.join(base_script_path, '..//'))
 os.environ['PYTHONPATH'] = ':'.join(sys.path)#python scripts that call our pig scripts need this
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.table.hbase.schema import ETLSchema

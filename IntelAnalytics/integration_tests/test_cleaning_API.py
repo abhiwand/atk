@@ -26,7 +26,7 @@ import commands
 import math
 import csv
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_script_path, '..'))
+sys.path.append(os.path.join(base_script_path, '..//'))
 from intel_analytics.table.bigdataframe import BigDataFrame
 from intel_analytics.table.bigdataframe import BigDataFrameException
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
@@ -35,7 +35,7 @@ from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.table import Imputation
 from intel_analytics.config import global_config as CONFIG_PARAMS
 
-worldbank_data_csv_path = os.path.join(base_script_path, '..', '..', 'feateng', 'test-data/worldbank.csv')
+worldbank_data_csv_path = os.path.join(base_script_path, '..//', '..', 'feateng', 'test-data/worldbank.csv')
 cols = ['etl-cf:country', 'etl-cf:year', 'etl-cf:co2_emission', 'etl-cf:co2_emission',
         'etl-cf:electric_consumption','etl-cf:energy_use','etl-cf:fertility','etl-cf:gni',
         'etl-cf:internet_users','etl-cf:life_expectancy','etl-cf:military_expenses','etl-cf:population','etl-cf:hiv_prevelence']

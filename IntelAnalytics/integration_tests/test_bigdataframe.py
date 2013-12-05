@@ -26,7 +26,7 @@ import random
 import sys
 import string
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_script_path, '..'))
+sys.path.append(os.path.join(base_script_path, '..//'))
 
 from intel_analytics.table.bigdataframe import BigDataFrame
 from intel_analytics.table.bigdataframe import BigDataFrameException
