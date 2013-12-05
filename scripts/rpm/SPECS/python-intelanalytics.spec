@@ -41,6 +41,7 @@ cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
 %clean
 
 %post
+ln -sf /usr/lib/IntelAnalytics/intel_analytics /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages
 
 %postun
 
