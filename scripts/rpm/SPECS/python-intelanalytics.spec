@@ -44,7 +44,7 @@ cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
 $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/install_pyenv.sh #install virtual python
 ln -sf /usr/lib/IntelAnalytics/virtpy/bin/activate %{_bindir}/virtpy
 
-ln -sf /usr/lib/IntelAnalytics/intel_analytics /usr/lib/IntelAnalytics/virtpy/lib/python2.7/lib/site-packages
+ln -sf /usr/lib/IntelAnalytics/intel_analytics /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages
 
 %postun
 rm -rf /usr/lib/IntelAnalytics/virtpy #remove vitual python 
