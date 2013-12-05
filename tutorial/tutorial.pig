@@ -4,13 +4,21 @@ REGISTER '/home/nyigitba/workspace/graphbuilder-2/target/graphbuilder-2.0alpha-w
 DEFINE ExtractJSON com.intel.pig.udf.eval.ExtractJSON();
 DEFINE store_graph com.intel.pig.store.RDFStoreFunc('arguments');
 
-json_data = load 'data/books.json' using TextLoader() as (json: chararray);
-extracted_first_books_author = FOREACH json_data GENERATE *, ExtractJSON(json, 'store.book[0].author') as author: chararray;
-extracted_price = FOREACH extracted_first_books_author GENERATE *, ExtractJSON(json, 'store.book.findAll{book -> book.price}[0].price') as price: double;
-extracted_num_books = FOREACH extracted_price GENERATE *, ExtractJSON(json, 'store.book.size()') as num_books: int;
-extracted_some_boolean_field = FOREACH extracted_num_books GENERATE *, ExtractJSON(json, 'store.book[0].boolean_field') as my_boolean: boolean;
-final_relation = FOREACH extracted_some_boolean_field GENERATE author, price, num_books, my_boolean; -- get rid of the json field
-filtered = FILTER final_relation BY my_boolean == '';
+--JSON example
+json_data = load 'data/tshirts.json' using TextLoader() as (json: chararray);
+extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSON(json, 'Sizes[0].Price') as price: double;
+extracted_num_sizes = FOREACH extracted_first_tshirts_price GENERATE *, ExtractJSON(json, 'Sizes.size()') as num_sizes: int;
+extracted_first_color = FOREACH extracted_num_sizes GENERATE *, ExtractJSON(json, 'Colors[0]') as first_color: chararray;
+extracted_cheapest_tshirt_price = FOREACH extracted_first_color GENERATE *, ExtractJSON(json, 'Sizes.Price.min()') as cheapest_price: double;
+extracted_size_of_expensive_thirts = FOREACH extracted_first_color GENERATE *, ExtractJSON(json, 'Sizes.findAll{Sizes -> Sizes.Price>90}.Size[0]') as tshirt_size: chararray;
+
+
+--XML example
+DEFINE XMLLoader com.intel.pig.load.XMLLoader('tshirts');
+xml_data = LOAD 'data/tshirts.xml' using com.intel.pig.load.XMLLoader('tshirts') as (xml: chararray);
+
+REGISTER '/home/nyigitba/pig-0.12.0/contrib/piggybank/java/piggybank.jar';
+xml_data = LOAD 'data/tshirts.xml' using org.apache.pig.piggybank.storage.XMLLoader('tshirts') as (xml: chararray);
 
 x = load '/etc/passwd' using PigStorage(':') as (username:chararray, f1: chararray, f2: chararray, f3:chararray, f4:chararray);
 tokenized = foreach x generate com.intel.pig.udf.eval.ExtractElement(*); 

@@ -35,7 +35,7 @@ import org.junit.runner.JUnitCore;
 
 public class TestExtractJSON {
 	EvalFunc<?> testFn;
-	String testJson = "{ \"store\": {\"book\": [{ \"category\": \"reference\", \"empty_field\":\"\", \"boolean_field\": true, \"null_field\": null, \"integer_field\": 2,\"author\": \"Nigel Rees\",\"title\": \"Sayings of the Century\", \"price\": 8.95},{ \"category\": \"fiction\",\"author\": \"Evelyn Waugh\", \"title\": \"Sword of Honour\", \"price\": 12.99,\"isbn\": \"0-553-21311-3\"}],\"bicycle\": {\"color\": \"red\",\"price\": 19.95}}}";
+	String testJson = "{ \"Name\": \"T-Shirt 2\", \"Sizes\": [ { \"Size\": \"Large\", \"Price\": 20.00 }, { \"Size\": \"Medium\", \"Price\": 11.00 }, { \"Size\": \"Small\", \"Price\": 5.00 } ], \"Colors\": [ \"Black\", \"White\" ]}";
 
 	@Before
 	public void setup() throws Exception {
@@ -49,68 +49,34 @@ public class TestExtractJSON {
 	public void testSuccessCases() throws IOException {
 		System.out.println("Testing success cases");
 
-		String testQuery = "store.book[0].author";
+		String testQuery = "Sizes[0].Price";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
 
 		String result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("First book's author does not match!", result,
-				"Nigel Rees");
+		assertEquals("Price is not correct!", result,
+				"20.0");
 
-		inTuple.set(1, "store.book[0].empty_field");
+		inTuple.set(1, "Sizes.size()");
 		result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Result should have been empty string!", result, "");
+		assertEquals("Size is not correct!", result, "3");
 
-		inTuple.set(1, "store.book[0].price");
+		inTuple.set(1, "Colors[0]");
 		result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Result should have been 8.95!", result, "8.95");
+		assertEquals("Color is not correct!", result, "Black");
 
-		inTuple.set(1, "store.book[0].integer_field");
+		inTuple.set(1, "Colors.size()");
 		result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Result should have been 2!", result, "2");
+		assertEquals("Color size is not correct!", result, "2");
 
-		inTuple.set(1, "store.book[0].boolean_field");
+		inTuple.set(1, "Sizes.Price.min()");
 		result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Result should have been true!", result, "true");
+		assertEquals("Cheapest price is not correct!", result, "5.0");
 
-		inTuple.set(1, "store.book.findAll{book -> book.price}[0].price");
+		inTuple.set(1, "Sizes.findAll{Sizes -> Sizes.Price>18}.Size[0]");
 		result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Result should have been 8.95!", result, "8.95");
-
-		inTuple.set(1, "store.book.size()");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Result should have been 2!", result, "2");
-
-		//
-		// result =
-		// with(testJson).get("store.book.findAll{book -> book.price > 10 }[0]").toString();
-		// System.out.println(">>> " + result);
-		// String expected =
-		// "{\"author\":\"Evelyn Waugh\",\"title\":\"Sword of Honour\",\"category\":\"fiction\",\"price\":12.99,\"isbn\":\"0-553-21311-3\"}";
-		// System.out.println("<<<" + expected);
-		// assertEquals("Result should have been " + expected + " !", result,
-		// expected);
-		//
-		// >>> {author=Evelyn Waugh, title=Sword of Honour, category=fiction,
-		// price=12.99, isbn=0-553-21311-3}
-		// <<<{"author":"Evelyn Waugh","title":"Sword of Honour","category":"fiction","price":12.99,"isbn":"0-553-21311-3"}
-
-		//
-		// result =
-		// with(testJson).get("store.book.findAll{book -> book.isbn}").toString();
-		// String expected =
-		// "{\"author\":\"Evelyn Waugh\",\"title\":\"Sword of Honour\",\"category\":\"fiction\",\"price\":12.99,\"isbn\":\"0-553-21311-3\"}";
-		// System.out.println(">>> " + result);
-		// System.out.println("<<<" + expected);
-		// assertEquals("Result should have been " + expected + " !", result,
-		// expected);
-		// >>> [{author=Evelyn Waugh, title=Sword of Honour, category=fiction,
-		// price=12.99, isbn=0-553-21311-3}]
-		// <<<{"author":"Evelyn Waugh","title":"Sword of Honour","category":"fiction","price":12.99,"isbn":"0-553-21311-3"}
-
-		// result = with(testJson).get("store.book.author").toString();
-		// assertEquals("Result should have been 8.95!", result, "8.95");
+		assertEquals("Size is not correct!", result, "Large");
 
 	}
 
@@ -118,7 +84,7 @@ public class TestExtractJSON {
 	public void testFailureCase1() throws IOException {
 		System.out.println("Testing failure cases");
 
-		String testQuery = "store.book.author";
+		String testQuery = "Sizes.Price";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
@@ -129,7 +95,7 @@ public class TestExtractJSON {
 	public void testFailureCase2() throws IOException {
 		System.out.println("Testing failure cases");
 
-		String testQuery = "store.book.findAll{book -> book.price}";
+		String testQuery = "Colors";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
@@ -140,13 +106,13 @@ public class TestExtractJSON {
 	public void testFailureCase3() throws IOException {
 		System.out.println("Testing failure cases");
 
-		String testQuery = "store.book.findAll{book -> book.author}";
+		String testQuery = "Sizes.findAll{Sizes -> Sizes.Price>5}";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
 		testFn.exec(inTuple);
 	}
-
+	
 	@After
 	public void done() {
 		System.out.println("*** Done with the ExtractJSON tests ***");
