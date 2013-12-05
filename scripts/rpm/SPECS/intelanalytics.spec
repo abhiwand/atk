@@ -37,6 +37,7 @@ rm -fr $RPM_BUILD_ROOT
 mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/conf
+mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/ipython
 
 cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 
@@ -46,7 +47,17 @@ ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/usr/lib/IntelA
 ln -sf %{_sysconfdir}/hadoop/conf/hadoop-env.sh %{buildroot}/usr/lib/IntelAnalytics/conf/hadoop-env.sh
 ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}/usr/lib/IntelAnalytics/conf/hadoop-site.xml
 
+%post
+SITE_PACKAGES=/usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/
+mkdir -p $SITE_PACKAGES
 
+#untar source to python
+tar xvf /usr/lib/IntelAnalytics/intel_analytics.tar.gz -C /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/
+
+ln -sf $SITE_PACKAGES/intel_analytics/intel_analytics.properties /usr/lib/IntelAnalytics/conf/intel_analytics.properties
+
+%postun
+rm -rf $SITE_PACKAGES/intel_analytics
 %clean
 
 rm -rf $RPM_BUILD_ROOT
