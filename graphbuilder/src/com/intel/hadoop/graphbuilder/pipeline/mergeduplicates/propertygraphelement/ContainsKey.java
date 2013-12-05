@@ -2,13 +2,12 @@ package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelem
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementType;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
 import org.apache.hadoop.io.Writable;
 
-import java.util.Date;
 import java.util.HashMap;
 
-public class ContainsKey implements PropertyGraphElementType {
+public class ContainsKey implements PropertyGraphElementTypeCallback {
     private HashMap<EdgeID, Writable>   edgeSet;
     private HashMap<Object, Writable>   vertexSet;
     /*private class Arguments {

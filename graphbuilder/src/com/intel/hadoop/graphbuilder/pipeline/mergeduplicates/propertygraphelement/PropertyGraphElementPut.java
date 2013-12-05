@@ -3,14 +3,14 @@ package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelem
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementType;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.io.Writable;
 
 import java.util.HashMap;
 
-public class PropertyGraphElementPut implements PropertyGraphElementType{
+public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback {
     private HashMap<EdgeID, Writable> edgeSet;
     private HashMap<Object, Writable>   vertexSet;
     private Functional edgeReducerFunction;

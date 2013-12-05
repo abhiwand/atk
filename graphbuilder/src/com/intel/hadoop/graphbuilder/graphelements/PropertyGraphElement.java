@@ -1,8 +1,6 @@
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementId;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementObject;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementType;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.*;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -24,19 +22,27 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
 
     private PropertyGraphElementObject propertyGraphElementObject;
     private PropertyGraphElementId propertyGraphElementId;
+    private PropertyGraphElementType propertyGraphElementType;
+    private PropertyGraphElementDst propertyGraphElementDst;
+    private PropertyGraphElementSrc propertyGraphElementSrc;
+    private PropertyGraphElementLabel propertyGraphElementLabel;
 
     public PropertyGraphElement(){
         propertyGraphElementObject = new PropertyGraphElementObject();
         propertyGraphElementId = new PropertyGraphElementId();
+        propertyGraphElementType = new PropertyGraphElementType();
+        propertyGraphElementDst = new PropertyGraphElementDst();
+        propertyGraphElementSrc = new PropertyGraphElementSrc();
+        propertyGraphElementLabel = new PropertyGraphElementLabel();
     }
 
-    public  <T> T typeCallback(PropertyGraphElementType propertyGraphElementTypeCallback, Object ... args){
+    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback, Object ... args){
         if(this.isEdge()){
-            return propertyGraphElementTypeCallback.edge(this, args);
+            return propertyGraphElementTypeCallbackCallback.edge(this, args);
         }else if(this.isVertex()){
-            return propertyGraphElementTypeCallback.vertex(this, args);
+            return propertyGraphElementTypeCallbackCallback.vertex(this, args);
         }else if(this.isNull()){
-            return propertyGraphElementTypeCallback.nullElement(this, args);
+            return propertyGraphElementTypeCallbackCallback.nullElement(this, args);
         }
         return null;
     }
@@ -48,6 +54,24 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     public Object getId(){
         return this.typeCallback(propertyGraphElementId);
     }
+
+    public Enum getType(){
+        return this.typeCallback(propertyGraphElementType);
+    }
+
+    public Object getDst(){
+        return this.typeCallback(propertyGraphElementDst);
+    }
+
+    public Object getSrc(){
+        return this.typeCallback(propertyGraphElementSrc);
+    }
+
+    public Object getLabel(){
+        return this.typeCallback(propertyGraphElementLabel);
+    }
+
+
 }
 
 

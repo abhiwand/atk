@@ -4,7 +4,7 @@ package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import org.apache.hadoop.io.WritableComparable;
 
-public class PropertyGraphElementId implements PropertyGraphElementType {
+public class PropertyGraphElementId implements PropertyGraphElementTypeCallback {
     @Override
     public EdgeID edge(PropertyGraphElement propertyGraphElement, Object ... args) {
         Edge edge = (Edge)propertyGraphElement;

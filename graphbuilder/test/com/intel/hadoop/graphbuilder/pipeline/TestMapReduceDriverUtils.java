@@ -14,11 +14,13 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuilding
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.thinkaurelius.titan.core.TitanGraph;
+import org.apache.commons.collections.iterators.ArrayIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -40,10 +42,14 @@ import org.powermock.reflect.Whitebox;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyPair;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
@@ -177,11 +183,16 @@ public abstract class TestMapReduceDriverUtils {
         return mapReduceDriver;
     }
 
-    protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runVertexHbaseMR(ImmutableBytesWritable key, Result result) throws IOException {
+    protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runVertexHbaseMR(
+            Pair<ImmutableBytesWritable,Result>[] pairs) throws IOException {
 
         gbMapReduceDriver = new GBMapReduceDriver(mapDriver, reduceDriver);
 
-        gbMapReduceDriver.withConfiguration(conf).withInput(key, result);
+        gbMapReduceDriver.withConfiguration(conf);
+
+        for(Pair<ImmutableBytesWritable, Result> kv: pairs){
+            gbMapReduceDriver.withInput(kv);
+        }
 
         List<Pair<IntWritable, SerializedPropertyGraphElement >> ran = gbMapReduceDriver.run();
         return ran;
@@ -322,6 +333,45 @@ public abstract class TestMapReduceDriverUtils {
     }
 
     /**
+     * setup our sample data for our Results column list
+     *
+     * @return Result column list
+     */
+    public static final Result sampleDataBob() {
+        ArrayList<KeyValue> list = new ArrayList<KeyValue>();
+        //alice
+        list.add(newKeyValue("row2", "cf", "age", "45", "1381447886360"));
+        list.add(newKeyValue("row2", "cf", "dept", "INTELLABS", "1381447886375"));
+        list.add(newKeyValue("row2", "cf", "id", "00002", "1381447886305"));
+        list.add(newKeyValue("row2", "cf", "manager", "Zed", "1381447886386"));
+        list.add(newKeyValue("row2", "cf", "name", "Bob", "1381447886328"));
+        list.add(newKeyValue("row2", "cf", "underManager", "1yrs", "1381447886400"));
+
+        return new Result(list);
+    }
+
+    /**
+     * help debug the wierdness with Hbase.Client.Results. prints all the sample data to see if any values are coming
+     * back null
+     *
+     * @throws UnsupportedEncodingException
+     */
+    public final void printSampleData(Result result) throws UnsupportedEncodingException {
+        printSampleRow(result, "cf", "age");
+        printSampleRow(result, "cf", "dept");
+        printSampleRow(result, "cf", "id");
+        printSampleRow(result, "cf", "manager");
+        printSampleRow(result, "cf", "name");
+        printSampleRow(result, "cf", "underManager");
+    }
+
+    public final void printSampleRow(Result result, String cf, String qualifier) throws UnsupportedEncodingException {
+        System.out.println((cf + ":" + qualifier + " value: " +
+                Bytes.toString(result.getValue(cf.getBytes(HConstants.UTF8_ENCODING),
+                        qualifier.getBytes(HConstants.UTF8_ENCODING)))));
+    }
+
+    /**
      * small wrapper method to help us create KeyValues. All the input values are strings that will be converted to
      * bytes with String.getBytes()
      *
@@ -350,18 +400,33 @@ public abstract class TestMapReduceDriverUtils {
      * will change no matter what our input data is
      *
      * @param pair             the writable pair from the mapper
-     * @param graphElementType the type of graph element edge/vertex
      * @param edge             the edge object to verify against
      * @param vertex           the vertex object to verify against
      */
-    public final void verifyPairSecond(Pair<IntWritable, SerializedPropertyGraphElement> pair, String graphElementType,
-                                       Edge<StringType> edge, Vertex<StringType> vertex) throws IllegalAccessException, InstantiationException {
+    public final void verifyPairSecond(Pair<IntWritable, SerializedPropertyGraphElement> pair,
+                                       SerializedPropertyGraphElement graphElement)
+            throws IllegalAccessException, InstantiationException {
 
-        if (graphElementType.equals("EDGE")) {
-            assert(pair.getSecond().graphElement().isEdge());
-        } else {
-            assert(pair.getSecond().graphElement().isVertex());
+        assertEquals("graph types must match", pair.getSecond().graphElement().getType(),
+                graphElement.graphElement().getType());
+
+        Edge edge = null;
+        Vertex vertex = null;
+        graphElement.graphElement().get();
+        if(graphElement.graphElement().isEdge()){
+            edge = (Edge) graphElement.graphElement().get();
+        }else if(graphElement.graphElement().isVertex()){
+            vertex = (Vertex) graphElement.graphElement().get();
+        }else {
+            //either null or unrecognized type
+            fail("null or unrecognized graph type");
         }
+
+        graphElement.graphElement();
+
+        assertTrue(pair.getSecond().graphElement().getSrc().equals(edge.getSrc()));
+        assertTrue(pair.getSecond().graphElement().getDst().equals(edge.getDst()));
+        assertTrue(pair.getSecond().graphElement().getLabel().equals(edge.getEdgeLabel()));
 
         if (pair.getSecond().graphElement().isEdge()) {
             Edge edgeFromPair = (Edge) pair.getSecond().graphElement();

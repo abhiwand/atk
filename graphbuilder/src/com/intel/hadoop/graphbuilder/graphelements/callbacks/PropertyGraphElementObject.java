@@ -3,9 +3,8 @@ package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.tinkerpop.gremlin.Tokens;
 
-public class PropertyGraphElementObject implements PropertyGraphElementType {
+public class PropertyGraphElementObject implements PropertyGraphElementTypeCallback {
 
     @Override
     public Edge edge(PropertyGraphElement propertyGraphElement, Object ... args) {

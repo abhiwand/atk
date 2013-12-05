@@ -6,7 +6,7 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 
-public class PropertyGraphElementPropertyMap implements PropertyGraphElementType{
+public class PropertyGraphElementPropertyMap implements PropertyGraphElementTypeCallback {
     @Override
     public PropertyMap edge(PropertyGraphElement propertyGraphElement, Object ... args) {
         return ((Edge)propertyGraphElement.get()).getProperties();
