@@ -2,4 +2,4 @@
 
 DEFINE ExtractJSON com.intel.pig.udf.eval.ExtractJSON();
 DEFINE ExtractElement com.intel.pig.udf.eval.ExtractElement();
-DEFINE store_graph com.intel.pig.store.RDFStoreFunc('arguments');
+DEFINE TORDF com.intel.pig.udf.eval.TORDF();

@@ -22,8 +22,10 @@ DUMP xml_data;
 
 x = LOAD '/etc/passwd' USING PigStorage(':') AS (username:chararray, f1: chararray, f2: chararray, f3:chararray, f4:chararray);
 tokenized = FOREACH x GENERATE ExtractElement(*); 
-DESCRIBE tokenized;
-DUMP tokenized;
+dump tokenized;
+rdf_triples = FOREACH tokenized GENERATE TORDF(*);
+DESCRIBE rdf_triples;
+DUMP rdf_triples;
 
 -- STORE some_relation INTO '-' USING store_graph();
 -- STORE_GRAPH(final_graph, 'hbase://pagerank_edge_list', 'Titan');
