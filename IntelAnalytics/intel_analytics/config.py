@@ -255,22 +255,27 @@ class Config(object):
             if f:
                 f.close()
         subs = os.environ.copy()
-        keys = set(properties.getPropertyDict().copy().keys())
-        #allow 10 levels deep of substitution nesting
-        tries = 1
-        while tries <= 10 and not keys < set(subs.keys()):
-            for (k,v) in properties.getPropertyDict().copy().items():
-                properties[k] = updated = Template(v).safe_substitute(subs)
-                #Add values that don't need further substitution to 
-                #the substitutions that can be used by other properties
-                if not get_keys_from_template(Template(updated)):
-                    subs[k] = properties
-            tries += 1
+        todo = properties.getPropertyDict().copy()
         missing = set()
-        for (k,v) in properties.getPropertyDict().items():
-            missing.update(get_keys_from_template(Template(v)))
-        if missing:
-            raise Exception("Could not load configuration: Missing environment variables or properties: " + ", ".join(missing))
+        while todo:
+            progress = False
+            for (k,v) in todo.items():
+                template = Template(v)
+                try:
+                    updated = template.substitute(subs)
+                    #Add values that don't need further substitution to 
+                    #the substitutions that can be used by other properties
+                    subs[k] = updated
+                    properties[k] = updated
+                    del todo[k]
+                    progress = True
+                except KeyError:
+                    unsatisfied = get_keys_from_template(template)
+                    missing.update(unsatisfied)
+            if not progress:
+                raise Exception("Could not load configuration: " + 
+                                "Missing environment variables or properties: " + 
+                                ", ".join(missing))
         # delay assignment to self until now, after error possibilities
         self.default_props = properties
         self.srcfile = srcfile
