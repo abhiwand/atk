@@ -241,7 +241,7 @@ public abstract class TestMapReduceDriverUtils {
         return spiedBaseMapper;
     }
 
-    protected PropertyGraphElements newPropertyGraphElements() throws IllegalAccessException, InstantiationException {
+    protected PropertyGraphElements newPropertyGraphElements() throws Exception {
         newVerticesIntoTitanReducer();
 
         if(propertyGraphElements == null){
@@ -254,7 +254,9 @@ public abstract class TestMapReduceDriverUtils {
 
             spiedPropertyGraphElements = spy(propertyGraphElements);
 
-            verticesIntoTitanReducer.setPropertyGraphElements(spiedPropertyGraphElements);
+            PowerMockito.whenNew(PropertyGraphElements.class).withAnyArguments().thenReturn(spiedPropertyGraphElements);
+
+            //verticesIntoTitanReducer.setPropertyGraphElements(spiedPropertyGraphElements);
         }
         return spiedPropertyGraphElements;
     }
