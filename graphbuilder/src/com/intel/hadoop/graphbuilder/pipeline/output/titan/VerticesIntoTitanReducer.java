@@ -147,10 +147,6 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
 
     }
 
-    public void setPropertyGraphElements(PropertyGraphElements propertyGraphElements) {
-        this.propertyGraphElements = propertyGraphElements;
-    }
-
     public  Enum getEdgeCounter(){
         return Counters.NUM_EDGES;
     }

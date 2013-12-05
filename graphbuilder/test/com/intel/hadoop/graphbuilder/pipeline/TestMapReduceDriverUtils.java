@@ -1,9 +1,6 @@
 package com.intel.hadoop.graphbuilder.pipeline;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
@@ -14,6 +11,7 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuilding
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.graphdb.vertices.StandardVertex;
 import org.apache.commons.collections.iterators.ArrayIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HConstants;
@@ -291,6 +289,11 @@ public abstract class TestMapReduceDriverUtils {
         return titanGraph;
     }
 
+
+    public com.tinkerpop.blueprints.Vertex vertexMock(){
+        return mock(StandardVertex.class);
+    }
+
     protected void init() throws Exception {
         newTitanGraphMock();
 
@@ -400,54 +403,34 @@ public abstract class TestMapReduceDriverUtils {
      * will change no matter what our input data is
      *
      * @param pair             the writable pair from the mapper
-     * @param edge             the edge object to verify against
-     * @param vertex           the vertex object to verify against
+     *
      */
     public final void verifyPairSecond(Pair<IntWritable, SerializedPropertyGraphElement> pair,
                                        SerializedPropertyGraphElement graphElement)
             throws IllegalAccessException, InstantiationException {
 
+
         assertEquals("graph types must match", pair.getSecond().graphElement().getType(),
                 graphElement.graphElement().getType());
+        PropertyGraphElement jobGraphElement = pair.getSecond().graphElement();
+        PropertyGraphElement givenGraphElement = graphElement.graphElement();
 
-        Edge edge = null;
-        Vertex vertex = null;
-        graphElement.graphElement().get();
-        if(graphElement.graphElement().isEdge()){
-            edge = (Edge) graphElement.graphElement().get();
-        }else if(graphElement.graphElement().isVertex()){
-            vertex = (Vertex) graphElement.graphElement().get();
-        }else {
-            //either null or unrecognized type
-            fail("null or unrecognized graph type");
+
+        assertTrue("match src", (jobGraphElement.getSrc() == null && givenGraphElement.getSrc() == null)
+                || jobGraphElement.getSrc().equals(givenGraphElement.getSrc()));
+        assertTrue("match dst", (jobGraphElement.getDst() == null && givenGraphElement.getDst() == null)
+                || jobGraphElement.getDst().equals(givenGraphElement.getDst()));
+        assertTrue("match label", (jobGraphElement.getLabel() == null && givenGraphElement.getLabel() == null)
+                || jobGraphElement.getLabel().equals(givenGraphElement.getLabel()));
+        assertTrue("match id", (jobGraphElement.getId() == null && givenGraphElement.getId() == null)
+                || jobGraphElement.getId().equals(givenGraphElement.getId()));
+
+        for (Writable writable : jobGraphElement.getProperties().getPropertyKeys()) {
+            String key = ((StringType) writable).get();
+            Object value = jobGraphElement.getProperty(key);
+            assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value.toString()),
+                    givenGraphElement.getProperty(key).equals(value));
         }
 
-        graphElement.graphElement();
-
-        assertTrue(pair.getSecond().graphElement().getSrc().equals(edge.getSrc()));
-        assertTrue(pair.getSecond().graphElement().getDst().equals(edge.getDst()));
-        assertTrue(pair.getSecond().graphElement().getLabel().equals(edge.getEdgeLabel()));
-
-        if (pair.getSecond().graphElement().isEdge()) {
-            Edge edgeFromPair = (Edge) pair.getSecond().graphElement();
-            assertTrue(edgeFromPair.getSrc().equals(edge.getSrc()));
-            assertTrue(edgeFromPair.getDst().equals(edge.getDst()));
-            assertTrue(edgeFromPair.getEdgeLabel().equals(edge.getEdgeLabel()));
-            for (Writable writable : edgeFromPair.getProperties().getPropertyKeys()) {
-                String key = ((StringType) writable).get();
-                Object value = edgeFromPair.getProperty(key);
-                assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value),
-                        edge.getProperty(key).equals(value));
-            }
-        } else if (pair.getSecond().graphElement().isVertex()) {
-            Vertex vertexFromPair = (Vertex) pair.getSecond().graphElement();
-            assertTrue("", vertexFromPair.getVertexId().equals(vertex.getVertexId()));
-            for (Writable writable : vertexFromPair.getProperties().getPropertyKeys()) {
-                String key = ((StringType) writable).get();
-                Object value = vertexFromPair.getProperty(key);
-                assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value.toString()),
-                        vertex.getProperty(key).equals(value) );
-            }
-        }
     }
 }
