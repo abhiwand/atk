@@ -48,20 +48,13 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 
 	@Override
 	public DataByteArray exec(Tuple input) throws IOException {
-		if (input == null || input.size() == 0)
+
+		if (input == null || input.size() == 0) {
+			warn("Input tuple is null or empty", PigWarning.UDF_WARNING_1);
 			return null;
+		}
 
-		/*
-		 * our transform scripts return bytearrays so in chained transform calls
-		 * we will receive byte arrays
-		 */
-		Object in = input.get(0);
-		String inString = null;
-		if (in instanceof DataByteArray)
-			inString = ((DataByteArray) in).toString();
-		else
-			inString = (String) in;
-
+		String inString = (String) input.get(0);
 		String query = (String) input.get(1);
 
 		Object queryResult = null;
@@ -74,7 +67,6 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 			return null;
 		}
 
-		/* null fields are supported in json */
 		if (queryResult == null) {
 			return new DataByteArray("");
 		} else if (queryResult instanceof String) {
@@ -102,7 +94,6 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 			BigDecimal result = (BigDecimal) queryResult;
 			return new DataByteArray(result.toString());
 		} else if (queryResult instanceof List) {
-
 			List result = (List) queryResult;
 			System.out.println("got a list result " + result.size());
 			/*
@@ -116,8 +107,7 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 		}
 
 		/*
-		 * OK, we have gone through all the data types. If none of them fit,
-		 * throw an exception.
+		 * OK, we have gone through all the data types and none of them fits.
 		 */
 
 		String errorMessage = null;
@@ -128,7 +118,6 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 			errorMessage = "The query returned a type that is not supported: "
 					+ queryResult.getClass();
 		}
-
 		throw new IllegalArgumentException(errorMessage);
 	}
 }

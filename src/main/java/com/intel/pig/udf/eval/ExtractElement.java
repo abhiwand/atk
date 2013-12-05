@@ -1,4 +1,4 @@
-package com.intel.pig.udf;
+package com.intel.pig.udf.eval;
 
 import java.io.IOException;
 
@@ -18,6 +18,10 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 
+/**
+ * \brief some documentation
+ *
+ */
 public class ExtractElement extends EvalFunc<Tuple> {
 
 	@Override
@@ -28,6 +32,8 @@ public class ExtractElement extends EvalFunc<Tuple> {
 		PropertyGraphElementStringTypeVids p = new PropertyGraphElementStringTypeVids();
 		Vertex<StringType> vertex = new Vertex<StringType>(new StringType(
 				"test_vid"));
+		vertex.setProperty("test_prop1", new StringType("test_val1"));
+		vertex.setProperty("test_prop2", new StringType("test_val2"));
 		p.init(GraphElementType.VERTEX, vertex);
 		byte type = DataType.findType(t);
 		System.out.println(">>>type " + type);
