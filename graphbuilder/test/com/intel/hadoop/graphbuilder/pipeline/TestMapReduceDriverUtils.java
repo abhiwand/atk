@@ -1,7 +1,9 @@
 package com.intel.hadoop.graphbuilder.pipeline;
 
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
@@ -10,6 +12,7 @@ import com.intel.hadoop.graphbuilder.pipeline.output.titan.VerticesIntoTitanRedu
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HConstants;
@@ -17,6 +20,7 @@ import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mrunit.PipelineMapReduceDriver;
@@ -39,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static junit.framework.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
@@ -48,7 +53,7 @@ import static org.powermock.api.mockito.PowerMockito.spy;
  */
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest(HBaseReaderMapper.class)
+@PrepareForTest({PropertyGraphElements.class, VerticesIntoTitanReducer.class, HBaseReaderMapper.class})
 public abstract class TestMapReduceDriverUtils {
     protected Configuration conf;
     protected Logger loggerMock;
@@ -182,6 +187,7 @@ public abstract class TestMapReduceDriverUtils {
         return ran;
     }
 
+
     protected Logger newLoggerMock(){
         if( loggerMock == null){
             loggerMock = mock(Logger.class);
@@ -248,7 +254,8 @@ public abstract class TestMapReduceDriverUtils {
             titanMergedGraphElementWrite = new TitanMergedGraphElementWrite();
             spiedTitanMergedGraphElementWrite = spy(titanMergedGraphElementWrite);
 
-            propertyGraphElements = new PropertyGraphElements(spiedTitanMergedGraphElementWrite, null, null, reduceContext, titanGraph,
+            propertyGraphElements = new PropertyGraphElements(spiedTitanMergedGraphElementWrite, null, null,
+                    reduceContext, titanGraph,
                     (SerializedPropertyGraphElement)valClass.newInstance(), verticesIntoTitanReducer.getEdgeCounter(),
                     verticesIntoTitanReducer.getVertexCounter() );
 
@@ -276,7 +283,12 @@ public abstract class TestMapReduceDriverUtils {
     protected void init() throws Exception {
         newTitanGraphMock();
 
+
+
         newVertexReducer();
+
+        newPropertyGraphElements();
+
         newHbaseMapper();
         newVertexHbaseMR();
         newLoggerMock();
@@ -285,7 +297,7 @@ public abstract class TestMapReduceDriverUtils {
         newMapperContext();
         newReducerContext();
         newBaseMapper();
-        newPropertyGraphElements();
+
     }
 
 
@@ -331,5 +343,46 @@ public abstract class TestMapReduceDriverUtils {
             return null;
         }
         return k1;
+    }
+
+    /**
+     * verify the value of the context.write(key, value). we don't care about the int writable because it's a key and
+     * will change no matter what our input data is
+     *
+     * @param pair             the writable pair from the mapper
+     * @param graphElementType the type of graph element edge/vertex
+     * @param edge             the edge object to verify against
+     * @param vertex           the vertex object to verify against
+     */
+    public final void verifyPairSecond(Pair<IntWritable, SerializedPropertyGraphElement> pair, String graphElementType,
+                                       Edge<StringType> edge, Vertex<StringType> vertex) throws IllegalAccessException, InstantiationException {
+
+        if (graphElementType.equals("EDGE")) {
+            assert(pair.getSecond().graphElement().isEdge());
+        } else {
+            assert(pair.getSecond().graphElement().isVertex());
+        }
+
+        if (pair.getSecond().graphElement().isEdge()) {
+            Edge edgeFromPair = (Edge) pair.getSecond().graphElement();
+            assertTrue(edgeFromPair.getSrc().equals(edge.getSrc()));
+            assertTrue(edgeFromPair.getDst().equals(edge.getDst()));
+            assertTrue(edgeFromPair.getEdgeLabel().equals(edge.getEdgeLabel()));
+            for (Writable writable : edgeFromPair.getProperties().getPropertyKeys()) {
+                String key = ((StringType) writable).get();
+                Object value = edgeFromPair.getProperty(key);
+                assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value),
+                        edge.getProperty(key).equals(value));
+            }
+        } else if (pair.getSecond().graphElement().isVertex()) {
+            Vertex vertexFromPair = (Vertex) pair.getSecond().graphElement();
+            assertTrue("", vertexFromPair.getVertexId().equals(vertex.getVertexId()));
+            for (Writable writable : vertexFromPair.getProperties().getPropertyKeys()) {
+                String key = ((StringType) writable).get();
+                Object value = vertexFromPair.getProperty(key);
+                assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value.toString()),
+                        vertex.getProperty(key).equals(value) );
+            }
+        }
     }
 }

@@ -134,9 +134,7 @@ public class HBaseReaderMapperTest {
         //set up some sample Hbase.client result
         result = sampleData();
 
-        recordTypeHBaseRow = new RecordTypeHBaseRow(key, result);
-
-
+    recordTypeHBaseRow = new RecordTypeHBaseRow(key, result);
     }
 
     @Test

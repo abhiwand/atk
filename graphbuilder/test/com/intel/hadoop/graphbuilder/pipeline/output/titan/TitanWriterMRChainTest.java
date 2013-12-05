@@ -1,15 +1,19 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.pipeline.TestMapReduceDriverUtils;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
+import com.intel.hadoop.graphbuilder.types.LongType;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.thinkaurelius.titan.core.TitanElement;
 import com.thinkaurelius.titan.graphdb.internal.ElementLifeCycle;
 import com.thinkaurelius.titan.graphdb.transaction.StandardTitanTx;
@@ -43,6 +47,8 @@ import org.powermock.reflect.Whitebox;
 
 import java.util.List;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
@@ -66,17 +72,49 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
         Result result = sampleData();
         ImmutableBytesWritable key = new ImmutableBytesWritable(Bytes.toBytes("row1"));
 
-        PowerMockito.doReturn(900L).when(spiedTitanMergedGraphElementWrite).getVertexId(any(com.tinkerpop.blueprints.Vertex.class));
-
         PowerMockito.doReturn(titanGraph).when(spiedVerticesIntoTitanReducer).tribecaGraphFactoryOpen(any(Reducer.Context.class));
 
         com.tinkerpop.blueprints.Vertex  bpVertex = newStandardVertexMock();
 
         PowerMockito.doReturn(bpVertex).when(titanGraph).addVertex(null);
 
+        PowerMockito.doReturn(900L).doReturn(901L).doReturn(902L).when(spiedTitanMergedGraphElementWrite).getVertexId
+                (any(com.tinkerpop.blueprints.Vertex.class));
+
         List<Pair<IntWritable,SerializedPropertyGraphElement>> run = runVertexHbaseMR(key, result);
 
-        System.out.println("done: " + run.size());
+        assertTrue("check the number of writables", run.size() == 3);
+        assertEquals("check the number of counters", gbMapReduceDriver.getCounters().countCounters(), 4);
+        assertEquals("check HTABLE_COLS_READ counter", gbMapReduceDriver.getCounters().findCounter
+                (GBHTableConfiguration.Counters.HTABLE_COLS_READ).getValue(), 5);
+        assertEquals("check HTABLE_ROWS_READ counter", gbMapReduceDriver.getCounters().findCounter
+                (GBHTableConfiguration.Counters.HTABLE_ROWS_READ).getValue(), 1);
+        assertEquals("check NUM_EDGES counter", gbMapReduceDriver.getCounters().findCounter
+                (verticesIntoTitanReducer.getEdgeCounter()).getValue(), 1);
+        assertEquals("check NUM_VERTICES counter", gbMapReduceDriver.getCounters().findCounter
+                (verticesIntoTitanReducer.getVertexCounter()).getValue(), 2);
+
+        //set up our matching vertex to test against
+        com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType> vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(new StringType("Alice"));
+        vertex.setProperty("cf:dept", new StringType("GAO123"));
+        vertex.setProperty("cf:age", new StringType("43"));
+        vertex.setProperty("TitanID", new LongType(900L));
+
+        verifyPairSecond(run.get(0), "VERTEX", null, vertex);
+
+        //set up our matching edge to test against
+        com.intel.hadoop.graphbuilder.graphelements.Edge<StringType> edge = new com.intel.hadoop.graphbuilder.graphelements.Edge<StringType>(new StringType("Alice"),
+                new StringType("GAO123"),
+                new StringType("worksAt"));
+        edge.setProperty("srcTitanID", new LongType(900L));
+
+        verifyPairSecond(run.get(1), "EDGE", edge, null);
+
+
+        vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<>(new StringType("GAO123"));
+        vertex.setProperty("TitanID", new LongType(901L));
+
+        verifyPairSecond(run.get(2), "VERTEX", null, vertex);
     }
 
     public com.tinkerpop.blueprints.Vertex newStandardVertexMock(){
