@@ -5,6 +5,11 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 
+/**
+ * set the all the vertex or edge properties with the passed PropertyMap
+ *
+ * @see PropertyGraphElement
+ */
 public class PropertyGraphElementSetProperties implements PropertyGraphElementTypeCallback {
     private PropertyMap propertyMap;
 
@@ -31,6 +36,11 @@ public class PropertyGraphElementSetProperties implements PropertyGraphElementTy
         return null;
     }
 
+    /**
+     * get the property map variable
+     *
+     * @param args variable length arguments
+     */
     private void initArguments(Object ... args){
         if(args.length == 1){
             propertyMap = (PropertyMap) args[0];

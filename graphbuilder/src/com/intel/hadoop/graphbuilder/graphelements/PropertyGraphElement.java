@@ -20,13 +20,16 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     public abstract PropertyMap getProperties();
     public abstract void    write(DataOutput output) throws IOException;
 
+    /**
+     * all the callback classes we will be using
+     */
     private PropertyGraphElementObject propertyGraphElementObject;
     private PropertyGraphElementId propertyGraphElementId;
     private PropertyGraphElementType propertyGraphElementType;
     private PropertyGraphElementDst propertyGraphElementDst;
     private PropertyGraphElementSrc propertyGraphElementSrc;
     private PropertyGraphElementLabel propertyGraphElementLabel;
-    private PropertyGraphElementProperty propertyGraphElementProperty;
+    private PropertyGraphElementGetProperty propertyGraphElementGetProperty;
     private PropertyGraphElementSetProperties propertyGraphElementSetProperties;
 
     public PropertyGraphElement(){
@@ -36,10 +39,20 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
         propertyGraphElementDst = new PropertyGraphElementDst();
         propertyGraphElementSrc = new PropertyGraphElementSrc();
         propertyGraphElementLabel = new PropertyGraphElementLabel();
-        propertyGraphElementProperty = new PropertyGraphElementProperty();
+        propertyGraphElementGetProperty = new PropertyGraphElementGetProperty();
         propertyGraphElementSetProperties = new PropertyGraphElementSetProperties();
     }
 
+    /**
+     * call the edge/vertex/null PropertyGraphElementTypeCallback
+     *
+     * @see PropertyGraphElementTypeCallback
+     *
+     * @param propertyGraphElementTypeCallbackCallback any instance of PropertyGraphElementTypeCallback
+     * @param args variable length of arguments that might be used by the instance of PropertyGraphElementTypeCallback
+     * @param <T> anything that gets returned by the instance of PropertyGraphElementTypeCallback
+     * @return anything that gets returned by the instance of PropertyGraphElementTypeCallback
+     */
     public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback, Object ... args){
         if(this.isEdge()){
             return propertyGraphElementTypeCallbackCallback.edge(this, args);
@@ -76,7 +89,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     public Object getProperty(String key){
-        return this.typeCallback(propertyGraphElementProperty, key);
+        return this.typeCallback(propertyGraphElementGetProperty, key);
     }
 
     public void setProperties(PropertyMap propertyMap){

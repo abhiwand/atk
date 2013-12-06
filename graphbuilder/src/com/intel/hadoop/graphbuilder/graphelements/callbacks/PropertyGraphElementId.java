@@ -4,6 +4,11 @@ package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import org.apache.hadoop.io.WritableComparable;
 
+/**
+ * get the graph elements id
+ *
+ * @see PropertyGraphElement
+ */
 public class PropertyGraphElementId implements PropertyGraphElementTypeCallback {
     @Override
     public EdgeID edge(PropertyGraphElement propertyGraphElement, Object ... args) {

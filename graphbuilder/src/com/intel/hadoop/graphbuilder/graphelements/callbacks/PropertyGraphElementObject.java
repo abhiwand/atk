@@ -4,6 +4,11 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 
+/**
+ * get the graph element object type casting it to the respective type
+ *
+ * @see PropertyGraphElement
+ */
 public class PropertyGraphElementObject implements PropertyGraphElementTypeCallback {
 
     @Override

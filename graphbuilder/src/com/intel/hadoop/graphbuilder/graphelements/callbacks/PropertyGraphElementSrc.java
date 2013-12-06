@@ -6,11 +6,10 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Created with IntelliJ IDEA.
- * User: rodorad
- * Date: 12/5/13
- * Time: 10:31 AM
- * To change this template use File | Settings | File Templates.
+ * get the graph element src. if it's an edge it will return whatever src the edge has otherwise it will return null
+ * if it's a vertex.
+ *
+ * @see PropertyGraphElement
  */
 public class PropertyGraphElementSrc implements PropertyGraphElementTypeCallback {
     @Override

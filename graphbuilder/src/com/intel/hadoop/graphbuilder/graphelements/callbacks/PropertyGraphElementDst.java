@@ -4,6 +4,11 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 
+/**
+ * get the graph elements dst. if it's an edge it will return the dst otherwise it will return null
+ *
+ * @see PropertyGraphElement
+ */
 public class PropertyGraphElementDst implements PropertyGraphElementTypeCallback{
     @Override
     public Object edge(PropertyGraphElement propertyGraphElement, Object... args) {

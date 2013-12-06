@@ -4,7 +4,12 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 
-public class PropertyGraphElementProperty implements PropertyGraphElementTypeCallback{
+/**
+ * get a property for the given graph element.
+ *
+ * @see PropertyGraphElement
+ */
+public class PropertyGraphElementGetProperty implements PropertyGraphElementTypeCallback{
     private String key;
 
     @Override
