@@ -15,7 +15,9 @@
  *
  * For more about this software visit:
  *      http://www.01.org/GraphBuilder
- */package com.intel.pig.udf.eval;
+ */
+
+package com.intel.pig.udf.eval;
 
 import java.io.IOException;
 
@@ -23,9 +25,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
-import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
-import org.apache.pig.data.DefaultBagFactory;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
