@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultBagFactory;
@@ -35,11 +36,13 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
+import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
  * \brief some documentation
  * 
  */
+@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class CreatePropGraphElements extends EvalFunc<Tuple> {
 	private String tokenizationRule;
 
