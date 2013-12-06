@@ -1,3 +1,6 @@
+import uuid
+import os
+
 # Configuration file for ipython-notebook.
 
 c = get_config()
@@ -32,8 +35,20 @@ c.NotebookApp.port_retries = 0
 # 
 # Note: Cookie secrets should be kept private, do not share config files with
 # cookie_secret stored in plaintext (you can read the value from a file).
-
-c.NotebookApp.cookie_secret = 'If you use this as a cookie secret, you are doing it wrong! Put a real cookie secret goes here!'
+ia_user_folder = os.path.join(os.path.expanduser("~"),'.intelanalytics')
+if not os.path.exists(ia_user_folder):
+	os.makedirs(ia_user_folder)
+cookie_path = os.path.join(ia_user_folder, '.cookie_secret')
+if not os.path.exists(cookie_path):
+	with open(cookie_path, 'w') as f:
+		f.write(str(uuid.uuid4()) + str(uuid.uuid4()))
+try:
+	with open(cookie_path) as f:
+		c.NotebookApp.cookie_secret = f.read()
+except:
+	print "WARNING: Cookie secret could not be loaded from ", cookie_path
+	#Set to a random secret to prevent login
+	c.NotebookApp.cookie_secret = str(uuid.uuid4)
 
 # Hashed password to use for web authentication.
 # 
@@ -44,7 +59,6 @@ c.NotebookApp.cookie_secret = 'If you use this as a cookie secret, you are doing
 # The string should be of the form type:salt:hashed-password.
 
 #Here we configure a random, unusable password, since we never want to log in with password.
-import uuid
 passwd = str(uuid.uuid4())
 c.NotebookApp.password = passwd
 
@@ -104,7 +118,7 @@ c.NotebookApp.password = passwd
 # configuration (through profiles), history storage, etc. The default is usually
 # $HOME/.ipython. This options can also be specified through the environment
 # variable IPYTHONDIR.
-# c.NotebookApp.ipython_dir = u'/home/hadoop/.ipython'
+c.NotebookApp.ipython_dir = os.path.join(ia_user_folder,"ipython_notebook")
 
 # Set the log level by value or name.
 # c.NotebookApp.log_level = 30
@@ -254,16 +268,16 @@ c.NotebookApp.trust_xheaders = True
 # an 'import *' is done from numpy and pylab, when using pylab mode.
 # 
 # When False, pylab mode should not import any names into the user namespace.
-# c.IPKernelApp.pylab_import_all = True
+c.IPKernelApp.pylab_import_all = True
 
 # The name of the IPython directory. This directory is used for logging
 # configuration (through profiles), history storage, etc. The default is usually
 # $HOME/.ipython. This options can also be specified through the environment
 # variable IPYTHONDIR.
-# c.IPKernelApp.ipython_dir = u'/home/hadoop/.ipython'
+c.IPKernelApp.ipython_dir = os.path.join(ia_user_folder,"ipython")
 
 # Configure matplotlib for interactive use with the default matplotlib backend.
-# c.IPKernelApp.matplotlib = None
+c.IPKernelApp.matplotlib = 'inline'
 
 # ONLY USED ON WINDOWS Interrupt this process when the parent is signaled.
 # c.IPKernelApp.interrupt = 0
@@ -558,7 +572,7 @@ c.NotebookApp.trust_xheaders = True
 #------------------------------------------------------------------------------
 
 # The directory to use for notebooks.
-c.NotebookManager.notebook_dir = u'/usr/lib/IntelAnalytics/ipython'
+c.NotebookManager.notebook_dir = ia_user_folder
 
 #------------------------------------------------------------------------------
 # FileNotebookManager configuration
@@ -579,4 +593,4 @@ c.NotebookManager.notebook_dir = u'/usr/lib/IntelAnalytics/ipython'
 # c.FileNotebookManager.save_script = False
 
 # The directory to use for notebooks.
-c.FileNotebookManager.notebook_dir = u'/usr/lib/IntelAnalytics/ipython'
+c.FileNotebookManager.notebook_dir = ia_user_folder

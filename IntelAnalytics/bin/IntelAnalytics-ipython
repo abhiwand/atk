@@ -21,10 +21,10 @@ if [ -d /home/hadoop/IntelAnalytics ]
 	then
 		sudo -u hadoop bash -c "
 	. $INTEL_ANALYTICS_HOME/virtpy/bin/activate
-	ipython notebook --profile-dir=$INTEL_ANALYTICS_HOME/conf/ipython_profile/profile_default --pylab
+	ipython notebook --config=$INTEL_ANALYTICS_HOME/conf/ipython_profile/profile_default/ipython_notebook_config.py
 	"
 else 
 	. $INTEL_ANALYTICS_HOME/virtpy/bin/activate
-	ipython notebook --profile-dir=$INTEL_ANALYTICS_HOME/conf/ipython_profile/profile_default --pylab
+	ipython notebook --config=$INTEL_ANALYTICS_HOME/conf/ipython_profile/profile_default/ipython_notebook_config.py
 fi
 
