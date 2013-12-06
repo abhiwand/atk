@@ -1,20 +1,20 @@
 /* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
+ *     All rights reserved.
+ *
  *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *
+ * For more about this software visit:
+ *      http://www.01.org/GraphBuilder
  */package com.intel.pig.udf.eval;
 
 import java.io.IOException;
@@ -26,6 +26,7 @@ import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultBagFactory;
 import org.apache.pig.data.Tuple;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement.GraphElementType;
@@ -37,13 +38,23 @@ import com.intel.pig.data.PropertyGraphElementTuple;
 
 /**
  * \brief some documentation
- *
+ * 
  */
-public class ExtractElement extends EvalFunc<Tuple> {
+public class CreatePropGraphElements extends EvalFunc<Tuple> {
+	private String tokenizationRule;
+
+	public CreatePropGraphElements(String tokenizationRule) {
+		this.tokenizationRule = tokenizationRule;
+	}
 
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
-		DataBag bag = DefaultBagFactory.getInstance().newDefaultBag();
+		Schema inputSchema = getInputSchema();
+		
+		/* assume that the user specified "f1" in the tokenizationRule, you can get the corresponding tuple with the following */
+		int fieldPos = inputSchema.getPosition("f1");
+		Object f1Tuple = input.get(fieldPos);
+
 		PropertyGraphElementTuple t = (PropertyGraphElementTuple) new GBTupleFactory()
 				.newTuple(1);
 		PropertyGraphElementStringTypeVids p = new PropertyGraphElementStringTypeVids();
