@@ -10,7 +10,6 @@ import com.intel.hadoop.graphbuilder.pipeline.output.titan.VerticesIntoTitanRedu
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
-import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.thinkaurelius.titan.core.TitanGraph;
@@ -55,10 +54,10 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 /**
  * An abstract class that can be extended that will hold most of the testing setup needed for output pipeline
- * grealty reducing the setup needed to test the hbase->vertices to titan mr pipeline and edges to titan reducer.
- * All the external depencies like titan, hbase are mocked out but otherwise this will run the entire pipeline from
- * command line parsing
- * rules, tokenizer to writting to titan.
+ * greatly reducing the setup needed to test the hbase to vertices to titan mr pipeline and edges to titan reducer.
+ * All the external decencies like titan, hbase are mocked out but otherwise this will run the entire pipeline from
+ * command line parsing rules, tokenizer to writting to titan. If it's needed to run the MR pipepline it's spied otherwise
+ * it's mocked.
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain
  * @see GBMapReduceDriver
@@ -75,8 +74,6 @@ public abstract class TestMapReduceDriverUtils {
     protected HBaseReaderMapper spiedHBaseReaderMapper;
     protected MapDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement> mapDriver;
 
-    protected Reducer.Context reduceContext;
-
     protected VerticesIntoTitanReducer spiedVerticesIntoTitanReducer;
     protected ReduceDriver<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> verticesReduceDriver;
 
@@ -87,7 +84,9 @@ public abstract class TestMapReduceDriverUtils {
     protected GBMapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> gbEdgeMapReduceDriver;
 
     protected Mapper.Context mapperContextMock;
-    protected Reducer.Context reducerContextMock;
+    protected Reducer.Context vertexReducerContextMock;
+    protected Reducer.Context edgeReducerContextMock;
+
     protected BaseMapper baseMapper;
     protected BaseMapper spiedBaseMapper;
     protected PropertyGraphElements propertyGraphElements;
@@ -104,7 +103,8 @@ public abstract class TestMapReduceDriverUtils {
     @BeforeClass
     public static void beforeClass(){
         //this is to suppress the log 4j errors during the tests
-        //System.setProperty("log4j.ignoreTCL","true");
+        //we should be moving to the new context logger
+        System.setProperty("log4j.ignoreTCL","true");
     }
 
     @Before
@@ -122,7 +122,6 @@ public abstract class TestMapReduceDriverUtils {
         spiedHBaseReaderMapper = null;
         mapDriver = null;
 
-        reduceContext = null;
         spiedVerticesIntoTitanReducer = null;
         verticesReduceDriver = null;
 
@@ -133,7 +132,8 @@ public abstract class TestMapReduceDriverUtils {
         gbVertexMapReduceDriver = null;
 
         mapperContextMock = null;
-        reducerContextMock = null;
+        vertexReducerContextMock = null;
+        edgeReducerContextMock = null;
         baseMapper = null;
         spiedBaseMapper = null;
 
@@ -145,6 +145,13 @@ public abstract class TestMapReduceDriverUtils {
         titanGraph = null;
     }
 
+    /**
+     * create a spied instance of EdgesIntoTitanReducer to be used by the EdgesIntoTitanReducer driver
+     *
+     * @see EdgesIntoTitanReducer
+     *
+     * @return a new spied EdgesIntoTitanReducer
+     */
     protected EdgesIntoTitanReducer newEdgesIntoTitanReducer(){
         spiedEdgesIntoTitanReducer = (EdgesIntoTitanReducer) newSpy(spiedEdgesIntoTitanReducer, EdgesIntoTitanReducer.class);
         try {
@@ -156,43 +163,80 @@ public abstract class TestMapReduceDriverUtils {
         return spiedEdgesIntoTitanReducer;
     }
 
+    /**
+     * create a spied instance of VerticesIntoTitanReducer to be used by the VerticesIntoTitanReducer driver
+     *
+     * @see VerticesIntoTitanReducer
+     *
+     * @return a new spied VerticesIntoTitanReducer instance
+     */
     protected VerticesIntoTitanReducer newVerticesIntoTitanReducer() {
         spiedVerticesIntoTitanReducer = (VerticesIntoTitanReducer) newSpy(spiedVerticesIntoTitanReducer, VerticesIntoTitanReducer.class);
         try {
-            PowerMockito.doReturn(titanGraph).when(spiedVerticesIntoTitanReducer, method(VerticesIntoTitanReducer.class, tribecaGraphFactoryOpen, Reducer.Context.class))
-                    .withArguments(any(Reducer.Context.class));
+            PowerMockito.doReturn(titanGraph).when(spiedVerticesIntoTitanReducer, method(VerticesIntoTitanReducer.class,
+                    tribecaGraphFactoryOpen, Reducer.Context.class)) .withArguments(any(Reducer.Context.class));
         } catch (Exception e) {
             fail("couldn't stub tribecaGraphFactoryOpen");
         }
         return spiedVerticesIntoTitanReducer;
     }
 
+    /**
+     * create a spy of the HbaseReaderMapper class that will be used by the HBaseReaderMapper driver
+     *
+     * @see HBaseReaderMapper
+     *
+     * @return a new spied HBaseReaderMapper instances
+     */
     protected HBaseReaderMapper newHBaseReaderMapper(){
         spiedHBaseReaderMapper = (HBaseReaderMapper) newSpy(spiedHBaseReaderMapper, HBaseReaderMapper.class);
         return spiedHBaseReaderMapper;
     }
 
-    protected ReduceDriver newEdgeReducer(){
+    /**
+     * create a new EdgesIntoTitanReducer driver and stub the context.getMapOutputValueClass method call. This driver
+     * gets used directly it's not used has part of a MapReduceDriver.
+     *
+     * @see EdgesIntoTitanReducer
+     *
+     * @return new EdgesIntoTitanReducer driver
+     */
+    protected ReduceDriver newEdgeReducerDriver(){
         newEdgesIntoTitanReducer();
 
-        edgesReduceDriver = newReduceDriver(spiedEdgesIntoTitanReducer, "reduceContext");
+        edgesReduceDriver = newReduceDriver(spiedEdgesIntoTitanReducer, "edgeReducerContextMock");
 
-        PowerMockito.when(reduceContext.getMapOutputValueClass()).thenReturn(klass);
+        PowerMockito.when(edgeReducerContextMock.getMapOutputValueClass()).thenReturn(klass);
 
         return edgesReduceDriver;
     }
 
-    protected ReduceDriver newVertexReducer() {
+    /**
+     * create a new VerticesIntoTitanReducer driver and stub the context.getMapOutputValueClass method call
+     *
+     * @see VerticesIntoTitanReducer
+     *
+     * @return new VerticesIntoTitanReducer driver
+     */
+    protected ReduceDriver newVerticesIntoTitanReducerDriver() {
         newVerticesIntoTitanReducer();
 
-        verticesReduceDriver = newReduceDriver(spiedVerticesIntoTitanReducer, "reduceContext");
+        verticesReduceDriver = newReduceDriver(spiedVerticesIntoTitanReducer, "vertexReducerContextMock");
 
-        PowerMockito.when(reduceContext.getMapOutputValueClass()).thenReturn(klass);
+        PowerMockito.when(vertexReducerContextMock.getMapOutputValueClass()).thenReturn(klass);
 
         return verticesReduceDriver;
     }
 
-    protected MapDriver newHbaseMapper(){
+    /**
+     * create our new hbase reader map driver and get the mocked context and stub the context.getMapOutputValueClass
+     * method call
+     *
+     * @see HBaseReaderMapper
+     *
+     * @return a new HbaseReaderMapper
+     */
+    protected MapDriver newHbaseReaderMapperDriver(){
         newHBaseReaderMapper();
 
         mapDriver = MapDriver.newMapDriver(spiedHBaseReaderMapper);
@@ -204,6 +248,15 @@ public abstract class TestMapReduceDriverUtils {
         return mapDriver;
     }
 
+    /**
+     * Run prerequisites needed for the hbase->vertex map reduce driver and create our new MapReduceDriver
+     *
+     * @see GBMapReduceDriver
+     * @see HBaseReaderMapper
+     * @see VerticesIntoTitanReducer
+     *
+     * @return a new Hbase->vertices GBMapReduceDriver
+     */
     protected MapReduceDriver newVertexHbaseMR(){
         newVerticesIntoTitanReducer();
         newHBaseReaderMapper();
@@ -214,6 +267,16 @@ public abstract class TestMapReduceDriverUtils {
         return gbVertexMapReduceDriver;
     }
 
+    /**
+     * abstract the setup and running of MapReduceDriver for any other Hbase->? jobs we might have
+     *
+     * @see GBMapReduceDriver
+     *
+     * @param mapReduceDriver the GBMapReduceDriver
+     * @param pairs row key, column hbase data
+     * @return any reducer context.write output
+     * @throws IOException
+     */
     protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runMapReduceDriver( GBMapReduceDriver mapReduceDriver,
             Pair<ImmutableBytesWritable,Result>[] pairs) throws IOException {
 
@@ -226,14 +289,30 @@ public abstract class TestMapReduceDriverUtils {
         return mapReduceDriver.run();
     }
 
+    /**
+     * takes row key, hbase Result pairs to run hbase->vertices MR job. Will also take care of adding the hadoop
+     * configuration to the driver.
+     *
+     * @see HBaseReaderMapper
+     * @see VerticesIntoTitanReducer
+     *
+     * @param pairs row key, hbase Result pairs to pass to the hbase->vertices MR job
+     * @return any context.write output from the reducer
+     * @throws IOException
+     */
     protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runVertexHbaseMR(
             Pair<ImmutableBytesWritable,Result>[] pairs) throws IOException {
-
-        gbVertexMapReduceDriver = new GBMapReduceDriver(mapDriver, verticesReduceDriver);
 
         return runMapReduceDriver(gbVertexMapReduceDriver, pairs);
     }
 
+    /**
+     * add the hadoop config and inputs to the edge reduce driver and return the context.write output.
+     *
+     * @param pairs a Key value pair data to be used to test the Reducer
+     * @return any context.write output
+     * @throws IOException
+     */
     protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runEdgeR(
             Pair<IntWritable, com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement[]>[] pairs) throws IOException{
 
@@ -246,7 +325,10 @@ public abstract class TestMapReduceDriverUtils {
         return edgesReduceDriver.run();
     }
 
-
+    /**
+     * mock and set our logger into HbaseReaderMapper to verify the logging of error messages.
+     * @return new Logger mock
+     */
     protected Logger newLoggerMock(){
         if( loggerMock == null){
             loggerMock = mock(Logger.class);
@@ -255,16 +337,24 @@ public abstract class TestMapReduceDriverUtils {
         return loggerMock;
     }
 
+    /**
+     * a real hbase configuration we use with the map/reduce pipeline with the minimum set to get it working
+     *
+     * @return a new hbase configuration
+     */
     protected Configuration newConfiguration(){
         if(conf == null){
             conf = new Configuration();
             conf.set("GraphTokenizer", HBaseTokenizer.class.getName());
             conf.set("KeyFunction", SourceVertexKeyFunction.class.getName());
-
         }
         return conf;
     }
 
+    /**
+     * The graph building rules that are usually defined on the command line minus the command line option and broken out
+     * into string arrays if you have more than one per option
+     */
     protected void newGraphBuildingRules(){
         //sample vertex and edge generation rules
         String[] vertexRules = new String[1];
@@ -279,6 +369,10 @@ public abstract class TestMapReduceDriverUtils {
         HBaseGraphBuildingRule.packDirectedEdgeRulesIntoConfiguration(conf, directedEdgeRules);
     }
 
+    /**
+     * mock the mapper context so we can return a getMapOutputValueClass
+     * @return new mocked mapper.context
+     */
     protected Mapper.Context newMapperContext(){
         if(mapperContextMock == null){
             mapperContextMock = mock(Mapper.Context.class);
@@ -287,14 +381,13 @@ public abstract class TestMapReduceDriverUtils {
         return mapperContextMock;
     }
 
-    protected Reducer.Context newReducerContext(){
-        if(reducerContextMock == null){
-            reducerContextMock = mock(Reducer.Context.class);
-            PowerMockito.when(reducerContextMock.getMapOutputValueClass()).thenReturn(valClass);
-        }
-        return reducerContextMock;
-    }
-
+    /**
+     *
+     * @see BaseMapper
+     *
+     * @return a spied BaseMapper
+     * @throws Exception
+     */
     protected BaseMapper newBaseMapper() throws Exception {
         if(spiedBaseMapper == null){
             baseMapper = new BaseMapper(mapperContextMock, conf, loggerMock);
@@ -304,48 +397,71 @@ public abstract class TestMapReduceDriverUtils {
         return spiedBaseMapper;
     }
 
+    /**
+     * spy on our merge duplicate interface that does the context write.
+     *
+     * @see TitanMergedGraphElementWrite
+     * @return new spied TitanMergedGraphElementWrite
+     */
     protected TitanMergedGraphElementWrite newTitanMergedGraphElementWrite(){
         spiedTitanMergedGraphElementWrite = (TitanMergedGraphElementWrite)newSpy(spiedTitanMergedGraphElementWrite,
                 TitanMergedGraphElementWrite.class);
         return spiedTitanMergedGraphElementWrite;
     }
 
+
+    /**
+     * create a spied PropertyGraphElements to stub out methods later in our test
+     *
+     * @see PropertyGraphElements
+     *
+     * @throws Exception
+     */
     protected void newPropertyGraphElements() throws Exception {
+        //step some mocks that get set when we create our spy
         newVerticesIntoTitanReducer();
         newTitanMergedGraphElementWrite();
 
         if(spiedVertexPropertyGraphElements == null){
 
             spiedVertexPropertyGraphElements = spy(new PropertyGraphElements(spiedTitanMergedGraphElementWrite, null, null,
-                    reduceContext, titanGraph,
+                    vertexReducerContextMock, titanGraph,
                     (SerializedPropertyGraphElement)valClass.newInstance(), spiedVerticesIntoTitanReducer.getEdgeCounter(),
                     spiedVerticesIntoTitanReducer.getVertexCounter()));
 
+            /**
+             * this will make sure our spied instance get returned when it's instantiated in the
+             * VerticesIntoTitanReducer.initPropertyGraphElements
+             * @see VerticesIntoTitanReducer
+             */
             PowerMockito.whenNew(PropertyGraphElements.class).withAnyArguments().thenReturn(spiedVertexPropertyGraphElements);
-        }
-
-        if(spiedEdgePropertyGraphElements == null){
-
-            spiedEdgePropertyGraphElements = spy(new PropertyGraphElements(spiedTitanMergedGraphElementWrite, null, null,
-                    reduceContext, titanGraph,
-                    (SerializedPropertyGraphElement)valClass.newInstance(), spiedEdgesIntoTitanReducer.getEdgeCounter(),
-                    null));
-
-            spiedEdgesIntoTitanReducer.getEdgePropertiesCounter();
-
-            PowerMockito.whenNew(PropertyGraphElements.class).withAnyArguments().thenReturn(spiedEdgePropertyGraphElements);
         }
     }
 
+    /**
+     * create our titan graph mock and assign it to our class a titanGraph class field and return.
+     *
+     * @see TitanGraph
+     *
+     * @return a new mocked titan graph
+     */
     protected TitanGraph newTitanGraphMock(){
         titanGraph = (TitanGraph) newMock(titanGraph, TitanGraph.class);
         return titanGraph;
     }
 
+    /**
+     * Create a new reduce driver with the context mocked
+     *
+     * @param reducer the hadoop reducer we are going to create the driver for
+     * @param contextFieldName this clases's context field name so we can assign the mocked context
+     * @return a new reduce driver
+     */
     protected ReduceDriver newReduceDriver(org.apache.hadoop.mapreduce.Reducer reducer, String contextFieldName){
         ReduceDriver newDriver = ReduceDriver.newReduceDriver(reducer);
 
         Field field;
+
         try {
             field = TestMapReduceDriverUtils.class.getDeclaredField(contextFieldName);
             field.setAccessible(true);
@@ -361,6 +477,13 @@ public abstract class TestMapReduceDriverUtils {
         return newDriver;
     }
 
+    /**
+     * create a new mock if it's not already created
+     *
+     * @param inst the object that will hold the mock
+     * @param klass the class we are mocking
+     * @return new mock
+     */
     protected Object newMock(Object inst, Class klass){
         if(inst == null){
             inst = mock(klass);
@@ -368,13 +491,19 @@ public abstract class TestMapReduceDriverUtils {
         return inst;
     }
 
+    /**
+     * create new spied instances if they are not set.
+     *
+     * @param object the object that will hold the spied intance
+     * @param klass the class we are going to create a spy for
+     * @return the spied instance
+     */
     protected Object newSpy(Object object, Class klass){
         if(object == null){
             try {
                 object = klass.newInstance();
-            } catch (InstantiationException e) {
-                fail("couldn't spy: " + klass.getName());
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
+                //if we get any of the thrown exceptions fail the test because nothing is going to work
                 fail("couldn't spy: " + klass.getName());
             }
             object = spy(object);
@@ -386,26 +515,40 @@ public abstract class TestMapReduceDriverUtils {
         return mock(StandardVertex.class);
     }
 
+
+    /**
+     * setup our testing environment. is called during the setUp
+     *
+     * @throws Exception
+     */
     protected void init() throws Exception {
         newTitanGraphMock();
 
-        newEdgeReducer();
-        newVertexReducer();
+        newEdgeReducerDriver();
+        newVerticesIntoTitanReducerDriver();
 
         newPropertyGraphElements();
 
-        newHbaseMapper();
+        newHbaseReaderMapperDriver();
         newVertexHbaseMR();
 
         newLoggerMock();
         newConfiguration();
         newGraphBuildingRules();
         newMapperContext();
-        newReducerContext();
+
         newBaseMapper();
     }
 
-
+    /**
+     * small helper function to help with the creation of vertices.
+     *
+     * @see Vertex
+     *
+     * @param vertexId string vertex id. will be used to create the StringType vertex id
+     * @param properties a hash map with all the properties
+     * @return new StringType vertex
+     */
     public static final Vertex<StringType> newVertex(String vertexId, HashMap<String, WritableComparable> properties){
         com.intel.hadoop.graphbuilder.graphelements.Vertex vertex =
                 new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(new StringType(vertexId));
@@ -415,18 +558,49 @@ public abstract class TestMapReduceDriverUtils {
         return vertex;
     }
 
+    /**
+     * small helper function to help with the creation of vertices.
+     *
+     * @see Vertex
+     *
+     * @param vertexId string vertex id. will be used to create the StringType vertex id
+     * @param propertyMap a new property map for the vertex properties
+     * @return new StringType vertex
+     */
     public static final Vertex<StringType> newVertex(String vertexId, PropertyMap propertyMap){
         com.intel.hadoop.graphbuilder.graphelements.Vertex vertex =
                 new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(new StringType(vertexId), propertyMap);
         return vertex;
     }
 
+    /**
+     * small helper function to help with the creation of edges.
+     *
+     * @see Edge
+     *
+     * @param src string edge src. will be used to create the new StringType
+     * @param dst string edge dst. will be used to create the new StringType
+     * @param label string edge label. will be used to create the new StringType
+     * @param propertyMap  a new property map for the edge properties
+     * @return new StringType edge
+     */
     public static final Edge<StringType> newEdge(String src, String dst, String label, PropertyMap propertyMap){
         com.intel.hadoop.graphbuilder.graphelements.Edge edge =
                 new Edge<StringType>(new StringType(src), new StringType(dst), new StringType(label), propertyMap);;
         return edge;
     }
 
+    /**
+     * small helper function to help with the creation of edges.
+     *
+     * @see Edge
+     *
+     * @param src string edge src. will be used to create the new StringType
+     * @param dst string edge dst. will be used to create the new StringType
+     * @param label string edge label. will be used to create the new StringType
+     * @param properties hashmap with all the desired edge properties
+     * @return new StringType Edge
+     */
     public static final Edge<StringType> newEdge(String src, String dst, String label, HashMap<String, WritableComparable> properties){
         com.intel.hadoop.graphbuilder.graphelements.Edge edge =
                 new Edge<StringType>(new StringType(src), new StringType(dst), new StringType(label));
@@ -487,6 +661,15 @@ public abstract class TestMapReduceDriverUtils {
         printSampleRow(result, "cf", "underManager");
     }
 
+    /**
+     * will print the value for the given Column faimily for the hbase Result set. Will convert all CF and Qualifier strings
+     * to bytes with HConstants.UTF8_ENCODING before trying to read the qualifier value.
+     *
+     * @param result hbase result
+     * @param cf hbase column family
+     * @param qualifier hbase qualifier
+     * @throws UnsupportedEncodingException
+     */
     public final void printSampleRow(Result result, String cf, String qualifier) throws UnsupportedEncodingException {
         System.out.println((cf + ":" + qualifier + " value: " +
                 Bytes.toString(result.getValue(cf.getBytes(HConstants.UTF8_ENCODING),
@@ -527,7 +710,7 @@ public abstract class TestMapReduceDriverUtils {
     public final void verifyPairSecond(Pair<IntWritable, SerializedPropertyGraphElement> pair,
                                        SerializedPropertyGraphElement graphElement){
 
-
+        //checking the graphElement type of pair and graphElement i'm verifying against
         assertEquals("graph types must match", pair.getSecond().graphElement().getType(),
                 graphElement.graphElement().getType());
 
@@ -535,7 +718,9 @@ public abstract class TestMapReduceDriverUtils {
         PropertyGraphElement jobGraphElement = pair.getSecond().graphElement();
         PropertyGraphElement givenGraphElement = graphElement.graphElement();
 
-
+        /*i'm not making any distinction between vertex and edge. it makes the code cleaner i just have to watch out for
+            nulls. verify all the edge, vertex values match
+        */
         assertTrue("match src", (jobGraphElement.getSrc() == null && givenGraphElement.getSrc() == null)
                 || jobGraphElement.getSrc().equals(givenGraphElement.getSrc()));
         assertTrue("match dst", (jobGraphElement.getDst() == null && givenGraphElement.getDst() == null)
@@ -545,12 +730,12 @@ public abstract class TestMapReduceDriverUtils {
         assertTrue("match id", (jobGraphElement.getId() == null && givenGraphElement.getId() == null)
                 || jobGraphElement.getId().equals(givenGraphElement.getId()));
 
+        //verify all the edge/vertex properties match
         for (Writable writable : jobGraphElement.getProperties().getPropertyKeys()) {
             String key = ((StringType) writable).get();
             Object value = jobGraphElement.getProperty(key);
             assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value.toString()),
                     givenGraphElement.getProperty(key).equals(value));
         }
-
     }
 }

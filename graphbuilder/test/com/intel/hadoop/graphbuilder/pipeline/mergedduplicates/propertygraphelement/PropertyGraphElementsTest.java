@@ -23,14 +23,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.*;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.*;
 
 import java.io.IOException;
 
+/**
+ * Simple test to help debug the changes to the property graph elements and the refactoring of the merging duplicates
+ */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(PropertyGraphElements.class)
 public class PropertyGraphElementsTest{
@@ -104,11 +103,6 @@ public class PropertyGraphElementsTest{
 
     @Test
     public void test_valid_edge_vertex_with_no_edge_or_vertex_reducer_function() throws Exception {
-
-        /*PowerMockito.when(spiedGraphElements,
-                method(PropertyGraphElements.class, "getVertexId", com.tinkerpop.blueprints.Vertex.class))
-                .withArguments(any(com.tinkerpop.blueprints.Vertex.class)).thenReturn(1L);*/
-
         spiedGraphElements.mergeDuplicates(values);
 
         Mockito.verify(vertexCounter).increment(1);

@@ -23,7 +23,7 @@ import static org.apache.hadoop.mrunit.internal.util.ArgumentChecker.returnNonNu
  * @see MapReduceDriver
  *
  * @param <K1> map input key
- * @param <V1> mapinput value
+ * @param <V1> map input value
  * @param <K2> map output key / reduce input key
  * @param <V2> map output value / reduce input value
  * @param <K3> reduce output key
@@ -53,6 +53,13 @@ public class GBMapReduceDriver<K1, V1, K2, V2, K3, V3> extends
         return new GBMapReduceDriver<K1, V1, K2, V2, K3, V3>(mapper, reducer);
     }
 
+    /**
+     * runs the mapreduce driver. this is the MapReduceDriver's run method modified to use given map drivers not create
+     * ones
+     *
+     * @return key, value pairs that were written to context.write
+     * @throws IOException
+     */
     @Override
     public List<Pair<K3, V3>> run() throws IOException {
         MapDriver<K1, V1, K2, V2> myMapDriver = getMyMapDriver();
@@ -63,6 +70,7 @@ public class GBMapReduceDriver<K1, V1, K2, V2, K3, V3> extends
             List<Pair<K2, V2>> mapOutputs = new ArrayList<Pair<K2, V2>>();
             // run map component
             LOG.debug("Starting map phase with mapper: " + myMapDriver);
+            //this was creating a new map driver i changed it to use the one i give it
             mapOutputs.addAll(myMapDriver
                     .withCounters(getCounters()).withConfiguration(getConfiguration())
                     .withAll(inputList).withMapInputPath(getMapInputPath()).run());
