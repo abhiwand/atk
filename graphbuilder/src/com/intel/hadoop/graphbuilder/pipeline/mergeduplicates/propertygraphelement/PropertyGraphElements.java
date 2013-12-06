@@ -22,6 +22,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ # - duplicate edges and vertices are removed
+ * - each vertex is loaded into Titan and is tagged with its Titan ID and passed to the next MR job
+ *   through the temp file
+ * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
+ *
+ * @see PropertyGraphElementPut
+ */
 public class PropertyGraphElements {
     private static final Logger LOG = Logger.getLogger(PropertyGraphElements.class);
     private PropertyGraphElementPut propertyGraphElementPut;
@@ -71,7 +79,15 @@ public class PropertyGraphElements {
         this.mergedGraphElementWrite = mergedGraphElementWrite;
     }
 
-
+    /**
+     * called from Reducer to merge edges and vertices
+     *
+     * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.VerticesIntoTitanReducer
+     *
+     * @param values
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void mergeDuplicates(Iterable<SerializedPropertyGraphElement> values)
             throws IOException, InterruptedException {
 
@@ -95,6 +111,10 @@ public class PropertyGraphElements {
                 keyFunction);
     }
 
+    /**
+     * merges duplicate graph elements
+     * @param propertyGraphElement
+     */
     private void put(PropertyGraphElement propertyGraphElement){
         propertyGraphElement.typeCallback(propertyGraphElementPut, edgeSet, vertexSet, edgeReducerFunction,
                 vertexReducerFunction, noBiDir);

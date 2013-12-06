@@ -10,6 +10,12 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.HashMap;
 
+/**
+ * merged duplicate graph elements
+ *
+ * @see PropertyGraphElements
+ * @see ContainsKey
+ */
 public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback {
     private HashMap<EdgeID, Writable> edgeSet;
     private HashMap<Object, Writable>   vertexSet;

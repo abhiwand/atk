@@ -17,7 +17,16 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * - each vertex is loaded into Titan and is tagged with its Titan ID and passed to the next MR job
+ *   through the temp file
+ * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
+ *
+ * @see PropertyGraphElements
+ * @see PropertyGraphElementPut
+ */
 public class TextGraphMergedGraphElementWrite implements MergedGraphElementWrite {
+
 
     @Override
     public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet, Enum vertexCounter,

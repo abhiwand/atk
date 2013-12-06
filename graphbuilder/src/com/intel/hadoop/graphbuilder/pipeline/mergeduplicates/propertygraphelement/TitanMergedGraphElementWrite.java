@@ -1,6 +1,5 @@
 package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement;
 
-
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
@@ -22,6 +21,15 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * - duplicate edges and vertices are removed
+ * - each vertex is loaded into Titan and is tagged with its Titan ID and passed to the next MR job
+ *   through the temp file
+ * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
+ *
+ * @see PropertyGraphElements
+ * @see PropertyGraphElementPut
+ */
 public class TitanMergedGraphElementWrite implements MergedGraphElementWrite{
     private HashMap<Object, Long>  vertexNameToTitanID = new HashMap<>();
 

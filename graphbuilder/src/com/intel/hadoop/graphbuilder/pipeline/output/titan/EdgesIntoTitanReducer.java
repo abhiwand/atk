@@ -92,6 +92,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
 
         HashMap<EdgeID, Writable> edgePropertyTable  = new HashMap();
 
+
         for(SerializedPropertyGraphElement graphElement: values){
             graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback, edgePropertyTable, vertexNameToTitanID);
         }

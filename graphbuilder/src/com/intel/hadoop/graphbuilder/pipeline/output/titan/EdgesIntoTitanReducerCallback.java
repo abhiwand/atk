@@ -12,6 +12,11 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.HashMap;
 
+/**
+ * Apply reduce on edges and vertices, remove self and (or merge) duplicate edges.
+ *
+ * @see EdgesIntoTitanReducer
+ */
 public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCallback{
     private HashMap<EdgeID, Writable> edgePropertyTable;
     private HashMap<Object, Long> vertexNameToTitanID;

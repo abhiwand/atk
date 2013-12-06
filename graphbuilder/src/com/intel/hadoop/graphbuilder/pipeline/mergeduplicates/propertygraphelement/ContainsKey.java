@@ -7,20 +7,15 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.HashMap;
 
+
+/**
+ * check if the speficified graph element already exists in hashMap
+ *
+ * @see PropertyGraphElementPut
+ */
 public class ContainsKey implements PropertyGraphElementTypeCallback {
     private HashMap<EdgeID, Writable>   edgeSet;
     private HashMap<Object, Writable>   vertexSet;
-    /*private class Arguments {
-        HashMap<EdgeID, Writable>   edgeSet;
-        HashMap<Object, Writable>   vertexSet;
-
-        Arguments(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet){
-            this.edgeSet = edgeSet;
-            this.vertexSet = vertexSet;
-        }
-    }*/
-
-    //private Arguments arguments;
 
     @Override
     public Boolean edge(PropertyGraphElement propertyGraphElement, Object ... args) {
