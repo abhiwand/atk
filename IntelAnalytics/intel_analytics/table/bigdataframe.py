@@ -8,9 +8,7 @@ class BigDataFrameException(Exception):
 
 class BigDataFrame(object):
     """
-    BigDataFrame
-
-    Proxy for a large 2D container to work with table data at scale.
+    The BigDataFrame is a proxy for a large 2D container to work with table data at scale.
     """
 
     def __init__(self, table):
@@ -58,9 +56,12 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        filename : String   The name of the file.
-        include_header : Boolean   Whether to write the header as the first line.
-        include_schema : Boolean   Whether to also write a schema file with same name.
+        filename : String   
+		    The name of the file.
+        include_header : Boolean
+		    Whether to write the header as the first line.
+        include_schema : Boolean
+		    Whether to also write a schema file with same name.
         """
         # We'll create an HDFS folder and shard into files
         # We'll provide a separate, explicit "Download" mechanism to go from
@@ -73,8 +74,10 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        file : String   The name of snapshot file.
-        include_schema : Boolean   Whether to also write a schema file with same name.
+        file : String
+		    The name of snapshot file.
+        include_schema : Boolean
+		    Whether to also write a schema file with same name.
         """
         #TODO: embed the schema in same file, similar to header?
         raise BigDataFrameException("Not implemented")
@@ -86,8 +89,10 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        file : String   The name of a snapshot file.
-        include_schema : Boolean   Whether to also write a schema file with same name.
+        file : String
+		    The name of a snapshot file.
+        include_schema : Boolean
+		    Whether to also write a schema file with same name.
         """
         #TODO: use a JSON schema (or XML XSD or DTD?) --embed in the same
         #      file, similar to header?
@@ -106,14 +111,16 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        other : DataFrame or list of Series/dict-like objects
-        ignore_index : boolean, default False. If True, do not use the index labels. Useful for gluing together
+        other : DataFrame or a list of Series/dict-like objects.
+        ignore_index : Boolean, default False.
+		    If True, do not use the index labels. Useful for gluing together
             record arrays.
-        verify_integrity : boolean, default False. If True, raises Exception on creating index with duplicates.
+        verify_integrity : Boolean, default False.
+		    If True, raises Exception on creating index with duplicates.
 
         Notes
         -----
-        If you pass a list of dict and the keys are all contained in the
+        If you pass a list of dict, and the keys are all contained in the
         DataFrame's index, the order of the columns in the resulting DataFrame
         will not be hanged.
 
@@ -128,7 +135,7 @@ class BigDataFrame(object):
              sort=False):
         """
         (pandas)
-        Joins columns with another DataFrame either on index or on a key column. 
+        Joins columns with another DataFrame, either on the index or on a key column. 
 		
 		Efficiently Join multiple DataFrame objects by index at once by passing a list.
 
@@ -150,15 +157,17 @@ class BigDataFrame(object):
             * right: Use input frame's index.
             * outer: Form union of indexes.
             * inner: Use intersection of indexes.
-        lsuffix : string   The suffix to use from the left frame's overlapping columns.
-        rsuffix : string   The suffix to use from right frame's overlapping columns.
-        sort : boolean, default False
+        lsuffix : String
+		    The suffix to use from the left frame's overlapping columns.
+        rsuffix : String
+		    The suffix to use from the right frame's overlapping columns.
+        sort : Boolean, default False.
             If True, orders the resulting DataFrame lexicographically by the join key. If False,
             preserves the index order of the calling (left) DataFrame.
 
         Notes
         -----
-        The on, lsuffix, and rsuffix options are not supported when passing a list
+        The on lsuffix and rsuffix options are not supported when passing a list
         of DataFrame objects.
 
         Returns
@@ -192,25 +201,26 @@ class BigDataFrame(object):
             None and not merging on indexes, then it merges on the intersection
             of the columns by default.
         left_on : label or list, or array-like
-            Field names to join on in left DataFrame. Can be a vector or list of
+            Field names to join on in the left DataFrame. Can be a vector or list of
             vectors of the length of the DataFrame to use a particular vector as
             the join key instead of columns.
         right_on : label or list, or array-like
-            Field names to join on in right DataFrame or vector or list of vectors
+            Field names to join on in the right DataFrame or vector or list of vectors
             per left_on docs.
-        left_index : boolean, default False
+        left_index : Boolean, default False
             Use the index from the left DataFrame as the join key(s). If it is a
             MultiIndex, the number of keys in the other DataFrame (either the
             index or a number of columns) must match the number of levels.
-        right_index : boolean, default False
-            Use the index from the right DataFrame as the join key. Same
-            caveats as left_index.
-        sort : boolean, default False
+        right_index : Boolean, default False
+            Use the index from the right DataFrame as the join key(s).  If it is a
+            MultiIndex, the number of keys in the other DataFrame (either the
+            index or a number of columns) must match the number of levels.
+        sort : Boolean, default False
             Sort the join keys lexicographically in the resulting DataFrame.
         suffixes : 2-length sequence (tuple, list, ...)
             The suffix to apply to overlapping column names in the left and right
             sides, respectively.
-        copy : boolean, default True
+        copy : Boolean, default True
             If False, do not copy data unnecessarily.
 
         Examples
@@ -269,7 +279,7 @@ class BigDataFrame(object):
             The name for the new column that will be created as a result of applying the transformation.
         transformation : enumeration
             The transformation to apply.
-        keep_source_column: boolean
+        keep_source_column: Boolean
             Whether to keep the given column in the output of the transformation.
         transformation_args: list
             The arguments for the transformation to apply.
@@ -311,10 +321,10 @@ class BigDataFrame(object):
         axis : {0, 1}
             0 : Apply function to each column.
             1 : Apply function to each row.
-        broadcast : bool, default False
+        broadcast : Boolean, default False
             For aggregation functions, return an object of same size with values
             propagated.
-        raw : boolean, default False
+        raw : Boolean, default False
             If False, convert each row or column into a Series. If True, the
             function you pass will receive ndarray objects instead. If you are
             just applying a NumPy reduction function, this will achieve much
@@ -382,7 +392,7 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        by : mapping function / list of functions, dict, Series, or tuple / list of column names.
+        by : mapping function or list of functions, dict, Series, or tuple or list of column names.
             The function (or list of functions) that you pass is called on each element of the object 
 			index to determine the groups. If you pass a dict or Series, the Series or dict VALUES 
 			will be used to determine the groups.
@@ -390,15 +400,15 @@ class BigDataFrame(object):
         level : int, level name, or sequence of such, default None.
             If the axis is a MultiIndex (hierarchical), group by a particular
             level or levels.
-        as_index : boolean, default True
+        as_index : Boolean, default True
             For aggregated output, return the object with group labels as the
             index. Only relevant for DataFrame input. as_index=False is
             effectively "SQL-style" grouped output.
-        sort : boolean, default True
+        sort : Boolean, default True
             Sort group keys. You will get better performance by turning this off.
-        group_keys : boolean, default True
-            When calling apply, add group keys to the index to identify pieces.
-        squeeze : boolean, default False
+        group_keys : Boolean, default True
+            When calling apply, add group keys to the index to identify the pieces.
+        squeeze : Boolean, default False
             Reduce the dimensionaility of the return type if possible, otherwise
             return a consistent type.
 
@@ -455,12 +465,12 @@ class BigDataFrame(object):
 
     def head(self, n=10):
         """
-        Provides string representation of the first n lines of the table.
+        Provides a string representation of the first n lines of the table.
 
         Parameters
         ----------
         n : int
-            The number of rows
+            The number of rows.
 
         Returns
         -------
