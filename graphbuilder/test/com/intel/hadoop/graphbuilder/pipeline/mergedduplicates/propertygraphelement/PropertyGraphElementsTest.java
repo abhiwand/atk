@@ -148,7 +148,7 @@ public class PropertyGraphElementsTest{
 
         SerializedPropertyGraphElementStringTypeVids elementOne = new SerializedPropertyGraphElementStringTypeVids();
         elementOne.init(edge);
-        SerializedPropertyGraphElementLongTypeVids elementTwo = new SerializedPropertyGraphElementLongTypeVids();
+        SerializedPropertyGraphElementStringTypeVids elementTwo = new SerializedPropertyGraphElementStringTypeVids();
         elementTwo.init(vertex);
 
 

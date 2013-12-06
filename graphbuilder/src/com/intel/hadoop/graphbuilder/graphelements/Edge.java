@@ -49,6 +49,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends Property
 
     public Edge() {
         super();
+
         this.properties = new PropertyMap();
     }
 
@@ -60,10 +61,29 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends Property
      * @param label the edge label
      */
     public Edge(VidType src, VidType dst, StringType label) {
+        super();
+
         this.src = src;
         this.dst = dst;
         this.label = label;
         this.properties = new PropertyMap();
+    }
+
+
+    /**
+     * Creates an edge with given source, destination, label and property map
+     *
+     * @param src vertex ID of the edge's source vertex
+     * @param dst vertex ID of the edge's destination vertex
+     * @param label the edge label
+     */
+    public Edge(VidType src, VidType dst, StringType label, PropertyMap propertyMap) {
+        super();
+
+        this.src = src;
+        this.dst = dst;
+        this.label = label;
+        this.properties = propertyMap;
     }
 
     /**

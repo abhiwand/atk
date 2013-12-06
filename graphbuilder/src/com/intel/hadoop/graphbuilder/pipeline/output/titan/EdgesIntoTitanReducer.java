@@ -35,7 +35,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
     private TitanGraph            graph;
     private HashMap<Object, Long> vertexNameToTitanID;
 
-    //  final KeyFunction keyfunction = new SourceVertexKeyFunction();
+    private EdgesIntoTitanReducerCallback edgesIntoTitanReducerCallback;
 
     private static enum Counters {
         EDGE_PROPERTIES_WRITTEN,
@@ -66,6 +66,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
         this.vertexNameToTitanID = new HashMap<Object, Long>();
 
         this.graph               = tribecaGraphFactoryOpen(context);
+        edgesIntoTitanReducerCallback = new EdgesIntoTitanReducerCallback();
     }
 
     /**
@@ -76,7 +77,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
      * been assigned the TitanID of its source vertex.
      * </p>
      * <p>
-     * Titan IDs are propagatd from the destination vertices to each edge and the edges are loaded into Titan
+     * Titan IDs are propagated from the destination vertices to each edge and the edges are loaded into Titan
      * using the BluePrints API
      * </p>
      * @param key    mapreduce key; a hash of a vertex ID
@@ -91,45 +92,15 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
 
         HashMap<EdgeID, Writable> edgePropertyTable  = new HashMap();
 
-        Iterator<SerializedPropertyGraphElement> valueIterator = values.iterator();
-
-        while (valueIterator.hasNext()) {
-
-            PropertyGraphElement nextElement = valueIterator.next().graphElement();
-
-            // Apply reduce on vertex
-
-            if (nextElement.isVertex()) {
-
-                Vertex vertex = (Vertex) nextElement;
-
-                Object      vertexId      = vertex.getVertexId();
-                PropertyMap propertyMap   = vertex.getProperties();
-                long        vertexTitanId = ((LongType) propertyMap.getProperty("TitanID")).get();
-
-                vertexNameToTitanID.put(vertexId, vertexTitanId);
-
-            } else {
-
-                // Apply reduce on edges, remove self and (or merge) duplicate edges.
-                // Optionally remove bidirectional edge.
-
-                Edge   edge   = (Edge) nextElement;
-                EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
-
-                edgePropertyTable.put(edgeID, edge.getProperties());
-            }
+        for(SerializedPropertyGraphElement graphElement: values){
+            graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback, edgePropertyTable, vertexNameToTitanID);
         }
 
         int edgeCount   = 0;
 
         // Output edge records
 
-        Iterator<Map.Entry<EdgeID, Writable>> edgeIterator = edgePropertyTable.entrySet().iterator();
-
-        while (edgeIterator.hasNext()) {
-
-            Map.Entry<EdgeID, Writable> edgeMapEntry = edgeIterator.next();
+        for (Map.Entry<EdgeID, Writable> edgeMapEntry : edgePropertyTable.entrySet()) {
 
             Object dst   = edgeMapEntry.getKey().getDst();
             String label = edgeMapEntry.getKey().getLabel().toString();
@@ -146,11 +117,11 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
 
             com.tinkerpop.blueprints.Edge bluePrintsEdge = null;
             try {
-                bluePrintsEdge = this.graph.addEdge(null,
-                                                                              srcBlueprintsVertex,
-                                                                              tgtBlueprintsVertex,
-                                                                              label);
-            } catch (IllegalArgumentException e) {;
+
+                bluePrintsEdge = this.graph.addEdge(null,srcBlueprintsVertex, tgtBlueprintsVertex, label);
+
+            } catch (IllegalArgumentException e) {
+
                 GraphBuilderExit.graphbuilderFatalExitException(StatusCode.TITAN_ERROR,
                         "Could not add edge to Titan; likely a schema error. The label on the edge is  " + label,
                         LOG, e);
@@ -167,13 +138,12 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
                 EncapsulatedObject mapEntry = (EncapsulatedObject) propertyMap.getProperty(propertyKey.toString());
 
                 try {
-                bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
+                    bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
                 } catch (IllegalArgumentException e) {
                     LOG.fatal("Could not add edge property; probably a schema error. The label on the edge is  " + label);
                     LOG.fatal("The property on the edge is " + propertyKey.toString());
                     LOG.fatal(e.getMessage());
-                    e.printStackTrace();
-                    System.exit(1);
+                    GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INDESCRIBABLE_FAILURE, "", LOG, e);
                 }
 
             }
@@ -195,5 +165,13 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         this.graph.shutdown();
+    }
+
+    public  Enum getEdgeCounter(){
+        return Counters.NUM_EDGES;
+    }
+
+    public Enum getEdgePropertiesCounter(){
+        return Counters.EDGE_PROPERTIES_WRITTEN;
     }
 }

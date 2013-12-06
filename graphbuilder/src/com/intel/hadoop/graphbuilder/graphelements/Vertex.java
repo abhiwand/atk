@@ -47,6 +47,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      */
     public Vertex() {
         super();
+
         this.properties = new PropertyMap();
     }
 
@@ -56,8 +57,22 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      * @param vid vertex ID
      */
     public Vertex(VertexIdType vid) {
+        super();
+
         this.vertexId   = vid;
         this.properties = new PropertyMap();
+    }
+
+    /**
+     * Create a vertex with given vertex ID and given property map
+     *
+     * @param vid vertex ID
+     */
+    public Vertex(VertexIdType vid, PropertyMap propertyMap) {
+        super();
+
+        this.vertexId   = vid;
+        this.properties = propertyMap;
     }
 
     /**
