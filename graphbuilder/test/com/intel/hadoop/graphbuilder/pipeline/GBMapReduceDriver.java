@@ -15,7 +15,20 @@ import java.util.List;
 
 import static org.apache.hadoop.mrunit.internal.util.ArgumentChecker.returnNonNull;
 
-
+/**
+ * MrUnit MapReduceDriver was extended and modified lightly to allow instantiation  with a reduceDriver and mapDriver
+ * instead if the Map and Reduce classes. Using drivers allows us to get a context mock before we run the map reduce
+ * pipeline.
+ *
+ * @see MapReduceDriver
+ *
+ * @param <K1> map input key
+ * @param <V1> mapinput value
+ * @param <K2> map output key / reduce input key
+ * @param <V2> map output value / reduce input value
+ * @param <K3> reduce output key
+ * @param <V3> reduce output value
+ */
 public class GBMapReduceDriver<K1, V1, K2, V2, K3, V3> extends
         MapReduceDriver<K1, V1, K2, V2, K3, V3> implements ContextDriver {
 

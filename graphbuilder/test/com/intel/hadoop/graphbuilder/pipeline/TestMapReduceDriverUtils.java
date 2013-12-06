@@ -54,12 +54,13 @@ import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 /**
- * An abstract class that can be extended that will hold most of the testing setup need for GB. This will reduce the
- * amount of setup needed to test the hbase->vertices to titan mr pipeline and edges to titan reducer. All the external
- * depencies like titan, hbase are mocked out but otherwise this will run the entire pipeline from command line parsing
+ * An abstract class that can be extended that will hold most of the testing setup needed for output pipeline
+ * grealty reducing the setup needed to test the hbase->vertices to titan mr pipeline and edges to titan reducer.
+ * All the external depencies like titan, hbase are mocked out but otherwise this will run the entire pipeline from
+ * command line parsing
  * rules, tokenizer to writting to titan.
  *
- * @see PowerMockito
+ * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain
  * @see GBMapReduceDriver
  */
 @RunWith(PowerMockRunner.class)
