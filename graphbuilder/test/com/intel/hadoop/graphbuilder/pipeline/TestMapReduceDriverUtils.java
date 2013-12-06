@@ -427,7 +427,7 @@ public abstract class TestMapReduceDriverUtils {
         return edge;
     }
 
-    public static final addProperties(PropertyGraphElement graphElement, HashMap<String, WritableComparable> properties){
+    public static final void addProperties(PropertyGraphElement graphElement, HashMap<String, WritableComparable> properties){
         for(Map.Entry<String, WritableComparable> entry: properties.entrySet()){
             graphElement.setProperty(entry.getKey(), entry.getValue());
         }

@@ -15,8 +15,7 @@ public class PropertyGraphElementLabel implements PropertyGraphElementTypeCallba
 
     @Override
     public WritableComparable vertex(PropertyGraphElement propertyGraphElement, Object... args) {
-        Vertex vertex = (Vertex)propertyGraphElement;
-        return vertex.getVertexId();
+        return null;
     }
 
     @Override
