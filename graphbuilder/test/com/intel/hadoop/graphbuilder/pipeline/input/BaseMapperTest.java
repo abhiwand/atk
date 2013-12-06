@@ -34,7 +34,7 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 public class BaseMapperTest {
     Configuration conf = new Configuration();
     Mapper.Context mapperContextMock;
-    //Mapper.Context spiedMapperContext;
+
     Logger loggerMock;
     BaseMapper baseMapper;
     BaseMapper spiedBaseMapper;
