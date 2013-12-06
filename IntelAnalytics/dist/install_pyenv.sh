@@ -1,3 +1,4 @@
+#!/bin/sh
 # install_py.sh  (run as root)
 #
 # Installs necessary dependencies for Tribeca Python
@@ -102,7 +103,7 @@ function check {
 
 function test {
     # exit if the python module cannot be imported
-    if [ ! -e $(python -c "import $1")]; then
+    if [ ! -e $(python -c "import $1") ]; then
         echo $hdr **Failed to install $1
         exit 1
     fi
@@ -114,6 +115,21 @@ function ins {
        echo $hdr Install $1
        pip install $1
        test $1
+    fi
+}
+
+function ins_ignore_virt {
+    if check $1; then
+        echo $hdr Install $1
+        pip install $1
+        pkgs=${PYTHON_VIRTUALENV}/lib/python2.7/site-packages
+        pushd ${pkgs}
+        for f in /usr/lib/python2.7/site-packages/${1}*
+        do
+            echo $hdr Create symlink to ${f} at ${pkgs}
+            ln -sf ${f}
+        done
+        popd
     fi
 }
 
@@ -179,12 +195,18 @@ if check pydoop; then
         for f in /usr/lib/python2.7/site-packages/pydoop*
         do
             echo $hdr Create symlink to ${f} at ${pkgs}
-            ln -s ${f}
+            ln -fs ${f}
         done
         popd
    fi
    test pydoop
 fi
+
+
+#nose haas a pip error that ignores the virtenv
+ins_ignore_virt nose
+ins coverage
+
 
 echo $hdr Python Virtual Environment Installation complete
 echo $hdr "To activate enter: 'source $PYTHON_VIRTUALENV/bin/activate'"
