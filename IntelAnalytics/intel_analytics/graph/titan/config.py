@@ -11,19 +11,19 @@ class TitanConfig(object):
 
     def write_gb_cfg(self, tablename, stream=None):
         """
-        Writes a GraphBuilder config XML file
+        Writes a GraphBuilder config XML file.
 
         Parameters
         ----------
-        tablename : string
-            name of destination table in Titan
+        tablename : String
+            The name of the destination table in Titan.
         stream : stream
-           an open dest stream, if None, cfg written to cfg-specified file path
+            An open dest stream, if None, the cfg file is written to the cfg-specified file path.
 
         Returns
         -------
-        filename : string
-            full path of the config file created
+        filename : String
+            The full path of the config file created by this method.
         """
         self.config['titan_storage_tablename'] = tablename
         filename = os.path.join(self.config['titan_conf_folder'],
@@ -36,19 +36,19 @@ class TitanConfig(object):
 
     def write_rexster_cfg(self, tablename, stream=None):
         """
-        Writes a Rexster config XML file
+        Writes a Rexster config XML file.
 
         Parameters
         ----------
-        tablename : string
-           name of destination table in Titan
+        tablename : String
+            The name of the destination table in Titan.
         stream : stream
-           an open dest stream, if None, cfg written to cfg-specified file path
+            An open dest stream, if None, the cfg file is written to cfg-specified file path.
 
         Returns
         -------
-        filename : string
-            full path of the config file created
+        filename : String
+            The full path of the config file created by this method.
         """
         return self._write_cfg(tablename,
                                stream,

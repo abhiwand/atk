@@ -4,7 +4,7 @@ Titan-base Giraph Machine Learning
 
 class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     """
-    Titan-based Giraph Machine Learning instance for a graph
+    Titan-based Giraph Machine Learning instance for a graph.
     """
 
     def __init__(self, graph):
@@ -28,10 +28,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
 class BeliefPropagation(object):  #TODO: eventually inherit from base Algo class
     """
-    Descriptive class of BP algo... should contain info
-    about the cfg constants, the user supplied parameters
+    Descriptive class of BP algorithm.
+	
+	Should contain info about the cfg constants, the user supplied parameters
     and what the results are --can also define a specific
-    BeliefPropagationResults class if necessary
+    BeliefPropagationResults class if necessary.
     """
     pass
 
