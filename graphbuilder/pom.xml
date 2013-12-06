@@ -16,6 +16,11 @@
         <powermock.version>1.5.1</powermock.version>
         <tinkerpop.version>2.4.0</tinkerpop.version>
         <titan.version>0.4.1</titan.version>
+        <license.inceptionYear>2012</license.inceptionYear>
+        <license.url>http://www.apache.org/licenses/LICENSE-2.0</license.url>
+        <license.project.url>http://www.01.org/GraphBuilder</license.project.url>
+        <license.owner>Intel Corporation</license.owner>
+
     </properties>
 
     <build>
@@ -78,6 +83,34 @@
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.mycila</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <header>license.txt</header>
+                    <properties>
+                        <owner>${license.owner}</owner>
+                        <year>${license.inceptionYear}</year>
+                        <licenseUrl>${license.url}</licenseUrl>
+                        <projectUrl>${license.project.url}</projectUrl>
+                    </properties>
+                    <includes>
+                        <include>demoapps/</include>
+                        <include>src/</include>
+                        <include>test/</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -192,6 +225,16 @@
 
     <repositories>
         <repository>
+            <id>info-bliki-repository1</id>
+            <url>http://repo1.maven.org/maven2/com/mycila/license-maven-plugin/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>info-bliki-repository</id>
             <url>http://gwtwiki.googlecode.com/svn/maven-repository/</url>
             <releases>
@@ -222,6 +265,11 @@
     </repositories>
 
     <pluginRepositories>
+        <pluginRepository>
+            <id>test</id>
+            <name>license checker</name>
+            <url>http://repo1.maven.org/maven2/com/mycila/license-maven-plugin/</url>
+        </pluginRepository>
         <pluginRepository>
             <id>central</id>
             <name>Maven Plugin Repository</name>
