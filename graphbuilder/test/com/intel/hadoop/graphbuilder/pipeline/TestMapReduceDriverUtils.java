@@ -420,18 +420,21 @@ public abstract class TestMapReduceDriverUtils {
         return vertex;
     }
 
-    public static final Edge<StringType> newEdge(String src, String dst, String label, HashMap<String, WritableComparable> properties){
+    public static final Edge<StringType> newEdge(String src, String dst, String label, PropertyMap propertyMap){
         com.intel.hadoop.graphbuilder.graphelements.Edge edge =
-                new Edge<StringType>(new StringType(src), new StringType(dst), new StringType(label));
-
+                new Edge<StringType>(new StringType(src), new StringType(dst), new StringType(label), propertyMap);;
         return edge;
     }
 
-    public static final void addProperties(PropertyGraphElement graphElement, HashMap<String, WritableComparable> properties){
+    public static final Edge<StringType> newEdge(String src, String dst, String label, HashMap<String, WritableComparable> properties){
+        com.intel.hadoop.graphbuilder.graphelements.Edge edge =
+                new Edge<StringType>(new StringType(src), new StringType(dst), new StringType(label));
         for(Map.Entry<String, WritableComparable> entry: properties.entrySet()){
-            graphElement.setProperty(entry.getKey(), entry.getValue());
+            edge.setProperty(entry.getKey(), entry.getValue());
         }
+        return edge;
     }
+
     /**
      * setup our sample data for our Results column list
      *

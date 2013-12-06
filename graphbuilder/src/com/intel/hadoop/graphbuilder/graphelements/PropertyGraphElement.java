@@ -27,6 +27,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     private PropertyGraphElementSrc propertyGraphElementSrc;
     private PropertyGraphElementLabel propertyGraphElementLabel;
     private PropertyGraphElementProperty propertyGraphElementProperty;
+    private PropertyGraphElementSetProperties propertyGraphElementSetProperties;
 
     public PropertyGraphElement(){
         propertyGraphElementObject = new PropertyGraphElementObject();
@@ -36,6 +37,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
         propertyGraphElementSrc = new PropertyGraphElementSrc();
         propertyGraphElementLabel = new PropertyGraphElementLabel();
         propertyGraphElementProperty = new PropertyGraphElementProperty();
+        propertyGraphElementSetProperties = new PropertyGraphElementSetProperties();
     }
 
     public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback, Object ... args){
@@ -75,6 +77,10 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
 
     public Object getProperty(String key){
         return this.typeCallback(propertyGraphElementProperty, key);
+    }
+
+    public void setProperties(PropertyMap propertyMap){
+        this.typeCallback(propertyGraphElementSetProperties, propertyMap);
     }
 
 }
