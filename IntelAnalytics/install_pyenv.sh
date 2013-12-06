@@ -157,6 +157,10 @@ if check zmq; then
 fi
 ins pyjavaproperties
 
+# load MathJax into IPython's static folder to avoid CDN problems
+python -c'from IPython.external.mathjax import install_mathjax;
+install_mathjax(dest="/usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/IPython/html/static/mathjax")'
+
 # add pydoop to do hdfs, or mapred in python directly
 if check pydoop; then
    echo $hdr Install pydoop
