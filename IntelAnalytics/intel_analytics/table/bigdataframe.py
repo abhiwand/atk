@@ -54,16 +54,13 @@ class BigDataFrame(object):
 
     def to_csv(self, filename, include_header=True, include_schema=True):
         """
-        Serialize the current state of the table to a CSV file.
+        Serializes the current state of the table to a CSV file.
 
         Parameters
         ----------
-        filename : String
-            The name of the file.
-        include_header : Boolean
-            Whether to write the header as the first line.
-        include_schema : Boolean
-            Whether to also write a schema file with same name.
+        filename : String   The name of the file.
+        include_header : Boolean   Whether to write the header as the first line.
+        include_schema : Boolean   Whether to also write a schema file with same name.
         """
         # We'll create an HDFS folder and shard into files
         # We'll provide a separate, explicit "Download" mechanism to go from
@@ -72,14 +69,12 @@ class BigDataFrame(object):
 
     def to_json(self, filename, include_schema=True):
         """
-        Serialize the current state of the table to an XML file.
+        Serializes the current state of the table to an XML file.
 
         Parameters
         ----------
-        file : String
-            The name of snapshot file.
-        include_schema : Boolean
-            Whether to also write a schema file with same name.
+        file : String   The name of snapshot file.
+        include_schema : Boolean   Whether to also write a schema file with same name.
         """
         #TODO: embed the schema in same file, similar to header?
         raise BigDataFrameException("Not implemented")
@@ -87,14 +82,12 @@ class BigDataFrame(object):
 
     def to_xml(self, filename, include_schema=True):
         """
-        Serialize the current state of the table to an XML file.
+        Serializes the current state of the table to an XML file.
 
         Parameters
         ----------
-        file : String
-            The name of a snapshot file.
-        include_schema : Boolean
-            Whether to also write a schema file with same name.
+        file : String   The name of a snapshot file.
+        include_schema : Boolean   Whether to also write a schema file with same name.
         """
         #TODO: use a JSON schema (or XML XSD or DTD?) --embed in the same
         #      file, similar to header?
@@ -107,18 +100,16 @@ class BigDataFrame(object):
     def append(self, other, ignore_index=False, verify_integrity=False):
         """
         (pandas)
-        Append columns of another frame to the end of this frame's columns and
+        Appends the columns of another frame to the end of this frame's columns and
         index, returning a new object. Columns not in this frame are added as new
         columns.
 
         Parameters
         ----------
         other : DataFrame or list of Series/dict-like objects
-        ignore_index : boolean, default False
-            If True, do not use the index labels. Useful for gluing together
+        ignore_index : boolean, default False. If True, do not use the index labels. Useful for gluing together
             record arrays.
-        verify_integrity : boolean, default False
-            If True, raises Exception on creating index with duplicates.
+        verify_integrity : boolean, default False. If True, raises Exception on creating index with duplicates.
 
         Notes
         -----
@@ -137,9 +128,9 @@ class BigDataFrame(object):
              sort=False):
         """
         (pandas)
-        Join columns with another DataFrame either on index or on a key
-        column. Efficiently Join multiple DataFrame objects by index at once by
-        passing a list.
+        Joins columns with another DataFrame either on index or on a key column. 
+		
+		Efficiently Join multiple DataFrame objects by index at once by passing a list.
 
         Parameters
         ----------
@@ -148,28 +139,26 @@ class BigDataFrame(object):
             If you pass a Series, you must set its name attribute, which will be
             used as the column name in the resulting joined DataFrame.
         on : column name, tuple/list of column names, or array-like.
-            Column(s) to use for joining, otherwise join on index. If you give multiple
+            The column(s) to use for joining, otherwise join on the index. If you give multiple
             columns, the passed DataFrame must have a MultiIndex. You can
             pass an array as the join key, if it is not already contained in the
             calling DataFrame. This is similar to an Excel VLOOKUP operation.
         how : {'left', 'right', 'outer', 'inner'}
             How to handle indexes of the two objects. Default: 'left'
             for joining on index, None, otherwise:
-            * left: use calling frame's index
-            * right: use input frame's index
-            * outer: form union of indexes
-            * inner: use intersection of indexes
-        lsuffix : string
-            The suffix to use from the left frame's overlapping columns.
-        rsuffix : string
-            The suffix to use from right frame's overlapping columns.
+            * left: Use calling frame's index.
+            * right: Use input frame's index.
+            * outer: Form union of indexes.
+            * inner: Use intersection of indexes.
+        lsuffix : string   The suffix to use from the left frame's overlapping columns.
+        rsuffix : string   The suffix to use from right frame's overlapping columns.
         sort : boolean, default False
             If True, orders the resulting DataFrame lexicographically by the join key. If False,
             preserves the index order of the calling (left) DataFrame.
 
         Notes
         -----
-        on, lsuffix, and rsuffix options are not supported when passing a list
+        The on, lsuffix, and rsuffix options are not supported when passing a list
         of DataFrame objects.
 
         Returns
@@ -183,7 +172,7 @@ class BigDataFrame(object):
               suffixes=('_x', '_y'), copy=True):
         """
         (pandas)
-        Merge DataFrame objects by performing a database-style join operation by
+        Merges DataFrame objects by performing a database-style join operation by
         columns or indexes.
 
         If joining columns on columns, the DataFrame indexes *will be
@@ -194,10 +183,10 @@ class BigDataFrame(object):
         ----------
         right : DataFrame
         how : {'left', 'right', 'outer', 'inner'}, default 'inner'
-            * left: use only keys from left frame (SQL: left outer join)
-            * right: use only keys from right frame (SQL: right outer join)
-            * outer: use union of keys from both frames (SQL: full outer join)
-            * inner: use intersection of keys from both frames (SQL: inner join)
+            * left: Use only keys from left frame (SQL: left outer join)
+            * right: Use only keys from right frame (SQL: right outer join)
+            * outer: Use union of keys from both frames (SQL: full outer join)
+            * inner: Use intersection of keys from both frames (SQL: inner join)
         on : label or list
             Field names to join on. Must be found in both DataFrames. If on is
             None and not merging on indexes, then it merges on the intersection
