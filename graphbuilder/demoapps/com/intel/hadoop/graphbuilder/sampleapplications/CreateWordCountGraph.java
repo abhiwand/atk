@@ -63,21 +63,6 @@ public class CreateWordCountGraph {
     private static final   Logger  LOG             = Logger.getLogger(CreateWordCountGraph.class);
     private static         boolean titanAsDataSink = false;
 
-    /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return true;
-        }
-
-        @Override
-        public boolean shouldUseHBase() {
-            return false;
-        }
-    }
-
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
@@ -95,13 +80,11 @@ public class CreateWordCountGraph {
                 .hasArgs()
                 .withArgName("dictionary path")
                 .create("d"));
-
         options.addOption(OptionBuilder.withLongOpt("stopwords")
                 .withDescription("stop words path")
                 .hasArgs()
                 .withArgName("stop words path")
                 .create("s"));
-
         commandLineInterface.setOptions(options);
     }
 
@@ -145,23 +128,24 @@ public class CreateWordCountGraph {
 
         Timer timer = new Timer();
 
-        ConstructionPipeline job = new CreateWordCountGraph().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.addConfig(job);
+        GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
+        commandLineInterface.getRuntimeConfig().addConfig(pipeline);
 
         if (commandLineInterface.hasOption("d")) {
             String dictionaryPath = commandLineInterface.getOptionValue("dictionary");
-            job.addUserOpt("Dictionary", dictionaryPath);
+            pipeline.addUserOpt("Dictionary", dictionaryPath);
             LOG.info("Dictionary path: " + dictionaryPath);
         }
 
         if (commandLineInterface.hasOption("s")) {
             String stopwordsPath = commandLineInterface.getOptionValue("stopwords");
-            job.addUserOpt("Dictionary", stopwordsPath);
+            pipeline.addUserOpt("Dictionary", stopwordsPath);
             LOG.info("Stopwords path: " + stopwordsPath);
         }
 
+        String                     inputPathName      = commandLineInterface.getOptionValue("in");
         TextInputFormat            format             = new WikiPageInputFormat();
-        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
+        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format, inputPathName);
         WordCountGraphBuildingRule graphBuildingRule  = new WordCountGraphBuildingRule();
 
         OutputConfiguration outputConfiguration = null;
@@ -170,12 +154,15 @@ public class CreateWordCountGraph {
             outputConfiguration = new TitanOutputConfiguration();
         }
         else {
-            outputConfiguration = new TextGraphOutputConfiguration();
+            String outputPathName = commandLineInterface.getOptionValue("o");
+            outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
         }
 
         LOG.info("============= Creating Word Count Graph ===================");
         timer.start();
-        job.run(inputConfiguration, graphBuildingRule, outputConfiguration, cmd);
+        pipeline.run(inputConfiguration, graphBuildingRule,
+                GraphConstructionPipeline.BiDirectionalHandling.REMOVE_BIDIRECTIONALEDGES,
+                outputConfiguration, commandLineInterface.getCmd());
         LOG.info("========== Done Creating Word Count Graph  ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

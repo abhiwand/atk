@@ -24,9 +24,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import com.intel.hadoop.graphbuilder.graphelements.*;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TextGraphMergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -97,16 +98,16 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
             }
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Could not instantiate reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Could not instantiate reducer functions", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when instantiating reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer functions", LOG, e);
         } catch (ClassNotFoundException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Class not found exception when instantiating reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Class not found exception when instantiating reducer functions", LOG, e);
         } catch (Functional.FunctionalConfigurationError e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Configuration error when configuring reducer functionals.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Configuration error when configuring reducer functionals.", LOG, e);
         }
 
         initPropertyGraphElements(context);

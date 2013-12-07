@@ -33,6 +33,9 @@ import play.api.db.slick.DB
  */
 object DBGetWhiteListEntryCommand extends GetWhiteListEntryCommand {
 
+    /**
+     * see GetWhiteListEntryCommand
+     */
     def execute(email: String): Option[WhiteListRow] = DB.withSession {
         implicit session: scala.slick.session.Session =>
             val result = getByEmail(email).list

@@ -96,6 +96,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     private String[] vertexRules;
     private String[] edgeRules;
     private String[] directedEdgeRules;
+    private boolean  flattenLists = false;
 
     private Class vidClass = StringType.class;
     private Class<? extends GraphTokenizer>  tokenizerClass = HBaseTokenizer.class;
@@ -110,12 +111,12 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      */
     public HBaseGraphBuildingRule(CommandLine cmd) {
 
-        graphSchema = new PropertyGraphSchema();
+        this.graphSchema = new PropertyGraphSchema();
         try {
             this.hBaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
-                    "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
         srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
@@ -137,6 +138,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         generateEdgeSchemata();
         generateVertexSchemata();
+    }
+
+    /**
+     * Set the option to flatten lists.
+     * <p>When this option is set, string lists serialized as {string1,string2,...stringn} expand into n different
+     * strings string1, ... stringn when used as vertex IDs</p>
+     * @param flattenLists {@code boolean}
+     */
+    public void setFlattenLists(boolean flattenLists) {
+        this.flattenLists = flattenLists;
     }
 
     /**
@@ -185,7 +196,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Check that the vertex generation rules use only  legal column families.
+     * Check that the vertex generation rules use only legal column families.
      * <p/>
      * Because hbase allows different rows to contains different columns under each column family,
      * we cannot validate the full column name against the Hbase table.
@@ -204,7 +215,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             if (returnValue == false) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "GRAPHBUILDER FAILURE: " + vidColumn + " does not belong to a valid column family of table "
+                        "GRAPHBUILDER ERROR: " + vidColumn + " does not belong to a valid column family of table "
                                 + srcTableName, LOG);
             }
 
@@ -215,7 +226,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                 returnValue &= hBaseUtils.columnHasValidFamily(columnName, srcTableName);
                 if (returnValue == false) {
                     GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                            "GRAPHBUILDER FAILURE: " + columnName + " does not belong to a valid column family of table "
+                            "GRAPHBUILDER ERROR: " + columnName + " does not belong to a valid column family of table "
                                     + srcTableName, LOG);
                 }
             }
@@ -245,16 +256,17 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             List<String> propertyColNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
 
             returnValue &= hBaseUtils.columnHasValidFamily(srcVertexColName, srcTableName);
+
             if (returnValue == false) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "GRAPHBUILDER FAILURE: " + srcVertexColName + " does not belong to a valid column family of table "
+                        "GRAPHBUILDER ERROR: " + srcVertexColName + " does not belong to a valid column family of table "
                         + srcTableName, LOG);
             }
 
             returnValue &= hBaseUtils.columnHasValidFamily(tgtVertexColName, srcTableName);
             if (returnValue == false) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                        "GRAPHBUILDER FAILURE: " + tgtVertexColName + " does not belong to a valid column family of table "
+                        "GRAPHBUILDER ERROR: " + tgtVertexColName + " does not belong to a valid column family of table "
                                 + srcTableName, LOG);
             }
 
@@ -262,7 +274,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                 returnValue &= hBaseUtils.columnHasValidFamily(propertyColName, srcTableName);
                 if (returnValue == false) {
                     GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                            "GRAPHBUILDER FAILURE: " + propertyColName + " does not belong to a valid column family of table "
+                            "GRAPHBUILDER ERROR: " + propertyColName + " does not belong to a valid column family of table "
                                     + srcTableName, LOG);
                 }
             }
@@ -275,13 +287,13 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      * Store the edge and vertex generation rules in the job configuration for use by the MR time graph tokenizer.
      *
      * @param configuration reference to the job configuration in which rules for tokenizer will be stored
-     * @param cmd           the command line options provided by the user
      * @see HBaseTokenizer
      */
-    public void updateConfigurationForTokenizer(Configuration configuration, CommandLine cmd) {
+    public void updateConfigurationForTokenizer(Configuration configuration) {
         packVertexRulesIntoConfiguration(configuration, vertexRules);
         packEdgeRulesIntoConfiguration(configuration, edgeRules);
         packDirectedEdgeRulesIntoConfiguration(configuration, directedEdgeRules);
+        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", flattenLists);
     }
 
     /**
@@ -341,7 +353,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             for (String columnName : columnNames) {
                 String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }
@@ -358,7 +370,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             for (String columnName : columnNames) {
                 String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }
@@ -488,7 +500,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     /**
      * Obtain vertex ID column name from vertex rule.
      * <p/>
-     * <code>vertex_col1=vertex_prop1,...vertex_coln</code>
+     * <code>[RDF Object],vertex_col1=vertex_prop1,...vertex_coln</code>
      *
      * @return the column name of the vertex ID in the given vertex rule
      */
@@ -496,8 +508,31 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         String[] columnNames = vertexRule.split("\\=");
         String vertexIdColumnName = columnNames[0];
+        if (vertexIdColumnName.contains(",")) {
+            String[] elements  = vertexIdColumnName.split("\\,");
+            vertexIdColumnName = elements[1];
+        }
 
         return vertexIdColumnName;
+    }
+
+     /**
+     * Obtain RDF tag of the vertex from vertex rule.
+     * <p/>
+     * <code>[RDF Object],vertex_col1=vertex_prop1,...vertex_coln</code>
+     *
+     * @return the RDF tag of the vertex in the given vertex rule
+     */
+    public static String getRDFTagFromVertexRule(String vertexRule) {
+
+        String[] columnNames = vertexRule.split("\\=");
+        String vertexIdColumnName = columnNames[0];
+        if (vertexIdColumnName.contains(",")) {
+            String[] elements  = vertexIdColumnName.split("\\,");
+            return elements[0];
+        } else {
+            return null;
+        }
     }
 
     /**

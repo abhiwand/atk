@@ -30,6 +30,9 @@ import play.api.Play.current
 
 object DBLoginCommand extends LoginCommand {
 
+    /**
+     * see LoginCommand
+     */
     def execute(email: String, statementGenerator: StatementGenerator): LoginOutput = DB.withSession {
         implicit session: scala.slick.session.Session =>
 
@@ -55,9 +58,9 @@ object DBLoginCommand extends LoginCommand {
     }
 
     /**
-     *
-     * @param rs
-     * @return
+     * find the uid from result set.
+     * @param rs result set
+     * @return uid
      */
     private def getUidFromResultSet(rs: ResultSet): Int = {
         var uid = 0

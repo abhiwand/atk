@@ -36,7 +36,7 @@ object Whitelists {
     }
 
     /**
-     *
+     * check whether the user with the specific email exists in the white list.
      * @param email
      * @return
      */
@@ -51,7 +51,7 @@ object Whitelists {
 
 
     /**
-     *
+     * get white list row by email.
      * @param email
      * @return
      */

@@ -17,6 +17,7 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
+
 package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
 
 import java.io.IOException;
@@ -83,6 +84,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
     private HBaseUtils hbaseUtils = null;
     private boolean    usingHBase = false;
+    private String     outputPathName;
 
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
@@ -96,6 +98,13 @@ public class TextGraphMR extends GraphGenerationMRJob {
     private Functional edgeReducerFunction;
     private boolean    cleanBidirectionalEdge;
 
+    /**
+     * The constructor. It requires the pathname for the output as an argument.
+     * @param outputPathName  the pathname as a String
+     */
+    public TextGraphMR(String outputPathName) {
+        this.outputPathName = outputPathName;
+    }
 
     /**
      * Set-up time routine that connects raw data ({@code inputConfiguration} and the graph generations rule
@@ -120,7 +129,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
                 this.hbaseUtils = HBaseUtils.getInstance();
             } catch (IOException e) {
                 GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
-                        "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+                        "GRAPHBUILDER_ERROR: Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
             }
             this.conf       = hbaseUtils.getConfiguration();
         } else {
@@ -148,10 +157,10 @@ public class TextGraphMR extends GraphGenerationMRJob {
             }
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot instantiate reducer functions.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot instantiate reducer functions.", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when instantiating reducer functions.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer functions.", LOG, e);
         }
     }
 
@@ -183,10 +192,10 @@ public class TextGraphMR extends GraphGenerationMRJob {
             this.mapValueType = (SerializedPropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when setting value class ( " + valueClass.getName() + ")", LOG, e);
         }
     }
 
@@ -235,13 +244,13 @@ public class TextGraphMR extends GraphGenerationMRJob {
      * @throws InterruptedException
      */
 
+    // dev todo:  the cmd parameter is deprecated and not used any more by this method ---
+    // it has not yet been eliminated because it has not been eliminated from the GraphGenerationMRJob abstract class
+    // which is blocked by getting the command lines out of the other reducers
+    @Override
     public void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException {
 
-        String outputPath = cmd.getOptionValue("out");
-
         // Set required parameters in configuration
-
-        String test = graphBuildingRule.getClass().getName();
 
         conf.set("GraphTokenizer", graphBuildingRule.getGraphTokenizerClass().getName());
         conf.setBoolean("noBiDir", cleanBidirectionalEdge);
@@ -259,11 +268,11 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
         // set the configuration per the input
 
-        inputConfiguration.updateConfigurationForMapper(conf, cmd);
+        inputConfiguration.updateConfigurationForMapper(conf);
 
         // update the configuration per the graphBuildingRule
 
-        graphBuildingRule.updateConfigurationForTokenizer(conf, cmd);
+        graphBuildingRule.updateConfigurationForTokenizer(conf);
 
         // create job from configuration and initialize MR parameters
 
@@ -272,7 +281,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
         // configure mapper  and input
 
-        inputConfiguration.updateJobForMapper(job, cmd);
+        inputConfiguration.updateJobForMapper(job);
 
         job.setMapOutputKeyClass(IntWritable.class);
         job.setMapOutputValueClass(mapValueType.getClass());
@@ -291,14 +300,14 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
         LazyOutputFormat.setOutputFormatClass(job, TextOutputFormat.class);
 
-        FileOutputFormat.setOutputPath(job, new Path(outputPath));
+        FileOutputFormat.setOutputPath(job, new Path(outputPathName));
 
         // fired up and ready to go!
 
         LOG.info("=========== Job: Creating vertex list and edge list from input data, saving as text file ===========");
 
         LOG.info("input: " + inputConfiguration.getDescription());
-        LOG.info("Output = " + outputPath);
+        LOG.info("Output = " + outputPathName);
 
         LOG.info("InputFormat = " + inputConfiguration.getDescription());
         LOG.info("GraphTokenizerFromString = " + graphBuildingRule.getClass().getName());

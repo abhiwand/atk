@@ -49,19 +49,24 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
         }
     }
 
+    /**
+     * Verify the token data is valid.
+     * @return userInfo
+     */
     def validateToken(): Option[UserInfo] = {
         Provider match {
             case Providers.GooglePlus =>
-                if (responseData == None)
-                    return None
-
-                userInfo = GooglePlus.validateToken(responseData.get.access_token)
+                userInfo = GooglePlus.validateToken(jsonData)
                 if (userInfo != None && userInfo.get.email != null) userInfo else None
             case Providers.None =>
                 None
         }
     }
 
+    /**
+     * Verify the user info is valid.
+     * @return
+     */
     def validateUserInfo(): Option[UserInfo] = {
         Provider match {
             case Providers.GooglePlus =>
@@ -73,6 +78,10 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
 
     }
 
+    /**
+     * Get user info from access token.
+     * @return
+     */
     def getUserInfo(): Option[UserInfo] = {
         Provider match {
             case Providers.GooglePlus =>
@@ -86,6 +95,10 @@ class Authorize(var authData: JsValue, var provider: Providers.Providers) {
         }
     }
 
+    /**
+     * Check whether the auth response data is valid.
+     * @return
+     */
     def isAuthResponseDataValid(): Boolean = {
         (validateTokenResponseData() && validateToken() != None && getUserInfo() != None)
     }

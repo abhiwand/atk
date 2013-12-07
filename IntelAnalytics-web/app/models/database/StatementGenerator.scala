@@ -29,5 +29,11 @@ import java.sql.CallableStatement
  * define signature for preparing call statement.
  */
 trait StatementGenerator {
+    /**
+     * get CallableStatement instance.
+     * @param session
+     * @param callString
+     * @return CallableStatement instance.
+     */
     def getCallStatement(session: scala.slick.session.Session, callString: String): CallableStatement
 }

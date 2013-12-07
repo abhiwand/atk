@@ -7,7 +7,7 @@ source IntelAnalytics_common_env.sh
 
 # existing AMI Names (with build version, can override 
 if [ -z "${IA_AMI_BUILD}" ]; then
-    IA_AMI_BUILD="Build.03"
+    IA_AMI_BUILD="Build.07"
 fi
 export IA_AMI_VERSION="${IA_VERSION}-${IA_AMI_BUILD}"
 export IA_AMI_MASTER="${IA_NAME}-Master-${IA_AMI_VERSION}"
@@ -22,7 +22,9 @@ export IA_INSTANCE_TYPE=cc2.8xlarge
 
 # Default IAM group and user
 export IA_IAM_GROUP=${IA_NAME}_Public
-export IA_IAM_USER=${IA_NAME}_User
+if [ -z "${IA_IAM_USER}" ]; then
+    export IA_IAM_USER=${IA_NAME}_User
+fi
 
 # The current requirements on supported clusters are
 # - max 40 clusters

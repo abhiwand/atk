@@ -258,7 +258,7 @@ public class CommandLineInterface{
         HelpFormatter h = new HelpFormatter();
         h.printHelp(error, options);
         GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                "Unable to process command line.", LOG);
+                "GRAPHBUILDER_ERROR: Unable to process command line.", LOG);
     }
 
     private void _showHelp(String help){

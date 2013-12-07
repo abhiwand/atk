@@ -17,6 +17,7 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
+
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.text.textinputformats.WikiPageInputFormat;
@@ -95,27 +96,11 @@ public class CreateLinkGraph {
             commandLineInterface.showError("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
         } else if (cmd.hasOption(outputPathOpt)) {
             outputPath = cmd.getOptionValue(outputPathOpt);
-            LOG.info("output path: " + outputPath);
+            LOG.info("GRAPHBUILDER_INFO: output path: " + outputPath);
         } else if (cmd.hasOption(titanStorageOpt)) {
             titanAsDataSink = true;
         } else {
-            commandLineInterface.showError("An output path is required");
-        }
-    }
-
-    /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return false;
-        }
-
-        @Override
-        public boolean shouldUseHBase() {
-            return false;
+            commandLineInterface.showError("GRAPHBUILDER_ERROR: An output path is required");
         }
     }
 
@@ -131,11 +116,13 @@ public class CreateLinkGraph {
 
         Timer timer = new Timer();
 
-        ConstructionPipeline job = new CreateLinkGraph().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.addConfig(job);
+        GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
+        commandLineInterface.addConfig(pipeline);
+
+        String inputPathName = commandLineInterface.getOptionValue("in");
 
         WikiPageInputFormat        format             = new WikiPageInputFormat();
-        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format);
+        TextFileInputConfiguration inputConfiguration = new TextFileInputConfiguration(format, inputPathName);
         GraphBuildingRule          buildingRule       = new LinkGraphBuildingRule();
 
         OutputConfiguration outputConfiguration = null;
@@ -143,12 +130,15 @@ public class CreateLinkGraph {
         if (titanAsDataSink) {
             outputConfiguration = new TitanOutputConfiguration();
         } else {
-            outputConfiguration = new TextGraphOutputConfiguration();
+            String outputPathName = commandLineInterface.getOptionValue("o");
+            outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
         }
 
         LOG.info("========== Creating link graph ================");
         timer.start();
-        job.run(inputConfiguration, buildingRule, outputConfiguration, cmd);
+        pipeline.run(inputConfiguration, buildingRule,
+                GraphConstructionPipeline.BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES, outputConfiguration,
+                commandLineInterface.getCmd());
         LOG.info("========== Done creating link graph ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

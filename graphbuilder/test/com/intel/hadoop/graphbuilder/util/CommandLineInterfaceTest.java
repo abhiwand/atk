@@ -108,6 +108,7 @@ public class CommandLineInterfaceTest {
         cliArgs.put("a", "");
         cliArgs.put("F", "");
         cliArgs.put("d", "directed edge");
+        cliArgs.put("k", "keys index");
         cliArgs.put("h", "");
 
         testDemoApp(TableToGraphDB.class, cliArgs);

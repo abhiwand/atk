@@ -29,5 +29,8 @@ import java.sql.CallableStatement
  * Provide service to generate my sql specific statement.
  */
 object MySQLStatementGenerator extends StatementGenerator{
+    /**
+     * see StatementGenerator
+     */
     def getCallStatement(session: scala.slick.session.Session, callString: String): CallableStatement = session.conn.prepareCall(callString)
 }

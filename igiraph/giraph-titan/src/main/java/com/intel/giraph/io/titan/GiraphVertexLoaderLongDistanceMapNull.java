@@ -22,23 +22,19 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-
 import com.google.common.base.Preconditions;
-import org.apache.giraph.edge.Edge;
-import org.apache.giraph.edge.EdgeFactory;
-import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import com.intel.giraph.io.DistanceMapWritable;
-
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.edge.Edge;
+import org.apache.giraph.edge.EdgeFactory;
+import org.apache.giraph.graph.Vertex;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -46,6 +42,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
 
 /**
  * GiraphVertexLoaderLongDistanceMapNull loads vertex
@@ -193,7 +193,8 @@ public class GiraphVertexLoaderLongDistanceMapNull {
         @Override
         public void setOtherVertexID(final long vertexId) {
             if (vertexId < 0) {
-                LOG.error("negative vertexId");
+                LOG.error(INVALID_VERTEX_ID + vertexId);
+                throw new RuntimeException(INVALID_VERTEX_ID + vertexId);
             }
             this.otherVertexID = vertexId;
         }
@@ -235,7 +236,7 @@ public class GiraphVertexLoaderLongDistanceMapNull {
                     if (edgeLabelValues.contains(this.type.getName())) {
                         if (this.direction.equals(Direction.OUT)) {
                             Edge<LongWritable, NullWritable> edge = EdgeFactory.create(new LongWritable(
-                                    this.otherVertexID), NullWritable.get());
+                                this.otherVertexID), NullWritable.get());
                             vertex.addEdge(edge);
 
                         } else if (this.direction.equals(Direction.BOTH)) {
@@ -243,7 +244,9 @@ public class GiraphVertexLoaderLongDistanceMapNull {
                         }
                     }
                 } else {
-                    LOG.error("negative Edge ID.");
+                    LOG.error(INVALID_EDGE_ID + this.relationID);
+                    throw new RuntimeException(
+                        INVALID_EDGE_ID + this.relationID);
                 }
 
             }

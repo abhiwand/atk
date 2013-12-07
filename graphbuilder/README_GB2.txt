@@ -1,4 +1,4 @@
-Graphbuilder 2 : the graph building boogaloo.
+Graphbuilder 2.0-alpha : the graph building library.
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 demo apps (by name of jar file) and their command lines

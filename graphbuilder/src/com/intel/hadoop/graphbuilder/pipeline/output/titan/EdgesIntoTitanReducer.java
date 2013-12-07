@@ -66,7 +66,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
      * @return TitanGraph for saving edges
      * @throws IOException
      */
-    private TitanGraph tribecaGraphFactoryOpen(Context context) throws IOException {
+    private TitanGraph getTitanGraphInstance (Context context) throws IOException {
         BaseConfiguration titanConfig = new BaseConfiguration();
         return GraphDatabaseConnector.open("titan", titanConfig, context.getConfiguration());
     }
@@ -82,9 +82,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
     public void setup(Context context) throws IOException, InterruptedException {
 
         this.vertexNameToTitanID = new HashMap<Object, Long>();
-
-        this.graph               = tribecaGraphFactoryOpen(context);
-        edgesIntoTitanReducerCallback = new EdgesIntoTitanReducerCallback();
+        this.graph               = getTitanGraphInstance(context);
     }
 
     /**
@@ -159,8 +157,8 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
                 try {
                     bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
                 } catch (IllegalArgumentException e) {
-                    LOG.fatal("Could not add edge property; probably a schema error. The label on the edge is  " + label);
-                    LOG.fatal("The property on the edge is " + propertyKey.toString());
+                    LOG.fatal("GRAPHBUILDER_ERROR: Could not add edge property; probably a schema error. The label on the edge is  " + label);
+                    LOG.fatal("GRAPHBUILDER_ERROR: The property on the edge is " + propertyKey.toString());
                     LOG.fatal(e.getMessage());
                     GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INDESCRIBABLE_FAILURE, "", LOG, e);
                 }

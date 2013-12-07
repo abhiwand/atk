@@ -1,3 +1,25 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2013 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
 """
 Builtin functions that can be applied with the transform method on BigDataFrames
 """
@@ -32,6 +54,9 @@ class EvalFunctions:
         POW=1003
         EXP=1004
         STND=1005 #STND: standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization)
+        
+    class Json:
+        EXTRACT_FIELD=2000
 
     @staticmethod
     def to_string(x):
@@ -60,12 +85,14 @@ class EvalFunctions:
             EvalFunctions.Math.LOG10: 'LOG10',
             EvalFunctions.Math.POW: 'org.apache.pig.piggybank.evaluation.math.POW',
             EvalFunctions.Math.EXP: 'EXP',    
-            EvalFunctions.Math.STND: 'STND'     
-           
+            EvalFunctions.Math.STND: 'STND',
+            
+            EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON'
         }[x]
 
 string_functions = []
 math_functions = []  
+json_functions = []
 available_builtin_functions = []#used for validation, does the user try to call a valid function? 
 for key,val in EvalFunctions.String.__dict__.items():
     if key == '__module__' or key == '__doc__':
@@ -75,7 +102,13 @@ for key,val in EvalFunctions.String.__dict__.items():
 for key,val in EvalFunctions.Math.__dict__.items():
     if key == '__module__' or key == '__doc__':
         continue
-    math_functions.append(EvalFunctions.to_string(val))    
+    math_functions.append(EvalFunctions.to_string(val))  
+    
+for key,val in EvalFunctions.Json.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    json_functions.append(EvalFunctions.to_string(val)) 
 
 available_builtin_functions.extend(string_functions)
 available_builtin_functions.extend(math_functions)
+available_builtin_functions.extend(json_functions)

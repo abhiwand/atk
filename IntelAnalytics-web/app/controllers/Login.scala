@@ -25,12 +25,10 @@ package controllers
 
 import play.api.mvc._
 import services.authorize.{Providers, Authorize}
-import models.database.{DBLoginCommand, LoginOutput, StatementGenerator, MySQLStatementGenerator}
+import models.database.{DBLoginCommand, StatementGenerator, MySQLStatementGenerator}
 import models._
 import controllers.Session._
 import models.StatusCodes
-import play.api.mvc.Cookie
-import scala.Some
 import play.api.mvc.SimpleResult
 
 /**
@@ -38,8 +36,16 @@ import play.api.mvc.SimpleResult
  */
 object Login extends Controller {
 
+    abstract class LoginActionResponse
+    case class SuccessfullyLoginResponse(sessionId: String) extends LoginActionResponse
+    case class FailToValidateResponse() extends LoginActionResponse
+    case class GeneralErrorResponse(errorCode: Int) extends LoginActionResponse
+
     var simpleResult: SimpleResult = Ok
 
+    /**
+     * get login result and return to user
+     */
     var login = Action(parse.json) {
         request => {
             val auth = new Authorize(request.body, Providers.GooglePlus)
@@ -47,14 +53,20 @@ object Login extends Controller {
         }
     }
 
-
+    /**
+     * get login result from database.
+     * @param auth
+     * @param sessionGen
+     * @param statementGenerator
+     * @return
+     */
     def getResult(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): SimpleResult = {
+
         val response = getResponse(auth, sessionGen, statementGenerator)
-        response._1 match {
-            case StatusCodes.LOGIN => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> response._2.get).withCookies(Register.getRegisteredCookie)
-            case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
-                "/", None, true, false))
-            case _ => Ok(StatusCodes.getJsonStatusCode(response._1))
+        response match {
+            case successfulResponse: SuccessfullyLoginResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.LOGIN)).withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(Register.getRegisteredCookie)
+            case failedResponse: FailToValidateResponse => Ok(StatusCodes.getJsonStatusCode(StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA))
+            case generalErrorResponse: GeneralErrorResponse => Ok(StatusCodes.getJsonStatusCode(generalErrorResponse.errorCode))
         }
     }
 
@@ -62,12 +74,11 @@ object Login extends Controller {
     /**
      *
      * @param Authorization info
-     * @return tuple of (status code, session Id)
+     * @return LoginActionResponse
      */
-    def getResponse(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): (Int, Option[String]) = {
-
-        if (auth.validateUserInfo() == None)
-            return (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
+    def getResponse(auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): LoginActionResponse = {
+        if (auth.validateToken() == None || auth.validateUserInfo() == None)
+            return FailToValidateResponse()
 
         val result = Users.login(auth.userInfo.get.email, statementGenerator, DBLoginCommand)
 
@@ -75,12 +86,12 @@ object Login extends Controller {
 
             val sessionId = sessionGen.create(result.uid)
             if (sessionId == None)
-                (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
+                FailToValidateResponse()
             else
-                (StatusCodes.LOGIN, Some(sessionId.get))
+                SuccessfullyLoginResponse(sessionId.get)
         }
         else
-            (result.errorCode, None)
+            GeneralErrorResponse(result.errorCode)
     }
 }
 

@@ -19,6 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
+package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;

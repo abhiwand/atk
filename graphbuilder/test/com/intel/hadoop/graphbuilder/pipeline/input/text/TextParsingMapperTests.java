@@ -17,6 +17,7 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
+
 package com.intel.hadoop.graphbuilder.pipeline.input.text;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;

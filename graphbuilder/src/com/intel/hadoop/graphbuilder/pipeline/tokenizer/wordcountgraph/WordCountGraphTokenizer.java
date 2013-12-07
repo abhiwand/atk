@@ -126,7 +126,7 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
                 loadDictionary(dictPath);
             } catch (IOException e) {
                 GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
-                        "Could not load dictionary file, path=" + dictPath, LOG, e);
+                        "GRAPHBUILDER_ERROR: Could not load dictionary file, path=" + dictPath, LOG, e);
             }
         }
 
@@ -137,7 +137,7 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
                 loadStopWords(stopWordsPath);
             } catch (IOException e) {
                 GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_LOAD_INPUT_FILE,
-                        "Could not load stopwords file, path=" + stopWordsPath, LOG, e);
+                        "GRAPHBUILDER_ERROR: Could not load stopwords file, path=" + stopWordsPath, LOG, e);
             }
         }
     }
@@ -214,16 +214,16 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
             } // end of if (!(input_title.startsWith("Wikipedia:") || ...   block
         } catch (ParserConfigurationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
-                    "Parser configuration error.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Parser configuration error.", LOG, e);
         } catch (SAXException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
-                    "SAXException", LOG, e);
+                    "GRAPHBUILDER_ERROR: SAXException", LOG, e);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
-                    "IO Exception", LOG, e);
+                    "GRAPHBUILDER_ERROR: IO Exception", LOG, e);
         } catch (XPathExpressionException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INTERNAL_PARSER_ERROR,
-                    "XPathExpressionException", LOG, e);
+                    "GRAPHBUILDER_ERROR: XPathExpressionException", LOG, e);
         }
     }
 

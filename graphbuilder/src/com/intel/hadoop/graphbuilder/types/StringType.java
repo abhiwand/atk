@@ -17,6 +17,7 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
+
 package com.intel.hadoop.graphbuilder.types;
 
 import java.io.DataInput;
@@ -58,11 +59,7 @@ public class StringType implements WritableComparable<StringType>, EncapsulatedO
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof StringType) {
-            return ((StringType) obj).str.equals(str);
-        } else {
-            return false;
-        }
+        return (obj instanceof StringType) && ((StringType) obj).str.equals(str);
     }
 
     @Override
@@ -85,6 +82,10 @@ public class StringType implements WritableComparable<StringType>, EncapsulatedO
 
     public void set(String s) {
         this.str = s;
+    }
+
+    public boolean isEmpty() {
+        return (this.str.length() == 0);
     }
 
     @Override

@@ -29,24 +29,19 @@ import controllers.Session._
 object Application extends Controller {
 
   var index = ActionWithSession { request =>
-    Ok(views.html.index("Home", request.user._1))
+    Ok(views.html.index("Home", request.user.userInfo))
   }
 
   var logout = Action{
     Redirect("/").withNewSession
   }
 
-  var privacy = ActionWithSession{ request =>
-    Ok(views.html.privacy("Privacy", request.user._1))
+  var termsOfUse = ActionWithSession{ request =>
+    Ok(views.html.termsOfUse("Terms of Use", request.user.userInfo))
   }
 
-  var cookies = ActionWithSession{ request =>
-    Ok(views.html.cookies("Privacy", request.user._1))
-  }
-
-
-  /*try in aws with elb in front of the server
   def redirect = Action { implicit request =>
-    MovedPermanently("https://" + request.host + request.uri).withHeaders("x-forwarded-proto" -> "https")
-  }*/
+    //redirect the request to https
+    MovedPermanently("https://" + request.host + request.uri).withHeaders("X-Forwarded-Proto" -> "https")
+  }
 }

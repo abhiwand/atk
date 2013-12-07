@@ -53,6 +53,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
     private List<String>                  vertexIdColumnList;
     private HashMap<String, String[]>     vertexPropColMap;
+    private HashMap<String, String>       vertexRDFLabelMap;
     private ArrayList<Vertex<StringType>> vertexList;
 
     private HashMap<String, EdgeRule>     edgeLabelToEdgeRules;
@@ -130,6 +131,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
     public HBaseTokenizer() {
 
+        vertexRDFLabelMap  = new HashMap<String, String>();
         vertexPropColMap   = new HashMap<String, String[]>();
         vertexIdColumnList = new ArrayList<String>();
         vertexList         = new ArrayList<Vertex<StringType>>();
@@ -158,6 +160,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         String[] vertexRules = HBaseGraphBuildingRule.unpackVertexRulesFromConfiguration(conf);
 
         String   vertexIdColumnName  = null;
+        String   vertexRDFLabel      = null;
 
         for (String vertexRule : vertexRules) {
 
@@ -168,10 +171,15 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                         HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
 
                 vertexPropColMap.put(vertexIdColumnName, vertexPropertiesColumnNames);
+
+                // Vertex RDF labels are maintained in a separate map
+                vertexRDFLabel = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
+                if (vertexRDFLabel != null) {
+                    vertexRDFLabelMap.put(vertexIdColumnName, vertexRDFLabel);
+                }
         }
 
-        LOG.info("TRIBECA_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
-
+        LOG.info("GRAPHBUILDER_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
 
         String[] rawEdgeRules         = HBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
         String[] rawDirectedEdgeRules = HBaseGraphBuildingRule.unpackDirectedEdgeRulesFromConfiguration(conf);
@@ -313,10 +321,16 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                         }
                     }
 
+                    // add the RDF label to the vertex
+
+                    String rdfLabel = vertexRDFLabelMap.get(columnName);
+                    if (rdfLabel != null) {
+                        vertex.setVertexLabel(new StringType(rdfLabel));
+                    }
                     vertexList.add(vertex);
                 } else {
 
-                    LOG.warn("TRIBECA_WARN: Null vertex in " + columnName + ", row " + row.toString());
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
                     context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
                 }
             }
@@ -357,7 +371,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                             property = edgeAttributes[countEdgeAttr].replaceAll(
                                     GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                    GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                                    GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
 
                             if (property != null) {
                                 edge.setProperty(property, new StringType(propertyValue));
@@ -386,7 +400,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                                 property = edgeAttributes[countEdgeAttr].replaceAll(
                                         GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                        GBHTableConfiguration.config.getProperty("TRIBECA_GRAPH_PROPERTY_SEPARATOR"));
+                                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
 
                                 if (property != null) {
                                     opposingEdge.setProperty(property, new StringType(propertyValue));

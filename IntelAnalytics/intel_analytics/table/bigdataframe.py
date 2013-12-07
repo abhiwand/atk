@@ -1,10 +1,168 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2013 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
 """
 BigDataFrame
 """
 import sys
+import abc
+import traceback
+from intel_analytics.config import global_config, dynamic_import
+
+__all__ = ['get_frame_builder',
+           'get_frame',
+           'get_frame_names',
+           'BigDataFrame'
+           ]
+
+
+class FrameBuilderFactory(object):
+    """
+    Abstract class for the various frame builder factories (i.e. one for Hbase)
+    """
+    __metaclass__ = abc.ABCMeta
+
+    #todo: implement when builder discrimination is required
+    def __init__(self):
+        pass
+
+    @abc.abstractmethod
+    def get_frame_builder(self):
+        raise Exception("Not overridden")
+
+    @abc.abstractmethod
+    def get_frame(self, frame_name):
+        raise Exception("Not overridden")
+
+    @abc.abstractmethod
+    def get_frame_names(self):
+        raise Exception("Not overridden")
+
+
+class FrameBuilder(object):
+    """
+   Abstract class for the various table builders to inherit
+   """
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def build_from_csv(self, frame_name, file_name, schema, skip_header=False):
+        """
+        Reads CSV (comma-separated-value) file and loads into a table
+
+        Parameters
+        ----------
+        filename : string
+            path to file
+        schema : string
+            TODO:
+
+        TODO: others parameters for the csv parser
+
+        Returns
+        -------
+        frame : BigDataFrame
+        """
+        pass
+
+    @abc.abstractmethod
+    def build_from_json(self, frame_name, file_name):
+        """
+        Reads JSON (www.json.org) file and loads into a table
+
+        Parameters
+        ----------
+        filename : string
+            path to file
+
+        TODO: others parameters for the parser
+
+        Returns
+        -------
+        frame : BigDataFrame
+        """
+        pass
+
+    @abc.abstractmethod
+    def build_from_xml(self, frame_name, file_name, schema=None):
+        """
+        Reads XML file and loads into a table
+
+        Parameters
+        ----------
+        filename : string
+            path to file
+        schema : string
+            TODO:
+
+        TODO: others parameters for the parser
+
+        Returns
+        -------
+        frame : BigDataFrame
+        """
+        pass
+
+
+def get_frame_builder():
+    """
+    Returns a frame_builder with which to create BigDataFrame objects
+    """
+    factory_class = _get_frame_builder_factory_class()
+    return factory_class.get_frame_builder()
+
+
+def get_frame(frame_name):
+    """
+    Returns a previously created frame
+    """
+    factory_class = _get_frame_builder_factory_class()
+    return factory_class.get_frame(frame_name)
+
+def get_frame_names():
+    """
+    Returns a previously created frame
+    """
+    factory_class = _get_frame_builder_factory_class()
+    return factory_class.get_frame_names()
+
+
+# dynamically and lazily load the correct frame_builder factory,
+# according to config
+_frame_builder_factory = None
+
+
+def _get_frame_builder_factory_class():
+    global _frame_builder_factory
+    if _frame_builder_factory is None:
+        frame_builder_factory_class = dynamic_import(
+            global_config['py_frame_builder_factory_class'])
+        _frame_builder_factory = frame_builder_factory_class.get_instance()
+    return _frame_builder_factory
+
 
 class BigDataFrameException(Exception):
     pass
+
 
 class BigDataFrame(object):
     """
@@ -13,7 +171,7 @@ class BigDataFrame(object):
     Proxy for large 2D container to work with table data at scale
     """
 
-    def __init__(self, table):
+    def __init__(self, name, table):
         """
         (internal constructor)
         Parameters
@@ -22,12 +180,16 @@ class BigDataFrame(object):
         """
         #if not isinstance(table, Table):
         #    raise Exception("bad table given to Constructor")
+        if name is None:
+            raise BigDataFrameException("BigDataFrame Constructor requires non-None name")
         if table is None:
-            raise Exception("BigDataFrame Constructor requires non-None table")
+            raise BigDataFrameException("BigDataFrame Constructor requires non-None table")
 
+        self.name = name
         self._table = table
         #this holds the original table that we imported the data, will be used for understanding which features are derived or not
-        self.origin_table_name=self._table.table_name
+        self._original_table_name = self._table.table_name
+        self.source_file = self._table.file_name
         self.lineage=[]
         self.lineage.append(self._table.table_name)
 
@@ -38,9 +200,6 @@ class BigDataFrame(object):
                 buf+='%s:%s ' % (key, self.__dict__[key])
         buf += '}'
         return buf
-
-    def get_table_name(self):
-        return self._table.table_name
 
     def get_schema(self):
         """
@@ -99,6 +258,18 @@ class BigDataFrame(object):
         #TODO: use a JSON schema (or XML XSD or DTD?) --embed in the same
         #      file, similar to header?
         raise BigDataFrameException("Not implemented")
+    
+    
+    def to_html(self, nRows=10):
+        """
+        Get the first nRows as an HTML table
+
+        Parameters
+        ----------
+        nRows : int
+            number of rows to retrieve in the HTML table
+        """
+        return self._table.to_html(nRows)  
 
 
     #----------------------------------------------------------------------
@@ -267,7 +438,7 @@ class BigDataFrame(object):
     #----------------------------------------------------------------------
 
 
-    def transform(self, column_name, new_column_name, transformation, keep_source_column=False, transformation_args=None):
+    def transform(self, column_name, new_column_name, transformation, transformation_args=None):
 
         """
         Applies a built-in transformation function to the given column
@@ -280,18 +451,16 @@ class BigDataFrame(object):
             name for the new column that will be created as a result of applying the transformation
         transformation : enumeration
             transformation to apply
-        keep_source_column: boolean
-            whether to keep the given column in the output of the transformation
         transformation_args: list
             the arguments for the transformation to apply
         """
         try:
-            self._table.transform(column_name, new_column_name, transformation, keep_source_column, transformation_args)
+            self._table.transform(column_name, new_column_name, transformation, transformation_args)
             self.lineage.append(self._table.table_name)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("transform exception"), None, trace
-                
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("transform exception " + str(e))
+
     #TODO - how to pass UDFs through to mapreduce
     def apply(self, column_name, func, output_type):
 
@@ -479,35 +648,35 @@ class BigDataFrame(object):
         head : String
         """
         # for IPython, consider dumping 2D array (NDarray) for pretty-print
-        
-        
+
+
         try:
             self._table.head(n)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("head exception"), None, trace
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("head exception " + str(e))
 
-        # How do I manually create a row? (not doing)
+            # How do I manually create a row? (not doing)
 
-        # Not doing __setitem__ for 0.5
-        # instead we'll do:
+            # Not doing __setitem__ for 0.5
+            # instead we'll do:
+            #
+            #    bdf['x'].apply(sq, 'sqx')
+            #
+            #def __setitem__(self, column_name, value):
+            #"""
+            #sets/insert the column name
+            #"""
+            ## bdf['sqx'] = bdf['x'].apply(sq)
+            #print "Not implemented"
+
+            #  Index-based lookup doesn't fit the HBase model unless we provide
+            #  consequetive row key, which we shouldn't do anyway because of perf
+
+            #def get_value(self, index, col):
+            #"""
+            #Quickly retrieve single value at passed column and index  (row key)
         #
-        #    bdf['x'].apply(sq, 'sqx')
-        #
-        #def __setitem__(self, column_name, value):
-        #"""
-        #sets/insert the column name
-        #"""
-        ## bdf['sqx'] = bdf['x'].apply(sq)
-        #print "Not implemented"
-
-        #  Index-based lookup doesn't fit the HBase model unless we provide
-        #  consequetive row key, which we shouldn't do anyway because of perf
-
-        #def get_value(self, index, col):
-        #"""
-        #Quickly retrieve single value at passed column and index  (row key)
-    #
     #Parameters
     #----------
     #index : row label
@@ -576,10 +745,10 @@ class BigDataFrame(object):
         try:
             self._table.dropna(how, column_name)
             self.lineage.append(self._table.table_name)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("dropna exception"), None, trace
-        
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("dropna exception " + str(e))
+
     def fillna(self, column_name, value):
         """
         Fills in the NA with given value
@@ -591,15 +760,14 @@ class BigDataFrame(object):
         value : Imputation
             the fill value
         """
-        
+
         try:
             self._table.fillna(column_name, value)
             self.lineage.append(self._table.table_name)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("fillna exception"), None, trace
-                
-        
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("fillna exception "+ str(e))
+
 
     def impute(self, column_name, how):
         """
@@ -614,23 +782,23 @@ class BigDataFrame(object):
         """
         # Imputation will be an enumeration of supported operations, like
         # Imputation.AVG or something
-        
+
         try:
             self._table.impute(column_name, how)
             self.lineage.append(self._table.table_name)
-        except Exception:
-            trace = sys.exc_info()[2]
-            raise BigDataFrameException("impute exception"), None, trace
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("impute exception "+ str(e))
 
 
-        # just use our String/Math Manip functions for now
-        #def replace(self, column_name, to_replace):
-        #"""
-        #Parameters
-        #----------
-        #column_name : String
-        #    name of column for replace
-        #how : Imputation
-        #    the imputation operation
-        #"""
-        #print "Not implemented"
+            # just use our String/Math Manip functions for now
+            #def replace(self, column_name, to_replace):
+            #"""
+            #Parameters
+            #----------
+            #column_name : String
+            #    name of column for replace
+            #how : Imputation
+            #    the imputation operation
+            #"""
+            #print "Not implemented"

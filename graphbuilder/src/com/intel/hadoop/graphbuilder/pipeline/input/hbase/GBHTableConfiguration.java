@@ -17,11 +17,10 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
+
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 
 /**
  * Class holding all static strings
@@ -54,8 +53,8 @@ public class GBHTableConfiguration {
     public static final String VERTEX_PROP_IDCOLQUALIFIER = "VertexID";
 
     public static final String HBASE_COLUMN_SEPARATOR           = ":";
+    public static final String GRAPHBUILDER_PROPERTY_SEPARATOR = ":";
 
-    public static final String TRIBECA_GRAPH_PROPERTY_SEPARATOR = "_";
     public static final String NULLKEY                          = "NULLKEY";
 
     public static RuntimeConfig config = RuntimeConfig.getInstance(GBHTableConfiguration.class);

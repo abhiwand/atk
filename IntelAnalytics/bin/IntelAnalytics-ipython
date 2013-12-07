@@ -1,0 +1,6 @@
+#! /bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+sudo -u hadoop bash -c "
+. $DIR/../virtpy/bin/activate
+cd $DIR/../ipython
+ipython notebook --profile-dir=$DIR/../conf/ipython_profile/profile_default --pylab"

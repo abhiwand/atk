@@ -23,7 +23,9 @@ import com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphOutputCo
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
+
 import com.intel.hadoop.graphbuilder.util.*;
+
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
@@ -109,35 +111,11 @@ public class TableToTextGraph {
      * This function checks whether required tablename, vertices, vertex properties
      * edges and edge properties are specified as command line arguments
      */
-    private static void checkCli(CommandLine cmd) {
 
+    private static void checkCli(CommandLine cmd) {
         if (!(cmd.hasOption(BaseCLI.Options.edge.getLongOpt())) &&
                 !(cmd.hasOption(BaseCLI.Options.directedEdge.getLongOpt()))) {
             commandLineInterface.showError("Please add column family and names for (directed) edges and (directed) edge properties");
-        }
-
-    }
-
-    /**
-     * Encapsulation of the job setup process.
-     */
-    public class ConstructionPipeline extends GraphConstructionPipeline {
-        /**
-         * This method allows bidirectional edges (do not clean them).
-         * @return  false
-         */
-        @Override
-        public boolean shouldCleanBiDirectionalEdges() {
-            return false;
-        }
-
-        /**
-         * This method uses hbase.
-         * @return  true
-         */
-        @Override
-        public boolean shouldUseHBase() {
-            return true;
         }
     }
 
@@ -158,19 +136,21 @@ public class TableToTextGraph {
         //run it through our app specific logic
         checkCli(cmd);
 
+        String srcTableName   = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
+        String outputPathName = cmd.getOptionValue(BaseCLI.Options.outputPath.getLongOpt());
 
-        String srcTableName = commandLineInterface.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
-
-        ConstructionPipeline job                 = new TableToTextGraph().new ConstructionPipeline();
-        job = (ConstructionPipeline) commandLineInterface.addConfig(job);
-
+        GraphConstructionPipeline    pipeline            = new GraphConstructionPipeline();
         HBaseInputConfiguration      inputConfiguration  = new HBaseInputConfiguration(srcTableName);
-        HBaseGraphBuildingRule buildingRule        = new HBaseGraphBuildingRule(commandLineInterface.getCmd());
-        TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration();
+
+        HBaseGraphBuildingRule       buildingRule        = new HBaseGraphBuildingRule(cmd);
+        buildingRule.setFlattenLists(cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt()));
+
+        TextGraphOutputConfiguration outputConfiguration = new TextGraphOutputConfiguration(outputPathName);
 
         LOG.info("============= Creating graph from hbase ==================");
         timer.start();
-        job.run( inputConfiguration,buildingRule, outputConfiguration, commandLineInterface.getCmd());
+        pipeline.run(inputConfiguration, buildingRule,
+                GraphConstructionPipeline.BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES, outputConfiguration, cmd);
         LOG.info("========== Done creating graph from hbase ================");
         LOG.info("Time elapsed : " + timer.current_time() + " seconds");
     }

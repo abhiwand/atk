@@ -59,6 +59,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     private HBaseUtils hBaseUtils   = null;
     private String     srcTableName = null;
+
     private Scan       scan         = new Scan();
 
     private Class      mapperClass  = HBaseReaderMapper.class;
@@ -69,11 +70,12 @@ public class HBaseInputConfiguration implements InputConfiguration {
     public HBaseInputConfiguration(String srcTableName) {
 
         this.srcTableName = srcTableName;
+
         try {
             this.hBaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
-                    "Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);
         }
 
         try {
@@ -98,32 +100,27 @@ public class HBaseInputConfiguration implements InputConfiguration {
     /**
      * Perform setup tasks with hbase.
      * @param configuration configuration being prepared for graph construction job
-     * @param cmd  user provided command line
      */
-    public void updateConfigurationForMapper(Configuration configuration, CommandLine cmd) {
 
-        srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
+    public void updateConfigurationForMapper(Configuration configuration) {
 
         configuration.set("SRCTABLENAME", srcTableName);
 
 
         scan.setCaching(HBaseConfig.config.getPropertyInt("HBASE_CACHE_SIZE"));
         scan.setCacheBlocks(false);
-
-        configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", cmd.hasOption("flattenlists"));
     }
 
     /**
      * Initialize the table mapper job.
      * @param job  Map reduce job in preparation for graph construction
-     * @param cmd  User provided command line
      */
-    public void updateJobForMapper(Job job, CommandLine cmd) {
+    public void updateJobForMapper(Job job) {
         try {
             TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseReaderMapper.class, Text.class, SerializedPropertyGraphElement.class, job);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.HADOOP_REPORTED_ERROR,
-                    "Could not initialize table mapper job", LOG, e);
+                    "GRAPHBUILDER_ERROR: Could not initialize table mapper job", LOG, e);
         }
     }
 

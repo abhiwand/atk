@@ -22,9 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.giraph.io.VertexInputFormat;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.hbase.client.Result;
@@ -37,6 +34,9 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
+import java.io.IOException;
+import java.util.List;
+
 /**
  * Base class that wraps an HBase TableInputFormat and underlying Scan object to
  * help instantiate vertices from an HBase table. All the static
@@ -48,7 +48,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
  * @param <E> Edge value
  */
 public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, V extends Writable, E extends Writable>
-        extends VertexInputFormat<I, V, E> {
+    extends VertexInputFormat<I, V, E> {
 
     /**
      * use HBase table input format
@@ -66,7 +66,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
      * @param <E> Edge value
      */
     public abstract static class HBaseVertexReader<I extends WritableComparable, V extends Writable, E extends Writable>
-            extends VertexReader<I, V, E> {
+        extends VertexReader<I, V, E> {
 
         /**
          * Reader instance
@@ -104,7 +104,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
          * @throws InterruptedException
          */
         public void initialize(InputSplit inputSplit, TaskAttemptContext context) throws IOException,
-                InterruptedException {
+            InterruptedException {
             reader = createHBaseRecordReader(inputSplit, context);
             reader.initialize(inputSplit, context);
             this.context = context;
@@ -161,7 +161,7 @@ public abstract class TitanHBaseVertexInputFormat<I extends WritableComparable, 
      */
     @Override
     public List<InputSplit> getSplits(JobContext context, int minSplitCountHint) throws IOException,
-            InterruptedException {
+        InterruptedException {
         INPUT_FORMAT.setConf(getConf());
         return INPUT_FORMAT.getSplits(context);
     }
