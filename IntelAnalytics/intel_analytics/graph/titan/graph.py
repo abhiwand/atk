@@ -32,15 +32,14 @@ from intel_analytics.graph.biggraph import \
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 from intel_analytics.graph.titan.config import titan_config
+from intel_analytics.table.hbase.table import hbase_registry
 from intel_analytics.subproc import call
-from intel_analytics.config import Registry, global_config
+from intel_analytics.config import global_config
 
 from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import Config as bulbsConfig
 from intel_analytics.report import ProgressReportStrategy
 from intel_analytics.logger import stdout_logger as logger
-
-import os
 
 
 #class TitanGraph(object):   # TODO: inherit BigGraph later
@@ -61,9 +60,6 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def __init__(self):
         super(TitanGraphBuilderFactory, self).__init__()
         self._active_titan_table_name = None
-        self._name_registry = Registry(
-            os.path.join(global_config['conf_folder'],
-                         global_config['titan_names_file']))
 
     def get_graph_builder(self, graph_type, source=None):
         if graph_type is GraphTypes.Bipartite:
@@ -75,30 +71,37 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
 
     def get_graph(self, graph_name):
         try:
-            titan_table_name = self._name_registry[graph_name]
+            titan_table_name = hbase_registry[graph_name]
         except KeyError:
             raise KeyError("Could not find titan table name for graph '"
-                       + graph_name + "'")
+                           + graph_name + "'")
+        if not titan_table_name.endswith("_titan"):
+            raise Exception("Internal error: graph name "
+                            + graph_name + " not mapped to graph")
         return self._get_graph(graph_name, titan_table_name)
 
     def get_graph_names(self):
-        return self._name_registry.keys()
+        return (k for k, v in hbase_registry.items() if v.endswith('_titan'))
 
     def activate_graph(self, graph):
         self._activate_titan_table(graph.titan_table_name)
         pass
 
     def get_active_graph_name(self):
-        if self._active_titan_table_name is None:
+        if not self._active_titan_table_name:
             return ""
-        return self._name_registry.get_key(self._active_titan_table_name)
+        return hbase_registry.get_key(self._active_titan_table_name)
 
     def _activate_titan_table(self, titan_table_name):
         """changes rexster's configuration to point to given graph
         """
         # write new cfg file for rexster to turn its attention to the new graph
+        if not titan_table_name.endswith("_titan"):
+            raise Exception("Internal error: table name not mapped to graph")
         try:
+            #stop rexster
             titan_config.write_rexster_cfg(titan_table_name)
+            #start rexster
         except ValueError:
             raise ValueError('ERROR: Failed to reconfigure rexster server')
         self._active_titan_table_name = titan_table_name
@@ -137,7 +140,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
                 '\n'.join(map(lambda x: vertex_str(x, True), self._vertex_list))
         return s
 
-    def build(self, graph_name):
+    def build(self, graph_name, overwrite=False):
         if len(self._vertex_list) != 2:
             raise ValueError("ERROR: bipartite graph construction requires 2 " +
                 "vertex sources; " + str(len(self._vertex_list)) + " detected")
@@ -150,7 +153,8 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
                      self._source,
                      self._vertex_list,
                      edge_list,
-                     is_directed=False)
+                     is_directed=False,
+                     overwrite=overwrite)
 
 
 class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
@@ -171,44 +175,47 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                 + '\n'.join(map(lambda x: edge_str(x,True), self._edge_list))
         return s
 
-    def build(self, graph_name):
+    def build(self, graph_name, overwrite=False):
         return build(graph_name,
                      self._source,
                      self._vertex_list,
                      self._edge_list,
-                     is_directed=True)
+                     is_directed=True,
+                     overwrite=overwrite)
 
 
-def build(graph_name, source, vertex_list, edge_list, is_directed):
+def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
     # validate column sources
     # todo: implement column validation
     if source is None:
         raise Exception("Graph has no source. Try register_source()")
 
     # build
-    titan_table_name = generate_titan_table_name(graph_name, source)
-    hbase_table_name = get_table_name_from_source(source)
-    gb_conf_file = titan_config.write_gb_cfg(titan_table_name)
+    dst_hbase_table_name = generate_titan_table_name(graph_name, source)
+    src_hbase_table_name = get_table_name_from_source(source)
+
+    hbase_registry.register(graph_name,
+                            dst_hbase_table_name,
+                            overwrite=overwrite,
+                            delete_table=True)
+    gb_conf_file = titan_config.write_gb_cfg(dst_hbase_table_name)
     build_command = get_gb_build_command(
         gb_conf_file,
-        hbase_table_name,
+        src_hbase_table_name,
         vertex_list,
         edge_list,
         is_directed)
-    logger.debug(' '.join(build_command))
     gb_cmd = ' '.join(map(str, build_command))
-    print gb_cmd
+    logger.debug(gb_cmd)
+    # print gb_cmd
     call(gb_cmd, shell=True, report_strategy = ProgressReportStrategy())
-
-    titan_graph_builder_factory._name_registry.\
-        register(graph_name, titan_table_name)
 
     return titan_graph_builder_factory.get_graph(graph_name)
 
 
 def generate_titan_table_name(prefix, source):
     source_table_name = get_table_name_from_source(source)
-    return prefix + "_" + source_table_name
+    return '_'.join([prefix, source_table_name, "titan"])
 
 
 def get_table_name_from_source(source):
@@ -246,19 +253,6 @@ def edge_str(edge, public=False):
 
 
 # static templates and commands, validated against config on load
-
-from string import Template
-
-
-def get_template(config, template_str):
-    template = Template(template_str)
-    config.verify_template(template)
-    return template
-
-
-def fill_template(template, config, args):
-    return template.substitute(config).format(*args)
-
 
 def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list,
                          is_directed):
@@ -309,13 +303,3 @@ Many graph operations will fail.  Two options:
          >>> global_config['missing_key'] = 'missing_value'
 """.format(', '.join(missing), global_config.srcfile))
     sys.stderr.flush()
-
-
-class DummyBigDataFrame(object):
-    def __init__(self, name):
-        self._table = DummyHBaseTable(name)
-
-
-class DummyHBaseTable(object):
-    def __init__(self, name):
-        self.table_name = name

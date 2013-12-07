@@ -20,10 +20,12 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-from time import strftime
 import os
+from time import strftime
+from intel_analytics.table.hbase.table import hbase_registry
 
-__all__ = [ 'titan_config']
+__all__ = ['titan_config']
+
 
 class TitanConfig(object):
     from intel_analytics.config import global_config
@@ -31,13 +33,13 @@ class TitanConfig(object):
     def __init__(self, config=global_config):
         self.config = config
 
-    def write_gb_cfg(self, tablename, stream=None):
+    def write_gb_cfg(self, table_name, stream=None):
         """
         Writes a GraphBuilder config XML file
 
         Parameters
         ----------
-        tablename : string
+        table_name : string
             name of destination table in Titan
         stream : stream
            an open dest stream, if None, cfg written to cfg-specified file path
@@ -47,22 +49,20 @@ class TitanConfig(object):
         filename : string
             full path of the config file created
         """
-        self.config['titan_storage_tablename'] = tablename
         filename = os.path.join(self.config['conf_folder'],
                                 "graphbuilder_titan.xml")
-        return self._write_cfg(tablename,
+        return self._write_cfg(table_name,
                                stream,
                                filename,
-                               gb_keys,
                                self._write_gb)
 
-    def write_rexster_cfg(self, tablename, stream=None):
+    def write_rexster_cfg(self, table_name, stream=None):
         """
         Writes a Rexster config XML file
 
         Parameters
         ----------
-        tablename : string
+        table_name : string
            name of destination table in Titan
         stream : stream
            an open dest stream, if None, cfg written to cfg-specified file path
@@ -72,19 +72,16 @@ class TitanConfig(object):
         filename : string
             full path of the config file created
         """
-        return self._write_cfg(tablename,
+        return self._write_cfg(table_name,
                                stream,
                                self.config['rexster_xml'],
-                               rexster_keys,
                                self._write_rexster)
 
+    def _write_cfg(self, table_name, stream, filename, func):
+        if not table_name:
+            raise Exception("table_name is None")
 
-    def _write_cfg(self, tablename, stream, filename, keys, func):
-        if tablename is None: raise Exception("tablename is None")
-
-        self.config.verify(keys)
-
-        if stream is not None:
+        if stream:
             func(stream)
             return ""
         else:
@@ -92,7 +89,14 @@ class TitanConfig(object):
                 func(out)
             return filename
 
+    def get_values(self, d, keys):
+        values = []
+        for k in keys:
+            values.append(d[k])
+
     def _write_gb(self, out):
+        params = {k: self.config[k] for k in gb_keys}
+        params['graphs'] = self._generate_rexster_graphs_xml(params)
         _write_header(out, "GraphBuilder")
         out.write("<configuration>\n")
         for k in gb_keys:
@@ -100,14 +104,28 @@ class TitanConfig(object):
         out.write("</configuration>\n")
 
     def _write_rexster(self, out):
+        params = {k: self.config[k] for k in rexster_keys}
+        params['graphs'] = self._generate_rexster_graphs_xml(params)
         _write_header(out, "Rexster")
-        out.write(rexster_template.substitute(self.config))
+        out.write(Template(rexster_template_str).substitute(params))
+
+    def _generate_rexster_graphs_xml(self, params):
+        values = hbase_registry.values()
+        graphs = []
+        for value in values:
+            if value.endswith('_titan'):
+                params['titan_storage_tablename'] = value
+                graphs.append(Template(rexster_template_graph_fragment_str).
+                              substitute(params))
+        del params['titan_storage_tablename']
+        return os.linesep.join(graphs)
 
 
 def _write_header(out, cfg_name):
     out.write("<!-- ")
     out.write(cfg_name)
     out.write(strftime(" cfg file generated at %Y-%m-%d %H:%M:%S-->\n\n"))
+
 
 def _write_gb_prop(out, name, value):
     out.write("  <property>\n    <name>graphbuilder.")
@@ -208,6 +226,11 @@ rexster_template_str = """
         </reporter>
     </metrics>
     <graphs>
+${graphs}
+    </graphs>
+</rexster>
+"""
+rexster_template_graph_fragment_str = """
         <graph>
             <graph-name>${titan_storage_tablename}</graph-name>
             <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
@@ -221,21 +244,21 @@ rexster_template_str = """
             </properties>
             <extensions>
                 <allows>
-                        <allow>tp:gremlin</allow>
+                  <allow>tp:gremlin</allow>
                 </allows>
             </extensions>
         </graph>
-    </graphs>
-</rexster>
 """
 
 from string import Template
 from collections import defaultdict
-rexster_template = Template(rexster_template_str)
 
 # pull the required keys from the template
-d = defaultdict(lambda : None)
-rexster_template.substitute(d)
+d = defaultdict(lambda: None)
+Template(rexster_template_str + rexster_template_graph_fragment_str).substitute(d)
+# remove the keys whose values are dynamically supplied:
+del d['titan_storage_tablename']
+del d['graphs']
 rexster_keys = d.keys()
 rexster_keys.sort()
 
@@ -243,7 +266,7 @@ rexster_keys.sort()
 # GraphBuilder
 #--------------------------------------------------------------------------
 gb_keys = ['conf_folder']
-for k in ['hostname', 'tablename', 'backend', 'port', 'connection_timeout']:
+for k in ['hostname', 'backend', 'port', 'connection_timeout']:
     gb_keys.append('titan_storage_' + k)
 gb_keys.sort()
 

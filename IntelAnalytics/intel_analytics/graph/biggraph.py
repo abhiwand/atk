@@ -33,7 +33,7 @@ __all__ = ['get_graph_builder',
            'get_graph_names',
            'GraphTypes',
            'BigGraph'
-]
+           ]
 
 
 class BigGraph(object):   # note: not using this for 0.5
@@ -50,6 +50,7 @@ class GraphTypes:
         """
         # todo: write a better description
         pass
+
     class Property:
         """
         Property Graph
@@ -80,6 +81,7 @@ class GraphBuilderFactory(object):
     def get_graph_names(self):
         raise Exception("Not overridden")
 
+
 class GraphBuilder(object):
     """
     Abstract class for the various graph builders to inherit
@@ -95,7 +97,7 @@ class GraphBuilder(object):
         self._source = source
 
     @abc.abstractmethod
-    def build(self, graph_name):
+    def build(self, graph_name, overwrite):
         pass
 
 
@@ -110,7 +112,7 @@ class BipartiteGraphBuilder(GraphBuilder):
         self._vertex_list = []
 
     @abc.abstractmethod
-    def build(self, graph_name):
+    def build(self, graph_name, overwrite):
         pass
 
     def register_vertex(self, key, properties=None):
@@ -119,9 +121,9 @@ class BipartiteGraphBuilder(GraphBuilder):
         register_vertex('id', ['name', 'age', 'dept'])
         """
         if len(self._vertex_list) > 2:
-            raise ValueError(
-                """ERROR: Attempt to register more than two vertex sources for a bipartite
-                graph; check vertex registration or switch to a property graph builder""")
+            raise ValueError("""
+ERROR: Attempt to register more than two vertex sources for a bipartite
+graph; check vertex registration or switch to a property graph builder""")
         self._vertex_list.append(GraphBuilderVertex(key, properties))
 
     def register_vertices(self, vertices):
@@ -149,7 +151,7 @@ class PropertyGraphBuilder(GraphBuilder):
         self._edge_list = []
 
     @abc.abstractmethod
-    def build(self, graph_name):
+    def build(self, graph_name, build):
         pass
 
     def register_vertex(self, key, properties=None):
@@ -286,6 +288,7 @@ def get_graph(graph_name):
     """
     factory_class = _get_graph_builder_factory_class()
     return factory_class.get_graph(graph_name)
+
 
 def get_graph_names():
     """
