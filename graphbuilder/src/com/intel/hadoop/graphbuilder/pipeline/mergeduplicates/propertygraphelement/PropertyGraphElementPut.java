@@ -24,6 +24,7 @@ import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.io.Writable;
 
@@ -38,6 +39,7 @@ import java.util.HashMap;
 public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback {
     private HashMap<EdgeID, Writable> edgeSet;
     private HashMap<Object, Writable>   vertexSet;
+    private HashMap<Object, StringType>    vertexLabelMap;
     private Functional edgeReducerFunction;
     private Functional vertexReducerFunction;
     private boolean noBiDir = false;
@@ -94,6 +96,15 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
         this.arguments(args);
 
         Object vid = propertyGraphElement.getId();
+
+        // track the RDF labels of vertices
+
+        if (propertyGraphElement.getLabel() != null) {
+            if (!vertexLabelMap.containsKey(propertyGraphElement.getId())) {
+                vertexLabelMap.put(propertyGraphElement.getId(), (StringType)propertyGraphElement.getLabel());
+            }
+        }
+
         if(containsKey(propertyGraphElement)){
             if (vertexReducerFunction != null) {
                 vertexSet.put(vid,

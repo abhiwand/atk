@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
@@ -52,16 +53,18 @@ public interface MergedGraphElementWrite {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet, Enum vertexCounter,
-                      Enum edgeCounter, Reducer.Context context, TitanGraph graph,
+    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+                      HashMap<Object, StringType> vertexLabelMap,
+                      Enum vertexCounter, Enum edgeCounter, Reducer.Context context, TitanGraph graph,
                       SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
             throws IOException, InterruptedException;
 
-    public void vertexWrite(HashMap<Object, Writable> vertexSet, Enum counter, Reducer.Context context,
+    public void vertexWrite(HashMap<Object, Writable> vertexSet,
+                            Enum counter, Reducer.Context context,
                             TitanGraph graph, SerializedPropertyGraphElement outValue,
                             IntWritable outKey, KeyFunction keyFunction) throws IOException, InterruptedException;
 
-    public void edgeWrite(HashMap<EdgeID, Writable> edgeSet,Enum counter,  Reducer.Context context,
+    public void edgeWrite(HashMap<EdgeID, Writable> edgeSet, Enum counter,  Reducer.Context context,
                           TitanGraph graph, SerializedPropertyGraphElement outValue,
                           IntWritable outKey, KeyFunction keyFunction) throws IOException, InterruptedException;
 

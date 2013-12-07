@@ -63,7 +63,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends Property
      * @param label the edge label
      */
     public Edge(VidType src, VidType dst, StringType label) {
-        super();
+        this();
 
         this.src = src;
         this.dst = dst;
@@ -80,7 +80,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends Property
      * @param label the edge label
      */
     public Edge(VidType src, VidType dst, StringType label, PropertyMap propertyMap) {
-        super();
+        this();
 
         this.src = src;
         this.dst = dst;

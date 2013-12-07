@@ -55,6 +55,7 @@ public class PropertyGraphElements {
 
     HashMap<EdgeID, Writable>   edgeSet       = new HashMap<>();
     HashMap<Object, Writable>   vertexSet     = new HashMap<>();
+    HashMap<Object, StringType> vertexLabelMap = new HashMap();
 
     private Reducer.Context context;
 
@@ -112,6 +113,7 @@ public class PropertyGraphElements {
 
         edgeSet       = new HashMap<>();
         vertexSet     = new HashMap<>();
+        vertexLabelMap= new HashMap<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
             PropertyGraphElement propertyGraphElement = serializedPropertyGraphElement.graphElement();
@@ -126,7 +128,7 @@ public class PropertyGraphElements {
     }
 
     public void write() throws IOException, InterruptedException {
-        mergedGraphElementWrite.write(edgeSet, vertexSet, vertexCounter, edgeCounter, context, graph, outValue, outKey,
+        mergedGraphElementWrite.write(edgeSet, vertexSet, vertexLabelMap, vertexCounter, edgeCounter, context, graph, outValue, outKey,
                 keyFunction);
     }
 

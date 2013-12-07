@@ -51,11 +51,11 @@ public class PropertyGraphElementStringTypeVidsTest {
 
         Vertex<StringType> vertex = new Vertex<StringType>(vid);
 
-        PropertyGraphElementStringTypeVids vertexElement  = new PropertyGraphElementStringTypeVids();
+        SerializedPropertyGraphElementStringTypeVids vertexElement  = new SerializedPropertyGraphElementStringTypeVids();
 
-        vertexElement.init(PropertyGraphElement.GraphElementType.VERTEX, vertex);
+        vertexElement.init(vertex);
 
-        assert(vertexElement.toString().contains(name));
+        assert(vertexElement.graphElement().toString().contains(name));
 
 
         String srcName = "The Source";
@@ -69,18 +69,18 @@ public class PropertyGraphElementStringTypeVidsTest {
 
         Edge<StringType> edge = new Edge<StringType>(srcId, dstId, wrappedLabel);
 
-        PropertyGraphElementStringTypeVids edgeElement  = new PropertyGraphElementStringTypeVids();
+        SerializedPropertyGraphElementStringTypeVids edgeElement  = new SerializedPropertyGraphElementStringTypeVids();
 
-        edgeElement.init(PropertyGraphElement.GraphElementType.EDGE, edge);
+        edgeElement.init(edge);
 
-        assert(edgeElement.toString().contains(srcName));
-        assert(edgeElement.toString().contains(dstName));
-        assert(edgeElement.toString().contains(label));
+        assert(edgeElement.graphElement().toString().contains(srcName));
+        assert(edgeElement.graphElement().toString().contains(dstName));
+        assert(edgeElement.graphElement().toString().contains(label));
 
         // as for the null graph element...
         // well, I don't care what you call it, but it needs to have nonzero length string
 
-        PropertyGraphElementStringTypeVids nullElement = new PropertyGraphElementStringTypeVids();
+        SerializedPropertyGraphElementStringTypeVids nullElement = new SerializedPropertyGraphElementStringTypeVids();
 
         assert(nullElement.toString().length() > 0);
     }

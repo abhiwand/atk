@@ -117,7 +117,7 @@ public abstract class TestMapReduceDriverUtils {
 
     protected static final Class klass = SerializedPropertyGraphElementStringTypeVids.class;
     protected static final Class valClass = SerializedPropertyGraphElementStringTypeVids.class;
-    protected static final String tribecaGraphFactoryOpen = "tribecaGraphFactoryOpen";
+    protected static final String getTitanGraphInstance = "getTitanGraphInstance";
 
     @BeforeClass
     public static void beforeClass(){
@@ -174,10 +174,10 @@ public abstract class TestMapReduceDriverUtils {
     protected EdgesIntoTitanReducer newEdgesIntoTitanReducer(){
         spiedEdgesIntoTitanReducer = (EdgesIntoTitanReducer) newSpy(spiedEdgesIntoTitanReducer, EdgesIntoTitanReducer.class);
         try {
-            PowerMockito.doReturn(titanGraph).when(spiedEdgesIntoTitanReducer, method(EdgesIntoTitanReducer.class, tribecaGraphFactoryOpen, Reducer.Context.class))
+            PowerMockito.doReturn(titanGraph).when(spiedEdgesIntoTitanReducer, method(EdgesIntoTitanReducer.class, getTitanGraphInstance, Reducer.Context.class))
                     .withArguments(any(Reducer.Context.class));
         } catch (Exception e) {
-            fail("couldn't stub tribecaGraphFactoryOpen");
+            fail("couldn't stub getTitanGraphInstance");
         }
         return spiedEdgesIntoTitanReducer;
     }
@@ -193,9 +193,9 @@ public abstract class TestMapReduceDriverUtils {
         spiedVerticesIntoTitanReducer = (VerticesIntoTitanReducer) newSpy(spiedVerticesIntoTitanReducer, VerticesIntoTitanReducer.class);
         try {
             PowerMockito.doReturn(titanGraph).when(spiedVerticesIntoTitanReducer, method(VerticesIntoTitanReducer.class,
-                    tribecaGraphFactoryOpen, Reducer.Context.class)) .withArguments(any(Reducer.Context.class));
+                    getTitanGraphInstance, Reducer.Context.class)) .withArguments(any(Reducer.Context.class));
         } catch (Exception e) {
-            fail("couldn't stub tribecaGraphFactoryOpen");
+            fail("couldn't stub getTitanGraphInstance");
         }
         return spiedVerticesIntoTitanReducer;
     }

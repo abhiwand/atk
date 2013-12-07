@@ -52,6 +52,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     public Vertex() {
         super();
 
+        this.vertexLabel = new StringType();
         this.properties = new PropertyMap();
     }
 
@@ -61,7 +62,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      * @param vid vertex ID
      */
     public Vertex(VertexIdType vid) {
-        super();
+        this();
 
         this.vertexId   = vid;
         this.properties = new PropertyMap();
@@ -73,10 +74,24 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      * @param vid vertex ID
      */
     public Vertex(VertexIdType vid, PropertyMap propertyMap) {
-        super();
+        this();
 
         this.vertexId   = vid;
         this.properties = propertyMap;
+    }
+
+    /**
+     * Create a vertex with given vertex ID.
+     *
+     * @param vid vertex ID
+     * @param label vertex Label
+     */
+    public Vertex(VertexIdType vid, String label) {
+        this();
+
+        this.vertexId    = vid;
+        this.properties  = new PropertyMap();
+        this.vertexLabel = new StringType(label);
     }
 
     /**
@@ -104,18 +119,6 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
         }else{
             return false;
         }
-    }
-
-    /**
-     * Create a vertex with given vertex ID.
-     *
-     * @param vid vertex ID
-     * @param label vertex Label
-     */
-    public Vertex(VertexIdType vid, String label) {
-        this.vertexId    = vid;
-        this.properties  = new PropertyMap();
-        this.vertexLabel = new StringType(label);
     }
 
     /**
@@ -183,7 +186,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      */
     @Override
     public final String toString() {
-        if (this.vertexLabel.isEmpty()) {
+        if (this.vertexLabel == null || this.vertexLabel.isEmpty()) {
             return this.vertexId.toString() + "\t" + this.properties.toString();
         } else {
             return this.vertexId.toString() + "\t" + this.vertexLabel.toString() + "\t" + properties.toString();

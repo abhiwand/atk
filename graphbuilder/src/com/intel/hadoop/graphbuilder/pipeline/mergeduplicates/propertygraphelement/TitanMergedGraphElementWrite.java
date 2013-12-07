@@ -53,7 +53,8 @@ public class TitanMergedGraphElementWrite implements MergedGraphElementWrite{
     private HashMap<Object, Long>  vertexNameToTitanID = new HashMap<>();
 
     @Override
-    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet, Enum vertexCounter,
+    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+                      HashMap<Object, StringType> vertexLabelMap, Enum vertexCounter,
                       Enum edgeCounter, Reducer.Context context, TitanGraph graph,
                       SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
             throws IOException, InterruptedException {

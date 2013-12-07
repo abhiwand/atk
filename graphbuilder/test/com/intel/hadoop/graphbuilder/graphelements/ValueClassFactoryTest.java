@@ -12,10 +12,10 @@ public class ValueClassFactoryTest {
     public void testGetValueClassByVidClassName() throws Exception {
 
         assertSame(ValueClassFactory.getValueClassByVidClassName(StringType.class.getName()),
-                PropertyGraphElementStringTypeVids.class);
+                SerializedPropertyGraphElementStringTypeVids.class);
 
         assertSame(ValueClassFactory.getValueClassByVidClassName(LongType.class.getName()),
-                PropertyGraphElementLongTypeVids.class);
+                SerializedPropertyGraphElementLongTypeVids.class);
     }
 
     @Test(expected=IllegalArgumentException.class)

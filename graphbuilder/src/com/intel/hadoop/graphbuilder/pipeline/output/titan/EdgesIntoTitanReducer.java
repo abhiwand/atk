@@ -83,6 +83,8 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
 
         this.vertexNameToTitanID = new HashMap<Object, Long>();
         this.graph               = getTitanGraphInstance(context);
+
+        edgesIntoTitanReducerCallback = new EdgesIntoTitanReducerCallback();
     }
 
     /**
