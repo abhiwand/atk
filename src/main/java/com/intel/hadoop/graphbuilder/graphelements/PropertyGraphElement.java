@@ -108,7 +108,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
 	}
 
 	/**
-	 * @return the vertex value, used only when graphElementType == EDGE.
+	 * @return the Edge value, used only when graphElementType == EDGE.
 	 */
 
 	public Edge<VidType> edge() {
