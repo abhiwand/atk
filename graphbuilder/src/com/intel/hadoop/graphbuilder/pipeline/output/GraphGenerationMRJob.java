@@ -31,7 +31,6 @@ import java.util.HashMap;
  * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR
  * @see  com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain
  */
-
 public abstract class GraphGenerationMRJob {
     public abstract void setValueClass(Class valueClass);
     public abstract void setVidClass(Class vidClass);

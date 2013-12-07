@@ -19,7 +19,6 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
