@@ -33,6 +33,7 @@ import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.OWL2;
 import com.hp.hpl.jena.vocabulary.OntDocManagerVocab;
 import com.hp.hpl.jena.vocabulary.RDFS;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 
 public class RDFUtils {
