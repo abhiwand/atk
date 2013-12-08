@@ -38,12 +38,11 @@ public class TORDF extends EvalFunc<Tuple> {
 
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
-		PropertyGraphElementTuple t = (PropertyGraphElementTuple) input.get(0);
-		List<Object> allGraphElements = t.getAll();
-		for (Object o : allGraphElements) {
-			PropertyGraphElement e = (PropertyGraphElement) o;
-			System.out.println(e.graphElementType());
-		}
+		Object graphElement =  input.get(0);
+
+        PropertyGraphElement e = (PropertyGraphElement) graphElement;
+        System.out.println(e.graphElementType());
+
 		Tuple rdfTuple = TupleFactory.getInstance().newTuple(3);// an RDF tuple
 																// is a triple
 		rdfTuple.set(0, "subject");

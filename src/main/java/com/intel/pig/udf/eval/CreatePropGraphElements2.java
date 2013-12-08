@@ -22,7 +22,7 @@ package com.intel.pig.udf.eval;
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
-import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.types.*;
 import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.pig.data.GBTupleFactory;
@@ -74,6 +74,8 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
 
     private HashMap<String, EdgeRule>     edgeLabelToEdgeRules;
     private ArrayList<String>             edgeLabelList;
+
+    private HashMap<String, Byte> fieldNameToDataType;
 
     private boolean                       flattenList;
     /**
@@ -157,6 +159,15 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
 
         this.tokenizationRule = tokenizationRule;
 
+
+        vertexRDFLabelMap  = new HashMap<String, String>();
+        vertexPropColMap   = new HashMap<String, String[]>();
+        vertexIdColumnList = new ArrayList<String>();
+
+        edgeLabelToEdgeRules  = new HashMap<String, EdgeRule>();
+        edgeLabelList         = new ArrayList<String>();
+
+
         vertexRules =
                 nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
 
@@ -165,7 +176,6 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
 
         rawDirectedEdgeRules =
                 nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
-
 
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
@@ -177,6 +187,7 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
         for (String vertexRule : vertexRules) {
 
             vertexIdColumnName = HBaseGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
+
             vertexIdColumnList.add(vertexIdColumnName);
 
             String[] vertexPropertiesColumnNames =
@@ -254,9 +265,6 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
     }
 
     private Object getTupleData(Tuple input, Schema inputSchema, String fieldName) throws IOException{
-		/* assume that the user specified "f1" in the tokenizationRule, you can get the corresponding tuple with the following */
-        //int fieldPos = inputSchema.getPosition("f1");
-        //  Object f1Tuple = input.get(fieldPos);
 
         int fieldPos = inputSchema.getPosition(fieldName);
         Object output = input.get(fieldPos);
@@ -295,13 +303,60 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
         } catch (ExecException e) {
             // log something here, however pig logs stuff
         }
+
     }
 
+    private WritableComparable dataConverter(Object value, byte typeByte) {
+        WritableComparable object = null;
+
+        if (typeByte == DataType.BYTE) {
+            object = new IntType((int) value);
+        } else if (typeByte == DataType.INTEGER) {
+            object = new IntType((int) value);
+        } else if (typeByte == DataType.LONG) {
+            object = new LongType((long) value);
+        } else if (typeByte == DataType.FLOAT) {
+            object = new FloatType((float) value);
+        } else if (typeByte == DataType.DOUBLE) {
+            object = new DoubleType((double) value);
+        } else if (typeByte == DataType.CHARARRAY) {
+            object = new StringType((String) value);
+        } else {
+            // todo: failure/exception
+        }
+
+        return object;
+    }
+    private Class<?> pigTypeByteToJavaClass(byte typeByte) {
+
+        Class<?> javaClass = Object.class;
+
+        if (typeByte == DataType.BYTE) {
+            return Byte.class;
+        } else if (typeByte == DataType.INTEGER) {
+            return Integer.class;
+        } else if (typeByte == DataType.LONG) {
+            return Long.class;
+        } else if (typeByte == DataType.FLOAT) {
+            return Float.class;
+        } else if (typeByte == DataType.DOUBLE) {
+            return Double.class;
+        } else if (typeByte == DataType.CHARARRAY) {
+            return String.class;
+        }
+
+        return javaClass;
+    }
 
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
         Schema inputSchema = getInputSchema();
+        fieldNameToDataType = new HashMap<String,Byte>();
+
+        for (Schema.FieldSchema field : inputSchema.getFields()) {
+            fieldNameToDataType.put(field.alias, field.type);
+        }
 
         DataBag outputBag = mBagFactory.newDefaultBag();
 
@@ -311,9 +366,8 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
 
             String vidCell = (String) getTupleData(input, inputSchema, columnName);
 
-            for (String vertexId : expandString(vidCell)) {
-
-                if (null != vertexId) {
+            if (null != vidCell) {
+                for (String vertexId : expandString(vidCell)) {
 
                     // create vertex
 
@@ -325,13 +379,15 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
 
                     if (null != vpColNames) {
 
-                        String value = null;
+
 
                         if (vpColNames.length > 0) {
                             for (String vertexPropertyColumnName : vpColNames) {
-                                value =  (String) getTupleData(input, inputSchema, vertexPropertyColumnName);
+                                Object value = null;
+
+                                value =  getTupleData(input, inputSchema, vertexPropertyColumnName);
                                 if (value != null) {
-                                    vertex.setProperty(vertexPropertyColumnName, new StringType(value));
+                                    vertex.setProperty(vertexPropertyColumnName, dataConverter(value,fieldNameToDataType.get(vertexPropertyColumnName) ));
                                 }
                             }
                         }
@@ -344,19 +400,19 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
                         vertex.setVertexLabel(new StringType(rdfLabel));
                     }
                     addVertexToPropElementBag(outputBag, vertex);
-                } else {
-                    // what kind of logging and what error counting can we do with pig?
+                }
+            }  else {
+                // what kind of logging and what error counting can we do with pig?
                     /*
                     LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
                     context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
                     */
-                }
             }
         }// End of vertex block
 
         // check row for edges
 
-        String propertyValue;
+        Object propertyValue;
         String property;
         String srcVertexColName;
         String tgtVertexColName;
@@ -375,23 +431,20 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
             String srcVertexCellString = (String) getTupleData(input, inputSchema, srcVertexColName);
             String tgtVertexCellString = (String) getTupleData(input, inputSchema, tgtVertexColName);
 
+            if (srcVertexCellString != null && tgtVertexCellString != null && eLabel != null) {
 
-            for (String srcVertexName : expandString(srcVertexCellString)) {
-                for (String tgtVertexName: expandString(tgtVertexCellString)) {
-
-                    if (srcVertexColName != null && tgtVertexColName != null && eLabel != null) {
+                for (String srcVertexName : expandString(srcVertexCellString)) {
+                    for (String tgtVertexName: expandString(tgtVertexCellString)) {
 
                         Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
                                 new StringType(tgtVertexName), new StringType(eLabel));
 
                         for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-                            propertyValue = (String) getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
-                            property = edgeAttributes[countEdgeAttr].replaceAll(
-                                    GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                    GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
+                            propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
+                            property = edgeAttributes[countEdgeAttr];
 
-                            if (property != null) {
-                                edge.setProperty(property, new StringType(propertyValue));
+                            if (propertyValue != null) {
+                                edge.setProperty(property, dataConverter(propertyValue, fieldNameToDataType.get(edgeAttributes[countEdgeAttr]) ));
                             }
                         }
 
@@ -414,12 +467,10 @@ public class CreatePropGraphElements2 extends EvalFunc<DataBag> {
                             for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
                                 propertyValue = (String) getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
 
-                                property = edgeAttributes[countEdgeAttr].replaceAll(
-                                        GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
+                                property = edgeAttributes[countEdgeAttr];
 
-                                if (property != null) {
-                                    opposingEdge.setProperty(property, new StringType(propertyValue));
+                                if (propertyValue != null) {
+                                    edge.setProperty(property, dataConverter(propertyValue, fieldNameToDataType.get(edgeAttributes[countEdgeAttr]) ));
                                 }
                             }
                             addEdgeToPropElementBag(outputBag, opposingEdge);

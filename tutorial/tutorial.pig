@@ -21,8 +21,8 @@ xml_data = LOAD 'tutorial/data/tshirts.xml' using org.apache.pig.piggybank.stora
 DUMP xml_data;
 
 x = LOAD '/etc/passwd' USING PigStorage(':') AS (username:chararray, f1: chararray, f2: chararray, f3:chararray, f4:chararray);
-DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "f1" "f2" -e "f1,f2,link,f3"');
-pge = FOREACH x GENERATE CreatePropGraphElements(*); 
+DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "f1" "f2" -e "f1,f2,link,f3"');
+pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
 dump pge;
 rdf_triples = FOREACH pge GENERATE TORDF(*);
 DESCRIBE rdf_triples;
