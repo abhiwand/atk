@@ -41,7 +41,8 @@ import java.util.HashMap;
  * </p>
  *
  * <p>
- * all arguments are extracted from the argument builder
+ * all arguments are extracted from the argument builder and all are mandatory except the edgeReducerFunction,
+ * vertexReducerFunction.
  * <ul>
  *      <li>edgeSet - hashmap with the current list of merged edges</li>
  *      <li>vertexSet - hashmap with the current list of merged vertices</li>
@@ -195,24 +196,16 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
     }
 
 
+    /**
+     * Runs a PropertyGraphElementTypeCallback to see if the element exist in either the edge or vertex set.
+     *
+     * @see ContainsKey
+     * @see PropertyGraphElementTypeCallback
+     * @param propertyGraphElement element to check for
+     * @return weather or not the property graph elements key exist in either the vertex or edge hash set.
+     */
     private boolean containsKey(PropertyGraphElement propertyGraphElement){
         return (Boolean)propertyGraphElement.typeCallback(containsKey, ArgumentBuilder.newArguments()
                 .with("edgeSet", edgeSet).with("vertexSet", vertexSet));
-    }
-
-    public void setVertexSet(HashMap<Object, Writable> vertexSet) {
-        this.vertexSet = vertexSet;
-    }
-
-    public void setEdgeReducerFunction(Functional edgeReducerFunction) {
-        this.edgeReducerFunction = edgeReducerFunction;
-    }
-
-    public void setVertexReducerFunction(Functional vertexReducerFunction) {
-        this.vertexReducerFunction = vertexReducerFunction;
-    }
-
-    public void setNoBiDir(boolean noBiDir) {
-        this.noBiDir = noBiDir;
     }
 }

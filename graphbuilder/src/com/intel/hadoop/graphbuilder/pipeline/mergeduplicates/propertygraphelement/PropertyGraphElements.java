@@ -38,7 +38,7 @@ import java.util.HashMap;
  * Coordinates the tasks of merging edges and vertices and writing them to their desired output.
  *
  * <p>
- * The merge phase is common across all three graph outputs and doesn't need to be defined but the writting class needs
+ * The merge phase is common across all three graph outputs and doesn't need to be defined but the writing class needs
  * to be declared during instantiation.
  *
  * <b>implemented write classes</b>
@@ -50,7 +50,6 @@ import java.util.HashMap;
  * </ul>
  *
  * </p>
- *
  *
  * @see PropertyGraphElementPut
  * @see MergedGraphElementWrite
