@@ -25,7 +25,9 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -295,9 +297,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
             String vidCell = getColumnData(columns, columnName, context);
 
-            for (String vertexId : expandString(vidCell)) {
-
-                if (null != vertexId) {
+            if (null != vidCell) {
+                for (String vertexId : expandString(vidCell)) {
 
                     // create vertex
 
@@ -328,13 +329,13 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                         vertex.setVertexLabel(new StringType(rdfLabel));
                     }
                     vertexList.add(vertex);
-                } else {
-
-                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
-                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
                 }
+            } else {
+
+                LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
+                context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
             }
-        }// End of vertex block
+        } // End of vertex block
 
         // check row for edges
 
@@ -357,11 +358,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             String srcVertexCellString = getColumnData(columns, srcVertexColName, context);
             String tgtVertexCellString = getColumnData(columns, tgtVertexColName, context);
 
-
-            for (String srcVertexName : expandString(srcVertexCellString)) {
-                for (String tgtVertexName: expandString(tgtVertexCellString)) {
-
-                    if (srcVertexColName != null && tgtVertexColName != null && eLabel != null) {
+            if (srcVertexCellString != null && tgtVertexCellString != null && eLabel != null) {
+                for (String srcVertexName : expandString(srcVertexCellString)) {
+                    for (String tgtVertexName: expandString(tgtVertexCellString)) {
 
                         Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
                                 new StringType(tgtVertexName), new StringType(eLabel));
@@ -409,6 +408,22 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                             edgeList.add(opposingEdge);
                         }
                     }
+                }
+            } else {
+
+                if (srcVertexCellString == null) {
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + srcVertexColName + ", row " + row.toString());
+                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
+                }
+
+                if (tgtVertexCellString == null) {
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + tgtVertexColName + ", row " + row.toString());
+                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
+                }
+
+                if (eLabel == null) {
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.INTERNAL_PARSER_ERROR,
+                            "Null edge label during parsing. Possibly a bad mapper configuration.",LOG);
                 }
             }
         }
