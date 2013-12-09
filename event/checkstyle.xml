@@ -164,9 +164,14 @@
       <property name="allowUndeclaredRTE" value="true"/>
       <property name="allowMissingThrowsTags" value="true"/> 
       <property name="allowMissingPropertyJavadoc" value="true"/>
+      <property name="allowMissingParamTags" value = "true" />
+      <property name="allowMissingReturnTag" value = "true" />
+      <property name="excludeScope" value="private"/>
     </module>
       <!-- Require field javadoc -->
-    <module name="JavadocVariable"/>   
+    <module name="JavadocVariable">
+        <property name="excludeScope" value="private"/>
+    </module>
 
     <!-- Miscellaneous other checks (tree walker).     -->
     <!-- See http://checkstyle.sf.net/config_misc.html -->
