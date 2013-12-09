@@ -24,7 +24,10 @@ x = LOAD '/etc/passwd' USING PigStorage(':') AS (username:chararray, f1: chararr
 DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "f1" "f2" -e "f1,f2,link,f3"');
 pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
 dump pge;
-rdf_triples = FOREACH pge GENERATE TORDF(*);
+
+--RDF example
+DEFINE TORDF com.intel.pig.udf.eval.TORDF('OWL');--specify the namespace to use with the constructor
+rdf_triples = FOREACH pge GENERATE FLATTEN(TORDF(*));
 DESCRIBE rdf_triples;
 DUMP rdf_triples;
 

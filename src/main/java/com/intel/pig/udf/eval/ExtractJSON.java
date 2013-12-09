@@ -35,6 +35,8 @@ import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
+ * \brief UDF for extracting fields from JSON documents using JSONPath queries
+ * 
  * ExtractJSON UDF is for extracting fields from (potentially complex & nested)
  * JSON documents with JSONPath expressions. This UDF uses the JSONPath
  * implementation of the <a

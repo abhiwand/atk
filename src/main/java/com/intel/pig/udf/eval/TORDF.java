@@ -39,8 +39,25 @@ import com.intel.hadoop.graphbuilder.util.RDFUtils;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief some documentation
+ * \brief UDF for converting property graph elements to RDF triples
  * 
+ * TORDF UDF converts given property graph elements to RDF triples.
+ * 
+ * <p/>
+ * <b>Example:</b>
+ * <p/>
+ * Assume that "tshirts.json" file has a record: <br/>
+ * { "Name": "T-Shirt 1", "Sizes": [ { "Size": "Large", "Price": 20.50 }, {
+ * "Size": "Medium", "Price": 10.00 } ], "Colors": [ "Red", "Green", "Blue" ]} <br/>
+ * <br/>
+ * Then here is the corresponding Pig script:
+ * 
+ * <pre>
+ * {@code
+ * json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
+ * extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSON(json, 'Sizes[0].Price') AS price: double;
+ * }
+ * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class TORDF extends EvalFunc<DataBag> {
