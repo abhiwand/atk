@@ -141,10 +141,6 @@ public class PropertyGraphElements {
                 .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap)
                 .with("vertexCounter", vertexCounter).with("edgeCounter", edgeCounter).with("context", context)
                 .with("graph", graph).with("outValue", outValue).with("outKey", outKey).with("keyFunction", keyFunction));
-
-        /*mergedGraphElementWrite.write(edgeSet, vertexSet, vertexLabelMap, vertexCounter, edgeCounter, context, graph, outValue, outKey,
-
-                keyFunction);*/
     }
 
     /**
@@ -157,10 +153,6 @@ public class PropertyGraphElements {
                     .with("edgeReducerFunction", edgeReducerFunction)
                     .with("vertexReducerFunction", vertexReducerFunction)
                     .with("noBiDir", noBiDir));
-
-        /*propertyGraphElement.typeCallback(propertyGraphElementPut, edgeSet, vertexSet, edgeReducerFunction,
-
-                vertexReducerFunction, noBiDir);*/
     }
 
 

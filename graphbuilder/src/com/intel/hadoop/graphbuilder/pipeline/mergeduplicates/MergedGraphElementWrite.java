@@ -67,43 +67,13 @@ public abstract class MergedGraphElementWrite {
         keyFunction = (KeyFunction)args.get("keyFunction");
     }
 
-    /**
-     *
-     * @param edgeSet merged edge hashmap
-     * @param vertexSet merged vetices hashmap
-     * @param vertexCounter counter to be increment when after succesfull vertex write
-     * @param edgeCounter counter to be increment when after succesfull edge write
-     * @param context the reducer context
-     * @param graph titan graph
-     * @param outValue instance of context.getMapOutputValueClass
-     * @param outKey instance of teh out key usually IntWritable
-     * @param keyFunction key function for creating the context.write key
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    /*HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
-                      HashMap<Object, StringType> vertexLabelMap,
-                      Enum vertexCounter, Enum edgeCounter, Reducer.Context context, TitanGraph graph,
-                      SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction
-                      */
+
     public abstract void write(ArgumentBuilder args)
             throws IOException, InterruptedException;
 
 
-    /*
-    *
-    * HashMap<Object, Writable> vertexSet,
-                            Enum counter, Reducer.Context context,
-                            TitanGraph graph, SerializedPropertyGraphElement outValue,
-                            IntWritable outKey, KeyFunction keyFunction
-    * */
     public abstract void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException;
 
-    /*
-    HashMap<EdgeID, Writable> edgeSet, Enum counter,  Reducer.Context context,
-                          TitanGraph graph, SerializedPropertyGraphElement outValue,
-                          IntWritable outKey, KeyFunction keyFunction
-     */
     public abstract void edgeWrite(ArgumentBuilder args) throws IOException, InterruptedException;
 
 }
