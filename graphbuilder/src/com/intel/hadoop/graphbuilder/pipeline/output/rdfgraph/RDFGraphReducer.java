@@ -258,7 +258,7 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
     }
 
     private void initPropertyGraphElements(Context context){
-        propertyGraphElements = new PropertyGraphElements(new TitanMergedGraphElementWrite(),vertexReducerFunction,
+        propertyGraphElements = new PropertyGraphElements(new RDFGraphMergedGraphElementWrite(),vertexReducerFunction,
                 edgeReducerFunction, context, null, null, Counters.NUM_EDGES, Counters.NUM_VERTICES);
 
     }

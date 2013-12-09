@@ -35,12 +35,25 @@ import java.io.IOException;
 import java.util.HashMap;
 
 /**
- # - duplicate edges and vertices are removed
- * - each vertex is loaded into Titan and is tagged with its Titan ID and passed to the next MR job
- *   through the temp file
- * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
+ * Coordinates the tasks of merging edges and vertices and writing them to their desired output.
+ *
+ * <p>
+ * The merge phase is common across all three graph outputs and doesn't need to be defined but the writting class needs
+ * to be declared during instantiation.
+ *
+ * <b>implemented write classes</b>
+ * <ul>
+ *     <li>RDFGraphMergedGraphElementWrite - write edges/vertices to rdf format</li>
+ *     <li>TitanMergedGraphElementWrite - each vertex is loaded into Titan,
+ *      each edge is tagged with the Titan ID of its source vertex and passed to the next MR job</li>
+ *     <li>TextGraphMergedGraphElementWrite - write edges/vertices to tab delimited format</li>
+ * </ul>
+ *
+ * </p>
+ *
  *
  * @see PropertyGraphElementPut
+ * @see MergedGraphElementWrite
  */
 public class PropertyGraphElements {
     private static final Logger LOG = Logger.getLogger(PropertyGraphElements.class);
@@ -121,7 +134,7 @@ public class PropertyGraphElements {
 
         edgeSet       = new HashMap<>();
         vertexSet     = new HashMap<>();
-        vertexLabelMap= new HashMap<>();
+        vertexLabelMap = new HashMap<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
             PropertyGraphElement propertyGraphElement = serializedPropertyGraphElement.graphElement();

@@ -53,35 +53,6 @@ import java.util.Map;
 public class TitanMergedGraphElementWrite extends MergedGraphElementWrite{
     private HashMap<Object, Long>  vertexNameToTitanID = new HashMap<>();
 
-
-    /*HashMap<EdgeID, Writable> edgeSet;
-    HashMap<Object, Writable> vertexSet;
-    HashMap<Object, StringType> vertexLabelMap;
-    Enum vertexCounter;
-    Enum edgeCounter;
-    Reducer.Context context;
-    TitanGraph graph;
-    SerializedPropertyGraphElement outValue;
-    IntWritable outKey;
-    KeyFunction keyFunction;
-
-    private void initArgs(ArgumentBuilder args){
-        edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
-        vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
-        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap");
-
-        vertexCounter = (Enum)args.get("vertexCounter");
-        edgeCounter = (Enum)args.get("edgeCounter");
-
-        context = (Reducer.Context)args.get("context");
-
-        graph = (TitanGraph)args.get("graph");
-
-        outValue = (SerializedPropertyGraphElement)args.get("outValue");
-        outKey = (IntWritable)args.get("outKey");
-        keyFunction = (KeyFunction)args.get("keyFunction");
-    }*/
-
     @Override
     public void write(ArgumentBuilder args)
             throws IOException, InterruptedException {
