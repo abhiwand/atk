@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
  * get a property for the given graph element.
@@ -32,7 +33,7 @@ public class PropertyGraphElementGetProperty implements PropertyGraphElementType
     private String key;
 
     @Override
-    public Object edge(PropertyGraphElement propertyGraphElement, Object... args) {
+    public Object edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         initArguments(args);
 
         Edge edge = (Edge)propertyGraphElement;
@@ -40,7 +41,7 @@ public class PropertyGraphElementGetProperty implements PropertyGraphElementType
     }
 
     @Override
-    public Object vertex(PropertyGraphElement propertyGraphElement, Object... args) {
+    public Object vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         initArguments(args);
 
         Vertex vertex = (Vertex)propertyGraphElement;
@@ -48,11 +49,12 @@ public class PropertyGraphElementGetProperty implements PropertyGraphElementType
     }
 
     @Override
-    public Object nullElement(PropertyGraphElement propertyGraphElement, Object... args) {
+    public Object nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return null;
     }
 
-    private void initArguments(Object ... args){
-        key = (String) args[0];
+    private void initArguments(ArgumentBuilder args){
+        if(args.exists("key"))
+        key = (String) args.get("key");
     }
 }

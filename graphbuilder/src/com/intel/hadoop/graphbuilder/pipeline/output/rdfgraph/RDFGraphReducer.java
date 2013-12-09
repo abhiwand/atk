@@ -22,21 +22,13 @@ package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntProperty;
 import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.rdf.model.impl.PropertyImpl;
 import com.hp.hpl.jena.vocabulary.*;
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TitanMergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -51,9 +43,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.log4j.Logger;
-
-import org.apache.jena.riot.RDFDataMgr;
-import org.openrdf.rio.RDFFormat;
 
 /**
  * The Reducer class applies user defined {@code Functional}s to reduce

@@ -20,17 +20,12 @@
 package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement;
 
 import com.intel.hadoop.graphbuilder.graphelements.*;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.MergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
-import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
-import com.intel.hadoop.graphbuilder.types.LongType;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.Functional;
-import com.thinkaurelius.titan.core.TitanElement;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -38,8 +33,6 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  # - duplicate edges and vertices are removed
@@ -79,6 +72,21 @@ public class PropertyGraphElements {
     public PropertyGraphElements(){
         propertyGraphElementPut = new PropertyGraphElementPut();
 
+    }
+
+    public PropertyGraphElements(ArgumentBuilder argumentBuilder){
+        this();
+        this.vertexReducerFunction = (Functional)argumentBuilder.get("vertexReducerFunction");;
+        this.edgeReducerFunction = (Functional)argumentBuilder.get("edgeReducerFunction");
+        this.context = (Reducer.Context)argumentBuilder.get("context");
+        this.noBiDir = context.getConfiguration().getBoolean("noBiDir", false);
+        this.graph = (TitanGraph)argumentBuilder.get("graph");
+        this.outKey   = new IntWritable();
+        this.outValue   = (SerializedPropertyGraphElement)argumentBuilder.get("outValue");
+        this.vertexNameToTitanID = new HashMap<Object, Long>();
+        this.vertexCounter = (Enum)argumentBuilder.get("vertexCounter");
+        this.edgeCounter = (Enum)argumentBuilder.get("edgeCounter");
+        this.mergedGraphElementWrite = (MergedGraphElementWrite)argumentBuilder.get("mergedGraphElementWrite");
     }
 
     public PropertyGraphElements(MergedGraphElementWrite mergedGraphElementWrite, Functional vertexReducerFunction,
@@ -128,8 +136,15 @@ public class PropertyGraphElements {
     }
 
     public void write() throws IOException, InterruptedException {
-        mergedGraphElementWrite.write(edgeSet, vertexSet, vertexLabelMap, vertexCounter, edgeCounter, context, graph, outValue, outKey,
-                keyFunction);
+
+        mergedGraphElementWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
+                .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap)
+                .with("vertexCounter", vertexCounter).with("edgeCounter", edgeCounter).with("context", context)
+                .with("graph", graph).with("outValue", outValue).with("outKey", outKey).with("keyFunction", keyFunction));
+
+        /*mergedGraphElementWrite.write(edgeSet, vertexSet, vertexLabelMap, vertexCounter, edgeCounter, context, graph, outValue, outKey,
+
+                keyFunction);*/
     }
 
     /**
@@ -137,7 +152,16 @@ public class PropertyGraphElements {
      * @param propertyGraphElement
      */
     private void put(PropertyGraphElement propertyGraphElement){
-        propertyGraphElement.typeCallback(propertyGraphElementPut, edgeSet, vertexSet, edgeReducerFunction,
-                vertexReducerFunction, noBiDir);
+        propertyGraphElement.typeCallback(propertyGraphElementPut,
+                ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
+                    .with("edgeReducerFunction", edgeReducerFunction)
+                    .with("vertexReducerFunction", vertexReducerFunction)
+                    .with("noBiDir", noBiDir));
+
+        /*propertyGraphElement.typeCallback(propertyGraphElementPut, edgeSet, vertexSet, edgeReducerFunction,
+
+                vertexReducerFunction, noBiDir);*/
     }
+
+
 }

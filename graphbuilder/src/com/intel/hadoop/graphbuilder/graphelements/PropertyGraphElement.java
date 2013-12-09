@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.*;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataOutput;
@@ -73,7 +74,20 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
      * @param <T> anything that gets returned by the instance of PropertyGraphElementTypeCallback
      * @return anything that gets returned by the instance of PropertyGraphElementTypeCallback
      */
-    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback, Object ... args){
+    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback, ArgumentBuilder args){
+        if(this.isEdge()){
+            return propertyGraphElementTypeCallbackCallback.edge(this, args);
+        }else if(this.isVertex()){
+            return propertyGraphElementTypeCallbackCallback.vertex(this, args);
+        }else if(this.isNull()){
+            return propertyGraphElementTypeCallbackCallback.nullElement(this, args);
+        }
+        return null;
+    }
+
+    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback){
+        ArgumentBuilder args = ArgumentBuilder.newArguments();
+
         if(this.isEdge()){
             return propertyGraphElementTypeCallbackCallback.edge(this, args);
         }else if(this.isVertex()){
@@ -109,11 +123,12 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     public Object getProperty(String key){
-        return this.typeCallback(propertyGraphElementGetProperty, key);
+        return this.typeCallback(propertyGraphElementGetProperty, ArgumentBuilder.newArguments().with("key", key));
     }
 
     public void setProperties(PropertyMap propertyMap){
-        this.typeCallback(propertyGraphElementSetProperties, propertyMap);
+        this.typeCallback(propertyGraphElementSetProperties, ArgumentBuilder.newArguments().
+                with("propertyMap", propertyMap));
     }
 
 }

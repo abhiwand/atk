@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
  * Very simple interface that gets called when the property graph element is an edge, vertex or null graph element.
@@ -39,7 +40,7 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
  * @see PropertyGraphElementObject
  */
 public interface PropertyGraphElementTypeCallback {
-    public <T> T edge(PropertyGraphElement propertyGraphElement, Object ... args);
-    public <T> T vertex(PropertyGraphElement propertyGraphElement, Object ... args);
-    public <T> T nullElement(PropertyGraphElement propertyGraphElement, Object ... args);
+    public <T> T edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);
+    public <T> T vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);
+    public <T> T nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);
 }

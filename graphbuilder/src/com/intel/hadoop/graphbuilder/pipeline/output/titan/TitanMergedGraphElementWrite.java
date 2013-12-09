@@ -17,7 +17,7 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement;
+package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
@@ -29,6 +29,7 @@ import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.thinkaurelius.titan.core.TitanElement;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.io.IntWritable;
@@ -46,22 +47,50 @@ import java.util.Map;
  *   through the temp file
  * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
  *
- * @see PropertyGraphElements
- * @see PropertyGraphElementPut
+ * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements
+ * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementPut
  */
-public class TitanMergedGraphElementWrite implements MergedGraphElementWrite{
+public class TitanMergedGraphElementWrite extends MergedGraphElementWrite{
     private HashMap<Object, Long>  vertexNameToTitanID = new HashMap<>();
 
+
+    /*HashMap<EdgeID, Writable> edgeSet;
+    HashMap<Object, Writable> vertexSet;
+    HashMap<Object, StringType> vertexLabelMap;
+    Enum vertexCounter;
+    Enum edgeCounter;
+    Reducer.Context context;
+    TitanGraph graph;
+    SerializedPropertyGraphElement outValue;
+    IntWritable outKey;
+    KeyFunction keyFunction;
+
+    private void initArgs(ArgumentBuilder args){
+        edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
+        vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
+        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap");
+
+        vertexCounter = (Enum)args.get("vertexCounter");
+        edgeCounter = (Enum)args.get("edgeCounter");
+
+        context = (Reducer.Context)args.get("context");
+
+        graph = (TitanGraph)args.get("graph");
+
+        outValue = (SerializedPropertyGraphElement)args.get("outValue");
+        outKey = (IntWritable)args.get("outKey");
+        keyFunction = (KeyFunction)args.get("keyFunction");
+    }*/
+
     @Override
-    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
-                      HashMap<Object, StringType> vertexLabelMap, Enum vertexCounter,
-                      Enum edgeCounter, Reducer.Context context, TitanGraph graph,
-                      SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
+    public void write(ArgumentBuilder args)
             throws IOException, InterruptedException {
+        initArgs(args);
 
-        vertexWrite(vertexSet, vertexCounter, context, graph, outValue, outKey, keyFunction);
 
-        edgeWrite(edgeSet, edgeCounter, context, graph, outValue, outKey, keyFunction);
+        vertexWrite(args);
+
+        edgeWrite(args);
     }
 
     public long getVertexId(com.tinkerpop.blueprints.Vertex bpVertex){
@@ -69,9 +98,9 @@ public class TitanMergedGraphElementWrite implements MergedGraphElementWrite{
     }
 
     @Override
-    public void vertexWrite(HashMap<Object, Writable> vertexSet,Enum counter, Reducer.Context context, TitanGraph graph,
-                            SerializedPropertyGraphElement outValue,
-                            IntWritable outKey, KeyFunction keyFunction) throws IOException, InterruptedException {
+    public void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+        initArgs(args);
+
         int vertexCount = 0;
 
         for(Map.Entry<Object, Writable> vertex: vertexSet.entrySet()) {
@@ -96,13 +125,14 @@ public class TitanMergedGraphElementWrite implements MergedGraphElementWrite{
             vertexCount++;
         }
 
-        context.getCounter(counter).increment(vertexCount);
+        context.getCounter(vertexCounter).increment(vertexCount);
     }
 
     @Override
-    public void edgeWrite(HashMap<EdgeID, Writable> edgeSet,Enum counter, Reducer.Context context, TitanGraph graph,
-                          SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
+    public void edgeWrite(ArgumentBuilder args)
             throws IOException, InterruptedException {
+        initArgs(args);
+
         int edgeCount   = 0;
 
         for(Map.Entry<EdgeID, Writable> edge: edgeSet.entrySet()){
@@ -126,7 +156,7 @@ public class TitanMergedGraphElementWrite implements MergedGraphElementWrite{
 
             edgeCount++;
         }
-        context.getCounter(counter).increment(edgeCount);
+        context.getCounter(edgeCounter).increment(edgeCount);
 
     }
 

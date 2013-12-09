@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
  * return the type of the graph element. Very use full when you don't care if it's an edge or vertex you just want a
@@ -30,17 +31,17 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 public class PropertyGraphElementType implements PropertyGraphElementTypeCallback{
     public enum GraphType{EDGE,VERTEX,NULL}
     @Override
-    public GraphType edge(PropertyGraphElement propertyGraphElement, Object... args) {
+    public GraphType edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return GraphType.EDGE;
     }
 
     @Override
-    public GraphType vertex(PropertyGraphElement propertyGraphElement, Object... args) {
+    public GraphType vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return GraphType.VERTEX;
     }
 
     @Override
-    public GraphType nullElement(PropertyGraphElement propertyGraphElement, Object... args) {
+    public GraphType nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return GraphType.NULL;
     }
 }

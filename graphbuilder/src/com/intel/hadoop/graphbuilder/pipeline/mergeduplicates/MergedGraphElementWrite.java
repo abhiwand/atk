@@ -23,6 +23,7 @@ import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
@@ -34,10 +35,37 @@ import java.util.HashMap;
 /**
  * simple interface for writing the merged edges and vertices
  *
- * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TitanMergedGraphElementWrite
- * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TextGraphMergedGraphElementWrite
+ * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite
+ * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMergedGraphElementWrite
  */
-public interface MergedGraphElementWrite {
+public abstract class MergedGraphElementWrite {
+    protected HashMap<EdgeID, Writable> edgeSet;
+    protected HashMap<Object, Writable> vertexSet;
+    protected HashMap<Object, StringType> vertexLabelMap;
+    protected Enum vertexCounter;
+    protected Enum edgeCounter;
+    protected Reducer.Context context;
+    protected TitanGraph graph;
+    protected SerializedPropertyGraphElement outValue;
+    protected IntWritable outKey;
+    protected KeyFunction keyFunction;
+
+    protected  void initArgs(ArgumentBuilder args){
+        edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
+        vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
+        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap");
+
+        vertexCounter = (Enum)args.get("vertexCounter");
+        edgeCounter = (Enum)args.get("edgeCounter");
+
+        context = (Reducer.Context)args.get("context");
+
+        graph = (TitanGraph)args.get("graph");
+
+        outValue = (SerializedPropertyGraphElement)args.get("outValue");
+        outKey = (IntWritable)args.get("outKey");
+        keyFunction = (KeyFunction)args.get("keyFunction");
+    }
 
     /**
      *
@@ -53,19 +81,29 @@ public interface MergedGraphElementWrite {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+    /*HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
                       HashMap<Object, StringType> vertexLabelMap,
                       Enum vertexCounter, Enum edgeCounter, Reducer.Context context, TitanGraph graph,
-                      SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
+                      SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction
+                      */
+    public abstract void write(ArgumentBuilder args)
             throws IOException, InterruptedException;
 
-    public void vertexWrite(HashMap<Object, Writable> vertexSet,
+
+    /*
+    *
+    * HashMap<Object, Writable> vertexSet,
                             Enum counter, Reducer.Context context,
                             TitanGraph graph, SerializedPropertyGraphElement outValue,
-                            IntWritable outKey, KeyFunction keyFunction) throws IOException, InterruptedException;
+                            IntWritable outKey, KeyFunction keyFunction
+    * */
+    public abstract void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException;
 
-    public void edgeWrite(HashMap<EdgeID, Writable> edgeSet, Enum counter,  Reducer.Context context,
+    /*
+    HashMap<EdgeID, Writable> edgeSet, Enum counter,  Reducer.Context context,
                           TitanGraph graph, SerializedPropertyGraphElement outValue,
-                          IntWritable outKey, KeyFunction keyFunction) throws IOException, InterruptedException;
+                          IntWritable outKey, KeyFunction keyFunction
+     */
+    public abstract void edgeWrite(ArgumentBuilder args) throws IOException, InterruptedException;
 
 }

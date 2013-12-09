@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
  * get the graph element object type casting it to the respective type
@@ -31,17 +32,17 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 public class PropertyGraphElementObject implements PropertyGraphElementTypeCallback {
 
     @Override
-    public Edge edge(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public Edge edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return (Edge)propertyGraphElement;
     }
 
     @Override
-    public Vertex vertex(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public Vertex vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return (Vertex)propertyGraphElement;
     }
 
     @Override
-    public Object nullElement(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public Object nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return null;
     }
 }

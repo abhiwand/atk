@@ -25,6 +25,7 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.io.Writable;
 
@@ -50,7 +51,7 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
     }
 
     @Override
-    public <T> T edge(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public <T> T edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         this.arguments(args);
 
         EdgeID edgeID = (EdgeID)propertyGraphElement.getId();
@@ -92,7 +93,7 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
     }
 
     @Override
-    public <T> T vertex(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public <T> T vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         this.arguments(args);
 
         Object vid = propertyGraphElement.getId();
@@ -133,24 +134,25 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
     }
 
     @Override
-    public <T> T nullElement(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public <T> T nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return null;
     }
 
-    private void arguments(Object ... args){
+    private void arguments(ArgumentBuilder args){
         setEdgeSet(args);
-        vertexSet = (HashMap<Object, Writable>)args[1];
-        edgeReducerFunction = (Functional)args[2];
-        vertexReducerFunction = (Functional)args[3];
-        noBiDir = (boolean)args[4];
+        vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
+        edgeReducerFunction = (Functional)args.get("edgeReducerFunction");
+        vertexReducerFunction = (Functional)args.get("vertexReducerFunction");
+        noBiDir = (boolean)args.get("noBiDir");
     }
 
     private boolean containsKey(PropertyGraphElement propertyGraphElement){
-        return (Boolean)propertyGraphElement.typeCallback(containsKey, edgeSet, vertexSet);
+        return (Boolean)propertyGraphElement.typeCallback(containsKey, ArgumentBuilder.newArguments()
+                .with("edgeSet", edgeSet).with("vertexSet", vertexSet));
     }
 
-    public void setEdgeSet(Object ... args) {
-        edgeSet = (HashMap<EdgeID, Writable>)args[0];
+    public void setEdgeSet(ArgumentBuilder args) {
+        edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
     }
 
     public void setVertexSet(HashMap<Object, Writable> vertexSet) {

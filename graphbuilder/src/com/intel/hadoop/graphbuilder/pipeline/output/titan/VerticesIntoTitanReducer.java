@@ -21,7 +21,6 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
-import com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph.RDFGraphMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -185,7 +184,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     }
 
     private void initPropertyGraphElements(Context context){
-        propertyGraphElements = new PropertyGraphElements(new RDFGraphMergedGraphElementWrite(),vertexReducerFunction,
+        propertyGraphElements = new PropertyGraphElements(new TitanMergedGraphElementWrite(),vertexReducerFunction,
                 edgeReducerFunction, context, graph, outValue, Counters.NUM_EDGES, Counters.NUM_VERTICES);
 
     }

@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
@@ -32,18 +33,18 @@ import org.apache.hadoop.io.WritableComparable;
  */
 public class PropertyGraphElementSrc implements PropertyGraphElementTypeCallback {
     @Override
-    public Object edge(PropertyGraphElement propertyGraphElement, Object... args) {
+    public Object edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         Edge edge = (Edge)propertyGraphElement;
         return edge.getSrc();
     }
 
     @Override
-    public Object vertex(PropertyGraphElement propertyGraphElement, Object... args) {
+    public Object vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return null;
     }
 
     @Override
-    public Object nullElement(PropertyGraphElement propertyGraphElement, Object... args) {
+    public Object nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return null;
     }
 }

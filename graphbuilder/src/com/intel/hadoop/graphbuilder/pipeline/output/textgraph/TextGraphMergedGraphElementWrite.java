@@ -17,13 +17,14 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement;
+package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.MergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -42,27 +43,27 @@ import java.util.Map;
  *   through the temp file
  * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
  *
- * @see PropertyGraphElements
- * @see PropertyGraphElementPut
+ * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements
+ * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementPut
  */
-public class TextGraphMergedGraphElementWrite implements MergedGraphElementWrite {
+public class TextGraphMergedGraphElementWrite extends MergedGraphElementWrite {
     MultipleOutputs<NullWritable, Text> multipleOutputs;
 
     @Override
-    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
-                      HashMap<Object, StringType> vertexLabelMap, Enum vertexCounter,
-                      Enum edgeCounter, Reducer.Context context, TitanGraph graph,
-                      SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
+    public void write(ArgumentBuilder args)
             throws IOException, InterruptedException {
+        initArgs(args);
+
         multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
 
-        vertexWrite(vertexSet, vertexCounter, context, graph, outValue, outKey, keyFunction);
+        vertexWrite(args);
 
-        edgeWrite(edgeSet, edgeCounter, context, graph, outValue, outKey, keyFunction);
+        edgeWrite(args);
     }
 
     @Override
-    public void vertexWrite(HashMap<Object, Writable> vertexSet, Enum counter, Reducer.Context context, TitanGraph graph, SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction) throws IOException, InterruptedException {
+    public void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+        initArgs(args);
 
         int vertexCount = 0;
         String outPath = new String("edata/part");
@@ -79,11 +80,12 @@ public class TextGraphMergedGraphElementWrite implements MergedGraphElementWrite
             vertexCount++;
         }
 
-        context.getCounter(counter).increment(vertexCount);
+        context.getCounter(edgeCounter).increment(vertexCount);
     }
 
     @Override
-    public void edgeWrite(HashMap<EdgeID, Writable> edgeSet, Enum counter, Reducer.Context context, TitanGraph graph, SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction) throws IOException, InterruptedException {
+    public void edgeWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+        initArgs(args);
 
         Iterator<Map.Entry<EdgeID, Writable>> edgeIterator = edgeSet.entrySet().iterator();
 
@@ -99,7 +101,7 @@ public class TextGraphMergedGraphElementWrite implements MergedGraphElementWrite
             edgeCount++;
         }
 
-        context.getCounter(counter).increment(edgeCount);
+        context.getCounter(edgeCounter).increment(edgeCount);
     }
 
 

@@ -27,6 +27,7 @@ import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.MergedGraphElement
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
@@ -41,7 +42,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class RDFGraphMergedGraphElementWrite implements MergedGraphElementWrite {
+public class RDFGraphMergedGraphElementWrite extends MergedGraphElementWrite {
     private String     rdfNamespace;
 
     HashMap<Object, StringType> vertexLabelMap;
@@ -49,11 +50,9 @@ public class RDFGraphMergedGraphElementWrite implements MergedGraphElementWrite 
     private MultipleOutputs<NullWritable, Text> multipleOutputs;
 
     @Override
-    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
-                      HashMap<Object, StringType> vertexLabelMap,Enum vertexCounter,
-                      Enum edgeCounter, Reducer.Context context, TitanGraph graph,
-                      SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
+    public void write(ArgumentBuilder args)
             throws IOException, InterruptedException {
+        initArgs(args);
 
         this.multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
 
@@ -65,15 +64,15 @@ public class RDFGraphMergedGraphElementWrite implements MergedGraphElementWrite 
 
         this.vertexLabelMap = vertexLabelMap;
 
-        vertexWrite(vertexSet, vertexCounter, context, graph, outValue, outKey, keyFunction);
+        vertexWrite(args);
 
-        edgeWrite(edgeSet, edgeCounter, context, graph, outValue, outKey, keyFunction);
+        edgeWrite(args);
     }
 
     @Override
-    public void vertexWrite(HashMap<Object, Writable> vertexSet, Enum counter, Reducer.Context context, TitanGraph graph,
-                            SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
+    public void vertexWrite(ArgumentBuilder args)
             throws IOException, InterruptedException {
+        initArgs(args);
 
         int vertexCount = 0;
         String outPath = new String("vdata/rdftriples");
@@ -87,7 +86,7 @@ public class RDFGraphMergedGraphElementWrite implements MergedGraphElementWrite 
             vertexCount++;
         }
 
-        context.getCounter(counter).increment(vertexCount);
+        context.getCounter(vertexCounter).increment(vertexCount);
     }
 
     /**
@@ -129,9 +128,10 @@ public class RDFGraphMergedGraphElementWrite implements MergedGraphElementWrite 
     }
 
     @Override
-    public void edgeWrite(HashMap<EdgeID, Writable> edgeSet, Enum counter, Reducer.Context context, TitanGraph graph,
-                          SerializedPropertyGraphElement outValue, IntWritable outKey, KeyFunction keyFunction)
+    public void edgeWrite(ArgumentBuilder args)
             throws IOException, InterruptedException {
+        initArgs(args);
+
         int edgeCount   = 0;
         String outPath  = new String("edata/rdftriples");
 
@@ -150,7 +150,7 @@ public class RDFGraphMergedGraphElementWrite implements MergedGraphElementWrite 
             edgeCount++;
         }
 
-        context.getCounter(counter).increment(edgeCount);
+        context.getCounter(edgeCounter).increment(edgeCount);
     }
 
     /**

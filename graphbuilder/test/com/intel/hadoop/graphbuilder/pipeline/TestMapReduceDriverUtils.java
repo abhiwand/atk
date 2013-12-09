@@ -23,7 +23,7 @@ import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.TitanMergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducer;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.VerticesIntoTitanReducer;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;

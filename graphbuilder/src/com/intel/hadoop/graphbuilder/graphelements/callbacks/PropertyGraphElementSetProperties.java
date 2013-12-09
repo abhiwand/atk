@@ -23,6 +23,7 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
  * set the all the vertex or edge properties with the passed PropertyMap
@@ -33,7 +34,7 @@ public class PropertyGraphElementSetProperties implements PropertyGraphElementTy
     private PropertyMap propertyMap;
 
     @Override
-    public <T> T edge(PropertyGraphElement propertyGraphElement, Object... args) {
+    public <T> T edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         initArguments(args);
 
         Edge edge = (Edge)propertyGraphElement;
@@ -42,7 +43,7 @@ public class PropertyGraphElementSetProperties implements PropertyGraphElementTy
     }
 
     @Override
-    public <T> T vertex(PropertyGraphElement propertyGraphElement, Object... args) {
+    public <T> T vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         initArguments(args);
 
         Vertex vertex = (Vertex)propertyGraphElement;
@@ -51,7 +52,7 @@ public class PropertyGraphElementSetProperties implements PropertyGraphElementTy
     }
 
     @Override
-    public <T> T nullElement(PropertyGraphElement propertyGraphElement, Object... args) {
+    public <T> T nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return null;
     }
 
@@ -60,11 +61,11 @@ public class PropertyGraphElementSetProperties implements PropertyGraphElementTy
      *
      * @param args variable length arguments
      */
-    private void initArguments(Object ... args){
-        if(args.length == 1){
-            propertyMap = (PropertyMap) args[0];
+    private void initArguments(ArgumentBuilder args){
+        if(args.exists("PropertyMap")){
+            propertyMap = (PropertyMap)args.get("PropertyMap");
         }else{
-            throw new IllegalArgumentException("Incorrect number of arguments expect exactly 1 given: " + args.length);
+            throw new IllegalArgumentException("no property map specified");
         }
     }
 }

@@ -27,6 +27,7 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import org.apache.hadoop.io.Writable;
 
 import java.util.HashMap;
@@ -40,7 +41,7 @@ public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCa
     private HashMap<EdgeID, Writable> edgePropertyTable;
     private HashMap<Object, Long> vertexNameToTitanID;
     @Override
-    public HashMap<EdgeID, Writable> edge(PropertyGraphElement propertyGraphElement, Object... args) {
+    public HashMap<EdgeID, Writable> edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder  args) {
         initArguments(args);
 
         // Apply reduce on edges, remove self and (or merge) duplicate edges.
@@ -55,7 +56,7 @@ public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCa
     }
 
     @Override
-    public HashMap<Object, Long> vertex(PropertyGraphElement propertyGraphElement, Object... args) {
+    public HashMap<Object, Long> vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         initArguments(args);
 
         // Apply reduce on vertex
@@ -70,16 +71,16 @@ public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCa
     }
 
     @Override
-    public Object nullElement(PropertyGraphElement propertyGraphElement, Object... args) {
+    public Object nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return null;
     }
 
-    private void initArguments(Object ... args){
-        if(args.length == 2){
-            edgePropertyTable = (HashMap<EdgeID, Writable>)args[0];
-            vertexNameToTitanID = (HashMap<Object, Long>)args[1];
+    private void initArguments(ArgumentBuilder args){
+        if(args.exists("edgePropertyTable") && args.exists("vertexNameToTitanID")){
+            edgePropertyTable = (HashMap<EdgeID, Writable>)args.get("edgePropertyTable");
+            vertexNameToTitanID = (HashMap<Object, Long>)args.get("vertexNameToTitanID");
         }else{
-            throw new IllegalArgumentException("Incorrect number of arguments expect exactly 2 given: " + args.length );
+            throw new IllegalArgumentException("edgePropertyTable and vertexNameToTitanID were not set" );
         }
     }
 }

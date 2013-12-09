@@ -23,6 +23,7 @@ import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -112,7 +113,8 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
 
 
         for(SerializedPropertyGraphElement graphElement: values){
-            graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback, edgePropertyTable, vertexNameToTitanID);
+            graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback, ArgumentBuilder.newArguments().with("edgePropertyTable", edgePropertyTable)
+                    .with("vertexNameToTitanID", vertexNameToTitanID));
         }
 
         int edgeCount   = 0;

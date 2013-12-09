@@ -24,6 +24,7 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
  * get the graph element properties. although the edge and vertex classes already have the method available this interface
@@ -33,17 +34,17 @@ import com.intel.hadoop.graphbuilder.types.PropertyMap;
  */
 public class PropertyGraphElementGetProperties implements PropertyGraphElementTypeCallback {
     @Override
-    public PropertyMap edge(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public PropertyMap edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return ((Edge)propertyGraphElement.get()).getProperties();
     }
 
     @Override
-    public PropertyMap vertex(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public PropertyMap vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder  args) {
         return ((Vertex)propertyGraphElement.get()).getProperties();
     }
 
     @Override
-    public Object nullElement(PropertyGraphElement propertyGraphElement, Object ... args) {
+    public Object nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder  args) {
         return null;
     }
 }
