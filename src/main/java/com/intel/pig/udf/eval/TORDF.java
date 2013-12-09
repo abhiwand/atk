@@ -18,10 +18,7 @@
  */package com.intel.pig.udf.eval;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
@@ -39,7 +36,6 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement.GraphElementType;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.util.RDFUtils;
-import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
@@ -57,69 +53,59 @@ public class TORDF extends EvalFunc<DataBag> {
 	@Override
 	public DataBag exec(Tuple input) throws IOException {
 		DataBag rdfBag = DefaultBagFactory.getInstance().newDefaultBag();
+		PropertyGraphElement e = (PropertyGraphElement) input.get(0);
+		Resource resource = null;
 
-		PropertyGraphElementTuple t = (PropertyGraphElementTuple) input.get(0);
-		List<Object> allGraphElements = t.getAll();
-		for (Object o : allGraphElements) {
-			PropertyGraphElement e = (PropertyGraphElement) o;
-			System.out.println(e.graphElementType());
-			Resource resoure = null;
-
-			if (e.graphElementType().equals(GraphElementType.EDGE)) {
-				Edge edge = e.edge();
-				// create a Resource from the edge
-				resoure = RDFUtils.createResourceFromEdge(rdfNamespace, edge
-						.getSrc().toString(), edge.getDst().toString(), edge
-						.getEdgeLabel().get(), edge.getProperties());
-			} else if (e.graphElementType().equals(GraphElementType.VERTEX)) {
-				Vertex vertex = e.vertex();
-				// TODO: what's the key we need to pass here?
-				// TODO is vertex.getVertexId() null before we load them to
-				// titan?
-				// create a Resource from the vertex
-				resoure = RDFUtils
-						.createResourceFromVertex(rdfNamespace, vertex
-								.getVertexId().toString(), vertex
-								.getProperties());
-			}
-
-			// list the statements in the model
-			StmtIterator iterator = resoure.getModel().listStatements();
-			// print out the predicate, subject and object of each statement
-			while (iterator.hasNext()) {
-				Statement stmt = iterator.nextStatement();
-				Resource subject = stmt.getSubject();
-				Property predicate = stmt.getPredicate();
-				RDFNode object = stmt.getObject();
-
-				// Text text = new Text(subject.toString() + " "
-				// + predicate.toString() + " " + object.toString() + " .");
-
-				Tuple rdfTuple = TupleFactory.getInstance().newTuple(1);
-				String rdfTripleAsString = subject.toString() + " "
-						+ predicate.toString() + " " + object.toString() + " .";
-
-				rdfTuple.set(0, rdfTripleAsString);
-				rdfBag.add(rdfTuple);
-			}
-
+		if (e.graphElementType().equals(GraphElementType.EDGE)) {
+			Edge edge = e.edge();
+			// create a Resource from the edge
+			resource = RDFUtils.createResourceFromEdge(rdfNamespace, edge
+					.getSrc().toString(), edge.getDst().toString(), edge
+					.getEdgeLabel().get(), edge.getProperties());
+		} else if (e.graphElementType().equals(GraphElementType.VERTEX)) {
+			Vertex vertex = e.vertex();
+			// TODO: what's the key we need to pass here?
+			// TODO is vertex.getVertexId() null before we load them to
+			// titan?
+			// create a Resource from the vertex
+			resource = RDFUtils.createResourceFromVertex(rdfNamespace, vertex
+					.getVertexId().toString(), vertex.getProperties());
 		}
 
+		// list the statements in the model
+		StmtIterator iterator = resource.getModel().listStatements();
+		// print out the predicate, subject and object of each statement
+		while (iterator.hasNext()) {
+			Statement stmt = iterator.nextStatement();
+			Resource subject = stmt.getSubject();
+			Property predicate = stmt.getPredicate();
+			RDFNode object = stmt.getObject();
+
+			// Text text = new Text(subject.toString() + " "
+			// + predicate.toString() + " " + object.toString() + " .");
+
+			Tuple rdfTuple = TupleFactory.getInstance().newTuple(1);
+			String rdfTripleAsString = subject.toString() + " "
+					+ predicate.toString() + " " + object.toString() + " .";
+
+			rdfTuple.set(0, rdfTripleAsString);
+			rdfBag.add(rdfTuple);
+		}
 		return rdfBag;
 	}
 
-//	@Override
-//	public Schema outputSchema(Schema input) {
-//		Schema tuple = new Schema();
-//		FieldSchema f1 = new FieldSchema("gb_tuple",
-//				DataType.GENERIC_WRITABLECOMPARABLE);
-//		tuple.add(f1);
-//		return tuple;
-//		// try {
-//		// return new Schema(new Schema.FieldSchema(null, tuple, DataType.BAG));
-//		// } catch (Exception e) {
-//		// return null;
-//		// }
-//	}
+	// @Override
+	// public Schema outputSchema(Schema input) {
+	// Schema tuple = new Schema();
+	// FieldSchema f1 = new FieldSchema("gb_tuple",
+	// DataType.GENERIC_WRITABLECOMPARABLE);
+	// tuple.add(f1);
+	// return tuple;
+	// // try {
+	// // return new Schema(new Schema.FieldSchema(null, tuple, DataType.BAG));
+	// // } catch (Exception e) {
+	// // return null;
+	// // }
+	// }
 
 }
