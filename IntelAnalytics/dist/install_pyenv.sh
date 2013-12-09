@@ -173,6 +173,9 @@ if check zmq; then
 fi
 ins pyjavaproperties
 ins mock
+#nose haas a pip error that ignores the virtenv
+ins_ignore_virt nose
+ins coverage
 
 # add pydoop to do hdfs, or mapred in python directly
 if check pydoop; then
@@ -201,11 +204,6 @@ if check pydoop; then
    fi
    test pydoop
 fi
-
-
-#nose haas a pip error that ignores the virtenv
-ins_ignore_virt nose
-ins coverage
 
 
 echo $hdr Python Virtual Environment Installation complete
