@@ -30,14 +30,19 @@ DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
 #set the following environment variables to a status needed to execute tests
 export INTEL_ANALYTICS_PYTHON=`dirname $DIR`
 export INTEL_ANALYTICS_HOME=`dirname $INTEL_ANALYTICS_PYTHON`
+export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
 
 rm -rf $INTEL_ANALYTICS_HOME/cover
 
 nosetests $INTEL_ANALYTICS_PYTHON --with-coverage --cover-package=intel_analytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$INTEL_ANALYTICS_HOME/nosetests.xml
 
-rm  $INTEL_ANALYTICS_HOME/python-coverage.zip
-zip -r  $INTEL_ANALYTICS_HOME/python-coverage.zip $INTEL_ANALYTICS_HOME/cover
+COVERAGE_ARCHIVE=$SOURCE_CODE/python-coverage.zip
 
+rm  $COVERAGE_ARCHIVE
+
+pushd $INTEL_ANALYTICS_HOME/cover
+zip -r $COVERAGE_ARCHIVE .
+popd
 
 deactivate
 
