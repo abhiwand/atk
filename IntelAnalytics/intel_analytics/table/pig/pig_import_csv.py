@@ -23,7 +23,10 @@
 import os
 import sys
 
-from org.apache.pig.scripting import Pig
+try:
+    from org.apache.pig.scripting import Pig
+except:
+    print("Pig is either not installed or not executing through Jython")
 from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
 from intel_analytics.table.pig import pig_helpers
 

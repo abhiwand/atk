@@ -21,7 +21,10 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import sys
-from org.apache.pig.scripting import Pig
+try:
+    from org.apache.pig.scripting import Pig
+except:
+    print("Pig is either not installed or not executing through Jython")
 from intel_analytics.table.pig import pig_helpers
 from intel_analytics.table.pig.argparse_lib import ArgumentParser
 
