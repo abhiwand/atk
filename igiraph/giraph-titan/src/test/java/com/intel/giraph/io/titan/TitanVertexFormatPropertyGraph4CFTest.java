@@ -41,10 +41,7 @@ import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -131,7 +128,7 @@ public class TitanVertexFormatPropertyGraph4CFTest {
         open();
     }
 
-    //@Ignore
+    @Ignore("Interacts with real resource")
     @Test
     public void VertexOutputFormatPropertyGraph4CFTest() throws Exception {
         /*

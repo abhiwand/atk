@@ -39,10 +39,7 @@ import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.log4j.Logger;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -117,7 +114,7 @@ public class TitanVertexFormatLongIDDistanceMapTest {
         open();
     }
 
-    //@Ignore
+    @Ignore("Interacts with real resource")
     @Test
     public void VertexFormatLongIDDistanceMapTest() throws Exception {
         /*

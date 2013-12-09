@@ -45,10 +45,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -146,7 +143,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest {
         }
     }
 
-    //@Ignore
+    @Ignore("Interacts with real resource")
     @Test
     public void VertexInputFormatPropertyGraph4CFCGDTest() throws Exception {
         /*
