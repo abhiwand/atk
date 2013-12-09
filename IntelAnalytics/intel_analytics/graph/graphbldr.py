@@ -1,5 +1,5 @@
 """
-Common Graph Builder classes
+Common Graph Builder classes.
 """
 
 import abc
@@ -15,24 +15,24 @@ __all__ = ['get_graphbuilder',
 
 class GraphTypes:
     """
-    Collection of classes which represent the supported graph builder types
+    The collection of classes which represent the supported graph builder types.
     """
     class Bipartite:
         """
-        Bipartite Graph
+        Represents Bipartite Graphs.
         """
         # todo: write a better description
         pass
     class Property:
         """
-        Property Graph
+        Represents Property Graphs.
         """
         # todo: write a better description
         pass
 
 class GraphBuilderFactory(object):
     """
-    Abstract class for the various graph build factories (i.e. one for Titan)
+    Abstract class for the various graph build factories (in other words, one for Titan).
     """
     __metaclass__ = abc.ABCMeta
 
@@ -53,7 +53,7 @@ class GraphBuilderFactory(object):
 class GraphBuilder(object):
     """
     Abstract class for the various graph builders to inherit
-    (not to be confused by the Tribeca "GraphBuilder" product or component)
+    (not to be confused with the Tribeca "GraphBuilder" product or component).
     """
     __metaclass__ = abc.ABCMeta
 
@@ -70,7 +70,7 @@ class GraphBuilder(object):
 
 class BipartiteGraphBuilder(GraphBuilder):
     """
-    Abstract class for py bipartite graph builders
+    Abstract class for py bipartite graph builders.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -98,7 +98,7 @@ class BipartiteGraphBuilder(GraphBuilder):
     def register_vertices(self, vertices):
         """
         Parameters:
-        vertices: List of (id and list of properties)'s
+        vertices: List of (id and list of properties)'s.
         Example: register_vertices([('id', ['name', 'age', 'dept']),
                                     ('manager', ['income', 'org'])])
         """
@@ -110,7 +110,7 @@ class BipartiteGraphBuilder(GraphBuilder):
 
 class PropertyGraphBuilder(GraphBuilder):
     """
-    Abstract class for py property graph builders
+    An abstract class for py property graph builders.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -166,7 +166,7 @@ class PropertyGraphBuilder(GraphBuilder):
 
 class GraphBuilderVertex:
     """
-    An entry for GraphBuilder vertex registration
+    An entry for GraphBuilder vertex registration.
     """
     def __init__(self, key, properties=None):
         if key is None: raise Exception("Invalid key_src: None")
@@ -193,7 +193,7 @@ class GraphBuilderVertex:
 
 class GraphBuilderEdge:
     """
-    An entry for GraphBuilder edge registration
+    An entry for GraphBuilder edge registration.
     """
     def __init__(self, edge_tuple, properties=None):
         if len(edge_tuple) != 3:
@@ -232,13 +232,13 @@ class GraphBuilderEdge:
 
 def get_graphbuilder(graph_type, source=None):
     """
-    Returns a graphbuilder for given graph type
+    Returns a graphbuilder for a given graph type.
 
     Parameters
     ----------
     graph_type : GraphTypes.*
-        Class indicating the type of graph, like GraphTypes.Property
-        or GraphTypes.Bipartite
+        A class indicating the type of graph, such as GraphTypes.Property
+        or GraphTypes.Bipartite.
     """
     factory_class = _get_graphbuilder_factory_class()
     return factory_class.get_graphbuilder(graph_type, source)

@@ -1,5 +1,5 @@
 """
-Titan-base Giraph Machine Learning
+Titan-base Giraph Machine Learning.
 """
 
 class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
@@ -28,7 +28,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
 class BeliefPropagation(object):  #TODO: eventually inherit from base Algo class
     """
-    Descriptive class of BP algorithm.
+    Descriptive class of Belief Propagation algorithm.
 	
 	Should contain info about the cfg constants, the user supplied parameters
     and what the results are --can also define a specific
