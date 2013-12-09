@@ -29,7 +29,9 @@ import java.util.HashMap;
 
 
 /**
- * check if the speficified graph element already exists in hashMap
+ * check if the specified graph element already exists in the edge/vertex hashMap.
+ * This is called from PropertyGraphElementPut.containsKey which is called before adding any new graph elements to the
+ * edge and vertex hash maps.
  *
  * @see PropertyGraphElementPut
  */

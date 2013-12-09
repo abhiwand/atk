@@ -116,7 +116,7 @@ public class PropertyGraphElements {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void mergeDuplicates(Iterable<SerializedPropertyGraphElement> values)
+     public void mergeDuplicates(Iterable<SerializedPropertyGraphElement> values)
             throws IOException, InterruptedException {
 
         edgeSet       = new HashMap<>();

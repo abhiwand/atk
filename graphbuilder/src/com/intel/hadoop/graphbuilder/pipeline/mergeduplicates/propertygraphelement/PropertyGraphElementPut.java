@@ -32,7 +32,8 @@ import org.apache.hadoop.io.Writable;
 import java.util.HashMap;
 
 /**
- * merged duplicate graph elements
+ * merged duplicate graph elements is called during the PropertyGraphElements.mergeDuplicates for loop to merge the
+ * edges/vertices.
  *
  * @see PropertyGraphElements
  * @see ContainsKey
