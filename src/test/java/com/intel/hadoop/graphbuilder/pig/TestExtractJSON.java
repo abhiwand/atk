@@ -80,7 +80,7 @@ public class TestExtractJSON {
 
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IOException.class)
 	public void testFailureCase1() throws IOException {
 		System.out.println("Testing failure cases");
 
@@ -91,7 +91,7 @@ public class TestExtractJSON {
 		testFn.exec(inTuple);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IOException.class)
 	public void testFailureCase2() throws IOException {
 		System.out.println("Testing failure cases");
 
@@ -102,7 +102,7 @@ public class TestExtractJSON {
 		testFn.exec(inTuple);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = IOException.class)
 	public void testFailureCase3() throws IOException {
 		System.out.println("Testing failure cases");
 

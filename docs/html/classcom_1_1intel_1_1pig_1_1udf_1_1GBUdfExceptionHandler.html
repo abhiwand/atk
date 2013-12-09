@@ -107,7 +107,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a453d4404edf86239acd4c9a6904736ea"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1GBUdfExceptionHandler.html#a453d4404edf86239acd4c9a6904736ea">handleError</a> (EvalFunc evalFunc, Exception e)</td></tr>
 <tr class="separator:a453d4404edf86239acd4c9a6904736ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1GBUdfExceptionHandler.html">GBUdfExceptionHandler</a> is an exception handler used for handling exceptions thrown from the UDFs unless they are of type <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1GBUdfException.html">GBUdfException</a>. It simply logs the error &amp; ensures that processing goes on. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a453d4404edf86239acd4c9a6904736ea"></a>
 <div class="memitem">
 <div class="memproto">
@@ -139,11 +141,16 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;                                                                   {</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        System.out.println(<span class="stringliteral">&quot;GBUdfExceptionHandler caught an exception&quot;</span>);</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        log.error(evalFunc + <span class="stringliteral">&quot; failed.&quot;</span>, e);</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(e);</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                                                                   {</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keywordflow">if</span> (e instanceof IOException) {</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            Throwable cause = e.getCause();</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;            <span class="keywordflow">if</span> (cause != null &amp;&amp; cause instanceof GBUdfException) {</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                <span class="comment">/* bubble up custom exceptions */</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(e);</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;            }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        }</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        log.error(<span class="stringliteral">&quot;Caught unexpected exception.&quot;</span> + evalFunc + <span class="stringliteral">&quot; failed.&quot;</span>, e);</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -153,7 +160,7 @@ Static Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Dec 5 2013 09:52:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 9 2013 10:42:27 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

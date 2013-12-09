@@ -22,9 +22,13 @@ import java.io.IOException;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
+import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultBagFactory;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.FrontendException;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -39,24 +43,21 @@ import com.intel.hadoop.graphbuilder.util.RDFUtils;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief UDF for converting property graph elements to RDF triples
- * 
- * TORDF UDF converts given property graph elements to RDF triples.
- * 
+ * \brief TORDF UDF converts given property graph elements to RDF triples.
  * <p/>
+ * 
  * <b>Example:</b>
- * <p/>
- * Assume that "tshirts.json" file has a record: <br/>
- * { "Name": "T-Shirt 1", "Sizes": [ { "Size": "Large", "Price": 20.50 }, {
- * "Size": "Medium", "Price": 10.00 } ], "Colors": [ "Red", "Green", "Blue" ]} <br/>
- * <br/>
- * Then here is the corresponding Pig script:
  * 
  * <pre>
  * {@code
- * json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
- * extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSON(json, 'Sizes[0].Price') AS price: double;
- * }
+ *    DEFINE TORDF com.intel.pig.udf.eval.TORDF('OWL');--specify the namespace to use with the constructor
+ *    DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
+ *    x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+ *    x = FILTER x by id!='';--remove employee records with missing ids
+ *    pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));--create the property graph elements from raw source data
+ *    rdf_triples = FOREACH pge GENERATE FLATTEN(TORDF(*));--create RDF tuples from the property graph elements
+ *    STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
+ *    }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
@@ -81,9 +82,6 @@ public class TORDF extends EvalFunc<DataBag> {
 					.getEdgeLabel().get(), edge.getProperties());
 		} else if (e.graphElementType().equals(GraphElementType.VERTEX)) {
 			Vertex vertex = e.vertex();
-			// TODO: what's the key we need to pass here?
-			// TODO is vertex.getVertexId() null before we load them to
-			// titan?
 			// create a Resource from the vertex
 			resource = RDFUtils.createResourceFromVertex(rdfNamespace, vertex
 					.getVertexId().toString(), vertex.getProperties());
@@ -97,10 +95,6 @@ public class TORDF extends EvalFunc<DataBag> {
 			Resource subject = stmt.getSubject();
 			Property predicate = stmt.getPredicate();
 			RDFNode object = stmt.getObject();
-
-			// Text text = new Text(subject.toString() + " "
-			// + predicate.toString() + " " + object.toString() + " .");
-
 			Tuple rdfTuple = TupleFactory.getInstance().newTuple(1);
 			String rdfTripleAsString = subject.toString() + " "
 					+ predicate.toString() + " " + object.toString() + " .";
@@ -111,18 +105,22 @@ public class TORDF extends EvalFunc<DataBag> {
 		return rdfBag;
 	}
 
-	// @Override
-	// public Schema outputSchema(Schema input) {
-	// Schema tuple = new Schema();
-	// FieldSchema f1 = new FieldSchema("gb_tuple",
-	// DataType.GENERIC_WRITABLECOMPARABLE);
-	// tuple.add(f1);
-	// return tuple;
-	// // try {
-	// // return new Schema(new Schema.FieldSchema(null, tuple, DataType.BAG));
-	// // } catch (Exception e) {
-	// // return null;
-	// // }
-	// }
-
+	/**
+	 * TORDF UDF returns a bag of RDF statements.
+	 */
+	@Override
+	public Schema outputSchema(Schema input) {
+		try {
+			Schema rdfStatementTuple = new Schema(new Schema.FieldSchema(
+					"rdf_statement", DataType.CHARARRAY));
+			Schema rdfBagSchema;
+			rdfBagSchema = new Schema(new FieldSchema("rdf_statements",
+					rdfStatementTuple, DataType.BAG));
+			return rdfBagSchema;
+		} catch (FrontendException e) {
+			// This should not happen
+			throw new RuntimeException("Bug : exception thrown while "
+					+ "creating output schema for TORDF udf", e);
+		}
+	}
 }

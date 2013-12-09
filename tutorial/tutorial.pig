@@ -20,16 +20,18 @@ REGISTER /usr/local/pig/piggybank.jar;
 xml_data = LOAD 'tutorial/data/tshirts.xml' using org.apache.pig.piggybank.storage.XMLLoader('tshirts') AS (xml: chararray);--extract the 'tshirts' element with Piggy Bank's XMLLoader
 DUMP xml_data;
 
-x = LOAD '/etc/passwd' USING PigStorage(':') AS (username:chararray, f1: chararray, f2: chararray, f3:chararray, f4:chararray);
-DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "f1" "f2" -e "f1,f2,link,f3"');
-pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
-dump pge;
-
 --RDF example
+DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
+x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+x = FILTER x by id!='';
+pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
 DEFINE TORDF com.intel.pig.udf.eval.TORDF('OWL');--specify the namespace to use with the constructor
 rdf_triples = FOREACH pge GENERATE FLATTEN(TORDF(*));
 DESCRIBE rdf_triples;
 DUMP rdf_triples;
+STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
+
 
 -- STORE some_relation INTO '-' USING store_graph();
 -- STORE_GRAPH(final_graph, 'hbase://pagerank_edge_list', 'Titan');
+ 

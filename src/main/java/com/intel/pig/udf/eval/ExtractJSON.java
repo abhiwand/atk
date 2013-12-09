@@ -28,20 +28,20 @@ import java.util.List;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
-import org.apache.pig.data.DataByteArray;
+import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief UDF for extracting fields from JSON documents using JSONPath queries
- * 
- * ExtractJSON UDF is for extracting fields from (potentially complex & nested)
+ * \brief ExtractJSON UDF extracts fields from (potentially complex & nested)
  * JSON documents with JSONPath expressions. This UDF uses the JSONPath
  * implementation of the <a
  * href="https://code.google.com/p/rest-assured/">RestAssured</a> project. <br/>
  * <p/>
+ * 
  * <b>Example:</b>
  * <p/>
  * Assume that "tshirts.json" file has a record: <br/>
@@ -52,16 +52,16 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * 
  * <pre>
  * {@code
- * json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
- * extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSON(json, 'Sizes[0].Price') AS price: double;
- * }
+ *    json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
+ *    extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSON(json, 'Sizes[0].Price') AS price: double;
+ *    }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
-public class ExtractJSON extends EvalFunc<DataByteArray> {
+public class ExtractJSON extends EvalFunc<String> {
 
 	@Override
-	public DataByteArray exec(Tuple input) throws IOException {
+	public String exec(Tuple input) throws IOException {
 
 		if (input == null || input.size() == 0) {
 			warn("Input tuple is null or empty", PigWarning.UDF_WARNING_1);
@@ -82,40 +82,39 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 		}
 
 		if (queryResult == null) {
-			return new DataByteArray("");
+			return "";
 		} else if (queryResult instanceof String) {
 			String result = (String) queryResult;
-			return new DataByteArray(result);
+			return result;
 		} else if (queryResult instanceof Boolean) {
 			Boolean result = (Boolean) queryResult;
-			return new DataByteArray(String.valueOf(result));
+			return String.valueOf(result);
 		} else if (queryResult instanceof Double) {
 			Double result = (Double) queryResult;
-			return new DataByteArray(String.valueOf(result));
+			return String.valueOf(result);
 		} else if (queryResult instanceof Float) {
 			Float result = (Float) queryResult;
-			return new DataByteArray(String.valueOf(result));
+			return String.valueOf(result);
 		} else if (queryResult instanceof Integer) {
 			Integer result = (Integer) queryResult;
-			return new DataByteArray(String.valueOf(result));
+			return String.valueOf(result);
 		} else if (queryResult instanceof Long) {
 			Long result = (Long) queryResult;
-			return new DataByteArray(String.valueOf(result));
+			return String.valueOf(result);
 		} else if (queryResult instanceof BigInteger) {
 			BigInteger result = (BigInteger) queryResult;
-			return new DataByteArray(result.toString());
+			return String.valueOf(result);
 		} else if (queryResult instanceof BigDecimal) {
 			BigDecimal result = (BigDecimal) queryResult;
-			return new DataByteArray(result.toString());
+			return String.valueOf(result);
 		} else if (queryResult instanceof List) {
 			List result = (List) queryResult;
 			/*
-			 * restrict the query expression to return a single primitive
-			 * value
+			 * restrict the query expression to return a single primitive value
 			 */
 			if (result.size() == 1) {
 				Object o = result.get(0);
-				return new DataByteArray(o.toString());
+				return o.toString();
 			}
 		}
 
@@ -132,5 +131,14 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 					+ queryResult.getClass();
 		}
 		throw new IOException(new GBUdfException(errorMessage));
+	}
+
+	/**
+	 * ExtractJSON UDF returns an extracted JSON field, which is of type
+	 * chararray
+	 */
+	@Override
+	public Schema outputSchema(Schema input) {
+		return new Schema(new Schema.FieldSchema(null, DataType.CHARARRAY));
 	}
 }

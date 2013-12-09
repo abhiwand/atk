@@ -4,6 +4,7 @@ var searchData=
   ['gbhtableconfiguration_2ejava',['GBHTableConfiguration.java',['../GBHTableConfiguration_8java.html',1,'']]],
   ['gbtitankey_2ejava',['GBTitanKey.java',['../GBTitanKey_8java.html',1,'']]],
   ['gbtuplefactory_2ejava',['GBTupleFactory.java',['../GBTupleFactory_8java.html',1,'']]],
+  ['gbudfexception_2ejava',['GBUdfException.java',['../GBUdfException_8java.html',1,'']]],
   ['gbudfexceptionhandler_2ejava',['GBUdfExceptionHandler.java',['../GBUdfExceptionHandler_8java.html',1,'']]],
   ['graphbuilderexit_2ejava',['GraphBuilderExit.java',['../GraphBuilderExit_8java.html',1,'']]],
   ['graphbuildingrule_2ejava',['GraphBuildingRule.java',['../GraphBuildingRule_8java.html',1,'']]],
