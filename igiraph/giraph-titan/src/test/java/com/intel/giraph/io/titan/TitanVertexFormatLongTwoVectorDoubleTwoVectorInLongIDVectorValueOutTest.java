@@ -94,7 +94,7 @@ public class TitanVertexFormatLongTwoVectorDoubleTwoVectorInLongIDVectorValueOut
         open();
     }
 
-    @Ignore("Interacts with real resource")
+    //@Ignore("Interacts with real resource")
     @Test
     public void VertexFormatLongTwoVectorDoubleTwoVectorInLongIDVectorValueOutTest() throws Exception {
         /* a small four vertex graph

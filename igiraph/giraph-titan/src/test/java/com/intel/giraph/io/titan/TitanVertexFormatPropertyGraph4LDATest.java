@@ -126,7 +126,7 @@ public class TitanVertexFormatPropertyGraph4LDATest {
 
     }
 
-    @Ignore("Interacts with real resource")
+    //@Ignore("Interacts with real resource")
     @Test
     public void VertexFormatPropertyGraph4LDATest() throws Exception {
         /*
