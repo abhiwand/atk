@@ -40,9 +40,4 @@ public class PropertyGraphElementDst implements PropertyGraphElementTypeCallback
     public Object vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return null;
     }
-
-    @Override
-    public Object nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
-        return null;
-    }
 }

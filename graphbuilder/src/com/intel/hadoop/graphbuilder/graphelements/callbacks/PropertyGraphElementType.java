@@ -29,7 +29,7 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  * @see PropertyGraphElement
  */
 public class PropertyGraphElementType implements PropertyGraphElementTypeCallback{
-    public enum GraphType{EDGE,VERTEX,NULL}
+    public enum GraphType{EDGE,VERTEX}
     @Override
     public GraphType edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return GraphType.EDGE;
@@ -38,10 +38,5 @@ public class PropertyGraphElementType implements PropertyGraphElementTypeCallbac
     @Override
     public GraphType vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         return GraphType.VERTEX;
-    }
-
-    @Override
-    public GraphType nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
-        return GraphType.NULL;
     }
 }

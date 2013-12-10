@@ -24,9 +24,8 @@ import java.util.HashMap;
 
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.MergedGraphElementWrite;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementPut;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
+import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.PropertyGraphElementMerge;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -75,9 +74,8 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     private HashMap<EdgeID, Writable> edgeSet;
     private HashMap<Object, Writable>   vertexSet;
 
-    private PropertyGraphElements propertyGraphElements;
-    private MergedGraphElementWrite textnMergedWrite;
-    private PropertyGraphElementTypeCallback propertyGraphElementPut;
+    private MergedGraphElementWrite textMergedWrite;
+    private PropertyGraphElementTypeCallback propertyGraphElementWrite;
 
     @Override
     public void setup(Context context) {
@@ -133,12 +131,11 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
             }
 
             //try to add the graph element to the existing set of vertices or edges
-            //PropertyGraphElementPut will take care of switching between edge and vertex
-            put(propertyGraphElement);
+            //PropertyGraphElementMerge will take care of switching between edge and vertex
+            merge(edgeSet, vertexSet, propertyGraphElement);
         }
 
-        propertyGraphElements.mergeDuplicates(values);
-        propertyGraphElements.write();
+        write(edgeSet, vertexSet, context);
     }
 
     /**
@@ -146,8 +143,9 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
      *
      * @param propertyGraphElement the graph element to add to our existing vertexSet or edgeSet
      */
-    private void put(PropertyGraphElement propertyGraphElement){
-        propertyGraphElement.typeCallback(propertyGraphElementPut,
+    private void merge(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+                       PropertyGraphElement propertyGraphElement){
+        propertyGraphElement.typeCallback(propertyGraphElementWrite,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
                         .with("vertexReducerFunction", vertexReducerFunction)
@@ -160,12 +158,13 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
      * @throws IOException
      * @throws InterruptedException
      */
-    public void write(Context context) throws IOException, InterruptedException {
+    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+                      Context context) throws IOException, InterruptedException {
 
-        textnMergedWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
+        textMergedWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
                 .with("vertexSet", vertexSet).with("vertexCounter", Counters.NUM_VERTICES)
                 .with("edgeCounter", Counters.NUM_EDGES).with("context", context)
-                );
+        );
     }
 
     @Override
@@ -174,11 +173,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     }
 
     private void initMergerWriter(Context context){
-        propertyGraphElementPut = new PropertyGraphElementPut();
-        textnMergedWrite = new TitanMergedGraphElementWrite();
-
-        /*propertyGraphElements = new PropertyGraphElements(new TextGraphMergedGraphElementWrite(), vertexReducerFunction,
-                edgeReducerFunction, context, null, null, Counters.NUM_EDGES, Counters.NUM_VERTICES);*/
-
+        propertyGraphElementWrite = new PropertyGraphElementMerge();
+        textMergedWrite = new TitanMergedGraphElementWrite();
     }
 }
