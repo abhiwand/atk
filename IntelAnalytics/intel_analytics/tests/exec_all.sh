@@ -14,7 +14,7 @@ fi
 
 source $ACTIVATE_FILE
 
-#check if the python libraries are correctly installed by importing them through python. If no output module exists
+#check if the python libraries are correctly installed by importing them through python. If there is no output then the module exists.
 if [[ -e $(python -c "import nose") ]]; then
     echo "Nosetests is not installed into your python virtual environment please install nose."
     exit 0
@@ -33,9 +33,15 @@ echo $INTEL_ANALYTICS_HOME
 echo $SOURCE_CODE
 
 
-export INTEL_ANALYTICS_PYTHON=`dirname $DIR`
-export INTEL_ANALYTICS_HOME=`dirname $INTEL_ANALYTICS_PYTHON`
-export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
+if [[ -z "$INTEL_ANALYTICS_PYTHON" ]]; then
+    export INTEL_ANALYTICS_PYTHON=`dirname $DIR`
+fi
+if [[ -z "$INTEL_ANALYTICS_HOME" ]]; then
+    export INTEL_ANALYTICS_HOME=`dirname $INTEL_ANALYTICS_PYTHON`
+fi
+if [[ -z "$SOURCE_CODE" ]]; then
+    export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
+fi
 
 rm -rf $INTEL_ANALYTICS_HOME/cover
 
