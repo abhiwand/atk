@@ -19,7 +19,10 @@ package com.intel.pig.udf.eval;
  *      http://www.01.org/GraphBuilder
  */
 
-import com.intel.hadoop.graphbuilder.graphelements.*;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.types.*;
 import com.intel.hadoop.graphbuilder.util.BaseCLI;
@@ -27,8 +30,11 @@ import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.BagFactory;
@@ -39,20 +45,9 @@ import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
-
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-
-import org.apache.pig.PigWarning;
 /**
  * \brief CreatePropGraphElements ... converts tuples of scalar data into bag of property graph elements..
  * <p/>
@@ -80,7 +75,8 @@ import org.apache.pig.PigWarning;
  * <code> src_fname,dest_fname>,label,edge_property_fname1,...edge_property_fnamen </code>
  * </p>
  * <p>
- * <p>VERTICES: The first attribute in the string is the vertex ID field name. Subsequent attributes denote vertex properties
+ * <p>VERTICES: The first attribute in the string is an optional vertex label, the next is the required
+ *  ertex ID field name. Subsequent attributes denote vertex properties
  * and are separated from the first by an equals sign:</p>
  * <code> vertex_id_fieldname=vertex_prop1_fieldname,... vertex_propn_fieldname</code>
  * <p>or in the case there are no properties associated with the vertex id:
@@ -111,7 +107,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     private boolean flattenLists = false;
     private List<String> vertexIdFieldList;
     private Hashtable<String, String[]> vertexPropToFieldNamesMap;
-    private Hashtable<String, String> vertexRDFLabelMap;
+    private Hashtable<String, String> vertexLabelMap;
 
     private Hashtable<String, EdgeRule>     edgeLabelToEdgeRules;
 
@@ -213,7 +209,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         this.tokenizationRule = tokenizationRule;
 
 
-        vertexRDFLabelMap  = new Hashtable<String, String>();
+        vertexLabelMap = new Hashtable<String, String>();
         vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
         vertexIdFieldList = new ArrayList<String>();
 
@@ -233,7 +229,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
 
         String   vertexIdFieldName  = null;
-        String   vertexRDFLabel      = null;
+        String   vertexLabel      = null;
 
         for (String vertexRule : vertexRules) {
 
@@ -250,10 +246,10 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
             vertexPropToFieldNamesMap.put(vertexIdFieldName, vertexPropertiesFieldNames);
 
-            // Vertex RDF labels are maintained in a separate map
-            vertexRDFLabel = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
-            if (vertexRDFLabel != null) {
-                vertexRDFLabelMap.put(vertexIdFieldName, vertexRDFLabel);
+            // Vertex labels are maintained in a separate map
+            vertexLabel = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
+            if (vertexLabel != null) {
+                vertexLabelMap.put(vertexIdFieldName, vertexLabel);
             }
         }
 
@@ -437,11 +433,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                         }
                     }
 
-                    // add the RDF label to the vertex
+                    // add the abel to the vertex
 
-                    String rdfLabel = vertexRDFLabelMap.get(fieldName);
-                    if (rdfLabel != null) {
-                        vertex.setVertexLabel(new StringType(rdfLabel));
+                    String label = vertexLabelMap.get(fieldName);
+                    if (label != null) {
+                        vertex.setVertexLabel(new StringType(label));
                     }
                     addVertexToPropElementBag(outputBag, vertex);
                 }
