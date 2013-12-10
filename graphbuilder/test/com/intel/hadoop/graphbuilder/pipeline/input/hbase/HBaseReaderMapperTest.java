@@ -146,7 +146,7 @@ public class HBaseReaderMapperTest {
         spiedHBaseReaderMapper = spy(hBaseReaderMapper);
         spiedHBaseReaderMapper.setBaseMapper(spiedBaseMapper);
 
-        //row key is trow away nothing is done with it
+        //row key is throw away nothing is done with it
         key = new ImmutableBytesWritable(Bytes.toBytes("row1"));
 
         //set up some sample Hbase.client result
