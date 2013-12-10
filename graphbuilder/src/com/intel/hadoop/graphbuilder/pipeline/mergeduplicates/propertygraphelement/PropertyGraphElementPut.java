@@ -69,7 +69,7 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
 
     private ContainsKey containsKey;
 
-    PropertyGraphElementPut(){
+    public PropertyGraphElementPut(){
         containsKey = new ContainsKey();
     }
 
@@ -134,7 +134,7 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
         Object vid = propertyGraphElement.getId();
 
         // track the RDF labels of vertices
-        if (propertyGraphElement.getLabel() != null) {
+        if (propertyGraphElement.getLabel() != null && vertexLabelMap != null) {
             if (!vertexLabelMap.containsKey(propertyGraphElement.getId())) {
                 vertexLabelMap.put(propertyGraphElement.getId(), (StringType)propertyGraphElement.getLabel());
             }
@@ -191,7 +191,7 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
         vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
         edgeReducerFunction = (Functional)args.get("edgeReducerFunction", null);
         vertexReducerFunction = (Functional)args.get("vertexReducerFunction", null);
-        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap");
+        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap", null);
         noBiDir = (boolean)args.get("noBiDir");
     }
 
