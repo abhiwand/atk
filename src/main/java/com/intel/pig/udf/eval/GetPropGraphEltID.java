@@ -30,17 +30,17 @@ import org.apache.pig.data.TupleFactory;
 import java.io.IOException;
 
 /**
- * \brief AttachPGraphElementID ... prepends tuple with the objectID of the propertygraph element...
+ * \brief GetPropGraphEltID ... prepends tuple with the objectID of the propertygraph element...
  *
  * We could do some hashing to avoid bloat and speed up shuffles, but for now, this is the clearer thing to do.
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
-public class AttachPGraphElementID extends EvalFunc<Tuple>  {
+public class GetPropGraphEltID extends EvalFunc<String>  {
 
     TupleFactory mTupleFactory = TupleFactory.getInstance();
 
     @Override
-    public Tuple exec(Tuple input) throws IOException {
+    public String exec(Tuple input) throws IOException {
         Object graphElement =  input.get(0);
 
         PropertyGraphElement e = (PropertyGraphElement) graphElement;
@@ -52,10 +52,6 @@ public class AttachPGraphElementID extends EvalFunc<Tuple>  {
             objectId = "EDGE " + e.edge().getEdgeID().toString();
         }
 
-        Tuple output = mTupleFactory.newTuple(2);
-
-        output.set(0,objectId);
-        output.set(1,input);
-        return output;
+        return objectId;
     }
 }
