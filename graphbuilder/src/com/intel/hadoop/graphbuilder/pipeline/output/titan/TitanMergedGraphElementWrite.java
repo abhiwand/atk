@@ -58,7 +58,6 @@ public class TitanMergedGraphElementWrite extends MergedGraphElementWrite{
             throws IOException, InterruptedException {
         initArgs(args);
 
-
         vertexWrite(args);
 
         edgeWrite(args);
