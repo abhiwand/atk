@@ -57,5 +57,4 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 public interface PropertyGraphElementTypeCallback {
     public <T> T edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);
     public <T> T vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);
-    public <T> T nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);
 }

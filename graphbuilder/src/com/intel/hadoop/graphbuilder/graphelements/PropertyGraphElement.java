@@ -65,31 +65,27 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
      *
      * @see PropertyGraphElementTypeCallback
      *
-     * @param propertyGraphElementTypeCallbackCallback any instance of PropertyGraphElementTypeCallback
+     * @param propertyGraphElementTypeCallback any instance of PropertyGraphElementTypeCallback
      * @param args variable length of arguments that might be used by the instance of PropertyGraphElementTypeCallback
      * @param <T> anything that gets returned by the instance of PropertyGraphElementTypeCallback
      * @return anything that gets returned by the instance of PropertyGraphElementTypeCallback
      */
-    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback, ArgumentBuilder args){
+    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallback, ArgumentBuilder args){
         if(this.isEdge()){
-            return propertyGraphElementTypeCallbackCallback.edge(this, args);
+            return propertyGraphElementTypeCallback.edge(this, args);
         }else if(this.isVertex()){
-            return propertyGraphElementTypeCallbackCallback.vertex(this, args);
-        }else if(this.isNull()){
-            return propertyGraphElementTypeCallbackCallback.nullElement(this, args);
+            return propertyGraphElementTypeCallback.vertex(this, args);
         }
         return null;
     }
 
-    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback){
+    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallback){
         ArgumentBuilder args = ArgumentBuilder.newArguments();
 
         if(this.isEdge()){
-            return propertyGraphElementTypeCallbackCallback.edge(this, args);
+            return propertyGraphElementTypeCallback.edge(this, args);
         }else if(this.isVertex()){
-            return propertyGraphElementTypeCallbackCallback.vertex(this, args);
-        }else if(this.isNull()){
-            return propertyGraphElementTypeCallbackCallback.nullElement(this, args);
+            return propertyGraphElementTypeCallback.vertex(this, args);
         }
         return null;
     }

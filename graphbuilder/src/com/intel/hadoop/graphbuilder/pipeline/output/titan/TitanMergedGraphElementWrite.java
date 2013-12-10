@@ -21,21 +21,16 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.MergedGraphElementWrite;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
+import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.thinkaurelius.titan.core.TitanElement;
-import com.thinkaurelius.titan.core.TitanGraph;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -47,8 +42,7 @@ import java.util.Map;
  *   through the temp file
  * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
  *
- * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements
- * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementPut
+ * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementMerge
  */
 public class TitanMergedGraphElementWrite extends MergedGraphElementWrite{
     private HashMap<Object, Long>  vertexNameToTitanID = new HashMap<>();
@@ -77,7 +71,8 @@ public class TitanMergedGraphElementWrite extends MergedGraphElementWrite{
             // Major operation - vertex is added to Titan and a new ID is assigned to it
             com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
 
-            bpVertex.setProperty("trueName", vertex.getKey().toString());
+
+            bpVertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, vertex.getKey().toString());
 
             long vertexId = getVertexId(bpVertex);//((TitanElement) bpVertex).getID();
 

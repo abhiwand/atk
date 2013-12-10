@@ -22,19 +22,14 @@ package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.MergedGraphElementWrite;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
+import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
-import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
@@ -61,8 +56,6 @@ public class RDFGraphMergedGraphElementWrite extends MergedGraphElementWrite {
         if (conf.get("rdfNamespace") != null) {
             this.rdfNamespace = conf.get("rdfNamespace");
         }
-
-        this.vertexLabelMap = vertexLabelMap;
 
         vertexWrite(args);
 

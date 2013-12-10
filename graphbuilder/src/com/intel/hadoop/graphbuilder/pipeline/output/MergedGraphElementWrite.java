@@ -17,7 +17,7 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates;
+package com.intel.hadoop.graphbuilder.pipeline.output;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
@@ -53,7 +53,7 @@ public abstract class MergedGraphElementWrite {
     protected  void initArgs(ArgumentBuilder args){
         edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
         vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
-        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap");
+        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap", new HashMap<Object, StringType>());
 
         vertexCounter = (Enum)args.get("vertexCounter");
         edgeCounter = (Enum)args.get("edgeCounter");

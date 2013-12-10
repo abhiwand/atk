@@ -28,8 +28,8 @@ import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.MergedGraphElementWrite;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementPut;
+import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.PropertyGraphElementMerge;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -78,7 +78,7 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
 
     private HashMap<EdgeID, Writable> edgeSet;
     private HashMap<Object, Writable>   vertexSet;
-    HashMap<Object, StringType>    vertexLabelMap       = new HashMap();
+    private HashMap<Object, StringType>    vertexLabelMap       = new HashMap();
 
     //private PropertyGraphElements propertyGraphElements;
     private MergedGraphElementWrite RDFGraphMergedGraphElementWrite;
@@ -98,7 +98,7 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
         RDFNamespaceMap.put("RDFS",       RDFS.getURI());
 
         // TODO We will not support XMLSchema in Graphbuilder2.0
-//        RDFNamespaceMap.put("XMLSchema",  "http://www.w3.org/2001/XMLSchema#");
+//        RDFNamespaceMap.merge("XMLSchema",  "http://www.w3.org/2001/XMLSchema#");
     }
 
     protected static final Map<String, Property> RDFTagMap;
@@ -183,11 +183,11 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
             }
 
             //try to add the graph element to the existing set of vertices or edges
-            //PropertyGraphElementPut will take care of switching between edge and vertex
-            put(propertyGraphElement);
+            //PropertyGraphElementMerge will take care of switching between edge and vertex
+            merge(edgeSet, vertexSet, vertexLabelMap, propertyGraphElement);
         }
 
-        write(context);
+        write(edgeSet, vertexSet, vertexLabelMap, context);
     }
 
     @Override
@@ -201,7 +201,8 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
      *
      * @param propertyGraphElement the graph element to add to our existing vertexSet or edgeSet
      */
-    private void put(PropertyGraphElement propertyGraphElement){
+    private void merge(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet, HashMap<Object,
+            StringType> vertexLabelMap, PropertyGraphElement propertyGraphElement){
         propertyGraphElement.typeCallback(propertyGraphElementPut,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
@@ -215,18 +216,17 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
      * @throws IOException
      * @throws InterruptedException
      */
-    public void write(Context context) throws IOException, InterruptedException {
+    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+                      HashMap<Object, StringType> vertexLabelMap, Context context) throws IOException,
+            InterruptedException {
         RDFGraphMergedGraphElementWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
-                .with("vertexSet", vertexSet).with("vertexCounter", Counters.NUM_VERTICES)
+                .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap).with("vertexCounter",
+                Counters.NUM_VERTICES)
                 .with("edgeCounter", Counters.NUM_EDGES).with("context", context));
     }
 
     private void initMergerWriter(Context context){
-        propertyGraphElementPut = new PropertyGraphElementPut();
+        propertyGraphElementPut = new PropertyGraphElementMerge();
         RDFGraphMergedGraphElementWrite = new RDFGraphMergedGraphElementWrite();
-
-        /*propertyGraphElements = new PropertyGraphElements(new RDFGraphMergedGraphElementWrite(),vertexReducerFunction,
-                edgeReducerFunction, context, null, null, Counters.NUM_EDGES, Counters.NUM_VERTICES);*/
-
     }
 }

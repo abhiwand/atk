@@ -20,21 +20,14 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.MergedGraphElementWrite;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
-import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
-import com.thinkaurelius.titan.core.TitanGraph;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -44,7 +37,7 @@ import java.util.Map;
  * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements
- * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementPut
+ * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementMerge
  */
 public class TextGraphMergedGraphElementWrite extends MergedGraphElementWrite {
     MultipleOutputs<NullWritable, Text> multipleOutputs;
@@ -103,7 +96,4 @@ public class TextGraphMergedGraphElementWrite extends MergedGraphElementWrite {
 
         context.getCounter(edgeCounter).increment(edgeCount);
     }
-
-
-
 }
