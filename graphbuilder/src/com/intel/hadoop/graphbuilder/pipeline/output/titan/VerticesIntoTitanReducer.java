@@ -36,11 +36,16 @@ import org.apache.log4j.Logger;
 
 /**
  * This reducer performs the following tasks:
- * - gathers edges with the source vertices.
- * - removes duplicate edges and vertices.
- * - loads each vertex into Titan and tags it with its Titan ID, and passes it to the next MR job
- *   through the temp file.
- * - tags each edge with the Titan ID of its source vertex and passes it to the next MR job.
+ * <ul>
+ *  <li>removes duplicate edges and vertices.</li>
+ *  <li>loads each vertex into Titan and tags each with its Titan ID and passes it to the next MR job
+ *   through the temp file.</li>
+ *  <li>tags each edge with the Titan ID of its source vertex and passes it to the next MR job.</li>
+ * </ul>
+ * <p>
+ *  We expect that the mapper will set the keys so that the edges are gathered with the source vertices during the shuffle.
+ * </p>
+ * @see com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction
  */
 
 public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphElement, IntWritable, PropertyGraphElement> {
@@ -70,11 +75,17 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
      * @return TitanGraph  For saving edges.
      * @throws IOException
      */
-    protected TitanGraph tribecaGraphFactoryOpen(Context context) throws IOException {
+    private TitanGraph getTitanGraphInstance (Context context) throws IOException {
         BaseConfiguration titanConfig = new BaseConfiguration();
         return GraphDatabaseConnector.open("titan", titanConfig, context.getConfiguration());
     }
 
+    /**
+     * Set up the reducer at the start of the task.
+     * @param context
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void setup(Context context)  throws IOException, InterruptedException {
 
@@ -87,17 +98,17 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
             outValue   = (PropertyGraphElement) outClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot instantiate new reducer output value ( " + outClass.getName() + ")", LOG, e);
+                    "GRAPHBUILDER_ERROR: Cannot instantiate new reducer output value ( " + outClass.getName() + ")", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when instantiating reducer output value ( " + outClass.getName() + ")",
+                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer output value ( " + outClass.getName() + ")",
                     LOG, e);
         }
 
 
         this.vertexNameToTitanID = new HashMap<Object, Long>();
 
-        this.graph = tribecaGraphFactoryOpen(context);
+        this.graph = getTitanGraphInstance(context);
         assert (null != this.graph);
 
         this.noBiDir = conf.getBoolean("noBiDir", false);
@@ -131,11 +142,21 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
         }
     }
 
+    /**
+     * The main reducer routine. Performs duplicate removal followed by vertex load, then a propagation of
+     * vertex IDs to the edges whose source is the current vertex.
+     *
+     * @param key
+     * @param values
+     * @param context
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void reduce(IntWritable key, Iterable<PropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        HashMap<EdgeID, Writable>     edgeSet       = new HashMap();
+        HashMap<EdgeID, Writable>      edgeSet       = new HashMap();
         HashMap<Object, Writable>      vertexSet     = new HashMap();
         Iterator<PropertyGraphElement> valueIterator = values.iterator();
 
@@ -246,7 +267,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
 
             com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
 
-            bpVertex.setProperty("trueName", v.getKey().toString());
+            bpVertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, v.getKey().toString());
 
             PropertyMap propertyMap = (PropertyMap) v.getValue();
 
@@ -308,6 +329,12 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
         context.getCounter(Counters.NUM_EDGES).increment(edgeCount);
     }
 
+    /**
+     * Closes the Titan graph connection at the end of the reducer.
+     * @param context
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         this.graph.shutdown();

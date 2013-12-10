@@ -42,10 +42,17 @@ import play.api.Play.current
  */
 object Register extends Controller {
 
+    abstract class RegisterActionResponse
+    case class SuccessfullyRegisterResponse(sessionId: String) extends RegisterActionResponse
+    case class FailToValidateResponse() extends RegisterActionResponse
+    case class GeneralErrorResponse() extends RegisterActionResponse
+
     var json: JsValue = _
     var auth: Authorize = _
-    var response: (Int, Option[String]) = (0, None)
-
+    var response: RegisterActionResponse = _
+    /**
+     * register user to the system.
+     */
     var register = Action {
         request => {
             Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
@@ -54,19 +61,21 @@ object Register extends Controller {
                 },
                 registrationForm => {
                     //make sure the terms are set to on since we couldnt' validate with a boolean
-                    if (registrationForm.terms == "on" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
+                    if (registrationForm.terms.trim.toLowerCase == "i agree" && registrationForm.experience >= 1 && registrationForm.experience <= 4) {
                         json = Json.parse(registrationForm.authResult)
                         auth = new Authorize(json, Providers.GooglePlus)
                         response = getResponse(registrationForm, auth, Sessions, MySQLStatementGenerator)
+                    }else{
+                      Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600), "/", None, true, false))
                     }
                 }
             )
 
-            response._1 match {
-                case StatusCodes.LOGIN => Redirect("/ipython").withNewSession.withSession(SessionValName -> response._2.get).withCookies(getRegisteredCookie)
-                case StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+            response match {
+                case successfulResponse: SuccessfullyRegisterResponse => Redirect("/ipython").withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(getRegisteredCookie)
+                case failedResponse: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
                     "/", None, true, false))
-                case _ => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
+                case generalErrorResponse: GeneralErrorResponse => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
                     "/", None, true, false)).withCookies(getRegisteredCookie)
             }
         }
@@ -75,31 +84,33 @@ object Register extends Controller {
     }
 
     /**
-     *
+     * Get registration response.
      * @param Authorization info
-     * @return tuple of (status code, session Id)
+     * @return RegisterActionResponse
      */
-    def getResponse(registrationForm: RegistrationFormMapping, auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): (Int, Option[String]) = {
+    def getResponse(registrationForm: RegistrationFormMapping, auth: Authorize, sessionGen: SessionGenerator, statementGenerator: StatementGenerator): RegisterActionResponse = {
+        if (auth.validateToken() == None || auth.validateUserInfo() == None)
+            return FailToValidateResponse()
 
-        if (auth.validateUserInfo() == None)
-            return (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
 
-        val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true,
-          Some(Play.application.configuration.getString("ipython.url").get),
-          Some(Play.application.configuration.getString("ipython.secret").get), None)
+        val u = UserRow(None, auth.userInfo.get.givenName, auth.userInfo.get.familyName, auth.userInfo.get.email, true, None, None, None)
         val result = Users.register(u, registrationForm, statementGenerator, DBRegisterCommand)
 
         if (result.login == 1) {
             val sessionId = sessionGen.create(result.uid)
             if (sessionId == None)
-                (StatusCodes.FAIL_TO_VALIDATE_AUTH_DATA, None)
+                FailToValidateResponse()
             else
-                (StatusCodes.LOGIN, Some(sessionId.get))
+                SuccessfullyRegisterResponse(sessionId.get)
         }
         else
-            (result.errorCode, None)
+            GeneralErrorResponse()
     }
 
+    /**
+     * get cookie to indicate that the user has registered.
+     * @return cookie
+     */
   def getRegisteredCookie:Cookie = {
     Cookie("registered", "true", Some(3600),"/", None, true, false)
   }

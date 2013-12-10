@@ -478,19 +478,26 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
             }
 
             int learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
-            if (superstep == 1) {
+            int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
+            int realStep = 0;
+            if (superstep >= 1) {
+                realStep = (int) superstep - 1;
+            } else if (superstep == -1) {
+                realStep = maxSupersteps;
+            }
+            if (superstep == 0) {
                 // output graph statistics
                 long leftVertices = Long.parseLong(map.get(SUM_LEFT_VERTICES));
                 long rightVertices = Long.parseLong(map.get(SUM_RIGHT_VERTICES));
                 long trainEdges = Long.parseLong(map.get(SUM_TRAIN_EDGES));
                 long validateEdges = Long.parseLong(map.get(SUM_VALIDATE_EDGES));
                 long testEdges = Long.parseLong(map.get(SUM_TEST_EDGES));
-                output.writeUTF("Graph Statistics:\n");
-                output.writeUTF(String.format("Number of vertices: %d (left: %d, right: %d)%n",
-                    leftVertices + rightVertices, leftVertices, rightVertices));
-                output.writeUTF(String.format("Number of edges: %d (train: %d, validate: %d, test: %d)%n",
-                    trainEdges + validateEdges + testEdges, trainEdges, validateEdges, testEdges));
-                output.writeUTF("\n");
+                output.writeBytes("Graph Statistics:\n");
+                output.writeBytes("Number of vertices: " + (leftVertices + rightVertices) +
+                    " (left: " + leftVertices + ", right: " + rightVertices + ")\n");
+                output.writeBytes("Number of edges: " + (trainEdges + validateEdges + testEdges) +
+                    " (train: " + trainEdges + ", validate: " + validateEdges + ", test: " +
+                    testEdges + ")\n");
                 // output gd configuration
                 float learningRate = getConf().getFloat(LEARNING_RATE, 0.001f);
                 float discount = getConf().getFloat(DISCOUNT, 1.0f);
@@ -498,32 +505,31 @@ public class GradientDescentComputation extends BasicComputation<LongWritable, V
                 float lambda = getConf().getFloat(LAMBDA, 0f);
                 boolean biasOn = getConf().getBoolean(BIAS_ON, false);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
-                int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
                 float minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
-                output.writeUTF("GD Configuration:\n");
-                output.writeUTF(String.format("featureDimension: %d%n", featureDimension));
-                output.writeUTF(String.format("learningRate: %f%n", learningRate));
-                output.writeUTF(String.format("discount: %f%n", discount));
-                output.writeUTF(String.format("lambda: %f%n", lambda));
-                output.writeUTF(String.format("biasOn: %b%n", biasOn));
-                output.writeUTF(String.format("convergenceThreshold: %f%n", convergenceThreshold));
-                output.writeUTF(String.format("maxSupersteps: %d%n", maxSupersteps));
-                output.writeUTF(String.format("maxVal: %f%n", maxVal));
-                output.writeUTF(String.format("minVal: %f%n", minVal));
-                output.writeUTF(String.format("learningCurveOutputInterval: %d%n", learningCurveOutputInterval));
-                output.writeUTF("\n");
-                output.writeUTF("Learning Progress:\n");
-            } else if ((superstep >= 3 && (superstep % (2 * learningCurveOutputInterval)) == 1) || superstep == -1) {
+                output.writeBytes("======================GD Configuration====================\n");
+                output.writeBytes("featureDimension: " + featureDimension + "\n");
+                output.writeBytes("learningRate: " + learningRate + "\n");
+                output.writeBytes("discount: " + discount + "\n");
+                output.writeBytes("lambda: " + lambda + "\n");
+                output.writeBytes("biasOn: " + biasOn + "\n");
+                output.writeBytes("convergenceThreshold: n" + convergenceThreshold + "\n");
+                output.writeBytes("maxSupersteps: " +  maxSupersteps + "\n");
+                output.writeBytes("maxVal: " +  maxVal + "\n");
+                output.writeBytes("minVal: " + minVal + "\n");
+                output.writeBytes("learningCurveOutputInterval: " + learningCurveOutputInterval + "\n");
+                output.writeBytes("-------------------------------------------------------------\n");
+                output.writeBytes("\n");
+                output.writeBytes("========================Learning Progress====================\n");
+            } else if (realStep > 0 && (realStep % (2 * learningCurveOutputInterval)) == 0) {
                 // output learning progress
                 double trainCost = Double.parseDouble(map.get(SUM_TRAIN_COST));
                 double validateRmse = Double.parseDouble(map.get(SUM_VALIDATE_ERROR));
                 double testRmse = Double.parseDouble(map.get(SUM_TEST_ERROR));
-                output.writeUTF(String.format("superstep=%d", superstep));
-                output.writeUTF(String.format("cost(train)=%f", trainCost));
-                output.writeUTF(String.format("rmse(validate)=%f", validateRmse));
-                output.writeUTF(String.format("rmse(test)=%f", testRmse));
-                output.writeUTF("\n");
+                output.writeBytes("superstep = " + realStep + "\t");
+                output.writeBytes("cost(train) = " + trainCost + "\t");
+                output.writeBytes("rmse(validate) = " + validateRmse + "\t");
+                output.writeBytes("rmse(test) = " + testRmse + "\n");
             }
             output.flush();
         }

@@ -13,13 +13,6 @@ import scala.slick.session.Session
 import scala.Some
 import services.authorize.{UserInfo, Authorize}
 
-/**
- * Created with IntelliJ IDEA.
- * User: schen55
- * Date: 11/6/13
- * Time: 11:10 AM
- * To change this template use File | Settings | File Templates.
- */
 @RunWith(classOf[JUnitRunner])
 class LoginControllerSpec extends Specification with Mockito {
     "Login controller get response" should {
@@ -31,7 +24,8 @@ class LoginControllerSpec extends Specification with Mockito {
             sessionGen.create(1) returns Some("1")
             val statementGenerator = mock[StatementGenerator]
             val result = Login.getResult(auth, sessionGen, statementGenerator)
-            (result.header.status == 303 && result.header.headers("Set-Cookie").contains("authenticationFailed")) must beTrue
+            (result.header.status == 200) must
+              beTrue
         }
 
         "get response for valid log in" in {

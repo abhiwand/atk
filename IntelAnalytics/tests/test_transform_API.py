@@ -1,3 +1,25 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2013 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
 import os
 import sys
 import subprocess
@@ -23,6 +45,12 @@ TEST_TRANSFORM_TABLE='worldbank_csv_transformed'
 TEST_STND_TABLE='test_standardization_dataset_csv'
 TEST_STND_TRANSFORM_TABLE='test_standardization_dataset_csv_transformed'
 
+TEST_TABLES = []
+TEST_TABLES.append(TEST_TABLE)
+TEST_TABLES.append(TEST_TRANSFORM_TABLE)
+TEST_TABLES.append(TEST_STND_TABLE)
+TEST_TABLES.append(TEST_STND_TRANSFORM_TABLE)
+
 print '###########################'
 print 'Validating Transform Functions'
 print '###########################'
@@ -36,15 +64,23 @@ schema_definition = 'country:chararray,year:chararray,'+\
                     'internet_users:double,life_expectancy:double,military_expenses:double,'+\
                     'population: double,hiv_prevelence:double'
                       
-subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/worldbank.csv',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/worldbank.csv',
                  '-o', TEST_TABLE, '-s', schema_definition, '-k'])
 
+if return_code:
+    raise Exception("Transform script failed!")
+    sys.exit(1)
+    
 DIFF_EPSILON = 0.01#diff used for floating point comparisons
 
 print "Testing the EXP transform"
-subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+ 
+return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'EXP', '-n', 'exp_internet_users', '-k'])
-
+ 
+if return_code:
+    raise Exception("Transform script failed!")
+    sys.exit(1)
 # NOTE: THE EXP VALIDATION MAY FAIL BECAUSE
 #  I have seen differences between Java 1.6 and Java 1.7 floating point arithmetic results
 #  for example:
@@ -65,14 +101,18 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
         except OverflowError:
             assert data['etl-cf:exp_internet_users'] == 'Infinity', "%s should have been Infinity" % (data['etl-cf:exp_internet_users'])
 print "Validated the EXP transform"
-
+ 
 #cleanup transform tables
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     hbase_client.connection.delete_table(TEST_TRANSFORM_TABLE, disable=True)
-
+  
 print "Testing the ABS transform"
-subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'ABS', '-n', 'abs_internet_users', '-k'])
+    
+if return_code:
+    raise Exception("Transform script failed!")
+    sys.exit(1)
   
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     t = hbase_client.connection.table(TEST_TRANSFORM_TABLE)
@@ -85,15 +125,19 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
         except OverflowError:
             assert data['etl-cf:abs_internet_users'] == 'Infinity', "%s should have been Infinity" % (data['etl-cf:abs_internet_users'])
 print "Validated the ABS transform"
-
+  
 #cleanup transform tables
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     hbase_client.connection.delete_table(TEST_TRANSFORM_TABLE, disable=True)
-
+  
 print "Testing the LOG10 transform"      
-subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'LOG10', '-n', 'log10_internet_users', '-k'])
- 
+  
+if return_code:
+    raise Exception("Transform script failed!")
+    sys.exit(1)
+  
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     t = hbase_client.connection.table(TEST_TRANSFORM_TABLE)
     for key, data in t.scan():
@@ -107,17 +151,21 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
                 assert (float(data['etl-cf:log10_internet_users']) - log10_value) < DIFF_EPSILON, "%f vs. %f" % (float(data['etl-cf:log10_internet_users']), log10_value)
         except OverflowError:
             assert data['etl-cf:log10_internet_users'] == 'Infinity', "%s should have been Infinity" % (data['etl-cf:log10_internet_users'])
-              
+                
 print "Validated the LOG10 transform"
-
+  
 #cleanup transform tables
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     hbase_client.connection.delete_table(TEST_TRANSFORM_TABLE, disable=True)
-
+  
 print "Testing the org.apache.pig.piggybank.evaluation.math.POW transform"          
-subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'org.apache.pig.piggybank.evaluation.math.POW', '-a', '[2]', '-n', 'internet_users_squared', '-k'])
- 
+  
+if return_code:
+    raise Exception("Transform script failed!")
+    sys.exit(1)
+   
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     t = hbase_client.connection.table(TEST_TRANSFORM_TABLE)
     for key, data in t.scan():
@@ -125,28 +173,36 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
                  continue
         pow_value = math.pow(float(data['etl-cf:internet_users']), 2)
         assert (float(data['etl-cf:internet_users_squared']) - pow_value) < DIFF_EPSILON, "%f vs. %f" % (float(data['etl-cf:internet_users_squared']), pow_value)
-            
+              
 print "Validated the org.apache.pig.piggybank.evaluation.math.POW transform"            
-
+  
 print "Importing %s for testing STND transform"%(test_standardization_dataset_csv_path)  
-
+  
 commands.getoutput("cp %s /tmp/test_standardization_dataset.csv" % (test_standardization_dataset_csv_path))
 schema_definition = 'value:double'
-                       
-subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/test_standardization_dataset.csv',
+                         
+return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/test_standardization_dataset.csv',
                  '-o', TEST_STND_TABLE, '-s', schema_definition, '-k'])
-
+  
+if return_code:
+    raise Exception("Transform script failed!")
+    sys.exit(1)
+  
 #cleanup transform tables
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     try:
         hbase_client.connection.delete_table(TEST_STND_TRANSFORM_TABLE, disable=True)
     except:
         pass
-
+ 
 print "Testing the STND transform"  
-subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_STND_TABLE, '-f', 'value',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_STND_TABLE, '-f', 'value',
                  '-o', TEST_STND_TRANSFORM_TABLE, '-t', 'STND', '-n', 'stnd_value', '-k'])
-
+ 
+if return_code:
+    raise Exception("Transform script failed!")
+    sys.exit(1)
+ 
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     t = hbase_client.connection.table(TEST_STND_TRANSFORM_TABLE)
     for key, data in t.scan():
@@ -160,27 +216,26 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
             assert data['etl-cf:stnd_value'] == '-0.2549155731972525', "data['etl-cf:stnd_value']=%s must have been -0.2549155731972525" % (data['etl-cf:stnd_value'])
         if data['etl-cf:value'] == '4.0':
             assert data['etl-cf:stnd_value'] == '0.16994371546483492', "data['etl-cf:stnd_value']=%s must have been 0.16994371546483492" % (data['etl-cf:stnd_value'])
-            
+             
 print "Validated the STND transform"  
                         
 #cleanup test tables
 with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
-    try:
-        hbase_client.connection.delete_table(TEST_TABLE, disable=True)
-    except:
-        pass
-    try:
-        hbase_client.connection.delete_table(TEST_TRANSFORM_TABLE, disable=True)
-    except:
-        pass
-    try:
-        hbase_client.connection.delete_table(TEST_STND_TABLE, disable=True)
-    except:
-        pass
-    try:
-        hbase_client.connection.delete_table(TEST_STND_TRANSFORM_TABLE, disable=True)
-    except:
-        pass
+    for temp in TEST_TABLES:
+        try:
+            hbase_client.connection.delete_table(temp, disable=True)
+            print 'deleted table',temp
+        except:
+            pass
+        try:
+            table = hbase_client.connection.table(CONFIG_PARAMS['hbase_schema_table'])
+            table.delete(temp)#also remove the schema info
+            print 'deleted schema information for table',temp
+        except:
+	    print "got ecxception"
+	    print sys.exc_info()[0]		
+            pass
+                    
 print '###########################'
 print 'DONE Validating Transform Functions'
 print '###########################'    

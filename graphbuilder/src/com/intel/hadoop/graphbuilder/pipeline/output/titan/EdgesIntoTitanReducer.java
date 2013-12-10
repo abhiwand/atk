@@ -1,21 +1,21 @@
 /* Copyright (C) 2013 Intel Corporation.
- *     All rights reserved.
- *           
+*     All rights reserved.
+*
  *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- * For more about this software visit:
- *      http://www.01.org/GraphBuilder 
- */
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+* For more about this software visit:
+*      http://www.01.org/GraphBuilder
+*/
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
@@ -70,7 +70,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
      * @return TitanGraph For saving edges.
      * @throws IOException
      */
-    private TitanGraph tribecaGraphFactoryOpen(Context context) throws IOException {
+    private TitanGraph getTitanGraphInstance (Context context) throws IOException {
         BaseConfiguration titanConfig = new BaseConfiguration();
         return GraphDatabaseConnector.open("titan", titanConfig, context.getConfiguration());
     }
@@ -86,8 +86,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     public void setup(Context context) throws IOException, InterruptedException {
 
         this.vertexNameToTitanID = new HashMap<Object, Long>();
-
-        this.graph               = tribecaGraphFactoryOpen(context);
+        this.graph               = getTitanGraphInstance(context);
     }
 
     /**
@@ -191,8 +190,8 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
                 try {
                 bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
                 } catch (IllegalArgumentException e) {
-                    LOG.fatal("Could not add edge property; probably a schema error. The label on the edge is  " + label);
-                    LOG.fatal("The property on the edge is " + propertyKey.toString());
+                    LOG.fatal("GRAPHBUILDER_ERROR: Could not add edge property; probably a schema error. The label on the edge is  " + label);
+                    LOG.fatal("GRAPHBUILDER_ERROR: The property on the edge is " + propertyKey.toString());
                     LOG.fatal(e.getMessage());
                     e.printStackTrace();
                     System.exit(1);

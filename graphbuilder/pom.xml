@@ -16,6 +16,7 @@
         <powermock.version>1.5.1</powermock.version>
         <tinkerpop.version>2.4.0</tinkerpop.version>
         <titan.version>0.4.0</titan.version>
+        <hbase.version>0.94.12</hbase.version>
     </properties>
 
     <build>
@@ -31,9 +32,9 @@
                 <executions>
                     <execution>
                         <id>add-test-source</id>
-                        <phase>generate-test-sources</phase>
+                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>add-test-source</goal>
+                            <goal>add-source</goal>
                         </goals>
                         <configuration>
                             <sources>
@@ -101,7 +102,7 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase</artifactId>
-            <version>0.94.1</version>
+            <version>${hbase.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -182,6 +183,12 @@
             <artifactId>mockito-all</artifactId>
             <version>1.9.5</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.jena</groupId>
+          <artifactId>apache-jena-libs</artifactId>
+          <type>pom</type>
+          <version>2.11.0</version>
         </dependency>
     </dependencies>
 

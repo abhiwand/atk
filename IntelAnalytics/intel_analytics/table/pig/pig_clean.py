@@ -1,3 +1,25 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2013 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
 import sys
 from org.apache.pig.scripting import Pig
 from intel_analytics.table.pig import pig_helpers
@@ -36,7 +58,7 @@ def main(argv):
     
     final_relation_to_store = 'cleaned_data'
     if cmd_line_args.feature_to_clean:
-        if feature_type_dict[cmd_line_args.feature_to_clean] == 'chararray':#chararray checks are done using empty strings instead of NULLs
+        if feature_type_dict[cmd_line_args.feature_to_clean] == 'chararray' or feature_type_dict[cmd_line_args.feature_to_clean] == 'bytearray':#chararray checks are done using empty strings instead of NULLs
             pig_statements.append("cleaned_data = FILTER parsed_val BY (%s != '');" % (cmd_line_args.feature_to_clean))
             pig_statements.append("null_relation = FILTER parsed_val BY (%s == '');" % (cmd_line_args.feature_to_clean))
         else:
@@ -48,7 +70,7 @@ def main(argv):
             for i, feature in enumerate(features):
               if feature == 'key':#skip the hbase row key
                   continue
-              if feature_type_dict[feature] == 'chararray':
+              if feature_type_dict[feature] == 'chararray' or feature_type_dict[feature] == 'bytearray':
                   clean_statement += "(%s != '')" % (feature)#chararray checks are done using empty strings instead of NULLs
               else:
                   clean_statement += "(%s is not NULL)" % (feature)
@@ -58,7 +80,7 @@ def main(argv):
             for i, feature in enumerate(features):
               if feature == 'key':#skip the hbase row key
                   continue                
-              if feature_type_dict[feature] == 'chararray':
+              if feature_type_dict[feature] == 'chararray' or feature_type_dict[feature] == 'bytearray':
                   clean_statement += "(%s == '')" % (feature)#chararray checks are done using empty strings instead of NULLs
               else:
                   clean_statement += "(%s is NULL)" % (feature)

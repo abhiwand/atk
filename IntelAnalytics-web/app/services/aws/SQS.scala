@@ -54,7 +54,7 @@ object SQS {
   }
 
   def createQueue(clusterId: String): String ={
-    val queue = new CreateQueueRequest(clusterId)
+    val queue = new CreateQueueRequest(Play.application.mode.toString.toLowerCase + "-" + clusterId)
     val queueUrl = sqs.createQueue(queue)
 
     val policyMap =  Map( "Policy" -> createPermissionPolicy(clusterId, queueUrl.getQueueUrl))

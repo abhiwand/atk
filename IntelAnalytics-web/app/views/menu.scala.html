@@ -3,34 +3,34 @@
 <div class='collapse navbar-collapse navbar-header-collapse'>
     <ul class='nav navbar-nav navbar-right'>
         @if(user != null && user.uid.get > 0 ){
-            <li class='dropdown' >
+            @*<li class='dropdown' >
                 <a href='faq.html' id='faq-page'>
                     <span>
                         FAQ
                     </span>
                 </a>
-            </li>
-            <li class='dropdown'>
-                <a href='documentation' id='documentation-page'>
+            </li>*@
+            <li class='dropdown' id='documentation-page'>
+                <a href='documentation' >
                     <span>
                         API Documentation
                     </span>
                 </a>
             </li>
-            <li class='active dropdown' >
-                <a href='ipython' id='ipython-page'>
+            <li class='dropdown' id='ipython-page' >
+                <a href='ipython' >
                     <span>
                         IPython Tutorial
                     </span>
                 </a>
             </li>
-            <li class='dropdown'>
+            @*<li class='dropdown'>
                 <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href='#datasetModal' id='dataset-modal'>
                     <span>
                         View/Add Datasets
                     </span>
                 </a>
-            </li>
+            </li>*@
             <li class='dropdown'>
                 <a href="logout" id='logout-link'>
                     <span>
@@ -44,13 +44,13 @@
         <li class='dropdown' id="requestInvite">
             <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href='#myModal' id='request-an-invite-modal'>
                 <span>
-                    Request an Invitation
+                   Register for Use
                 </span>
             </a>
         </li>
         <li class='dropdown'>
             <a class='dropdown-toggle' data-delay='50' data-hover='dropdown' data-toggle='modal' href="">
-                <span id="googleLoginButton" >Sign In</span>
+                <span class="googleLoginButton" >Sign In</span>
             </a>
         </li>
         }

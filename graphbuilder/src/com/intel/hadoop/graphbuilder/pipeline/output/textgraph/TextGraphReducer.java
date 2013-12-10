@@ -1,20 +1,20 @@
 /* Copyright (C) 2013 Intel Corporation.
- *     All rights reserved.
- *           
+*     All rights reserved.
+*
  *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- * For more about this software visit:
- *      http://www.01.org/GraphBuilder 
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+* For more about this software visit:
+*      http://www.01.org/GraphBuilder
  */
 
 package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
@@ -96,16 +96,16 @@ public class TextGraphReducer extends Reducer<IntWritable, PropertyGraphElement,
             }
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Could not instantiate reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Could not instantiate reducer functions", LOG, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Illegal access exception when instantiating reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer functions", LOG, e);
         } catch (ClassNotFoundException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Class not found exception when instantiating reducer functions", LOG, e);
+                    "GRAPHBUILDER_ERROR: Class not found exception when instantiating reducer functions", LOG, e);
         } catch (Functional.FunctionalConfigurationError e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Configuration error when configuring reducer functionals.", LOG, e);
+                    "GRAPHBUILDER_ERROR: Configuration error when configuring reducer functionals.", LOG, e);
         }
     }
 

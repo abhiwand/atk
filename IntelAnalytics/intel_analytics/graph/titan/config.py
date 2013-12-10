@@ -1,3 +1,25 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2013 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
 from time import strftime
 import os
 
@@ -26,8 +48,8 @@ class TitanConfig(object):
             The full path of the config file created by this method.
         """
         self.config['titan_storage_tablename'] = tablename
-        filename = os.path.join(self.config['titan_conf_folder'],
-                                "graphbuilder_" + tablename+".xml")
+        filename = os.path.join(self.config['conf_folder'],
+                                "graphbuilder_titan.xml")
         return self._write_cfg(tablename,
                                stream,
                                filename,
@@ -220,7 +242,7 @@ rexster_keys.sort()
 #--------------------------------------------------------------------------
 # GraphBuilder
 #--------------------------------------------------------------------------
-gb_keys = ['titan_conf_folder']
+gb_keys = ['conf_folder']
 for k in ['hostname', 'tablename', 'backend', 'port', 'connection_timeout']:
     gb_keys.append('titan_storage_' + k)
 gb_keys.sort()

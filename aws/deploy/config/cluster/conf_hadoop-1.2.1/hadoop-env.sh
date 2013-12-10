@@ -11,13 +11,13 @@
 export JAVA_HOME=/usr/lib/jvm/java
 
 # Extra Java CLASSPATH elements.  Optional.
-#export HADOOP_CLASSPATH=/home/user/Hadoop/hbase-0.94.1/hbase-0.94.1.jar:/home/user/Hadoop/hbase-0.94.1/hbase-0.94.1-tests.jar:/home/user/Hadoop/hbase-0.94.1/lib/:home/user/Hadoop/hbase-0.94.1/conf:/home/user/Hadoop/hbase-0.94.1/lib/zookeeper-3.4.3.jar
+export HADOOP_CLASSPATH=/home/hadoop/IntelAnalytics/pig/conf:/home/hadoop/IntelAnalytics/pig/pig-0.12.0-withouthadoop.jar:/home/hadoop/IntelAnalytics/hbase/hbase-0.94.12-security.jar:/home/hadoop/IntelAnalytics/hbase/hbase-0.94.12-security-tests.jar:/home/hadoop/IntelAnalytics/hbase/lib/:/home/hadoop/IntelAnalytics/hbase/conf:/home/hadoop/IntelAnalytics/hbase/lib/zookeeper-3.4.5.jar:/home/hadoop/IntelAnalytics/hbase/lib/protobuf-java-2.4.0a.jar:/home/hadoop/IntelAnalytics/hbase/lib/guava-11.0.2.jar
 
 # The maximum amount of heap to use, in MB. Default is 1000.
 # export HADOOP_HEAPSIZE=2000
 
 # Extra Java runtime options.  Empty by default.
-# export HADOOP_OPTS=-server
+export HADOOP_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC"
 
 # Command specific options appended to HADOOP_OPTS when specified
 export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"

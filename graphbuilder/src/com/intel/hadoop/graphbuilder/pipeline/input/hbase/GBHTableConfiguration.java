@@ -1,19 +1,22 @@
 /* Copyright (C) 2013 Intel Corporation.
- *     All rights reserved.
- *
+*     All rights reserved.
+*
  *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+* For more about this software visit:
+*      http://www.01.org/GraphBuilder
  */
+
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
@@ -47,22 +50,12 @@ public class GBHTableConfiguration {
     public static final String DECN_CONF_NAME = "DirectedEdgeColNames";
     public static final String VERTEX_PROP_COLFAMILY = "VertexPropertyCF";
     public static final String VERTEX_PROP_IDCOLQUALIFIER = "VertexID";
-    public static final String CMD_EDGES_OPTNAME = "edges";
-    public static final String CMD_DIRECTED_EDGES_OPTNAME = "directedEdges";
-    public static final String CMD_TABLE_OPTNAME = "tablename";
-    public static final String CMD_VERTICES_OPTNAME = "vertices";
-    public static final String FLATTEN_LISTS_OPTNAME = "flattenlists";
-
-
-    public static final int    HBASE_CACHE_SIZE            = 500;
-    public static final String TITAN_HBASE_TABLENAME       = "GBTitan";
-    public static final String TITAN_HBASE_STORAGE_TIMEOUT = "10000";
 
     public static final String HBASE_COLUMN_SEPARATOR           = ":";
-    public static final String TRIBECA_GRAPH_PROPERTY_SEPARATOR = "_";
+    public static final String GRAPHBUILDER_PROPERTY_SEPARATOR = ":";
+
     public static final String NULLKEY                          = "NULLKEY";
 
     public static RuntimeConfig config = RuntimeConfig.getInstance(GBHTableConfiguration.class);
-
 
 }

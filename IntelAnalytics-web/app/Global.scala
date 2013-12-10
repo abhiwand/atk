@@ -3,11 +3,12 @@ import play.api.mvc._
 import play.api._
 import java.io.File
 import scala.collection.JavaConversions._
-import scala.concurrent.Future
-import scala.Some
+import scala.concurrent.{ExecutionContext, Future}
 import scala.Some
 import play.api.Play.current
 import services.aws.S3
+import play.api.http.HeaderNames._
+import ExecutionContext.Implicits.global
 
 
 object Global extends GlobalSettings{
@@ -34,17 +35,29 @@ object Global extends GlobalSettings{
   }
 
   override def onStart(app : play.api.Application){
-    //create s3 bucket to hold user files
-    S3.createBucket()
+    //don't create the s3 bucket in test mode
+    if(!Play.isTest){
+      //create s3 bucket to hold user files
+      S3.createBucket()
+    }
   }
 
-  /*try this on prod with elb infront of it
+  override def doFilter(action: EssentialAction): EssentialAction = EssentialAction { request =>
+    action.apply(request).map(_.withHeaders(
+      "X-Frame-Options" -> "SAMEORIGIN"
+    ))
+  }
+
   override def onRouteRequest(request: RequestHeader): Option[Handler] = {
-    if (Play.isDev && !request.headers.get("x-forwarded-proto").getOrElse("").contains("https")) {
+    //check if the aws health checker is hitting the server
+    val elbHealthChecker = request.headers.get(USER_AGENT).getOrElse("").contains("ELB-HealthChecker")
+
+    //only force https on prod mode when User-Agent header is anything but aws health check
+    if (Play.isProd &&  !elbHealthChecker && !request.headers.get(X_FORWARDED_PROTO).getOrElse("").contains("https")) {
       Some(controllers.Application.redirect)
     } else {
       super.onRouteRequest(request)
     }
-  }*/
+  }
 
 }

@@ -47,10 +47,12 @@ import ExecutionContext.Implicits.global
 /**
  * Configuration for the S3Copier application
  */
-case class Config(bucket: String = "gaopublic",
+case class Config(bucket: String = "",
                   prefix: String = "invalid",
-                  destination: String = "/user/gao", queue: String = "gao",
-                  statusDestination: String = "/tmp/s3-copier", loopDelay: Int = 1000)
+                  destination: String = "",
+                  queue: String = "",
+                  statusDestination: String = "",
+                  loopDelay: Int = 1000)
 
 /**
  * Companion object for Config class

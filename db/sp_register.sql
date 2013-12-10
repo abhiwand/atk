@@ -1,11 +1,18 @@
 DELIMITER $$
-CREATE DEFINER=`tribecaWebUser`@`%` PROCEDURE `sp_register`(given_name varchar(100)
+CREATE DEFINER=`tribecaWebUser`@`%` PROCEDURE `sp_register`(myName varchar(254)
+, given_name varchar(100)
 , family_name varchar(100)
 , email varchar(320)
-, phone varchar(254)
 , organization_name varchar(100)
+, organization_phone varchar(254)
 , organization_email varchar(320)
-, out  loginAfterRegister bool, out  errorCode int, out  errorMessage varchar(1000))
+, experience int
+, role varchar(254)
+, why_participate varchar(254)
+, what_tools varchar(254)
+, out  loginAfterRegister bool
+, out  errorCode int
+, out  errorMessage varchar(1000))
 body:BEGIN
 	declare isAlreadyRegistered bool;
 	declare isInWhiteList bool;
@@ -27,6 +34,11 @@ body:BEGIN
 			where w.email = email)
 	then
 		set isInWhiteList = true;
+	end if;
+
+	if(isInWhiteList = true)
+	then
+		set loginAfterRegister = true;
 	end if;
 
 	if(isAlreadyRegistered = true)
@@ -60,24 +72,14 @@ body:BEGIN
 		SET
 			given_name = given_name,
 			family_name = family_name,
-			organization_name = organization_name,
-			organization_email = organization_email,
-			phone = phone,
 			registered = 1
 		where uid = userId;
-
-		set loginAfterRegister = true;
-
-		select userId as uid;
 	elseif(isAlreadyRegistered = false and isInWhiteList = false)
 	then
 		INSERT INTO user_info
 		(
 			given_name,
 			family_name,
-			organization_name,
-			organization_email,
-			phone,
 			email,
 			registered
 		)
@@ -85,17 +87,40 @@ body:BEGIN
 		(
 			given_name,
 			family_name,
-			organization_name,
-			organization_email,
-			phone,
 			email,
 			1
 		);
 
-		select LAST_INSERT_ID() AS uid; 
+		set userId = LAST_INSERT_ID();
 	end if;
 
-	
+	select userId as uid;
+
+	INSERT INTO user_registration
+	(
+		myName,
+		uid,
+		organization_name,
+		organization_phone,
+		organization_email,
+		experience,
+		role,
+		why_participate,
+		what_tools
+	)
+	VALUES
+	(
+		myName,
+		userId,
+		organization_name,
+		organization_phone,
+		organization_email,
+		experience,
+		role,
+		why_participate,
+		what_tools
+	);
+
 
 END$$
 DELIMITER ;

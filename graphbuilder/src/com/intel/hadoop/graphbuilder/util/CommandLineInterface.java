@@ -1,5 +1,25 @@
+/* Copyright (C) 2013 Intel Corporation.
+*     All rights reserved.
+*
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+* For more about this software visit:
+*      http://www.01.org/GraphBuilder
+ */
+
 package com.intel.hadoop.graphbuilder.util;
 
+import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
 import org.apache.commons.cli.*;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.log4j.Logger;
@@ -10,65 +30,87 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A general command line parsing utility for graph builder.
+ * A general command line parsing utility for graph builder. This CLI class is a wrapper around the GenericOptionsParser
+ * and the apache commons cli PosixParser. It manages and centralizes much of the error checking and parser instantiation
+ * to one class versus having it distributed across all the demo apps.
  *
+ * Uses the Hadoop generic options parser to parse config files.
+ * The reserved options: -conf, -D, -fs, -jt, -files, -libjars, and -archives are already used by the Hadoop generic options parser.
+ * Don't use any of the reserved options to avoid conflicts. All the hadoop generic options must be placed before any
+ * app specific options.
+ *
+ * Usage:
  * <p>
- *     <code>-conf</code>   specifies the configuration file.
+ *     <code>-conf path/to/config/file</code>   Specifies the configuration file.
+ *     <code>-DmySingleConfigName=mySingleConfigValue</code> Specifies the individual config property.
+ *     or
+ *     <code>-D mySingleConfigName=mySingleConfigValue</code> Specifies the individual config property.
  * </p>
+ * @see GenericOptionsParser
+ * @see PosixParser
  */
-public class CommandLineInterface {
+public class CommandLineInterface{
 
     private static final Logger  LOG           = Logger.getLogger(CommandLineInterface.class);
     private static final String  GENERIC_ERROR = "Error parsing options";
+    private static final Option HELP_OPTION = OptionBuilder.withLongOpt("help").withDescription("").create("h");
     private Options              options       = new Options();
     private CommandLine          cmd           = null;
     private RuntimeConfig        runtimeConfig = RuntimeConfig.getInstance();
     private GenericOptionsParser genericOptionsParser;
 
     /**
+     * A wrapper to the regular hasOption command line class.
      * Does this command line have the specified option?
-     * @param option  The name of option being requested.
-     * @return  true  If the command line has the option.
+     * @param option  The name of the option being requested.
+     * @return  true  If and only if the command line has the option.
      */
     public boolean hasOption(String option) {
         return cmd.hasOption(option);
     }
 
     /**
+     * A wrapper to the regular getOptionValue command line class.
      * Gets the value of the option from the command line.
-     * @param option The name of option whose value is requested.
+     * @param option The name of the option whose value is requested.
      * @return value The value of the option as specified by the command line.
      */
     public String getOptionValue(String option) {
         return cmd.getOptionValue(option);
     }
 
+
     /**
-     * Parses the raw arguments into the {@code CommandLine} object.
+     * A simple wrapper to reduce the length of the call in the demo app.
+     * @param job The GraphConstructionPipeline(hadoop) job to which we will attach our config.
+     * @return The same GraphConstructionPipeline(hadoop) job with our config.
+     */
+    public GraphConstructionPipeline addConfig(GraphConstructionPipeline job){
+        return this.getRuntimeConfig().addConfig(job);
+    }
+
+    /**
+     * Parses the raw arguments into a {@code CommandLine} object.
      * @param args The raw command line arguments as a string array.
      * @return  A nicely packaged {@code CommandLine} object.
      */
     public CommandLine parseArgs(String[] args) {
 
-        for (int i = 0; i < args.length;i++) {
-            if (args[i].equals("-conf")) {
-                if (i + 1 == args.length) {
-                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                            "-conf argument given but no file path specified!", LOG);
-                } else if (!new File(args[i+1]).exists()) {
-                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CANNOT_FIND_CONFIG_FILE,
-                            "Configuration file " + args[i+1] + " cannot be found.", LOG);
-                }
-            }
-        }
-
-        //send the command line options to hadoop parse args to get runtime config options first
+        //send the command line options through the hadoop parser the config options first
 
         try {
             genericOptionsParser = new GenericOptionsParser(args);
         } catch (IOException e) {
             // show help and terminate the process
             showHelp("Error parsing hadoop generic options.");
+        }
+
+        //make sure the config file exist when it's specified
+        if(genericOptionsParser.getCommandLine().hasOption("conf") &&
+                !new File(genericOptionsParser.getCommandLine().getOptionValue("conf")).exists()){
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CANNOT_FIND_CONFIG_FILE,
+                    "Configuration file " + genericOptionsParser.getCommandLine().getOptionValue("conf") +
+                            " cannot be found.", LOG);
         }
 
         //load all the grahpbuilder configs into the runtime class
@@ -80,17 +122,18 @@ public class CommandLineInterface {
         CommandLineParser parser = new PosixParser();
 
         try {
-
             cmd = parser.parse(options, genericOptionsParser.getRemainingArgs());
         }
         catch (ParseException e){
             if(e instanceof UnrecognizedOptionException){
-                showHelpMissingOption(getUnrecognizedOptionFromException(e));
+                showErrorUnrecognizedOption(getUnrecognizedOptionFromException(e));
 
             }else if(e instanceof MissingOptionException){
-                showHelpOption(getFirstMissingOptionFromException(e));
+                showErrorOption(getFirstMissingOptionFromException(e));
+
             }else if(e instanceof MissingArgumentException){
-                showHelpMissingArgument(getMissingArgumentFromException(e));
+                showErrorMissingArgument(getMissingArgumentFromException(e));
+
             } else {
                 showHelp("Error parsing option string.");
             }
@@ -102,18 +145,30 @@ public class CommandLineInterface {
      * Makes sure that all required options are present in the raw arguments.
      * @param args  The raw arguments as a string array.
      */
-    public void checkCli(String[] args) {
-        parseArgs(args);
-        options.getRequiredOptions().iterator();
+    public CommandLine checkCli(String[] args) {
+        CommandLine cmd = parseArgs(args);
+
+        if (cmd == null) {
+            showHelp("Error parsing command line options");
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
+                    "Error parsing command line options", LOG);
+        }
+
+        if(cmd.hasOption(HELP_OPTION.getOpt())){
+            showHelp("Help1");
+        }
+
+        //report any missing required options
         List<String> opts = options.getRequiredOptions();
-        for( String option: opts){
+        for(String option: opts){
             if (!cmd.hasOption(option)) {
-                showHelpOption(option);
-            }
-            else {
-                showOptionParsed(option);
+                showErrorOption(option);
             }
         }
+
+        //report parsed values for options given
+        showOptionsParsed();
+        return cmd;
     }
 
     /**
@@ -128,69 +183,100 @@ public class CommandLineInterface {
      * Displays the parsed options for the given option name.
      * @param option The name of option as a string.
      */
-    public void showOptionParsed(String option){
-        LOG.info(String.format("%s: %s", options.getOption(option).getLongOpt(), cmd.getOptionValue(option) ));
+    public void showParsedOption(Option option){
+        String message;
+        if(option.hasArg()){
+            message = String.format("Parsed -%s -%s:\t %s", option.getOpt(),
+                    option.getLongOpt(), cmd.getOptionValue(option.getOpt()) );
+        }else{
+            message = String.format("Parsed -%s -%s:\t %b", option.getOpt(),
+                    option.getLongOpt(), cmd.hasOption(option.getOpt()) );
+        }
+        LOG.info(message);
     }
 
     /**
      * Displays the parsed options.
      */
     public void showOptionsParsed(){
-        Iterator optionss = options.getOptions().iterator();
-        while( optionss.hasNext()){
-            Option toPrint = (Option) optionss.next();
-            if (cmd.hasOption(toPrint.getOpt())) {
-                showOptionParsed(toPrint.getOpt());
+        Iterator<Option> optionIterator = options.getOptions().iterator();
+        while(optionIterator.hasNext()){
+            Option nextOption = optionIterator.next();
+            if (cmd.hasOption(nextOption.getOpt())) {
+                showParsedOption(nextOption);
             }
         }
     }
 
     /**
-     * Displays help after an error message.
-     * @param message  The error message.
+     * Display a help message when a user sets the help option.
+     * @param message  The error message to display.
      */
     public void showHelp(String message){
         _showHelp(message);
     }
 
-    private void showHelpMissingArgument(String option){
+    /**
+     * Display help message after a bad command line param
+     * @param message error message to display on the command line
+     */
+    public void showError(String message){
+        _showError(message);
+    }
+
+    private void showErrorMissingArgument(String option){
         String error = GENERIC_ERROR;
         if( option != null){
             error = String.format("Option -%s --%s %s is missing it's argument", options.getOption(option).getOpt(),
                     options.getOption(option).getLongOpt(), options.getOption(option).getDescription());
         }
-        _showHelp(error);
+        _showError(error);
     }
 
-    private void showHelpMissingOption(String option){
+    private void showErrorUnrecognizedOption(String option){
         String error = GENERIC_ERROR;
         if( option != null){
             error = String.format("Option -%s not recognized", option);
         }
-        _showHelp(error);
+        _showError(error);
     }
 
-    private void showHelpOption(String option) {
+    private void showErrorOption(String option) {
         String error = GENERIC_ERROR;
         if( option != null){
+            //show the short, long option and the description for the missing option
             error = String.format("Option -%s --%s %s is missing", options.getOption(option).getOpt(),
                     options.getOption(option).getLongOpt(), options.getOption(option).getDescription());
         }
-        _showHelp(error);
+        _showError(error);
     }
 
-    private void _showHelp(String error){
-        if(error.trim().length() > 0){
-            LOG.fatal(error);
+    private void _showError(String error){
+        if(error == null || error.trim().length() > 0){
+            error = " ";
         }
         HelpFormatter h = new HelpFormatter();
         h.printHelp(error, options);
         GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
-                "Unable to process command line.", LOG);
+                "GRAPHBUILDER_ERROR: Unable to process command line.", LOG);
+    }
+
+    private void _showHelp(String help){
+        if(help == null || help.trim().length() > 0){
+            help = " ";
+        }
+        HelpFormatter h = new HelpFormatter();
+        h.printHelp(help, options);
+        GraphBuilderExit.graphbuilderExitNoException(StatusCode.SUCCESS);
     }
 
     public void setOptions(Options options) {
         this.options = options;
+        this.options.addOption(HELP_OPTION);
+    }
+
+    public void removeOptions() {
+        this.options = null;
     }
 
     public void setOption(Option option) {

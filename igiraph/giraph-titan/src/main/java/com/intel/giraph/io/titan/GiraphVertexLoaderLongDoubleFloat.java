@@ -22,25 +22,19 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
-
 import com.google.common.base.Preconditions;
-import org.apache.giraph.edge.Edge;
-import org.apache.giraph.edge.EdgeFactory;
-import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.FloatWritable;
-
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.util.ExceptionFactory;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.giraph.edge.Edge;
+import org.apache.giraph.edge.EdgeFactory;
+import org.apache.giraph.graph.Vertex;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -48,6 +42,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
+
 
 /**
  * GiraphVertexLoaderLongDoubleFloat loads vertex
@@ -211,7 +212,8 @@ public class GiraphVertexLoaderLongDoubleFloat {
         @Override
         public void setOtherVertexID(final long vertexId) {
             if (vertexId < 0) {
-                LOG.error("negative vertexId");
+                LOG.error(INVALID_VERTEX_ID + vertexId);
+                throw new RuntimeException(INVALID_VERTEX_ID + vertexId);
             }
             this.otherVertexID = vertexId;
         }
@@ -262,13 +264,13 @@ public class GiraphVertexLoaderLongDoubleFloat {
                             for (final Map.Entry<String, Object> entry : this.properties.entrySet()) {
                                 // filter Edge Property
                                 if ((entry.getValue() != null) &&
-                                        edgePropertyKeyValues.contains(entry.getKey())) {
+                                    edgePropertyKeyValues.contains(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
                                     edgeValue = Float.parseFloat(edgeValueObject.toString());
                                 }
                             }
                             Edge<LongWritable, FloatWritable> edge = EdgeFactory.create(new LongWritable(
-                                    this.otherVertexID), new FloatWritable(edgeValue));
+                                this.otherVertexID), new FloatWritable(edgeValue));
                             vertex.addEdge(edge);
 
                         } else if (this.direction.equals(Direction.BOTH)) {
@@ -276,7 +278,8 @@ public class GiraphVertexLoaderLongDoubleFloat {
                         }
                     }
                 } else {
-                    LOG.error("negative Edge ID.");
+                    LOG.error(INVALID_EDGE_ID + this.relationID);
+                    throw new RuntimeException(INVALID_EDGE_ID + this.relationID);
                 }
 
             }

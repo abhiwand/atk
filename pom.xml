@@ -43,7 +43,7 @@
 
     <dep.accumulo.version>1.4.0</dep.accumulo.version>
     <dep.airline.version>0.5</dep.airline.version>
-    <dep.aurelius.version>0.4.0</dep.aurelius.version>
+    <dep.aurelius.version>0.4.1</dep.aurelius.version>
     <dep.base64.version>2.3.8</dep.base64.version>
     <dep.cli-parser.version>1.1</dep.cli-parser.version>
     <dep.codehaus-jackson.version>1.8.0</dep.codehaus-jackson.version>
@@ -70,7 +70,7 @@
     <dep.mahout.version>0.8</dep.mahout.version>
     <dep.mockito-all.version>1.8.5</dep.mockito-all.version>
     <dep.netty.version>3.5.3.Final</dep.netty.version>
-    <dep.slf4j.version>1.7.2</dep.slf4j.version>
+    <dep.slf4j.version>1.7.5</dep.slf4j.version>
     <dep.typetools.version>0.2.1</dep.typetools.version>
     <dep.yammer-metrics.version>2.2.0</dep.yammer-metrics.version>
     <dep.yourkit-api.version>9.5.6</dep.yourkit-api.version>
