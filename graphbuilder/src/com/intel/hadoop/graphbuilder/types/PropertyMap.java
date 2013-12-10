@@ -30,8 +30,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.MapWritable;
 
 /**
- *  Implements a property map
- *  MapWritable with a friendly toString() method
+ *  Implements a property map.
+ *  MapWritable with a friendly toString() method.
  */
 public class PropertyMap implements Writable
 {

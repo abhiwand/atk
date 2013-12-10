@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -43,9 +43,9 @@ import java.util.Iterator;
 public class BaseMapper {
 
     /**
-     * vertex/edge counters. should never be called directly use the getter methods.
+     * The vertex and edge counters. You should never call this directly, use the getter methods instead.
      *
-     * need to add regular non error counters
+     * Need to add regular non-error counters.
      */
     private enum Counters {
         VERTEX_WRITE_ERROR,
@@ -62,12 +62,12 @@ public class BaseMapper {
     private Configuration        conf;
 
     /**
-     * An Exception construction will log fatal and cause a system.exit. Their is no point in going forward if we
-     * can't initialize the tokenizer class, key function, map val or map key
+     * An Exception construction will log fatal and cause a system.exit. Their is no point in 
+     * going forward if we can't initialize the tokenizer class, key function, map val or map key.
      *
-     * @param context the Mapper.Context for the running mapper
-     * @param conf    the current conf for the mapper
-     * @param log     the log instance so all logs are attributed to the calling class
+     * @param context The Mapper.Context for the running mapper.
+     * @param conf    The current conf for the mapper.
+     * @param log     The log instance so all logs are attributed to the calling class.
      */
     public BaseMapper(Mapper.Context context, Configuration conf, Logger log) {
         this.context = context;
@@ -77,12 +77,12 @@ public class BaseMapper {
     }
 
     /**
-     * Mapper bootstrapping. initialize the tokenizer for parsing the edges and vertices, the key function for getting
-     * the context.write key, and initialize mapKey mapValue. InstantiationException, IllegalAccessException, and
-     * ClassNotFoundException will all be caught logged and a system exit will be called. no reason continue if we
-     * couldn't boot strap.
+     * Mapper bootstrapping. Initializes the tokenizer for parsing the edges and vertices, the key 
+     * function for getting the context.write key, and initializes the mapKey mapValue. 
+     * InstantiationException, IllegalAccessException, and ClassNotFoundException will all be caught,  
+     * logged, and a system exit will be called. There is no reason to continue if we can't boot strap.
      *
-     * @param conf the mappers current configuration usually context.getConfiguration()
+     * @param conf The mappers current configuration, usually context.getConfiguration().
      */
     public void setUp(Configuration conf) {
 
@@ -105,9 +105,10 @@ public class BaseMapper {
     }
 
     /**
-     * wrapper method to initialize key function. makes it easier to mock in unit test.
+     * A wrapper method to initialize the key function. This makes it easier to mockup in a unit test,
+	 * and it is general good practice to encapsulate.
      *
-     * @param conf the mappers conf usually context.getConfiguration()
+     * @param conf The mappers conf, usually context.getConfiguration().
      */
 
     protected void initializeKeyFunction(Configuration conf) {
@@ -126,10 +127,10 @@ public class BaseMapper {
     }
 
     /**
-     * wrapper method to initialize tokenizer. makes it easier to mock in unit test and is general good practice to
-     * encapsulate.
+     * A wrapper method to initialize the tokenizer. This makes it easier to mockup in a unit test, 
+     * and it is general good practice to encapsulate.
      *
-     * @param conf the mappers conf usually context.getConfiguration()
+     * @param conf The mappers conf, usually context.getConfiguration().
      */
     protected void initializeTokenizer(Configuration conf) {
         try {
@@ -148,10 +149,10 @@ public class BaseMapper {
     }
 
     /**
-     * increment the correct error Counter either the Vertex or Edge error counter.
+     * Increments the correct error Counter, either the Vertex or Edge error counter.
      *
-     * @param context the current context for the mapper
-     * @param val     the PropertyGraphElement that through the error
+     * @param context The current context for the mapper.
+     * @param val     The PropertyGraphElement that threw the error.
      */
     protected void incrementErrorCounter(Mapper.Context context, PropertyGraphElement val) {
         if (val.graphElementType().equals(PropertyGraphElement.GraphElementType.EDGE)) {
@@ -162,12 +163,12 @@ public class BaseMapper {
     }
 
     /**
-     * Attempt to write the key and value pair. IOException, InterruptedException will be logged and the appropriate
-     * edge or vertex counter will be incremented
+     * Attempts to write the key and value pair. IOException, InterruptedException will be logged and 
+     * the appropriate edge or vertex counter will be incremented.
      *
-     * @param context the current mapper context
-     * @param key     the vertex/edge key  to write
-     * @param val     the property graph element to write either vertex/edge
+     * @param context The current mapper context.
+     * @param key     The vertex and edge key  to write.
+     * @param val     The property graph element to write, either vertex or edge.
      */
     protected void contextWrite(Mapper.Context context, IntWritable key, PropertyGraphElement val) {
         try {
@@ -182,10 +183,10 @@ public class BaseMapper {
     }
 
     /**
-     * iterate through the edge list create Edge graph element get it's key and write. NullPointerException are being
-     * captures for the times when edge/vertex has any null values
+     * Iterates through the edge list, creates the Edge graph element, get it's key and writes it. 
+     * NullPointerException are captured whenever edge or vertex has any null values.
      *
-     * @param context the mappers current context
+     * @param context The mapper's current context.
      */
     public void writeEdges(Mapper.Context context) {
         try {
@@ -207,10 +208,10 @@ public class BaseMapper {
     }
 
     /**
-     * iterate through the vertex list create a vertex graph element get it's key and write. NullPointerExceptions are
-     * being captures for the times when edge/vertex has any null values
+     * Iterate through the vertex list, creates a vertex graph element, get it's key, and writes it. 
+     * NullPointerExceptions are captured whenever the edge or vertex has any null values.
      *
-     * @param context the mappers current context
+     * @param context The mapper's current context.
      */
     public void writeVertices(Mapper.Context context) {
         try {
@@ -247,8 +248,8 @@ public class BaseMapper {
     }
 
     /**
-     * a getter for the edge write error counter. Will make it easier to change the enum in the future if we need to
-     * with  out affecting other code
+     * Gets the edge write error counter. This will make it easier to change the enum in the future if 
+     * we need to, without affecting other code.
      *
      * @return Counter
      */
@@ -257,8 +258,8 @@ public class BaseMapper {
     }
 
     /**
-     * a getter for the vertex write error counter. Will make it easier to change the enum in the future if we need to
-     * with out affecting other code
+     * Gets the vertex write error counter. This will make it easier to change the enum in the future if 
+     * we need to, without affecting other code.
      *
      * @return Counter
      */

@@ -29,8 +29,8 @@ from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports 
 
 def main(argv):
     """
-    Currently we don't get any schema info from the user. We just load
-    the whole json as a possibly nested map and dump it as is to HBase.
+    Currently, we don't get any schema info from the user. We just load
+    the whole JSON as a possibly nested map and dump it as is to HBase.
     """
     parser = ArgumentParser(description='imports a big CSV dataset from HDFS to HBase')
     parser.add_argument('-i', '--input', dest='input', help='the input file path (on HDFS)', required=True)

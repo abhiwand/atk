@@ -69,7 +69,7 @@ public class HBaseUtils {
     }
 
     /**
-     *  Return the unique instance of HBaseUtils, create one if there isn't one already
+     *  Returns the unique instance of HBaseUtils; creates one if there isn't one already.
      *
      *  @throws IOException
      *
@@ -85,28 +85,28 @@ public class HBaseUtils {
     }
 
     /**
-     * Return a new hbase configuration
+     * Returns a new hbase configuration.
      */
     public static Configuration getNewConfiguration() {
         return HBaseConfiguration.create();
     }
 
     /**
-     * Parse the column name to return the family and qualifier in a string array
+     * Parses the column name to return the family and qualifier in a string array.
      *
-     * @param columnName Column name in HBase "column family:column qualifier"
-     * @return family and qualifier in string array
+     * @param columnName The column name in HBase "column family:column qualifier".
+     * @return The family and qualifier in string array.
      */
     public static byte[][] parseColumnName(String columnName) {
         return KeyValue.parseColumn(Bytes.toBytes(columnName));
     }
 
     /**
-     * Get the cell value from HBase given a column handler and column name
+     * Gets the cell value from HBase given a column handler and column name.
      *
-     * @param columns        Scanned columns from a HTable row passed from a mapper/reducer
-     * @param fullColumnName Full column key "family:qualifier"
-     * @return cell value as byte array
+     * @param columns        The scanned columns from an HTable row passed from a mapper or reducer.
+     * @param fullColumnName The full column key, for example: "family:qualifier"
+     * @return The cell value as a byte array.
      */
     public static byte[] getColumnData(Result columns, String fullColumnName) {
         byte[][] columnKey = HBaseUtils.parseColumnName(fullColumnName);
@@ -121,12 +121,12 @@ public class HBaseUtils {
     }
 
     /**
-     * Get the column value from HBase given a table handler, rowkey, and column key
+     * Gets the column value from HBase given a table handler, rowkey, and column key.
      *
-     * @param Key           Row key
-     * @param colFamilyName Column family name
-     * @param colName       Column name
-     * @return column value as byte array
+     * @param Key           The row key.
+     * @param colFamilyName The column family name.
+     * @param colName       The column name.
+     * @return The column value as a byte array.
      */
 
     public byte[] getColumnData(String Key, String colFamilyName, String colName)
@@ -140,14 +140,14 @@ public class HBaseUtils {
     }
 
     /**
-     * Write a cell value to HBase
+     * Writes a cell value to HBase.
      *
-     * @param key             HBase row key
-     * @param columnFamily    HBase column family (default - "VertexID")
-     * @param columnQualifier HBase column name
-     * @param value           value to be written
-     * @param context         Context of Hadoop's reducer
-     * @return value          the value that was written
+     * @param key             The HBase row key.
+     * @param columnFamily    The HBase column family (default - "VertexID").
+     * @param columnQualifier The HBase column name.
+     * @param value           The value to write.
+     * @param context         The context of Hadoop's reducer.
+     * @return value          The value that was written.
      */
     public static byte[] putValue(byte[] key,
                                   byte[] columnFamily,
@@ -161,21 +161,21 @@ public class HBaseUtils {
     }
 
     /**
-     * Check if the table exists in HBase
+     * Checks if the table exists in HBase.
      *
-     * @param hTableName HBase table name
-     * @return true iff the table with the given name exists
+     * @param hTableName The HBase table name.
+     * @return true If, and only if, the table with the given name exists.
      */
     public boolean tableExists(String hTableName) throws IOException {
         return admin.tableExists(hTableName);
     }
 
     /**
-     * Check if the given table contains the given column family
+     * Checks if the given table contains the given column family.
      *
-     * @param hTableName HBase table name
-     * @param columnFamilyName
-     * @return true iff the table contains the given column family
+     * @param hTableName The HBase table name.
+     * @param columnFamilyName  The family name of the column.
+     * @return true If, and only if, the table contains the given column family.
      */
     public boolean tableContainsColumnFamily(String hTableName, String columnFamilyName) throws IOException {
         HTableDescriptor htd = admin.getTableDescriptor(hTableName.getBytes());
@@ -183,11 +183,11 @@ public class HBaseUtils {
     }
 
     /**
-     * Check if the given full column has a column family that is present in the table.
+     * Checks if the given full column has a column family that is present in the table.
      *
-     * @param fullColumnName
-     * @param tableName,
-     * @return  true iff the column's family is present in the table
+     * @param fullColumnName  The full column name.
+     * @param tableName       The table name.
+     * @return  true If, and only if, the column's family is present in the table.
      */
     public boolean columnHasValidFamily( String fullColumnName, String tableName) {
 
@@ -207,7 +207,7 @@ public class HBaseUtils {
     }
 
     /**
-     * Return configuration
+     * Returns the configuration of the {@code HBaseUtils} instance.
      * @return the configuration of the {@code HBaseUtils} instance
      */
     public Configuration getConfiguration() {
@@ -215,11 +215,11 @@ public class HBaseUtils {
     }
 
     /**
-     * Create a HBase table
+     * Creates an HBase table.
      *
-     * @param hTableName           Name of the HBase table to be created
-     * @param hTableColumnFamilies Names of the table column families
-     * @return a scan for the table
+     * @param hTableName           The name of the HBase table to be created.
+     * @param hTableColumnFamilies The names of the table column families.
+     * @return A scan for the table.
      */
     public Scan createTable(String hTableName, String[] hTableColumnFamilies) throws IOException {
 
@@ -258,11 +258,11 @@ public class HBaseUtils {
     }
 
     /**
-     * Create a HBase table with a single column family
+     * Creates an HBase table with a single column family.
      *
-     * @param hTableName         Name of the HBase table to be created
-     * @param hTableColumnFamily Names of the table column family
-     * @return a scan for the table
+     * @param hTableName         The name of the HBase table to be created.
+     * @param hTableColumnFamily The names of the table column family.
+     * @return A scan for the table.
      */
     public Scan createTable(String hTableName, String hTableColumnFamily) throws IOException {
 
@@ -300,9 +300,9 @@ public class HBaseUtils {
     }
 
     /**
-     * Get a scanner for the specified table.
-     * @param tableName   name of the table in question
-     * @return  a scanner for the specified table
+     * Gets a scanner for the specified table.
+     * @param tableName   The name of the table in question.
+     * @return  A scanner for the specified table.
      */
     public Scan getTableScanner(String tableName) {
         this.hTableName = tableName;

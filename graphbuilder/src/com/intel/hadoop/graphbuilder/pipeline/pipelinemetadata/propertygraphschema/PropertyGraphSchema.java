@@ -26,7 +26,7 @@ import java.util.Set;
 
 /**
  * The schema or "signature" of a property graph. It contains all the possible types of edges and vertices that it may
- * contain. (Possibly it contains types for edges or vertices that are not witnessed by any element present in the
+ * contain. (It might contain types for edges or vertices that are not witnessed by any element present in the
  * graph.)
  *
  * <p>

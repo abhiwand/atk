@@ -36,7 +36,7 @@ import java.util.Objects;
  * This class is mutable. See the {@code configure} and {@code setProperty} methods.
  * </p>
  *
- * @param <VertexIdType> the type of vertex id.
+ * @param <VertexIdType> The type of vertex id.
  */
 public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> implements Writable {
 
@@ -45,7 +45,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     private StringType   vertexLabel;
 
     /**
-     * Default constructor. Creates an placeholder vertex.
+     * Default constructor. Creates a placeholder vertex.
      */
     public Vertex() {
         this.properties  = new PropertyMap();
@@ -53,9 +53,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Create a vertex with given vertex ID.
+     * Creates a vertex with given vertex ID.
      *
-     * @param vid vertex ID
+     * @param vid Vertex ID.
      */
     public Vertex(VertexIdType vid) {
         this.vertexId    = vid;
@@ -76,8 +76,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Return the ID of the vertex.
-     * @return the ID of the vertex
+     * Returns the ID of the vertex.
+     * @return The ID of the vertex.
      */
     public VertexIdType getVertexId() {
         return vertexId;
@@ -91,9 +91,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
         return this.vertexLabel;
     }
     /**
-     * Overwrite the ID and property map of the vertex.
-     * @param vid new vertex ID
-     * @param properties new {@code PropertyMap}
+     * Overwrites the ID and property map of the vertex.
+     * @param vid The new vertex ID.
+     * @param properties The new {@code PropertyMap}.
      */
     public void configure(VertexIdType vid, PropertyMap properties) {
         this.vertexId   = vid;
@@ -101,18 +101,18 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Return a property of the vertex.
-     * @param key lookup key for the property
-     * @return the value of the property
+     * Returns a property of the vertex.
+     * @param key The lookup key for the property.
+     * @return The value of the property.
      */
     public Object getProperty(String key) {
         return properties.getProperty(key);
     }
 
     /**
-     * Set a property of the vertex
-     * @param key  the key of the property being updated
-     * @param val  the new value for the property
+     * Set a property of the vertex.
+     * @param key  The key of the property being updated.
+     * @param val  The new value for the property.
      */
     public void setProperty(String key, Writable val) {
         this.properties.setProperty(key, val);
@@ -127,16 +127,16 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Get the property map for the vertex.
-     * @return the property map
+     * Gets the property map for the vertex.
+     * @return The property map.
      */
     public PropertyMap getProperties() {
         return properties;
     }
 
     /**
-     * Convert the vertex to a string.
-     * @return  a string representation of the vertex
+     * Converts the vertex to a string.
+     * @return  AA string representation of the vertex.
      */
     @Override
     public final String toString() {
@@ -148,9 +148,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Read a vertex from an input stream
-     * @param input the input stream
-     * @throws IOException
+     * Reads a vertex from an input stream.
+     * @param input The input stream.
+     * @throws IOException.
      */
     @Override
     public void readFields(DataInput input) throws IOException {
@@ -160,9 +160,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Write a vertex to an output stream
-     * @param output the output stream
-     * @throws IOException
+     * Writes a vertex to an output stream.
+     * @param output The output stream.
+     * @throws IOException.
      */
     @Override
     public void write(DataOutput output) throws IOException {

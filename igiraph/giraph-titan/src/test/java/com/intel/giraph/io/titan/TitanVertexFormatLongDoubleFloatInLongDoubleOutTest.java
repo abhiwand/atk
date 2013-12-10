@@ -35,6 +35,8 @@ import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -110,10 +112,17 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest {
         OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "rank");
 
         HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
-        if (hbaseAdmin.isTableAvailable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf))) {
-            hbaseAdmin.disableTable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf));
-            hbaseAdmin.deleteTable(GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf));
+        String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf);
+        //even delete an existing table needs the table is enabled before deletion
+        if (hbaseAdmin.isTableDisabled(tableName)) {
+            hbaseAdmin.enableTable(tableName);
         }
+
+        if (hbaseAdmin.isTableAvailable(tableName)) {
+            hbaseAdmin.disableTable(tableName);
+            hbaseAdmin.deleteTable(tableName);
+        }
+
 
         conf = new ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, FloatWritable>(
             giraphConf);
