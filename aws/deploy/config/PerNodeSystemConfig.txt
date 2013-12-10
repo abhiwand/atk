@@ -15,3 +15,20 @@ IntelAnalytics componets:
 /etc/ganglia/gmond.conf
 /etc/ganglia/gmetad.conf
 /etc/logrotate.d/IntelAnalytics
+
+
+The symlinks are created to allow IntelAnalytics softare to reference
+the cluster configurations files via /etc, instead of having to change
+the IntelAnalytics RPMs directly:
+
+yzou@zybuntu:cd ~/Projects/src/intel/source_code/aws/deploy/config
+yzou@zybuntu:for n in pig hadoop hbase titan titan-server; do ls -l etc/${n}; done
+total 0
+lrwxrwxrwx 1 yzou yzou 36 Dec 10 01:39 conf -> /home/hadoop/IntelAnalytics/pig/conf
+total 0
+lrwxrwxrwx 1 yzou yzou 39 Dec 10 01:39 conf -> /home/hadoop/IntelAnalytics/hadoop/conf
+total 0
+lrwxrwxrwx 1 yzou yzou 38 Dec 10 01:39 conf.dist -> /home/hadoop/IntelAnalytics/hbase/conf
+lrwxrwxrwx 1 yzou yzou 12 Dec 10 01:39 etc/titan -> titan-server
+total 0
+lrwxrwxrwx 1 yzou yzou 45 Dec 10 14:56 conf -> /home/hadoop/IntelAnalytics/titan-server/conf
