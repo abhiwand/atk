@@ -47,6 +47,7 @@ import java.util.Map;
  * Titan IDs of their sources in the previous MR job and each vertex is tagged with its Titan ID,
  * we now know the Titan ID of the source and destination of the edges and can add them to Titan.
  * </p>
+ *
  */
 
 public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> {
@@ -111,10 +112,15 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
 
         HashMap<EdgeID, Writable> edgePropertyTable  = new HashMap();
 
-
         for(SerializedPropertyGraphElement graphElement: values){
-            graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback, ArgumentBuilder.newArguments().with("edgePropertyTable", edgePropertyTable)
-                    .with("vertexNameToTitanID", vertexNameToTitanID));
+            /*
+             * this is calling
+             * EdgesIntoTitanReducerCallback which is an implementation of PropertyGraphElementTypeCallback
+             * to add all the edges and vertices into edgePropertyTable and vertexNameToTitanID hashmaps
+             */
+            graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback,
+                    ArgumentBuilder.newArguments().with("edgePropertyTable", edgePropertyTable)
+                            .with("vertexNameToTitanID", vertexNameToTitanID));
         }
 
         int edgeCount   = 0;

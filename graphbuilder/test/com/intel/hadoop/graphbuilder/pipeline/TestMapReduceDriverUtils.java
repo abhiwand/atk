@@ -422,9 +422,13 @@ public abstract class TestMapReduceDriverUtils {
      * @see TitanMergedGraphElementWrite
      * @return new spied TitanMergedGraphElementWrite
      */
-    protected TitanMergedGraphElementWrite newTitanMergedGraphElementWrite(){
+    protected TitanMergedGraphElementWrite newTitanMergedGraphElementWrite() throws Exception {
         spiedTitanMergedGraphElementWrite = (TitanMergedGraphElementWrite)newSpy(spiedTitanMergedGraphElementWrite,
                 TitanMergedGraphElementWrite.class);
+
+        PowerMockito.whenNew(TitanMergedGraphElementWrite.class).withAnyArguments().thenReturn
+                (spiedTitanMergedGraphElementWrite);
+
         return spiedTitanMergedGraphElementWrite;
     }
 

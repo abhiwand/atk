@@ -46,6 +46,6 @@ public class DestinationVertexKeyFunction  implements KeyFunction {
      * @return  hash code of the  vertex ID
      */
     public int getVertexKey(Vertex vertex) {
-        return vertex.getVertexId().hashCode();
+        return vertex.getId().hashCode();
     }
 }

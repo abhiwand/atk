@@ -125,15 +125,22 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      * Return the ID of the vertex.
      * @return the ID of the vertex
      */
-    public VertexIdType getVertexId() {
+    public VertexIdType getId() {
         return vertexId;
+    }
+
+    /**
+     * @return get the graph element
+     */
+    public Vertex get(){
+        return this;
     }
 
     /**
  * Return the label of the vertex.
      * @return the label of the vertex
      */
-    public StringType getVertexLabel() {
+    public StringType getLabel() {
         return this.vertexLabel;
     }
     /**
@@ -162,6 +169,14 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      */
     public void setProperty(String key, Writable val) {
         this.properties.setProperty(key, val);
+    }
+
+    /**
+     * set the entire property map
+     * @param propertyMap
+     */
+    public void setProperties(PropertyMap propertyMap){
+        this.properties = propertyMap;
     }
 
      /**

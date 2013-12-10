@@ -146,7 +146,7 @@ public class HBaseReaderMapperTest {
         spiedHBaseReaderMapper = spy(hBaseReaderMapper);
         spiedHBaseReaderMapper.setBaseMapper(spiedBaseMapper);
 
-        //row key is trow away nothing is done with it
+        //row key is throw away nothing is done with it
         key = new ImmutableBytesWritable(Bytes.toBytes("row1"));
 
         //set up some sample Hbase.client result
@@ -408,7 +408,7 @@ public class HBaseReaderMapperTest {
             Edge edgeFromPair = (Edge) pair.getSecond().graphElement();
             assertTrue(edgeFromPair.getSrc().equals(edge.getSrc()));
             assertTrue(edgeFromPair.getDst().equals(edge.getDst()));
-            assertTrue(edgeFromPair.getEdgeLabel().equals(edge.getEdgeLabel()));
+            assertTrue(edgeFromPair.getLabel().equals(edge.getLabel()));
             for (Writable writable : edgeFromPair.getProperties().getPropertyKeys()) {
                 String key = ((StringType) writable).get();
                 String value = ((StringType) edgeFromPair.getProperty(key)).get();
@@ -417,7 +417,7 @@ public class HBaseReaderMapperTest {
             }
         } else if (pair.getSecond().graphElement().isVertex()) {
             Vertex vertexFromPair = (Vertex) pair.getSecond().graphElement();
-            assertTrue("", vertexFromPair.getVertexId().equals(vertex.getVertexId()));
+            assertTrue("", vertexFromPair.getId().equals(vertex.getId()));
             for (Writable writable : vertexFromPair.getProperties().getPropertyKeys()) {
                 String key = ((StringType) writable).get();
                 String value = ((StringType) vertexFromPair.getProperty(key)).get();

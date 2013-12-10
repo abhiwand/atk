@@ -37,7 +37,7 @@ public class ElementIdKeyFunction implements KeyFunction {
      * @return  hash code of the  edge ID
      */
     public int getEdgeKey(Edge edge) {
-        return edge.getEdgeID().hashCode();
+        return edge.getId().hashCode();
     }
 
     /**
@@ -47,6 +47,6 @@ public class ElementIdKeyFunction implements KeyFunction {
      * @return  hash code of the  vertex ID
      */
     public int getVertexKey(Vertex vertex) {
-        return vertex.getVertexId().hashCode();
+        return vertex.getId().hashCode();
     }
 }

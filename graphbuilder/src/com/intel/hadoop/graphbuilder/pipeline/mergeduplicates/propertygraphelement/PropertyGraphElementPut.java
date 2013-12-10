@@ -32,27 +32,55 @@ import org.apache.hadoop.io.Writable;
 import java.util.HashMap;
 
 /**
- * merged duplicate graph elements is called during the PropertyGraphElements.mergeDuplicates for loop to merge the
- * edges/vertices.
+ * <p>
+ * Remove any duplicate edges and vertices. If duplicates are found either merge their property maps or call an
+ * optional Edge/Vertex reducer
+ * </p>
+ * <p>
+ * This will be called on the property graph element as we are iterating through the list received by the reducer.
+ * </p>
+ *
+ * <p>
+ * all arguments are extracted from the argument builder and all are mandatory except the edgeReducerFunction,
+ * vertexReducerFunction.
+ * <ul>
+ *      <li>edgeSet - hashmap with the current list of merged edges</li>
+ *      <li>vertexSet - hashmap with the current list of merged vertices</li>
+ *      <li>edgeReducerFunction - optional edge reducer function</li>
+ *      <li>vertexReducerFunction - optional vertex reducer function</li>
+ *      <li>vertexLabelMap - list of vertex labels to be used for writing rdf output</li>
+ *      <li>noBiDir - are we cleaning bidirectional edges. if true then remove bidirectional edge</li>
+ * </ul>
+ * </p>
  *
  * @see PropertyGraphElements
  * @see ContainsKey
  */
 public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback {
+
     private HashMap<EdgeID, Writable> edgeSet;
     private HashMap<Object, Writable>   vertexSet;
     private HashMap<Object, StringType>    vertexLabelMap;
+
     private Functional edgeReducerFunction;
     private Functional vertexReducerFunction;
+
     private boolean noBiDir = false;
 
     private ContainsKey containsKey;
-    PropertyGraphElementPut(){
+
+    public PropertyGraphElementPut(){
         containsKey = new ContainsKey();
     }
 
+    /**
+     *
+     * @param propertyGraphElement the property graph element we will check for duplicates
+     * @param args list of arguments
+     * @return the updated edge set
+     */
     @Override
-    public <T> T edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
+    public HashMap<EdgeID, Writable> edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         this.arguments(args);
 
         EdgeID edgeID = (EdgeID)propertyGraphElement.getId();
@@ -90,18 +118,23 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
                 }
             }
         }
-        return null;
+        return edgeSet;
     }
 
+    /**
+     *
+     * @param propertyGraphElement the property graph element we will check for duplicates
+     * @param args see the arguments method for the expected argument list
+     * @return updated vertex set
+     */
     @Override
-    public <T> T vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
+    public HashMap<Object, Writable>  vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         this.arguments(args);
 
         Object vid = propertyGraphElement.getId();
 
         // track the RDF labels of vertices
-
-        if (propertyGraphElement.getLabel() != null) {
+        if (propertyGraphElement.getLabel() != null && vertexLabelMap != null) {
             if (!vertexLabelMap.containsKey(propertyGraphElement.getId())) {
                 vertexLabelMap.put(propertyGraphElement.getId(), (StringType)propertyGraphElement.getLabel());
             }
@@ -139,36 +172,40 @@ public class PropertyGraphElementPut implements PropertyGraphElementTypeCallback
         return null;
     }
 
+    /**
+     * Gets all our arguments from the argument builder.
+     * <ul>
+     *      <li>edgeSet - hashmap with the current list of merged edges</li>
+     *      <li>vertexSet - hashmap with the current list of merged vertices</li>
+     *      <li>edgeReducerFunction - optional edge reducer function</li>
+     *      <li>vertexReducerFunction - optional vertex reducer function</li>
+     *      <li>vertexLabelMap - list of vertex labels to be used for writing rdf output</li>
+     *      <li>noBiDir - are we cleaning bidirectional edges. if true then remove bidirectional edge</li>
+     * </ul>
+     * @param args an ArgumentBuilder with all the necessary arguments
+     *
+     * @see Functional
+     */
     private void arguments(ArgumentBuilder args){
-        setEdgeSet(args);
+        edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
         vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
-        edgeReducerFunction = (Functional)args.get("edgeReducerFunction");
-        vertexReducerFunction = (Functional)args.get("vertexReducerFunction");
+        edgeReducerFunction = (Functional)args.get("edgeReducerFunction", null);
+        vertexReducerFunction = (Functional)args.get("vertexReducerFunction", null);
+        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap", null);
         noBiDir = (boolean)args.get("noBiDir");
     }
 
+
+    /**
+     * Runs a PropertyGraphElementTypeCallback to see if the element exist in either the edge or vertex set.
+     *
+     * @see ContainsKey
+     * @see PropertyGraphElementTypeCallback
+     * @param propertyGraphElement element to check for
+     * @return weather or not the property graph elements key exist in either the vertex or edge hash set.
+     */
     private boolean containsKey(PropertyGraphElement propertyGraphElement){
         return (Boolean)propertyGraphElement.typeCallback(containsKey, ArgumentBuilder.newArguments()
                 .with("edgeSet", edgeSet).with("vertexSet", vertexSet));
-    }
-
-    public void setEdgeSet(ArgumentBuilder args) {
-        edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
-    }
-
-    public void setVertexSet(HashMap<Object, Writable> vertexSet) {
-        this.vertexSet = vertexSet;
-    }
-
-    public void setEdgeReducerFunction(Functional edgeReducerFunction) {
-        this.edgeReducerFunction = edgeReducerFunction;
-    }
-
-    public void setVertexReducerFunction(Functional vertexReducerFunction) {
-        this.vertexReducerFunction = vertexReducerFunction;
-    }
-
-    public void setNoBiDir(boolean noBiDir) {
-        this.noBiDir = noBiDir;
     }
 }

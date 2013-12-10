@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.*;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -29,8 +30,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * base the vertex/edge graph element.
+ * base for the vertex/edge graph element.
  * @param <VidType>
+ * @code
  */
 public abstract class PropertyGraphElement<VidType extends WritableComparable<VidType>> {
 
@@ -39,29 +41,23 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     public abstract boolean isNull();
     public abstract String toString();
     public abstract PropertyMap getProperties();
+    public abstract Object getProperty(String key);
     public abstract void    write(DataOutput output) throws IOException;
+    public abstract StringType getLabel();
+    public abstract Object getId();
+    public abstract PropertyGraphElement get();
 
     /**
      * all the callback classes we will be using
      */
-    private PropertyGraphElementObject propertyGraphElementObject;
-    private PropertyGraphElementId propertyGraphElementId;
     private PropertyGraphElementType propertyGraphElementType;
     private PropertyGraphElementDst propertyGraphElementDst;
     private PropertyGraphElementSrc propertyGraphElementSrc;
-    private PropertyGraphElementLabel propertyGraphElementLabel;
-    private PropertyGraphElementGetProperty propertyGraphElementGetProperty;
-    private PropertyGraphElementSetProperties propertyGraphElementSetProperties;
 
     public PropertyGraphElement(){
-        propertyGraphElementObject = new PropertyGraphElementObject();
-        propertyGraphElementId = new PropertyGraphElementId();
         propertyGraphElementType = new PropertyGraphElementType();
         propertyGraphElementDst = new PropertyGraphElementDst();
         propertyGraphElementSrc = new PropertyGraphElementSrc();
-        propertyGraphElementLabel = new PropertyGraphElementLabel();
-        propertyGraphElementGetProperty = new PropertyGraphElementGetProperty();
-        propertyGraphElementSetProperties = new PropertyGraphElementSetProperties();
     }
 
     /**
@@ -98,14 +94,6 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
         return null;
     }
 
-    public <T extends PropertyGraphElement> T get(){
-        return this.typeCallback(propertyGraphElementObject);
-    }
-
-    public Object getId(){
-        return this.typeCallback(propertyGraphElementId);
-    }
-
     public Enum getType(){
         return this.typeCallback(propertyGraphElementType);
     }
@@ -117,20 +105,6 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     public Object getSrc(){
         return this.typeCallback(propertyGraphElementSrc);
     }
-
-    public Object getLabel(){
-        return this.typeCallback(propertyGraphElementLabel);
-    }
-
-    public Object getProperty(String key){
-        return this.typeCallback(propertyGraphElementGetProperty, ArgumentBuilder.newArguments().with("key", key));
-    }
-
-    public void setProperties(PropertyMap propertyMap){
-        this.typeCallback(propertyGraphElementSetProperties, ArgumentBuilder.newArguments().
-                with("propertyMap", propertyMap));
-    }
-
 }
 
 
