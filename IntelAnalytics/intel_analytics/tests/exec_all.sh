@@ -27,7 +27,12 @@ fi
 
 
 DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
-#set the following environment variables to a status needed to execute tests
+echo "set the following environment variables to a status needed to execute tests"
+echo $INTEL_ANALYTICS_PYTHON
+echo $INTEL_ANALYTICS_HOME
+echo $SOURCE_CODE
+
+
 export INTEL_ANALYTICS_PYTHON=`dirname $DIR`
 export INTEL_ANALYTICS_HOME=`dirname $INTEL_ANALYTICS_PYTHON`
 export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
