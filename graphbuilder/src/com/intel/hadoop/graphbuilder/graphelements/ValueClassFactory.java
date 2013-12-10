@@ -32,9 +32,9 @@ public class ValueClassFactory {
 
     /**
      * @param  vidClassName
-     * @return a Class which inherits {@code PropertyGraphElement} and
+     * @return A Class which inherits {@code PropertyGraphElement} and
      *         overrides {@code createVid} to return the correct vertex ID class.
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException.
      */
 
     public static Class getValueClassByVidClassName(String vidClassName) throws IllegalArgumentException {

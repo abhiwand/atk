@@ -156,6 +156,7 @@ if check zmq; then
    test zmq
 fi
 ins pyjavaproperties
+ins mock
 
 # load MathJax into IPython's static folder to avoid CDN problems
 python -c'from IPython.external.mathjax import install_mathjax;

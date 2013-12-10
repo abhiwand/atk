@@ -29,7 +29,7 @@ import net.minidev.json.JSONValue;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Basic float type in the library.
+ * The basic float type in the library.
  */
 public class FloatType implements WritableComparable<FloatType>, Mergeable<FloatType>, JSONAware, EncapsulatedObject {
 

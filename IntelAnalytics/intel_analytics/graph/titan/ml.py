@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Titan-base Giraph Machine Learning
+Titan-base Giraph Machine Learning.
 """
 from intel_analytics.subproc import call
 from intel_analytics.config import global_config, get_time_str
@@ -41,7 +41,7 @@ import re
 
 class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     """
-    Titan-based Giraph Machine Learning instance for a graph
+    Titan-based Giraph Machine Learning instance for a graph.
     """
 
     def __init__(self, graph):
@@ -1232,10 +1232,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
 class BeliefPropagation(object):  #TODO: eventually inherit from base Algo class
     """
-    Descriptive class of BP algo... should contain info
-    about the cfg constants, the user supplied parameters
+    Descriptive class of Belief Propagation algorithm.
+	
+	Should contain info about the cfg constants, the user supplied parameters
     and what the results are --can also define a specific
-    BeliefPropagationResults class if necessary
+    BeliefPropagationResults class if necessary.
     """
     pass
 
