@@ -40,7 +40,7 @@ public class ArgumentBuilder {
     /**
      * a static constructor to save folks from having to do a new
      *
-     * @return ArgumentBuilder Instance
+     * @return ArgumentBuilder instance
      */
     public static ArgumentBuilder newArguments(){
         return new ArgumentBuilder();
@@ -49,13 +49,13 @@ public class ArgumentBuilder {
     /**
      * add an argument
      *
-     * @param name variable name
+     * @param argumentName variable name
      * @param object variable to set
      * @return updated ArgumentBuilder instance
      */
-    public ArgumentBuilder with(String name, Object object){
+    public ArgumentBuilder with(String argumentName, Object object){
 
-        this.arguments.put(name, object);
+        this.arguments.put(argumentName, object);
 
         return this;
     }
@@ -63,12 +63,12 @@ public class ArgumentBuilder {
     /**
      * remove an argument
      *
-     * @param name the variables name
+     * @param argumentName the variables name
      * @return updated ArgumentBuilder instance
      */
-    public ArgumentBuilder withOut(String name){
+    public ArgumentBuilder withOut(String argumentName){
 
-        this.arguments.remove(name);
+        this.arguments.remove(argumentName);
 
         return this;
     }
@@ -76,24 +76,24 @@ public class ArgumentBuilder {
     /**
      * get the stored object
      *
-     * @param name the name of the variable to return
+     * @param argumentName the name of the variable to return
      * @return the requested argument
      */
-    public Object get(String name){
+    public Object get(String argumentName){
 
-        return arguments.get(name);
+        return arguments.get(argumentName);
     }
 
     /**
      * get an argument if it exists else return the default value
      *
-     * @param name the arguments name
+     * @param argumentName the arguments name
      * @param defaultValue desired default value if the argument doesn't exists
      * @return requested argument
      */
-    public Object get(String name, Object defaultValue){
-        if(this.exists(name)){
-            return this.get(name);
+    public Object get(String argumentName, Object defaultValue){
+        if(this.exists(argumentName)){
+            return this.get(argumentName);
         }else{
             return defaultValue;
         }
@@ -113,15 +113,16 @@ public class ArgumentBuilder {
     /**
      * check a stored arguments type vs the given type
      *
-     * @param name the argument to check
+     * @param argumentName the argument to check
      * @param klass the class to verify against
      * @return status of the type check
      */
-    public boolean isType(String name, Class klass){
-        if(this.exists(name) && this.get(name).getClass().equals(klass)){
+    public boolean isType(String argumentName, Class klass){
+        if(this.exists(argumentName) && this.get(argumentName).getClass().equals(klass)){
 
             return true;
         }else{
+
             return false;
         }
     }
@@ -129,12 +130,12 @@ public class ArgumentBuilder {
     /**
      * does the argument exists
      *
-     * @param name argument name to check for
+     * @param argumentName argument name to check for
      * @return status of an argument
      */
-    public boolean exists(String name){
+    public boolean exists(String argumentName){
 
-        return arguments.containsKey(name);
+        return arguments.containsKey(argumentName);
     }
 
     /**

@@ -40,11 +40,15 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     public abstract boolean isVertex();
     public abstract boolean isNull();
     public abstract String toString();
-    public abstract PropertyMap getProperties();
-    public abstract Object getProperty(String key);
     public abstract void write(DataOutput output) throws IOException;
+    public abstract PropertyMap getProperties();
+    //get a property from the property map
+    public abstract Object getProperty(String key);
+    //get the vertex or edge label
     public abstract StringType getLabel();
+    //get the vertex id or EdgeID
     public abstract Object getId();
+    //get the graph element
     public abstract GraphElement get();
 
     /**
