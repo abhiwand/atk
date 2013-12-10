@@ -29,7 +29,8 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  */
 public class GraphElementType implements GraphElementTypeCallback {
-    public enum GraphType{EDGE,VERTEX}
+    public enum GraphType {EDGE, VERTEX}
+
     @Override
     public GraphType edge(GraphElement graphElement, ArgumentBuilder args) {
         return GraphType.EDGE;

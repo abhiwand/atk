@@ -42,7 +42,7 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     public abstract String toString();
     public abstract PropertyMap getProperties();
     public abstract Object getProperty(String key);
-    public abstract void    write(DataOutput output) throws IOException;
+    public abstract void write(DataOutput output) throws IOException;
     public abstract StringType getLabel();
     public abstract Object getId();
     public abstract GraphElement get();
@@ -50,9 +50,9 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     /**
      * all the callback classes we will be using
      */
-    private GraphElementType propertyGraphElementType;
-    private GraphElementDst graphElementDst;
-    private GraphElementSrc propertyGraphElementSrc;
+    private final GraphElementType propertyGraphElementType;
+    private final GraphElementDst graphElementDst;
+    private final GraphElementSrc propertyGraphElementSrc;
 
     public GraphElement(){
         propertyGraphElementType = new GraphElementType();

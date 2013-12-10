@@ -326,7 +326,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                     String rdfLabel = vertexRDFLabelMap.get(columnName);
                     if (rdfLabel != null) {
-                        vertex.setVertexLabel(new StringType(rdfLabel));
+                        vertex.setLabel(new StringType(rdfLabel));
                     }
                     vertexList.add(vertex);
                 }

@@ -63,12 +63,8 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      * @param label the edge label
      */
     public Edge(VidType src, VidType dst, StringType label) {
-        this();
 
-        this.src = src;
-        this.dst = dst;
-        this.label = label;
-        this.properties = new PropertyMap();
+        this(src, dst, label, new PropertyMap());
     }
 
 
