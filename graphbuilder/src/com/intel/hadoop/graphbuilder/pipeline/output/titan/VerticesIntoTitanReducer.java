@@ -37,13 +37,13 @@ import org.apache.log4j.Logger;
 /**
  * This reducer performs the following tasks:
  * <ul>
- *  <li>duplicate edges and vertices are removed</li>
- *  <li>each vertex is loaded into Titan and is tagged with its Titan ID and passed to the next MR job
- *   through the temp file</li>
- *  <li>each edge is tagged with the Titan ID of its source vertex and passed to the next MR job</li>
+ *  <li>removes duplicate edges and vertices.</li>
+ *  <li>loads each vertex into Titan and tags each with its Titan ID and passes it to the next MR job
+ *   through the temp file.</li>
+ *  <li>tags each edge with the Titan ID of its source vertex and passes it to the next MR job.</li>
  * </ul>
  * <p>
- *  It is expected that the mapper will set keys so that edges are gathered with the source vertices during the shuffle.
+ *  We expect that the mapper will set the keys so that the edges are gathered with the source vertices during the shuffle.
  * </p>
  * @see com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction
  */
@@ -70,9 +70,9 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
     }
 
     /**
-     * Create the titan graph for saving edges and remove the static open method from setup so it can be mocked
+     * Creates the Titan graph for saving edges and removes the static open method from setup so it can be mocked-up.
      *
-     * @return TitanGraph for saving edges
+     * @return TitanGraph  For saving edges.
      * @throws IOException
      */
     private TitanGraph getTitanGraphInstance (Context context) throws IOException {
@@ -222,8 +222,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                     } else {
 
                         /**
-                         * default behavior is to merge the property maps of duplicate edges
-                         * conflicting key/value pairs get overwritten
+                         * The default behavior is to merge the property maps of duplicate edges,
+                         * conflicting key/value pairs get overwritten.
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeID);
