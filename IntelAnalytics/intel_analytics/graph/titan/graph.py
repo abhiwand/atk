@@ -70,6 +70,13 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
             raise Exception("Unsupported graph type: " + str(graph_type))
 
     def get_graph(self, graph_name):
+        titan_table_name = self._get_titan_table_name(graph_name)
+        return self._get_graph(graph_name, titan_table_name)
+
+    def get_graph_names(self):
+        return (k for k, v in hbase_registry.items() if v.endswith('_titan'))
+
+    def _get_titan_table_name(self, graph_name):
         try:
             titan_table_name = hbase_registry[graph_name]
         except KeyError:
@@ -78,36 +85,20 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
         if not titan_table_name.endswith("_titan"):
             raise Exception("Internal error: graph name "
                             + graph_name + " not mapped to graph")
-        return self._get_graph(graph_name, titan_table_name)
+        return titan_table_name
 
-    def get_graph_names(self):
-        return (k for k, v in hbase_registry.items() if v.endswith('_titan'))
-
-    def activate_graph(self, graph):
-        self._activate_titan_table(graph.titan_table_name)
-        pass
-
-    def get_active_graph_name(self):
-        if not self._active_titan_table_name:
-            return ""
-        return hbase_registry.get_key(self._active_titan_table_name)
-
-    def _activate_titan_table(self, titan_table_name):
+    def _refresh_rexster_cfg(self):
         """changes rexster's configuration to point to given graph
         """
         # write new cfg file for rexster to turn its attention to the new graph
-        if not titan_table_name.endswith("_titan"):
-            raise Exception("Internal error: table name not mapped to graph")
         try:
             #stop rexster
-            titan_config.write_rexster_cfg(titan_table_name)
+            titan_config.write_rexster_cfg()
             #start rexster
         except ValueError:
             raise ValueError('ERROR: Failed to reconfigure rexster server')
-        self._active_titan_table_name = titan_table_name
 
     def _get_graph(self, graph_name, titan_table_name):
-        self._activate_titan_table(titan_table_name)
         rexster_server_uri = get_rexster_server_uri(titan_table_name)
         bulbs_config = bulbsConfig(rexster_server_uri)
         titan_graph = bulbsGraph(bulbs_config)

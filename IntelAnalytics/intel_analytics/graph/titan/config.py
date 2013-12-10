@@ -20,14 +20,21 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+"""
+Titan/Rexster-specific configuration
+
+Includes the Rexster XML config file template and Graph Builder XML template
+"""
 import os
-from time import strftime
 from intel_analytics.table.hbase.table import hbase_registry
 
 __all__ = ['titan_config']
 
 
 class TitanConfig(object):
+    """
+    Config methods specifically for working with Titan, Rexster
+    """
     from intel_analytics.config import global_config
 
     def __init__(self, config=global_config):
@@ -49,14 +56,13 @@ class TitanConfig(object):
         filename : string
             full path of the config file created
         """
-        filename = os.path.join(self.config['conf_folder'],
-                                "graphbuilder_titan.xml")
+        filename = self.config['graphbuilder_titan_file']
         return self._write_cfg(table_name,
                                stream,
                                filename,
                                self._write_gb)
 
-    def write_rexster_cfg(self, table_name, stream=None):
+    def write_rexster_cfg(self, stream=None):
         """
         Writes a Rexster config XML file
 
@@ -72,7 +78,7 @@ class TitanConfig(object):
         filename : string
             full path of the config file created
         """
-        return self._write_cfg(table_name,
+        return self._write_cfg('rexster',
                                stream,
                                self.config['rexster_xml'],
                                self._write_rexster)
@@ -82,28 +88,24 @@ class TitanConfig(object):
             raise Exception("table_name is None")
 
         if stream:
-            func(stream)
+            func(table_name, stream)
             return ""
         else:
             with open(filename, 'w') as out:
-                func(out)
+                func(table_name, out)
             return filename
 
-    def get_values(self, d, keys):
-        values = []
-        for k in keys:
-            values.append(d[k])
-
-    def _write_gb(self, out):
+    def _write_gb(self, table_name, out):
         params = {k: self.config[k] for k in gb_keys}
-        params['graphs'] = self._generate_rexster_graphs_xml(params)
+        params['titan_storage_tablename'] = table_name
         _write_header(out, "GraphBuilder")
         out.write("<configuration>\n")
-        for k in gb_keys:
-            _write_gb_prop(out, k, self.config[k])
+        keys = sorted(params.keys())
+        for k in keys:
+            _write_gb_prop(out, k, params[k])
         out.write("</configuration>\n")
 
-    def _write_rexster(self, out):
+    def _write_rexster(self, table_name, out):
         params = {k: self.config[k] for k in rexster_keys}
         params['graphs'] = self._generate_rexster_graphs_xml(params)
         _write_header(out, "Rexster")
@@ -122,9 +124,9 @@ class TitanConfig(object):
 
 
 def _write_header(out, cfg_name):
-    out.write("<!-- ")
+    out.write("<!-- Auto-generated ")
     out.write(cfg_name)
-    out.write(strftime(" cfg file generated at %Y-%m-%d %H:%M:%S-->\n\n"))
+    out.write(" cfg file -->\n\n")
 
 
 def _write_gb_prop(out, name, value):
@@ -230,8 +232,7 @@ ${graphs}
     </graphs>
 </rexster>
 """
-rexster_template_graph_fragment_str = """
-        <graph>
+rexster_template_graph_fragment_str = """        <graph>
             <graph-name>${titan_storage_tablename}</graph-name>
             <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
             <graph-location></graph-location>
@@ -244,11 +245,10 @@ rexster_template_graph_fragment_str = """
             </properties>
             <extensions>
                 <allows>
-                  <allow>tp:gremlin</allow>
+                    <allow>tp:gremlin</allow>
                 </allows>
             </extensions>
-        </graph>
-"""
+        </graph>"""
 
 from string import Template
 from collections import defaultdict
