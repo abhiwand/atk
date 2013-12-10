@@ -32,7 +32,6 @@ echo $INTEL_ANALYTICS_PYTHON
 echo $INTEL_ANALYTICS_HOME
 echo $SOURCE_CODE
 
-
 if [[ -z "$INTEL_ANALYTICS_PYTHON" ]]; then
     export INTEL_ANALYTICS_PYTHON=`dirname $DIR`
 fi
@@ -41,6 +40,11 @@ if [[ -z "$INTEL_ANALYTICS_HOME" ]]; then
 fi
 if [[ -z "$SOURCE_CODE" ]]; then
     export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
+fi
+
+if [[ ! -f $INTEL_ANALYTICS_HOME/conf/intel_analytics.properties ]]; then
+    #configuration file does not exist link it to the actual default properties file
+    ln -s $INTEL_ANALYTICS_HOME/intel_analytics/intel_analytics.properties $INTEL_ANALYTICS_HOME/conf/intel_analytics.properties
 fi
 
 rm -rf $INTEL_ANALYTICS_HOME/cover
