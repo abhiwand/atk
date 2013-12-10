@@ -130,7 +130,7 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest {
         open();
     }
 
-    //@Ignore("Interacts with real resource")
+    @Ignore("Interacts with real resource")
     @Test
     public void VertexFormatLongDoubleFloatInLongDoubleOutTest() throws Exception {
         /*  input graph
