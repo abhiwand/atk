@@ -34,8 +34,25 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  * ((Edge)SerializedPropertyGraphElement.graphElement()).getType()
  * </p>
  *
+ * <p>The interface gets called from PropertyGraphElement.typeCallback</p>
+ * <pre>
+ * <code>
+ *     public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback,
+ *     ArgumentBuilder args){
+ *          if(this.isEdge()){
+ *              return propertyGraphElementTypeCallbackCallback.edge(this, args);
+ *          }else if(this.isVertex()){
+ *              return propertyGraphElementTypeCallbackCallback.vertex(this, args);
+ *          }else if(this.isNull()){
+ *              return propertyGraphElementTypeCallbackCallback.nullElement(this, args);
+ *          }
+ *              return null;
+ *      }
+ * </code>
+ * </pre>
  * <b>For a sample usage look at</b>
  * @see PropertyGraphElement
+ * @code
  */
 public interface PropertyGraphElementTypeCallback {
     public <T> T edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);

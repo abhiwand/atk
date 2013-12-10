@@ -30,12 +30,11 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * base the vertex/edge graph element.
+ * base for the vertex/edge graph element.
  * @param <VidType>
+ * @code
  */
 public abstract class PropertyGraphElement<VidType extends WritableComparable<VidType>> {
-
-    protected PropertyMap properties;
 
     public abstract boolean isEdge();
     public abstract boolean isVertex();
@@ -94,10 +93,6 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
         }
         return null;
     }
-
-  /*  public <T extends PropertyGraphElement> T get(){
-        return this.typeCallback(propertyGraphElementObject);
-    }*/
 
     public Enum getType(){
         return this.typeCallback(propertyGraphElementType);
