@@ -50,7 +50,7 @@ public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCa
         initArguments(args);
 
         Edge edge   = (Edge) propertyGraphElement;
-        EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
+        EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getLabel());
 
         edgePropertyTable.put(edgeID, edge.getProperties());
 
@@ -64,7 +64,7 @@ public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCa
         Vertex vertex = (Vertex) propertyGraphElement;
 
         //get the vertex id, StringType or LongType
-        Object      vertexId      = vertex.getVertexId();
+        Object      vertexId      = vertex.getId();
         PropertyMap propertyMap   = vertex.getProperties();
         //the Titan id we got assigned during the VerticesIntoTitanReducer
         long        vertexTitanId = ((LongType) propertyMap.getProperty("TitanID")).get();

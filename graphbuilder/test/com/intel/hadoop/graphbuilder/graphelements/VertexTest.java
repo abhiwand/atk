@@ -38,7 +38,7 @@ public class VertexTest {
         Vertex<StringType> vertex = new Vertex<StringType>();
 
         assertNotNull(vertex);
-        assertNull(vertex.getVertexId());
+        assertNull(vertex.getId());
         assertNotNull(vertex.getProperties());
     }
 
@@ -48,7 +48,7 @@ public class VertexTest {
         Vertex<StringType> vertex = new Vertex<StringType>(vertexId);
 
         assertNotNull(vertex);
-        assert (vertex.getVertexId().equals(vertexId));
+        assert (vertex.getId().equals(vertexId));
         assertNotNull(vertex.getProperties());
     }
 
@@ -59,7 +59,7 @@ public class VertexTest {
         Vertex<StringType> vertex = new Vertex<StringType>(vertexId);
 
         assertNotNull(vertex);
-        assert (vertex.getVertexId().equals(vertexId));
+        assert (vertex.getId().equals(vertexId));
         assertNotNull(vertex.getProperties());
 
         PropertyMap pm = vertex.getProperties();
@@ -68,11 +68,11 @@ public class VertexTest {
         StringType anotherOpinion = new StringType("No that vertex sucks");
 
         vertex.configure(anotherOpinion, pm2);
-        assert (vertex.getVertexId().equals(anotherOpinion));
+        assert (vertex.getId().equals(anotherOpinion));
         assertSame(vertex.getProperties(), pm2);
 
         vertex.configure(vertexId, pm);
-        assert (vertex.getVertexId().equals(vertexId));
+        assert (vertex.getId().equals(vertexId));
         assertSame(vertex.getProperties(), pm);
     }
 
@@ -152,7 +152,7 @@ public class VertexTest {
 
         vertexOnTheOtherEnd.readFields(dataInputStream);
 
-        assert (vertex.getVertexId().equals(vertexOnTheOtherEnd.getVertexId()));
+        assert (vertex.getId().equals(vertexOnTheOtherEnd.getId()));
         assert (vertex.getProperties().toString().equals(vertexOnTheOtherEnd.getProperties().toString()));
 
         // one more time, with a nonempty property list
@@ -173,7 +173,7 @@ public class VertexTest {
 
         vertexOnTheOtherEnd.readFields(dataInputStream2);
 
-        assert (vertex.getVertexId().equals(vertexOnTheOtherEnd.getVertexId()));
+        assert (vertex.getId().equals(vertexOnTheOtherEnd.getId()));
         assert (vertex.getProperties().toString().equals(vertexOnTheOtherEnd.getProperties().toString()));
     }
 }

@@ -47,6 +47,6 @@ public class SourceVertexKeyFunction  implements KeyFunction {
      */
 
     public int getVertexKey(Vertex vertex) {
-        return vertex.getVertexId().hashCode();
+        return vertex.getId().hashCode();
     }
 }

@@ -157,7 +157,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends Property
     /**
      * @return the edge label.
      */
-    public StringType getEdgeLabel() {
+    public StringType getLabel() {
         return label;
     }
 
@@ -191,10 +191,26 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends Property
     }
 
     /**
+     * set the entire property map
+     * @param propertyMap
+     */
+    public void setProperties(PropertyMap propertyMap){
+        this.properties = propertyMap;
+    }
+
+    /**
+     * @return get the graph element
+     *
+     */
+    public Edge get(){
+        return this;
+    }
+
+    /**
      * Get the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID and its label
      * @return  the triple of the edge's source vertex ID, destination vertex ID and its label
      */
-    public EdgeID getEdgeID() {
+    public EdgeID getId() {
         return new EdgeID(this.src, this.dst, this.label);
     }
 
