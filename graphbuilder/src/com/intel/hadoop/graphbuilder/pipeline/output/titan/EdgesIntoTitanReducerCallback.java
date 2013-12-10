@@ -33,19 +33,21 @@ import org.apache.hadoop.io.Writable;
 import java.util.HashMap;
 
 /**
- * Apply reduce on edges and vertices, remove self and (or merge) duplicate edges.
+ *  Add all the edges and vertices into the their respective hashmaps. the edgePropertyTable hash is keyed by edge
+ *  id(src, dst, label) with the value being the property map. the  vertexNameToTitanID has is keyed by vertex id
+ *  which should be a StringType or LongType with the value bing the titan ID for the vertex.
  *
+ * @see LongType
+ * @see com.intel.hadoop.graphbuilder.types.StringType
  * @see EdgesIntoTitanReducer
  */
 public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCallback{
     private HashMap<EdgeID, Writable> edgePropertyTable;
     private HashMap<Object, Long> vertexNameToTitanID;
+
     @Override
     public HashMap<EdgeID, Writable> edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder  args) {
         initArguments(args);
-
-        // Apply reduce on edges, remove self and (or merge) duplicate edges.
-        // Optionally remove bidirectional edge.
 
         Edge edge   = (Edge) propertyGraphElement;
         EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
@@ -59,13 +61,14 @@ public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCa
     public HashMap<Object, Long> vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
         initArguments(args);
 
-        // Apply reduce on vertex
-
         Vertex vertex = (Vertex) propertyGraphElement;
 
+        //get the vertex id, StringType or LongType
         Object      vertexId      = vertex.getVertexId();
         PropertyMap propertyMap   = vertex.getProperties();
+        //the Titan id we got assigned during the VerticesIntoTitanReducer
         long        vertexTitanId = ((LongType) propertyMap.getProperty("TitanID")).get();
+
         vertexNameToTitanID.put(vertexId, vertexTitanId);
         return vertexNameToTitanID;
     }
