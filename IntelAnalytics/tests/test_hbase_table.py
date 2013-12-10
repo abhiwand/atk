@@ -3,7 +3,7 @@ import unittest
 from intel_analytics.config import global_config as config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
-from intel_analytics.table.hbase.table import HBaseTable, HBaseFrameBuilderFactory
+from intel_analytics.table.hbase.table import HBaseTable, HBaseFrameBuilderFactory, Imputation
 from tests.mock import patch, Mock, PropertyMock, MagicMock
 
 class HbaseTableTest(unittest.TestCase):
@@ -236,6 +236,73 @@ class HbaseTableTest(unittest.TestCase):
         table.dropna(column_name = column_to_clean)
         self.assertEqual(column_to_clean, result_holder["column_name"])
         self.assertEqual("any", result_holder["how"])
+
+
+    @patch('intel_analytics.table.hbase.table.hbase_frame_builder_factory')
+    def test_fillna(self, hbase_frame_builder_factory):
+
+        result_holder = {}
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        hbase_frame_builder_factory.name_registry.get_key = Mock(return_value = "test_frame")
+        def drop_side_effect(output_table, column_name=None, how=None, replace_with=None):
+            result_holder["column_name"] = column_name
+            result_holder["how"] = how
+            result_holder["replace_with"] = replace_with
+
+        column_to_clean = "col1"
+        replace_with = "N/A"
+        table._HBaseTable__drop = Mock(side_effect = drop_side_effect)
+        table.fillna(column_to_clean, replace_with)
+
+        self.assertEqual(column_to_clean, result_holder["column_name"])
+        self.assertEqual(replace_with, result_holder["replace_with"])
+        self.assertEqual(None, result_holder["how"])
+
+
+    @patch('intel_analytics.table.hbase.table.hbase_frame_builder_factory')
+    def test_impute(self, hbase_frame_builder_factory):
+
+        result_holder = {}
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        hbase_frame_builder_factory.name_registry.get_key = Mock(return_value = "test_frame")
+        def drop_side_effect(output_table, column_name=None, how=None, replace_with=None):
+            result_holder["column_name"] = column_name
+            result_holder["how"] = how
+            result_holder["replace_with"] = replace_with
+
+        column_to_clean = "col1"
+        table._HBaseTable__drop = Mock(side_effect = drop_side_effect)
+        table.impute(column_to_clean, Imputation.MEAN)
+
+        self.assertEqual(column_to_clean, result_holder["column_name"])
+        self.assertEqual('avg', result_holder["replace_with"])
+        self.assertEqual(None, result_holder["how"])
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_get_schema(self, etl_schema_class):
+        object = ETLSchema()
+        object.load_schema = Mock()
+        object.feature_names = ["col1", "col2", "col3"]
+        object.feature_types = ["long", "chararray", "long"]
+        etl_schema_class.return_value = object
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        schema = table.get_schema()
+
+        self.assertEqual('long', schema['col1'])
+        self.assertEqual('chararray', schema['col2'])
+        self.assertEqual('long', schema['col3'])
+
+
+
+
+
 
 
 if __name__ == '__main__':
