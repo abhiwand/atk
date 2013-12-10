@@ -19,13 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
  * Very simple interface that gets called when the property graph element is an edge, vertex or null graph element.
  * This essentially allows us to do a callback based on graph element type and it centralizes the branching on type to a
- * single function to PropertyGraphElement.typeCallback(). Makes the PropertyGraphElement much nicer because you don't
+ * single function to GraphElement.typeCallback(). Makes the GraphElement much nicer because you don't
  * have to worry about weather your vertex or an edge has much.
  *
  * <P><b>With interface</b><br />
@@ -34,10 +34,10 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  * ((Edge)SerializedPropertyGraphElement.graphElement()).getType()
  * </p>
  *
- * <p>The interface gets called from PropertyGraphElement.typeCallback</p>
+ * <p>The interface gets called from GraphElement.typeCallback</p>
  * <pre>
  * <code>
- *     public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallbackCallback,
+ *     public  <T> T typeCallback(GraphElementTypeCallback graphElementTypeCallback,
  *     ArgumentBuilder args){
  *          if(this.isEdge()){
  *              return propertyGraphElementTypeCallbackCallback.edge(this, args);
@@ -51,10 +51,10 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  * </code>
  * </pre>
  * <b>For a sample usage look at</b>
- * @see PropertyGraphElement
+ * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  * @code
  */
-public interface PropertyGraphElementTypeCallback {
-    public <T> T edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);
-    public <T> T vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args);
+public interface GraphElementTypeCallback {
+    public <T> T edge(GraphElement graphElement, ArgumentBuilder args);
+    public <T> T vertex(GraphElement graphElement, ArgumentBuilder args);
 }

@@ -22,7 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline;
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducer;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.VerticesIntoTitanReducer;
@@ -82,7 +82,7 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
  * @see GBMapReduceDriver
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({PropertyGraphElements.class, EdgesIntoTitanReducer.class, VerticesIntoTitanReducer.class, HBaseReaderMapper.class})
+@PrepareForTest({EdgesIntoTitanReducer.class, VerticesIntoTitanReducer.class, HBaseReaderMapper.class, TitanMergedGraphElementWrite.class})
 public abstract class TestMapReduceDriverUtils {
 
     protected Configuration conf;
@@ -108,9 +108,9 @@ public abstract class TestMapReduceDriverUtils {
 
     protected BaseMapper baseMapper;
     protected BaseMapper spiedBaseMapper;
-    protected PropertyGraphElements propertyGraphElements;
-    protected PropertyGraphElements spiedVertexPropertyGraphElements;
-    protected PropertyGraphElements spiedEdgePropertyGraphElements;
+    //protected PropertyGraphElements propertyGraphElements;
+    //protected PropertyGraphElements spiedVertexPropertyGraphElements;
+    //protected PropertyGraphElements spiedEdgePropertyGraphElements;
     protected TitanMergedGraphElementWrite titanMergedGraphElementWrite;
     protected TitanMergedGraphElementWrite spiedTitanMergedGraphElementWrite;
     protected TitanGraph titanGraph;
@@ -156,9 +156,9 @@ public abstract class TestMapReduceDriverUtils {
         baseMapper = null;
         spiedBaseMapper = null;
 
-        propertyGraphElements = null;
+      /*  propertyGraphElements = null;
         spiedVertexPropertyGraphElements = null;
-        spiedEdgePropertyGraphElements = null;
+        spiedEdgePropertyGraphElements = null;*/
         titanMergedGraphElementWrite = null;
         spiedTitanMergedGraphElementWrite = null;
         titanGraph = null;
@@ -439,7 +439,7 @@ public abstract class TestMapReduceDriverUtils {
      * @see PropertyGraphElements
      *
      * @throws Exception
-     */
+     *//*
     protected void newPropertyGraphElements() throws Exception {
         //step some mocks that get set when we create our spy
         newVerticesIntoTitanReducer();
@@ -452,14 +452,14 @@ public abstract class TestMapReduceDriverUtils {
                     (SerializedPropertyGraphElement)valClass.newInstance(), spiedVerticesIntoTitanReducer.getEdgeCounter(),
                     spiedVerticesIntoTitanReducer.getVertexCounter()));
 
-            /**
+            *//**
              * this will make sure our spied instance get returned when it's instantiated in the
              * VerticesIntoTitanReducer.initPropertyGraphElements
              * @see VerticesIntoTitanReducer
-             */
+             *//*
             PowerMockito.whenNew(PropertyGraphElements.class).withAnyArguments().thenReturn(spiedVertexPropertyGraphElements);
         }
-    }
+    }*/
 
     /**
      * create our titan graph mock and assign it to our class a titanGraph class field and return.
@@ -550,7 +550,7 @@ public abstract class TestMapReduceDriverUtils {
         newEdgeReducerDriver();
         newVerticesIntoTitanReducerDriver();
 
-        newPropertyGraphElements();
+        newTitanMergedGraphElementWrite();
 
         newHbaseReaderMapperDriver();
         newVertexHbaseMR();
@@ -738,8 +738,8 @@ public abstract class TestMapReduceDriverUtils {
                 graphElement.graphElement().getType());
 
         //assign to local variables to reduce line length;
-        PropertyGraphElement jobGraphElement = pair.getSecond().graphElement();
-        PropertyGraphElement givenGraphElement = graphElement.graphElement();
+        GraphElement jobGraphElement = pair.getSecond().graphElement();
+        GraphElement givenGraphElement = graphElement.graphElement();
 
         /*i'm not making any distinction between vertex and edge. it makes the code cleaner i just have to watch out for
             nulls. verify all the edge, vertex values match

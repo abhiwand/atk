@@ -19,24 +19,25 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
- * return the type of the graph element. Very use full when you don't care if it's an edge or vertex you just want a
- * type
+ * get the graph element src. if it's an edge it will return whatever src the edge has otherwise it will return null
+ * if it's a vertex.
  *
- * @see PropertyGraphElement
+ * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  */
-public class PropertyGraphElementType implements PropertyGraphElementTypeCallback{
-    public enum GraphType{EDGE,VERTEX}
+public class GraphElementSrc implements GraphElementTypeCallback {
     @Override
-    public GraphType edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
-        return GraphType.EDGE;
+    public Object edge(GraphElement graphElement, ArgumentBuilder args) {
+        Edge edge = (Edge) graphElement;
+        return edge.getSrc();
     }
 
     @Override
-    public GraphType vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
-        return GraphType.VERTEX;
+    public Object vertex(GraphElement graphElement, ArgumentBuilder args) {
+        return null;
     }
 }

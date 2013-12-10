@@ -21,8 +21,8 @@ package com.intel.hadoop.graphbuilder.pipeline.mergeduplicates;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
@@ -53,7 +53,7 @@ import java.util.HashMap;
  * </ul>
  * </p>
  */
-public class PropertyGraphElementMerge implements PropertyGraphElementTypeCallback {
+public class GraphElementMerge implements GraphElementTypeCallback {
 
     private HashMap<EdgeID, Writable> edgeSet;
     private HashMap<Object, Writable>   vertexSet;
@@ -66,26 +66,26 @@ public class PropertyGraphElementMerge implements PropertyGraphElementTypeCallba
 
     /**
      *
-     * @param propertyGraphElement the property graph element we will check for duplicates
+     * @param graphElement the property graph element we will check for duplicates
      * @param args list of arguments
      * @return the updated edge set
      */
     @Override
-    public HashMap<EdgeID, Writable> edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
+    public HashMap<EdgeID, Writable> edge(GraphElement graphElement, ArgumentBuilder args) {
         this.arguments(args);
 
-        EdgeID edgeID = (EdgeID)propertyGraphElement.getId();
+        EdgeID edgeID = (EdgeID) graphElement.getId();
 
-        if (((Edge)propertyGraphElement).isSelfEdge()) {
+        if (((Edge) graphElement).isSelfEdge()) {
             // self edges are omitted
             return null;
         }
 
-        if(edgeSet.containsKey(propertyGraphElement.getId())){  //containsKey(propertyGraphElement)){
+        if(edgeSet.containsKey(graphElement.getId())){
             // edge is a duplicate
 
             if (edgeReducerFunction != null) {
-                edgeSet.put(edgeID, edgeReducerFunction.reduce(propertyGraphElement.getProperties(), edgeSet.get(edgeID)));
+                edgeSet.put(edgeID, edgeReducerFunction.reduce(graphElement.getProperties(), edgeSet.get(edgeID)));
             } else {
 
                 /**
@@ -94,7 +94,7 @@ public class PropertyGraphElementMerge implements PropertyGraphElementTypeCallba
                  */
 
                 PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeID);
-                existingPropertyMap.mergeProperties(propertyGraphElement.getProperties());
+                existingPropertyMap.mergeProperties(graphElement.getProperties());
             }
 
         }else{
@@ -103,9 +103,9 @@ public class PropertyGraphElementMerge implements PropertyGraphElementTypeCallba
             } else {
                 // edge is either not bi-directional, or we are keeping bi-directional edges
                 if (edgeReducerFunction != null) {
-                    edgeSet.put(edgeID, edgeReducerFunction.reduce(propertyGraphElement.getProperties(),edgeReducerFunction.identityValue()));
+                    edgeSet.put(edgeID, edgeReducerFunction.reduce(graphElement.getProperties(),edgeReducerFunction.identityValue()));
                 } else {
-                    edgeSet.put(edgeID, propertyGraphElement.getProperties());
+                    edgeSet.put(edgeID, graphElement.getProperties());
                 }
             }
         }
@@ -114,27 +114,27 @@ public class PropertyGraphElementMerge implements PropertyGraphElementTypeCallba
 
     /**
      *
-     * @param propertyGraphElement the property graph element we will check for duplicates
+     * @param graphElement the property graph element we will check for duplicates
      * @param args see the arguments method for the expected argument list
      * @return updated vertex set
      */
     @Override
-    public HashMap<Object, Writable>  vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
+    public HashMap<Object, Writable>  vertex(GraphElement graphElement, ArgumentBuilder args) {
         this.arguments(args);
 
-        Object vid = propertyGraphElement.getId();
+        Object vid = graphElement.getId();
 
         // track the RDF labels of vertices
-        if (propertyGraphElement.getLabel() != null && vertexLabelMap != null) {
-            if (!vertexLabelMap.containsKey(propertyGraphElement.getId())) {
-                vertexLabelMap.put(propertyGraphElement.getId(), (StringType)propertyGraphElement.getLabel());
+        if (graphElement.getLabel() != null && vertexLabelMap != null) {
+            if (!vertexLabelMap.containsKey(graphElement.getId())) {
+                vertexLabelMap.put(graphElement.getId(), (StringType) graphElement.getLabel());
             }
         }
 
-        if(vertexSet.containsKey(propertyGraphElement.getId())){
+        if(vertexSet.containsKey(graphElement.getId())){
             if (vertexReducerFunction != null) {
                 vertexSet.put(vid,
-                        vertexReducerFunction.reduce(propertyGraphElement.getProperties(),
+                        vertexReducerFunction.reduce(graphElement.getProperties(),
                                 vertexSet.get(vid)));
             } else {
 
@@ -144,15 +144,15 @@ public class PropertyGraphElementMerge implements PropertyGraphElementTypeCallba
                  */
 
                 PropertyMap existingPropertyMap = (PropertyMap) vertexSet.get(vid);
-                existingPropertyMap.mergeProperties(propertyGraphElement.getProperties());
+                existingPropertyMap.mergeProperties(graphElement.getProperties());
             }
 
         }else{
             if (vertexReducerFunction != null) {
                 vertexSet.put(vid, vertexReducerFunction.reduce(
-                        propertyGraphElement.getProperties(),vertexReducerFunction.identityValue()));
+                        graphElement.getProperties(),vertexReducerFunction.identityValue()));
             } else {
-                vertexSet.put(vid, propertyGraphElement.getProperties());
+                vertexSet.put(vid, graphElement.getProperties());
             }
         }
         return null;

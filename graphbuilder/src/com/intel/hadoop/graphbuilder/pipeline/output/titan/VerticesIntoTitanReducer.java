@@ -20,10 +20,10 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.PropertyGraphElementMerge;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
 import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
@@ -82,7 +82,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     private HashMap<Object, Writable>   vertexSet;
 
     private MergedGraphElementWrite titanMergedWrite;
-    private PropertyGraphElementTypeCallback propertyGraphElementMerge;
+    private GraphElementTypeCallback propertyGraphElementMerge;
 
     /**
      * Create the titan graph for saving edges and remove the static open method from setup so it can be mocked
@@ -177,15 +177,15 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
         vertexSet     = new HashMap<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
-            PropertyGraphElement propertyGraphElement = serializedPropertyGraphElement.graphElement();
+            GraphElement graphElement = serializedPropertyGraphElement.graphElement();
 
-            if(propertyGraphElement.isNull()){
+            if(graphElement.isNull()){
                 continue;
             }
 
             //try to add the graph element to the existing set of vertices or edges
-            //PropertyGraphElementMerge will take care of switching between edge and vertex
-            merge(edgeSet, vertexSet, propertyGraphElement);
+            //GraphElementMerge will take care of switching between edge and vertex
+            merge(edgeSet, vertexSet, graphElement);
         }
 
         write(edgeSet, vertexSet, context);
@@ -205,11 +205,11 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     /**
      * remove duplicate edges/vertices and merge their property maps
      *
-     * @param propertyGraphElement the graph element to add to our existing vertexSet or edgeSet
+     * @param graphElement the graph element to add to our existing vertexSet or edgeSet
      */
     private void merge(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
-                       PropertyGraphElement propertyGraphElement){
-        propertyGraphElement.typeCallback(propertyGraphElementMerge,
+                       GraphElement graphElement){
+        graphElement.typeCallback(propertyGraphElementMerge,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
                         .with("vertexReducerFunction", vertexReducerFunction)
@@ -232,7 +232,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     }
 
     private void initMergerWriter(Context context){
-        propertyGraphElementMerge = new PropertyGraphElementMerge();
+        propertyGraphElementMerge = new GraphElementMerge();
         titanMergedWrite = new TitanMergedGraphElementWrite();
     }
 

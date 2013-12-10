@@ -39,14 +39,14 @@ public abstract class SerializedPropertyGraphElement<VidType extends WritableCom
         implements Writable {
 
 
-    private PropertyGraphElement graphElement;
+    private GraphElement graphElement;
 
 
     public SerializedPropertyGraphElement() {
         this.graphElement = null;
     }
 
-    protected SerializedPropertyGraphElement(PropertyGraphElement graphElement) {
+    protected SerializedPropertyGraphElement(GraphElement graphElement) {
         this.graphElement = graphElement;
     }
 
@@ -57,7 +57,7 @@ public abstract class SerializedPropertyGraphElement<VidType extends WritableCom
      *
      * @param graphElement
      */
-    public void init(PropertyGraphElement graphElement) {
+    public void init(GraphElement graphElement) {
 
         this.graphElement = graphElement;
     }
@@ -67,7 +67,7 @@ public abstract class SerializedPropertyGraphElement<VidType extends WritableCom
      * @return a vertex or edge property graph element
      */
 
-    public PropertyGraphElement graphElement() {
+    public GraphElement graphElement() {
         return this.graphElement.get();
     }
 

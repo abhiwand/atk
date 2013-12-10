@@ -38,7 +38,7 @@ import java.util.Objects;
  *
  * @param <VidType> the type of vertex id.
  */
-public class Edge<VidType extends WritableComparable<VidType>>  extends PropertyGraphElement implements Writable {
+public class Edge<VidType extends WritableComparable<VidType>>  extends GraphElement implements Writable {
 
     private VidType     src;
     private VidType     dst;

@@ -28,7 +28,6 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Represents a vertex object with a vertex ID and a (potentially empty) property map.
@@ -40,7 +39,7 @@ import java.util.Objects;
  * @param <VertexIdType> the type of vertex id.
  */
 public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
-        extends PropertyGraphElement implements Writable {
+        extends GraphElement implements Writable {
 
     private VertexIdType vertexId;
     private PropertyMap  properties;

@@ -115,7 +115,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
         for(SerializedPropertyGraphElement graphElement: values){
             /*
              * this is calling
-             * EdgesIntoTitanReducerCallback which is an implementation of PropertyGraphElementTypeCallback
+             * EdgesIntoTitanReducerCallback which is an implementation of GraphElementTypeCallback
              * to add all the edges and vertices into edgePropertyTable and vertexNameToTitanID hashmaps
              */
             graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback,

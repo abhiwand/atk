@@ -34,7 +34,7 @@ import java.io.IOException;
  * @param <VidType>
  * @code
  */
-public abstract class PropertyGraphElement<VidType extends WritableComparable<VidType>> {
+public abstract class GraphElement<VidType extends WritableComparable<VidType>> {
 
     public abstract boolean isEdge();
     public abstract boolean isVertex();
@@ -45,47 +45,47 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     public abstract void    write(DataOutput output) throws IOException;
     public abstract StringType getLabel();
     public abstract Object getId();
-    public abstract PropertyGraphElement get();
+    public abstract GraphElement get();
 
     /**
      * all the callback classes we will be using
      */
-    private PropertyGraphElementType propertyGraphElementType;
-    private PropertyGraphElementDst propertyGraphElementDst;
-    private PropertyGraphElementSrc propertyGraphElementSrc;
+    private GraphElementType propertyGraphElementType;
+    private GraphElementDst graphElementDst;
+    private GraphElementSrc propertyGraphElementSrc;
 
-    public PropertyGraphElement(){
-        propertyGraphElementType = new PropertyGraphElementType();
-        propertyGraphElementDst = new PropertyGraphElementDst();
-        propertyGraphElementSrc = new PropertyGraphElementSrc();
+    public GraphElement(){
+        propertyGraphElementType = new GraphElementType();
+        graphElementDst = new GraphElementDst();
+        propertyGraphElementSrc = new GraphElementSrc();
     }
 
     /**
-     * call the edge/vertex/null PropertyGraphElementTypeCallback
+     * call the edge/vertex/null GraphElementTypeCallback
      *
-     * @see PropertyGraphElementTypeCallback
+     * @see com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback
      *
-     * @param propertyGraphElementTypeCallback any instance of PropertyGraphElementTypeCallback
-     * @param args variable length of arguments that might be used by the instance of PropertyGraphElementTypeCallback
-     * @param <T> anything that gets returned by the instance of PropertyGraphElementTypeCallback
-     * @return anything that gets returned by the instance of PropertyGraphElementTypeCallback
+     * @param graphElementTypeCallback any instance of GraphElementTypeCallback
+     * @param args variable length of arguments that might be used by the instance of GraphElementTypeCallback
+     * @param <T> anything that gets returned by the instance of GraphElementTypeCallback
+     * @return anything that gets returned by the instance of GraphElementTypeCallback
      */
-    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallback, ArgumentBuilder args){
+    public  <T> T typeCallback(GraphElementTypeCallback graphElementTypeCallback, ArgumentBuilder args){
         if(this.isEdge()){
-            return propertyGraphElementTypeCallback.edge(this, args);
+            return graphElementTypeCallback.edge(this, args);
         }else if(this.isVertex()){
-            return propertyGraphElementTypeCallback.vertex(this, args);
+            return graphElementTypeCallback.vertex(this, args);
         }
         return null;
     }
 
-    public  <T> T typeCallback(PropertyGraphElementTypeCallback propertyGraphElementTypeCallback){
+    public  <T> T typeCallback(GraphElementTypeCallback graphElementTypeCallback){
         ArgumentBuilder args = ArgumentBuilder.newArguments();
 
         if(this.isEdge()){
-            return propertyGraphElementTypeCallback.edge(this, args);
+            return graphElementTypeCallback.edge(this, args);
         }else if(this.isVertex()){
-            return propertyGraphElementTypeCallback.vertex(this, args);
+            return graphElementTypeCallback.vertex(this, args);
         }
         return null;
     }
@@ -95,7 +95,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     public Object getDst(){
-        return this.typeCallback(propertyGraphElementDst);
+        return this.typeCallback(graphElementDst);
     }
 
     public Object getSrc(){

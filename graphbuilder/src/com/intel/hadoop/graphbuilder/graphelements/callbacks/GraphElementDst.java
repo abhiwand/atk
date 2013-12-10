@@ -20,26 +20,23 @@
 package com.intel.hadoop.graphbuilder.graphelements.callbacks;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
-import org.apache.hadoop.io.WritableComparable;
 
 /**
- * get the graph element src. if it's an edge it will return whatever src the edge has otherwise it will return null
- * if it's a vertex.
+ * get the graph elements dst. if it's an edge it will return the dst otherwise it will return null
  *
- * @see PropertyGraphElement
+ * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  */
-public class PropertyGraphElementSrc implements PropertyGraphElementTypeCallback {
+public class GraphElementDst implements GraphElementTypeCallback {
     @Override
-    public Object edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
-        Edge edge = (Edge)propertyGraphElement;
-        return edge.getSrc();
+    public Object edge(GraphElement graphElement, ArgumentBuilder args) {
+        Edge edge = (Edge) graphElement;
+        return edge.getDst();
     }
 
     @Override
-    public Object vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
+    public Object vertex(GraphElement graphElement, ArgumentBuilder args) {
         return null;
     }
 }

@@ -20,14 +20,12 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;

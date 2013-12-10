@@ -23,9 +23,9 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import com.intel.hadoop.graphbuilder.graphelements.*;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
 import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.PropertyGraphElementMerge;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -75,7 +75,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     private HashMap<Object, Writable>   vertexSet;
 
     private MergedGraphElementWrite textMergedWrite;
-    private PropertyGraphElementTypeCallback propertyGraphElementWrite;
+    private GraphElementTypeCallback propertyGraphElementWrite;
 
     @Override
     public void setup(Context context) {
@@ -124,15 +124,15 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
         vertexSet     = new HashMap<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
-            PropertyGraphElement propertyGraphElement = serializedPropertyGraphElement.graphElement();
+            GraphElement graphElement = serializedPropertyGraphElement.graphElement();
 
-            if(propertyGraphElement.isNull()){
+            if(graphElement.isNull()){
                 continue;
             }
 
             //try to add the graph element to the existing set of vertices or edges
-            //PropertyGraphElementMerge will take care of switching between edge and vertex
-            merge(edgeSet, vertexSet, propertyGraphElement);
+            //GraphElementMerge will take care of switching between edge and vertex
+            merge(edgeSet, vertexSet, graphElement);
         }
 
         write(edgeSet, vertexSet, context);
@@ -141,11 +141,11 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     /**
      * remove duplicate edges/vertices and merge their property maps
      *
-     * @param propertyGraphElement the graph element to add to our existing vertexSet or edgeSet
+     * @param graphElement the graph element to add to our existing vertexSet or edgeSet
      */
     private void merge(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
-                       PropertyGraphElement propertyGraphElement){
-        propertyGraphElement.typeCallback(propertyGraphElementWrite,
+                       GraphElement graphElement){
+        graphElement.typeCallback(propertyGraphElementWrite,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
                         .with("vertexReducerFunction", vertexReducerFunction)
@@ -173,7 +173,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     }
 
     private void initMergerWriter(Context context){
-        propertyGraphElementWrite = new PropertyGraphElementMerge();
+        propertyGraphElementWrite = new GraphElementMerge();
         textMergedWrite = new TitanMergedGraphElementWrite();
     }
 }

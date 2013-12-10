@@ -27,9 +27,9 @@ import java.util.Map;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;
 import com.intel.hadoop.graphbuilder.graphelements.*;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
 import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.PropertyGraphElementMerge;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -82,7 +82,7 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
 
     //private PropertyGraphElements propertyGraphElements;
     private MergedGraphElementWrite RDFGraphMergedGraphElementWrite;
-    private PropertyGraphElementTypeCallback propertyGraphElementPut;
+    private GraphElementTypeCallback propertyGraphElementPut;
 
     //private PropertyGraphElements propertyGraphElements;
 
@@ -176,15 +176,15 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
         vertexSet     = new HashMap<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
-            PropertyGraphElement propertyGraphElement = serializedPropertyGraphElement.graphElement();
+            GraphElement graphElement = serializedPropertyGraphElement.graphElement();
 
-            if(propertyGraphElement.isNull()){
+            if(graphElement.isNull()){
                 continue;
             }
 
             //try to add the graph element to the existing set of vertices or edges
-            //PropertyGraphElementMerge will take care of switching between edge and vertex
-            merge(edgeSet, vertexSet, vertexLabelMap, propertyGraphElement);
+            //GraphElementMerge will take care of switching between edge and vertex
+            merge(edgeSet, vertexSet, vertexLabelMap, graphElement);
         }
 
         write(edgeSet, vertexSet, vertexLabelMap, context);
@@ -199,11 +199,11 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
     /**
      * remove duplicate edges/vertices and merge their property maps
      *
-     * @param propertyGraphElement the graph element to add to our existing vertexSet or edgeSet
+     * @param graphElement the graph element to add to our existing vertexSet or edgeSet
      */
     private void merge(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet, HashMap<Object,
-            StringType> vertexLabelMap, PropertyGraphElement propertyGraphElement){
-        propertyGraphElement.typeCallback(propertyGraphElementPut,
+            StringType> vertexLabelMap, GraphElement graphElement){
+        graphElement.typeCallback(propertyGraphElementPut,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
                         .with("vertexReducerFunction", vertexReducerFunction)
@@ -221,12 +221,12 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
             InterruptedException {
         RDFGraphMergedGraphElementWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
                 .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap).with("vertexCounter",
-                Counters.NUM_VERTICES)
+                        Counters.NUM_VERTICES)
                 .with("edgeCounter", Counters.NUM_EDGES).with("context", context));
     }
 
     private void initMergerWriter(Context context){
-        propertyGraphElementPut = new PropertyGraphElementMerge();
+        propertyGraphElementPut = new GraphElementMerge();
         RDFGraphMergedGraphElementWrite = new RDFGraphMergedGraphElementWrite();
     }
 }

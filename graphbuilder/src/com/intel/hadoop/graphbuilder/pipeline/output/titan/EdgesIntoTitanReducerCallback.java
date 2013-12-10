@@ -22,9 +22,9 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.PropertyGraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
@@ -41,15 +41,15 @@ import java.util.HashMap;
  * @see com.intel.hadoop.graphbuilder.types.StringType
  * @see EdgesIntoTitanReducer
  */
-public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCallback{
+public class EdgesIntoTitanReducerCallback implements GraphElementTypeCallback {
     private HashMap<EdgeID, Writable> edgePropertyTable;
     private HashMap<Object, Long> vertexNameToTitanID;
 
     @Override
-    public HashMap<EdgeID, Writable> edge(PropertyGraphElement propertyGraphElement, ArgumentBuilder  args) {
+    public HashMap<EdgeID, Writable> edge(GraphElement graphElement, ArgumentBuilder  args) {
         initArguments(args);
 
-        Edge edge   = (Edge) propertyGraphElement;
+        Edge edge   = (Edge) graphElement;
         EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getLabel());
 
         edgePropertyTable.put(edgeID, edge.getProperties());
@@ -58,10 +58,10 @@ public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCa
     }
 
     @Override
-    public HashMap<Object, Long> vertex(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
+    public HashMap<Object, Long> vertex(GraphElement graphElement, ArgumentBuilder args) {
         initArguments(args);
 
-        Vertex vertex = (Vertex) propertyGraphElement;
+        Vertex vertex = (Vertex) graphElement;
 
         //get the vertex id, StringType or LongType
         Object      vertexId      = vertex.getId();
@@ -71,11 +71,6 @@ public class EdgesIntoTitanReducerCallback implements PropertyGraphElementTypeCa
 
         vertexNameToTitanID.put(vertexId, vertexTitanId);
         return vertexNameToTitanID;
-    }
-
-    @Override
-    public Object nullElement(PropertyGraphElement propertyGraphElement, ArgumentBuilder args) {
-        return null;
     }
 
     private void initArguments(ArgumentBuilder args){
