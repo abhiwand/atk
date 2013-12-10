@@ -124,7 +124,7 @@ titan_graph_builder_factory = TitanGraphBuilderFactory()
 
 class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
     """
-    The bipartite graph builder for HBase->Titan.
+    The bipartite graph builder for HBase to Titan.
     """
     def __init__(self, source=None):
         super(HBase2TitanBipartiteGraphBuilder, self).__init__(source)
@@ -155,7 +155,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
 
 class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
     """
-    The property graph builder for HBase->Titan.
+    The property graph builder for HBase to Titan.
     """
     def __init__(self, source=None):
         super(HBase2TitanPropertyGraphBuilder, self).__init__(source)
