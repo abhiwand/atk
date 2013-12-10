@@ -42,6 +42,7 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
@@ -51,6 +52,7 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 
+import org.apache.pig.PigWarning;
 /**
  * \brief CreatePropGraphElements ... converts tuples of scalar data into bag of property graph elements..
  * <p/>
@@ -108,13 +110,12 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     private boolean flattenLists = false;
     private List<String> vertexIdFieldList;
-    private HashMap<String, String[]> vertexPropToFieldNamesMap;
-    private HashMap<String, String>       vertexRDFLabelMap;
+    private Hashtable<String, String[]> vertexPropToFieldNamesMap;
+    private Hashtable<String, String> vertexRDFLabelMap;
 
-    private HashMap<String, EdgeRule>     edgeLabelToEdgeRules;
-    private ArrayList<String>             edgeLabelList;
+    private Hashtable<String, EdgeRule>     edgeLabelToEdgeRules;
 
-    private HashMap<String, Byte> fieldNameToDataType;
+    private Hashtable<String, Byte> fieldNameToDataType;
 
     private boolean                       flattenList;
     /**
@@ -137,7 +138,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         private EdgeRule() {
 
-        };
+        }
+
         /**
          * Constructor must take source, destination and bidirectionality as arguments.
          * <p>There is no public default constructor.</p>
@@ -173,10 +175,13 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         }
     }
 
+    final boolean BIDIRECTIONAL = true;
+    final boolean DIRECTED      = false;
+
     /*
      * A helper function that replaces nulls with empty lists.
      */
-    private String[] nullsIntoEmptyStringArrays(String[] in) {
+    private String[] nullIntoEmptyArray(String[] in) {
         if (in == null) {
             return new String[0];
         } else {
@@ -208,22 +213,20 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         this.tokenizationRule = tokenizationRule;
 
 
-        vertexRDFLabelMap  = new HashMap<String, String>();
-        vertexPropToFieldNamesMap = new HashMap<String, String[]>();
+        vertexRDFLabelMap  = new Hashtable<String, String>();
+        vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
         vertexIdFieldList = new ArrayList<String>();
 
-        edgeLabelToEdgeRules  = new HashMap<String, EdgeRule>();
-        edgeLabelList         = new ArrayList<String>();
-
+        edgeLabelToEdgeRules  = new Hashtable<String, EdgeRule>();
 
         vertexRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
+                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
 
         rawEdgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
+                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
 
         rawDirectedEdgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
+                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
 
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
@@ -254,10 +257,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             }
         }
 
-
-        final boolean BIDIRECTIONAL = true;
-        final boolean DIRECTED      = false;
-
         for (String rawEdgeRule : rawEdgeRules) {
 
             String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
@@ -272,7 +271,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                 edgeRule.addPropertyColumnName(edgePropertyFieldName);
             }
             edgeLabelToEdgeRules.put(label, edgeRule);
-            edgeLabelList.add(label);
         }
 
         for (String rawDirectedEdgeRule : rawDirectedEdgeRules) {
@@ -290,8 +288,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             }
 
             edgeLabelToEdgeRules.put(label, edgeRule);
-            edgeLabelList.add(label);
-
         }
     }
 
@@ -309,8 +305,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             outArray                        = expandedString;
 
         }  else {
-            outArray    = new String[1];
-            outArray[0] = string;
+            outArray = new String[] {string} ;
         }
 
         return outArray;
@@ -337,7 +332,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             graphElementTuple.set(0, graphElement);
             outputBag.add(graphElementTuple);
         } catch (ExecException e) {
-            // log something here, however pig logs stuff
+            // todo raise exception
+            warn("Null data", PigWarning.UDF_WARNING_1);
         }
     }
 
@@ -353,7 +349,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             graphElementTuple.set(0, graphElement);
             outputBag.add(graphElementTuple);
         } catch (ExecException e) {
-            // log something here, however pig logs stuff
+            // todo raise exception
+            warn("Null data", PigWarning.UDF_WARNING_1);
         }
 
     }
@@ -361,20 +358,29 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte) {
         WritableComparable object = null;
 
-        if (typeByte == DataType.BYTE) {
-            object = new IntType((int) value);
-        } else if (typeByte == DataType.INTEGER) {
-            object = new IntType((int) value);
-        } else if (typeByte == DataType.LONG) {
-            object = new LongType((long) value);
-        } else if (typeByte == DataType.FLOAT) {
-            object = new FloatType((float) value);
-        } else if (typeByte == DataType.DOUBLE) {
-            object = new DoubleType((double) value);
-        } else if (typeByte == DataType.CHARARRAY) {
-            object = new StringType((String) value);
-        } else {
-            // todo: failure/exception
+        switch(typeByte) {
+            case DataType.BYTE:
+                object = new IntType((int) value);
+                break;
+            case DataType.INTEGER:
+                object = new IntType((int) value);
+                break;
+            case DataType.LONG:
+                object = new LongType((long) value);
+                break;
+            case DataType.FLOAT:
+                object = new FloatType((float) value);
+                break;
+            case DataType.DOUBLE:
+                object = new DoubleType((double) value);
+                break;
+            case DataType.CHARARRAY:
+                object = new StringType((String) value);
+                break;
+            default:
+                // todo raise exception
+                warn("Null data", PigWarning.UDF_WARNING_1);
+
         }
 
         return object;
@@ -393,7 +399,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     public DataBag exec(Tuple input) throws IOException {
 
         Schema inputSchema = getInputSchema();
-        fieldNameToDataType = new HashMap<String,Byte>();
+        fieldNameToDataType = new Hashtable<String,Byte>();
 
         for (Schema.FieldSchema field : inputSchema.getFields()) {
             fieldNameToDataType.put(field.alias, field.type);
@@ -419,17 +425,14 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
                     String[] vpFieldNames = vertexPropToFieldNamesMap.get(fieldName);
 
-                    if (null != vpFieldNames) {
+                    if (null != vpFieldNames && vpFieldNames.length > 0) {
+                        for (String vertexPropertyFieldName : vpFieldNames) {
+                            Object value = null;
 
-                        if (vpFieldNames.length > 0) {
-                            for (String vertexPropertyFieldName : vpFieldNames) {
-                                Object value = null;
-
-                                value =  getTupleData(input, inputSchema, vertexPropertyFieldName);
-                                if (value != null) {
-                                    vertex.setProperty(vertexPropertyFieldName, pigTypesToSerializedJavaTypes(value,
-                                            fieldNameToDataType.get(vertexPropertyFieldName)));
-                                }
+                            value =  getTupleData(input, inputSchema, vertexPropertyFieldName);
+                            if (value != null) {
+                                vertex.setProperty(vertexPropertyFieldName, pigTypesToSerializedJavaTypes(value,
+                                        fieldNameToDataType.get(vertexPropertyFieldName)));
                             }
                         }
                     }
@@ -443,11 +446,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                     addVertexToPropElementBag(outputBag, vertex);
                 }
             }  else {
-                // what kind of logging and what error counting can we do with pig?
-                    /*
-                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + fieldName + ", row " + row.toString());
-                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
-                    */
+                // todo raise exception
+                warn("Null data", PigWarning.UDF_WARNING_1);
             }
         }// End of vertex block
 
@@ -458,7 +458,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         String srcVertexFieldName;
         String tgtVertexFieldName;
 
-        for (String eLabel : edgeLabelList) {
+        for (String eLabel : edgeLabelToEdgeRules.keySet()) {
 
             int          countEdgeAttr  = 0;
             EdgeRule     edgeRule           = edgeLabelToEdgeRules.get(eLabel);
@@ -546,7 +546,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         } catch (FrontendException e) {
             // This should not happen
             throw new RuntimeException("Bug : exception thrown while "
-                    + "creating output schema for TORDF udf", e);
+                    + "creating output schema for CreatePropGraphElements udf", e);
         }
     }
 }
