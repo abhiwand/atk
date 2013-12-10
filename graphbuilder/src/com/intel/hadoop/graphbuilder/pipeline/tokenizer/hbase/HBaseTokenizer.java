@@ -25,7 +25,9 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -41,7 +43,7 @@ import java.util.List;
 /**
  * MR-time routine that creates property graph elements from HBase rows.
  *
- * <p>Its set-up time analog is {@code HBaseGraphBuildingRule} </p>
+ * <p>Its set-up time analog is {@code HBaseGraphBuildingRule}. </p>
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule
  * @see com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration
@@ -65,14 +67,14 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
 
     /**
-     * Encapsulation of the rules for creating edges.
+     * Encapsulates of the rules for creating edges.
      *
      * <p> Edge rules consist of the following:
      * <ul>
-     * <li> A column name from which to read the edge's source vertex</li>
-     * <li> A column name from which to read the edge's destination vertex</li>
-     * <li> A boolean flag denoting if the edge is bidirectional or directed</li>
-     * <li> A list of column names from which to read the edge's properties</li>
+     * <li> A column name from which to read the edge's source vertex.</li>
+     * <li> A column name from which to read the edge's destination vertex.</li>
+     * <li> A boolean flag denoting if the edge is bidirectional or directed.</li>
+     * <li> A list of column names from which to read the edge's properties.</li>
      * </ul></p>
      * <p>Edge rules are indexed by their label, so we do not store the label in the rule.</p>
      */
@@ -87,11 +89,11 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         };
 
         /**
-         * Constructor must take source, destination and bidirectionality as arguments.
+         * This constructor must take source, destination, and bidirectionality as arguments.
          * <p>There is no public default constructor.</p>
-         * @param srcColumnName  column name from which to get source vertex
-         * @param dstColumnName  column name from which to get destination vertex
-         * @param biDirectional  is this edge bidirectional or not?
+         * @param srcColumnName  The column name from which to get the source vertex.
+         * @param dstColumnName  The column name from which to get the destination vertex.
+         * @param biDirectional  Is this edge bidirectional or not?
          */
         EdgeRule(String srcColumnName, String dstColumnName, boolean biDirectional) {
             this.srcColumnName       = srcColumnName;
@@ -144,9 +146,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     /**
      * Extracts the vertex and edge generation rules from the configuration.
      *
-     * The edge and vertex rules are placed in the configuration by {@code HBaseGraphBuildingRule}
+     * The edge and vertex rules are placed in the configuration by {@code HBaseGraphBuildingRule}.
      *
-     * @param conf  jobc configuration, provided by Hadoop
+     * @param conf  The jobc configuration, provided by Hadoop.
      * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule
      */
     @Override
@@ -229,8 +231,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     /**
      * Get column data from the HBase table. If any errors are encountered, log them.
      *
-     * @param columns        HTable columns for the current row
-     * @param fullColumnName Name of the HTABLE column - column_family:column_qualifier
+     * @param columns        The HTable columns for the current row.
+     * @param fullColumnName The Name of the HTABLE column - column_family:column_qualifier.
      * @param context        Hadoop's mapper context. Used for error logging.
      */
     private String getColumnData(Result columns, String fullColumnName, Mapper.Context context) {
@@ -295,9 +297,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
             String vidCell = getColumnData(columns, columnName, context);
 
-            for (String vertexId : expandString(vidCell)) {
-
-                if (null != vertexId) {
+            if (null != vidCell) {
+                for (String vertexId : expandString(vidCell)) {
 
                     // create vertex
 
@@ -328,13 +329,13 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                         vertex.setVertexLabel(new StringType(rdfLabel));
                     }
                     vertexList.add(vertex);
-                } else {
-
-                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
-                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
                 }
+            } else {
+
+                LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
+                context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
             }
-        }// End of vertex block
+        } // End of vertex block
 
         // check row for edges
 
@@ -357,11 +358,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             String srcVertexCellString = getColumnData(columns, srcVertexColName, context);
             String tgtVertexCellString = getColumnData(columns, tgtVertexColName, context);
 
-
-            for (String srcVertexName : expandString(srcVertexCellString)) {
-                for (String tgtVertexName: expandString(tgtVertexCellString)) {
-
-                    if (srcVertexColName != null && tgtVertexColName != null && eLabel != null) {
+            if (srcVertexCellString != null && tgtVertexCellString != null && eLabel != null) {
+                for (String srcVertexName : expandString(srcVertexCellString)) {
+                    for (String tgtVertexName: expandString(tgtVertexCellString)) {
 
                         Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
                                 new StringType(tgtVertexName), new StringType(eLabel));
@@ -410,12 +409,28 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                         }
                     }
                 }
+            } else {
+
+                if (srcVertexCellString == null) {
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + srcVertexColName + ", row " + row.toString());
+                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
+                }
+
+                if (tgtVertexCellString == null) {
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + tgtVertexColName + ", row " + row.toString());
+                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
+                }
+
+                if (eLabel == null) {
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.INTERNAL_PARSER_ERROR,
+                            "Null edge label during parsing. Possibly a bad mapper configuration.",LOG);
+                }
             }
         }
     }
 
     /**
-     * Obtain iterator over the vertex list.
+     * Obtains the iterator over the vertex list.
      *
      * @return  Iterator over the vertex list.
      */
@@ -424,7 +439,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     }
 
     /**
-     * Obtain iterator over the edge list.
+     * Obtains the iterator over the edge list.
      * @return Iterator over the edge list.
      */
     @Override

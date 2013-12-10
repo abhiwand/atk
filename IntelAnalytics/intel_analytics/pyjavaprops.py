@@ -1,12 +1,13 @@
 #! /usr/bin/env python
 
 """
-A Python replacement for java.util.Properties class
+A Python replacement for java.util.Properties class.
+
 This is modelled as closely as possible to the Java original.
 
-Created - Anand B Pillai <abpillai@gmail.com>
+Created by Anand B Pillai <abpillai@gmail.com>.
 
-Nov 2013 - blbarker edited to include load w/ array of strings
+Nov 2013 - blbarker edited to include load with array of strings.
 """
 
 import sys,os
@@ -24,22 +25,22 @@ class IllegalArgumentException(Exception):
         return s
 
 class Properties(object):
-    """ A Python replacement for java.util.Properties """
+    """ A Python replacement for the java.util.Properties class. """
 
     def __init__(self, props=None):
 
         # Note: We don't take a default properties object
-        # as argument yet
+        # as argument yet.
 
         # Dictionary of properties.
         self._props = {}
-        # Dictionary of properties with 'pristine' keys
+        # Dictionary of properties with 'pristine' keys.
         # This is used for dumping the properties to a file
-        # using the 'store' method
+        # using the 'store' method.
         self._origprops = {}
         self._keyorder = []
         # Dictionary mapping keys from property
-        # dictionary to pristine dictionary
+        # dictionary to pristine dictionary.
         self._keymap = {}
 
         self.othercharre = re.compile(r'(?<!\\)(\s*\=)|(?<!\\)(\s*\:)')
@@ -55,13 +56,13 @@ class Properties(object):
         return s
 
     def __parse(self, lines):
-        """ Parse a list of lines and create
-        an internal property dictionary """
+        """ Parses a list of lines and creates
+        an internal property dictionary. """
 
         # Every line in the file must consist of either a comment
         # or a key-value pair. A key-value pair is a line consisting
         # of a key which is a combination of non-white space characters
-        # The separator character between key-value pairs is a '=',
+        # The separator character between key-value pairs is an '=',
         # ':' or a whitespace character not including the newline.
         # If the '=' or ':' characters are found, in the line, even
         # keys containing whitespace chars are allowed.
@@ -85,10 +86,10 @@ class Properties(object):
 
         # Any line that starts with a '#' or '!' is considerered a comment
         # and skipped. Also any trailing or preceding whitespaces
-        # are removed from the key/value.
+        # are removed from the key-value pairs.
 
         # This is a line parser. It parses the
-        # contents like by line.
+        # contents by line.
 
         lineno=0
         i = iter(lines)
@@ -96,17 +97,17 @@ class Properties(object):
         for line in i:
             lineno += 1
             line = line.strip()
-            # Skip null lines
+            # Skip null lines.
             if not line: continue
-            # Skip lines which are comments
+            # Skip lines which are comments.
             if line[0] in ('#','!'): continue
-            # Some flags
+            # Some flags.
             escaped=False
-            # Position of first separation char
+            # Position of first separation char.
             sepidx = -1
-            # A flag for performing wspace re check
+            # A flag for performing wspace re check.
             flag = 0
-            # Check for valid space separation
+            # Check for valid space separation.
             # First obtain the max index to which we
             # can search.
             m = self.othercharre.search(line)
@@ -122,7 +123,7 @@ class Properties(object):
                     # they are preceded by a backslash.
 
                     # This means, we need to modify the
-                    # wspacere a bit, not to look for
+                    # wspacere a bit, not to look for the 
                     # : or = characters.
                     wspacere = re.compile(r'(?<![\\])(\s)')
                 start, end = 0, len(line)
@@ -136,25 +137,25 @@ class Properties(object):
             elif m:
                 # print 'Other match=>',line
                 # No matching wspace char found, need
-                # to split by either '=' or ':'
+                # to split by either '=' or ':'.
                 first, last = m.span()
                 sepidx = last - 1
                 # print line[sepidx]
 
 
-            # If the last character is a backslash
-            # it has to be preceded by a space in which
+            # If the last character is a backslash,
+            # it has to be preceded by a space, in which
             # case the next line is read as part of the
-            # same property
+            # same property.
             while line[-1] == '\\':
-                # Read next line
+                # Read next line.
                 nextline = i.next()
                 nextline = nextline.strip()
                 lineno += 1
-                # This line will become part of the value
+                # This line will become part of the value.
                 line = line[:-1] + nextline
 
-            # Now split to key,value according to separation char
+            # Now split to key,value according to the separation char.
             if sepidx != -1:
                 key, value = line[:sepidx], line[sepidx+1:]
             else:
@@ -163,12 +164,12 @@ class Properties(object):
             self.processPair(key, value)
 
     def processPair(self, key, value):
-        """ Process a (key, value) pair """
+        """ Processes a (key, value) pair. """
 
         oldkey = key
         oldvalue = value
 
-        # Create key intelligently
+        # Creates a key intelligently.
         keyparts = self.bspacere.split(key)
         # print keyparts
 
@@ -179,7 +180,7 @@ class Properties(object):
             keyparts[-1] = lastpart.replace('\\','')
 
         # If no backspace is found at the end, but empty
-        # space is found, strip it
+        # space is found, strip it.
         elif lastpart and lastpart[-1] == ' ':
             strippable = True
 
@@ -202,13 +203,13 @@ class Properties(object):
 
         self._props[key] = value.strip()
 
-        # Check if an entry exists in pristine keys
+        # Check if an entry exists in pristine keys.
         if self._keymap.has_key(key):
             oldkey = self._keymap.get(key)
             self._origprops[oldkey] = oldvalue.strip()
         else:
             self._origprops[oldkey] = oldvalue.strip()
-            # Store entry in keymap
+            # Store entry in keymap.
             self._keymap[key] = oldkey
 
         if key not in self._keyorder:
@@ -226,7 +227,7 @@ class Properties(object):
 
     def unescape(self, value):
 
-        # Reverse of escape
+        # Reverse of escape.
         newvalue = value.replace('\:',':')
         newvalue = newvalue.replace('\=','=')
 
@@ -239,12 +240,12 @@ class Properties(object):
             raise
 
     def load(self, stream):
-        """ Load properties from an open file stream """
+        """ Loads the properties from an open file stream. """
 
-        # For the time being only accept file input streams
+        # For the time being only accept file input streams.
         if type(stream) is not file:
             raise TypeError,'Argument should be a file object!'
-        # Check for the opened mode
+        # Check for the opened mode.
         if stream.mode != 'r':
             raise ValueError,'Stream should be opened in read-only mode!'
 
@@ -255,12 +256,12 @@ class Properties(object):
             raise
 
     def getProperty(self, key):
-        """ Return a property for the given key """
+        """ Returns a property for the given key. """
 
         return self._props.get(key,'')
 
     def setProperty(self, key, value):
-        """ Set the property for the given key """
+        """ Sets the property for the given key. """
 
         if type(key) is str and type(value) is str:
             self.processPair(key, value)
@@ -268,32 +269,32 @@ class Properties(object):
             raise TypeError,'both key and value should be strings!'
 
     def propertyNames(self):
-        """ Return an iterator over all the keys of the property
-        dictionary, i.e the names of the properties """
+        """ Returns an iterator over all the keys of the property
+        dictionary, that is, the names of the properties. """
 
         return self._props.keys()
 
     def list(self, out=sys.stdout):
         """ Prints a listing of the properties to the
-        stream 'out' which defaults to the standard output """
+        stream 'out' which defaults to the standard output. """
 
         out.write('-- listing properties --\n')
         for key,value in self._props.items():
             out.write(''.join((key,'=',value,'\n')))
 
     def store(self, out, header=""):
-        """ Write the properties list to the stream 'out' along
-        with the optional 'header' """
+        """ Writes the properties list to the stream 'out' along
+        with the optional 'header'. """
 
         if out.mode[0] != 'w':
             raise ValueError,'Steam should be opened in write mode!'
 
         try:
             out.write(''.join(('#',header,'\n')))
-            # Write timestamp
+            # Writes the timestamp.
             tstamp = time.strftime('%a %b %d %H:%M:%S %Z %Y', time.localtime())
             out.write(''.join(('#',tstamp,'\n')))
-            # Write properties from the pristine dictionary
+            # Writes the properties from the pristine dictionary.
             for prop in self._keyorder:
                 if prop in self._origprops:
                     val = self._origprops[prop]
@@ -307,18 +308,18 @@ class Properties(object):
         return self._props
 
     def __getitem__(self, name):
-        """ To support direct dictionary like access """
+        """ To support direct dictionary-like access. """
 
         return self.getProperty(name)
 
     def __setitem__(self, name, value):
-        """ To support direct dictionary like access """
+        """ To support direct dictionary-like access. """
 
         self.setProperty(name, value)
 
     def __getattr__(self, name):
         """ For attributes not found in self, redirect
-        to the properties dictionary """
+        to the properties dictionary. """
 
         try:
             return self.__dict__[name]

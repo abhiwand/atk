@@ -42,7 +42,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Load edges into Titan.
+ * Loads edges into Titan.
  * <p>
  * It gathers each vertex with the edges that point to that vertex, that is,
  * those edges for whom the vertex is the destination.  Because the edges were tagged with the
@@ -64,9 +64,10 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     }
 
     /**
-     * Create the titan graph for saving edges and remove the static open method from setup so it can be mocked
+     * Creates the Titan graph for saving edges and removes the static open method from setup 
+	 * so it can be mocked-up.
      *
-     * @return TitanGraph for saving edges
+     * @return TitanGraph For saving edges.
      * @throws IOException
      */
     private TitanGraph getTitanGraphInstance (Context context) throws IOException {
@@ -75,9 +76,9 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     }
 
     /**
-     * Set up Titan connection.
+     * Set up the Titan connection.
      *
-     * @param context  the reducer context provided by Hadoop
+     * @param context  The reducer context provided by Hadoop.
      * @throws IOException
      * @throws InterruptedException
      */
@@ -91,17 +92,17 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     /**
      * Hadoop-called routine for loading edges into Titan.
      * <p>
-     * It is assumed that edges and vertices have been gathered so that every
+     * We assume that edges and vertices have been gathered so that every
      * edge shares the reducer of its destination vertex, and that every edge has previously
      * been assigned the TitanID of its source vertex.
      * </p>
      * <p>
-     * Titan IDs are propagatd from the destination vertices to each edge and the edges are loaded into Titan
-     * using the BluePrints API
+     * Titan IDs are propagatd from the destination vertices to each edge and the edges are loaded 
+     * into Titan using the BluePrints API.
      * </p>
-     * @param key    mapreduce key; a hash of a vertex ID
-     * @param values  either a vertex with that hashed vertex ID, or an edge with said vertex as its destination
-     * @param context  reducer context provided by Hadoop
+     * @param key      A mapreduce key; a hash of a vertex ID.
+     * @param values   Either a vertex with that hashed vertex ID, or an edge with said vertex as its destination.
+     * @param context  A reducer context provided by Hadoop.
      * @throws IOException
      * @throws InterruptedException
      */
