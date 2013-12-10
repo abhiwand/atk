@@ -1,5 +1,10 @@
 import uuid
 import os
+import sys
+
+
+ia_home = os.getenv('INTEL_ANALYTICS_PYTHON', os.getenv('INTEL_ANALYTICS_HOME', '.'))
+sys.path.append(ia_home)
 
 # Configuration file for ipython-notebook.
 
@@ -95,7 +100,7 @@ c.NotebookApp.password = passwd
 # connection, or for offline use of the notebook.
 # 
 # When disabled, equations etc. will appear as their untransformed TeX source.
-# c.NotebookApp.enable_mathjax = True
+c.NotebookApp.enable_mathjax = False
 
 # The full path to an SSL/TLS certificate file.
 #c.NotebookApp.certfile = certfile path needed! # u''
@@ -139,7 +144,9 @@ c.NotebookApp.ipython_dir = os.path.join(ia_user_folder,"ipython_notebook")
 # 
 # This allows adding javascript/css to be available from the notebook server
 # machine, or overriding individual files in the IPython
-# c.NotebookApp.extra_static_paths = []
+
+static_ipython = os.path.abspath(os.path.join(ia_home, 'ipython'))
+c.NotebookApp.extra_static_paths = [static_ipython]
 
 # Whether to trust or not X-Scheme/X-Forwarded-Proto and X-Real-Ip/X-Forwarded-
 # For headerssent by the upstream reverse proxy. Neccesary if the proxy handles
@@ -157,7 +164,7 @@ c.NotebookApp.trust_xheaders = True
 
 # Supply overrides for the tornado.web.Application that the IPython notebook
 # uses.
-# c.NotebookApp.webapp_settings = {}
+# c.NotebookApp.webapp_settings = {'static_path':static_ipython}
 
 # Specify what command to use to invoke a web browser when opening the notebook.
 # If not specified, the default browser will be determined by the `webbrowser`
