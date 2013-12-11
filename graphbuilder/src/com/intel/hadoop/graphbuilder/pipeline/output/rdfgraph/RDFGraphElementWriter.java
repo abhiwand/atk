@@ -38,7 +38,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 
-public class RDFGraphGraphElementWriter extends GraphElementWriter {
+public class RDFGraphElementWriter extends GraphElementWriter {
     private String     rdfNamespace;
 
     Hashtable<Object, StringType> vertexLabelMap;
