@@ -37,9 +37,11 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
  * \brief ExtractJSON UDF extracts fields from (potentially complex & nested)
- * JSON documents with JSONPath expressions. This UDF uses the JSONPath
- * implementation of the <a
- * href="https://code.google.com/p/rest-assured/">RestAssured</a> project. <br/>
+ * JSON data with JSONPath expressions.
+ * 
+ * ExtractJSON provides another convenient way of processing complex JSON data
+ * with JSONPath expressions using the JSONPath
+ * implementation of the <a href="https://code.google.com/p/rest-assured/">RestAssured</a> project. <br/>
  * <p/>
  * 
  * <b>Example:</b>
@@ -52,9 +54,9 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * 
  * <pre>
  * {@code
- *    json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
- *    extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSON(json, 'Sizes[0].Price') AS price: double;
- *    }
+     json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
+     extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSON(json, 'Sizes[0].Price') AS price: double;
+     }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)

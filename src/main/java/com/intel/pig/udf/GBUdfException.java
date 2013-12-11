@@ -20,7 +20,7 @@ package com.intel.pig.udf;
 
 /**
  * GBUdfException is a custom exception thrown from the UDFs to notify the user
- * about problems occured during UDF processing.
+ * about problems that occurred during UDF processing.
  * 
  */
 public class GBUdfException extends Exception {

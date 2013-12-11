@@ -20,6 +20,7 @@
 import java.io.IOException;
 
 import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
@@ -43,21 +44,22 @@ import com.intel.hadoop.graphbuilder.util.RDFUtils;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief TORDF UDF converts given property graph elements to RDF triples.
+ * \brief TORDF UDF converts a given property graph element to RDF triples.
  * <p/>
+ * If the PropertyGraphElement is null, this UDF returns null
  * 
  * <b>Example:</b>
  * 
  * <pre>
  * {@code
- *    DEFINE TORDF com.intel.pig.udf.eval.TORDF('OWL');--specify the namespace to use with the constructor
- *    DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
- *    x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
- *    x = FILTER x by id!='';--remove employee records with missing ids
- *    pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));--create the property graph elements from raw source data
- *    rdf_triples = FOREACH pge GENERATE FLATTEN(TORDF(*));--create RDF tuples from the property graph elements
- *    STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
- *    }
+       DEFINE TORDF com.intel.pig.udf.eval.TORDF('OWL');--specify the namespace to use with the constructor
+       DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
+       x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+       x = FILTER x by id!='';--remove employee records with missing ids
+       pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));--create the property graph elements from raw source data
+       rdf_triples = FOREACH pge GENERATE FLATTEN(TORDF(*));--create RDF tuples from the property graph elements
+       STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
+       }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
@@ -72,16 +74,36 @@ public class TORDF extends EvalFunc<DataBag> {
 	public DataBag exec(Tuple input) throws IOException {
 		DataBag rdfBag = DefaultBagFactory.getInstance().newDefaultBag();
 		PropertyGraphElement e = (PropertyGraphElement) input.get(0);
+
+		if (e == null) {
+			warn("Null property graph element", PigWarning.UDF_WARNING_1);
+			return null;
+		}
+
 		Resource resource = null;
 
 		if (e.graphElementType().equals(GraphElementType.EDGE)) {
 			Edge edge = e.edge();
+
+			if (edge == null) {
+				warn("Null edge in property graph element",
+						PigWarning.UDF_WARNING_1);
+				return null;
+			}
+
 			// create a Resource from the edge
 			resource = RDFUtils.createResourceFromEdge(rdfNamespace, edge
 					.getSrc().toString(), edge.getDst().toString(), edge
 					.getEdgeLabel().get(), edge.getProperties());
 		} else if (e.graphElementType().equals(GraphElementType.VERTEX)) {
 			Vertex vertex = e.vertex();
+
+			if (vertex == null) {
+				warn("Null vertex in property graph element",
+						PigWarning.UDF_WARNING_1);
+				return null;
+			}
+
 			// create a Resource from the vertex
 			resource = RDFUtils.createResourceFromVertex(rdfNamespace, vertex
 					.getVertexId().toString(), vertex.getProperties());
@@ -118,8 +140,7 @@ public class TORDF extends EvalFunc<DataBag> {
 					rdfStatementTuple, DataType.BAG));
 			return rdfBagSchema;
 		} catch (FrontendException e) {
-			// This should not happen
-			throw new RuntimeException("Bug : exception thrown while "
+			throw new RuntimeException("Exception while "
 					+ "creating output schema for TORDF udf", e);
 		}
 	}
