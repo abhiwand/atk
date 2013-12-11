@@ -30,7 +30,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * base for the vertex/edge graph element.
+ * Base for the vertex/edge graph element.
  * @param <VidType>
  * @code
  */
@@ -65,13 +65,12 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     }
 
     /**
-     * call the edge/vertex/null GraphElementTypeCallback
+     * Call the edge/vertex GraphElementTypeCallback
      *
      * @see com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback
      *
      * @param graphElementTypeCallback any instance of GraphElementTypeCallback
      * @param args variable length of arguments that might be used by the instance of GraphElementTypeCallback
-     * @param <T> anything that gets returned by the instance of GraphElementTypeCallback
      * @return anything that gets returned by the instance of GraphElementTypeCallback
      */
     public  <T> T typeCallback(GraphElementTypeCallback graphElementTypeCallback, ArgumentBuilder args){
