@@ -269,7 +269,7 @@ class BigDataFrame(object):
         nRows : int
             number of rows to retrieve in the HTML table
         """
-        return self._table.to_html(nRows)  
+        return self._table.illustrate_to_html(nRows)
 
 
     #----------------------------------------------------------------------
@@ -651,7 +651,7 @@ class BigDataFrame(object):
 
 
         try:
-            self._table.head(n)
+            self._table.illustrate(n)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("head exception " + str(e))
