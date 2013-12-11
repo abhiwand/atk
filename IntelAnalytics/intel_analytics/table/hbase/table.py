@@ -158,7 +158,15 @@ class HBaseTable(object):
         etl_schema.save_schema(self.table_name)
 
     def _get_first_N(self, n):
+
+        if n < 0:
+            raise HBaseTableException('A range smaller than 0 is specified')
+
+        if n == 0:
+            return []
+
         first_N_rows = []
+
         with ETLHBaseClient() as hbase_client:
            table = hbase_client.connection.table(self.table_name)
            nrows_read = 0
@@ -171,29 +179,31 @@ class HBaseTable(object):
         return first_N_rows
     
     def head(self, n=10):
-        header_printed = False
+
         first_N_rows = self._get_first_N(n)
+        schema = self.get_schema()
+        columns = schema.keys()
+        column_array = []
+        sys.stdout.write("--------------------------------------------------------------------\n")
+        for i, column in enumerate(columns):
+            header = re.sub(config['hbase_column_family'],'',column)
+            column_array.append(header)
+            sys.stdout.write("%s"%(header))
+            if i != len(columns)-1:
+                sys.stdout.write("\t")
+        sys.stdout.write("\n--------------------------------------------------------------------\n")
+
         for orderedData in first_N_rows:
-           columns = orderedData.keys()
-           items = orderedData.items()
-           if not header_printed:
-               sys.stdout.write("--------------------------------------------------------------------\n")
-               for i, column in enumerate(columns):
-                   header = re.sub(config['hbase_column_family'],'',column)
-                   sys.stdout.write("%s"%(header))
-                   if i != len(columns)-1:
-                       sys.stdout.write("\t")
-               sys.stdout.write("\n--------------------------------------------------------------------\n")
-               header_printed = True
-             
-           for i,(column,value) in enumerate(items):
-               if value == '' or value==None:
-                   sys.stdout.write("NA")
+
+           for col in column_array:
+               if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
+                   sys.stdout.write("%s"%(orderedData[col]))
                else:
-                   sys.stdout.write("%s"%(value))
-                       
-               if i != len(items)-1:
+                   sys.stdout.write("NA")
+
+               if col != column_array[-1]:
                    sys.stdout.write("  |  ")
+
            sys.stdout.write("\n")
                
     def to_html(self, nRows=10):
