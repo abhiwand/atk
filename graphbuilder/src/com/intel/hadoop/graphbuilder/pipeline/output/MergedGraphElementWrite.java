@@ -31,6 +31,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 /**
  * simple interface for writing the merged edges and vertices
@@ -39,9 +40,9 @@ import java.util.HashMap;
  * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMergedGraphElementWrite
  */
 public abstract class MergedGraphElementWrite {
-    protected HashMap<EdgeID, Writable> edgeSet;
-    protected HashMap<Object, Writable> vertexSet;
-    protected HashMap<Object, StringType> vertexLabelMap;
+    protected Hashtable<EdgeID, Writable> edgeSet;
+    protected Hashtable<Object, Writable> vertexSet;
+    protected Hashtable<Object, StringType> vertexLabelMap;
     protected Enum vertexCounter;
     protected Enum edgeCounter;
     protected Reducer.Context context;
@@ -51,9 +52,9 @@ public abstract class MergedGraphElementWrite {
     protected KeyFunction keyFunction;
 
     protected  void initArgs(ArgumentBuilder args){
-        edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
-        vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
-        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap", new HashMap<Object, StringType>());
+        edgeSet = (Hashtable<EdgeID, Writable>)args.get("edgeSet");
+        vertexSet = (Hashtable<Object, Writable>)args.get("vertexSet");
+        vertexLabelMap = (Hashtable<Object, StringType>)args.get("vertexLabelMap", new Hashtable<Object, StringType>());
 
         vertexCounter = (Enum)args.get("vertexCounter");
         edgeCounter = (Enum)args.get("edgeCounter");

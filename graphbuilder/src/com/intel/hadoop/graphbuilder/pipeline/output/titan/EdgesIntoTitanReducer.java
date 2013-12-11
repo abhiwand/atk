@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ import java.util.Map;
 public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> {
     private static final Logger LOG = Logger.getLogger(EdgesIntoTitanReducer.class);
     private TitanGraph            graph;
-    private HashMap<Object, Long> vertexNameToTitanID;
+    private Hashtable<Object, Long> vertexNameToTitanID;
 
     private EdgesIntoTitanReducerCallback edgesIntoTitanReducerCallback;
 
@@ -83,7 +84,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
     @Override
     public void setup(Context context) throws IOException, InterruptedException {
 
-        this.vertexNameToTitanID = new HashMap<Object, Long>();
+        this.vertexNameToTitanID = new Hashtable<Object, Long>();
         this.graph               = getTitanGraphInstance(context);
 
         edgesIntoTitanReducerCallback = new EdgesIntoTitanReducerCallback();
@@ -110,7 +111,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
     public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        HashMap<EdgeID, Writable> edgePropertyTable  = new HashMap();
+        Hashtable<EdgeID, Writable> edgePropertyTable  = new Hashtable();
 
         for(SerializedPropertyGraphElement graphElement: values){
             /*

@@ -34,13 +34,14 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
 public class RDFGraphMergedGraphElementWrite extends MergedGraphElementWrite {
     private String     rdfNamespace;
 
-    HashMap<Object, StringType> vertexLabelMap;
+    Hashtable<Object, StringType> vertexLabelMap;
 
     private MultipleOutputs<NullWritable, Text> multipleOutputs;
 

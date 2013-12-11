@@ -33,7 +33,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 /**
@@ -42,10 +42,10 @@ import java.util.Map;
  *   through the temp file
  * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
  *
- * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementMerge
+ * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge
  */
 public class TitanMergedGraphElementWrite extends MergedGraphElementWrite{
-    private HashMap<Object, Long>  vertexNameToTitanID = new HashMap<>();
+    private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<>();
 
     @Override
     public void write(ArgumentBuilder args)

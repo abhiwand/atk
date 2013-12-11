@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 import com.hp.hpl.jena.rdf.model.*;
@@ -76,9 +77,9 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
         NUM_EDGES
     }
 
-    private HashMap<EdgeID, Writable> edgeSet;
-    private HashMap<Object, Writable>   vertexSet;
-    private HashMap<Object, StringType>    vertexLabelMap       = new HashMap();
+    private Hashtable<EdgeID, Writable> edgeSet;
+    private Hashtable<Object, Writable>   vertexSet;
+    private Hashtable<Object, StringType>    vertexLabelMap = new Hashtable<>();
 
     //private PropertyGraphElements propertyGraphElements;
     private MergedGraphElementWrite RDFGraphMergedGraphElementWrite;
@@ -88,7 +89,7 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
 
     protected static final Map<String, String> RDFNamespaceMap;
     static {
-        RDFNamespaceMap = new HashMap<String, String>();
+        RDFNamespaceMap = new Hashtable<String, String>();
         RDFNamespaceMap.put("OWL",        OWL.NS);
         RDFNamespaceMap.put("DC",         DC.NS);
         RDFNamespaceMap.put("LOCMAP",     LocationMappingVocab.NS);
@@ -103,7 +104,7 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
 
     protected static final Map<String, Property> RDFTagMap;
     static {
-        RDFTagMap = new HashMap<String, Property>();
+        RDFTagMap = new Hashtable<String, Property>();
         RDFTagMap.put("DC.contributor", DC.contributor);
         RDFTagMap.put("DC.coverage", DC.coverage);
         RDFTagMap.put("DC.creator", DC.creator);
@@ -170,10 +171,10 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
     public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        vertexLabelMap       = new HashMap();
+        vertexLabelMap       = new Hashtable<>();
 
-        edgeSet       = new HashMap<>();
-        vertexSet     = new HashMap<>();
+        edgeSet       = new Hashtable<>();
+        vertexSet     = new Hashtable<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
             GraphElement graphElement = serializedPropertyGraphElement.graphElement();
@@ -201,8 +202,8 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
      *
      * @param graphElement the graph element to add to our existing vertexSet or edgeSet
      */
-    private void merge(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet, HashMap<Object,
-            StringType> vertexLabelMap, GraphElement graphElement){
+    private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet, Hashtable<Object,
+                StringType> vertexLabelMap, GraphElement graphElement){
         graphElement.typeCallback(propertyGraphElementPut,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
@@ -216,8 +217,8 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
      * @throws IOException
      * @throws InterruptedException
      */
-    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
-                      HashMap<Object, StringType> vertexLabelMap, Context context) throws IOException,
+    public void write(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
+                      Hashtable<Object, StringType> vertexLabelMap, Context context) throws IOException,
             InterruptedException {
         RDFGraphMergedGraphElementWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
                 .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap).with("vertexCounter",

@@ -183,8 +183,8 @@ public class RDFGraphMR extends GraphGenerationMRJob {
      *
      * @param valueClass the intermediate value class
      * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementLongTypeVids
      */
 
     @Override

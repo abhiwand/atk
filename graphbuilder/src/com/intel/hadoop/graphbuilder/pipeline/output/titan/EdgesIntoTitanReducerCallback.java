@@ -30,7 +30,7 @@ import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import org.apache.hadoop.io.Writable;
 
-import java.util.HashMap;
+import java.util.Hashtable;
 
 /**
  *  Add all the edges and vertices into the their respective hashmaps. the edgePropertyTable hash is keyed by edge
@@ -42,11 +42,11 @@ import java.util.HashMap;
  * @see EdgesIntoTitanReducer
  */
 public class EdgesIntoTitanReducerCallback implements GraphElementTypeCallback {
-    private HashMap<EdgeID, Writable> edgePropertyTable;
-    private HashMap<Object, Long> vertexNameToTitanID;
+    private Hashtable<EdgeID, Writable> edgePropertyTable;
+    private Hashtable<Object, Long> vertexNameToTitanID;
 
     @Override
-    public HashMap<EdgeID, Writable> edge(GraphElement graphElement, ArgumentBuilder  args) {
+    public Hashtable<EdgeID, Writable> edge(GraphElement graphElement, ArgumentBuilder  args) {
         initArguments(args);
 
         Edge edge   = (Edge) graphElement;
@@ -58,7 +58,7 @@ public class EdgesIntoTitanReducerCallback implements GraphElementTypeCallback {
     }
 
     @Override
-    public HashMap<Object, Long> vertex(GraphElement graphElement, ArgumentBuilder args) {
+    public Hashtable<Object, Long> vertex(GraphElement graphElement, ArgumentBuilder args) {
         initArguments(args);
 
         Vertex vertex = (Vertex) graphElement;
@@ -75,8 +75,8 @@ public class EdgesIntoTitanReducerCallback implements GraphElementTypeCallback {
 
     private void initArguments(ArgumentBuilder args){
         if(args.exists("edgePropertyTable") && args.exists("vertexNameToTitanID")){
-            edgePropertyTable = (HashMap<EdgeID, Writable>)args.get("edgePropertyTable");
-            vertexNameToTitanID = (HashMap<Object, Long>)args.get("vertexNameToTitanID");
+            edgePropertyTable = (Hashtable<EdgeID, Writable>)args.get("edgePropertyTable");
+            vertexNameToTitanID = (Hashtable<Object, Long>)args.get("vertexNameToTitanID");
         }else{
             throw new IllegalArgumentException("edgePropertyTable and vertexNameToTitanID were not set" );
         }

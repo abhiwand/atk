@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
@@ -71,8 +72,8 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
         NUM_EDGES
     }
 
-    private HashMap<EdgeID, Writable> edgeSet;
-    private HashMap<Object, Writable>   vertexSet;
+    private Hashtable<EdgeID, Writable> edgeSet;
+    private Hashtable<Object, Writable>   vertexSet;
 
     private MergedGraphElementWrite textMergedWrite;
     private GraphElementTypeCallback propertyGraphElementWrite;
@@ -120,8 +121,8 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        edgeSet       = new HashMap<>();
-        vertexSet     = new HashMap<>();
+        edgeSet       = new Hashtable<>();
+        vertexSet     = new Hashtable<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
             GraphElement graphElement = serializedPropertyGraphElement.graphElement();
@@ -143,7 +144,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
      *
      * @param graphElement the graph element to add to our existing vertexSet or edgeSet
      */
-    private void merge(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+    private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
                        GraphElement graphElement){
         graphElement.typeCallback(propertyGraphElementWrite,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
@@ -158,7 +159,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
      * @throws IOException
      * @throws InterruptedException
      */
-    public void write(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+    public void write(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
                       Context context) throws IOException, InterruptedException {
 
         textMergedWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)

@@ -29,7 +29,7 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.io.Writable;
 
-import java.util.HashMap;
+import java.util.Hashtable;
 
 /**
  * <p>
@@ -44,8 +44,8 @@ import java.util.HashMap;
  * all arguments are extracted from the argument builder and all are mandatory except the edgeReducerFunction,
  * vertexReducerFunction.
  * <ul>
- *      <li>edgeSet - hashmap with the current list of merged edges</li>
- *      <li>vertexSet - hashmap with the current list of merged vertices</li>
+ *      <li>edgeSet - Hashtable with the current list of merged edges</li>
+ *      <li>vertexSet - Hashtable with the current list of merged vertices</li>
  *      <li>edgeReducerFunction - optional edge reducer function</li>
  *      <li>vertexReducerFunction - optional vertex reducer function</li>
  *      <li>vertexLabelMap - list of vertex labels to be used for writing rdf output</li>
@@ -55,9 +55,9 @@ import java.util.HashMap;
  */
 public class GraphElementMerge implements GraphElementTypeCallback {
 
-    private HashMap<EdgeID, Writable> edgeSet;
-    private HashMap<Object, Writable>   vertexSet;
-    private HashMap<Object, StringType>    vertexLabelMap;
+    private Hashtable<EdgeID, Writable> edgeSet;
+    private Hashtable<Object, Writable>   vertexSet;
+    private Hashtable<Object, StringType>    vertexLabelMap;
 
     private Functional edgeReducerFunction;
     private Functional vertexReducerFunction;
@@ -71,7 +71,7 @@ public class GraphElementMerge implements GraphElementTypeCallback {
      * @return the updated edge set
      */
     @Override
-    public HashMap<EdgeID, Writable> edge(GraphElement graphElement, ArgumentBuilder args) {
+    public Hashtable<EdgeID, Writable> edge(GraphElement graphElement, ArgumentBuilder args) {
         this.arguments(args);
 
         EdgeID edgeID = (EdgeID) graphElement.getId();
@@ -119,7 +119,7 @@ public class GraphElementMerge implements GraphElementTypeCallback {
      * @return updated vertex set
      */
     @Override
-    public HashMap<Object, Writable>  vertex(GraphElement graphElement, ArgumentBuilder args) {
+    public Hashtable<Object, Writable>  vertex(GraphElement graphElement, ArgumentBuilder args) {
         this.arguments(args);
 
         Object vid = graphElement.getId();
@@ -161,8 +161,8 @@ public class GraphElementMerge implements GraphElementTypeCallback {
     /**
      * Gets all our arguments from the argument builder.
      * <ul>
-     *      <li>edgeSet - hashmap with the current list of merged edges</li>
-     *      <li>vertexSet - hashmap with the current list of merged vertices</li>
+     *      <li>edgeSet - Hashtable with the current list of merged edges</li>
+     *      <li>vertexSet - Hashtable with the current list of merged vertices</li>
      *      <li>edgeReducerFunction - optional edge reducer function</li>
      *      <li>vertexReducerFunction - optional vertex reducer function</li>
      *      <li>vertexLabelMap - list of vertex labels to be used for writing rdf output</li>
@@ -173,11 +173,11 @@ public class GraphElementMerge implements GraphElementTypeCallback {
      * @see Functional
      */
     private void arguments(ArgumentBuilder args){
-        edgeSet = (HashMap<EdgeID, Writable>)args.get("edgeSet");
-        vertexSet = (HashMap<Object, Writable>)args.get("vertexSet");
+        edgeSet = (Hashtable<EdgeID, Writable>)args.get("edgeSet");
+        vertexSet = (Hashtable<Object, Writable>)args.get("vertexSet");
         edgeReducerFunction = (Functional)args.get("edgeReducerFunction", null);
         vertexReducerFunction = (Functional)args.get("vertexReducerFunction", null);
-        vertexLabelMap = (HashMap<Object, StringType>)args.get("vertexLabelMap", null);
+        vertexLabelMap = (Hashtable<Object, StringType>)args.get("vertexLabelMap", null);
         noBiDir = (boolean)args.get("noBiDir");
     }
 }

@@ -38,6 +38,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 
 import org.apache.hadoop.io.IntWritable;
 
@@ -66,7 +67,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     private Functional vertexReducerFunction;
     private TitanGraph graph;
 
-    private HashMap<Object, Long>  vertexNameToTitanID;
+    private Hashtable<Object, Long> vertexNameToTitanID;
     private IntWritable            outKey;
     private SerializedPropertyGraphElement outValue;
     private Class                  outClass;
@@ -78,8 +79,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
         NUM_EDGES
     }
 
-    private HashMap<EdgeID, Writable> edgeSet;
-    private HashMap<Object, Writable>   vertexSet;
+    private Hashtable<EdgeID, Writable> edgeSet;
+    private Hashtable<Object, Writable>   vertexSet;
 
     private MergedGraphElementWrite titanMergedWrite;
     private GraphElementTypeCallback propertyGraphElementMerge;
@@ -121,7 +122,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
         }
 
 
-        this.vertexNameToTitanID = new HashMap<Object, Long>();
+        this.vertexNameToTitanID = new Hashtable<Object, Long>();
 
         this.graph = getTitanGraphInstance(context);
         assert (null != this.graph);
@@ -173,8 +174,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        edgeSet       = new HashMap<>();
-        vertexSet     = new HashMap<>();
+        edgeSet       = new Hashtable<>();
+        vertexSet     = new Hashtable<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
             GraphElement graphElement = serializedPropertyGraphElement.graphElement();
@@ -207,7 +208,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
      *
      * @param graphElement the graph element to add to our existing vertexSet or edgeSet
      */
-    private void merge(HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet,
+    private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
                        GraphElement graphElement){
         graphElement.typeCallback(propertyGraphElementMerge,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
@@ -222,7 +223,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
      * @throws IOException
      * @throws InterruptedException
      */
-    public void write( HashMap<EdgeID, Writable> edgeSet, HashMap<Object, Writable> vertexSet, Context context) throws
+    public void write( Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet, Context context) throws
             IOException, InterruptedException {
 
         titanMergedWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
