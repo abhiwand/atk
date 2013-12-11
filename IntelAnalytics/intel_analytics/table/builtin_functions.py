@@ -61,14 +61,14 @@ class EvalFunctions:
     @staticmethod
     def to_string(x):
         #these strings will be passed to the pig jython scripts
-        return {
+        mapping = {
             EvalFunctions.String.ENDS_WITH: 'ENDSWITH',
             EvalFunctions.String.EQUALS_IGNORE_CASE: 'EqualsIgnoreCase',
             EvalFunctions.String.INDEX_OF: 'INDEXOF',
             EvalFunctions.String.LAST_INDEX_OF: 'LAST_INDEX_OF',
             EvalFunctions.String.LOWER: 'LOWER',
-            EvalFunctions.String.LTRIM: 'LTRIM',      
-            EvalFunctions.String.REGEX_EXTRACT: 'REGEX_EXTRACT',      
+            EvalFunctions.String.LTRIM: 'LTRIM',
+            EvalFunctions.String.REGEX_EXTRACT: 'REGEX_EXTRACT',
             EvalFunctions.String.REGEX_EXTRACT_ALL: 'REGEX_EXTRACT_ALL',
             EvalFunctions.String.REPLACE: 'REPLACE',
             EvalFunctions.String.RTRIM: 'RTRIM',
@@ -84,11 +84,16 @@ class EvalFunctions:
             EvalFunctions.Math.LOG: 'LOG',
             EvalFunctions.Math.LOG10: 'LOG10',
             EvalFunctions.Math.POW: 'org.apache.pig.piggybank.evaluation.math.POW',
-            EvalFunctions.Math.EXP: 'EXP',    
+            EvalFunctions.Math.EXP: 'EXP',
             EvalFunctions.Math.STND: 'STND',
-            
+
             EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON'
-        }[x]
+        }
+
+        if x in mapping:
+            return mapping[x]
+        else:
+            raise Exception("The function specified is not valid")
 
 string_functions = []
 math_functions = []  
