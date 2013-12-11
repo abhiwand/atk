@@ -111,7 +111,11 @@ class HBaseTable(object):
                   new_column_name,
                   transformation,
                   transformation_args=None):
-        transformation_to_apply = EvalFunctions.to_string(transformation)
+
+        try:
+            transformation_to_apply = EvalFunctions.to_string(transformation)
+        except:
+            raise HBaseTableException('The specified transformation function is invalid')
         
         #by default all transforms are now in-place
         keep_source_column=True#For in-place transformations the source/original feature has to be kept
