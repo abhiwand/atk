@@ -32,11 +32,11 @@ import java.util.Objects;
 /**
  * Represents a vertex object with a vertex ID and a (potentially empty) property map.
  *
- *  * <p>
+ * <p>
  * This class is mutable. See the {@code configure} and {@code setProperty} methods.
  * </p>
  *
- * @param <VertexIdType> The type of vertex id.
+ * @param <VertexIdType> The type of the vertex ID.
  */
 public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> implements Writable {
 
@@ -45,7 +45,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     private StringType   vertexLabel;
 
     /**
-     * Default constructor. Creates a placeholder vertex.
+     * The default vertex constructor. Creates a placeholder vertex.
      */
     public Vertex() {
         this.properties  = new PropertyMap();
@@ -55,7 +55,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     /**
      * Creates a vertex with given vertex ID.
      *
-     * @param vid Vertex ID.
+     * @param vid The vertex ID.
      */
     public Vertex(VertexIdType vid) {
         this.vertexId    = vid;
@@ -64,10 +64,10 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
-     * Create a vertex with given vertex ID.
+     * Creates a vertex with given vertex ID.
      *
-     * @param vid vertex ID
-     * @param label vertex Label
+     * @param vid The vertex ID.
+     * @param label The vertex Label.
      */
     public Vertex(VertexIdType vid, String label) {
         this.vertexId    = vid;
@@ -84,8 +84,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
     /**
- * Return the label of the vertex.
-     * @return the label of the vertex
+     * Returns the label of the vertex.
+     * @return The label of the vertex.
      */
     public StringType getVertexLabel() {
         return this.vertexLabel;
@@ -102,7 +102,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
 
     /**
      * Returns a property of the vertex.
-     * @param key The lookup key for the property.
+     * @param key  The lookup key for the property.
      * @return The value of the property.
      */
     public Object getProperty(String key) {
@@ -119,8 +119,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     }
 
      /**
-     * Set label of the vertex (RDF label in case of RDF graphs)
-      * @param label  the label of the vertex
+     * Sets the label of the vertex (the RDF label in the case of RDF graphs).
+      * @param label  The label of the vertex, or the RDF label if an RDF graph.
       */
     public void setVertexLabel(StringType label) {
         this.vertexLabel = label;
@@ -128,7 +128,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
 
     /**
      * Gets the property map for the vertex.
-     * @return The property map.
+     * @return The vertex property map.
      */
     public PropertyMap getProperties() {
         return properties;
@@ -136,7 +136,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
 
     /**
      * Converts the vertex to a string.
-     * @return  AA string representation of the vertex.
+     * @return  A string representation of the vertex.
      */
     @Override
     public final String toString() {
@@ -150,7 +150,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     /**
      * Reads a vertex from an input stream.
      * @param input The input stream.
-     * @throws IOException.
+     * @throws IOException
      */
     @Override
     public void readFields(DataInput input) throws IOException {
@@ -162,7 +162,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
     /**
      * Writes a vertex to an output stream.
      * @param output The output stream.
-     * @throws IOException.
+     * @throws IOException
      */
     @Override
     public void write(DataOutput output) throws IOException {

@@ -108,7 +108,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
     }
 
     /**
-     * Initialize the table mapper job.
+     * Initializes the table mapper job.
      * @param job  The map reduce job in preparation for graph construction.
      */
     public void updateJobForMapper(Job job) {
@@ -131,7 +131,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     /**
      * Obtains a description of the input configuration for logging purposes.
-     * @return  "Hbase table name: " appended with source table name.
+     * @return  "Hbase table name: " Appended with the source table name.
      */
     public String getDescription() {
         return "Hbase table name: " + srcTableName;

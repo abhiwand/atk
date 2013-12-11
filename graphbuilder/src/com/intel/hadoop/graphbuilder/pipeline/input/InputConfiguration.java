@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,7 +15,7 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.pipeline.input;
 
@@ -30,10 +30,10 @@ import org.apache.hadoop.mapreduce.Job;
  * The first map job corresponds to stepping through the raw input and spitting out property 
  * graph elements. The input determines the first mapper.
  *
- * The output determines the first reducer and any subsequent MR tasks in a chain.
+ * The output determines the first reducer and any subsequent Map Reducer tasks in a chain.
  *
- * The methods in this interface are used by the full MR chain to properly configure the first 
- * MR job to work with the input mapper.
+ * The methods in this interface are used by the full Map Reducer chain to properly configure the first 
+ * Map Reducer job to work with the input mapper.
  *
  */
 

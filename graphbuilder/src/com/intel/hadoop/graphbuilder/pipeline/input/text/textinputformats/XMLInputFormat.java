@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -42,11 +42,11 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
- * XMLInputFormat is a builtin InputFormat for XML, borrowed from Cloud9:
+ * The XMLInputFormat class is a builtin InputFormat for XML, borrowed from Cloud9:
  * { @link https://github.com/lintoolCloud9/blob/master/src/dist/edu/umd/cloud9/collection/XMLInputFormat.java }.
  *
- * The class recognizes begin-of-document and end-of-document tags only:
- * everything between those delimiting tags is returned in an uninterpreted Text
+ * The class recognizes only the begin-of-document and end-of-document tags:
+ * everything between those delimiting tags is returned as an uninterpreted Text
  * object.
  */
 
@@ -84,8 +84,8 @@ public class XMLInputFormat extends TextInputFormat {
     }
 
     /**
-     * RecordReader for XML documents recognizes begin-of-document and
-     * end-of-document tags only: Returning a text object of everything in between
+     * RecordReader for XML documents recognizes only the begin-of-document and
+     * end-of-document tags. Returns a text object of everything in between
      * the delimiters.
      */
 

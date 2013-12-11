@@ -59,13 +59,13 @@ import org.openrdf.rio.RDFFormat;
  * The Reducer class applies user defined {@code Functional}s to reduce
  * duplicate edges and vertices. If no such {@code Functional} is provide, it
  * outputs the first instance and discards the rest with the same identifier. It
- * also discards self edges: v - > v. An option for discard bidirectional edge
+ * also discards self edges: v - > v. An option to discard bidirectional edges
  * is provided by {@code setCleanBidirectionalEdges(boolean)}.
  * <p>
  * Output directory structure:
  * <ul>
- * <li>$outputdir/edata contains edge data output</li>
- * <li>$outputdir/vdata contains vertex data output</li>
+ * <li>{@code $outputdir/edata} Contains the edge data output.</li>
+ * <li>{@code $outputdir/vdata} Contains the vertex data output.</li>
  * </ul>
  * </p>
  */
@@ -203,8 +203,8 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
                     } else {
 
                         /**
-                         * default behavior is to merge the property maps of duplicate vertices
-                         * conflicting key/value pairs get overwritten
+                         * The default behavior is to merge the property maps of duplicate vertices
+                         * conflicting key/value pairs get overwritten.
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) vertexPropertiesMap.get(vertexId);
@@ -247,8 +247,8 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
                                               edgePropertiesMap.get(edgeID)));
                     } else {
                         /**
-                         * default behavior is to merge the property maps of duplicate edges
-                         * conflicting key/value pairs get overwritten
+                         * The default behavior is to merge the property maps of duplicate edges
+                         * conflicting key/value pairs get overwritten.
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) edgePropertiesMap.get(edgeID);
@@ -322,8 +322,8 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
     }
 
     /**
-     * @param key Vertex key
-     * @param propertyMap
+     * @param {@code key} The Vertex key.
+     * @param {@code propertyMap} The Property map.
      *
      */
     void vertexToRdf(String key, String label, PropertyMap propertyMap, String outPath)
@@ -360,11 +360,10 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
     }
 
     /**
-     * @param source
-     * @param target
-     * @param label
-     * @param propertyMap
-     *
+     * @param {@code source}
+     * @param {@code target}
+     * @param {@code label}
+     * @param {@code propertyMap}
      */
     void edgeToRdf(String source, String target, String label, PropertyMap propertyMap, String outPath)
 		throws IOException, InterruptedException {

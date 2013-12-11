@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -30,7 +30,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.log4j.Logger;
 
 /**
- * Reads columns from an HTable and emits vertices and edges. Most of the magic has been moved to a 
+ * Reads columns from an HTable and emits vertices and edges. Most of the logic has been moved to a 
  * BaseMapper class that is also used by TextParsingMapper.
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper
@@ -53,14 +53,14 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, PropertyGraphEle
 
         Configuration conf = context.getConfiguration();
 
-        //this will initialize the tokenizer key function and map key and map values
+        //Initializes the tokenizer key function and map key and map values.
 
         setBaseMapper(new BaseMapper(context, conf, LOG));
     }
 
     /**
      * Maps the input of HTable rows and columns to vertices and edges. Any exception thrown by 
-     * contex.write inside the base mapper class will be caught and logged as errors so we can
+     * {@code contex.write} inside the base mapper class will be caught and logged as errors so we can
      * continue to the next record.	 
      *
      * @param row     The row key.

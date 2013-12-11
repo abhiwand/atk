@@ -31,7 +31,7 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 public class ValueClassFactory {
 
     /**
-     * @param  vidClassName
+     * @param  vidClassName  The name of the vid class.
      * @return A Class which inherits {@code PropertyGraphElement} and
      *         overrides {@code createVid} to return the correct vertex ID class.
      * @throws IllegalArgumentException.

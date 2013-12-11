@@ -22,7 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.input.rdf;
 import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
 
 /**
- * Class holding all static strings
+ * This class holds all of the static strings.
  */
 public class RDFConfiguration {
 
