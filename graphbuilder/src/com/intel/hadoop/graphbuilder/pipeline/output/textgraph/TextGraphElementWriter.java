@@ -58,7 +58,7 @@ public class TextGraphElementWriter extends GraphElementWriter {
         initArgs(args);
 
         int vertexCount = 0;
-        String outPath = new String("edata/part");
+        String outPath = new String("vdata/part");
 
         // Output vertex records
 
@@ -94,5 +94,11 @@ public class TextGraphElementWriter extends GraphElementWriter {
         }
 
         context.getCounter(edgeCounter).increment(edgeCount);
+    }
+
+    @Override
+    protected void initArgs(ArgumentBuilder arguments){
+        super.initArgs(arguments);
+        this.multipleOutputs = (MultipleOutputs<NullWritable, Text>)arguments.get("multipleOutputs");
     }
 }

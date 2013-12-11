@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Set;
 
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.rdf.RDFConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.ElementIdKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
@@ -89,7 +90,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
 
-    private GraphElement mapValueType;
+    private SerializedPropertyGraphElement mapValueType;
     private Class vidClass;
 
     private final Class keyFuncClass = ElementIdKeyFunction.class;
@@ -190,7 +191,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     @Override
     public void setValueClass(Class valueClass) {
         try {
-            this.mapValueType = (GraphElement) valueClass.newInstance();
+            this.mapValueType = (SerializedPropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "GRAPHBUILDER_ERROR: Cannot set value class ( " + valueClass.getName() + ")", LOG, e);

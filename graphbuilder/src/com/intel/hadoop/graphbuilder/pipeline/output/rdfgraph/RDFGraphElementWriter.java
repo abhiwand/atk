@@ -23,6 +23,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 import com.hp.hpl.jena.rdf.model.*;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
@@ -39,9 +40,8 @@ import java.util.Map;
 
 
 public class RDFGraphElementWriter extends GraphElementWriter {
-    private String     rdfNamespace;
 
-    Hashtable<Object, StringType> vertexLabelMap;
+    private String     rdfNamespace;
 
     private MultipleOutputs<NullWritable, Text> multipleOutputs;
 
@@ -49,8 +49,6 @@ public class RDFGraphElementWriter extends GraphElementWriter {
     public void write(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
-
-        this.multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
 
         Configuration conf = context.getConfiguration();
 
@@ -189,5 +187,11 @@ public class RDFGraphElementWriter extends GraphElementWriter {
             Text text = new Text(subject.toString() + " " + predicate.toString() + " " + object.toString() + " .");
             this.multipleOutputs.write(NullWritable.get(), text, outPath);
         }   // End of while
+    }
+
+    @Override
+    protected void initArgs(ArgumentBuilder arguments){
+        super.initArgs(arguments);
+        this.multipleOutputs = (MultipleOutputs<NullWritable, Text>)arguments.get("multipleOutputs");
     }
 }

@@ -167,10 +167,9 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
     public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        vertexLabelMap       = new Hashtable<>();
-
         edgeSet       = new Hashtable<>();
         vertexSet     = new Hashtable<>();
+        vertexLabelMap       = new Hashtable<>();
 
         for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
             GraphElement graphElement = serializedPropertyGraphElement.graphElement();
@@ -219,7 +218,7 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
         RDFGraphElementWriter.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
                 .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap).with("vertexCounter",
                         Counters.NUM_VERTICES)
-                .with("edgeCounter", Counters.NUM_EDGES).with("context", context));
+                .with("edgeCounter", Counters.NUM_EDGES).with("context", context).with("multipleOutputs",multipleOutputs));
     }
 
     private void initMergerWriter(Context context){

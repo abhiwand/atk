@@ -85,6 +85,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
         this.noBiDir = conf.getBoolean("noBiDir", false);
 
         multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
+
         try {
             if (conf.get("edgeReducerFunction") != null) {
                 this.edgeReducerFunction =
@@ -164,7 +165,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
         textWriter.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
                 .with("vertexSet", vertexSet).with("vertexCounter", Counters.NUM_VERTICES)
                 .with("edgeCounter", Counters.NUM_EDGES).with("context", context)
-        );
+                .with("multipleOutputs", multipleOutputs));
     }
 
     @Override
