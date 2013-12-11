@@ -32,7 +32,7 @@ import java.util.Objects;
 public class Triple<A, B, C> {
 
     /**
-     * Construct a triple
+     * Constructs a triple
      *
      * @param a
      * @param b
@@ -45,52 +45,49 @@ public class Triple<A, B, C> {
     }
 
     /**
-     * @return the A value.
+     * @return The A value.
      */
     public A getA() {
         return this.a;
     }
 
     /**
-     * @return the B value.
+     * @return The B value.
      */
     public B getB() {
         return this.b;
     }
 
     /**
-     * @return the C value.
+     * @return The C value.
      */
     public C getC() {
         return this.c;
     }
 
     /**
-     * @param val
-     *          the new value for the A value.
+     * @param val   The new value for the A value.
      */
     public void setA(A val) {
         this.a = val;
     }
 
     /**
-     * @param val
-     *          the new value for the B value.
+     * @param val   The new value for the B value.
      */
     public void setB(B val) {
         this.b = val;
     }
 
     /**
-     * @param val
-     *          the new value for the C value.
+     * @param val   The new value for the C value.
      */
     public void setC(C val) {
         this.c = val;
     }
 
     /**
-     * @return reverse first two coordinates
+     * @return Reverse the first two coordinates.
      */
     public Triple<B, A, C> swapAB() {
         return new Triple<B, A, C>(b, a, c);

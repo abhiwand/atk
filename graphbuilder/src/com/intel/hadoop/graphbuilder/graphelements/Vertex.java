@@ -36,7 +36,7 @@ import java.io.IOException;
  * This class is mutable. See the {@code configure} and {@code setProperty} methods.
  * </p>
  *
- * @param <VertexIdType> the type of vertex id.
+ * @param <VertexIdType> The type of vertex id.
  */
 public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
         extends GraphElement implements Writable {
@@ -46,7 +46,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     private StringType label;
 
     /**
-     * Default constructor. Creates an placeholder vertex.
+     * Default constructor. Creates a placeholder vertex.
      */
     public Vertex() {
         super();
@@ -56,9 +56,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Create a vertex with an ID.
+     * Creates a vertex with given vertex ID.
      *
-     * @param vid vertex ID
+     * @param vid Vertex ID.
      */
     public Vertex(VertexIdType vid) {
 
@@ -66,7 +66,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Create a vertex with ID, label, and property map
+     * Create a vertex with ID, label, and property map.
      *
      * @param vid vertex ID
      */
@@ -142,8 +142,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Return the ID of the vertex.
-     * @return the ID of the vertex
+     * Returns the ID of the vertex.
+     * @return The ID of the vertex.
      */
     public VertexIdType getId() {
         return id;
@@ -164,9 +164,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
         return this.label;
     }
     /**
-     * Overwrite the ID and property map of the vertex.
-     * @param vid new vertex ID
-     * @param properties new {@code PropertyMap}
+     * Overwrites the ID and property map of the vertex.
+     * @param vid The new vertex ID.
+     * @param properties The new {@code PropertyMap}.
      */
     public void configure(VertexIdType vid, PropertyMap properties) {
         this.id = vid;
@@ -174,18 +174,18 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Return a property of the vertex.
-     * @param key lookup key for the property
-     * @return the value of the property
+     * Returns a property of the vertex.
+     * @param key The lookup key for the property.
+     * @return The value of the property.
      */
     public Object getProperty(String key) {
         return properties.getProperty(key);
     }
 
     /**
-     * Set a property of the vertex
-     * @param key  the key of the property being updated
-     * @param val  the new value for the property
+     * Set a property of the vertex.
+     * @param key  The key of the property being updated.
+     * @param val  The new value for the property.
      */
     public void setProperty(String key, Writable val) {
         this.properties.setProperty(key, val);
@@ -208,16 +208,16 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Get the property map for the vertex.
-     * @return the property map
+     * Gets the property map for the vertex.
+     * @return The property map.
      */
     public PropertyMap getProperties() {
         return properties;
     }
 
     /**
-     * Convert the vertex to a string.
-     * @return  a string representation of the vertex
+     * Converts the vertex to a string.
+     * @return  AA string representation of the vertex.
      */
     @Override
     public final String toString() {
@@ -229,9 +229,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Read a vertex from an input stream
-     * @param input the input stream
-     * @throws IOException
+     * Reads a vertex from an input stream.
+     * @param input The input stream.
+     * @throws IOException.
      */
     @Override
     public void readFields(DataInput input) throws IOException {
@@ -241,9 +241,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Write a vertex to an output stream
-     * @param output the output stream
-     * @throws IOException
+     * Writes a vertex to an output stream.
+     * @param output The output stream.
+     * @throws IOException.
      */
     @Override
     public void write(DataOutput output) throws IOException {

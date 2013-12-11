@@ -30,8 +30,8 @@ import java.util.Map;
 
 
 /**
- *  Class for handling graph database connections:
- *   right now only Titan is supported
+ *  A class for handling graph database connections.
+ *  This release supports only Titan databases.
  */
 public class GraphDatabaseConnector {
 
@@ -39,10 +39,10 @@ public class GraphDatabaseConnector {
     private static RuntimeConfig runtimeConfig = RuntimeConfig.getInstance();
 
     /**
-     * @param graphDB                         Identifier of the target graph database,  "titan" for now
-     *                                        "allegrograph" and "neo4j" are placeholders
-     * @throws UnsupportedOperationException  when it cannot open the graph database, particular, if you try to
-     *                                        open an unsupported graph databse
+     * @param graphDB                         The identifier of the target graph database, "titan" for now
+     *                                        "allegrograph" and "neo4j" are placeholders.
+     * @throws UnsupportedOperationException  When it cannot open the graph database, particularly if you try to
+     *                                        open an unsupported graph database.
      */
 
     public static TitanGraph open(String graphDB, org.apache.commons.configuration.Configuration configuration,

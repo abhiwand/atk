@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.io.IOException;
 
 /**
- * Class that is responsible for resolving and configuring the graph construction pipeline prior to execution.
+ * The class that is responsible for resolving and configuring the graph construction pipeline prior to execution.
  *
  * <p>
  *  Stages include:

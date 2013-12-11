@@ -23,7 +23,7 @@ package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
 
 /**
- * Class holding all static strings
+ * The class holding all of the static strings.
  */
 public class GBHTableConfiguration {
 

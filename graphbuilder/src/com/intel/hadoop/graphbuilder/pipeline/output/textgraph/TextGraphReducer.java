@@ -43,15 +43,15 @@ import org.apache.log4j.Logger;
 
 /**
  * The Reducer class applies user defined {@code Functional}s to reduce
- * duplicate edges and vertices. If no such {@code Functional} is provide, it
+ * duplicate edges and vertices. If the user does not provide any {@code Functional}, it
  * outputs the first instance and discards the rest with the same identifier. It
- * also discards self edges: v - > v. An option for discard bidirectional edge
+ * also discards self edges: v - > v. An option for discarding bidirectional edges
  * is provided by {@code setCleanBidirectionalEdges(boolean)}.
  * <p>
  * Output directory structure:
  * <ul>
- * <li>$outputdir/edata contains edge data output</li>
- * <li>$outputdir/vdata contains vertex data output</li>
+ * <li>$outputdir/edata Contains the edge data output.</li>
+ * <li>$outputdir/vdata Contains the vertex data output.</li>
  * </ul>
  * </p>
  */

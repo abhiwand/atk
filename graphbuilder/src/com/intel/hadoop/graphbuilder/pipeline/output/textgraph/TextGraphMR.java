@@ -46,28 +46,29 @@ import org.apache.log4j.Logger;
 
 import com.intel.hadoop.graphbuilder.util.Functional;
 /**
- * Set up a MapReduce jobs to store a property graph as a text vertex list and a text edge list.
+ * Sets up a MapReduce job to store a property graph as a text vertex list and a text edge list.
  *
  * <p>
  *     To run a graph construction job:
  *     <ul>
- *         <li>Configure the graph building pipeline by providing a {@code InputConfiguration} and {@code GraphBuildingRule}
- *         through the method {@code init}</li>
- *         <li>Invoke the pipeline with the method {@code run}</li>
+ *         <li>Configure the graph building pipeline by providing a {@code InputConfiguration} and 
+ *         {@code GraphBuildingRule} through the method {@code init}.</li>
+ *         <li>Invoke the pipeline with the method {@code run}.</li>
  *     </ul>
  * </p>
  * <p>
  *     <ul>
  * <li>The mapper for the job is determined by the {@code InputConfiguration}. </li>
- * <li>The property graph elements are streamed out of the mapper by the {@code GraphTokenizer}</li>
- * <li>The reducer, provided by this class, performs a "de-duplification" step, by which duplicate edges and vertices
- * are merged, and then stores the unique vertices in a text file of vertices and a text file of edges.</li>
+ * <li>The property graph elements are streamed out of the mapper by the {@code GraphTokenizer}.</li>
+ * <li>The reducer, provided by this class, performs a "de-duplification" step, by which duplicate 
+ * edges and vertices are merged, and then the reducer stores the unique vertices in a text file of 
+ * vertices and a text file of edges.</li>
  * </p>
  *
  * <p> The output is structured as follows:
  * <ul>
- * <li>$outputdir/edata contains edge data output</li>
- * <li>$outputdir/vdata contains vertex data output</li>
+ * <li>$outputdir/edata Contains the edge data output.</li>
+ * <li>$outputdir/vdata Contains the vertex data output.</li>
  * </ul>
  * </p>
  *
@@ -107,15 +108,16 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Set-up time routine that connects raw data ({@code inputConfiguration} and the graph generations rule
-     * ({@code graphBuildingRule}) into the MR chain.
+     * Set-up time routine that connects raw data ({@code inputConfiguration} and the graph 
+     * generations rule ({@code graphBuildingRule}) to the MR chain.
      *
      * <p>
      *     This step must be taken before attempting to execute the pipeline with the {@code run} method.
      * </p>
      *
-     * @param inputConfiguration object that handles the generation of data records from raw data
-     * @param graphBuildingRule object that handles the conversion of data records into property graph element
+     * @param inputConfiguration The object that handles the generation of data records from raw data.
+     * @param graphBuildingRule The object that handles the conversion of data records into a 
+	 * property graph element.
      */
     @Override
     public void init(InputConfiguration inputConfiguration, GraphBuildingRule graphBuildingRule) {
@@ -138,12 +140,12 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Set user defined function for reduce duplicate vertices and edges.
-     * <p>If the user does not specify these functions, the default behavior is that duplicate objects will be
-     * merged by having their property maps merged.</p>
+     * Sets user defined functions to reduce duplicate vertices and edges.
+     * <p>If the user does not specify these functions, the default behavior is that duplicate objects 
+     * will be merged by having their property maps merged.</p>
      *
-     * @param vertexReducerFunction user specified function for reducing duplicate vertices
-     * @param edgeReducerFunction   user specified function for reducing duplicate edges
+     * @param vertexReducerFunction User specified function for reducing duplicate vertices.
+     * @param edgeReducerFunction   User specified function for reducing duplicate edges.
      */
 
     public void setFunctionClass(Class vertexReducerFunction, Class edgeReducerFunction) {
@@ -165,9 +167,9 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Set the option to clean (remove) bidirectional edges.
+     * Sets the option to clean (remove) bidirectional edges.
      *
-     * @param clean the boolean option value, if true then remove bidirectional edges.
+     * @param clean The boolean option value, if true then remove bidirectional edges.
      */
 
     @Override
@@ -176,11 +178,12 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     *Set the value class for the property graph elements coming from the mapper/tokenizer.
+     *Sets the value class for the property graph elements coming from the mapper and tokenizer.
      *
-     * <p> The class is one of the instantiations of {@code SerializedPropertyGraphElement}, determined the vertex ID type</p>
+     * <p> The class is one of the instantiations of {@code SerializedPropertyGraphElement}that determines
+     * the vertex ID type.</p>
      *
-     * @param valueClass the intermediate value class
+     * @param valueClass The intermediate value class
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementLongTypeVids
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids
@@ -201,9 +204,9 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
     /**
      * Set the vertex id class.
-     * <p>This can either be a {@code StringType} or {@code LongType}, which are writable encapsulations of the
-     * {@code String} and {@code Long} types, respectively. </p>
-     * @param vidClass the class of the vertex IDs
+     * <p>This can either be a {@code StringType} or {@code LongType}, which are writable 
+     * encapsulations of the {@code String} and {@code Long} types, respectively. </p>
+     * @param vidClass The class of the vertex IDs.
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement
      * @see com.intel.hadoop.graphbuilder.types.StringType
      * @see com.intel.hadoop.graphbuilder.types.LongType
@@ -216,7 +219,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
     /**
      * Get the configuration of the current job.
-     * @return Hadoop configuration of the current job
+     * @return The Hadoop configuration of the current job.
      */
 
     public Configuration getConf() {
@@ -224,9 +227,9 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Set user defined options.
+     * Sets user defined options.
      *
-     * @param userOpts a Map of option key value pairs.
+     * @param userOpts A Map of option key value pairs.
      */
     @Override
     public void setUserOptions(HashMap<String, String> userOpts) {
@@ -236,9 +239,9 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Run the graph building pipeline.
+     * Runs the graph building pipeline.
      *
-     * @param cmd user provided command line options
+     * @param cmd The user provided command line options.
      * @throws IOException
      * @throws ClassNotFoundException
      * @throws InterruptedException

@@ -21,49 +21,48 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Invoke subprocess calls with polling to check progress.
+Invokes subprocess calls with polling to check progress.
 """
 
 import time
 
 from threading import Thread
 from subprocess import PIPE, Popen
-from intel_analytics.report import JobReportService
 
 SIGTERM_TO_SIGKILL_SECS = 2 # seconds to wait before send the big kill
 
 def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False):
     """
-    Runs the command described by args in a subprocess, with or without polling
+    Runs the command described by args in a subprocess, with or without polling.
 
-    Starts a subprocess which runs the command described by args.  It consumes
+    Starts a subprocess, which runs the command described by args.  It consumes
     the subprocess's STDERR and collects its return code.  If called with a
     heartbeat N, then this function will poll the subprocess every N seconds
     to see if the command has completed.
 
-    When subprocess completes, if the return code != 0 then an Exception is
+    When the subprocess completes, if the return code != 0 then an Exception is
     raised containing the return code and the STDERR collected from the
     subprocess.
 
     Parameters
     ----------
 
-    args : list of strings describing the command
+    args : A list of strings describing the command.
 
+    heartbeat : If > 0, then poll every hb seconds.
     report_strategy: ReportStrategy
 
-    heartbeat : if > 0, then poll every hb seconds
 
-    timeout : if > 0, then raise an Exception if execution of the cmd exceeds
+    timeout : If > 0, then raise an Exception if execution of the cmd exceeds
         that many seconds.
     """
 
-    # non-blocking invocation of subprocess
+    # A non-blocking invocation of the subprocess.
     p = Popen(args, shell=shell, stderr=PIPE, stdout=PIPE)
     reportService = JobReportService()
     reportService.add_report_strategy(report_strategy)
 
-    # spawn thread to consume subprocess's STDERR in non-blocking manner
+    # Spawns a thread to consume the subprocess's STDERR in a non-blocking manner.
     err_txt = []
     te = Thread(target=_process_error_output, args=(p.stderr, err_txt, reportService))
     te.daemon = True # thread dies with the called process
@@ -75,7 +74,7 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False):
 
     rc = None
     if heartbeat > 0:
-        # poll at heartbeat interval
+        # Polls at heartbeat interval.
         rc = p.poll()
         countdown = timeout
         while(rc is None):
@@ -86,7 +85,7 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False):
 
             rc = p.poll()
     else:
-        rc = p.wait() # block on subprocess
+        rc = p.wait() # block on subprocess.
 
     # wait for thread to finish in no more than 10 seconds
     te.join(10)
@@ -108,7 +107,7 @@ def _report_output(out, reportService):
 
 def _process_error_output(out, string_list, reportService):
     """
-    continously reads from stream and appends to list of strings
+    Continously reads from the stream and appends to a list of strings.
     """
     for line in iter(out.readline, b''):
         reportService.report_line(line)
@@ -118,7 +117,7 @@ def _process_error_output(out, string_list, reportService):
 def _timeout_abort(process, cmd, timeout):
     """
     Attempts to kill the process (first SIGTERM, then SIGKILL) and raises
-    a timeout exception
+    a timeout exception.
     """
     process.terminate()
     signals = "SIGTERM"
