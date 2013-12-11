@@ -158,7 +158,9 @@ fi
 ins pyjavaproperties
 ins mock
 
+
 # load MathJax into IPython's static folder to avoid CDN problems
+ipython profile create
 python -c'from IPython.external.mathjax import install_mathjax;
 install_mathjax(dest="/usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/IPython/html/static/mathjax")'
 
