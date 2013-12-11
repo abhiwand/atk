@@ -32,7 +32,7 @@ import org.apache.hadoop.io.WritableComparable;
  * Abstract union type of {@code Vertex} and {@code Edge}. Used as an intermediate
  * map output value to hold either a vertex or an edge.
  *
- * <p> This type is abstract only because a constructor for {@code VidType} is needed</p>
+ * <p> This type is abstract only because we need a constructor for {@code VidType}.</p>
  *
  * @param <VidType>
  */
@@ -44,12 +44,12 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
 
     /**
      * Abstract method for the {@code VidType} constructor.
-     * @return  a new {@code VidType} object
+     * @return  A new {@code VidType} object.
      */
     public abstract VidType createVid();
 
     /**
-     * Flag to communicate if the property graph element in question is a vertex, an edge, or yet unassigned.
+     * A flag to communicate if the property graph element in question is a vertex, an edge, or unassigned.
      */
     public enum GraphElementType {
         NULL_ELEMENT,
@@ -62,7 +62,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     private Edge             edge;
 
     /**
-     * Default constructor. Allocates both the edge and vertex fields, flags the element as {@code NULL_ELEMENT}.
+     * A default constructor that allocates both the edge and vertex fields, and flags the element as {@code NULL_ELEMENT}.
      */
     public PropertyGraphElement() {
         graphElementType = GraphElementType.NULL_ELEMENT;
@@ -72,7 +72,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
 
 
     /**
-     * Initialize the value.
+     * Initializes the {@code graphElementType} value.
      *
      * @param graphElementType
      * @param value
@@ -115,8 +115,8 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     /**
-     * Read a property graph element from an input stream.
-     * @param input
+     * Reads a property graph element from an input stream.
+     * @param input The input stream.
      * @throws IOException
      */
     @Override
@@ -158,8 +158,8 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     /**
-     * Write a property graph element to an output stream.
-     * @param output
+     * Writes a property graph element to an output stream.
+     * @param output The output stream.
      * @throws IOException
      */
     @Override
@@ -177,7 +177,7 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
     }
 
     /**
-     * Convert a property graph element to a string.
+     * Converts a property graph element to a string.
      * @return
      */
     @Override

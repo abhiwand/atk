@@ -25,8 +25,8 @@ import com.intel.hadoop.graphbuilder.util.Triple;
  * The identifying information of an edge: Its source, its destination, and its label.
  *
  * <p>
- * It is used in the initial reducer of an {@code GraphGenerationJob}to detect and handle duplicate edges.
- * Edges are considered duplicate if they have identical source, destination and label.
+ * It is used in the initial reducer of an {@code GraphGenerationJob} to detect and handle duplicate edges.
+ * Edges are considered duplicate if they have identical source, destination, and label.
  * Property maps are <i>not</i> used for purposes of comparison.
  *    </p>
  * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphReducer

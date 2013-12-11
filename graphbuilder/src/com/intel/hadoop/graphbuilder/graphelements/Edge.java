@@ -30,12 +30,12 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * Represents an Edge object with a source, destination, label and a  (possibly empty) property map.
+ * Represents an Edge object with a source, destination, label, and a (possibly empty) property map.
  * <p>
  * This class is mutable. See the {@code configure} and {@code setProperty} methods.
  * </p>
  *
- * @param <VidType> the type of vertex id.
+ * @param <VidType> The type of vertex id.
  */
 public class Edge<VidType extends WritableComparable<VidType>> implements Writable {
 
@@ -53,7 +53,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Creates an edge with given source, destination and label..
+     * Creates an edge with a given source, destination and label.
      *
      * @param src The vertex ID of the edge's source vertex.
      * @param dst The vertex ID of the edge's destination vertex.
@@ -67,7 +67,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     *  Overwrite an edge's fields with the given parameters.
+     *  Overwrites an edge's fields with the given parameters.
      *  @param src The vertex ID of the edge's source vertex.
      *  @param dst The vertex ID of the edge's destination vertex.
      *  @param properties The edge's property map.
@@ -80,7 +80,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Get a property from the edge's property map.
+     * Gets a property from the edge's property map.
      * @param key The lookup key for the value in the edge's property map.
      */
     public Object getProperty(String key) {
@@ -88,7 +88,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Set an edge property.
+     * Sets an edge property.
      *
      * This changes the property map of the edge.
      *
@@ -121,7 +121,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Determine if the edge is a loop - that is, if its source and destination are the same vertex.
+     * Determines if the edge is a loop - that is, if its source and destination are the same vertex.
      * @return True, if the edge's source and destination are equal.
      */
     public boolean isSelfEdge() {
@@ -136,7 +136,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Gets the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID, and its label.
+     * Gets the edge's ID, that is,  the triple of its source vertex ID, destination vertex ID, and its label.
      * @return  The triple of the edge's source vertex ID, destination vertex ID, and its label.
      */
     public EdgeID getEdgeID() {

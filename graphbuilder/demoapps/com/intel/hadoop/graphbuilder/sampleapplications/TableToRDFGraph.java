@@ -35,46 +35,46 @@ import org.apache.log4j.Logger;
 /**
  * TableToRDFGraph
  * <p>
- * Read  a big tables and generate a graph in the TextGraph format,
- * that is, two text files, one a vertex list, and the other an edge list text files.
+ * Reads a big table and generates a graph in the TextGraph format,
+ * that is, two text files, one a vertex list, and the other an edge list text file.
  * </p>
  *
  *  * <p>
  *     Path Arguments:
  *     <ul>
- *         <li> <code>-t</code> specifies the HBase table from which to read</li>
- *         <li> <code>-conf</code> specifies configuration file</li>
- *         <li><code>-a</code> an option that tells Titan it can append the newly generated graph to an existing
- *         one in the same table. Default behavior is to abort if you try to use an existing Titan table name</li>
+ *         <li>The <code>-t</code> flag specifies the HBase table from which to read.</li>
+ *         <li>The <code>-conf</code> flag specifies configuration file</li>
+ *         <li>The <code>-a</code> an option that tells Titan it can append the newly generated graph to an existing
+ *         one in the same table. The default behavior is to abort if you try to use an existing Titan table name.</li>
  *     </ul>
- *     The Titan table name is specified in the configuration file in the property
+ *     Specify the Titan table name in the configuration file in the property:
  *     <code>graphbuilder.titan.storage_tablename</code>
  * </p>
  *
  * <p>TO SPECIFY EDGES:
- * Edges are specified by a sequence of "edge rules" following the flag <code>-e</code> (for undirected edges) or
+ * Specify edges by a sequence of "edge rules" following the <code>-e</code> flag (for undirected edges) or
  * <code>-d</code> (for directed edges). The rules for edge construction are the same for both directed and
  * undirected edges.
- * The first three attributes in the edge rule are source vertex column, destination
- * vertex column and the string label. </p>
+ * The first three attributes in the edge rule are the source vertex column, the destination
+ * vertex column, and the string label. </p>
  * <code> -e src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code>
  * </p>
  * <p> <code> -d src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code></p>
  * <p>
- * <p>TO SPECIFY VERTICES: The first attribute in the string is the vertex ID column. Subsequent attributes
- * denote vertex properties
- * and are separated from the first by an equals sign:</p>
+ * <p>TO SPECIFY VERTICES: 
+ * The first attribute in the string is the vertex ID column. Subsequent attributes
+ * denote vertex properties and are separated from the first by an equals sign:</p>
  * <code> -v vertex_id_column=vertex_prop1_column,... vertex_propn_column </code>
- * <p>or in the case there are no properties associated with the vertex id:
+ * <p>Or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_column </code>
  *
  * </p>
  *  Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices.
  *  (The declaration is implicit, but the vertices really end up in the graph database.)
  * <p>
- *     The option <code>-F</code> (for "flatten lists") specifies that when a cell containing a JSon list is read as a vertex ID, it is to be
- *     expanded into one vertex for each entry in the list. This applies to the source and destination columns for
- *     edges as well. It does not apply to properties.
+ *     The option <code>-F</code> (for "flatten lists") specifies that when a cell containing a JSon list is read 
+ *     as a vertex ID, it is to be expanded into one vertex for each entry in the list. This applies to the source 
+ *     and destination columns for edges as well. It does not apply to properties.
  * </p>
  * <p>
  *     EXAMPLES:
@@ -117,8 +117,8 @@ public class TableToRDFGraph {
     }
 
     /**
-     * This function checks whether required tablename, vertices, vertex properties
-     * edges and edge properties are specified as command line arguments
+     * This function checks whether the required tablename, vertices, vertex properties
+     * edges, and edge properties are specified as command line arguments.
      */
 
     private static void checkCli(CommandLine cmd) {
@@ -129,9 +129,9 @@ public class TableToRDFGraph {
     }
 
     /**
-     * Main method for feature table to text graph construction
+     * The main method for feature table to text graph construction.
      *
-     * @param args Command line arguments
+     * @param args Command line arguments.
      * @throws Exception
      */
 

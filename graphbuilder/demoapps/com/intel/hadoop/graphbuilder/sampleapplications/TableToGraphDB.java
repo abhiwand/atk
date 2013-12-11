@@ -34,8 +34,8 @@ import org.apache.log4j.Logger;
  * Generates a graph from rows of a big table, store in a graph database.
  * <p>
  *    <ul>
- *        <li>At present, only Hbase is supported for the big table.</li>
- *        <li>At present, only Titan is supported for the graph database.</li>
+ *        <li>We support only Hbase for the big table.</li>
+ *        <li>We support only Titan for the graph database.</li>
  *    </ul>
  * </p>
  *
