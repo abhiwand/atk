@@ -29,14 +29,29 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  */
 public class GraphElementDst implements GraphElementTypeCallback {
+
+    /**
+     * cast our graph element to an edge and get it's dst
+     *
+     * @param graphElement graph element to perform operations on
+     * @param arguments any arguments that might have been passed
+     * @return edges dst
+     */
     @Override
-    public Object edge(GraphElement graphElement, ArgumentBuilder args) {
+    public Object edge(GraphElement graphElement, ArgumentBuilder arguments) {
         Edge edge = (Edge) graphElement;
         return edge.getDst();
     }
 
+    /**
+     * return null since all vertices have no dst
+     *
+     * @param graphElement graph element to perform operations on
+     * @param arguments any arguments that might have been passed
+     * @return always null since vertices doesn't have a dst
+     */
     @Override
-    public Object vertex(GraphElement graphElement, ArgumentBuilder args) {
+    public Object vertex(GraphElement graphElement, ArgumentBuilder arguments) {
         return null;
     }
 }
