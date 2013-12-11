@@ -211,29 +211,29 @@ class HBaseTable(object):
            sys.stdout.write("\n")
                
     def to_html(self, nRows=10):
-        header_printed = False
         first_N_rows = self._get_first_N(nRows)
         html_table='<table border="1">'
+
+        schema = self.get_schema()
+        columns = schema.keys()
+        column_array = []
+        html_table+='<tr>'
+        for i, column in enumerate(columns):
+            header = re.sub(config['hbase_column_family'],'',column)
+            column_array.append(header)
+            html_table+='<th>%s</th>' % header
+        html_table+='</tr>'
+
         for orderedData in first_N_rows:
-           columns = orderedData.keys()
-           items = orderedData.items()
-           
-           if not header_printed:
-               html_table+='<tr>'
-               for i, column in enumerate(columns):
-                   header = re.sub(config['hbase_column_family'],'',column)
-                   html_table+='<th>%s</th>' % header
-               html_table+='</tr>'
-               header_printed = True
-             
            html_table+='<tr>'
-           for i,(column,value) in enumerate(items):
-               if value == '' or value==None:
-                   html_table+='<td>NA</td>'
+           for col in column_array:
+               if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
+                   html_table+=("<td>%s</td>" % (orderedData[col]))
                else:
-                   html_table+=("<td>%s</td>" % (value))
+                   html_table+='<td>NA</td>'
+
            html_table+='</tr>'
-                   
+
         html_table+='</table>'
         return html_table
     
