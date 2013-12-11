@@ -30,16 +30,15 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Hashtable;
 
 /**
  * simple interface for writing the merged edges and vertices
  *
- * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite
- * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMergedGraphElementWrite
+ * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter
+ * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphGraphElementWriter
  */
-public abstract class MergedGraphElementWrite {
+public abstract class GraphElementWriter {
     protected Hashtable<EdgeID, Writable> edgeSet;
     protected Hashtable<Object, Writable> vertexSet;
     protected Hashtable<Object, StringType> vertexLabelMap;

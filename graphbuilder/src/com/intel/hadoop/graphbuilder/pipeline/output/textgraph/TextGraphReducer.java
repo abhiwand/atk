@@ -20,14 +20,13 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Hashtable;
 
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
-import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -75,8 +74,8 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     private Hashtable<EdgeID, Writable> edgeSet;
     private Hashtable<Object, Writable>   vertexSet;
 
-    private MergedGraphElementWrite textMergedWrite;
-    private GraphElementTypeCallback propertyGraphElementWrite;
+    private GraphElementWriter textWriter;
+    private GraphElementTypeCallback graphElementWrite;
 
     @Override
     public void setup(Context context) {
@@ -146,7 +145,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
      */
     private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
                        GraphElement graphElement){
-        graphElement.typeCallback(propertyGraphElementWrite,
+        graphElement.typeCallback(graphElementWrite,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
                         .with("vertexReducerFunction", vertexReducerFunction)
@@ -154,7 +153,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     }
 
     /**
-     * Call MergedGraphElementWrite function the class  was initiated with to write the edges and vertices.
+     * Call GraphElementWriter function the class  was initiated with to write the edges and vertices.
      *
      * @throws IOException
      * @throws InterruptedException
@@ -162,7 +161,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     public void write(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
                       Context context) throws IOException, InterruptedException {
 
-        textMergedWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
+        textWriter.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
                 .with("vertexSet", vertexSet).with("vertexCounter", Counters.NUM_VERTICES)
                 .with("edgeCounter", Counters.NUM_EDGES).with("context", context)
         );
@@ -174,7 +173,7 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     }
 
     private void initMergerWriter(Context context){
-        propertyGraphElementWrite = new GraphElementMerge();
-        textMergedWrite = new TitanMergedGraphElementWrite();
+        graphElementWrite = new GraphElementMerge();
+        textWriter = new TitanGraphElementWriter();
     }
 }

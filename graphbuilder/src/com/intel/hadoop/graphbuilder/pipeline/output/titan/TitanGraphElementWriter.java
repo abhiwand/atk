@@ -22,7 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
@@ -44,7 +44,7 @@ import java.util.Map;
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge
  */
-public class TitanMergedGraphElementWrite extends MergedGraphElementWrite{
+public class TitanGraphElementWriter extends GraphElementWriter {
     private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<>();
 
     @Override

@@ -22,8 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline;
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;
-import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanMergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducer;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.VerticesIntoTitanReducer;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
@@ -82,7 +81,7 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
  * @see GBMapReduceDriver
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({EdgesIntoTitanReducer.class, VerticesIntoTitanReducer.class, HBaseReaderMapper.class, TitanMergedGraphElementWrite.class})
+@PrepareForTest({EdgesIntoTitanReducer.class, VerticesIntoTitanReducer.class, HBaseReaderMapper.class, TitanGraphElementWriter.class})
 public abstract class TestMapReduceDriverUtils {
 
     protected Configuration conf;
@@ -111,8 +110,8 @@ public abstract class TestMapReduceDriverUtils {
     //protected PropertyGraphElements propertyGraphElements;
     //protected PropertyGraphElements spiedVertexPropertyGraphElements;
     //protected PropertyGraphElements spiedEdgePropertyGraphElements;
-    protected TitanMergedGraphElementWrite titanMergedGraphElementWrite;
-    protected TitanMergedGraphElementWrite spiedTitanMergedGraphElementWrite;
+    protected TitanGraphElementWriter titanMergedGraphElementWrite;
+    protected TitanGraphElementWriter spiedTitanMergedGraphElementWrite;
     protected TitanGraph titanGraph;
 
     protected static final Class klass = SerializedPropertyGraphElementStringTypeVids.class;
@@ -419,14 +418,14 @@ public abstract class TestMapReduceDriverUtils {
     /**
      * spy on our merge duplicate interface that does the context write.
      *
-     * @see TitanMergedGraphElementWrite
-     * @return new spied TitanMergedGraphElementWrite
+     * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter
+     * @return new spied TitanGraphElementWriter
      */
-    protected TitanMergedGraphElementWrite newTitanMergedGraphElementWrite() throws Exception {
-        spiedTitanMergedGraphElementWrite = (TitanMergedGraphElementWrite)newSpy(spiedTitanMergedGraphElementWrite,
-                TitanMergedGraphElementWrite.class);
+    protected TitanGraphElementWriter newTitanMergedGraphElementWrite() throws Exception {
+        spiedTitanMergedGraphElementWrite = (TitanGraphElementWriter)newSpy(spiedTitanMergedGraphElementWrite,
+                TitanGraphElementWriter.class);
 
-        PowerMockito.whenNew(TitanMergedGraphElementWrite.class).withAnyArguments().thenReturn
+        PowerMockito.whenNew(TitanGraphElementWriter.class).withAnyArguments().thenReturn
                 (spiedTitanMergedGraphElementWrite);
 
         return spiedTitanMergedGraphElementWrite;

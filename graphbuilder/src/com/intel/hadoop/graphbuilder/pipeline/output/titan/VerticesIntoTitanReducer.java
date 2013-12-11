@@ -24,7 +24,7 @@ import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
-import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.util.*;
@@ -37,7 +37,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.commons.configuration.BaseConfiguration;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Hashtable;
 
 import org.apache.hadoop.io.IntWritable;
@@ -82,8 +81,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     private Hashtable<EdgeID, Writable> edgeSet;
     private Hashtable<Object, Writable>   vertexSet;
 
-    private MergedGraphElementWrite titanMergedWrite;
-    private GraphElementTypeCallback propertyGraphElementMerge;
+    private GraphElementWriter titanWriter;
+    private GraphElementTypeCallback graphElementMerge;
 
     /**
      * Create the titan graph for saving edges and remove the static open method from setup so it can be mocked
@@ -210,7 +209,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
      */
     private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
                        GraphElement graphElement){
-        graphElement.typeCallback(propertyGraphElementMerge,
+        graphElement.typeCallback(graphElementMerge,
                 ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
                         .with("vertexReducerFunction", vertexReducerFunction)
@@ -218,7 +217,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     }
 
     /**
-     * Call MergedGraphElementWrite function the class  was initiated with to write the edges and vertices.
+     * Call GraphElementWriter function the class  was initiated with to write the edges and vertices.
      *
      * @throws IOException
      * @throws InterruptedException
@@ -226,15 +225,15 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
     public void write( Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet, Context context) throws
             IOException, InterruptedException {
 
-        titanMergedWrite.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
+        titanWriter.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
                 .with("vertexSet", vertexSet).with("vertexCounter", Counters.NUM_VERTICES)
                 .with("edgeCounter", Counters.NUM_EDGES).with("context", context)
                 .with("graph", graph).with("outValue", outValue).with("outKey", outKey).with("keyFunction", keyFunction));
     }
 
     private void initMergerWriter(Context context){
-        propertyGraphElementMerge = new GraphElementMerge();
-        titanMergedWrite = new TitanMergedGraphElementWrite();
+        graphElementMerge = new GraphElementMerge();
+        titanWriter = new TitanGraphElementWriter();
     }
 
     public  Enum getEdgeCounter(){

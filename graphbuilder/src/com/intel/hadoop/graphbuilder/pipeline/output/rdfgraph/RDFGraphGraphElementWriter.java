@@ -22,7 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
@@ -33,12 +33,12 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
-public class RDFGraphMergedGraphElementWrite extends MergedGraphElementWrite {
+
+public class RDFGraphGraphElementWriter extends GraphElementWriter {
     private String     rdfNamespace;
 
     Hashtable<Object, StringType> vertexLabelMap;

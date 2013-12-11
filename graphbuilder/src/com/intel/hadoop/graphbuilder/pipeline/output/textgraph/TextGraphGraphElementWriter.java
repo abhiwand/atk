@@ -20,7 +20,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.pipeline.output.MergedGraphElementWrite;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -36,10 +36,9 @@ import java.util.Map;
  *   through the temp file
  * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
  *
- * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElements
- * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.propertygraphelement.PropertyGraphElementMerge
+ * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge
  */
-public class TextGraphMergedGraphElementWrite extends MergedGraphElementWrite {
+public class TextGraphGraphElementWriter extends GraphElementWriter {
     MultipleOutputs<NullWritable, Text> multipleOutputs;
 
     @Override
