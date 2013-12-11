@@ -155,7 +155,7 @@ public class GraphElementMerge implements GraphElementTypeCallback {
                 vertexSet.put(vid, graphElement.getProperties());
             }
         }
-        return null;
+        return vertexSet;
     }
 
     /**
