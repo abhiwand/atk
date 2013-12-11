@@ -20,7 +20,7 @@
 package com.intel.hadoop.graphbuilder.util;
 
 /**
- * Represents a pair of objects.
+ * A class that represents a pair of objects.
  * 
  * 
  * @param <L>
@@ -29,7 +29,7 @@ package com.intel.hadoop.graphbuilder.util;
 public class Pair<L, R> {
 
   /**
-   * Construct a pair with left = l and right = r.
+   * Constructs a pair of objects with left = l and right = r.
    * 
    * @param l
    * @param r
@@ -40,37 +40,35 @@ public class Pair<L, R> {
   }
 
   /**
-   * @return the left value.
+   * @return The left value.
    */
   public L getL() {
     return l;
   }
 
   /**
-   * @return the right value.
+   * @return The right value.
    */
   public R getR() {
     return r;
   }
 
   /**
-   * @param l
-   *          the new value for the left value.
+   * @param l   The new value for the left value.
    */
   public void setL(L l) {
     this.l = l;
   }
 
   /**
-   * @param r
-   *          the new value for the right value.
+   * @param r   The new value for the right value.
    */
   public void setR(R r) {
     this.r = r;
   }
 
   /**
-   * @return a reversed pair.
+   * @return A reversed pair.
    */
   public Pair<R, L> reverse() {
     return new Pair<R, L>(r, l);

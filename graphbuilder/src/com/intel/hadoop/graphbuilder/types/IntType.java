@@ -29,7 +29,7 @@ import net.minidev.json.JSONValue;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Basic int type in the library.
+ * The basic int type in the library.
  */
 public class IntType implements WritableComparable<IntType>, Mergeable<IntType>, JSONAware, EncapsulatedObject {
 
