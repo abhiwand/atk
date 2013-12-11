@@ -80,11 +80,8 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
     private Hashtable<Object, Writable>   vertexSet;
     private Hashtable<Object, StringType>    vertexLabelMap = new Hashtable<>();
 
-    //private PropertyGraphElements propertyGraphElements;
     private GraphElementWriter RDFGraphElementWriter;
     private GraphElementTypeCallback propertyGraphElementPut;
-
-    //private PropertyGraphElements propertyGraphElements;
 
     protected static final Map<String, String> RDFNamespaceMap;
     static {
