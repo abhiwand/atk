@@ -24,6 +24,9 @@ import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 
+/**
+ * \brief TupleFactory to create tuples of type {@link PropertyGraphElementTuple}
+ */
 public class GBTupleFactory extends TupleFactory {
 
 	@Override
