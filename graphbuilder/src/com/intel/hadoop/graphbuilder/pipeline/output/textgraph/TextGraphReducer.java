@@ -174,6 +174,6 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
 
     private void initMergerWriter(Context context){
         graphElementWrite = new GraphElementMerge();
-        textWriter = new TitanGraphElementWriter();
+        textWriter = new TextGraphElementWriter();
     }
 }

@@ -38,7 +38,7 @@ import java.util.Map;
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge
  */
-public class TextGraphGraphElementWriter extends GraphElementWriter {
+public class TextGraphElementWriter extends GraphElementWriter {
     MultipleOutputs<NullWritable, Text> multipleOutputs;
 
     @Override

@@ -227,6 +227,6 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
 
     private void initMergerWriter(Context context){
         propertyGraphElementPut = new GraphElementMerge();
-        RDFGraphElementWriter = new RDFGraphGraphElementWriter();
+        RDFGraphElementWriter = new com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph.RDFGraphElementWriter();
     }
 }
