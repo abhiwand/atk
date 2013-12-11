@@ -329,7 +329,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             outputBag.add(graphElementTuple);
         } catch (ExecException e) {
             // todo raise exception
-            warn("Null data", PigWarning.UDF_WARNING_1);
+            warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
         }
     }
 
@@ -346,7 +346,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             outputBag.add(graphElementTuple);
         } catch (ExecException e) {
             // todo raise exception
-            warn("Null data", PigWarning.UDF_WARNING_1);
+            warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
         }
 
     }
@@ -375,7 +375,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                 break;
             default:
                 // todo raise exception
-                warn("Null data", PigWarning.UDF_WARNING_1);
+                warn("Invalid data type", PigWarning.UDF_WARNING_1);
 
         }
 
