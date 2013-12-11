@@ -152,7 +152,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest {
         }
     }
 
-    @Ignore("Interacts with real resource")
+    //@Ignore("Interacts with real resource")
     @Test
     public void VertexInputFormatPropertyGraph4CFCGDTest() throws Exception {
         /*

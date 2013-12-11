@@ -123,7 +123,7 @@ public class TitanVertexFormatLongIDDistanceMapTest {
         open();
     }
 
-    @Ignore("Interacts with real resource")
+    //@Ignore("Interacts with real resource")
     @Test
     public void VertexFormatLongIDDistanceMapTest() throws Exception {
         /*

@@ -137,7 +137,7 @@ public class TitanVertexFormatPropertyGraph4CFTest {
         open();
     }
 
-    @Ignore("Interacts with real resource")
+    //@Ignore("Interacts with real resource")
     @Test
     public void VertexOutputFormatPropertyGraph4CFTest() throws Exception {
         /*

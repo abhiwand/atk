@@ -138,7 +138,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest {
         }
     }
 
-    @Ignore("Interacts with real resource")
+    //@Ignore("Interacts with real resource")
     @Test
     public void VertexInputFormatLongTwoVectorDoubleVectorTest() throws Exception {
         /* a small four vertex graph
