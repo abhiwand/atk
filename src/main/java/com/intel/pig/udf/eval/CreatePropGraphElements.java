@@ -1,5 +1,3 @@
-package com.intel.pig.udf.eval;
-
 /* Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
@@ -19,6 +17,10 @@ package com.intel.pig.udf.eval;
  *      http://www.01.org/GraphBuilder
  */
 
+package com.intel.pig.udf.eval;
+
+import java.io.IOException;
+
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
@@ -37,8 +39,10 @@ import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.builtin.MonitoredUDF;
+
 import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
+
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;

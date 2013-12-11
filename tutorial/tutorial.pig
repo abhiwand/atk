@@ -25,9 +25,9 @@ DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-
 pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
 DESCRIBE pge;
 dump pge;
-rdf_triples = FOREACH pge GENERATE TORDF(*);
-DESCRIBE rdf_triples;
-DUMP rdf_triples;
+-- rdf_triples = FOREACH pge GENERATE TORDF(*);
+-- DESCRIBE rdf_triples;
+-- DUMP rdf_triples;
 
 -- STORE some_relation INTO '-' USING store_graph();
 -- STORE_GRAPH(final_graph, 'hbase://pagerank_edge_list', 'Titan');
