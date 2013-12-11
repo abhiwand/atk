@@ -67,10 +67,7 @@ public abstract class GraphElementWriter {
         keyFunction = (KeyFunction)args.get("keyFunction");
     }
 
-
-    public abstract void write(ArgumentBuilder args)
-            throws IOException, InterruptedException;
-
+    public abstract void write(ArgumentBuilder args) throws IOException, InterruptedException;
 
     public abstract void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException;
 
