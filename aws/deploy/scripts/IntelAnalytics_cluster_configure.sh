@@ -114,7 +114,7 @@ ${dryrun} scp -i ${pemfile} ${m}:/etc/ganglia/gmond.conf _gmond.master
 for n in `cat ${nodesfile}`; do
     echo ${n}:Configuring ganglia...;
     if  [ "${n}" == "${m}" ]; then
-        ${dryrun} ssh -t -i ${pemfile} ${n} bash -c "'
+        ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
         service gmond restart 2>&1 > /dev/null;
         service gmetad restart 2>&1 > /dev/null;
         service httpd stop 2>&1 > /dev/null;
@@ -126,9 +126,9 @@ for n in `cat ${nodesfile}`; do
         nn=`grep ${n0} ${hostsfile} | awk '{print $2}'`
         sed -e 's/host = \"127.0.0.1\"/host = \"maser\"/g' -e 's/master@/'${nn}'@/g' _gmond.master > _gmond.${nn}
         ${dryrun} scp -i ${pemfile} _gmond.${nn} ${n}:/tmp/_gmond.conf
-        ${dryrun} ssh -t -i ${pemfile} ${n} bash -c "'
+        ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
         echo ${n}:Updating ganglia config file;
-        sudo mv -f /tmp/_gmond.conf /etc/ganglia/gmond.conf;
+        mv -f /tmp/_gmond.conf /etc/ganglia/gmond.conf;
         echo ${n}:Disabling webserver;
         service nginx stop 2>&1 > /dev/null;
         chkconfig nginx off 2>&1 > /dev/null;
