@@ -31,7 +31,6 @@ import org.apache.pig.impl.PigContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
 
 public class TestExtractJSON {
 	EvalFunc<?> testFn;
@@ -54,28 +53,27 @@ public class TestExtractJSON {
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
 
-		String result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Price is not correct!", result,
-				"20.0");
+		String result = (String) testFn.exec(inTuple);
+		assertEquals("Price is not correct!", result, "20.0");
 
 		inTuple.set(1, "Sizes.size()");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Size is not correct!", result, "3");
 
 		inTuple.set(1, "Colors[0]");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Color is not correct!", result, "Black");
 
 		inTuple.set(1, "Colors.size()");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Color size is not correct!", result, "2");
 
 		inTuple.set(1, "Sizes.Price.min()");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Cheapest price is not correct!", result, "5.0");
 
 		inTuple.set(1, "Sizes.findAll{Sizes -> Sizes.Price>18}.Size[0]");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Size is not correct!", result, "Large");
 
 	}
@@ -112,13 +110,10 @@ public class TestExtractJSON {
 				Arrays.asList(inputTuple));
 		testFn.exec(inTuple);
 	}
-	
+
 	@After
 	public void done() {
 		System.out.println("*** Done with the ExtractJSON tests ***");
 	}
 
-	public static void main(String[] args) {
-		JUnitCore.main("TestExtractJSON");
-	}
 }
