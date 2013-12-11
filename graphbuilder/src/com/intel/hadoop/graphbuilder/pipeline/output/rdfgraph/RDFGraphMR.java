@@ -47,7 +47,7 @@ import org.apache.log4j.Logger;
 
 import com.intel.hadoop.graphbuilder.util.Functional;
 /**
- * Set up a MapReduce jobs to store a property graph elements as RDF triples
+ * Set up a MapReduce jobs to store a graph elements as RDF triples
  *
  * <p>
  *     To run a RDF graph construction job:
@@ -248,8 +248,6 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     public void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException {
 
         // Set required parameters in configuration
-
-        String test = graphBuildingRule.getClass().getName();
 
         conf.set("GraphTokenizer", graphBuildingRule.getGraphTokenizerClass().getName());
         conf.setBoolean("noBiDir", cleanBidirectionalEdge);
