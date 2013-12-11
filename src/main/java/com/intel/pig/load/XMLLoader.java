@@ -73,6 +73,8 @@ class _ByteArrayOutputStream extends ByteArrayOutputStream {
 }
 
 /**
+ * \brief GB 2.0 (alpha) version of Piggy Bank's XMLLoader with improved memory management
+ * 
  * A <code>XMLLoaderBufferedPositionedInputStream</code> is the package class
  * and is the decorator over the BufferedPositionedInputStream which in turn
  * decorate BufferedInputStream. It contains
