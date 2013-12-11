@@ -24,9 +24,9 @@ x = LOAD '/etc/passwd' USING PigStorage(':') AS (username:chararray, f1: chararr
 DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "f1" "f2" -e "f1,f2,link,f3"');
 pge = FOREACH x GENERATE CreatePropGraphElements(*); 
 dump pge;
-rdf_triples = FOREACH pge GENERATE TORDF(*);
-DESCRIBE rdf_triples;
-DUMP rdf_triples;
+-- rdf_triples = FOREACH pge GENERATE TORDF(*);
+-- DESCRIBE rdf_triples;
+-- DUMP rdf_triples;
 
 -- STORE some_relation INTO '-' USING store_graph();
 -- STORE_GRAPH(final_graph, 'hbase://pagerank_edge_list', 'Titan');
