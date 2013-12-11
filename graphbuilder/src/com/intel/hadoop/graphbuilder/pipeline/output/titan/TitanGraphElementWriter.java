@@ -74,7 +74,7 @@ public class TitanGraphElementWriter extends GraphElementWriter {
 
             bpVertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, vertex.getKey().toString());
 
-            long vertexId = getVertexId(bpVertex);//((TitanElement) bpVertex).getID();
+            long vertexId = getVertexId(bpVertex);
 
             Vertex tempVertex = new Vertex();
 
@@ -139,8 +139,18 @@ public class TitanGraphElementWriter extends GraphElementWriter {
             bpVertex.setProperty(keyName.toString(), mapEntry.getBaseObject());
         }
 
-        propertyMap.setProperty("TitanID", new LongType(vertexId));
+        addTitanIdVertex(vertexId, propertyMap);
 
+        return propertyMap;
+    }
+
+    private PropertyMap addTitanIdVertex(long vertexId, PropertyMap propertyMap){
+        propertyMap.setProperty("TitanID", new LongType(vertexId));
+        return propertyMap;
+    }
+
+    private PropertyMap addTitanIdEdge(long srcTitanId, PropertyMap propertyMap){
+        propertyMap.setProperty("srcTitanID", new LongType(srcTitanId));
         return propertyMap;
     }
 
@@ -152,7 +162,7 @@ public class TitanGraphElementWriter extends GraphElementWriter {
             propertyMap = new PropertyMap();
         }
 
-        propertyMap.setProperty("srcTitanID", new LongType(srcTitanId));
+        addTitanIdEdge(srcTitanId, propertyMap);
 
         return propertyMap;
     }
