@@ -21,6 +21,7 @@ xml_data = LOAD 'tutorial/data/tshirts.xml' using org.apache.pig.piggybank.stora
 DUMP xml_data;
 
 --RDF example
+rmf /tmp/rdf_triples;
 DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
 x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
 x = FILTER x by id!='';
@@ -28,10 +29,35 @@ pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
 DEFINE TORDF com.intel.pig.udf.eval.TORDF('OWL');--specify the namespace to use with the constructor
 rdf_triples = FOREACH pge GENERATE FLATTEN(TORDF(*));
 DESCRIBE rdf_triples;
-DUMP rdf_triples;
 STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
 
+--bulk load titan example
 
--- STORE some_relation INTO '-' USING store_graph();
--- STORE_GRAPH(final_graph, 'hbase://pagerank_edge_list', 'Titan');
- 
+--cleanup titan hbase table-->TODO: PUT THIS LOGIC IN GB
+sh echo "disable 'test_graph'" | hbase shell --see hbase-titan-conf.xml
+sh echo "drop 'test_graph'" | hbase shell
+
+--prepare temp storage
+rmf /tmp/empty
+fs -mkdir /tmp/empty
+rmf /tmp/tmp_store_1;
+rmf /tmp/tmp_store_2;
+
+x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+x = FILTER x by id!='';
+--GB requires the input data to be in HBase
+--we need to append HBase row keys to the input relation 
+keyed_x = FOREACH x GENERATE FLATTEN(CreateRowKey(*));
+
+--create GB input table
+sh echo "disable 'gb_input_table'" | hbase shell
+sh echo "drop 'gb_input_table'" | hbase shell
+sh echo "create 'gb_input_table', {NAME=>'cf'}" | hbase shell --cf is the column family
+
+STORE keyed_x INTO 'hbase://gb_input_table' 
+  		USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:id cf:name cf:age cf:dept cf:manager cf:underManager');
+	  		
+	  		
+LOAD_TITAN('gb_input_table', '"cf:id=cf:name,cf:age,cf:dept" "cf:manager"',
+			   '"cf:id,cf:manager,worksUnder,cf:underManager"',
+			   'tutorial/hbase-titan-conf.xml');
