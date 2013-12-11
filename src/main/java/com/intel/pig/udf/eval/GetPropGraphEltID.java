@@ -30,15 +30,18 @@ import org.apache.pig.data.TupleFactory;
 import java.io.IOException;
 
 /**
- * \brief GetPropGraphEltID ... prepends tuple with the objectID of the propertygraph element...
- *
- * We could do some hashing to avoid bloat and speed up shuffles, but for now, this is the clearer thing to do.
+ * \brief GetPropGraphEltID ...returns string objectID of its property graph element.
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class GetPropGraphEltID extends EvalFunc<String>  {
 
-    TupleFactory mTupleFactory = TupleFactory.getInstance();
-
+    /**
+     * Get the string representation of the ID of a property graph element
+     *
+     * @param input tuple containing a property graph element
+     * @return string objectID of its property graph element
+     * @throws IOException
+     */
     @Override
     public String exec(Tuple input) throws IOException {
         Object graphElement =  input.get(0);
@@ -46,6 +49,7 @@ public class GetPropGraphEltID extends EvalFunc<String>  {
         PropertyGraphElement e = (PropertyGraphElement) graphElement;
 
         String objectId = null;
+
         if (e.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
             objectId = "VERTEX " + e.vertex().getVertexId().toString();
         } else {

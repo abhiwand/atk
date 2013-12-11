@@ -25,7 +25,14 @@ DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-
 pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
 DESCRIBE pge;
 dump pge;
--- rdf_triples = FOREACH pge GENERATE TORDF(*);
+grouped = GROUP pge by $0;
+dump grouped;
+DESCRIBE grouped;
+DEFINE merge com.intel.pig.udf.eval.MergeDuplicateGraphElements;
+dedupd = FOREACH grouped GENERATE(merge(*));
+DESCRIBE dedupd;
+dump dedupd;
+-- rdf_triples = FOREACH dedupd GENERATE TORDF(*);
 -- DESCRIBE rdf_triples;
 -- DUMP rdf_triples;
 
