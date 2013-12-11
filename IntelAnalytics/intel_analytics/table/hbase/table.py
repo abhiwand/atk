@@ -182,7 +182,7 @@ class HBaseTable(object):
                    break
         return first_N_rows
     
-    def head(self, n=10):
+    def illustrate(self, n=10):
 
         first_N_rows = self._get_first_N(n)
         schema = self.get_schema()
@@ -210,7 +210,7 @@ class HBaseTable(object):
 
            sys.stdout.write("\n")
                
-    def to_html(self, nRows=10):
+    def illustrate_to_html(self, nRows=10):
         first_N_rows = self._get_first_N(nRows)
         html_table='<table border="1">'
 
