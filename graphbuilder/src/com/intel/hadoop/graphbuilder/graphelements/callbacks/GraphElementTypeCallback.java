@@ -43,10 +43,8 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  *              return propertyGraphElementTypeCallbackCallback.edge(this, args);
  *          }else if(this.isVertex()){
  *              return propertyGraphElementTypeCallbackCallback.vertex(this, args);
- *          }else if(this.isNull()){
- *              return propertyGraphElementTypeCallbackCallback.nullElement(this, args);
  *          }
- *              return null;
+ *          return null;
  *      }
  * </code>
  * </pre>

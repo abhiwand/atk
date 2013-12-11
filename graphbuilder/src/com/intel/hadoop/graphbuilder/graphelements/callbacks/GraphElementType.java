@@ -31,13 +31,29 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 public class GraphElementType implements GraphElementTypeCallback {
     public enum GraphType {EDGE, VERTEX}
 
+    /**
+     * returns the edge enum type. Although the graphElement and arguments are not used here they must be part of the
+     * method definition to satisfy the implementation.
+     *
+     * @param graphElement graph element to perform operations on
+     * @param arguments any arguments that might have been passed
+     * @return Edge enum type
+     */
     @Override
-    public GraphType edge(GraphElement graphElement, ArgumentBuilder args) {
+    public GraphType edge(GraphElement graphElement, ArgumentBuilder arguments) {
         return GraphType.EDGE;
     }
 
+    /**
+     * returns the vertex enum type. Although the graphElement and arguments are not used here they must be part of the
+     * method definition to satisfy the implementation.
+     *
+     * @param graphElement graph element to perform operations on
+     * @param arguments any arguments that might have been passed
+     * @return Vertex enum type
+     */
     @Override
-    public GraphType vertex(GraphElement graphElement, ArgumentBuilder args) {
+    public GraphType vertex(GraphElement graphElement, ArgumentBuilder arguments) {
         return GraphType.VERTEX;
     }
 }
