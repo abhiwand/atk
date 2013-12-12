@@ -1,28 +1,26 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.types.IntType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import org.apache.hadoop.io.IntWritable;
 import org.junit.Test;
 
 import java.io.*;
@@ -42,8 +40,8 @@ public class EdgeTest {
         assertNotNull(edge);
         assertNull(edge.getSrc());
         assertNull(edge.getDst());
-        assertNull(edge.getEdgeLabel());
-        assertNotNull(edge.getEdgeID());
+        assertNull(edge.getLabel());
+        assertNotNull(edge.getId());
         assertNotNull(edge.getProperties());
     }
 
@@ -57,8 +55,8 @@ public class EdgeTest {
 
         assertSame(src, edge.getSrc());
         assertSame(dst, edge.getDst());
-        assertSame(label, edge.getEdgeLabel());
-        assertNotNull(edge.getEdgeID());
+        assertSame(label, edge.getLabel());
+        assertNotNull(edge.getId());
         assertNotNull(edge.getProperties());
     }
 
@@ -75,7 +73,7 @@ public class EdgeTest {
 
         assertSame(src, edge.getSrc());
         assertSame(dst, edge.getDst());
-        assertSame(label, edge.getEdgeLabel());
+        assertSame(label, edge.getLabel());
         assertSame(pm, edge.getProperties());
 
         // now test against an edge created with arguments in the constructor
@@ -90,7 +88,7 @@ public class EdgeTest {
 
         assertSame(src, edge2.getSrc());
         assertSame(dst, edge2.getDst());
-        assertSame(label, edge2.getEdgeLabel());
+        assertSame(label, edge2.getLabel());
         assertSame(pm, edge2.getProperties());
     }
 
@@ -145,19 +143,19 @@ public class EdgeTest {
         Edge<StringType> edge2 = new Edge<>(src2, dst2, label2);
         Edge<StringType> edge3 = new Edge<>(src1, dst1, label1);
 
-        assertNotNull(edge1.getEdgeID());
-        assertNotNull(edge2.getEdgeID());
-        assertNotNull(edge3.getEdgeID());
+        assertNotNull(edge1.getId());
+        assertNotNull(edge2.getId());
+        assertNotNull(edge3.getId());
 
-        assertFalse(edge1.getEdgeID().equals(edge2.getEdgeID()));
-        assert (edge1.getEdgeID().equals(edge3.getEdgeID()));
+        assertFalse(edge1.getId().equals(edge2.getId()));
+        assert (edge1.getId().equals(edge3.getId()));
 
         String key = new String("key");
         StringType value = new StringType("bank");
 
         edge1.setProperty(key, value);
-        assertFalse(edge1.getEdgeID().equals(edge2.getEdgeID()));
-        assert (edge1.getEdgeID().equals(edge3.getEdgeID()));
+        assertFalse(edge1.getId().equals(edge2.getId()));
+        assert (edge1.getId().equals(edge3.getId()));
     }
 
     @Test
@@ -228,7 +226,7 @@ public class EdgeTest {
 
         edgeOnTheOtherEnd.readFields(dataInputStream);
 
-        assert (edgeOnTheOtherEnd.getEdgeID().equals(edge.getEdgeID()));
+        assert (edgeOnTheOtherEnd.getId().equals(edge.getId()));
         assert (edgeOnTheOtherEnd.getProperties().toString().equals(edge.getProperties().toString()));
 
         // one more time, with a nonempty property list
@@ -249,7 +247,7 @@ public class EdgeTest {
 
         edgeOnTheOtherEnd.readFields(dataInputStream2);
 
-        assert (edgeOnTheOtherEnd.getEdgeID().equals(edge.getEdgeID()));
+        assert (edgeOnTheOtherEnd.getId().equals(edge.getId()));
         assert (edgeOnTheOtherEnd.getProperties().toString().equals(edge.getProperties().toString()));
     }
 }

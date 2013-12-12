@@ -1,44 +1,37 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
 
 package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Hashtable;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntProperty;
 import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.rdf.model.impl.PropertyImpl;
 import com.hp.hpl.jena.vocabulary.*;
-import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.graphelements.*;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
@@ -51,9 +44,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import com.intel.hadoop.graphbuilder.util.Functional;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 import org.apache.log4j.Logger;
-
-import org.apache.jena.riot.RDFDataMgr;
-import org.openrdf.rio.RDFFormat;
 
 /**
  * The Reducer class applies user defined {@code Functional}s to reduce
@@ -70,7 +60,7 @@ import org.openrdf.rio.RDFFormat;
  * </p>
  */
 
-public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, NullWritable, Text> {
+public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, NullWritable, Text> {
 
     private static final Logger LOG = Logger.getLogger(RDFGraphReducer.class);
 
@@ -86,9 +76,16 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
         NUM_EDGES
     }
 
-    private static final Map<String, String> RDFNamespaceMap;
+    private Hashtable<EdgeID, Writable> edgeSet;
+    private Hashtable<Object, Writable>   vertexSet;
+    private Hashtable<Object, StringType>    vertexLabelMap = new Hashtable<>();
+
+    private GraphElementWriter RDFGraphElementWriter;
+    private GraphElementTypeCallback propertyGraphElementPut;
+
+    protected static final Map<String, String> RDFNamespaceMap;
     static {
-        RDFNamespaceMap = new HashMap<String, String>();
+        RDFNamespaceMap = new Hashtable<String, String>();
         RDFNamespaceMap.put("OWL",        OWL.NS);
         RDFNamespaceMap.put("DC",         DC.NS);
         RDFNamespaceMap.put("LOCMAP",     LocationMappingVocab.NS);
@@ -98,12 +95,12 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
         RDFNamespaceMap.put("RDFS",       RDFS.getURI());
 
         // TODO We will not support XMLSchema in Graphbuilder2.0
-//        RDFNamespaceMap.put("XMLSchema",  "http://www.w3.org/2001/XMLSchema#");
+//        RDFNamespaceMap.merge("XMLSchema",  "http://www.w3.org/2001/XMLSchema#");
     }
 
-    private static final Map<String, Property> RDFTagMap;
+    protected static final Map<String, Property> RDFTagMap;
     static {
-        RDFTagMap = new HashMap<String, Property>();
+        RDFTagMap = new Hashtable<String, Property>();
         RDFTagMap.put("DC.contributor", DC.contributor);
         RDFTagMap.put("DC.coverage", DC.coverage);
         RDFTagMap.put("DC.creator", DC.creator);
@@ -162,249 +159,70 @@ public class RDFGraphReducer extends Reducer<IntWritable, PropertyGraphElement, 
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "GRAPHBUILDER_ERROR: Configuration error when configuring reducer functionals.", LOG, e);
         }
+
+        initMergerWriter(context);
     }
 
     @Override
-    public void reduce(IntWritable key, Iterable<PropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        HashMap<EdgeID, Writable>      edgePropertiesMap    = new HashMap();
-        HashMap<Object, Writable>      vertexPropertiesMap  = new HashMap();
-        HashMap<Object, StringType>    vertexLabelMap       = new HashMap();
-        Iterator<PropertyGraphElement> valueIterator        = values.iterator();
+        edgeSet       = new Hashtable<>();
+        vertexSet     = new Hashtable<>();
+        vertexLabelMap       = new Hashtable<>();
 
-        while (valueIterator.hasNext()) {
+        for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
+            GraphElement graphElement = serializedPropertyGraphElement.graphElement();
 
-            PropertyGraphElement next = valueIterator.next();
-
-            // Apply reduce on vertex
-
-            if (next.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
-
-                Object vertexId = next.vertex().getVertexId();
-                Vertex vertex   = next.vertex();
-		
-    		    // track the RDF labels of vertices
-
-        		if (vertex.getVertexLabel() != null) {
-	        	    if (!vertexLabelMap.containsKey(vertexId)) {
-		                vertexLabelMap.put(vertexId, vertex.getVertexLabel());
-		            }
-    	    	}
-
-                if (vertexPropertiesMap.containsKey(vertexId)) {
-
-                    // vertexId denotes a duplicate vertex
-
-                    if (vertexReducerFunction != null) {
-                        vertexPropertiesMap.put(vertexId,
-                                vertexReducerFunction.reduce(vertex.getProperties(),
-                                        vertexPropertiesMap.get(vertexId)));
-                    } else {
-
-                        /**
-                         * default behavior is to merge the property maps of duplicate vertices
-                         * conflicting key/value pairs get overwritten
-                         */
-
-                        PropertyMap existingPropertyMap = (PropertyMap) vertexPropertiesMap.get(vertexId);
-                        existingPropertyMap.mergeProperties(vertex.getProperties());
-                    }
-                } else {
-
-                    // vertexId denotes a NON-duplicate vertex
-
-                    if (vertexReducerFunction != null) {
-                        vertexPropertiesMap.put(vertexId,
-                                                vertexReducerFunction.reduce(vertex.getProperties(),
-                                                vertexReducerFunction.identityValue()));
-                    } else {
-                        vertexPropertiesMap.put(vertexId, vertex.getProperties());
-                    }
-                }
-            } else {
-
-                // Apply reduce on edges, remove self and (or merge) duplicate edges.
-                // Optionally remove bidirectional edge.
-
-                Edge<?> edge    = next.edge();
-                EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
-
-                if (edge.isSelfEdge()) {
-                    // self edges are omitted
-                    continue;
-                }
-
-                if (edgePropertiesMap.containsKey(edgeID)) {
-
-                    // edge is a duplicate
-                    // default behavior is to not process the duplicate edge,
-                    // but if there is an edge reducer function supplied, it used to combine the edge
-
-                    if (edgeReducerFunction != null) {
-                        edgePropertiesMap.put(edgeID,
-                                              edgeReducerFunction.reduce(edge.getProperties(),
-                                              edgePropertiesMap.get(edgeID)));
-                    } else {
-                        /**
-                         * default behavior is to merge the property maps of duplicate edges
-                         * conflicting key/value pairs get overwritten
-                         */
-
-                        PropertyMap existingPropertyMap = (PropertyMap) edgePropertiesMap.get(edgeID);
-                        existingPropertyMap.mergeProperties(edge.getProperties());
-
-                    }
-                } else {
-
-                    // edge is a NON-duplicate
-
-                    if (noBiDir && edgePropertiesMap.containsKey(edgeID.reverseEdge())) {
-                        // in this case, skip the bi-directional edge
-                    } else {
-
-                        // edge is either not bi-directional, or we are keeping bi-directional edges
-
-                        if (edgeReducerFunction != null) {
-                            edgePropertiesMap.put(edgeID,
-                                                  edgeReducerFunction.reduce(edge.getProperties(),
-                                                  edgeReducerFunction.identityValue()));
-                        } else {
-                            edgePropertiesMap.put(edgeID, edge.getProperties());
-                        }
-                    }
-                }
+            if(graphElement.isNull()){
+                continue;
             }
+
+            //try to add the graph element to the existing set of vertices or edges
+            //GraphElementMerge will take care of switching between edge and vertex
+            merge(edgeSet, vertexSet, vertexLabelMap, graphElement);
         }
 
-        int vertexCount = 0;
-        int edgeCount   = 0;
-        String outPath  = null;
-
-        // Output vertex records
-
-        Iterator<Entry<Object, Writable>> vertexIterator = vertexPropertiesMap.entrySet().iterator();
-
-        outPath = new String("vdata/rdftriples");
-
-        while (vertexIterator.hasNext()) {
-
-            Entry v     = vertexIterator.next();
-            //Text  text = new Text(v.getKey().toString() + "\t" + v.getValue().toString());
-            vertexToRdf(v.getKey().toString(), vertexLabelMap.get(v.getKey()).toString(), (PropertyMap) v.getValue(), outPath);
-            vertexCount++;
-        }
-
-        context.getCounter(Counters.NUM_VERTICES).increment(vertexCount);
-
-        // Output edge records
-
-        Iterator<Entry<EdgeID, Writable>> edgeIterator = edgePropertiesMap.entrySet().iterator();
-
-        outPath = new String("edata/rdftriples");
-
-        while (edgeIterator.hasNext()) {
-
-            Entry<EdgeID, Writable> e = edgeIterator.next();
-
-            //Text text = new Text(e.getKey().getSrc() + "\t" + e.getKey().getDst() + "\t" + e.getKey().getLabel()
-            //        + "\t" + e.getValue().toString());
-            edgeToRdf(e.getKey().getSrc().toString(),
-                      e.getKey().getDst().toString(),
-                      e.getKey().getLabel().toString(),
-                      (PropertyMap) e.getValue(),
-		      outPath);
-
-            edgeCount++;
-        }
-
-        context.getCounter(Counters.NUM_EDGES).increment(edgeCount);
-    }
-
-    /**
-     * @param key Vertex key
-     * @param propertyMap
-     *
-     */
-    void vertexToRdf(String key, String label, PropertyMap propertyMap, String outPath)
-		throws IOException, InterruptedException {
-
-        // Namespace can be DC, DB, RDF, OWL, or OWL2
-
-        String namespace = RDFNamespaceMap.get(this.rdfNamespace);
-
-        // create an empty Model
-
-        Model model = ModelFactory.createDefaultModel();
-
-        // create the vertex resource
-
-        Resource vertexRdf = model.createResource(namespace + key);
-
-        for (Writable property : propertyMap.getPropertyKeys()) {
-            Property vertexRDFProperty = model.getProperty(namespace + property.toString());
-            vertexRdf.addProperty(vertexRDFProperty, propertyMap.getProperty(property.toString()).toString());
-        }
-
-        // list the statements in the model
-        StmtIterator iterator = model.listStatements();
-        // print out the predicate, subject and object of each statement
-        while (iterator.hasNext()) {
-            Statement stmt      = iterator.nextStatement();         // get next statement
-            Resource  subject   = stmt.getSubject();   // get the subject
-            Property  predicate = stmt.getPredicate(); // get the predicate
-            RDFNode   object    = stmt.getObject();    // get the object
-            Text text = new Text(subject.toString() + " " + predicate.toString() + " " + object.toString() + " .");
-            this.multipleOutputs.write(NullWritable.get(), text, outPath);
-        }   // End of while
-    }
-
-    /**
-     * @param source
-     * @param target
-     * @param label
-     * @param propertyMap
-     *
-     */
-    void edgeToRdf(String source, String target, String label, PropertyMap propertyMap, String outPath)
-		throws IOException, InterruptedException {
-
-        // Namespace can be DC, DB, RDF, OWL, or OWL2
-
-        String namespace = RDFNamespaceMap.get(this.rdfNamespace);
-
-        // create an empty Model
-
-        Model model = ModelFactory.createDefaultModel();
-
-        // create the edge resource
-
-        Resource edgeRdf = model.createResource(namespace + label);
-
-        Property sourceRDF = model.getProperty(namespace + "source");
-        Property targetRDF = model.getProperty(namespace + "target");
-	    edgeRdf.addProperty(sourceRDF, source);
-    	edgeRdf.addProperty(targetRDF, target);
-        for (Writable property : propertyMap.getPropertyKeys()) {
-            Property edgeRDFProperty = model.getProperty(namespace + property.toString());
-            edgeRdf.addProperty(edgeRDFProperty, propertyMap.getProperty(property.toString()).toString());
-        }
-
-        // list the statements in the model
-        StmtIterator iter = model.listStatements();
-        // print out the predicate, subject and object of each statement
-        while (iter.hasNext()) {
-            Statement stmt      = iter.nextStatement();         // get next statement
-            Resource  subject   = stmt.getSubject();   // get the subject
-            Property  predicate = stmt.getPredicate(); // get the predicate
-            RDFNode   object    = stmt.getObject();    // get the object
-            Text text = new Text(subject.toString() + " " + predicate.toString() + " " + object.toString() + " .");
-            this.multipleOutputs.write(NullWritable.get(), text, outPath);
-        }   // End of while
+        write(edgeSet, vertexSet, vertexLabelMap, context);
     }
 
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         multipleOutputs.close();
+    }
+
+
+    /**
+     * remove duplicate edges/vertices and merge their property maps
+     *
+     * @param graphElement the graph element to add to our existing vertexSet or edgeSet
+     */
+    private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet, Hashtable<Object,
+                StringType> vertexLabelMap, GraphElement graphElement){
+        graphElement.typeCallback(propertyGraphElementPut,
+                ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
+                        .with("edgeReducerFunction", edgeReducerFunction)
+                        .with("vertexReducerFunction", vertexReducerFunction)
+                        .with("noBiDir", noBiDir).with("vertexLabelMap", vertexLabelMap));
+    }
+
+    /**
+     * Call GraphElementWriter function the class  was initiated with to write the edges and vertices.
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void write(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
+                      Hashtable<Object, StringType> vertexLabelMap, Context context) throws IOException,
+            InterruptedException {
+        RDFGraphElementWriter.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
+                .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap).with("vertexCounter",
+                        Counters.NUM_VERTICES)
+                .with("edgeCounter", Counters.NUM_EDGES).with("context", context).with("multipleOutputs",multipleOutputs));
+    }
+
+    private void initMergerWriter(Context context){
+        propertyGraphElementPut = new GraphElementMerge();
+        RDFGraphElementWriter = new com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph.RDFGraphElementWriter();
     }
 }

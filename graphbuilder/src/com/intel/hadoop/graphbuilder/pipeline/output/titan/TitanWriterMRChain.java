@@ -1,35 +1,34 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
-*/
-
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
+ */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
 import com.intel.hadoop.graphbuilder.util.*;
 import com.thinkaurelius.titan.core.KeyMaker;
 import com.thinkaurelius.titan.core.TitanGraph;
@@ -111,7 +110,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
 
-    private PropertyGraphElement mapValueType;
+    private SerializedPropertyGraphElement mapValueType;
     private Class                vidClass;
     private PropertyGraphSchema  graphSchema;
 
@@ -191,16 +190,16 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      *
      * This type can vary depending on the class used for vertex IDs.
      *
-     * @param valueClass   The class of the PropertyGraphElement value.
-     * @see PropertyGraphElement
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
+     * @param valueClass   The class of the SerializedPropertyGraphElement value
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementLongTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids
      */
 
     @Override
     public void setValueClass(Class valueClass) {
         try {
-            this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
+            this.mapValueType = (SerializedPropertyGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "GRAPHBUILDER_ERROR: Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
@@ -214,9 +213,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      * Sets the vertex id class.
      *
      * Currently long and String are supported.
-     * @see PropertyGraphElement
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementLongTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids
      */
 
     @Override

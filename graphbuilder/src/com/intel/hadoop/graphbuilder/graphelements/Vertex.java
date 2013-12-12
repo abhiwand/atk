@@ -1,20 +1,21 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
 
 package com.intel.hadoop.graphbuilder.graphelements;
@@ -27,7 +28,6 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Represents a vertex object with a vertex ID and a (potentially empty) property map.
@@ -38,18 +38,21 @@ import java.util.Objects;
  *
  * @param <VertexIdType> The type of vertex id.
  */
-public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> implements Writable {
+public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
+        extends GraphElement implements Writable {
 
-    private VertexIdType vertexId;
+    private VertexIdType id;
     private PropertyMap  properties;
-    private StringType   vertexLabel;
+    private StringType label;
 
     /**
      * Default constructor. Creates a placeholder vertex.
      */
     public Vertex() {
-        this.properties  = new PropertyMap();
-        this.vertexLabel = new StringType();
+        super();
+
+        this.label = new StringType();
+        this.properties = new PropertyMap();
     }
 
     /**
@@ -58,37 +61,107 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      * @param vid Vertex ID.
      */
     public Vertex(VertexIdType vid) {
-        this.vertexId    = vid;
-        this.properties  = new PropertyMap();
-        this.vertexLabel = new StringType();
+
+        this(vid, new StringType(), new PropertyMap());
     }
 
     /**
-     * Create a vertex with given vertex ID.
+     * Create a vertex with ID, label, and property map.
+     *
+     * @param vid vertex ID
+     */
+    public Vertex(VertexIdType vid, StringType label, PropertyMap propertyMap) {
+        this();
+
+        this.id = vid;
+        this.properties = propertyMap;
+        this.label = label;
+    }
+
+    /**
+     * Create a vertex with ID, label, and property map
+     *
+     * @param vid vertex ID
+     */
+    public Vertex(VertexIdType vid, String label, PropertyMap propertyMap) {
+        this();
+
+        this.id = vid;
+        this.properties = propertyMap;
+        this.label = new StringType(label);
+    }
+
+    /**
+     * Create a vertex with an ID.
      *
      * @param vid vertex ID
      * @param label vertex Label
      */
     public Vertex(VertexIdType vid, String label) {
-        this.vertexId    = vid;
-        this.properties  = new PropertyMap();
-        this.vertexLabel = new StringType(label);
+
+        this(vid, label, new PropertyMap());
+    }
+
+    /**
+     * Create a vertex with Id, and property map.
+     *
+     * @param vid vertex ID
+     * @param propertyMap a define property map to set
+     */
+    public Vertex(VertexIdType vid, PropertyMap propertyMap) {
+
+        this(vid, new StringType(), propertyMap);
+    }
+
+
+    /**
+     * This is not an edge.
+     * @return  {@code false}
+     */
+    @Override
+    public boolean isEdge() {
+        return false;
+    }
+
+    /**
+     * This is not a vertex.
+     * @return  {@code true}
+     */
+    @Override
+    public boolean isVertex() {
+        return true;
+    }
+
+    @Override
+    public boolean isNull(){
+        if(id == null){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     /**
      * Returns the ID of the vertex.
      * @return The ID of the vertex.
      */
-    public VertexIdType getVertexId() {
-        return vertexId;
+    public VertexIdType getId() {
+        return id;
+    }
+
+    /**
+     * @return get the graph element
+     */
+    public Vertex get(){
+        return this;
     }
 
     /**
  * Return the label of the vertex.
      * @return the label of the vertex
      */
-    public StringType getVertexLabel() {
-        return this.vertexLabel;
+    public StringType getLabel() {
+        return this.label;
     }
     /**
      * Overwrites the ID and property map of the vertex.
@@ -96,7 +169,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      * @param properties The new {@code PropertyMap}.
      */
     public void configure(VertexIdType vid, PropertyMap properties) {
-        this.vertexId   = vid;
+        this.id = vid;
         this.properties = properties;
     }
 
@@ -118,12 +191,20 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
         this.properties.setProperty(key, val);
     }
 
+    /**
+     * set the entire property map
+     * @param propertyMap
+     */
+    public void setProperties(PropertyMap propertyMap){
+        this.properties = propertyMap;
+    }
+
      /**
      * Set label of the vertex (RDF label in case of RDF graphs)
       * @param label  the label of the vertex
       */
-    public void setVertexLabel(StringType label) {
-        this.vertexLabel = label;
+    public void setLabel(StringType label) {
+        this.label = label;
     }
 
     /**
@@ -140,10 +221,10 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      */
     @Override
     public final String toString() {
-        if (this.vertexLabel.isEmpty()) {
-            return this.vertexId.toString() + "\t" + this.properties.toString();
+        if (this.label == null || this.label.isEmpty()) {
+            return this.id.toString() + "\t" + this.properties.toString();
         } else {
-            return this.vertexId.toString() + "\t" + this.vertexLabel.toString() + "\t" + properties.toString();
+            return this.id.toString() + "\t" + this.label.toString() + "\t" + properties.toString();
         }
     }
 
@@ -154,8 +235,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      */
     @Override
     public void readFields(DataInput input) throws IOException {
-        vertexId.readFields(input);
-        vertexLabel.readFields(input);
+        id.readFields(input);
+        label.readFields(input);
         this.properties.readFields(input);
     }
 
@@ -166,8 +247,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>> imple
      */
     @Override
     public void write(DataOutput output) throws IOException {
-        vertexId.write(output);
-        vertexLabel.write(output);
+        id.write(output);
+        label.write(output);
         properties.write(output);
     }
 }

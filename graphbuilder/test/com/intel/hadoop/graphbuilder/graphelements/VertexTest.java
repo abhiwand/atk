@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.IntType;
@@ -38,7 +38,7 @@ public class VertexTest {
         Vertex<StringType> vertex = new Vertex<StringType>();
 
         assertNotNull(vertex);
-        assertNull(vertex.getVertexId());
+        assertNull(vertex.getId());
         assertNotNull(vertex.getProperties());
     }
 
@@ -48,7 +48,7 @@ public class VertexTest {
         Vertex<StringType> vertex = new Vertex<StringType>(vertexId);
 
         assertNotNull(vertex);
-        assert (vertex.getVertexId().equals(vertexId));
+        assert (vertex.getId().equals(vertexId));
         assertNotNull(vertex.getProperties());
     }
 
@@ -59,7 +59,7 @@ public class VertexTest {
         Vertex<StringType> vertex = new Vertex<StringType>(vertexId);
 
         assertNotNull(vertex);
-        assert (vertex.getVertexId().equals(vertexId));
+        assert (vertex.getId().equals(vertexId));
         assertNotNull(vertex.getProperties());
 
         PropertyMap pm = vertex.getProperties();
@@ -68,11 +68,11 @@ public class VertexTest {
         StringType anotherOpinion = new StringType("No that vertex sucks");
 
         vertex.configure(anotherOpinion, pm2);
-        assert (vertex.getVertexId().equals(anotherOpinion));
+        assert (vertex.getId().equals(anotherOpinion));
         assertSame(vertex.getProperties(), pm2);
 
         vertex.configure(vertexId, pm);
-        assert (vertex.getVertexId().equals(vertexId));
+        assert (vertex.getId().equals(vertexId));
         assertSame(vertex.getProperties(), pm);
     }
 
@@ -152,7 +152,7 @@ public class VertexTest {
 
         vertexOnTheOtherEnd.readFields(dataInputStream);
 
-        assert (vertex.getVertexId().equals(vertexOnTheOtherEnd.getVertexId()));
+        assert (vertex.getId().equals(vertexOnTheOtherEnd.getId()));
         assert (vertex.getProperties().toString().equals(vertexOnTheOtherEnd.getProperties().toString()));
 
         // one more time, with a nonempty property list
@@ -173,7 +173,7 @@ public class VertexTest {
 
         vertexOnTheOtherEnd.readFields(dataInputStream2);
 
-        assert (vertex.getVertexId().equals(vertexOnTheOtherEnd.getVertexId()));
+        assert (vertex.getId().equals(vertexOnTheOtherEnd.getId()));
         assert (vertex.getProperties().toString().equals(vertexOnTheOtherEnd.getProperties().toString()));
     }
 }

@@ -1,20 +1,21 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
 
 package com.intel.hadoop.graphbuilder.graphelements;
@@ -37,7 +38,7 @@ import java.util.Objects;
  *
  * @param <VidType> the type of vertex id.
  */
-public class Edge<VidType extends WritableComparable<VidType>> implements Writable {
+public class Edge<VidType extends WritableComparable<VidType>>  extends GraphElement implements Writable {
 
     private VidType     src;
     private VidType     dst;
@@ -49,6 +50,8 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
      */
 
     public Edge() {
+        super();
+
         this.properties = new PropertyMap();
     }
 
@@ -60,10 +63,58 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
      * @param label The edge label.
      */
     public Edge(VidType src, VidType dst, StringType label) {
+
+        this(src, dst, label, new PropertyMap());
+    }
+
+
+    /**
+     * Creates an edge with given source, destination, label and property map
+     *
+     * @param src The vertex ID of the edge's source vertex
+     * @param dst The vertex ID of the edge's destination vertex
+     * @param label the edge label
+     */
+    public Edge(VidType src, VidType dst, StringType label, PropertyMap propertyMap) {
+        this();
+
         this.src = src;
         this.dst = dst;
         this.label = label;
-        this.properties = new PropertyMap();
+        this.properties = propertyMap;
+    }
+
+    /**
+     * This is an edge.
+     * @return  {@code true}
+     */
+    @Override
+    public boolean isEdge() {
+        return true;
+    }
+
+    /**
+     * This is not a vertex.
+     * @return  {@code false}
+     */
+    @Override
+    public boolean isVertex() {
+        return false;
+    }
+
+    /**
+     * See if this edge is null. If any of the values are nulls the whole thing is null. If we try to write an edge
+     * with any null values it will throw an exception.
+     * @return true/false based upon the null status of the src,dst, and label
+     */
+    @Override
+    public boolean isNull(){
+        if(this.src == null || this.dst == null || this.label == null){
+            return true;
+        }else{
+            return false;
+        }
+
     }
 
     /**
@@ -102,7 +153,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     /**
      * @return The edge label.
      */
-    public StringType getEdgeLabel() {
+    public StringType getLabel() {
         return label;
     }
 
@@ -136,10 +187,26 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
+     * set the entire property map
+     * @param propertyMap
+     */
+    public void setProperties(PropertyMap propertyMap){
+        this.properties = propertyMap;
+    }
+
+    /**
+     * @return get the graph element
+     *
+     */
+    public Edge get(){
+        return this;
+    }
+
+    /**
      * Gets the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID, and its label.
      * @return  The triple of the edge's source vertex ID, destination vertex ID, and its label.
      */
-    public EdgeID getEdgeID() {
+    public EdgeID getId() {
         return new EdgeID(this.src, this.dst, this.label);
     }
 

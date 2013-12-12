@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.StringType;
@@ -28,7 +28,7 @@ import static junit.framework.Assert.assertNotNull;
 public class PropertyGraphElementStringTypeVidsTest {
     @Test
     public void testCreateVid() {
-        PropertyGraphElementStringTypeVids elt = new PropertyGraphElementStringTypeVids();
+        SerializedPropertyGraphElementStringTypeVids elt = new SerializedPropertyGraphElementStringTypeVids();
 
         assertNotNull(elt);
 
@@ -51,11 +51,11 @@ public class PropertyGraphElementStringTypeVidsTest {
 
         Vertex<StringType> vertex = new Vertex<StringType>(vid);
 
-        PropertyGraphElementStringTypeVids vertexElement  = new PropertyGraphElementStringTypeVids();
+        SerializedPropertyGraphElementStringTypeVids vertexElement  = new SerializedPropertyGraphElementStringTypeVids();
 
-        vertexElement.init(PropertyGraphElement.GraphElementType.VERTEX, vertex);
+        vertexElement.init(vertex);
 
-        assert(vertexElement.toString().contains(name));
+        assert(vertexElement.graphElement().toString().contains(name));
 
 
         String srcName = "The Source";
@@ -69,18 +69,18 @@ public class PropertyGraphElementStringTypeVidsTest {
 
         Edge<StringType> edge = new Edge<StringType>(srcId, dstId, wrappedLabel);
 
-        PropertyGraphElementStringTypeVids edgeElement  = new PropertyGraphElementStringTypeVids();
+        SerializedPropertyGraphElementStringTypeVids edgeElement  = new SerializedPropertyGraphElementStringTypeVids();
 
-        edgeElement.init(PropertyGraphElement.GraphElementType.EDGE, edge);
+        edgeElement.init(edge);
 
-        assert(edgeElement.toString().contains(srcName));
-        assert(edgeElement.toString().contains(dstName));
-        assert(edgeElement.toString().contains(label));
+        assert(edgeElement.graphElement().toString().contains(srcName));
+        assert(edgeElement.graphElement().toString().contains(dstName));
+        assert(edgeElement.graphElement().toString().contains(label));
 
         // as for the null graph element...
         // well, I don't care what you call it, but it needs to have nonzero length string
 
-        PropertyGraphElementStringTypeVids nullElement = new PropertyGraphElementStringTypeVids();
+        SerializedPropertyGraphElementStringTypeVids nullElement = new SerializedPropertyGraphElementStringTypeVids();
 
         assert(nullElement.toString().length() > 0);
     }
