@@ -1,6 +1,33 @@
 #! /bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-sudo -u hadoop bash -c "
-. $DIR/../virtpy/bin/activate
-cd $DIR/../ipython
-ipython notebook --profile-dir=$DIR/../conf/ipython_profile/profile_default --pylab"
+export INTEL_ANALYTICS_HOME="$DIR/.."
+if [ -d intel_analytics ] 
+	then
+		export INTEL_ANALYTICS_PYTHON="$DIR/.."
+else 
+	export INTEL_ANALYTICS_PYTHON="$INTEL_ANALYTICS_HOME/virtpy/lib/python2.7/lib/site-packages"
+fi
+export HOSTNAME=`hostname`
+if [ -d /home/hadoop/IntelAnalytics/hadoop ] 
+	then
+		export HADOOP_HOME=/home/hadoop/IntelAnalytics/hadoop
+fi
+if [ -d /home/hadoop/IntelAnalytics/hbase ] 
+	then
+		export HADOOP_HOME=/home/hadoop/IntelAnalytics/hbase
+fi
+
+if [ -d /home/hadoop/IntelAnalytics ]
+	then
+		sudo -u hadoop bash -c "
+	. $INTEL_ANALYTICS_HOME/virtpy/bin/activate
+	ipython notebook --config=$INTEL_ANALYTICS_HOME/conf/ipython_notebook_config.py
+	"
+else 
+	if [ -d $INTEL_ANALYTICS_HOME/virtpy ]
+		then
+			. $INTEL_ANALYTICS_HOME/virtpy/bin/activate
+	fi
+	ipython notebook --config=$INTEL_ANALYTICS_HOME/conf/ipython_notebook_config.py
+fi
+
