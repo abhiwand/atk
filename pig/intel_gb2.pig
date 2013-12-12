@@ -1,4 +1,4 @@
-DEFINE ExtractJSON com.intel.pig.udf.eval.ExtractJSON();
+DEFINE ExtractJSONField com.intel.pig.udf.eval.ExtractJSONField();
 DEFINE CreateRowKey com.intel.pig.udf.eval.CreateRowKey();
 
 /**

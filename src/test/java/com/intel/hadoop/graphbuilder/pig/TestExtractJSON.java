@@ -38,9 +38,9 @@ public class TestExtractJSON {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting ExtractJSON tests. ***");
+		System.out.println("*** Starting ExtractJSONField tests. ***");
 		testFn = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec("com.intel.pig.udf.eval.ExtractJSON");
+				.instantiateFuncFromSpec("com.intel.pig.udf.eval.ExtractJSONField");
 		System.out.println(testJson);
 	}
 
@@ -113,7 +113,7 @@ public class TestExtractJSON {
 
 	@After
 	public void done() {
-		System.out.println("*** Done with the ExtractJSON tests ***");
+		System.out.println("*** Done with the ExtractJSONField tests ***");
 	}
 
 }

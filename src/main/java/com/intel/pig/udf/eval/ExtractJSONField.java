@@ -36,10 +36,10 @@ import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief ExtractJSON UDF extracts fields from (potentially complex & nested)
+ * \brief ExtractJSONField UDF extracts fields from (potentially complex & nested)
  * JSON data with JSONPath expressions.
  * 
- * ExtractJSON provides another convenient way of processing complex JSON data
+ * ExtractJSONField provides another convenient way of processing complex JSON data
  * with JSONPath expressions using the JSONPath
  * implementation of the <a href="https://code.google.com/p/rest-assured/">RestAssured</a> project. <br/>
  * 
@@ -54,12 +54,12 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * <pre>
  * {@code
      json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
-     extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSON(json, 'Sizes[0].Price') AS price: double;
+     extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(json, 'Sizes[0].Price') AS price: double;
      }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
-public class ExtractJSON extends EvalFunc<String> {
+public class ExtractJSONField extends EvalFunc<String> {
 
 	@Override
 	public String exec(Tuple input) throws IOException {
@@ -135,7 +135,7 @@ public class ExtractJSON extends EvalFunc<String> {
 	}
 
 	/**
-	 * ExtractJSON UDF returns an extracted JSON field, which is of type
+	 * ExtractJSONField UDF returns an extracted JSON field, which is of type
 	 * chararray
 	 */
 	@Override
