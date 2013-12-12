@@ -41,12 +41,13 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement.GraphElementType;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.util.RDFUtils;
+import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief TORDF UDF converts a given property graph element to RDF triples.
+ * \brief TORDF UDF converts a given {@link PropertyGraphElementTuple} to RDF triples.
  * <p/>
- * If the PropertyGraphElement is null, this UDF returns null
+ * If the {@link PropertyGraphElement} is null, this UDF returns null
  * 
  * <b>Example:</b>
  * 
