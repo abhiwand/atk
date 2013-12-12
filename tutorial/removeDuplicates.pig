@@ -9,7 +9,7 @@ x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') AS (id: int, name: 
 DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "name=age,managerId" -e "name,dept,worksAt,tenure"');
 pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
 
-merged = MergeDuplicateGraphElements(pge);
+merged = MERGEDUPLICATEGRAPHELEMENTS(pge);
 DESCRIBE merged;
 dump merged;
 

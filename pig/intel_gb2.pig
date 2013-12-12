@@ -3,8 +3,20 @@
 DEFINE ExtractJSON com.intel.pig.udf.eval.ExtractJSON();
 DEFINE TORDF com.intel.pig.udf.eval.TORDF();
 
-DEFINE MergeDuplicateGraphElements(inPropGraph) RETURNS outPropGraph {
-  DEFINE getPropGraphEltID com.intel.pig.udf.eval.GetPropGraphEltID;
+
+/**
+ * Remove duplicate property graphelements from a stream.
+ *
+ * <p><ul>
+ * <li>Vertices with the same IDs are treated as equal</li>
+ * <li>Edges with the same label and matching vertex IDs on their source and destination vertices are treated as equal</li>
+ * <li>Property lists are merged between duplicates, with conflicts resolved arbitrarily. </li>
+ * </ul> </p>
+ *
+*/
+
+DEFINE MERGEDUPLICATEGRAPHELEMENTS(inPropGraph) RETURNS outPropGraph {
+  DEFINE getPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
   labeled = FOREACH $inPropGraph GENERATE (getPropGraphEltID(*)), $0;
   grouped = GROUP labeled by $0;
   DEFINE merge com.intel.pig.udf.eval.MergeDuplicateGraphElements;

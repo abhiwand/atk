@@ -43,10 +43,10 @@ import java.util.Iterator;
  * \brief MergeDuplicateGraphElements ... combine duplicate property graph elements into a single property graph element.
  *
  * The intended input for this function is a tuple from the output of GROUP operation performed on pairs of the
- *     form (ID, property graph element) where ID is the output of {@code GetPropGraphEltID} called on the property graph element.
+ *     form (ID, property graph element) where ID is the output of {@code GetPropGraphElementID} called on the property graph element.
  *
  * Example:
- * DEFINE getPropGraphEltID com.intel.pig.udf.eval.GetPropGraphEltID;
+ * DEFINE getPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
  * pgeLabeled = FOREACH pge GENERATE (getPropGraphEltID(*)), $0;
  * grouped = GROUP pgeLabeled by $0;
  * DEFINE MergeDuplicateGraphElements com.intel.pig.udf.eval.MergeDuplicateGraphElements;
@@ -54,6 +54,8 @@ import java.util.Iterator;
  *
  * This routine merges properties by simply merging the property lists by brute force.
  *
+ * @see PropertyGraphElementTuple
+ * @see PropertyGraphElement
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {

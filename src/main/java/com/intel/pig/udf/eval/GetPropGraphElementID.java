@@ -30,10 +30,10 @@ import org.apache.pig.data.TupleFactory;
 import java.io.IOException;
 
 /**
- * \brief GetPropGraphEltID ...returns string objectID of its property graph element.
+ * \brief GetPropGraphElementID ...returns string objectID of its property graph element.
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
-public class GetPropGraphEltID extends EvalFunc<String>  {
+public class GetPropGraphElementID extends EvalFunc<String>  {
 
     /**
      * Get the string representation of the ID of a property graph element
