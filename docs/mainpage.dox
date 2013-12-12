@@ -5,7 +5,8 @@
  * This is the introduction.
  *
  * \section install_sec Installation
- *
+ * Hbase has to be installed and hbase binary should be on PATH for titan_bulk_load_example.pig to run
  * \subsection step1 Step 1: Opening the box
+ * Known issues: DUMP causes class not found we know the fix...
  *
  */
