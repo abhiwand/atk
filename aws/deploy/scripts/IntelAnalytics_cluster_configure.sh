@@ -200,7 +200,7 @@ echo ${m}:Creat Titan logging directory...;
 mkdir -p /mnt/data1/logs/titan 2>&1 > /dev/null
 ln -s /mnt/data1/logs/titan titan-server/logs 2>&1 > /dev/null
 echo ${m}:Load Titan gods graph to hbase...;
-titan/bin/gremlin.sh bin/IntelAnalytics_load.grem 2>&1 > /dev/null;
+titan/bin/gremlin.sh -e bin/IntelAnalytics_load.groovy 2>&1 > /dev/null;
 echo ${m}:Start Titan/Rexster server...;
 titan/bin/start-rexstitan.sh;
 sleep 2;
