@@ -47,6 +47,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -137,7 +138,7 @@ public class TitanVertexFormatPropertyGraph4LDATest {
 
     }
 
-    //@Ignore
+    @Ignore
     @Test
     public void VertexFormatPropertyGraph4LDATest() throws Exception {
         /*
