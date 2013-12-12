@@ -53,12 +53,12 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * 
  * <pre>
  * {@code
- *      x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
- *      x = FILTER x by id!='';
- *      keyed_x = FOREACH x GENERATE FLATTEN(CreateRowKey(*));
- *      STORE keyed_x INTO 'hbase://gb_input_table' 
- *        		USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:id cf:name cf:age cf:dept cf:manager cf:underManager');
- *    }
+       x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+       x = FILTER x by id!='';
+       keyed_x = FOREACH x GENERATE FLATTEN(CreateRowKey(*));
+       STORE keyed_x INTO 'hbase://gb_input_table' 
+        		USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:id cf:name cf:age cf:dept cf:manager cf:underManager');
+     }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 1, timeUnit = TimeUnit.MINUTES)
@@ -93,6 +93,13 @@ public class CreateRowKey extends EvalFunc<Tuple> {
 		return new_tuple;
 	}
 
+	/**
+	 * This method generates a row key by getting an MD5 hash of all tuple
+	 * elements concatenated as strings. Note that row key generation may have
+	 * significant impact on performance depending on the data access patterns.
+	 * So, please see <a href="http://hbase.apache.org/book/rowkey.design.html">
+	 * HBase Reference Guide</a> for a better understanding of this impact.
+	 */
 	private String generateRowKey(Tuple t) throws NoSuchAlgorithmException {
 		StringBuffer buffer = new StringBuffer();
 

@@ -53,9 +53,9 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * 
  * <pre>
  * {@code
- *      json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
- *      extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(json, 'Sizes[0].Price') AS price: double;
- *      }
+       json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
+       extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(json, 'Sizes[0].Price') AS price: double;
+       }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
