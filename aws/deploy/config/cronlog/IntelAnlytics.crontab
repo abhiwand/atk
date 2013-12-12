@@ -1,2 +1,0 @@
-0 3 * * 0 hadoop /usr/sbin/logrotate -f /etc/logrotate.d/IntelAnalytics
-
