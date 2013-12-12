@@ -75,22 +75,13 @@ import static junit.framework.Assert.assertTrue;
  * then run algorithm with input data,
  * finally write back results to Titan via TitanVertexOutputFormatLongIDDoubleValue
  */
-public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest {
-    /**
-     * LOG class
-     */
-    private static final Logger LOG = Logger
-        .getLogger(TitanVertexFormatLongDoubleFloatInLongDoubleOutTest.class);
+public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest extends TitanTestBase {
 
-    public TitanTestGraph graph = null;
-    public TitanTransaction tx = null;
-    private GiraphConfiguration giraphConf = null;
-    private GraphDatabaseConfiguration titanConfig = null;
     private ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, FloatWritable> conf;
 
     @Before
     public void setUp() throws Exception {
-        giraphConf = new GiraphConfiguration();
+        super.setup();
         giraphConf.setComputationClass(PageRankComputation.class);
         giraphConf.setMasterComputeClass(PageRankComputation.PageRankMasterCompute.class);
         giraphConf.setAggregatorWriterClass(PageRankComputation.PageRankAggregatorWriter.class);
@@ -100,33 +91,12 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest {
         giraphConf.set("pr.resetProbability", "0.15");
         giraphConf.set("pr.convergenceThreshold", "0.0001");
 
-        GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
-        GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
-        GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan");
-        GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
-        GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
-        GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
-        GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
         INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "default");
         INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
         OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "rank");
 
-        HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
-        String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf);
-        //even delete an existing table needs the table is enabled before deletion
-        if (hbaseAdmin.isTableDisabled(tableName)) {
-            hbaseAdmin.enableTable(tableName);
-        }
-
-        if (hbaseAdmin.isTableAvailable(tableName)) {
-            hbaseAdmin.disableTable(tableName);
-            hbaseAdmin.deleteTable(tableName);
-        }
-
-
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, FloatWritable>(
-            giraphConf);
+        conf = new ImmutableClassesGiraphConfiguration<>(giraphConf);
 
         BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
             GIRAPH_TITAN.get(giraphConf));
@@ -134,7 +104,7 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest {
         open();
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void VertexFormatLongDoubleFloatInLongDoubleOutTest() throws Exception {
         /*  input graph
@@ -205,7 +175,7 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest {
         }
 
         //verify data is written to Titan
-        clopen();
+        //clopen();
         long[] nid;
         TitanKey resultKey = null;
         String keyName = "rank";
@@ -225,36 +195,5 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest {
             assertEquals(expectedValues[i], Double.parseDouble(nodes[i].getProperty(resultKey).toString()), 0.01d);
 
         }
-    }
-
-    @After
-    public void done() throws IOException {
-        close();
-        LOG.info("***Done with VertexFormatLongDoubleFloatInLongDoubleOutTest****");
-    }
-
-    private void open() {
-        graph = new TitanTestGraph(titanConfig);
-        tx = graph.newTransaction();
-        if (tx == null) {
-            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
-            throw new RuntimeException(
-                "execute: Failed to create Titan transaction!");
-        }
-    }
-
-    public void close() {
-        if (null != tx && tx.isOpen()) {
-            tx.rollback();
-        }
-
-        if (null != graph) {
-            graph.shutdown();
-        }
-    }
-
-    private void clopen() {
-        close();
-        open();
     }
 }
