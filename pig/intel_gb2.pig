@@ -16,11 +16,11 @@ DEFINE TORDF com.intel.pig.udf.eval.TORDF();
 */
 
 DEFINE MERGEDUPLICATEGRAPHELEMENTS(inPropGraph) RETURNS outPropGraph {
-  DEFINE getPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
-  labeled = FOREACH $inPropGraph GENERATE (getPropGraphEltID(*)), $0;
+  DEFINE GetPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
+  labeled = FOREACH $inPropGraph GENERATE (GetPropGraphEltID(*)), $0;
   grouped = GROUP labeled by $0;
-  DEFINE merge com.intel.pig.udf.eval.MergeDuplicateGraphElements;
-  $outPropGraph = FOREACH grouped GENERATE(merge(*));
+  DEFINE Merge com.intel.pig.udf.eval.MergeDuplicateGraphElements;
+  $outPropGraph = FOREACH grouped GENERATE(Merge(*));
 };
 
 DEFINE LOAD_TITAN(edge_list, hbase_out_table, graph_db) RETURNS void {
