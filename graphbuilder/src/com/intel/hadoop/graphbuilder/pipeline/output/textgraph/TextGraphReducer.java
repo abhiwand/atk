@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,7 +15,7 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
 
@@ -44,15 +44,15 @@ import org.apache.log4j.Logger;
 
 /**
  * The Reducer class applies user defined {@code Functional}s to reduce
- * duplicate edges and vertices. If the user does not provide any {@code Functional}, it
+ * duplicate edges and vertices. If the user does not provide a {@code Functional}, it
  * outputs the first instance and discards the rest with the same identifier. It
  * also discards self edges: v - > v. An option for discarding bidirectional edges
  * is provided by {@code setCleanBidirectionalEdges(boolean)}.
  * <p>
  * Output directory structure:
  * <ul>
- * <li>$outputdir/edata Contains the edge data output.</li>
- * <li>$outputdir/vdata Contains the vertex data output.</li>
+ * <li>{@code $outputdir/edata} Contains the edge data output.</li>
+ * <li>{@code $outputdir/vdata} Contains the vertex data output.</li>
  * </ul>
  * </p>
  */

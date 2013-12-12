@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -44,8 +44,8 @@ import java.util.Map;
 /**
  * Loads edges into Titan.
  * <p>
- * It gathers each vertex with the edges that point to that vertex, that is,
- * those edges for whom the vertex is the destination.  Because the edges were tagged with the
+ * This class gathers each vertex with the edges that point to that vertex, that is,
+ * those edges for which the vertex is the destination. Because the edges were tagged with the
  * Titan IDs of their sources in the previous MR job and each vertex is tagged with its Titan ID,
  * we now know the Titan ID of the source and destination of the edges and can add them to Titan.
  * </p>
@@ -76,9 +76,9 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     }
 
     /**
-     * Set up the Titan connection.
+     * Sets up the Titan connection.
      *
-     * @param context  The reducer context provided by Hadoop.
+     * @param {@code context}  The reducer context provided by Hadoop.
      * @throws IOException
      * @throws InterruptedException
      */
@@ -100,9 +100,9 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
      * Titan IDs are propagatd from the destination vertices to each edge and the edges are loaded 
      * into Titan using the BluePrints API.
      * </p>
-     * @param key      A mapreduce key; a hash of a vertex ID.
-     * @param values   Either a vertex with that hashed vertex ID, or an edge with said vertex as its destination.
-     * @param context  A reducer context provided by Hadoop.
+     * @param {@code key}      A mapreduce key; a hash of a vertex ID.
+     * @param {@code values}   Either a vertex with that hashed vertex ID, or an edge with said vertex as its destination.
+     * @param {@code context}  A reducer context provided by Hadoop.
      * @throws IOException
      * @throws InterruptedException
      */

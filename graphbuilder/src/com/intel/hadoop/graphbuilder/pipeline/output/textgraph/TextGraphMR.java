@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,7 +15,7 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.pipeline.output.textgraph;
 
@@ -51,8 +51,8 @@ import com.intel.hadoop.graphbuilder.util.Functional;
  *     To run a graph construction job:
  *     <ul>
  *         <li>Configure the graph building pipeline by providing a {@code InputConfiguration} and 
- *         {@code GraphBuildingRule} through the method {@code init}.</li>
- *         <li>Invoke the pipeline with the method {@code run}.</li>
+ *         {@code GraphBuildingRule} through the {@code init} method.</li>
+ *         <li>Invoke the pipeline with the {@code run} method.</li>
  *     </ul>
  * </p>
  * <p>
@@ -66,8 +66,8 @@ import com.intel.hadoop.graphbuilder.util.Functional;
  *
  * <p> The output is structured as follows:
  * <ul>
- * <li>$outputdir/edata Contains the edge data output.</li>
- * <li>$outputdir/vdata Contains the vertex data output.</li>
+ * <li>{@code $outputdir/edata} Contains the edge data output.</li>
+ * <li>{@code $outputdir/vdata} Contains the vertex data output.</li>
  * </ul>
  * </p>
  *
@@ -101,7 +101,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
     /**
      * The constructor. It requires the pathname for the output as an argument.
-     * @param outputPathName  the pathname as a String
+     * @param {@code outputPathName}  The output pathname as a String.
      */
     public TextGraphMR(String outputPathName) {
         this.outputPathName = outputPathName;
@@ -109,14 +109,14 @@ public class TextGraphMR extends GraphGenerationMRJob {
 
     /**
      * Set-up time routine that connects raw data ({@code inputConfiguration} and the graph 
-     * generations rule ({@code graphBuildingRule}) to the MR chain.
+     * generations rule ({@code graphBuildingRule}) to the Map Reduce chain.
      *
      * <p>
      *     This step must be taken before attempting to execute the pipeline with the {@code run} method.
      * </p>
      *
-     * @param inputConfiguration The object that handles the generation of data records from raw data.
-     * @param graphBuildingRule The object that handles the conversion of data records into a 
+     * @param {@code inputConfiguration} The object that handles the generation of data records from raw data.
+     * @param {@code graphBuildingRule} The object that handles the conversion of data records into a 
 	 * property graph element.
      */
     @Override
@@ -140,12 +140,12 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Sets user defined functions to reduce duplicate vertices and edges.
+     * Sets the user defined functions to reduce duplicate vertices and edges.
      * <p>If the user does not specify these functions, the default behavior is that duplicate objects 
      * will be merged by having their property maps merged.</p>
      *
-     * @param vertexReducerFunction User specified function for reducing duplicate vertices.
-     * @param edgeReducerFunction   User specified function for reducing duplicate edges.
+     * @param {@code vertexReducerFunction} User specified function for reducing duplicate vertices.
+     * @param {@code edgeReducerFunction}   User specified function for reducing duplicate edges.
      */
 
     public void setFunctionClass(Class vertexReducerFunction, Class edgeReducerFunction) {
@@ -183,7 +183,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
      * <p> The class is one of the instantiations of {@code PropertyGraphElement} that determines
 	 * the vertex ID type.</p>
      *
-     * @param valueClass The intermediate value class.
+     * @param {@code valueClass}  The intermediate value class.
      * @see PropertyGraphElement
      * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
      * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
@@ -206,7 +206,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
      * Set the vertex id class.
      * <p>This can either be a {@code StringType} or {@code LongType}, which are writable 
      * encapsulations of the {@code String} and {@code Long} types, respectively. </p>
-     * @param vidClass The class of the vertex IDs.
+     * @param {@code vidClass} The class of the vertex IDs.
      * @see PropertyGraphElement
      * @see com.intel.hadoop.graphbuilder.types.StringType
      * @see com.intel.hadoop.graphbuilder.types.LongType
@@ -218,7 +218,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Get the configuration of the current job.
+     * Gets the configuration of the current job.
      * @return The Hadoop configuration of the current job.
      */
 
@@ -229,7 +229,7 @@ public class TextGraphMR extends GraphGenerationMRJob {
     /**
      * Sets user defined options.
      *
-     * @param userOpts A Map of option key value pairs.
+     * @param {@code userOpts}  A Map of the option key value pairs.
      */
     @Override
     public void setUserOptions(HashMap<String, String> userOpts) {
@@ -241,26 +241,26 @@ public class TextGraphMR extends GraphGenerationMRJob {
     /**
      * Runs the graph building pipeline.
      *
-     * @param cmd The user provided command line options.
+     * @param {@code cmd} The user provided command line options.
      * @throws IOException
      * @throws ClassNotFoundException
      * @throws InterruptedException
      */
 
-    // dev todo:  the cmd parameter is deprecated and not used any more by this method ---
+    // dev todo:  the cmd parameter is deprecated and not used any more by this method --- OUCH!
     // it has not yet been eliminated because it has not been eliminated from the GraphGenerationMRJob abstract class
-    // which is blocked by getting the command lines out of the other reducers
+    // which is blocked by getting the command lines out of the other reducers.
     @Override
     public void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException {
 
-        // Set required parameters in configuration
+        // Set required parameters in configuration.
 
         conf.set("GraphTokenizer", graphBuildingRule.getGraphTokenizerClass().getName());
         conf.setBoolean("noBiDir", cleanBidirectionalEdge);
         conf.set("vidClass", vidClass.getName());
         conf.set("KeyFunction", keyFuncClass.getName());
 
-        // Set optional parameters in configuration
+        // Set optional parameters in configuration.
 
         if (vertexReducerFunction != null) {
             conf.set("vertexReducerFunction", vertexReducerFunction.getClass().getName());
