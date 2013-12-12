@@ -317,7 +317,7 @@ class HbaseTableTest(unittest.TestCase):
 
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
-    def test_illustrate_to_html(self, etl_base_client_class):
+    def test_illustrate_as_html(self, etl_base_client_class):
 
         etl_base_client_class.return_value = self.create_mock_hbase_client_same_columns_in_rows()
 
@@ -325,13 +325,13 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        html = table.illustrate_to_html()
+        html = table.illustrate_as_html()
         expected = '<table border="1"><tr><th>name</th><th>address</th></tr><tr><td>A</td><td>1234 xyz st</td></tr><tr><td>B</td><td>5678 def ave</td></tr></table>'
         self.assertEqual(expected, html)
 
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
-    def test_illustrate_to_html_rows_with_different_columns(self, etl_base_client_class):
+    def test_illustrate_as_html_rows_with_different_columns(self, etl_base_client_class):
 
         etl_base_client_class.return_value = self.create_mock_hbase_client_different_columns_in_rows()
 
@@ -339,7 +339,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        html = table.illustrate_to_html()
+        html = table.illustrate_as_html()
         expected = '<table border="1"><tr><th>name</th><th>address</th></tr><tr><td>A</td><td>1234 xyz st</td></tr><tr><td>B</td><td>NA</td></tr></table>'
         self.assertEqual(expected, html)
 
