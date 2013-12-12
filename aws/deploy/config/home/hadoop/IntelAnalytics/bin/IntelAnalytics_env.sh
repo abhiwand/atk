@@ -39,7 +39,7 @@ fi
 
 if [ -z "${TITAN_SERVER_HOME}" ]; then
 	export TITAN_SERVER_HOME=${INTEL_ANALYTICS_HADOOP_HOME}/titan-server
-	export PATH=${PATH}:${TIAN_SERVER_HOME}/bin
+	export PATH=${PATH}:${TITAN_SERVER_HOME}/bin
 fi
 if [ -z "${ES_HOME}" ]; then
     export ES_HOME=${INTEL_ANALYTICS_HADOOP_HOME}/elasticsearch
