@@ -75,6 +75,10 @@ public class TestExtractJSON {
 		inTuple.set(1, "Sizes.findAll{Sizes -> Sizes.Price>18}.Size[0]");
 		result = (String) testFn.exec(inTuple);
 		assertEquals("Size is not correct!", result, "Large");
+		
+		inTuple.set(1, "invalid_json_path_query");
+		result = (String) testFn.exec(inTuple);
+		assertEquals("Null expected!", result, null);
 
 	}
 

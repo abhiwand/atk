@@ -83,7 +83,7 @@ public class ExtractJSONField extends EvalFunc<String> {
 		}
 
 		if (queryResult == null) {
-			return "";
+			return null;
 		} else if (queryResult instanceof List) {
 			List result = (List) queryResult;
 			/*
