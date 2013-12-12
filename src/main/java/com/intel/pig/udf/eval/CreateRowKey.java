@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
+import org.apache.pig.backend.hadoop.hbase.HBaseStorage;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
@@ -37,26 +38,27 @@ import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief CreateRowKey assigns (prepends) a row key to a given tuple to be
- * used by HBaseStorage. @see org.apache.pig.backend.hadoop.hbase.HBaseStorage 
+ * \brief CreateRowKey assigns (prepends) a row key to a given tuple to be used
+ * by {@link HBaseStorage}
  * 
  * <p/>
- * Row keys should be designed carefully as they may have significant
- * impact on read/write performance. This UDF only provides a generic
- * randomized row key assignment logic, which may not be suitable for every
- * situation. To understand the implications of row key design please see
- * <a href="http://hbase.apache.org/book/rowkey.design.html">HBase
- * Reference Guide</a>
+ * Row keys should be designed carefully as they may have significant impact on
+ * read/write performance. This UDF only provides a generic randomized row key
+ * assignment logic, which may not be suitable for every situation. To
+ * understand the implications of row key design please see <a
+ * href="http://hbase.apache.org/book/rowkey.design.html">HBase Reference
+ * Guide</a>
  * 
  * <b>Example:</b>
+ * 
  * <pre>
  * {@code
-    x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
-    x = FILTER x by id!='';
-    keyed_x = FOREACH x GENERATE FLATTEN(CreateRowKey(*));
-    STORE keyed_x INTO 'hbase://gb_input_table' 
-      		USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:id cf:name cf:age cf:dept cf:manager cf:underManager');
- *   }
+ *      x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+ *      x = FILTER x by id!='';
+ *      keyed_x = FOREACH x GENERATE FLATTEN(CreateRowKey(*));
+ *      STORE keyed_x INTO 'hbase://gb_input_table' 
+ *        		USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:id cf:name cf:age cf:dept cf:manager cf:underManager');
+ *    }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 1, timeUnit = TimeUnit.MINUTES)
@@ -79,8 +81,7 @@ public class CreateRowKey extends EvalFunc<Tuple> {
 		}
 
 		/*
-		 * first set the generated row key as the first element; this is what
-		 * HBaseStorage wants
+		 * first set the generated row key as the first element
 		 */
 		new_tuple.set(0, rowKey);
 
@@ -106,8 +107,7 @@ public class CreateRowKey extends EvalFunc<Tuple> {
 		MessageDigest m = MessageDigest.getInstance("MD5");
 		m.reset();
 		m.update(buffer.toString().getBytes());
-		byte[] digest = m.digest();
-		BigInteger bigInt = new BigInteger(1, digest);
+		BigInteger bigInt = new BigInteger(1, m.digest());
 		return bigInt.toString(16);
 	}
 
@@ -118,8 +118,9 @@ public class CreateRowKey extends EvalFunc<Tuple> {
 
 			int nInFields = input.getFields().size();
 
-			outputSchema.add(new FieldSchema("key", DataType.CHARARRAY));
+			outputSchema.add(new FieldSchema("row_key", DataType.CHARARRAY));
 
+			/* add the elements in the input schema */
 			for (int i = 0; i < nInFields; i++) {
 				outputSchema.add(input.getField(i));
 			}

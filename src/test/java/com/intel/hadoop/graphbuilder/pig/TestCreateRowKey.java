@@ -29,14 +29,14 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
-public class TestRowKeyAssignerUDF {
+public class TestCreateRowKey {
 	EvalFunc<?> rowKeyAssignerUDF;
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting RowKeyAssignerUDF tests. ***");
+		System.out.println("*** Starting CreateRowKey tests. ***");
 		rowKeyAssignerUDF = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec("com.intel.pig.udf.eval.RowKeyAssignerUDF");
+				.instantiateFuncFromSpec("com.intel.pig.udf.eval.CreateRowKey");
 	}
 
 	@Test
@@ -64,7 +64,7 @@ public class TestRowKeyAssignerUDF {
 
 	@After
 	public void done() {
-		System.out.println("*** Done with the RowKeyAssignerUDF tests ***");
+		System.out.println("*** Done with the CreateRowKey tests ***");
 	}
 
 }
