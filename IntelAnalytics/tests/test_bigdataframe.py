@@ -120,7 +120,7 @@ class BigDataFrameTest(unittest.TestCase):
 
     def test_data_frame_get_html(self):
         hbase_table = HBaseTable("test_table", "test_file")
-        hbase_table.illustrate_to_html = MagicMock(return_value="<table></table>")
+        hbase_table.illustrate_as_html = MagicMock(return_value="<table></table>")
         data_frame = BigDataFrame("test_frame", hbase_table)
         self.assertEqual("<table></table>", data_frame.to_html(10))
 

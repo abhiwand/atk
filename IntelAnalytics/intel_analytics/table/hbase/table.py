@@ -210,7 +210,7 @@ class HBaseTable(object):
 
            sys.stdout.write("\n")
                
-    def illustrate_to_html(self, nRows=10):
+    def illustrate_as_html(self, nRows=10):
         first_N_rows = self._get_first_N(nRows)
         html_table='<table border="1">'
 
@@ -307,7 +307,7 @@ class HBaseTable(object):
             name_registry.get_key(self.table_name)        
         output_table = _create_table_name(frame_name, True)
         if how not in available_imputations:
-            raise HBaseTableException('Please specify a support imputation method. %d is not supported' % (how))
+            raise HBaseTableException('Please specify a support imputation method. %s is not supported' % (str(how)))
         self.__drop(output_table, column_name=column_name, how=None, replace_with=Imputation.to_string(how))
 
     def get_schema(self):

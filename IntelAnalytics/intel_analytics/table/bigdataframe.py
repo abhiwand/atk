@@ -269,7 +269,7 @@ class BigDataFrame(object):
         nRows : int
             number of rows to retrieve in the HTML table
         """
-        return self._table.illustrate_to_html(nRows)
+        return self._table.illustrate_as_html(nRows)
 
 
     #----------------------------------------------------------------------
