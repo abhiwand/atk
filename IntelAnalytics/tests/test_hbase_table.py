@@ -1,10 +1,16 @@
 import os
 import unittest
+import sys
+
+curdir = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
+
 from intel_analytics.config import global_config as config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
 from tests.mock import patch, Mock, MagicMock
+
 
 class HbaseTableTest(unittest.TestCase):
 
@@ -330,7 +336,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         output_table = "output_table"
         table = HBaseTable(table_name, file_name)
-        table._HBaseTable__drop(output_table, 'col1')
+        table._HBaseTable__drop(output_table, 'col1', replace_with="replace")
 
         self.assertEqual(frame_name, result_holder["key"])
         self.assertEqual(output_table, result_holder["output_table"])
@@ -342,6 +348,23 @@ class HbaseTableTest(unittest.TestCase):
         self.assertEqual('col1,col2,col3', result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
         self.assertEqual('long,chararray,long', result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
         self.assertEqual('col1', result_holder["call_args"][result_holder["call_args"].index('-f') + 1])
+
+    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test__drop_failed_call(self, etl_schema_class, call_method, etl_base_client_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        call_method.return_value = 1
+        table_name = "test_table"
+        file_name = "test_file"
+        output_table = "output_table"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(HBaseTableException, table._HBaseTable__drop, output_table, 'col1')
+
+
 
     @patch('intel_analytics.table.hbase.table.ETLSchema')
     def test__drop_invalid_column(self, etl_schema_class):
@@ -406,6 +429,31 @@ class HbaseTableTest(unittest.TestCase):
         self.assertEqual(column_to_clean, result_holder["column_name"])
         self.assertEqual('avg', result_holder["replace_with"])
         self.assertEqual(None, result_holder["how"])
+
+
+    @patch('intel_analytics.table.hbase.table.hbase_frame_builder_factory')
+    def test_impute_random_method_string(self, hbase_frame_builder_factory):
+
+        result_holder = {}
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        hbase_frame_builder_factory.name_registry.get_key = Mock(return_value = "test_frame")
+        column_to_clean = "col1"
+        table._HBaseTable__drop = self.create_mock_drop_action(result_holder)
+        self.assertRaises(HBaseTableException, table.impute, column_to_clean, "random method")
+
+    @patch('intel_analytics.table.hbase.table.hbase_frame_builder_factory')
+    def test_impute_random_method_int(self, hbase_frame_builder_factory):
+
+        result_holder = {}
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        hbase_frame_builder_factory.name_registry.get_key = Mock(return_value = "test_frame")
+        column_to_clean = "col1"
+        table._HBaseTable__drop = self.create_mock_drop_action(result_holder)
+        self.assertRaises(HBaseTableException, table.impute, column_to_clean, 10000)
 
     @patch('intel_analytics.table.hbase.table.ETLSchema')
     def test_get_schema(self, etl_schema_class):
