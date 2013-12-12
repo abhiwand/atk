@@ -42,7 +42,6 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * ExtractJSON provides another convenient way of processing complex JSON data
  * with JSONPath expressions using the JSONPath
  * implementation of the <a href="https://code.google.com/p/rest-assured/">RestAssured</a> project. <br/>
- * <p/>
  * 
  * <b>Example:</b>
  * <p/>
