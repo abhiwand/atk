@@ -54,6 +54,30 @@ class HbaseTableTest(unittest.TestCase):
 
         return self.create_mock_hbase_client(get_result)
 
+    def create_mock_hbase_client_20_rows_in_table_scan(self):
+        def get_result():
+            yield "row1", {"name": "A", "address": "1234 xyz st"}
+            yield "row2", {"name": "B", "address": "5678 def ave"}
+            yield "row3", {"name": "A", "address": "1234 xyz st"}
+            yield "row4", {"name": "B", "address": "5678 def ave"}
+            yield "row5", {"name": "A", "address": "1234 xyz st"}
+            yield "row6", {"name": "B", "address": "5678 def ave"}
+            yield "row7", {"name": "A", "address": "1234 xyz st"}
+            yield "row8", {"name": "B", "address": "5678 def ave"}
+            yield "row9", {"name": "A", "address": "1234 xyz st"}
+            yield "row10", {"name": "B", "address": "5678 def ave"}
+            yield "row11", {"name": "A", "address": "1234 xyz st"}
+            yield "row12", {"name": "B", "address": "5678 def ave"}
+            yield "row13", {"name": "A", "address": "1234 xyz st"}
+            yield "row14", {"name": "B", "address": "5678 def ave"}
+            yield "row15", {"name": "A", "address": "1234 xyz st"}
+            yield "row16", {"name": "B", "address": "5678 def ave"}
+            yield "row17", {"name": "A", "address": "1234 xyz st"}
+            yield "row18", {"name": "B", "address": "5678 def ave"}
+            yield "row19", {"name": "A", "address": "1234 xyz st"}
+            yield "row20", {"name": "B", "address": "5678 def ave"}
+
+        return self.create_mock_hbase_client(get_result)
 
     def create_mock_drop_action(self, result_holder):
         def drop_side_effect(output_table, column_name=None, how=None, replace_with=None):
@@ -134,6 +158,17 @@ class HbaseTableTest(unittest.TestCase):
 
         self.assertEqual('5678 def ave', second_row['address'])
         self.assertEqual('B', second_row['name'])
+
+
+    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
+    def test_get_first_N_same_columns_more_rows_than_specified_range(self, etl_base_client_class):
+
+        etl_base_client_class.return_value = self.create_mock_hbase_client_20_rows_in_table_scan()
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        n_rows = table._get_first_N(10)
+        self.assertEqual(10, len(n_rows))
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
     def test_get_first_N_different_columns(self, etl_base_client_class):
