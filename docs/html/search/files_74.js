@@ -1,5 +1,8 @@
 var searchData=
 [
+  ['tabletographdb_2ejava',['TableToGraphDB.java',['../TableToGraphDB_8java.html',1,'']]],
+  ['tabletordfgraph_2ejava',['TableToRDFGraph.java',['../TableToRDFGraph_8java.html',1,'']]],
+  ['tabletotextgraph_2ejava',['TableToTextGraph.java',['../TableToTextGraph_8java.html',1,'']]],
   ['textfileinputconfiguration_2ejava',['TextFileInputConfiguration.java',['../TextFileInputConfiguration_8java.html',1,'']]],
   ['textgraphmr_2ejava',['TextGraphMR.java',['../TextGraphMR_8java.html',1,'']]],
   ['textgraphoutputconfiguration_2ejava',['TextGraphOutputConfiguration.java',['../TextGraphOutputConfiguration_8java.html',1,'']]],

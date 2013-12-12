@@ -40,6 +40,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="pages.html"><span>Tutorial</span></a></li>
       <li><a href="gb_function_doc.html"><span>Documentation</span></a></li>
       <li class="current"><a href="annotated.html"><span>Javadoc</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -93,6 +94,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">com.intel.pig.data.GBTupleFactory Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>TupleFactory to create tuples of type <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a>.  
+ <a href="classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for com.intel.pig.data.GBTupleFactory:</div>
 <div class="dyncontent">
@@ -112,14 +116,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1fa225a88251d0d13734786cd2e577d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a824b7f3e2afc9542ea780486fd1d514d"><td class="memItemLeft" align="right" valign="top">Tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html#a824b7f3e2afc9542ea780486fd1d514d">newTupleNoCopy</a> (List list)</td></tr>
 <tr class="separator:a824b7f3e2afc9542ea780486fd1d514d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66e276f3b65f74bd04e054b065b18622"><td class="memItemLeft" align="right" valign="top">Tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html#a66e276f3b65f74bd04e054b065b18622">newTuple</a> (Object datum)</td></tr>
-<tr class="separator:a66e276f3b65f74bd04e054b065b18622"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae911056fb457ff974e9cbd5ebc8d3ebb"><td class="memItemLeft" align="right" valign="top">Tuple&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html#ae911056fb457ff974e9cbd5ebc8d3ebb">newTuple</a> (Object pge)</td></tr>
+<tr class="separator:ae911056fb457ff974e9cbd5ebc8d3ebb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a124d3200fa10e655aa3d83d118fc13e8"><td class="memItemLeft" align="right" valign="top">Class&lt;?extends Tuple &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html#a124d3200fa10e655aa3d83d118fc13e8">tupleClass</a> ()</td></tr>
 <tr class="separator:a124d3200fa10e655aa3d83d118fc13e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0f2a7c69491720d19baf89fff80311e"><td class="memItemLeft" align="right" valign="top">boolean&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html#af0f2a7c69491720d19baf89fff80311e">isFixedSize</a> ()</td></tr>
 <tr class="separator:af0f2a7c69491720d19baf89fff80311e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>TupleFactory to create tuples of type <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a>. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="af0f2a7c69491720d19baf89fff80311e"></a>
 <div class="memitem">
 <div class="memproto">
@@ -140,9 +146,11 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                                 {</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    }</div>
+<p>This method is used to inspect whether the Tuples created by this factory will be of a fixed size when they are created. In practical terms, this means whether they support append or not.</p>
+<dl class="section return"><dt>Returns</dt><dd>whether the Tuple is fixed or not </dd></dl>
+<div class="fragment"><div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                                 {</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -166,9 +174,11 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;                            {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> PropertyGraphElementTuple();</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;    }</div>
+<p>Creates a new empty <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a></p>
+<dl class="section return"><dt>Returns</dt><dd>a empty <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a> </dd></dl>
+<div class="fragment"><div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                            {</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> PropertyGraphElementTuple();</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -193,9 +203,17 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;                                    {</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> PropertyGraphElementTuple(size);</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    }</div>
+<p>Creates a new <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a> of size <code>size</code></p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">the</td><td>size of the tuple </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a> of the given size </dd></dl>
+<div class="fragment"><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                                    {</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> PropertyGraphElementTuple(size);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -220,13 +238,21 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;                                     {</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> PropertyGraphElementTuple(list);</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    }</div>
+<p>Creates a new <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a> with the given list of <a class="el" href="">PropertyGraphElement</a>s</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">the</td><td>list of <a class="el" href="">PropertyGraphElement</a>s </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a> containing the list of given <a class="el" href="">PropertyGraphElement</a>s </dd></dl>
+<div class="fragment"><div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                                     {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> PropertyGraphElementTuple(list);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a66e276f3b65f74bd04e054b065b18622"></a>
+<a class="anchor" id="ae911056fb457ff974e9cbd5ebc8d3ebb"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -237,7 +263,7 @@ Public Member Functions</h2></td></tr>
           <td class="memname">Tuple com.intel.pig.data.GBTupleFactory.newTuple </td>
           <td>(</td>
           <td class="paramtype">Object&#160;</td>
-          <td class="paramname"><em>datum</em></td><td>)</td>
+          <td class="paramname"><em>pge</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -247,16 +273,24 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                                        {</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        Tuple t = <span class="keyword">new</span> PropertyGraphElementTuple(1);</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            t.set(0, datum);</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        } <span class="keywordflow">catch</span> (ExecException e) {</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(<span class="stringliteral">&quot;Unable to write to field 0 in newly &quot;</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                    + <span class="stringliteral">&quot;allocated tuple of size 1!&quot;</span>, e);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        }</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keywordflow">return</span> t;</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    }</div>
+<p>Create a tuple with a single <a class="el" href="">PropertyGraphElement</a></p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pge</td><td><a class="el" href="">PropertyGraphElement</a> to put in the tuple </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a> with one <a class="el" href="">PropertyGraphElement</a> </dd></dl>
+<div class="fragment"><div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                                      {</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        Tuple t = <span class="keyword">new</span> PropertyGraphElementTuple(1);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;            t.set(0, pge);</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        } <span class="keywordflow">catch</span> (ExecException e) {</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(<span class="stringliteral">&quot;Unable to write to field 0 in newly &quot;</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                    + <span class="stringliteral">&quot;allocated tuple of size 1!&quot;</span>, e);</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        }</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        <span class="keywordflow">return</span> t;</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -281,9 +315,17 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                                           {</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> PropertyGraphElementTuple(list);</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    }</div>
+<p>Creates a new <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a> with the given list of <a class="el" href="">PropertyGraphElement</a>s</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">the</td><td>list of <a class="el" href="">PropertyGraphElement</a>s </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>a <a class="el" href="classcom_1_1intel_1_1pig_1_1data_1_1PropertyGraphElementTuple.html">PropertyGraphElementTuple</a> containing the list of given <a class="el" href="">PropertyGraphElement</a>s </dd></dl>
+<div class="fragment"><div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                                           {</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> PropertyGraphElementTuple(list);</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -307,9 +349,11 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                                               {</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keywordflow">return</span> PropertyGraphElementTuple.class;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    }</div>
+<p>Return the tuple type this tuple factory creates</p>
+<dl class="section return"><dt>Returns</dt><dd>the tuple class created by this tuple factory </dd></dl>
+<div class="fragment"><div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                                               {</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <span class="keywordflow">return</span> PropertyGraphElementTuple.class;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -319,7 +363,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 9 2013 10:42:27 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Dec 11 2013 17:20:33 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
