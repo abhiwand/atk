@@ -9,5 +9,6 @@ run the play server with this
 -Dplay.config=dev -Dhttp.port=80 -Dhttps.port=443 -Dhttps.keyStore=conf/localhostKeystore.jks -Dhttps.keyStorePassword=frogsare#0071c5
 
 //prod config params
-sudo bin/tribeca-web -Dplay.config=prod -Dhttp.port=80 -Dhttps.port=443 -Dhttps.keyStore=conf/\\graphtrial.intel.com.pass.keystore.jks -Dhttps.keyStorePassword=frogsare#0071c5
+sudo bin/intelanalytics-web -Dplay.config=prod -Dhttp.port=80 -Dhttps.port=443 -Dhttps.keyStore=conf/\\graphtrial.intel
+.com.pass.keystore.jks -Dhttps.keyStorePassword=frogsare#0071c5
 This file will be packaged with your application, when using `play dist`.
