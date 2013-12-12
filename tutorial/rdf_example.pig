@@ -3,7 +3,7 @@
 * Demonstrates how to generate RDF triples from property graph elements
 */
 
-REGISTER target/graphbuilder-2.0alpha-with-deps.jar;
+REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
 IMPORT 'pig/intel_gb2.pig';
 
 rmf /tmp/rdf_triples; --delete the output directory

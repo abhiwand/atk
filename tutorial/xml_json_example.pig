@@ -4,7 +4,7 @@
 * and also how to use GB 2.0 (alpha) XMLLoader to load XML data
 */
 
-REGISTER target/graphbuilder-2.0alpha-with-deps.jar;
+REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
 IMPORT 'pig/intel_gb2.pig';
 
 json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
@@ -19,7 +19,7 @@ DEFINE XMLLoader com.intel.pig.load.XMLLoader('tshirts');--extract the 'tshirts'
 xml_data = LOAD 'tutorial/data/tshirts.xml' using com.intel.pig.load.XMLLoader('tshirts') AS (xml: chararray);
 DUMP xml_data;
 
--- make sure /usr/local/pig/piggybank.jar actually exists
+-- make sure /usr/local/pig/piggybank.jar exists
 REGISTER /usr/local/pig/piggybank.jar;
 xml_data = LOAD 'tutorial/data/tshirts.xml' using org.apache.pig.piggybank.storage.XMLLoader('tshirts') AS (xml: chararray);--extract the 'tshirts' element with Piggy Bank's XMLLoader
 DUMP xml_data;
