@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.linkgraph;
 
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
@@ -30,7 +30,7 @@ import org.apache.hadoop.conf.Configuration;
 
 
 /**
- * This class manage the set-up time state for the graph construction phase that emits vertices and edges of a link
+ * This class manages the set-up time state for the graph construction phase that emits vertices and edges of a link
  * graph from a wiki page (presented as a string).
  *
  * <p>
@@ -70,23 +70,23 @@ public class LinkGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Get the property graph schmea for the link graph.
-     * @return  the property graph schmea for the link graph
+     * Gets the property graph schmea for the link graph.
+     * @return  The property graph schmea for the link graph.
      */
     public PropertyGraphSchema getGraphSchema() {
         return graphSchema;
     }
 
     /**
-     * Update the MR configuration for use by the {@code LinkGraphTokenizer}
-     * @param conf hadoop configuration being updated
+     * Updates the MR configuration for use by the {@code LinkGraphTokenizer}.
+     * @param conf The hadoop configuration being updated.
      */
     public void updateConfigurationForTokenizer(Configuration conf) {
     }
 
     /**
-     * Get the class of the {@code GraphTokenizer} used to construct the link graph
-     * @return  the class of the {@code GraphTokenizer} used to construct the link graph
+     * Gets the class of the {@code GraphTokenizer} used to construct the link graph.
+     * @return  The class of the {@code GraphTokenizer} used to construct the link graph.
      * @see LinkGraphTokenizer
      */
     public Class<? extends GraphTokenizer> getGraphTokenizerClass() {
@@ -94,8 +94,8 @@ public class LinkGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Get the class of vertex IDs used to construct the link graph.
-     * @return  the class of vertex IDs used to construct the link graph.
+     * Gets the class of vertex IDs used to construct the link graph.
+     * @return  The class of vertex IDs used to construct the link graph.
      * @see StringType
      */
     public Class vidClass() {

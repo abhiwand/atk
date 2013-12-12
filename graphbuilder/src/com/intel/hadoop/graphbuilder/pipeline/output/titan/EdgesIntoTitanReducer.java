@@ -1,31 +1,29 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
-*/
-
+/**
+ * Copyright (C) 2012 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
+ */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -38,25 +36,27 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Load edges into Titan.
+ * Loads edges into Titan.
  * <p>
  * It gathers each vertex with the edges that point to that vertex, that is,
  * those edges for whom the vertex is the destination.  Because the edges were tagged with the
  * Titan IDs of their sources in the previous MR job and each vertex is tagged with its Titan ID,
  * we now know the Titan ID of the source and destination of the edges and can add them to Titan.
  * </p>
+ *
  */
 
-public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphElement, IntWritable, PropertyGraphElement> {
+public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> {
     private static final Logger LOG = Logger.getLogger(EdgesIntoTitanReducer.class);
     private TitanGraph            graph;
-    private HashMap<Object, Long> vertexNameToTitanID;
+    private Hashtable<Object, Long> vertexNameToTitanID;
 
-    //  final KeyFunction keyfunction = new SourceVertexKeyFunction();
+    private EdgesIntoTitanReducerCallback edgesIntoTitanReducerCallback;
 
     private static enum Counters {
         EDGE_PROPERTIES_WRITTEN,
@@ -64,9 +64,10 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     }
 
     /**
-     * Create the titan graph for saving edges and remove the static open method from setup so it can be mocked
+     * Creates the Titan graph for saving edges and removes the static open method from setup 
+	 * so it can be mocked-up.
      *
-     * @return TitanGraph for saving edges
+     * @return TitanGraph For saving edges.
      * @throws IOException
      */
     private TitanGraph getTitanGraphInstance (Context context) throws IOException {
@@ -75,81 +76,60 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     }
 
     /**
-     * Set up Titan connection.
+     * Set up the Titan connection.
      *
-     * @param context  the reducer context provided by Hadoop
+     * @param context  The reducer context provided by Hadoop.
      * @throws IOException
      * @throws InterruptedException
      */
     @Override
     public void setup(Context context) throws IOException, InterruptedException {
 
-        this.vertexNameToTitanID = new HashMap<Object, Long>();
+        this.vertexNameToTitanID = new Hashtable<Object, Long>();
         this.graph               = getTitanGraphInstance(context);
+
+        edgesIntoTitanReducerCallback = new EdgesIntoTitanReducerCallback();
     }
 
     /**
      * Hadoop-called routine for loading edges into Titan.
      * <p>
-     * It is assumed that edges and vertices have been gathered so that every
+     * We assume that edges and vertices have been gathered so that every
      * edge shares the reducer of its destination vertex, and that every edge has previously
      * been assigned the TitanID of its source vertex.
      * </p>
      * <p>
-     * Titan IDs are propagatd from the destination vertices to each edge and the edges are loaded into Titan
-     * using the BluePrints API
+     * Titan IDs are propagated from the destination vertices to each edge and the edges are loaded 
+     * into Titan using the BluePrints API
      * </p>
-     * @param key    mapreduce key; a hash of a vertex ID
-     * @param values  either a vertex with that hashed vertex ID, or an edge with said vertex as its destination
-     * @param context  reducer context provided by Hadoop
+     * @param key      A mapreduce key; a hash of a vertex ID.
+     * @param values   Either a vertex with that hashed vertex ID, or an edge with said vertex as its destination.
+     * @param context  A reducer context provided by Hadoop.
      * @throws IOException
      * @throws InterruptedException
      */
     @Override
-    public void reduce(IntWritable key, Iterable<PropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
-        HashMap<EdgeID, Writable> edgePropertyTable  = new HashMap();
+        Hashtable<EdgeID, Writable> edgePropertyTable  = new Hashtable();
 
-        Iterator<PropertyGraphElement> valueIterator = values.iterator();
-
-        while (valueIterator.hasNext()) {
-
-            PropertyGraphElement nextElement = valueIterator.next();
-
-            // Apply reduce on vertex
-
-            if (nextElement.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
-
-                Vertex vertex = nextElement.vertex();
-
-                Object      vertexId      = vertex.getVertexId();
-                PropertyMap propertyMap   = vertex.getProperties();
-                long        vertexTitanId = ((LongType) propertyMap.getProperty("TitanID")).get();
-
-                vertexNameToTitanID.put(vertexId, vertexTitanId);
-
-            } else {
-
-                // Apply reduce on edges, remove self and (or merge) duplicate edges.
-                // Optionally remove bidirectional edge.
-
-                Edge<?> edge    = nextElement.edge();
-                EdgeID edgeID = new EdgeID(edge.getSrc(), edge.getDst(), edge.getEdgeLabel());
-
-                edgePropertyTable.put(edgeID, edge.getProperties());
-            }
+        for(SerializedPropertyGraphElement graphElement: values){
+            /*
+             * this is calling
+             * EdgesIntoTitanReducerCallback which is an implementation of GraphElementTypeCallback
+             * to add all the edges and vertices into edgePropertyTable and vertexNameToTitanID hashmaps
+             */
+            graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback,
+                    ArgumentBuilder.newArguments().with("edgePropertyTable", edgePropertyTable)
+                            .with("vertexNameToTitanID", vertexNameToTitanID));
         }
 
         int edgeCount   = 0;
 
         // Output edge records
 
-        Iterator<Map.Entry<EdgeID, Writable>> edgeIterator = edgePropertyTable.entrySet().iterator();
-
-        while (edgeIterator.hasNext()) {
-
-            Map.Entry<EdgeID, Writable> edgeMapEntry = edgeIterator.next();
+        for (Map.Entry<EdgeID, Writable> edgeMapEntry : edgePropertyTable.entrySet()) {
 
             Object dst   = edgeMapEntry.getKey().getDst();
             String label = edgeMapEntry.getKey().getLabel().toString();
@@ -166,11 +146,11 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
 
             com.tinkerpop.blueprints.Edge bluePrintsEdge = null;
             try {
-                bluePrintsEdge = this.graph.addEdge(null,
-                                                                              srcBlueprintsVertex,
-                                                                              tgtBlueprintsVertex,
-                                                                              label);
-            } catch (IllegalArgumentException e) {;
+
+                bluePrintsEdge = this.graph.addEdge(null,srcBlueprintsVertex, tgtBlueprintsVertex, label);
+
+            } catch (IllegalArgumentException e) {
+
                 GraphBuilderExit.graphbuilderFatalExitException(StatusCode.TITAN_ERROR,
                         "Could not add edge to Titan; likely a schema error. The label on the edge is  " + label,
                         LOG, e);
@@ -187,13 +167,12 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
                 EncapsulatedObject mapEntry = (EncapsulatedObject) propertyMap.getProperty(propertyKey.toString());
 
                 try {
-                bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
+                    bluePrintsEdge.setProperty(propertyKey.toString(), mapEntry.getBaseObject());
                 } catch (IllegalArgumentException e) {
                     LOG.fatal("GRAPHBUILDER_ERROR: Could not add edge property; probably a schema error. The label on the edge is  " + label);
                     LOG.fatal("GRAPHBUILDER_ERROR: The property on the edge is " + propertyKey.toString());
                     LOG.fatal(e.getMessage());
-                    e.printStackTrace();
-                    System.exit(1);
+                    GraphBuilderExit.graphbuilderFatalExitException(StatusCode.INDESCRIBABLE_FAILURE, "", LOG, e);
                 }
 
             }
@@ -215,5 +194,13 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     @Override
     public void cleanup(Context context) throws IOException, InterruptedException {
         this.graph.shutdown();
+    }
+
+    public  Enum getEdgeCounter(){
+        return Counters.NUM_EDGES;
+    }
+
+    public Enum getEdgePropertiesCounter(){
+        return Counters.EDGE_PROPERTIES_WRITTEN;
     }
 }
