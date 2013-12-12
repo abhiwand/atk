@@ -12,7 +12,7 @@ extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(j
 extracted_num_sizes = FOREACH extracted_first_tshirts_price GENERATE *, ExtractJSONField(json, 'Sizes.size()') AS num_sizes: int;
 extracted_first_color = FOREACH extracted_num_sizes GENERATE *, ExtractJSONField(json, 'Colors[0]') AS first_color: chararray;
 extracted_cheapest_tshirt_price = FOREACH extracted_first_color GENERATE *, ExtractJSONField(json, 'Sizes.Price.min()') AS cheapest_price: double;
-extracted_size_of_expensive_thirts = FOREACH extracted_first_color GENERATE *, ExtractJSONField(json, 'Sizes.findAll{Sizes -> Sizes.Price>90}.Size[0]') AS tshirt_size: chararray;
+extracted_size_of_expensive_thirts = FOREACH extracted_cheapest_tshirt_price GENERATE *, ExtractJSONField(json, 'Sizes.findAll{Sizes -> Sizes.Price>90}.Size[0]') AS tshirt_size: chararray;
 DUMP extracted_size_of_expensive_thirts;
 
 DEFINE XMLLoader com.intel.pig.load.XMLLoader('tshirts');--extract the 'tshirts' element
