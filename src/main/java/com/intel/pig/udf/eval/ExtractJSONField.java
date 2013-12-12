@@ -36,12 +36,12 @@ import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief ExtractJSONField UDF extracts fields from (potentially complex & nested)
- * JSON data with JSONPath expressions.
+ * \brief ExtractJSONField UDF extracts fields from (potentially complex &
+ * nested) JSON data with JSONPath expressions.
  * 
- * ExtractJSONField provides another convenient way of processing complex JSON data
- * with JSONPath expressions using the JSONPath
- * implementation of the <a href="https://code.google.com/p/rest-assured/">RestAssured</a> project. <br/>
+ * ExtractJSONField provides another convenient way of processing complex JSON
+ * data with JSONPath expressions using the JSONPath implementation of the <a
+ * href="https://code.google.com/p/rest-assured/">RestAssured</a> project. <br/>
  * 
  * <b>Example:</b>
  * <p/>
@@ -53,9 +53,9 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * 
  * <pre>
  * {@code
-     json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
-     extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(json, 'Sizes[0].Price') AS price: double;
-     }
+ *      json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
+ *      extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(json, 'Sizes[0].Price') AS price: double;
+ *      }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
@@ -84,30 +84,6 @@ public class ExtractJSONField extends EvalFunc<String> {
 
 		if (queryResult == null) {
 			return "";
-		} else if (queryResult instanceof String) {
-			String result = (String) queryResult;
-			return result;
-		} else if (queryResult instanceof Boolean) {
-			Boolean result = (Boolean) queryResult;
-			return String.valueOf(result);
-		} else if (queryResult instanceof Double) {
-			Double result = (Double) queryResult;
-			return String.valueOf(result);
-		} else if (queryResult instanceof Float) {
-			Float result = (Float) queryResult;
-			return String.valueOf(result);
-		} else if (queryResult instanceof Integer) {
-			Integer result = (Integer) queryResult;
-			return String.valueOf(result);
-		} else if (queryResult instanceof Long) {
-			Long result = (Long) queryResult;
-			return String.valueOf(result);
-		} else if (queryResult instanceof BigInteger) {
-			BigInteger result = (BigInteger) queryResult;
-			return String.valueOf(result);
-		} else if (queryResult instanceof BigDecimal) {
-			BigDecimal result = (BigDecimal) queryResult;
-			return String.valueOf(result);
 		} else if (queryResult instanceof List) {
 			List result = (List) queryResult;
 			/*
@@ -115,23 +91,23 @@ public class ExtractJSONField extends EvalFunc<String> {
 			 */
 			if (result.size() == 1) {
 				Object o = result.get(0);
-				return o.toString();
+				return String.valueOf(o);
+			} else {
+				String err = "The query returned multiple results, it has to return a single value.";
+				warn(err, PigWarning.UDF_WARNING_1);
+				throw new IOException(new GBUdfException(err));
 			}
-		}
-
-		/*
-		 * OK, we have gone through all the data types and none of them fits.
-		 */
-
-		String errorMessage = null;
-
-		if (queryResult instanceof List) {
-			errorMessage = "The query returned multiple results, it has to return a single value.";
 		} else {
-			errorMessage = "The query returned a type that is not supported: "
-					+ queryResult.getClass();
+			/* for other data types try to convert the output to String */
+			String result = "";
+			try {
+				result = String.valueOf(queryResult);
+			} catch (Throwable t) {
+				String err = "Error converting query output to String.";
+				warn(err, PigWarning.UDF_WARNING_1);
+			}
+			return result;
 		}
-		throw new IOException(new GBUdfException(errorMessage));
 	}
 
 	/**
