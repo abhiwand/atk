@@ -349,6 +349,57 @@ class HbaseTableTest(unittest.TestCase):
         self.assertEqual('long,chararray,long', result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
         self.assertEqual('col1', result_holder["call_args"][result_holder["call_args"].index('-f') + 1])
 
+
+    @patch('intel_analytics.table.hbase.table.hbase_frame_builder_factory')
+    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test__drop_specify_how(self, etl_schema_class, call_method, etl_base_client_class, hbase_frame_builder_factory):
+
+        result_holder = {}
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        def register_side_effect(key, table_name):
+            result_holder["key"] = key
+            result_holder["output_table"] = table_name
+
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        frame_name = "test_frame"
+        hbase_frame_builder_factory.name_registry.register = Mock(side_effect = register_side_effect)
+        hbase_frame_builder_factory.name_registry.get_key = Mock(return_value = frame_name)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        output_table = "output_table"
+        table = HBaseTable(table_name, file_name)
+        table._HBaseTable__drop(output_table, how="any", replace_with="replace")
+
+        self.assertEqual(frame_name, result_holder["key"])
+        self.assertEqual(output_table, result_holder["output_table"])
+
+        # validate call arguments
+        self.assertEqual("pig", result_holder["call_args"][0])
+        self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
+        self.assertEqual(output_table, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
+        self.assertEqual('col1,col2,col3', result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
+        self.assertEqual('long,chararray,long', result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
+        self.assertEqual('any', result_holder["call_args"][result_holder["call_args"].index('-s') + 1])
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test__drop_specify_not_specify_column_and_how(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(HBaseTableException, table._HBaseTable__drop, None, None, None, "replace")
+
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
     @patch('intel_analytics.table.hbase.table.call')
     @patch('intel_analytics.table.hbase.table.ETLSchema')
