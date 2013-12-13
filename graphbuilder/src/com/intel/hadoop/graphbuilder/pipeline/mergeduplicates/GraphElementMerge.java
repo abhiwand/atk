@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -173,11 +173,11 @@ public class GraphElementMerge implements GraphElementTypeCallback {
      * @see Functional
      */
     private void arguments(ArgumentBuilder args){
-        edgeSet = (Hashtable<EdgeID, Writable>)args.get("edgeSet");
-        vertexSet = (Hashtable<Object, Writable>)args.get("vertexSet");
-        edgeReducerFunction = (Functional)args.get("edgeReducerFunction", null);
+        edgeSet               = (Hashtable<EdgeID, Writable>)args.get("edgeSet");
+        vertexSet             = (Hashtable<Object, Writable>)args.get("vertexSet");
+        edgeReducerFunction   = (Functional)args.get("edgeReducerFunction", null);
         vertexReducerFunction = (Functional)args.get("vertexReducerFunction", null);
-        vertexLabelMap = (Hashtable<Object, StringType>)args.get("vertexLabelMap", null);
-        noBiDir = (boolean)args.get("noBiDir");
+        vertexLabelMap        = (Hashtable<Object, StringType>)args.get("vertexLabelMap", null);
+        noBiDir               = (boolean)args.get("noBiDir");
     }
 }

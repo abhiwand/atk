@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,14 +19,14 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.conf.Configuration;
@@ -64,12 +64,12 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(HBaseReaderMapper.class)
 public class HBaseReaderMapperTest {
-    private MapDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement> mapDriver;
+    private MapDriver<ImmutableBytesWritable, Result, IntWritable, SerializedGraphElement> mapDriver;
     private HBaseReaderMapper hBaseReaderMapper;
     private HBaseReaderMapper spiedHBaseReaderMapper;
     private Configuration conf = new Configuration();
     private Mapper.Context mapperContextMock;
-    private SerializedPropertyGraphElementStringTypeVids valueClass;
+    private SerializedGraphElementStringTypeVids valueClass;
     private Logger loggerMock;
     private ImmutableBytesWritable key;
     private RecordTypeHBaseRow recordTypeHBaseRow;
@@ -108,7 +108,7 @@ public class HBaseReaderMapperTest {
         loggerMock = mock(Logger.class);
         Whitebox.setInternalState(HBaseReaderMapper.class, "LOG", loggerMock);
 
-        valueClass = mock(SerializedPropertyGraphElementStringTypeVids.class);
+        valueClass = mock(SerializedGraphElementStringTypeVids.class);
         mapperContextMock = mock(Mapper.Context.class);
 
         conf = new Configuration();
@@ -128,18 +128,18 @@ public class HBaseReaderMapperTest {
         HBaseGraphBuildingRule.packDirectedEdgeRulesIntoConfiguration(conf, directedEdgeRules);
 
         //mapper context mocks
-        Class valClass = SerializedPropertyGraphElementStringTypeVids.class;
+        Class valClass = SerializedGraphElementStringTypeVids.class;
         PowerMockito.when(mapperContextMock.getMapOutputValueClass()).thenReturn(valClass);
 
         baseMapper = new BaseMapper(mapperContextMock, conf, loggerMock);
         spiedBaseMapper = spy(baseMapper);
         PowerMockito.whenNew(BaseMapper.class).withAnyArguments().thenReturn(spiedBaseMapper);
 
-        spiedBaseMapper.setValClass(SerializedPropertyGraphElementStringTypeVids.class);
+        spiedBaseMapper.setValClass(SerializedGraphElementStringTypeVids.class);
         doNothing().when(spiedBaseMapper).setValClass(any(Class.class));
 
-        spiedBaseMapper.setMapVal(SerializedPropertyGraphElementStringTypeVids.class.newInstance());
-        doNothing().when(spiedBaseMapper).setMapVal(any(SerializedPropertyGraphElement.class));
+        spiedBaseMapper.setMapVal(SerializedGraphElementStringTypeVids.class.newInstance());
+        doNothing().when(spiedBaseMapper).setMapVal(any(SerializedGraphElement.class));
 
         //set up the spied HbaseReaderMapper
         hBaseReaderMapper = new HBaseReaderMapper();
@@ -170,7 +170,7 @@ public class HBaseReaderMapperTest {
         mapDriver.withConfiguration(conf).withInput(key, result);
 
         //run test
-        List<Pair<IntWritable, SerializedPropertyGraphElement>> writables = mapDriver.run();
+        List<Pair<IntWritable, SerializedGraphElement>> writables = mapDriver.run();
 
         //check the output of the mapper in this case with the input we should get 4 writes
         assertTrue("check for four writes", writables.size() == 4);
@@ -395,7 +395,7 @@ public class HBaseReaderMapperTest {
      * @param edge             the edge object to verify against
      * @param vertex           the vertex object to verify against
      */
-    public final void verifyPairSecond(Pair<IntWritable, SerializedPropertyGraphElement> pair, String graphElementType,
+    public final void verifyPairSecond(Pair<IntWritable, SerializedGraphElement> pair, String graphElementType,
                                        Edge<StringType> edge, Vertex<StringType> vertex) {
 
         if (graphElementType.equals("EDGE")) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,11 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.input.text;
 
 import java.io.IOException;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
@@ -41,7 +40,7 @@ import org.apache.log4j.Logger;
  * @see KeyFunction
  */
 
-public class TextParsingMapper extends Mapper<LongWritable, Text, IntWritable, SerializedPropertyGraphElement> {
+public class TextParsingMapper extends Mapper<LongWritable, Text, IntWritable, SerializedGraphElement> {
 
     private static final Logger LOG = Logger.getLogger(TextParsingMapper.class);
 

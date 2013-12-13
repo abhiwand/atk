@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,7 +21,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
@@ -57,7 +57,7 @@ import org.apache.log4j.Logger;
  * @see com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction
  */
 
-public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> {
+public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphElement, IntWritable, SerializedGraphElement> {
 
     private static final Logger LOG = Logger.getLogger(VerticesIntoTitanReducer.class);
 
@@ -68,7 +68,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
 
     private Hashtable<Object, Long> vertexNameToTitanID;
     private IntWritable            outKey;
-    private SerializedPropertyGraphElement outValue;
+    private SerializedGraphElement outValue;
     private Class                  outClass;
 
     private final KeyFunction keyFunction = new DestinationVertexKeyFunction();
@@ -110,7 +110,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
         outKey   = new IntWritable();
 
         try {
-            outValue   = (SerializedPropertyGraphElement) outClass.newInstance();
+            outValue   = (SerializedGraphElement) outClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "GRAPHBUILDER_ERROR: Cannot instantiate new reducer output value ( " + outClass.getName() + ")", LOG, e);
@@ -170,14 +170,14 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedPro
      * @throws InterruptedException
      */
     @Override
-    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
         edgeSet       = new Hashtable<>();
         vertexSet     = new Hashtable<>();
 
-        for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
-            GraphElement graphElement = serializedPropertyGraphElement.graphElement();
+        for(SerializedGraphElement serializedGraphElement : values){
+            GraphElement graphElement = serializedGraphElement.graphElement();
 
             if(graphElement.isNull()){
                 continue;

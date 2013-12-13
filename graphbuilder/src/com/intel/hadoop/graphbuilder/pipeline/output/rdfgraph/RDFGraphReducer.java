@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 
 import java.io.IOException;
@@ -60,7 +59,7 @@ import org.apache.log4j.Logger;
  * </p>
  */
 
-public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, NullWritable, Text> {
+public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement, NullWritable, Text> {
 
     private static final Logger LOG = Logger.getLogger(RDFGraphReducer.class);
 
@@ -164,15 +163,15 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedPropertyGrap
     }
 
     @Override
-    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
         edgeSet       = new Hashtable<>();
         vertexSet     = new Hashtable<>();
         vertexLabelMap       = new Hashtable<>();
 
-        for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
-            GraphElement graphElement = serializedPropertyGraphElement.graphElement();
+        for(SerializedGraphElement serializedGraphElement : values){
+            GraphElement graphElement = serializedGraphElement.graphElement();
 
             if(graphElement.isNull()){
                 continue;

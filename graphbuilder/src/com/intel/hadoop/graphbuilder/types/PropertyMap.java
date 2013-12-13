@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,6 +64,16 @@ public class PropertyMap implements Writable
         for(Writable key : propertyMap.getPropertyKeys()) {
             this.setProperty(key.toString(), propertyMap.getProperty(key.toString()));
         }
+    }
+
+    public boolean equals(PropertyMap thatValue) {
+        for (Writable writable : getPropertyKeys()) {
+            Writable value = thatValue.getProperty(writable.toString());
+            if (!value.equals(getProperty(writable.toString()))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
