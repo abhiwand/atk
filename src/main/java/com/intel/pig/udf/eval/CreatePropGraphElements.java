@@ -387,7 +387,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     }
 
     /**
-     * exec - the workhorse fo the CreatePropGraphElements UDF
+     * exec - the workhorse for the CreatePropGraphElements UDF
      *
      * Takes a tuple of scalars and outputs a bag of property graph elements.
      *
