@@ -32,7 +32,6 @@ import com.thinkaurelius.titan.core.TitanVertex;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.HTableDescriptor;
@@ -75,33 +74,34 @@ import static junit.framework.Assert.assertTrue;
  * then run algorithm with input data,
  * finally write back results to Titan via TitanVertexOutputFormatLongIDDoubleValue
  */
-public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest extends TitanTestBase {
+public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest 
+    extends TitanTestBase<LongWritable, DoubleWritable, FloatWritable> {
 
-    private ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, FloatWritable> conf;
-
+    
     @Before
     public void setUp() throws Exception {
-        super.setup();
-        giraphConf.setComputationClass(PageRankComputation.class);
-        giraphConf.setMasterComputeClass(PageRankComputation.PageRankMasterCompute.class);
-        giraphConf.setAggregatorWriterClass(PageRankComputation.PageRankAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleFloat.class);
-        giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDoubleValue.class);
-        giraphConf.set("pr.maxSupersteps", "30");
-        giraphConf.set("pr.resetProbability", "0.15");
-        giraphConf.set("pr.convergenceThreshold", "0.0001");
+        LOG.info("*** Starting setUp ***");
+        try {
+            setHbaseProperties();
+            giraphConf.setComputationClass(PageRankComputation.class);
+            giraphConf.setMasterComputeClass(PageRankComputation.PageRankMasterCompute.class);
+            giraphConf.setAggregatorWriterClass(PageRankComputation.PageRankAggregatorWriter.class);
+            giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleFloat.class);
+            giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDoubleValue.class);
+            giraphConf.set("pr.maxSupersteps", "30");
+            giraphConf.set("pr.resetProbability", "0.15");
+            giraphConf.set("pr.convergenceThreshold", "0.0001");
 
-        INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "default");
-        INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
-        INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
-        OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "rank");
+            INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "default");
+            INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
+            INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
+            OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "rank");
 
-        conf = new ImmutableClassesGiraphConfiguration<>(giraphConf);
-
-        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
-            GIRAPH_TITAN.get(giraphConf));
-        titanConfig = new GraphDatabaseConfiguration(baseConfig);
-        open();
+            open();
+        } catch (Exception e) {
+            LOG.error("*** Error in SETUP ***", e);
+            throw e;
+        }
     }
 
     //@Ignore
@@ -174,8 +174,7 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest extends TitanTe
             LOG.info(" got: " + resultLine);
         }
 
-        //verify data is written to Titan
-        clopen();
+        startNewTransaction();        
         long[] nid;
         TitanKey resultKey = null;
         String keyName = "rank";

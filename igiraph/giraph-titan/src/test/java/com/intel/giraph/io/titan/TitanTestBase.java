@@ -25,6 +25,8 @@ package com.intel.giraph.io.titan;
 import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -37,7 +39,9 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN
 
 /** Base class for all Titan/HBase related Giraph tests */
 
-public class TitanTestBase {
+public class TitanTestBase<I extends org.apache.hadoop.io.WritableComparable,
+                            V extends org.apache.hadoop.io.Writable,
+                            E extends org.apache.hadoop.io.Writable> {
     /**
      * LOG class
      */
@@ -45,6 +49,7 @@ public class TitanTestBase {
     public TitanTestGraph graph = null;
     public TitanTransaction tx = null;
     protected final GiraphConfiguration giraphConf = new GiraphConfiguration();
+    private ImmutableClassesGiraphConfiguration<I,V,E> conf;
 
     protected GraphDatabaseConfiguration titanConfig = null;
 
@@ -61,21 +66,19 @@ public class TitanTestBase {
     protected void ensureTitanTableReady() throws IOException {
         HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
         String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf);
-        //even delete an existing table needs the table is enabled before deletion
-        if (hbaseAdmin.isTableDisabled(tableName)) {
-            hbaseAdmin.enableTable(tableName);
+        if (hbaseAdmin.tableExists(tableName)) {
+            //even delete an existing table needs the table is enabled before deletion
+            if (hbaseAdmin.isTableDisabled(tableName)) {
+                LOG.info("*** Titan table was disabled, enabling now ***");
+                hbaseAdmin.enableTable(tableName);
+            }
+
+            if (hbaseAdmin.isTableAvailable(tableName)) {
+                LOG.info("*** Deleting titan table ***");
+                hbaseAdmin.disableTable(tableName);
+                hbaseAdmin.deleteTable(tableName);
+            }
         }
-
-        if (hbaseAdmin.isTableAvailable(tableName)) {
-            hbaseAdmin.disableTable(tableName);
-            hbaseAdmin.deleteTable(tableName);
-        }
-
-    }
-
-    @Before
-    public void setup() throws IOException {
-        setHbaseProperties();
     }
 
     @After
@@ -85,24 +88,38 @@ public class TitanTestBase {
     }
 
     protected void open() throws IOException {
-        graph = new TitanTestGraph(titanConfig);
+        LOG.info("*** Opening Titan connection ***");
+        conf = new ImmutableClassesGiraphConfiguration<I,V,E>(giraphConf);
+
+        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
+            GIRAPH_TITAN.get(giraphConf));
+        titanConfig = new GraphDatabaseConfiguration(baseConfig);
         ensureTitanTableReady();
+        graph = new TitanTestGraph(titanConfig);
+        startNewTransaction();
+    }
+
+    protected void startNewTransaction() {
         tx = graph.newTransaction();
         if (tx == null) {
             LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
             throw new RuntimeException(
                     "execute: Failed to create Titan transaction!");
         }
+        LOG.info("*** Opened Titan connection ***");
     }
 
     public void close() {
         if (null != tx && tx.isOpen()) {
+            LOG.info("*** Rolling back transaction ***");
             tx.rollback();
         }
 
         if (null != graph) {
+        LOG.info("*** Shutting down graph ***");
             graph.shutdown();
         }
+        LOG.info("*** Closed Titan ***");
     }
 
     protected void clopen() throws IOException {
