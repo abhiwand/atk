@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['gb_5ffunction_5fdoc_2edox',['gb_function_doc.dox',['../gb__function__doc_8dox.html',1,'']]],
   ['gbhtableconfiguration_2ejava',['GBHTableConfiguration.java',['../GBHTableConfiguration_8java.html',1,'']]],
   ['gbtitankey_2ejava',['GBTitanKey.java',['../GBTitanKey_8java.html',1,'']]],
   ['gbtuplefactory_2ejava',['GBTupleFactory.java',['../GBTupleFactory_8java.html',1,'']]],
