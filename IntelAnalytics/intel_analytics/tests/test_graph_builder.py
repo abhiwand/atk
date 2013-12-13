@@ -26,13 +26,14 @@ Unit tests for intel_analytics/graph  graph builder code
 import unittest
 import os
 import sys
+from shutil import copyfile
 from mock import patch, Mock
 from testutils import RegistryCallableFactory, get_diff_str
 get_registry_callable = RegistryCallableFactory().get_registry_callable
 
-curdir = os.path.dirname(__file__)
+_here_folder = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
-    os.path.join(os.path.join(curdir, os.pardir), os.pardir)))
+    os.path.join(os.path.join(_here_folder, os.pardir), os.pardir)))
 
 # mock imports
 sys.modules['bulbs.titan'] = __import__('mock_bulbs_titan')
@@ -42,10 +43,10 @@ sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
 
 # mock config
 from intel_analytics.config import global_config as config
-config['conf_folder'] = os.path.join(curdir, "conf")
-tmp_folder = os.path.join(curdir, "tmp")
-config['logs_folder'] = tmp_folder
-config['rexster_xml'] = os.path.join(tmp_folder, 'rexster.xml')
+config['conf_folder'] = os.path.join(_here_folder, "conf")
+_tmp_folder = os.path.join(_here_folder, "tmp")
+config['logs_folder'] = _tmp_folder
+config['rexster_xml'] = os.path.join(_tmp_folder, 'rexster.xml')
 config['graph_builder_titan_xml'] = \
     os.path.join(config['conf_folder'], "graph_builder_titan.xml")
 config['hbase_names_file'] = \
@@ -131,6 +132,8 @@ class TestGraphBuilder(unittest.TestCase):
     def test_build(self, mock_registry, mr2):
         self.assertIs(mock_registry, mr2)
         mock_registry.initialize(registry)
+        copyfile(os.path.join(_here_folder, 'gold_rexster.xml'),
+                 config['rexster_xml'])
         graph_name = 'g3'
         self.assertFalse(graph_name in mock_registry)
         frame = Mock()
@@ -190,8 +193,7 @@ class TestGraphConfig(unittest.TestCase):
 
     def test_rexster_xml_add_graph(self):
         rexster_xml = config['rexster_xml']
-        from shutil import copyfile
-        copyfile(os.path.join(curdir, 'gold_rexster.xml'), rexster_xml)
+        copyfile(os.path.join(_here_folder, 'gold_rexster.xml'), rexster_xml)
         titan_config.rexster_xml_add_graph('newgraph_f2_time_titan')
         expected = ['g1_f1_time_titan',
                     'g2_f2_time_titan',
@@ -201,7 +203,7 @@ class TestGraphConfig(unittest.TestCase):
     def test_rexster_xml_delete_graph(self):
         rexster_xml = config['rexster_xml']
         from shutil import copyfile
-        copyfile(os.path.join(curdir, 'gold_rexster.xml'), rexster_xml)
+        copyfile(os.path.join(_here_folder, 'gold_rexster.xml'), rexster_xml)
         titan_config.rexster_xml_delete_graph('g2_f2_time_titan')
         expected = ['g1_f1_time_titan']
         self._validate_rexster_xml(expected)
