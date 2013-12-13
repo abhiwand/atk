@@ -22,56 +22,29 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import com.intel.giraph.io.titan.TitanTestBase;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation;
 import com.intel.giraph.io.formats.JsonLongIDVectorValueOutputFormat;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.TitanTestGraph;
+import com.intel.giraph.io.titan.TitanTestBase;
 import com.intel.mahout.math.DoubleWithVectorWritable;
 import com.intel.mahout.math.TwoVectorWritable;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanKey;
 import com.thinkaurelius.titan.core.TitanLabel;
-import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.core.TitanVertex;
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-
-//import org.junit.Ignore;
 
 /**
  * Test TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector
@@ -168,9 +141,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0], new String[0]);
         Assert.assertNotNull(results);
-        Iterator<String> result = results.iterator();
-        while (result.hasNext()) {
-            String resultLine = result.next();
+        for (String resultLine : results) {
             LOG.info(" got: " + resultLine);
         }
 
@@ -179,7 +150,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest
         for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
             Double[] vertexValue = entry.getValue();
             assertEquals(3, vertexValue.length);
-            assertTrue(vertexValue[1].doubleValue() > 0.42d);
+            assertTrue(vertexValue[1] > 0.42d);
         }
 
 

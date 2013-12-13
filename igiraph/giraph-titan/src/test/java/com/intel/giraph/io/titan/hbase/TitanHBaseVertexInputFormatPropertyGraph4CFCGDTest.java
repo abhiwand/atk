@@ -21,54 +21,28 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
-import com.intel.giraph.io.titan.TitanTestBase;
+
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation;
 import com.intel.giraph.io.EdgeDataWritable;
 import com.intel.giraph.io.VertexData4CGDWritable;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.TitanTestGraph;
+import com.intel.giraph.io.titan.TitanTestBase;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanKey;
 import com.thinkaurelius.titan.core.TitanLabel;
-import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.core.TitanVertex;
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
@@ -180,9 +154,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        Iterator<String> result = results.iterator();
-        while (result.hasNext()) {
-            String resultLine = result.next();
+        for (String resultLine : results) {
             LOG.info(" got: " + resultLine);
         }
         // verify results
@@ -193,7 +165,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest
             Double[] vertexValue = entry.getValue();
             assertEquals(4, vertexValue.length);
             for (int j = 0; j < 3; j++) {
-                assertEquals(expectedValues[(int) (entry.getKey().longValue() / TITAN_ID_OFFSET) - 1][j], vertexValue[j].doubleValue(), 0.01d);
+                assertEquals(expectedValues[(int) (entry.getKey() / TITAN_ID_OFFSET) - 1][j], vertexValue[j], 0.01d);
             }
         }
     }

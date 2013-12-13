@@ -56,7 +56,6 @@ public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableCompa
     public TitanTestGraph graph = null;
     public TitanTransaction tx = null;
     protected final GiraphConfiguration giraphConf = new GiraphConfiguration();
-    private ImmutableClassesGiraphConfiguration<I,V,E> conf;
 
     protected GraphDatabaseConfiguration titanConfig = null;
 
@@ -111,7 +110,7 @@ public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableCompa
 
     protected void open() throws IOException {
         LOG.info("*** Opening Titan connection ***");
-        conf = new ImmutableClassesGiraphConfiguration<I,V,E>(giraphConf);
+        ImmutableClassesGiraphConfiguration<I, V, E> conf = new ImmutableClassesGiraphConfiguration<>(giraphConf);
 
         BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
             GIRAPH_TITAN.get(giraphConf));
