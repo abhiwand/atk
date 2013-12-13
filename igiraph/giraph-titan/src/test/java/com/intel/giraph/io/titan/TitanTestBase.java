@@ -37,11 +37,18 @@ import java.io.IOException;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
 
-/** Base class for all Titan/HBase related Giraph tests */
-
-public class TitanTestBase<I extends org.apache.hadoop.io.WritableComparable,
-                            V extends org.apache.hadoop.io.Writable,
-                            E extends org.apache.hadoop.io.Writable> {
+/** 
+ * Base class for all Titan/HBase related Giraph tests.
+ * 
+ * Note that these tests could still be significantly improved, this class was 
+ * made by simply extracting code from existing tests into a base class. Giraph configuration
+ * could be considerably simplified, the various tests that use the class could probably
+ * be further simplified as well.
+ *
+ */
+public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableComparable,
+                                    V extends org.apache.hadoop.io.Writable,
+                                    E extends org.apache.hadoop.io.Writable> {
     /**
      * LOG class
      */
@@ -52,6 +59,21 @@ public class TitanTestBase<I extends org.apache.hadoop.io.WritableComparable,
     private ImmutableClassesGiraphConfiguration<I,V,E> conf;
 
     protected GraphDatabaseConfiguration titanConfig = null;
+
+    @Before
+    public void setUp() throws Exception {
+        LOG.info("*** Starting setUp ***");
+        try {
+            setHbaseProperties();
+            configure();
+            open();
+        } catch (Exception e) {
+            LOG.error("*** Error in SETUP ***", e);
+            throw e;
+        }
+    }
+
+    protected abstract void configure() throws Exception;
 
     protected void setHbaseProperties() {
         GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
@@ -121,10 +143,4 @@ public class TitanTestBase<I extends org.apache.hadoop.io.WritableComparable,
         }
         LOG.info("*** Closed Titan ***");
     }
-
-    protected void clopen() throws IOException {
-        close();
-        open();
-    }
-
 }

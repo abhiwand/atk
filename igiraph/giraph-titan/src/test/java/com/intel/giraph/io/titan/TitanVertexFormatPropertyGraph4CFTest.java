@@ -79,22 +79,11 @@ import static junit.framework.Assert.assertTrue;
  * then run algorithm with input data,
  * finally write back results to Titan via TitanVertexOutputFormatPropertyGraph4CF
  */
-public class TitanVertexFormatPropertyGraph4CFTest {
-    /**
-     * LOG class
-     */
-    private static final Logger LOG = Logger
-        .getLogger(TitanVertexFormatPropertyGraph4CFTest.class);
+public class TitanVertexFormatPropertyGraph4CFTest
+    extends TitanTestBase<LongWritable, VertexDataWritable, EdgeDataWritable> {
 
-    public TitanTestGraph graph = null;
-    public TitanTransaction tx = null;
-    private GiraphConfiguration giraphConf = null;
-    private GraphDatabaseConfiguration titanConfig = null;
-    private ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable> conf;
-
-    @Before
-    public void setUp() throws Exception {
-        giraphConf = new GiraphConfiguration();
+    @Override
+    protected void configure() throws Exception {
         giraphConf.setComputationClass(AlternatingLeastSquaresComputation.class);
         giraphConf.setMasterComputeClass(AlternatingLeastSquaresMasterCompute.class);
         giraphConf.setAggregatorWriterClass(AlternatingLeastSquaresAggregatorWriter.class);
@@ -105,43 +94,14 @@ public class TitanVertexFormatPropertyGraph4CFTest {
         giraphConf.set("als.lambda", "0.05");
         giraphConf.set("als.convergenceThreshold", "0");
 
-        GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
-        GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
-        GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan");
-        GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
-        GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
-        GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
-        GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
         INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "default");
         INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
         VERTEX_TYPE_PROPERTY_KEY.set(giraphConf, "vertexType");
         EDGE_TYPE_PROPERTY_KEY.set(giraphConf, "edgeType");
         OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "result_p0,result_p1,result_p2");
-
-        HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
-        String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf);
-        //even delete an existing table needs the table is enabled before deletion
-        if (hbaseAdmin.isTableDisabled(tableName)) {
-            hbaseAdmin.enableTable(tableName);
-        }
-
-        if (hbaseAdmin.isTableAvailable(tableName)) {
-            hbaseAdmin.disableTable(tableName);
-            hbaseAdmin.deleteTable(tableName);
-        }
-
-
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable>(
-            giraphConf);
-
-        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
-            GIRAPH_TITAN.get(giraphConf));
-        titanConfig = new GraphDatabaseConfiguration(baseConfig);
-        open();
     }
 
-    @Ignore
     @Test
     public void VertexOutputFormatPropertyGraph4CFTest() throws Exception {
         /*
@@ -219,7 +179,7 @@ public class TitanVertexFormatPropertyGraph4CFTest {
         }
 
         //verify data is written to Titan
-        clopen();
+        startNewTransaction();
         long[] nid;
         TitanKey[] resultKey;
         String[] keyName;
@@ -246,36 +206,5 @@ public class TitanVertexFormatPropertyGraph4CFTest {
                 assertEquals(expectedValues[i][j], Double.parseDouble(nodes[i].getProperty(resultKey[j]).toString()), 0.01d);
             }
         }
-    }
-
-    @After
-    public void done() throws IOException {
-        close();
-        LOG.info("***Done with VertexOutputFormatPropertyGraph4CFTest****");
-    }
-
-    private void open() {
-        graph = new TitanTestGraph(titanConfig);
-        tx = graph.newTransaction();
-        if (tx == null) {
-            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
-            throw new RuntimeException(
-                "execute: Failed to create Titan transaction!");
-        }
-    }
-
-    public void close() {
-        if (null != tx && tx.isOpen()) {
-            tx.rollback();
-        }
-
-        if (null != graph) {
-            graph.shutdown();
-        }
-    }
-
-    private void clopen() {
-        close();
-        open();
     }
 }

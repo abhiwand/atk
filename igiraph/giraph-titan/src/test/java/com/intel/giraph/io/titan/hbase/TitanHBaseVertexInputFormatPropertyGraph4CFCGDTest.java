@@ -21,7 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
-
+import com.intel.giraph.io.titan.TitanTestBase;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation;
@@ -87,21 +87,11 @@ import static junit.framework.Assert.assertNotNull;
  * Second edge has a destination vertex 3, edge value 0.7,marked as "va".
  * [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
-public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest {
-    /**
-     * LOG class
-     */
-    private static final Logger LOG = Logger
-        .getLogger(TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest.class);
+public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest 
+    extends TitanTestBase<LongWritable, VertexData4CGDWritable, EdgeDataWritable> {
 
-    public TitanTestGraph graph = null;
-    public TitanTransaction tx = null;
-    private GiraphConfiguration giraphConf;
-    private ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CGDWritable, EdgeDataWritable> conf;
-
-    @Before
-    public void setUp() throws Exception {
-        giraphConf = new GiraphConfiguration();
+    @Override
+    protected void configure() throws Exception {
         giraphConf.setComputationClass(ConjugateGradientDescentComputation.class);
         giraphConf.setMasterComputeClass(ConjugateGradientDescentComputation.ConjugateGradientDescentMasterCompute.class);
         giraphConf.setAggregatorWriterClass(ConjugateGradientDescentComputation.ConjugateGradientDescentAggregatorWriter.class);
@@ -116,47 +106,14 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest {
         giraphConf.set("cgd.numCGDIters", "5");
         giraphConf.set("cgd.biasOn", "true");
 
-        GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
-        GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
-        GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan");
-        GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
-        GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
-        GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
-        GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
         INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
         VERTEX_TYPE_PROPERTY_KEY.set(giraphConf, "vertexType");
         EDGE_TYPE_PROPERTY_KEY.set(giraphConf, "edgeType");
 
-        HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
-        String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf);
-        //even delete an existing table needs the table is enabled before deletion
-        if (hbaseAdmin.isTableDisabled(tableName)) {
-            hbaseAdmin.enableTable(tableName);
-        }
-
-        if (hbaseAdmin.isTableAvailable(tableName)) {
-            hbaseAdmin.disableTable(tableName);
-            hbaseAdmin.deleteTable(tableName);
-        }
-
-
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CGDWritable, EdgeDataWritable>(
-            giraphConf);
-
-        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
-            GIRAPH_TITAN.get(giraphConf));
-        GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(baseConfig);
-        graph = new TitanTestGraph(titanConfig);
-        tx = graph.newTransaction();
-        if (tx == null) {
-            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
-            throw new RuntimeException(
-                "execute: Failed to create Titan transaction!");
-        }
     }
 
-    @Ignore
+    //@Ignore
     @Test
     public void VertexInputFormatPropertyGraph4CFCGDTest() throws Exception {
         /*
@@ -238,22 +195,6 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest {
             for (int j = 0; j < 3; j++) {
                 assertEquals(expectedValues[(int) (entry.getKey().longValue() / TITAN_ID_OFFSET) - 1][j], vertexValue[j].doubleValue(), 0.01d);
             }
-        }
-    }
-
-    @After
-    public void done() throws IOException {
-        close();
-        LOG.info("***Done with VertexInputFormatPropertyGraph4CFCGDTest****");
-    }
-
-    public void close() {
-        if (null != tx && tx.isOpen()) {
-            tx.rollback();
-        }
-
-        if (null != graph) {
-            graph.shutdown();
         }
     }
 

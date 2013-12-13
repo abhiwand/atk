@@ -77,31 +77,21 @@ import static junit.framework.Assert.assertTrue;
 public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest 
     extends TitanTestBase<LongWritable, DoubleWritable, FloatWritable> {
 
-    
-    @Before
-    public void setUp() throws Exception {
-        LOG.info("*** Starting setUp ***");
-        try {
-            setHbaseProperties();
-            giraphConf.setComputationClass(PageRankComputation.class);
-            giraphConf.setMasterComputeClass(PageRankComputation.PageRankMasterCompute.class);
-            giraphConf.setAggregatorWriterClass(PageRankComputation.PageRankAggregatorWriter.class);
-            giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleFloat.class);
-            giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDoubleValue.class);
-            giraphConf.set("pr.maxSupersteps", "30");
-            giraphConf.set("pr.resetProbability", "0.15");
-            giraphConf.set("pr.convergenceThreshold", "0.0001");
+    @Override
+    protected void configure() {
+        giraphConf.setComputationClass(PageRankComputation.class);
+        giraphConf.setMasterComputeClass(PageRankComputation.PageRankMasterCompute.class);
+        giraphConf.setAggregatorWriterClass(PageRankComputation.PageRankAggregatorWriter.class);
+        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleFloat.class);
+        giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDoubleValue.class);
+        giraphConf.set("pr.maxSupersteps", "30");
+        giraphConf.set("pr.resetProbability", "0.15");
+        giraphConf.set("pr.convergenceThreshold", "0.0001");
 
-            INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "default");
-            INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
-            INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
-            OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "rank");
-
-            open();
-        } catch (Exception e) {
-            LOG.error("*** Error in SETUP ***", e);
-            throw e;
-        }
+        INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "default");
+        INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
+        INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
+        OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "rank");
     }
 
     //@Ignore
