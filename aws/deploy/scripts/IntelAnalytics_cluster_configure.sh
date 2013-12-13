@@ -124,7 +124,7 @@ for n in `cat ${nodesfile}`; do
     else
         n0=`echo ${n} | awk -F '.' '{print $1}'`
         nn=`grep ${n0} ${hostsfile} | awk '{print $2}'`
-        sed -e 's/host = \"127.0.0.1\"/host = \"maser\"/g' -e 's/master@/'${nn}'@/g' _gmond.master > _gmond.${nn}
+        sed -e 's/host = \"127.0.0.1\"/host = \"master\"/g' -e 's/master@/'${nn}'@/g' _gmond.master > _gmond.${nn}
         ${dryrun} scp -i ${pemfile} _gmond.${nn} ${n}:/tmp/_gmond.conf
         ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
         echo ${n}:Updating ganglia config file;
@@ -163,6 +163,7 @@ then
     done;
     sed -i \'s/node03/nodes03,"${nodes}"/g\' titan/conf/titan-hbase.properties;
     sed -i \'s/node03/nodes03,"${nodes}"/g\' titan/conf/titan-hbase-es.properties;
+    sed -i \'s/node03/nodes03,"${nodes}"/g\' titan/conf/rexstitan-hbase-es.xml;
     '"
 fi
 
