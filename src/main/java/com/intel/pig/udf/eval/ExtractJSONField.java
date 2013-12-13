@@ -21,8 +21,6 @@ package com.intel.pig.udf.eval;
 import static com.jayway.restassured.path.json.JsonPath.with;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.pig.EvalFunc;
@@ -103,8 +101,7 @@ public class ExtractJSONField extends EvalFunc<String> {
 			try {
 				result = String.valueOf(queryResult);
 			} catch (Throwable t) {
-				String err = "Error converting query output to String.";
-				warn(err, PigWarning.UDF_WARNING_1);
+				warn("Error converting query output to String.", PigWarning.UDF_WARNING_1);
 			}
 			return result;
 		}

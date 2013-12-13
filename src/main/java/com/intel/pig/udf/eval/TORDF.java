@@ -45,9 +45,9 @@ import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief TORDF UDF converts a given {@link PropertyGraphElementTuple} to RDF triples.
+ * \brief TORDF UDF converts a given {@link PropertyGraphElementTuple} to a bag of RDF statements.
  * <p/>
- * If the {@link PropertyGraphElement} is null, this UDF returns null
+ * If the {@link PropertyGraphElement} is null, this UDF returns null.
  * 
  * <b>Example:</b>
  * 
@@ -110,9 +110,8 @@ public class TORDF extends EvalFunc<DataBag> {
 					.getVertexId().toString(), vertex.getProperties());
 		}
 
-		// list the statements in the model
+		/*create the RDF statements from the model*/
 		StmtIterator iterator = resource.getModel().listStatements();
-		// print out the predicate, subject and object of each statement
 		while (iterator.hasNext()) {
 			Statement stmt = iterator.nextStatement();
 			Resource subject = stmt.getSubject();
