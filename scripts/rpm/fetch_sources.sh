@@ -28,7 +28,7 @@ mkdir $python_folder/conf
 
 cp -R $src/intel_analytics $python_folder
 cp $src/conf/intel_analytics.properties $python_folder/conf
-cp -R $src/conf/ipython_profile $python_folder/conf
+cp $src/conf/ipython_notebook_config.py $python_folder/conf
 mkdir $python_folder/bin
 cp -R $src/bin/IntelAnalytics-ipython $python_folder/bin
 

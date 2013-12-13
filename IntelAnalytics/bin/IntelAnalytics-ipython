@@ -17,9 +17,9 @@ if [ -d /home/hadoop/IntelAnalytics/hbase ]
 		export HADOOP_HOME=/home/hadoop/IntelAnalytics/hbase
 fi
 
-if [ -d /home/hadoop/IntelAnalytics ]
+if [ -d /home/hadoop/IntelAnalytics ] && [`whoami` != 'hadoop']
 	then
-		sudo -u hadoop bash -c "
+		sudo -i -u hadoop bash -c "
 	. $INTEL_ANALYTICS_HOME/virtpy/bin/activate
 	ipython notebook --config=$INTEL_ANALYTICS_HOME/conf/ipython_notebook_config.py
 	"
