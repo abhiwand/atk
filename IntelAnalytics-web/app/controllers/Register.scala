@@ -81,8 +81,6 @@ object Register extends Controller {
                   "/", None, true, false))
             }
         }
-
-
     }
 
     /**
