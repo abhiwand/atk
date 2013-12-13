@@ -171,6 +171,23 @@ public class HBaseUtils {
     }
 
     /**
+     * If the table exists in HBase, it is disabled and dropped.
+     */
+    public void removeTable(String testTableName) throws IOException {
+
+        if (admin.tableExists(testTableName)) {
+            admin.disableTable(testTableName);
+            if (admin.isTableDisabled(testTableName)) {
+                admin.deleteTable(testTableName);
+            } else {
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                        "GRAPHBUILDER ERROR: Unable to delete existing table " + testTableName + ". Please delete it",
+                        LOG);
+            }
+        }
+    }
+
+    /**
      * Checks if the given table contains the given column family.
      *
      * @param hTableName The HBase table name.

@@ -89,7 +89,9 @@ public class GraphDatabaseConnector {
             LOG.fatal("GRAPHBUILDER ERROR: attempt to open graph database using null parameter string");
         }
         finally {
-            g.shutdown();
+            if (g != null) {
+                g.shutdown();
+            }
         }
     }
 }

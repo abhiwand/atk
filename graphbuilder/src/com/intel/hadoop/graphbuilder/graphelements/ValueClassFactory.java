@@ -32,7 +32,7 @@ public class ValueClassFactory {
      * @param  vidClassName
      * @return A Class which inherits {@code SerializedGraphElement} and
      *         overrides {@code createVid} to return the correct vertex ID class.
-     * @throws IllegalArgumentException.
+     * @throws IllegalArgumentException
      */
 
     public static Class getValueClassByVidClassName(String vidClassName) throws IllegalArgumentException {

@@ -1,4 +1,3 @@
-<!--
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -21,34 +20,3 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
--->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>imahout</artifactId>
-  <packaging>jar</packaging>
-  <name>IntelAnalytics iMahout </name>
-  <url>http://maven.apache.org</url>
-
- <parent>
-  	<groupId>com.intel.hadoop</groupId>
-  	<artifactId>IntelAnalytics</artifactId>
-  	<relativePath>../pom.xml</relativePath>  
-  	<version>0.5-SNAPSHOT</version>
-  </parent>
-
-  <dependencies>
-     <dependency>
-          <groupId>org.apache.mahout</groupId>
-          <artifactId>mahout-core</artifactId>
-          <version>${dep.mahout.version}</version>
-     </dependency>
-     <dependency>
-          <groupId>org.apache.mahout</groupId>
-          <artifactId>mahout-math</artifactId>
-          <version>${dep.mahout.version}</version>
-     </dependency>
-  </dependencies>
-
-</project>

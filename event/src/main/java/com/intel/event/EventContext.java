@@ -1,28 +1,38 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2013 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.event;
 
-/* Copyright (C) 2013 Intel Corporation.
- *     All rights reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- */
-
 import com.google.common.base.Strings;
-import org.apache.hadoop.io.Writable;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.json.simple.JSONObject;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -35,9 +45,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EventContext implements AutoCloseable {
 
+    private static final InheritableThreadLocal<EventContext> CURRENT = new InheritableThreadLocal<>();
     private String name;
-    private final ConcurrentHashMap<String,String> context = new ConcurrentHashMap<>();
-    private static final InheritableThreadLocal<EventContext> current = new InheritableThreadLocal<>();
+    private final ConcurrentHashMap<String, String> context = new ConcurrentHashMap<>();
     private final EventContext parent;
     private final String correlationId;
 
@@ -48,8 +58,9 @@ public class EventContext implements AutoCloseable {
      * @param name the name of the context as it should appear in logs
      */
     EventContext(String name) {
-        if(Strings.isNullOrEmpty(name))
+        if (Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("Event context name cannot be null or empty");
+        }
         this.name = name;
         parent = EventContext.getCurrent();
         if (parent != null) {
@@ -66,7 +77,7 @@ public class EventContext implements AutoCloseable {
      * @return the current event context, or null if no context has been established
      */
     public static EventContext getCurrent() {
-        return current.get();
+        return CURRENT.get();
     }
 
     /**
@@ -75,7 +86,7 @@ public class EventContext implements AutoCloseable {
      * @param current the context to set as the current context for this thread
      */
     static void setCurrent(EventContext current) {
-        EventContext.current.set(current);
+        EventContext.CURRENT.set(current);
     }
 
     /**
@@ -115,11 +126,12 @@ public class EventContext implements AutoCloseable {
      * Serializes the event context (and all its parents) to the given DataOutput
      */
     public void write(DataOutput dataOutput) throws IOException {
-        if(dataOutput == null)
+        if (dataOutput == null) {
             throw new IllegalArgumentException("The dataOutput cannot be null");
+        }
         dataOutput.writeUTF(name);
         dataOutput.writeInt(context.size());
-        for(Map.Entry<String,String> entry: context.entrySet()) {
+        for (Map.Entry<String, String> entry: context.entrySet()) {
             dataOutput.writeUTF(entry.getKey());
             dataOutput.writeUTF(entry.getValue());
         }
@@ -131,11 +143,12 @@ public class EventContext implements AutoCloseable {
      * @throws IOException
      */
     public void readFields(DataInput dataInput) throws IOException {
-        if(dataInput == null)
+        if (dataInput == null) {
             throw new IllegalArgumentException("the dataInput cannot be null");
+        }
         name = dataInput.readUTF();
         int count = dataInput.readInt();
-        for(int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             context.put(dataInput.readUTF(), dataInput.readUTF());
         }
     }
@@ -146,9 +159,11 @@ public class EventContext implements AutoCloseable {
      * @return the serialized EventContext
      */
     public static String serialize(EventContext context) {
-        if(context == null)
+        if (context == null) {
             throw new IllegalArgumentException("Event context cannot be null");
-        try(ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        }
+        //noinspection SpellCheckingInspection
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
             DataOutputStream os = new DataOutputStream(baos)) {
             context.write(os);
             os.flush();
@@ -164,9 +179,10 @@ public class EventContext implements AutoCloseable {
      * @return the EventContext read from the String
      */
     public static EventContext deserialize(String s) {
-        if(Strings.isNullOrEmpty(s))
+        if (Strings.isNullOrEmpty(s)) {
             throw new IllegalArgumentException("Dehydrated event context cannot be null or empty");
-        try(DataInputStream is = new DataInputStream(new StringInputStream(s, "UTF-8"))) {
+        }
+        try (DataInputStream is = new DataInputStream(new StringInputStream(s, "UTF-8"))) {
             EventContext ctx = new EventContext("default");
             ctx.readFields(is);
             setCurrent(ctx);
@@ -192,8 +208,8 @@ public class EventContext implements AutoCloseable {
      */
     @Override
     public void close() {
-        if (current.get() == this) {
-           current.set(this.parent);
+        if (getCurrent() == this) {
+            setCurrent(this.parent);
         }
     }
 
@@ -242,6 +258,7 @@ public class EventContext implements AutoCloseable {
         return event(Severity.INFO, message, substitutions);
     }
 
+    @SuppressWarnings("unchecked")
     JSONObject toJson() {
         JSONObject json = new JSONObject();
         json.put("name", getName());

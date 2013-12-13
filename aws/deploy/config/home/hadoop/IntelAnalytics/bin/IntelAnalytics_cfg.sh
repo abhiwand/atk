@@ -81,10 +81,10 @@ then
         ${HADOOP_HOME}/bin/stop-dfs.sh
     elif [ "${CMMD}" == "--titan-load-gods" ]
     then
-        ${TITAN_HOME}/bin/gremlin.sh `dirname $0`/IntelAnalytics_load.grem
+        ${TITAN_HOME}/bin/gremlin.sh -e `dirname $0`/IntelAnalytics_load.groovy
 
     elif [ "${CMMD}" == "--titan-test-gods" ]
     then
-        ${TITAN_HOME}/bin/gremlin.sh `dirname $0`/IntelAnalytics_test.grem
+        ${TITAN_HOME}/bin/gremlin.sh -e `dirname $0`/IntelAnalytics_test.groovy
     fi
 fi

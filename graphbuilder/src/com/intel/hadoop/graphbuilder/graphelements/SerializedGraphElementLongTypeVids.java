@@ -20,9 +20,19 @@
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.LongType;
+import org.apache.hadoop.io.WritableComparable;
 
+/**
+ * Serialized form of GraphElement class that uses LongType vertex IDs
+ */
 public class SerializedGraphElementLongTypeVids
         extends SerializedGraphElement<LongType> {
+
+    /**
+     * Allocate a new vertex ID.
+     * @return  a new LongType object
+     */
+
     public LongType createVid() {
         return new LongType();
     }
@@ -41,5 +51,6 @@ public class SerializedGraphElementLongTypeVids
         } else {
             return (this.graphElement().equals(o.graphElement())) ? 0 : 1;
         }
+
     }
 }

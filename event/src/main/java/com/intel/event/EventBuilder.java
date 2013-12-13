@@ -1,21 +1,27 @@
-package com.intel.event;
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2013 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
 
-/* Copyright (C) 2013 Intel Corporation.
- *     All rights reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- */
+package com.intel.event;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,7 +39,7 @@ public class EventBuilder {
     private final EventContext context;
     private final Instant instant;
     private final List<String> markers = new ArrayList<>();
-    private final Map<String,String> data = new HashMap<>();
+    private final Map<String, String> data = new HashMap<>();
     private final List<Throwable> errors = new ArrayList<>();
 
     /**
@@ -51,10 +57,12 @@ public class EventBuilder {
                         Severity severity,
                         Enum message,
                         String... substitutions) {
-        if (severity == null)
+        if (severity == null) {
             throw new IllegalArgumentException("Severity cannot be null");
-        if (message == null)
+        }
+        if (message == null) {
             throw new IllegalArgumentException("Message cannot be null");
+        }
         this.context = context;
         this.severity = severity;
         this.message = message;
@@ -64,6 +72,10 @@ public class EventBuilder {
 
     /**
      * Add additional data to this event
+     *
+     * @param key the name of the additional data
+     * @param value the value of the additional data
+     * @return an updated EventBuilder for further customization
      */
     public EventBuilder put(String key, String value) {
         data.put(key, value);
@@ -71,7 +83,10 @@ public class EventBuilder {
     }
 
     /**
-     * Add a marker (tag) to this event
+     * Add a marker (tag) to this event. Markers facilitate more flexible reporting on events.
+     *
+     * @param marker the marker to add to the event
+     * @return an updated EventBuilder for further customization
      */
     public EventBuilder addMarker(String marker) {
         markers.add(marker);
@@ -80,6 +95,9 @@ public class EventBuilder {
 
     /**
      * Add a Throwable associated with this event
+     *
+     * @param e the throwable to associate
+     * @return an updated EventBuilder for further customization
      */
     public EventBuilder addException(Throwable e) {
         errors.add(e);
@@ -92,8 +110,8 @@ public class EventBuilder {
      * @return the finished Event, which can then be passed to {@link EventLog#log}
      */
     public Event build() {
-        String[] markers = this.markers.toArray(new String[this.markers.size()]);
-        Throwable[] errors = this.errors.toArray(new Throwable[this.errors.size()]);
-        return new Event(context, instant, new EventData(severity, errors, data, markers, message, substitutions));
+        String[] marks = this.markers.toArray(new String[this.markers.size()]);
+        Throwable[] throwables = this.errors.toArray(new Throwable[this.errors.size()]);
+        return new Event(context, instant, new EventData(severity, throwables, data, marks, message, substitutions));
     }
 }

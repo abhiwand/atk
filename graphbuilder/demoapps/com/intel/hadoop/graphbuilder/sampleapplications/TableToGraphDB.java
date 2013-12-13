@@ -112,12 +112,15 @@ import org.apache.log4j.Logger;
 public class TableToGraphDB {
 
     private static final Logger LOG = Logger.getLogger(TableToGraphDB.class);
+    private static boolean configFilePresent = false;
 
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
 
         options.addOption(BaseCLI.Options.titanAppend.get());
+
+        options.addOption(BaseCLI.Options.titanOverwrite.get());
 
         options.addOption(BaseCLI.Options.flattenList.get());
 
@@ -145,8 +148,13 @@ public class TableToGraphDB {
     public static void main(String[] args)  {
 
         Timer timer = new Timer();
+        configFilePresent = (args[0].equals("-conf"));
+        if (!configFilePresent) {
+            commandLineInterface.showError("When writing to Titan, the Titan config file must be specified by -conf <config> ");
+        }
 
         CommandLine cmd = commandLineInterface.checkCli(args);
+
 
         GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
         commandLineInterface.getRuntimeConfig().addConfig(pipeline);
