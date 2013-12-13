@@ -71,14 +71,48 @@ class GraphBuilderFactory(object):
 
     @abc.abstractmethod
     def get_graph_builder(self, graph_type, source):
+        """
+        Returns a new graph builder
+
+        Gets a graph builder which will build the given type of graph for the
+        given source
+
+        Parameters
+        ----------
+        graph_type : (GraphTypes.Property | GraphTypes.Bipartite | GraphTypes.*)
+            the type of graph to create.  See GraphTypes class
+        source : BigDataFrame
+            the source of the data for the graph to build
+
+        Returns
+        -------
+        graph_builder : GraphBuilder
+            new graph builder object
+        """
         raise Exception("Not overridden")
 
     @abc.abstractmethod
     def get_graph(self, graph_name):
+        """
+        Returns a graph object for a previously created graph
+
+        Parameters
+        ----------
+        graph_name : string
+            user-given name of a previously created graph
+
+        Returns
+        -------
+        graph : Graph
+            new graph object
+        """
         raise Exception("Not overridden")
 
     @abc.abstractmethod
     def get_graph_names(self):
+        """
+        Returns a list of names of all the previously created graphs on record.
+        """
         raise Exception("Not overridden")
 
 
@@ -89,11 +123,7 @@ class GraphBuilder(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, source=None):
-        self.register_source(source)
-        pass
-
-    def register_source(self, source):
+    def __init__(self, source):
         self._source = source
 
     @abc.abstractmethod

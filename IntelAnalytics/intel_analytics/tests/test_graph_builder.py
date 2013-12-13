@@ -73,16 +73,22 @@ class TestGraphBuilder(unittest.TestCase):
 
     def test_get_graph_builder(self):
         factory = TitanGraphBuilderFactory()
-        gb = factory.get_graph_builder(GraphTypes.Bipartite)
+        gb = factory.get_graph_builder(GraphTypes.Bipartite, Mock())
         self.assertIsNotNone(gb)
-        gb = factory.get_graph_builder(GraphTypes.Property)
+        gb = factory.get_graph_builder(GraphTypes.Property, Mock())
         self.assertIsNotNone(gb)
         try:
-            factory.get_graph_builder(None)
+            factory.get_graph_builder(None, Mock())
         except Exception as e:
             self.assertTrue(str(e).startswith("Unsupported graph type"))
         else:
             self.fail("Expected exception for a None name")
+        try:
+            factory.get_graph_builder(GraphTypes.Property, None)
+        except Exception as e:
+            self.assertTrue(str(e) == "Graph builder has no source")
+        else:
+            self.fail("Expected exception for a None graph source")
 
     @patch('intel_analytics.table.hbase.table.hbase_registry',
            new_callable=get_registry_callable('test_get_graph'))

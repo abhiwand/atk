@@ -61,7 +61,9 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
         super(TitanGraphBuilderFactory, self).__init__()
         self._active_titan_table_name = None
 
-    def get_graph_builder(self, graph_type, source=None):
+    def get_graph_builder(self, graph_type, source):
+        if source is None:
+            raise Exception("Graph builder has no source")
         if graph_type is GraphTypes.Bipartite:
             return HBase2TitanBipartiteGraphBuilder(source)
         elif graph_type is GraphTypes.Property:
@@ -109,7 +111,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
     """
     The bipartite graph builder for HBase->Titan.
     """
-    def __init__(self, source=None):
+    def __init__(self, source):
         super(HBase2TitanBipartiteGraphBuilder, self).__init__(source)
 
     def __repr__(self):
@@ -141,7 +143,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
     """
     The property graph builder for HBase->Titan.
     """
-    def __init__(self, source=None):
+    def __init__(self, source):
         super(HBase2TitanPropertyGraphBuilder, self).__init__(source)
 
     def __repr__(self):
@@ -166,8 +168,6 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
 
 def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
     # todo: implement column validation
-    if source is None:
-        raise Exception("Graph has no source. Try register_source()")
 
     dst_hbase_table_name = generate_titan_table_name(graph_name, source)
     src_hbase_table_name = get_table_name_from_source(source)
