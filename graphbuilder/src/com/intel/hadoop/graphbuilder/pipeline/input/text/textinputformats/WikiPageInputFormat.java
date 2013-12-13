@@ -32,6 +32,9 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
+/**
+ * InputFormat for reading WikiPages
+ */
 public class WikiPageInputFormat extends TextInputFormat {
 
     private static final Logger LOG = Logger.getLogger(WikiPageInputFormat.class);
@@ -39,6 +42,9 @@ public class WikiPageInputFormat extends TextInputFormat {
     public static final String START_TAG = "<page>";
     public static final String END_TAG   = "</page>";
 
+    /**
+     * Hadoop RecordReader for reading Wikipages
+     */
     @Override
     public RecordReader<LongWritable, Text> createRecordReader(InputSplit split, TaskAttemptContext context) {
 

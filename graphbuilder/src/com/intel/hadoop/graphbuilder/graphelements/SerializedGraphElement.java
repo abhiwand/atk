@@ -29,10 +29,10 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Abstract union type of {@code Vertex} and {@code Edge}. Used as intermediate
- * map output value to hold either a vertex or an edge.
+ * Serialized wrapper class for {@code GraphElement}
  *
  * @param <VidType>
+ * @see GraphElement
  */
 
 public abstract class SerializedGraphElement<VidType extends WritableComparable<VidType>>
@@ -41,6 +41,9 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
 
     private GraphElement graphElement;
 
+    /**
+     *  Allocates new object. Wrapped {@code GraphElement} is initialized to {@code null}
+     */
     public SerializedGraphElement() {
         this.graphElement = null;
     }
@@ -49,10 +52,14 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
         this.graphElement = graphElement;
     }
 
+    /**
+     * Allocate a new vertex ID object.
+     * @return new object of type {@code VidType}
+     */
     public abstract VidType createVid();
 
     /**
-     * Initialize the graphElement.
+     * Passes in a graphElement to be wrapped.
      *
      * @param graphElement
      */
@@ -63,7 +70,7 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
 
 
     /**
-     * @return a vertex or edge property graph element
+     * @return the base GraphElement
      */
 
     public GraphElement graphElement() {
@@ -72,6 +79,11 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
         return this.graphElement.get();
     }
 
+    /**
+     * Read the SerializedGraphElement from an input stream.
+     * @param input
+     * @throws IOException
+     */
     @Override
     public void readFields(DataInput input) throws IOException {
 
@@ -117,6 +129,11 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
         }
     }
 
+    /**
+     * Write the SerializedGraphElement to an output stream.
+     * @param output
+     * @throws IOException
+     */
     @Override
     public void write(DataOutput output) throws IOException {
 

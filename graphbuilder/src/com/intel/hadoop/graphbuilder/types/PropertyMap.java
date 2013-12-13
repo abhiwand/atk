@@ -95,20 +95,18 @@ public class PropertyMap implements Writable
     @Override
     public String toString() {
 
-        String s = new String("");
+        StringBuffer s = new StringBuffer();
 
         if (!properties.isEmpty())
         {
-            s.concat("[" + "\t");
 
             for (Map.Entry<Writable, Writable> entry : properties.entrySet())
             {
-               s += (entry.getKey() + ":" + entry.getValue()) + "\t";
+               s.append(entry.getKey() + ":" + entry.getValue() + "\t");
             }
 
-            s.concat("\t" + "]");
         }
 
-        return s;
+        return s.toString();
     }
 }
