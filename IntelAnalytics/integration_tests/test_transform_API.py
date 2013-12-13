@@ -33,6 +33,7 @@ from intel_analytics.config import global_config as CONFIG_PARAMS
 
 worldbank_data_csv_path = os.path.join(base_script_path, '..//', '..', 'feateng', 'test-data/worldbank.csv')
 test_standardization_dataset_csv_path = os.path.join(base_script_path, '..//', '..', 'feateng', 'test-data/test_standardization_dataset.csv')
+os.environ['INTEL_ANALYTICS_ETL_RUN_LOCAL'] = 'true'
 
 py_scripts_path = os.path.join(base_script_path, '..//', 'intel_analytics', 'table' , 'hbase', 'scripts')
 
@@ -65,7 +66,7 @@ schema_definition = 'country:chararray,year:chararray,'+\
                     'population: double,hiv_prevelence:double'
                       
 return_code = subprocess.call(['python', os.path.join(py_scripts_path,
-                                                      '../intel_analytics/table/hbase/scripts/import_csv.py'), '-i', '/tmp/worldbank.csv',
+                                                      'import_csv.py'), '-i', '/tmp/worldbank.csv',
                  '-o', TEST_TABLE, '-s', schema_definition, '-k'])
 
 if return_code:
@@ -77,7 +78,7 @@ DIFF_EPSILON = 0.01#diff used for floating point comparisons
 print "Testing the EXP transform"
  
 return_code = subprocess.call(['python', os.path.join(py_scripts_path,
-                                                      '../intel_analytics/table/hbase/scripts/transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+                                                      'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'EXP', '-n', 'exp_internet_users', '-k'])
  
 if return_code:
@@ -110,7 +111,7 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
   
 print "Testing the ABS transform"
 return_code = subprocess.call(['python', os.path.join(py_scripts_path,
-                                                      '../intel_analytics/table/hbase/scripts/transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+                                                      'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'ABS', '-n', 'abs_internet_users', '-k'])
     
 if return_code:
@@ -135,7 +136,7 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
   
 print "Testing the LOG10 transform"      
 return_code = subprocess.call(['python', os.path.join(py_scripts_path,
-                                                      '../intel_analytics/table/hbase/scripts/transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+                                                      'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'LOG10', '-n', 'log10_internet_users', '-k'])
   
 if return_code:
@@ -164,7 +165,7 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
   
 print "Testing the org.apache.pig.piggybank.evaluation.math.POW transform"          
 return_code = subprocess.call(['python', os.path.join(py_scripts_path,
-                                                      '../intel_analytics/table/hbase/scripts/transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+                                                      'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'org.apache.pig.piggybank.evaluation.math.POW', '-a', '[2]', '-n', 'internet_users_squared', '-k'])
   
 if return_code:
@@ -187,7 +188,7 @@ commands.getoutput("cp %s /tmp/test_standardization_dataset.csv" % (test_standar
 schema_definition = 'value:double'
                          
 return_code = subprocess.call(['python', os.path.join(py_scripts_path,
-                                                      '../intel_analytics/table/hbase/scripts/import_csv.py'), '-i', '/tmp/test_standardization_dataset.csv',
+                                                      'import_csv.py'), '-i', '/tmp/test_standardization_dataset.csv',
                  '-o', TEST_STND_TABLE, '-s', schema_definition, '-k'])
   
 if return_code:
@@ -203,7 +204,7 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
  
 print "Testing the STND transform"  
 return_code = subprocess.call(['python', os.path.join(py_scripts_path,
-                                                      '../intel_analytics/table/hbase/scripts/transform.py'), '-i', TEST_STND_TABLE, '-f', 'value',
+                                                      'transform.py'), '-i', TEST_STND_TABLE, '-f', 'value',
                  '-o', TEST_STND_TRANSFORM_TABLE, '-t', 'STND', '-n', 'stnd_value', '-k'])
  
 if return_code:
