@@ -52,6 +52,7 @@ public class BaseCLI {
 
     //titan option long names
     private static final String TITAN_APPEND = TitanCommandLineOptions.APPEND;
+    private static final String TITAN_OVERWRITE = TitanCommandLineOptions.OVERWRITE;
     private static final String TITAN_STORAGE = TitanCommandLineOptions.STORE;
     private static final String TITAN_KEY_INDEX_DECLARATION_CLI_HELP = TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP;
     private static final String TITAN_KEY_INDEX = TitanCommandLineOptions.CMD_KEYS_OPTNAME;
@@ -65,6 +66,7 @@ public class BaseCLI {
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),
         directedEdge(CLI_DIRECTED_EDGE_OPTION), flattenList(CLI_FLATTEN_LIST_OPTION),
         titanAppend(CLI_TITAN_APPEND_OPTION), titanKeyIndex(CLI_TITAN_KEY_INDEX),
+        titanOverwrite(CLI_TITAN_OVERWRITE_OPTION),
         titanStorage(CLI_TITAN_STORAGE_OPTION),
         outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION);
 
@@ -87,6 +89,10 @@ public class BaseCLI {
     private static final Option CLI_TITAN_APPEND_OPTION= OptionBuilder.withLongOpt(TITAN_APPEND)
             .withDescription("Append Graph to Current Graph at Specified Titan Table")
             .create("a");
+
+    private static final Option CLI_TITAN_OVERWRITE_OPTION = OptionBuilder.withLongOpt(TITAN_OVERWRITE)
+            .withDescription("Overwrite the existing graph at the specified Titan Table")
+            .create("O");
 
     private static final Option CLI_TITAN_KEY_INDEX = OptionBuilder.withLongOpt(TITAN_KEY_INDEX)
             .withDescription("Specify keys, please. " + TITAN_KEY_INDEX_DECLARATION_CLI_HELP)

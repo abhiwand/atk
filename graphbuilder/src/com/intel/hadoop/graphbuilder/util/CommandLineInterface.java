@@ -252,7 +252,7 @@ public class CommandLineInterface{
     }
 
     private void _showError(String error){
-        if(error == null || error.trim().length() > 0){
+        if(error == null || error.trim().isEmpty()){
             error = " ";
         }
         HelpFormatter h = new HelpFormatter();

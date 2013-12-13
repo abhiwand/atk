@@ -20,9 +20,16 @@
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.LongType;
+import org.apache.hadoop.io.WritableComparable;
 
-public class SerializedPropertyGraphElementLongTypeVids extends SerializedPropertyGraphElement<LongType> {
+public class SerializedPropertyGraphElementLongTypeVids extends SerializedPropertyGraphElement<LongType> implements
+        WritableComparable<SerializedPropertyGraphElementLongTypeVids> {
     public LongType createVid() {
         return new LongType();
+    }
+
+    @Override
+    public int compareTo(SerializedPropertyGraphElementLongTypeVids v) {
+        return this.compareTo(v);
     }
 }

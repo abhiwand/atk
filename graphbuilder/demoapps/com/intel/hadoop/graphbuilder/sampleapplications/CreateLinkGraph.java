@@ -61,6 +61,7 @@ public class CreateLinkGraph {
 
     private static final Logger LOG = Logger.getLogger(CreateLinkGraph.class);
     private static boolean titanAsDataSink = false;
+    private static boolean configFilePresent = false;
 
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
 
@@ -75,6 +76,8 @@ public class CreateLinkGraph {
         options.addOption(BaseCLI.Options.titanStorage.get());
 
         options.addOption(BaseCLI.Options.titanAppend.get());
+
+        options.addOption(BaseCLI.Options.titanOverwrite.get());
 
         commandLineInterface.setOptions(options);
     }
@@ -94,11 +97,16 @@ public class CreateLinkGraph {
             commandLineInterface.showError("You cannot simultaneously specify a file and Titan for the output.");
         } else if (!cmd.hasOption(titanStorageOpt) && cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
             commandLineInterface.showError("You cannot append a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
+        } else if (!cmd.hasOption(titanStorageOpt) && cmd.hasOption(BaseCLI.Options.titanOverwrite.getLongOpt())) {
+            commandLineInterface.showError("You cannot overwrite a Titan graph if you do not write to Titan. (Add the -t option if you meant to do this.)");
         } else if (cmd.hasOption(outputPathOpt)) {
             outputPath = cmd.getOptionValue(outputPathOpt);
             LOG.info("GRAPHBUILDER_INFO: output path: " + outputPath);
         } else if (cmd.hasOption(titanStorageOpt)) {
             titanAsDataSink = true;
+            if (!configFilePresent) {
+                commandLineInterface.showError("-conf <config> is required additional parameter when writing to Titan");
+            }
         } else {
             commandLineInterface.showError("GRAPHBUILDER_ERROR: An output path is required");
         }
@@ -110,6 +118,8 @@ public class CreateLinkGraph {
      */
 
     public static void main(String[] args) {
+        configFilePresent = (args[0].equals("-conf"));
+
         CommandLine cmd = commandLineInterface.checkCli(args);
         //check the parsed option against some custom logic
         checkCli(cmd);

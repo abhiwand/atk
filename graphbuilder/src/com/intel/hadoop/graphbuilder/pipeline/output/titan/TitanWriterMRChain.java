@@ -454,12 +454,16 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         if (hbaseUtils.tableExists(titanTableName)) {
             if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
-            LOG.info("WARNING:  hbase table " + titanTableName +
-                     " already exists. Titan will append new graph to existing data.");
+                LOG.info("WARNING:  hbase table " + titanTableName +
+                         " already exists. Titan will append new graph to existing data.");
+            } if (cmd.hasOption(BaseCLI.Options.titanOverwrite.getLongOpt())) {
+                LOG.info("WARNING:  hbase table " + titanTableName +
+                        " already exists. Titan will overwrite existing data with the new graph.");
             } else {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "GRAPHBUILDER_FAILURE: hbase table " + titanTableName +
-                                " already exists. Use -a option if you wish to append new graph to existing data.", LOG);
+                                " already exists. Use -a option if you wish to append new graph to existing data."
+                        + " Use -O option if you wish to overwrite the graph.", LOG);
             }
         }
 

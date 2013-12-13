@@ -20,9 +20,17 @@
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.StringType;
+import org.apache.hadoop.io.WritableComparable;
 
-public class SerializedPropertyGraphElementStringTypeVids extends SerializedPropertyGraphElement<StringType> {
+public class SerializedPropertyGraphElementStringTypeVids extends SerializedPropertyGraphElement<StringType>
+        implements WritableComparable<SerializedPropertyGraphElementStringTypeVids> {
+
     public StringType createVid() {
         return new StringType();
+    }
+
+    @Override
+    public int compareTo(SerializedPropertyGraphElementStringTypeVids v) {
+        return this.compareTo(v);
     }
 }
