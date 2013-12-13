@@ -1,3 +1,21 @@
+/* Copyright (C) 2013 Intel Corporation.
+*     All rights reserved.
+*
+*  Licensed under the Apache License, Version 2.0 (the "License");
+*  you may not use this file except in compliance with the License.
+*  You may obtain a copy of the License at
+*
+*       http://www.apache.org/licenses/LICENSE-2.0
+*
+*   Unless required by applicable law or agreed to in writing, software
+*   distributed under the License is distributed on an "AS IS" BASIS,
+*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*   See the License for the specific language governing permissions and
+*   limitations under the License.
+*
+* For more about this software visit:
+*      http://www.01.org/GraphBuilder
+*/
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
@@ -38,9 +56,9 @@ import org.apache.log4j.Logger;
  * This reducer performs the following tasks:
  * <ul>
  *  <li>removes duplicate edges and vertices.</li>
- *  <li>loads each vertex into Titan and tags each with its Titan ID and passes it to the next MR job
+ *  <li>loads each vertex into Titan and tags each with its Titan ID and passes it to the next Map Reducer job
  *   through the temp file.</li>
- *  <li>tags each edge with the Titan ID of its source vertex and passes it to the next MR job.</li>
+ *  <li>tags each edge with the Titan ID of its source vertex and passes it to the next Map Reducer job.</li>
  * </ul>
  * <p>
  *  We expect that the mapper will set the keys so that the edges are gathered with the source vertices during the shuffle.
@@ -72,7 +90,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
     /**
      * Creates the Titan graph for saving edges and removes the static open method from setup so it can be mocked-up.
      *
-     * @return TitanGraph  For saving edges.
+     * @return {@code TitanGraph}  For saving edges.
      * @throws IOException
      */
     private TitanGraph getTitanGraphInstance (Context context) throws IOException {
@@ -81,8 +99,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
     }
 
     /**
-     * Set up the reducer at the start of the task.
-     * @param context
+     * Sets up the reducer at the start of the task.
+     * @param {@code context}
      * @throws IOException
      * @throws InterruptedException
      */
@@ -146,9 +164,9 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
      * The main reducer routine. Performs duplicate removal followed by vertex load, then a propagation of
      * vertex IDs to the edges whose source is the current vertex.
      *
-     * @param key
-     * @param values
-     * @param context
+     * @param {@code key}
+     * @param {@code values}
+     * @param {@code context}
      * @throws IOException
      * @throws InterruptedException
      */
@@ -181,8 +199,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                     } else {
 
                         /**
-                         * default behavior is to merge the property maps of duplicate vertices
-                         * conflicting key/value pairs get overwritten
+                         * The default behavior is to merge the property maps of duplicate vertices.
+                         * Conflicting key/value pairs get overwritten.
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) vertexSet.get(vid);
@@ -222,8 +240,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
                     } else {
 
                         /**
-                         * The default behavior is to merge the property maps of duplicate edges,
-                         * conflicting key/value pairs get overwritten.
+                         * The default behavior is to merge the property maps of duplicate edges.
+                         * Conflicting key/value pairs get overwritten.
                          */
 
                         PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeID);
@@ -331,7 +349,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, PropertyGraph
 
     /**
      * Closes the Titan graph connection at the end of the reducer.
-     * @param context
+     * @param {@code context}
      * @throws IOException
      * @throws InterruptedException
      */

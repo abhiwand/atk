@@ -27,14 +27,14 @@ import org.apache.commons.cli.OptionBuilder;
 
 /**
  * A nice wrapper to grab all the commonly used CLI options like input path and output path. Is also a centralized place
- * for the options LongOpt name which gets used by the demo apps, configs, and the tokenizer
+ * for the options LongOpt name which gets used by the demo apps, configs, and the tokenizer.
  *
  * <p><b>Usage:</b>
  * <p>
  * <br />
- * BaseCLI.Options.inputPath.get() get the base input option
+ * BaseCLI.Options.inputPath.get()  Gets the base input option.
  * <br />
- * BaseCLI.Options.inputPath.getLongOpt() get the long option name used to extract values from the CommandLine object
+ * BaseCLI.Options.inputPath.getLongOpt()  Gets the long option name used to extract values from the CommandLine object.
  * </p>
  * </p>
  *

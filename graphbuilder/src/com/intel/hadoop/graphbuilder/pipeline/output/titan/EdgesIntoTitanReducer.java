@@ -206,10 +206,10 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, PropertyGraphEle
     }
 
     /**
-     * Perform cleanup tasks after the reducer is finished.
+     * Performs cleanup tasks after the reducer finishes.
      *
-     * In particular, close the Titan graph.
-     * @param context    Hadoop provided reducer context.
+     * In particular, closes the Titan graph.
+     * @param {@code context}    Hadoop provided reducer context.
      * @throws IOException
      * @throws InterruptedException
      */

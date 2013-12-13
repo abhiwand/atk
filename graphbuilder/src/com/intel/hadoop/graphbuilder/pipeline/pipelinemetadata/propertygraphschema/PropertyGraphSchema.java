@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,7 +15,7 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
@@ -38,7 +38,7 @@ public class PropertyGraphSchema {
     private ArrayList<EdgeSchema>   edgeSchemata;
 
     /**
-     * Allocate a new property graph schema.
+     * Allocates a new property graph schema.
      */
     public PropertyGraphSchema() {
         vertexSchemata = new ArrayList<VertexSchema>();
@@ -46,41 +46,41 @@ public class PropertyGraphSchema {
     }
 
     /**
-     * Add a vertex schema to the vertex schemata of a property graph
-     * @param vertexSchema
+     * Adds a vertex schema to the vertex schemas of a property graph.
+     * @param {@code vertexSchema}
      */
     public void addVertexSchema(VertexSchema vertexSchema) {
         vertexSchemata.add(vertexSchema);
     }
 
     /**
-     * Get the vertex schemata of the property graph.
-     * @return  reference to the property graph's vertex schemata list
+     * Gets the vertex schemas of the property graph.
+     * @return  A reference to the property graph's vertex schemas list.
      */
     public ArrayList<VertexSchema> getVertexSchemata() {
         return vertexSchemata;
     }
 
     /**
-     * Add an edge schema to the edge schemata of a property graph.
-     * @param edgeSchema
+     * Adds an edge schema to the edge schemas of a property graph.
+     * @param {@code edgeSchema}
      */
     public void addEdgeSchema(EdgeSchema edgeSchema) {
         edgeSchemata.add(edgeSchema);
     }
 
     /**
-     * Get the edge schemata of the property graph.
-     * @return reference to the property graph's edge schemata list
+     * Gets the edge schemas of the property graph.
+     * @return A reference to the property graph's edge schemas list.
      */
     public ArrayList<EdgeSchema> getEdgeSchemata() {
         return edgeSchemata;
     }
 
     /**
-     * Obtain a set of the property names used in the schema of the property graph.
+     * Obtains a set of the property names used in the schema of the property graph.
      * <p>The set is newly allocated and populated with each call.</p>
-     * @return set of strings containing the names of the properties used by the property graph
+     * @return A set of strings containing the names of the properties used by the property graph.
      */
     public HashMap<String, Class<?>> getMapOfPropertyNamesToDataTypes() {
 

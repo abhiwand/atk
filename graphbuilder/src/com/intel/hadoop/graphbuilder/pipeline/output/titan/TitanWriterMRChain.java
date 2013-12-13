@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -69,23 +69,23 @@ import java.util.*;
  * </p>
  *
  * <p>
- * At the first reducer, vertices are gathered by the hash of their ID, and edges
+ * At the first reducer, the vertices are gathered by the hash of their IDs, and the edges
  * are gathered by the hashes of their source vertex IDs, see {@code SourceVertexKeyFunction}.
  * </p>
  *
  * The first reducer performs the following tasks:
  * <ul>
  *   <li> Removes any duplicate edges or vertices (default: property maps are combined for duplicates).</li>
- *   <li> Stores vertices in Titan.</li>
+ *   <li> Stores the vertices in Titan.</li>
  *   <li> Creates a temporary HDFS file containing the property graph elements annotated as follows:
  *   <ul>
  *       <li>Vertices are annotated with their Titan IDs.</li>
- *       <li>Edges are annotated with the Titan IDs of their source vertex.</li>
+ *       <li>Edges are annotated with the Titan IDs of their source vertexes.</li>
  *       </ul>
  *       </ul>
  *
  * <p>
- * At the second reducer, vertices are gathered by the hash of their ID, and edges
+ * At the second reducer, vertices are gathered by the hashes of their IDs, and edges
  * are gathered by the hashes of their destination vertex IDs, see {@code DestinationVertexKeyFunction}.
  *  </p>
  *  <p>
@@ -123,8 +123,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     /**
      * Acquires the set-up time components necessary for creating a graph from the raw data and 
 	 * loading it into Titan.
-     * @param  inputConfiguration  The object that handles creation of data records from raw data.
-     * @param  graphBuildingRule   The object that handles creation of property graph elements 
+     * @param  {@code inputConfiguration}  The object that handles the creation of data records from raw data.
+     * @param  {@code graphBuildingRule}   The object that handles the creation of property graph elements
 	 * from data records.
      */
 
@@ -148,13 +148,13 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /**
-     * Sets user defined functions to reduce duplicate vertexes and edges.
+     * Sets the user defined functions to reduce duplicate vertexes and edges.
      *
-     * If the use does not specify these functions, the default method of merging property lists 
+     * If the user does not specify these functions, the default method of merging property lists 
 	 * will be used.
      *
-     * @param vertexReducerFunction   user specified function for reducing duplicate vertices
-     * @param edgeReducerFunction     user specified function for reducing duplicate edges
+     * @param {@code vertexReducerFunction}   The user specified function for reducing duplicate vertices.
+     * @param {@code edgeReducerFunction}     The user specified function for reducing duplicate edges.
      */
 
     public void setFunctionClass(Class vertexReducerFunction, Class edgeReducerFunction) {
@@ -178,7 +178,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     /**
      * Sets the option to clean bidirectional edges.
      *
-     * @param clean The boolean option value, if true then remove bidirectional edges.
+     * @param {@code true} The boolean option value, if true then remove bidirectional edges.
      */
 
     @Override
@@ -191,7 +191,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      *
      * This type can vary depending on the class used for vertex IDs.
      *
-     * @param valueClass   The class of the PropertyGraphElement value.
+     * @param {@code valueClass}   The class of the {@code PropertyGraphElement} value.
      * @see PropertyGraphElement
      * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
      * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
@@ -225,7 +225,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /**
-     * @return Configuration of the current job.
+     * @return The configuration of the current job.
      */
 
     public Configuration getConf() {
@@ -244,7 +244,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     /**
      * Sets the user defined options.
      *
-     * @param userOpts A Map of option key value pairs.
+     * @param {@code userOpts} A Map of option key value pairs.
      */
     @Override
     public void setUserOptions(HashMap<String, String> userOpts) {
@@ -258,7 +258,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      * Creates the Titan graph for saving edges and removes the static open method from setup 
 	 * so it can be mocked-up.
      *
-     * @return TitanGraph  For saving edges.
+     * @return {@code TitanGraph}  For saving edges.
      * @throws IOException
      */
     private TitanGraph getTitanGraphInstance(Configuration configuration) throws IOException {
@@ -441,7 +441,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      * {@code InputConfiguration} according to the graph construction rule {@code GraphBuildingRule},
      * and loads it into the Titan graph database.
      *
-     * @param cmd  User specified command line.
+     * @param {@code cmd}  User specified command line.
      * @throws IOException
      * @throws ClassNotFoundException
      * @throws InterruptedException

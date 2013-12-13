@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,7 +15,7 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.pipeline.output;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 /**
- * These are the methods that the (chained) MR job(s) for generating a graph must provide.
+ * These are the methods that must be provided by the (chained) Map Reducer job(s) for generating a graph.
  * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR
  * @see  com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain
  */

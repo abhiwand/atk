@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,7 +15,7 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.util;
 
@@ -39,10 +39,10 @@ public class GraphDatabaseConnector {
     private static RuntimeConfig runtimeConfig = RuntimeConfig.getInstance();
 
     /**
-     * @param graphDB                         The identifier of the target graph database, "titan" for now
-     *                                        "allegrograph" and "neo4j" are placeholders.
-     * @throws UnsupportedOperationException  When it cannot open the graph database, particularly if you try to
-     *                                        open an unsupported graph database.
+     * @param {@code graphDB}                          The identifier of the target graph database, "titan" for now,
+     *                                                 "allegrograph" and "neo4j" are placeholders.
+     * @throws {@code UnsupportedOperationException}   Throws this error when it cannot open the graph database, 
+     *                                                 particularly if you try to open an unsupported graph database.
      */
 
     public static TitanGraph open(String graphDB, org.apache.commons.configuration.Configuration configuration,

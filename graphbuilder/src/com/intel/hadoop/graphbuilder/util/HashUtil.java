@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,20 +15,20 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.util;
 
 /**
- * Implementation of a hash combine from boost.
+ * Implements a hash combine from boost.
  * 
  * 
  */
 public class HashUtil {
 
   /**
-   * @param o1
-   * @param o2
+   * @param {@code o1}
+   * @param {@code o2}
    * @return The hash value of a pair of objects.
    */
   public static int hashPair(Object o1, Object o2) {
