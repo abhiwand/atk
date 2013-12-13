@@ -103,22 +103,5 @@
                 </allows>
             </extensions>
         </graph>
-        <graph>
-            <graph-name>g2_f2_time_titan</graph-name>
-            <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
-            <graph-location />
-            <graph-read-only>false</graph-read-only>
-            <properties>
-                <storage.backend>mocked</storage.backend>
-                <storage.hostname>mocked</storage.hostname>
-                <storage.port>mocked</storage.port>
-                <storage.tablename>g2_f2_time_titan</storage.tablename>
-            </properties>
-            <extensions>
-                <allows>
-                    <allow>tp:gremlin</allow>
-                </allows>
-            </extensions>
-        </graph>
-    </graphs>
+        </graphs>
 </rexster>

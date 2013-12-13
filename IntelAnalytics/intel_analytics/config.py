@@ -87,18 +87,8 @@ def dynamic_import(attr_path):
     Dynamically imports and returns a attribute according to the given path
     """
     module_path, attr_name = attr_path.rsplit(".", 1)
-
-    try:
-        # import importlib
-        # module = importlib.import_module(module_path) --requires 2.7
-        module = __import__(module_path, fromlist=[attr_name])
-    except ImportError:
-        raise ValueError("Could not import module '%s'" % (module_path,))
-    try:
-        attr = getattr(module, attr_name)
-    except ImportError:
-        raise ValueError("Error trying to find '%s' in module '%s'" %
-                         (attr_name, module_path))
+    module = __import__(module_path, fromlist=[attr_name])
+    attr = getattr(module, attr_name)
     return attr
 
 
@@ -152,28 +142,29 @@ class Registry(object):
         self.unregister_key(key)
 
     def get_value(self, key):
-        try:
-            return self._d[key]
-        except:
-            return None
+        return self._d[key]
 
     def get_key(self, value):
         try:
             return (k for k, v in self._d.items() if v == value).next()
         except StopIteration:
-            return None
+            raise ValueError
 
     def register(self, key, value):
         self._d[key] = value
         self._persist()
 
     def unregister_key(self, key):
-        del self._d[key]
-        self._persist()
+        if key in self._d[key]:
+            del self._d[key]
+            self._persist()
 
     def unregister_value(self, value):
-        key = self.get_key(value)
-        if key is not None:
+        try:
+            key = self.get_key(value)
+        except ValueError:
+            pass
+        else:
             del self._d[key]
             self._persist()
 

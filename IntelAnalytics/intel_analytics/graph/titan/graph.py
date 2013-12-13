@@ -87,20 +87,9 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
                             + graph_name + " not mapped to graph")
         return titan_table_name
 
-    def _refresh_rexster_cfg(self):
-        """changes rexster's configuration to point to given graph
-        """
-        # write new cfg file for rexster to turn its attention to the new graph
-        try:
-            #stop rexster
-            titan_config.write_rexster_cfg()
-            #start rexster
-        except ValueError:
-            raise ValueError('ERROR: Failed to reconfigure rexster server')
-
     def _get_graph(self, graph_name, titan_table_name):
-        rexster_server_uri = get_rexster_server_uri(titan_table_name)
-        bulbs_config = bulbsConfig(rexster_server_uri)
+        rexster_uri = titan_config.get_rexster_server_uri(titan_table_name)
+        bulbs_config = bulbsConfig(rexster_uri)
         titan_graph = bulbsGraph(bulbs_config)
         titan_graph.user_graph_name = graph_name
         titan_graph.titan_table_name = titan_table_name
@@ -160,10 +149,10 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
             s += '\nVertices:\n'\
-                + '\n'.join(map(lambda x: vertex_str(x,True), self._vertex_list))
+                + '\n'.join(map(lambda x: vertex_str(x,True),self._vertex_list))
         if len(self._edge_list) > 0:
             s += '\nEdges:\n'\
-                + '\n'.join(map(lambda x: edge_str(x,True), self._edge_list))
+                + '\n'.join(map(lambda x: edge_str(x, True), self._edge_list))
         return s
 
     def build(self, graph_name, overwrite=False):
@@ -176,15 +165,14 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
 
 
 def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
-    # validate column sources
     # todo: implement column validation
     if source is None:
         raise Exception("Graph has no source. Try register_source()")
 
-    # build
     dst_hbase_table_name = generate_titan_table_name(graph_name, source)
     src_hbase_table_name = get_table_name_from_source(source)
 
+    # Must register now to make sure the dest table is clean before calling GB
     hbase_registry.register(graph_name,
                             dst_hbase_table_name,
                             overwrite=overwrite,
@@ -199,7 +187,17 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
     gb_cmd = ' '.join(map(str, build_command))
     logger.debug(gb_cmd)
     # print gb_cmd
-    call(gb_cmd, shell=True, report_strategy = ProgressReportStrategy())
+    try:
+        call(gb_cmd, shell=True, report_strategy=ProgressReportStrategy())
+    except:
+        try:  # try to clean up registry
+            hbase_registry.unregister_key(graph_name, delete_table=True)
+        except:
+            logger.error("Graph Builder call failed and unable to unregister "
+                         + "table for graph " + graph_name)
+        raise
+
+    titan_config.rexster_xml_add_graph(dst_hbase_table_name)
 
     return titan_graph_builder_factory.get_graph(graph_name)
 
@@ -236,10 +234,10 @@ def edge_str(edge, public=False):
     """
     column_family = global_config['hbase_column_family']
     s = ("{0}{1},{0}{2},{3}" if public is False else "{1},{2},{3}") \
-            .format(column_family, edge.source, edge.target, edge.label)
+        .format(column_family, edge.source, edge.target, edge.label)
     if len(edge.properties) > 0:
         s += ',' + ','.join((map(lambda p: column_family + p, edge.properties))
-            if public is False else edge.properties)
+                            if public is False else edge.properties)
     return s
 
 
@@ -261,13 +259,6 @@ def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list,
             ', '.join(map(lambda e: '"' + edge_str(e) + '"', edge_list))
             ]
 
-
-def get_rexster_server_uri(table_name):
-    return '{0}:{1}/graphs/{2}'.format(
-        global_config['rexster_baseuri'],
-        global_config['rexster_bulbs_port'],
-        table_name)
-
 # validate the config can supply the necessary parameters
 missing = []
 try:
@@ -276,7 +267,7 @@ except KeyError as e:
     missing.append(str(e))
 
 try:
-    get_rexster_server_uri('')
+    titan_config.get_rexster_server_uri('')
 except KeyError as e:
     missing.append(str(e))
 

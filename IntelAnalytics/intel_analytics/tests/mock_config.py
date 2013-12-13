@@ -2,16 +2,23 @@
 
 from collections import defaultdict
 from mock import Mock, MagicMock
+from testutils import create_mock_registry
+
 
 dynamic_import = Mock()
 get_time_str = Mock()
+Registry = MagicMock(side_effect=create_mock_registry)
 
 dd = defaultdict(lambda: 'mocked')
+
+
 def getitem(key):
     return dd[key]
 
+
 def setitem(key, value):
     dd[key] = value
+
 
 def delitem(key):
     del dd[key]

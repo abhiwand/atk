@@ -26,51 +26,50 @@ Unit tests for intel_analytics/graph  graph builder code
 import unittest
 import os
 import sys
-import StringIO
+from mock import patch, Mock
+from testutils import RegistryCallableFactory, get_diff_str
+get_registry_callable = RegistryCallableFactory().get_registry_callable
 
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
     os.path.join(os.path.join(curdir, os.pardir), os.pardir)))
 
-
-# mock out bulbs import
+# mock imports
 sys.modules['bulbs.titan'] = __import__('mock_bulbs_titan')
 sys.modules['bulbs.config'] = __import__('mock_bulbs_config')
 sys.modules['intel_analytics.config'] = __import__('mock_config')
-sys.modules['intel_analytics.table.hbase.table'] =\
-    __import__('mock_hbase_table')
+sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
 
-# mock HBase Registry
-from intel_analytics.table.hbase.table import hbase_registry
-r = {'f1': 'f1_time',
-     'g1': 'g1_f1_time_titan',
-     'f2': 'f2_time',
-     'g2': 'g2_f2_time_titan',
-     'f3': 'f3_time',
-     # no g3 on purpose
-     }
-
-for k, v in r.items():
-    hbase_registry[k] = v
-
-from intel_analytics.graph.biggraph import GraphTypes
+# mock config
 from intel_analytics.config import global_config as config
-
 config['conf_folder'] = os.path.join(curdir, "conf")
 tmp_folder = os.path.join(curdir, "tmp")
 config['logs_folder'] = tmp_folder
-config['rexster_xml'] = os.path.join(config['conf_folder'], 'rexster.xml')
-config['graphbuilder_titan_xml'] = \
-    os.path.join(config['conf_folder'], "graphbuilder_titan.xml")
+config['rexster_xml'] = os.path.join(tmp_folder, 'rexster.xml')
+config['graph_builder_titan_xml'] = \
+    os.path.join(config['conf_folder'], "graph_builder_titan.xml")
+config['hbase_names_file'] = \
+    os.path.join(config['conf_folder'], "table_name.txt")
 
-#print config['conf_folder']
-#print config['rexster_xml']
-
-from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory
+from intel_analytics.graph.biggraph import GraphTypes
+from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory, build
 from intel_analytics.graph.titan.config import titan_config
+
+# mock HBase Registry
+registry = {'f1': 'f1_time',
+            'g1': 'g1_f1_time_titan',
+            'f2': 'f2_time',
+            'g2': 'g2_f2_time_titan',
+            'f3': 'f3_time',
+            # no g3 on purpose
+            }
 
 
 class TestGraphBuilder(unittest.TestCase):
+    def __init__(self, *args, **kw):
+        self._hbase_registries = {}
+        super(TestGraphBuilder, self).__init__(*args, **kw)
+
     def test_get_graph_builder(self):
         factory = TitanGraphBuilderFactory()
         gb = factory.get_graph_builder(GraphTypes.Bipartite)
@@ -79,11 +78,18 @@ class TestGraphBuilder(unittest.TestCase):
         self.assertIsNotNone(gb)
         try:
             factory.get_graph_builder(None)
-            self.fail("Expected exception for a None name")
         except Exception as e:
             self.assertTrue(str(e).startswith("Unsupported graph type"))
+        else:
+            self.fail("Expected exception for a None name")
 
-    def test_get_graph(self):
+    @patch('intel_analytics.table.hbase.table.hbase_registry',
+           new_callable=get_registry_callable('test_get_graph'))
+    @patch('intel_analytics.graph.titan.graph.hbase_registry',
+           new_callable=get_registry_callable('test_get_graph'))
+    def test_get_graph(self, mock_registry, mr2):
+        self.assertIs(mock_registry, mr2)
+        mock_registry.initialize(registry)
         factory = TitanGraphBuilderFactory()
         graph_name = "g1"
         table_name = "g1_f1_time_titan"
@@ -91,36 +97,57 @@ class TestGraphBuilder(unittest.TestCase):
         self.assertEqual(graph_name, graph.user_graph_name)
         self.assertEqual(table_name, graph.titan_table_name)
 
-    def test_get_graph_bad(self):
+    @patch('intel_analytics.table.hbase.table.hbase_registry',
+           new_callable=get_registry_callable('test_get_graph_bad'))
+    @patch('intel_analytics.graph.titan.graph.hbase_registry',
+           new_callable=get_registry_callable('test_get_graph_bad'))
+    def test_get_graph_bad(self, mock_registry, mr2):
+        self.assertIs(mock_registry, mr2)
+        mock_registry.initialize(registry)
         factory = TitanGraphBuilderFactory()
         try:
             factory.get_graph("g7")
-            self.fail("Expected not found exception for graph name 'g7'")
         except KeyError as e:
             self.assertEqual(e.message,
                              "Could not find titan table name for graph 'g7'")
+        else:
+            self.fail("Expected not found exception for graph name 'g7'")
 
-    def test_get_graph_names(self):
+    @patch('intel_analytics.table.hbase.table.hbase_registry',
+           new_callable=get_registry_callable('test_get_graph_names'))
+    @patch('intel_analytics.graph.titan.graph.hbase_registry',
+           new_callable=get_registry_callable('test_get_graph_names'))
+    def test_get_graph_names(self, mock_registry, mr2):
+        self.assertIs(mock_registry, mr2)
+        mock_registry.itialize(registry)
         factory = TitanGraphBuilderFactory()
         names = factory.get_graph_names()
         self.assertTrue({'g1', 'g2'}, set(names))
 
-    def test_activate_graph(self):
-        factory = TitanGraphBuilderFactory()
-        factory.activate
+    @patch('intel_analytics.table.hbase.table.hbase_registry',
+           new_callable=get_registry_callable('test_build'))
+    @patch('intel_analytics.graph.titan.graph.hbase_registry',
+           new_callable=get_registry_callable('test_build'))
+    def test_build(self, mock_registry, mr2):
+        self.assertIs(mock_registry, mr2)
+        mock_registry.initialize(registry)
+        graph_name = 'g3'
+        self.assertFalse(graph_name in mock_registry)
+        frame = Mock()
+        frame._table.table_name = 'f3_time'
+        g = build(graph_name, frame, [], [], False, overwrite=False)
+        self.assertIsNotNone(g)
+        self.assertIsNotNone(mock_registry.get_value(graph_name))
+        self.assertIsNotNone(mock_registry.get_value('g3'))
 
 
 class TestGraphConfig(unittest.TestCase):
 
     def test_write_gb_config(self):
         titan_config.write_gb_cfg('g1_f1_timeA_titan')
-        with open(config['graphbuilder_titan_xml']) as f:
-            result1 = f.read()
-        s = StringIO.StringIO()
-        titan_config.write_gb_cfg('g1_f1_timeA_titan', stream=s)
-        result2 = s.getvalue()
-
-        expected = """<!-- Auto-generated GraphBuilder cfg file -->
+        with open(config['graph_builder_titan_xml']) as f:
+            result = f.read()
+        expected = """<!-- Auto-generated Graph Builder cfg file -->
 
 <configuration>
   <property>
@@ -149,27 +176,47 @@ class TestGraphConfig(unittest.TestCase):
   </property>
 </configuration>
 """
-        self.assertEqual(expected, result1)
-        self.assertEqual(expected, result2)
+        if expected != result:
+            msg = get_diff_str(expected, result)
+            self.fail(msg)
 
     def test_write_gb_config_none(self):
         try:
             titan_config.write_gb_cfg(None)
-            self.fail("Expected exception for a None name")
         except Exception as e:
-            self.assertEqual(str(e), "table_name is None")
+            self.assertEqual(str(e), "Internal error: bad graph table")
+        else:
+            self.fail("Expected exception for a None name")
 
-    def test_write_rexster_cfg(self):
-        titan_config.write_rexster_cfg()
-        with open(config['rexster_xml']) as f:
-            result1 = f.read()
-        s = StringIO.StringIO()
-        titan_config.write_rexster_cfg(stream=s)
-        result2 = s.getvalue()
-        with open(os.path.join(curdir, 'gold_rexster.xml')) as f:
-            expected = f.read()
-        self.assertEqual(expected, result1)
-        self.assertEqual(expected, result2)
+    def test_rexster_xml_add_graph(self):
+        rexster_xml = config['rexster_xml']
+        from shutil import copyfile
+        copyfile(os.path.join(curdir, 'gold_rexster.xml'), rexster_xml)
+        titan_config.rexster_xml_add_graph('newgraph_f2_time_titan')
+        expected = ['g1_f1_time_titan',
+                    'g2_f2_time_titan',
+                    'newgraph_f2_time_titan']
+        self._validate_rexster_xml(expected)
+
+    def test_rexster_xml_delete_graph(self):
+        rexster_xml = config['rexster_xml']
+        from shutil import copyfile
+        copyfile(os.path.join(curdir, 'gold_rexster.xml'), rexster_xml)
+        titan_config.rexster_xml_delete_graph('g2_f2_time_titan')
+        expected = ['g1_f1_time_titan']
+        self._validate_rexster_xml(expected)
+
+    def _validate_rexster_xml(self, expected):
+        from xml.etree.ElementTree import ElementTree
+        tree = ElementTree()
+        tree.parse(config['rexster_xml'])
+        graph_elems = tree.findall("graphs/graph")
+        self.assertEqual(len(expected), len(graph_elems))
+        for i in range(len(expected)):
+            name = graph_elems[i].find("graph-name").text
+            self.assertEqual(expected[i], name)
+            name2 = graph_elems[i].find("./properties/storage.tablename").text
+            self.assertEqual(name, name2)
 
 
 if __name__ == '__main__':

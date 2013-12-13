@@ -1,4 +1,7 @@
-<rexster>
+<!-- Auto-generated Rexster cfg file -->
+
+
+ <rexster>
     <http>
         <server-port>8182</server-port>
         <server-host>mocked</server-host>
@@ -87,15 +90,15 @@
     </metrics>
     <graphs>
         <graph>
-            <graph-name>g1_f1_time_titan</graph-name>
+            <graph-name>g2_f2_time_titan</graph-name>
             <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
-            <graph-location />
+            <graph-location></graph-location>
             <graph-read-only>false</graph-read-only>
             <properties>
                 <storage.backend>mocked</storage.backend>
                 <storage.hostname>mocked</storage.hostname>
                 <storage.port>mocked</storage.port>
-                <storage.tablename>g1_f1_time_titan</storage.tablename>
+                <storage.tablename>g2_f2_time_titan</storage.tablename>
             </properties>
             <extensions>
                 <allows>
@@ -104,15 +107,15 @@
             </extensions>
         </graph>
         <graph>
-            <graph-name>g2_f2_time_titan</graph-name>
+            <graph-name>g1_f1_time_titan</graph-name>
             <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
-            <graph-location />
+            <graph-location></graph-location>
             <graph-read-only>false</graph-read-only>
             <properties>
                 <storage.backend>mocked</storage.backend>
                 <storage.hostname>mocked</storage.hostname>
                 <storage.port>mocked</storage.port>
-                <storage.tablename>g2_f2_time_titan</storage.tablename>
+                <storage.tablename>g1_f1_time_titan</storage.tablename>
             </properties>
             <extensions>
                 <allows>
