@@ -231,6 +231,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     /**
      * Get column data from the HBase table. If any errors are encountered, log them.
      *
+     * Leading and trailing whitespace is trimmed from all entries.
+     *
      * @param columns        The HTable columns for the current row.
      * @param fullColumnName The Name of the HTABLE column - column_family:column_qualifier.
      * @param context        Hadoop's mapper context. Used for error logging.
@@ -241,6 +243,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
         if (null != value) {
             context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_READ).increment(1);
+
+            value = value.trim();
 
             if (value.isEmpty()) {
                 context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
@@ -253,9 +257,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         return value;
     }
 
-    private String[] expandString(String string) {
+    private ArrayList<String> expandString(String string) {
 
-        String[] outArray = null;
+        ArrayList<String> outArray = new ArrayList<String>();
 
         int inLength = string.length();
 
@@ -264,11 +268,17 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             String bracesStrippedString     = string.substring(1,inLength-1);
             String parenthesesDroppedString = bracesStrippedString.replace("(","").replace(")","");
             String[] expandedString         = parenthesesDroppedString.split("\\,");
-            outArray                        = expandedString;
+
+            for (int i = 0; i < expandedString.length; i++) {
+                String trimmedString = expandedString[i].trim();
+
+                if (!trimmedString.isEmpty()) {
+                    outArray.add(trimmedString);
+                }
+            }
 
         }  else {
-            outArray    = new String[1];
-            outArray[0] = string;
+            outArray.add(string);
         }
 
         return outArray;
