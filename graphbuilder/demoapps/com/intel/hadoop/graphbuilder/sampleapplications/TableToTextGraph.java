@@ -98,6 +98,8 @@ public class TableToTextGraph {
 
         options.addOption(BaseCLI.Options.flattenList.get());
 
+        options.addOption(BaseCLI.Options.stripColumnFamilyNames.get());
+
         options.addOption(BaseCLI.Options.vertex.get());
 
         options.addOption(BaseCLI.Options.edge.get());

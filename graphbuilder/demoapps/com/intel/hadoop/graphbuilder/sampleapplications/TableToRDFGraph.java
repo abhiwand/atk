@@ -101,6 +101,8 @@ public class TableToRDFGraph {
 
         options.addOption(BaseCLI.Options.flattenList.get());
 
+        options.addOption(BaseCLI.Options.stripColumnFamilyNames.get());
+
         options.addOption(BaseCLI.Options.vertex.get());
 
         options.addOption(BaseCLI.Options.edge.get());
@@ -153,6 +155,8 @@ public class TableToRDFGraph {
         GraphConstructionPipeline pipeline         = new GraphConstructionPipeline();
         HBaseInputConfiguration inputConfiguration = new HBaseInputConfiguration(srcTableName);
         HBaseGraphBuildingRule buildingRule        = new HBaseGraphBuildingRule(cmd);
+        buildingRule.setFlattenLists(cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt()));
+
         RDFGraphOutputConfiguration outputConfiguration  = new RDFGraphOutputConfiguration(outputPathName);
 
         LOG.info("============= Creating graph from hbase ==================");

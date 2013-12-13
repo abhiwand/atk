@@ -121,6 +121,8 @@ public class TableToGraphDB {
 
         options.addOption(BaseCLI.Options.flattenList.get());
 
+        options.addOption(BaseCLI.Options.stripColumnFamilyNames.get());
+
         options.addOption(BaseCLI.Options.hbaseTable.get());
 
         options.addOption(BaseCLI.Options.vertex.get());

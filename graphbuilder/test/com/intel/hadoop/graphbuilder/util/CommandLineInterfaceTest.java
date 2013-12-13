@@ -110,6 +110,7 @@ public class CommandLineInterfaceTest {
         cliArgs.put("d", "directed edge");
         cliArgs.put("k", "keys index");
         cliArgs.put("h", "");
+        cliArgs.put("s", "");
 
         testDemoApp(TableToGraphDB.class, cliArgs);
     }
@@ -126,6 +127,7 @@ public class CommandLineInterfaceTest {
         cliArgs.put("d", "directed edge");
         cliArgs.put("o", outputPath);
         cliArgs.put("h", "");
+        cliArgs.put("s", "");
 
         testDemoApp(TableToTextGraph.class, cliArgs);
     }

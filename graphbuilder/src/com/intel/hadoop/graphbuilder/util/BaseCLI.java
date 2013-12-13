@@ -49,6 +49,8 @@ public class BaseCLI {
     private static final String CMD_TABLE_OPTION_NAME = HBaseCommandLineOptions.CMD_TABLE_OPTION_NAME;
     private static final String CMD_VERTICES_OPTION_NAME = HBaseCommandLineOptions.CMD_VERTICES_OPTION_NAME;
     private static final String FLATTEN_LISTS_OPTION_NAME = HBaseCommandLineOptions.FLATTEN_LISTS_OPTION_NAME;
+    private static final String STRIP_COLUMNFAMILY_NAMES_OPTION_NAME =
+            HBaseCommandLineOptions.STRIP_COLUMNFAMILY_NAMES_OPTION_NAME;
 
     //titan option long names
     private static final String TITAN_APPEND = TitanCommandLineOptions.APPEND;
@@ -64,6 +66,7 @@ public class BaseCLI {
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),
         directedEdge(CLI_DIRECTED_EDGE_OPTION), flattenList(CLI_FLATTEN_LIST_OPTION),
+        stripColumnFamilyNames(CLI_STRIP_COLUMNFAMILY_NAMES_OPTION),
         titanAppend(CLI_TITAN_APPEND_OPTION), titanKeyIndex(CLI_TITAN_KEY_INDEX),
         titanStorage(CLI_TITAN_STORAGE_OPTION),
         outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION);
@@ -83,6 +86,10 @@ public class BaseCLI {
     private static final Option CLI_FLATTEN_LIST_OPTION = OptionBuilder.withLongOpt(FLATTEN_LISTS_OPTION_NAME)
             .withDescription("Flag that expends lists into multiple items. " )
             .create("F");
+
+    private static final Option CLI_STRIP_COLUMNFAMILY_NAMES_OPTION = OptionBuilder.withLongOpt(STRIP_COLUMNFAMILY_NAMES_OPTION_NAME)
+            .withDescription("Flag that strips HBase column family names from the property names used in the graph. " )
+            .create("s");
 
     private static final Option CLI_TITAN_APPEND_OPTION= OptionBuilder.withLongOpt(TITAN_APPEND)
             .withDescription("Append Graph to Current Graph at Specified Titan Table")
