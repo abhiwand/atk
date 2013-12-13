@@ -19,19 +19,11 @@
 
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import org.apache.hadoop.io.WritableComparable;
-
 import com.intel.hadoop.graphbuilder.types.StringType;
 
 public class PropertyGraphElementStringTypeVids extends
-		PropertyGraphElement<StringType> implements
-		WritableComparable<PropertyGraphElementStringTypeVids> {
+		PropertyGraphElement<StringType>  {
 	public StringType createVid() {
 		return new StringType();
-	}
-
-	@Override
-	public int compareTo(PropertyGraphElementStringTypeVids v) {
-		return this.compareTo(v);
 	}
 }

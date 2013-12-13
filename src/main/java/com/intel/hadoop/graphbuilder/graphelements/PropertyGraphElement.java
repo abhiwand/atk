@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -41,7 +42,7 @@ import org.apache.hadoop.io.WritableComparable;
  */
 
 public abstract class PropertyGraphElement<VidType extends WritableComparable<VidType>>
-		implements Writable{
+		implements Writable, WritableComparable<Object> {
 
 	/**
 	 * Abstract method for the {@code VidType} constructor.
@@ -196,5 +197,12 @@ public abstract class PropertyGraphElement<VidType extends WritableComparable<Vi
 		default:
 			return new String("null graph element");
 		}
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		// TODO: Kushal will implement this in GB in Tribeca and then we will
+		// pull this to GB 2.0 (alpha)
+		return 0;
 	}
 }

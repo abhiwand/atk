@@ -7,6 +7,5 @@ var searchData=
   ['elementidkeyfunction',['ElementIdKeyFunction',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1pipelinemetadata_1_1keyfunction_1_1ElementIdKeyFunction.html',1,'com::intel::hadoop::graphbuilder::pipeline::pipelinemetadata::keyfunction']]],
   ['emptytype',['EmptyType',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1types_1_1EmptyType.html',1,'com::intel::hadoop::graphbuilder::types']]],
   ['encapsulatedobject',['EncapsulatedObject',['../interfacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1types_1_1EncapsulatedObject.html',1,'com::intel::hadoop::graphbuilder::types']]],
-  ['extractelement',['ExtractElement',['../classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1ExtractElement.html',1,'com::intel::pig::udf::eval']]],
-  ['extractjson',['ExtractJSON',['../classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1ExtractJSON.html',1,'com::intel::pig::udf::eval']]]
+  ['extractjsonfield',['ExtractJSONField',['../classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1ExtractJSONField.html',1,'com::intel::pig::udf::eval']]]
 ];

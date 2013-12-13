@@ -31,7 +31,6 @@ import org.apache.pig.impl.PigContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.JUnitCore;
 
 public class TestExtractJSON {
 	EvalFunc<?> testFn;
@@ -39,9 +38,9 @@ public class TestExtractJSON {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting ExtractJSON tests. ***");
+		System.out.println("*** Starting ExtractJSONField tests. ***");
 		testFn = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec("com.intel.pig.udf.eval.ExtractJSON");
+				.instantiateFuncFromSpec("com.intel.pig.udf.eval.ExtractJSONField");
 		System.out.println(testJson);
 	}
 
@@ -54,29 +53,32 @@ public class TestExtractJSON {
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
 
-		String result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Price is not correct!", result,
-				"20.0");
+		String result = (String) testFn.exec(inTuple);
+		assertEquals("Price is not correct!", result, "20.0");
 
 		inTuple.set(1, "Sizes.size()");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Size is not correct!", result, "3");
 
 		inTuple.set(1, "Colors[0]");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Color is not correct!", result, "Black");
 
 		inTuple.set(1, "Colors.size()");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Color size is not correct!", result, "2");
 
 		inTuple.set(1, "Sizes.Price.min()");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Cheapest price is not correct!", result, "5.0");
 
 		inTuple.set(1, "Sizes.findAll{Sizes -> Sizes.Price>18}.Size[0]");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		result = (String) testFn.exec(inTuple);
 		assertEquals("Size is not correct!", result, "Large");
+		
+		inTuple.set(1, "invalid_json_path_query");
+		result = (String) testFn.exec(inTuple);
+		assertEquals("Null expected!", result, null);
 
 	}
 
@@ -112,13 +114,10 @@ public class TestExtractJSON {
 				Arrays.asList(inputTuple));
 		testFn.exec(inTuple);
 	}
-	
+
 	@After
 	public void done() {
-		System.out.println("*** Done with the ExtractJSON tests ***");
+		System.out.println("*** Done with the ExtractJSONField tests ***");
 	}
 
-	public static void main(String[] args) {
-		JUnitCore.main("TestExtractJSON");
-	}
 }

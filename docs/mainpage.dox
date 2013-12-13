@@ -1,11 +1,75 @@
 /*! \mainpage 
  *
- * \section intro_sec Introduction
- *
- * This is the introduction.
- *
- * \section install_sec Installation
- *
- * \subsection step1 Step 1: Opening the box
- *
+ * <H2>Overview</H2>
+ * \todo NEED AN OVERVIEW
+ * Graph Builder 2.0 (alpha) is a library of <a href="http://pig.apache.org/">Apache Pig</a> UDFs (user defined functions) and macros
+ * to enable scalable graph ETL in the popular Pig Latin scripting language. GB lets users create graphs from structured, semi-structured and unstructured data. 
+ * The library offloads many of the complexities of graph construction, such as creating property graph elements from raw data, 
+ * deduplicate property graph elements, bulk loading a graph to a graph database, and serializing property graph elements in different formats
+ * such as edge and vertex list formats, and the <a href="http://www.w3.org/RDF/">RDF</a> format. 
+ * 
+ * <H2>Release Notes</H2>
+ * - fixed bugs: ...
+ * - new features on top of GB 1.0: ...
+ * - Several UDFs for graph ETL and a macro for bulk loading the <a href="http://thinkaurelius.github.io/titan/">Titan graph database:</a>
+	 * - <B>Raw Data Input</B> 
+	 *      <UL>
+	 *		<LI> \link com.intel.pig.udf.eval.ExtractJSONField ExtractJSONField \endlink Provides a convenient way of processing complex JSON documents using <a href="https://code.google.com/p/rest-assured/">JSONPath</a> queries.
+	 *      <LI> \link com.intel.pig.load.XMLLoader XMLLoader \endlink Provides a fix for reducing the memory footprint of <a href="https://cwiki.apache.org/confluence/display/PIG/PiggyBank">Piggy Bank</a>'s XMLLoader.
+	 *      </UL>
+	 * - <B>Graph Construction</B> 
+	 *      <UL>
+	 *	    <LI> \link com.intel.pig.udf.eval.CreatePropGraphElements CreatePropGraphElements \endlink Creates \link com.intel.pig.data.PropertyGraphElement PropertyGraphElements \endlink 
+	 *       from raw input given vertex and edge tokenization rules. 
+	 *      </UL> 
+	 * - <B>Filters:</B> 
+	 *      <UL> 
+	 *	    <LI> \link intel_gb2.pig MERGEDUPLICATEGRAPHELEMENTS \endlink   
+	 *      </UL>  
+	 * - <B>Storage:</B> 
+	 *      <UL> 
+	 *	    <LI> \link com.intel.pig.udf.eval.TORDF TORDF \endlink Constructs RDF triples from property graph elements.
+	 *      <LI> Text
+	 *      <LI> \link intel_gb2.pig LOAD_TITAN \endlink Loads a graph from a given HBase table to the Titan graph database.
+	 *      </UL> 
+	 * - <B>Misc:</B>
+	 *      <UL>  
+	 *      <LI>  \link com.intel.pig.udf.eval.CreateRowKey CreateRowKey \endlink Generates a row key that 
+	 *      <a href="http://pig.apache.org/docs/r0.12.0/api/org/apache/pig/backend/hadoop/hbase/HBaseStorage.html">HBaseStorage</a> 
+	 *      class needs when storing data to an HBase table by applying the MD5 hash function to a given tuple's elements.
+	 *      </UL> 
+ * 
+ * <H2>Prerequisites</H2>
+ * GB 2.0 (alpha) requires <a href="http://hadoop.apache.org/">Apache Hadoop</a> and <a href="http://pig.apache.org/">Apache Pig</a> installed. 
+ * To use the \link intel_gb2.pig LOAD_TITAN \endlink macro for bulk loading graphs to Titan, 
+ * <a href="http://hbase.apache.org/">HBase</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a> are also required. 
+ * In particular, GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.0. 
+  
+ * <H2>Building The Source Code</H2>
+ * GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. You can build GB with
+ \code
+ mvn clean package 
+ \endcode
+ * and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build
+ \code
+ mvn clean package -DskipTests 
+ \endcode
+ 
+ * <H2>Using GB 2.0 (alpha)</H2>
+ *  To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT \link intel_gb2.pig \endlink script. The 
+ * \link intel_gb2.pig \endlink script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user
+ * has to define the other UDFs with the constructor arguments they want; please see Tutorial for how to use GB functionality in your Pig scripts.
+ *  Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script:
+    \code
+     REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;
+     IMPORT '/usr/local/gb/pig/intel_gb2.pig';
+    \endcode
+ * 
+ * <H2>Known Issues:</H2>
+ *  <B>Using DUMP to print property graph elements fails</B><BR/>
+ *  Using Pig's DUMP command to dump property graph elements causes "ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
+ *  Could not find class com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids, while attempting to de-serialize it". To fix the problem,
+ *  in $HADOOP_HOME/conf/hadoop-env.sh file update the line that exports HADOOP_CLASSPATH and add "$PIG_HOME/pig-0.12.0.jar:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar" 
+ *  to the end of this classpath definition ($PIG_HOME and $GB_HOME are the paths where Pig and GB are installed).
+ * 
  */

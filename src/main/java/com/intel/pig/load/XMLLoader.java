@@ -80,7 +80,7 @@ class _ByteArrayOutputStream extends ByteArrayOutputStream {
  * input stream, which it uses as
  * its  basic source of data, possibly reading or providing  additional
  * functionality. The class <code>XMLLoaderBufferedPositionedInputStream</code>
- * itself simply overrides the necessary medthod for reading i.e
+ * itself simply overrides the necessary method for reading i.e
  * <code>read</code> <code>getPosition<code> with versions that
  * pass all requests to the contained  input
  * stream or do some special processing. Subclasses of <code>XMLLoaderBufferedPositionedInputStream</code>
@@ -456,6 +456,15 @@ class XMLLoaderBufferedPositionedInputStream extends
 }
 
 /**
+ * 
+ * \brief GraphBuilder version of Piggy Bank's XMLLoader with improved memory management
+ * 
+ * To improve the memory usage, GraphBuilder defines a {@link _ByteArrayOutputStream} class
+ * that extends {@link ByteArrayOutputStream} and instead of calling {@link ByteArrayOutputStream#toByteArray()}
+ * in the <code>XMLLoader</code>, which creates a new byte array at each call, this updated version
+ * calls {@link _ByteArrayOutputStream#getByteArray()} and avoids the copy cost. This simple fix especially
+ * helps reducing the memory footprint for large XML documents.
+ * 
  * The load function to load the XML file This implements the LoadFunc interface
  * which is used to parse records from a dataset. The various helper adaptor
  * function is extended from loader.Utf8StorageConverter which included various

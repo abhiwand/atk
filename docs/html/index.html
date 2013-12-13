@@ -38,8 +38,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     <ul class="tablist">
       <li class="current"><a href="index.html"><span>Overview</span></a></li>
       <li><a href="pages.html"><span>Tutorial</span></a></li>
-      <li><a href="gb_function_doc.html"><span>Documentation</span></a></li>
       <li><a href="annotated.html"><span>Javadoc</span></a></li>
+      <li><a href="files.html"><span>Files</span></a></li>
       <li>
         <div id="MSearchBox" class="MSearchBoxInactive">
         <span class="left">
@@ -78,17 +78,68 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">GraphBuilder 2.0 (alpha) Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h1><a class="anchor" id="intro_sec"></a>
-Introduction</h1>
-<p>This is the introduction.</p>
-<h1><a class="anchor" id="install_sec"></a>
-Installation</h1>
-<h2><a class="anchor" id="step1"></a>
-Step 1: Opening the box</h2>
+<div class="textblock"><h2>Overview</h2>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>NEED AN OVERVIEW Graph Builder 2.0 (alpha) is a library of <a href="http://pig.apache.org/">Apache Pig</a> UDFs (user defined functions) and macros to enable graph ETL in the popular Pig Latin scripting language. GB lets users create graphs from structured, semi-structured and unstructured data. The library offloads many of the complexities of graph construction, such as creating property graph elements from raw data, deduplicate property graph elements, bulk loading a graph to a graph database, and serializing property graph elements in different formats such as edge and vertex list formats, and the <a href="http://www.w3.org/RDF/">RDF</a> format. </dd></dl>
+<h2>Release Notes</h2>
+<ul>
+<li>fixed bugs: ...</li>
+<li>new features on top of GB 1.0: ...</li>
+<li>Several UDFs for graph ETL and a macro for bulk loading the <a href="http://thinkaurelius.github.io/titan/">Titan graph database:</a><ul>
+<li><b>Raw Data Input</b> <ul>
+<li>
+<a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1ExtractJSONField.html">ExtractJSONField </a> Provides a convenient way of processing complex JSON documents using <a href="https://code.google.com/p/rest-assured/">JSONPath</a> queries. </li>
+<li>
+<a class="el" href="classcom_1_1intel_1_1pig_1_1load_1_1XMLLoader.html">XMLLoader </a> Provides a fix for reducing the memory footprint of <a href="https://cwiki.apache.org/confluence/display/PIG/PiggyBank">Piggy Bank</a>'s XMLLoader. </li>
+</ul>
+</li>
+<li><b>Graph Construction</b> <ul>
+<li>
+<a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1CreatePropGraphElements.html">CreatePropGraphElements </a> Creates <a class="el" href="">PropertyGraphElements </a> from raw input given vertex and edge tokenization rules. </li>
+</ul>
+</li>
+<li><b>Filters:</b> <ul>
+<li>
+<a class="el" href="intel__gb2_8pig.html">MERGEDUPLICATEGRAPHELEMENTS </a> </li>
+</ul>
+</li>
+<li><b>Storage:</b> <ul>
+<li>
+<a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1TORDF.html">TORDF </a> Constructs RDF triples from property graph elements. </li>
+<li>
+Text </li>
+<li>
+<a class="el" href="intel__gb2_8pig.html">LOAD_TITAN </a> Loads a graph from a given HBase table to the Titan graph database. </li>
+</ul>
+</li>
+<li><b>Misc:</b> <ul>
+<li>
+<a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1CreateRowKey.html">CreateRowKey </a> Generates a row key that <a href="http://pig.apache.org/docs/r0.12.0/api/org/apache/pig/backend/hadoop/hbase/HBaseStorage.html">HBaseStorage</a> class needs when storing data to an HBase table by applying the MD5 hash function to a given tuple's elements. </li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2>Prerequisites</h2>
+<p>GB 2.0 (alpha) requires <a href="http://hadoop.apache.org/">Apache Hadoop</a> and <a href="http://pig.apache.org/">Apache Pig</a> installed. To use the <a class="el" href="intel__gb2_8pig.html">LOAD_TITAN </a> macro for bulk loading graphs to Titan, <a href="http://hbase.apache.org/">HBase</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a> are also required. In particular, GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.0.</p>
+<h2>Building The Source Code</h2>
+<p>GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. You can build GB with </p>
+<div class="fragment"><div class="line">mvn clean <span class="keyword">package </span></div>
+</div><!-- fragment --><p> and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build </p>
+<div class="fragment"><div class="line">mvn clean <span class="keyword">package </span>-DskipTests </div>
+</div><!-- fragment --><p> Finally, to generate the documentation </p>
+<div class="fragment"><div class="line">mvn exec:exec</div>
+</div><!-- fragment --> <h2>Using GB 2.0 (alpha)</h2>
+<p>To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT <a class="el" href="intel__gb2_8pig.html">intel_gb2.pig</a> script. The <a class="el" href="intel__gb2_8pig.html">intel_gb2.pig</a> script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user has to define the other UDFs with the constructor arguments they want; please see Tutorial for how to use GB functionality in your Pig scripts. Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script: </p>
+<div class="fragment"><div class="line">REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;</div>
+<div class="line">IMPORT <span class="stringliteral">&#39;/usr/local/gb/pig/intel_gb2.pig&#39;</span>;</div>
+</div><!-- fragment --><h2>Known Issues:</h2>
+<p><b>Using DUMP to print property graph elements fails</b><br/>
+ Using Pig's DUMP command to dump property graph elements causes "ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
+   Could not find class com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids, while attempting to de-serialize it". To fix the problem, in $HADOOP_HOME/conf/hadoop-env.sh file update the line that exports HADOOP_CLASSPATH and add "$PIG_HOME/pig-0.12.0.jar:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar" to the end of this classpath definition ($PIG_HOME and $GB_HOME are the paths Pig and GB are installed) </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Dec 5 2013 09:52:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 13 2013 11:05:34 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
