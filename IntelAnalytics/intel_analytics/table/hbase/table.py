@@ -91,7 +91,7 @@ class HBaseTableException(Exception):
 
 class HBaseTable(object):
     """
-    Table Implementation for HBase
+    Table Implementation for HBase.
     """
     def __init__(self, table_name, file_name):
         """
@@ -99,7 +99,7 @@ class HBaseTable(object):
         Parameters
         ----------
         table_name : String
-            name of table in Hbase
+            The name of the table in Hbase.
         file_name : String
             name of file from which this table came
         """
@@ -287,7 +287,7 @@ class HBaseTable(object):
 
     def get_schema(self):
         """
-        Returns the list of column names/types
+        Returns the list of column names and types.
         """
         columns = {}
         etl_schema = ETLSchema()

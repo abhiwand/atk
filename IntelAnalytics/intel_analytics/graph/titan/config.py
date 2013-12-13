@@ -38,17 +38,17 @@ class TitanConfig(object):
 
     def write_gb_cfg(self, table_name):
         """
-        Writes a GraphBuilder config XML file
+        Writes a GraphBuilder config XML file.
 
         Parameters
         ----------
         table_name : string
-            name of destination table in Titan
+            Then name of the destination table in Titan
 
         Returns
         -------
-        filename : string
-            full path of the config file created
+        filename : String
+            The full path of the config file created by this method.
         """
         if not table_name or not table_name.endswith('_titan'):
             raise Exception("Internal error: bad graph table")
@@ -91,12 +91,12 @@ class TitanConfig(object):
 
     def rexster_xml_add_graphs(self, titan_table_names):
         """
-        Add graph to the Rexster config XML file
+        Adds a graph to the Rexster config XML file
 
         Parameters
         ----------
         table_name : string
-           name of destination table in Titan
+           The name of the destination table in Titan.
         """
         tree = ElementTree()
         tree.parse(config['rexster_xml'])

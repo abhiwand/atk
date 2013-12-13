@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Titan-specific graph implementation
+The Titan-specific graph implementation.
 """
 
 __all__ = []
@@ -55,7 +55,7 @@ from intel_analytics.logger import stdout_logger as logger
 #-----------------------------------------------------------------------------
 class TitanGraphBuilderFactory(GraphBuilderFactory):
     """
-    Provides a set of Titan graph builders
+    Provides a set of Titan graph builders.
     """
     def __init__(self):
         super(TitanGraphBuilderFactory, self).__init__()
@@ -107,7 +107,7 @@ titan_graph_builder_factory = TitanGraphBuilderFactory()
 
 class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
     """
-    bipartite graph builder for HBase->Titan
+    The bipartite graph builder for HBase->Titan.
     """
     def __init__(self, source=None):
         super(HBase2TitanBipartiteGraphBuilder, self).__init__(source)
@@ -139,7 +139,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
 
 class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
     """
-    property graph builder for HBase->Titan
+    The property graph builder for HBase->Titan.
     """
     def __init__(self, source=None):
         super(HBase2TitanPropertyGraphBuilder, self).__init__(source)
@@ -217,7 +217,7 @@ def get_table_name_from_source(source):
 
 def vertex_str(vertex, public=False):
     """
-    get string for vertex to use in command call to graph_builder
+    Gets the string for the vertex to use in the command call to graph_builder.
     """
     column_family = global_config['hbase_column_family']
     s = (column_family + vertex.key) if public is False else vertex.key
@@ -230,7 +230,7 @@ def vertex_str(vertex, public=False):
 
 def edge_str(edge, public=False):
     """
-    get string for edge to use in command call to graph_builder
+    Gets the string for the edge to use in the command call to graph_builder.
     """
     column_family = global_config['hbase_column_family']
     s = ("{0}{1},{0}{2},{3}" if public is False else "{1},{2},{3}") \

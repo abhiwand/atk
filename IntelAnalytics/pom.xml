@@ -124,20 +124,16 @@
        <artifactId>igiraph-algorithms</artifactId>
        <version>${project.version}</version>
     </dependency>
-     <dependency>
+    <dependency>
+       <groupId>${project.groupId}</groupId>
+       <artifactId>feature-engineering</artifactId>
+       <version>${project.version}</version>
+    </dependency>
+    <dependency>
        <groupId>${project.groupId}</groupId>
        <artifactId>igiraph-titan</artifactId>
        <version>${project.version}</version>
     </dependency>
-    <dependency>
-       <groupId>com.intel.hadoop.graphbuilder</groupId>
-       <artifactId>graphbuilder</artifactId>
-       <version>2.0</version>
-    </dependency>
-     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${dep.slf4j.version}</version>
-    </dependency>
+
   </dependencies>
 </project>
