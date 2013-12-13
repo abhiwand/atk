@@ -18,16 +18,18 @@
  */package com.intel.pig.udf.eval;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
+import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultBagFactory;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.FrontendException;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.RDFNode;
@@ -43,8 +45,23 @@ import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
- * \brief some documentation
+ * \brief TORDF UDF converts a given {@link PropertyGraphElementTuple} to RDF triples.
+ * <p/>
+ * If the {@link PropertyGraphElement} is null, this UDF returns null
  * 
+ * <b>Example:</b>
+ * 
+ * <pre>
+ * {@code
+       DEFINE TORDF com.intel.pig.udf.eval.TORDF('OWL');--specify the namespace to use with the constructor
+       DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
+       x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+       x = FILTER x by id!='';--remove employee records with missing ids
+       pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));--create the property graph elements from raw source data
+       rdf_triples = FOREACH pge GENERATE FLATTEN(TORDF(*));--create RDF tuples from the property graph elements
+       STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
+       }
+ * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class TORDF extends EvalFunc<DataBag> {
@@ -56,67 +73,76 @@ public class TORDF extends EvalFunc<DataBag> {
 
 	@Override
 	public DataBag exec(Tuple input) throws IOException {
+		DataBag rdfBag = DefaultBagFactory.getInstance().newDefaultBag();
+		PropertyGraphElement e = (PropertyGraphElement) input.get(0);
 
-        DataBag rdfBag = DefaultBagFactory.getInstance().newDefaultBag();
+		if (e == null) {
+			warn("Null property graph element", PigWarning.UDF_WARNING_1);
+			return null;
+		}
 
-		Object graphElement =  input.get(0);
-        PropertyGraphElement e = (PropertyGraphElement) graphElement;
+		Resource resource = null;
 
-        Resource resoure = null;
+		if (e.graphElementType().equals(GraphElementType.EDGE)) {
+			Edge edge = e.edge();
 
-        if (e.graphElementType().equals(GraphElementType.EDGE)) {
-            Edge edge = e.edge();
-            // create a Resource from the edge
-            resoure = RDFUtils.createResourceFromEdge(rdfNamespace, edge
-                    .getSrc().toString(), edge.getDst().toString(), edge
-                    .getEdgeLabel().get(), edge.getProperties());
-        } else if (e.graphElementType().equals(GraphElementType.VERTEX)) {
-            Vertex vertex = e.vertex();
-            // TODO: what's the key we need to pass here?
-            // TODO is vertex.getVertexId() null before we load them to
-            // titan?
-            // create a Resource from the vertex
-            resoure = RDFUtils
-                    .createResourceFromVertex(rdfNamespace, vertex
-                            .getVertexId().toString(), vertex
-                            .getProperties());
-        }
+			if (edge == null) {
+				warn("Null edge in property graph element",
+						PigWarning.UDF_WARNING_1);
+				return null;
+			}
 
-        // list the statements in the model
-        StmtIterator iterator = resoure.getModel().listStatements();
-        // print out the predicate, subject and object of each statement
-        while (iterator.hasNext()) {
-            Statement stmt = iterator.nextStatement();
-            Resource subject = stmt.getSubject();
-            Property predicate = stmt.getPredicate();
-            RDFNode object = stmt.getObject();
+			// create a Resource from the edge
+			resource = RDFUtils.createResourceFromEdge(rdfNamespace, edge
+					.getSrc().toString(), edge.getDst().toString(), edge
+					.getEdgeLabel().get(), edge.getProperties());
+		} else if (e.graphElementType().equals(GraphElementType.VERTEX)) {
+			Vertex vertex = e.vertex();
 
-            // Text text = new Text(subject.toString() + " "
-            // + predicate.toString() + " " + object.toString() + " .");
+			if (vertex == null) {
+				warn("Null vertex in property graph element",
+						PigWarning.UDF_WARNING_1);
+				return null;
+			}
 
-            Tuple rdfTuple = TupleFactory.getInstance().newTuple(1);
-            String rdfTripleAsString = subject.toString() + " "
-                    + predicate.toString() + " " + object.toString() + " .";
+			// create a Resource from the vertex
+			resource = RDFUtils.createResourceFromVertex(rdfNamespace, vertex
+					.getVertexId().toString(), vertex.getProperties());
+		}
 
-            rdfTuple.set(0, rdfTripleAsString);
-            rdfBag.add(rdfTuple);
-        }
+		// list the statements in the model
+		StmtIterator iterator = resource.getModel().listStatements();
+		// print out the predicate, subject and object of each statement
+		while (iterator.hasNext()) {
+			Statement stmt = iterator.nextStatement();
+			Resource subject = stmt.getSubject();
+			Property predicate = stmt.getPredicate();
+			RDFNode object = stmt.getObject();
+			Tuple rdfTuple = TupleFactory.getInstance().newTuple(1);
+			String rdfTripleAsString = subject.toString() + " "
+					+ predicate.toString() + " " + object.toString() + " .";
 
+			rdfTuple.set(0, rdfTripleAsString);
+			rdfBag.add(rdfTuple);
+		}
 		return rdfBag;
 	}
 
-//	@Override
-//	public Schema outputSchema(Schema input) {
-//		Schema tuple = new Schema();
-//		FieldSchema f1 = new FieldSchema("gb_tuple",
-//				DataType.GENERIC_WRITABLECOMPARABLE);
-//		tuple.add(f1);
-//		return tuple;
-//		// try {
-//		// return new Schema(new Schema.FieldSchema(null, tuple, DataType.BAG));
-//		// } catch (Exception e) {
-//		// return null;
-//		// }
-//	}
-
+	/**
+	 * TORDF UDF returns a bag of RDF statements.
+	 */
+	@Override
+	public Schema outputSchema(Schema input) {
+		try {
+			Schema rdfStatementTuple = new Schema(new Schema.FieldSchema(
+					"rdf_statement", DataType.CHARARRAY));
+			Schema rdfBagSchema;
+			rdfBagSchema = new Schema(new FieldSchema("rdf_statements",
+					rdfStatementTuple, DataType.BAG));
+			return rdfBagSchema;
+		} catch (FrontendException e) {
+			throw new RuntimeException("Exception while "
+					+ "creating output schema for TORDF udf", e);
+		}
+	}
 }

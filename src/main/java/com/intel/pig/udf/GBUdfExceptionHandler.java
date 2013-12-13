@@ -27,8 +27,8 @@ import org.apache.pig.backend.hadoop.executionengine.physicalLayer.util.Monitore
 
 /**
  * GBUdfExceptionHandler is an exception handler used for handling exceptions
- * thrown from the UDFs unless they are of type {@link GBUdfException}. It
- * simply logs the error & ensures that processing goes on.
+ * thrown from the UDFs unless their cause are of type {@link GBUdfException}.
+ * This class simply logs the error & ensures that processing goes on.
  * 
  */
 public class GBUdfExceptionHandler extends ErrorCallback {

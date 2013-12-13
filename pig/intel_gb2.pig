@@ -1,7 +1,5 @@
---MACROS, DEFINES will go here.
-
-DEFINE ExtractJSON com.intel.pig.udf.eval.ExtractJSON();
-DEFINE TORDF com.intel.pig.udf.eval.TORDF();
+DEFINE ExtractJSONField com.intel.pig.udf.eval.ExtractJSONField();
+DEFINE CreateRowKey com.intel.pig.udf.eval.CreateRowKey();
 
 
 /**
@@ -23,7 +21,26 @@ DEFINE MERGEDUPLICATEGRAPHELEMENTS(inPropGraph) RETURNS outPropGraph {
   $outPropGraph = FOREACH grouped GENERATE(Merge(*));
 };
 
-DEFINE LOAD_TITAN(edge_list, hbase_out_table, graph_db) RETURNS void {
-  stored_graph = MAPREDUCE 'graphbuilder-2.0-hadoop-job.jar' STORE final_graph INTO 'hbase://pagerank_edge_list' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:src_domain cf:dest_domain cf:num_links') LOAD '/tmp/empty' using TextLoader() as (line:chararray) `com.intel.hadoop.graphbuilder.demoapps.tabletographdb.TableToGraphDB -conf hbaseToTitan.xml -t pagerank_edge_list -v "cf:src_domain" "cf:dest_domain" -e "cf:src_domain,cf:dest_domain,link,cf:num_links"`;
-  STORE stored_graph INTO '/tmp/tmp_store';
+/**
+* LOAD_TITAN macro bulk loads a graph into the Titan graph database. This macro
+* is a wrapper for the com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB MapReduce job.
+* For the details of the command line arguments @see com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB.
+* 
+* input_hbase_table_name : name of the input HBase table that GraphBuilder (GB) will create the graph from <br/>
+* vertex_rule 		   : vertex creation rule <br/>
+* edge_rule			   : edge creation rule <br/>
+* config_file			   : path to the XML configuration file to be used by GB for bulk loading to Titan <br/>
+*/
+DEFINE LOAD_TITAN(input_hbase_table_name, vertex_rule, edge_rule, config_file) RETURNS void {
+	-- load an empty relation that will be used in the MAPREDUCE operator
+	dummy = LOAD '/tmp/empty' USING TextLoader() AS (line:chararray);
+	
+	-- we do a dummy STORE/LOAD below as the MAPREDUCE operator 
+	-- requires a STORE and then a LOAD operation
+	stored_graph = MAPREDUCE 'target/graphbuilder-2.0-alpha-with-deps.jar' 
+	  		STORE dummy INTO '/tmp/tmp_store_1'
+	  		LOAD '/tmp/empty' USING TextLoader() AS (line:chararray) 
+	  		`com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB -conf $config_file --tablename $input_hbase_table_name --vertices $vertex_rule --edges $edge_rule`;
+	  		
+	STORE stored_graph INTO '/tmp/tmp_store_2';
 };

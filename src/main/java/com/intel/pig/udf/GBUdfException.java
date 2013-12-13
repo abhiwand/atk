@@ -19,29 +19,68 @@
 package com.intel.pig.udf;
 
 /**
- * GBUdfException is a custom exception thrown from the UDFs to notify the user
- * about problems occured during UDF processing.
+ * GBUdfException is thrown from GB UDFs to notify the user about problems that
+ * occurred during UDF processing.
  * 
  */
 public class GBUdfException extends Exception {
 
+	/**
+	 * Constructs an {@code GBUdfException} with {@code null} as its error
+	 * detail message.
+	 */
 	public GBUdfException() {
 		super();
 	}
 
-	public GBUdfException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
+    /**
+     * Constructs an {@code IOException} with the specified detail message
+     * and cause.
+     *
+     * <p> Note that the detail message associated with {@code cause} is
+     * <i>not</i> automatically incorporated into this exception's detail
+     * message.
+     *
+     * @param message
+     *        The detail message (which is saved for later retrieval
+     *        by the {@link #getMessage()} method)
+     *
+     * @param cause
+     *        The cause (which is saved for later retrieval by the
+     *        {@link #getCause()} method).  (A null value is permitted,
+     *        and indicates that the cause is nonexistent or unknown.)
+     *
+     * @since 1.6
+     */
 	public GBUdfException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Constructs an {@code GBUdfException} with the specified detail message.
+	 * 
+	 * @param message
+	 *            the detail message. The detail message is saved for later
+	 *            retrieval by the {@link #getMessage()} method.
+	 */
 	public GBUdfException(String message) {
 		super(message);
 	}
 
+	
+    /**
+     * Constructs an {@code GBUdfException} with the specified cause and a
+     * detail message of {@code (cause==null ? null : cause.toString())}
+     * (which typically contains the class and detail message of {@code cause}).
+     * This constructor is useful for exceptions that are little more
+     * than wrappers for other throwables.
+     *
+     * @param cause
+     *        The cause (which is saved for later retrieval by the
+     *        {@link #getCause()} method).  (A null value is permitted,
+     *        and indicates that the cause is nonexistent or unknown.)
+     *
+     */
 	public GBUdfException(Throwable cause) {
 		super(cause);
 	}
