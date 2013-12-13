@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,14 +22,27 @@ package com.intel.hadoop.graphbuilder.graphelements;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import org.apache.hadoop.io.WritableComparable;
 
-public class SerializedPropertyGraphElementLongTypeVids extends SerializedPropertyGraphElement<LongType> implements
-        WritableComparable<SerializedPropertyGraphElementLongTypeVids> {
+public class SerializedGraphElementLongTypeVids extends SerializedGraphElement<LongType> {
+
+
     public LongType createVid() {
         return new LongType();
     }
 
-    @Override
-    public int compareTo(SerializedPropertyGraphElementLongTypeVids v) {
-        return this.compareTo(v);
+    /**
+     * The compare function to enable key comparisons for
+     * WritableComparable child classes
+     * @param o
+     * @return -1 if less than o, 0 if equal, 1 otherwise
+     */
+    public int compareTo(SerializedGraphElementLongTypeVids o) {
+        if (this.graphElement() == null && o.graphElement() == null) {
+            return 0;
+        } else if (this.graphElement() == null || o.graphElement() == null) {
+            return 1;
+        } else {
+            return (this.graphElement().equals(o.graphElement())) ? 0 : 1;
+        }
+
     }
 }

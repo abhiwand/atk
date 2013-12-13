@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,10 +31,10 @@ public class ValueClassFactoryTest {
     public void testGetValueClassByVidClassName() throws Exception {
 
         assertSame(ValueClassFactory.getValueClassByVidClassName(StringType.class.getName()),
-                SerializedPropertyGraphElementStringTypeVids.class);
+                SerializedGraphElementStringTypeVids.class);
 
         assertSame(ValueClassFactory.getValueClassByVidClassName(LongType.class.getName()),
-                SerializedPropertyGraphElementLongTypeVids.class);
+                SerializedGraphElementLongTypeVids.class);
     }
 
     @Test(expected=IllegalArgumentException.class)

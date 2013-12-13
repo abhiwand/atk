@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,9 +29,9 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  * have to worry about weather your vertex or an edge has much.
  * <p/>
  * <P><b>With interface</b><br />
- * SerializedPropertyGraphElement.graphElement().getType()
+ * SerializedGraphElement.graphElement().getType()
  * <b>without interface</b>
- * ((Edge)SerializedPropertyGraphElement.graphElement()).getType()
+ * ((Edge)SerializedGraphElement.graphElement()).getType()
  * </p>
  * <p/>
  * <p>The interface gets called from GraphElement.typeCallback</p>

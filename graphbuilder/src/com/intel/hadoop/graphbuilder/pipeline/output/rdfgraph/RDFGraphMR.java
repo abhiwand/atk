@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,15 +17,13 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
-import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.rdf.RDFConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.ElementIdKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
@@ -90,7 +88,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
 
-    private SerializedPropertyGraphElement mapValueType;
+    private SerializedGraphElement mapValueType;
     private Class vidClass;
 
     private final Class keyFuncClass = ElementIdKeyFunction.class;
@@ -184,14 +182,14 @@ public class RDFGraphMR extends GraphGenerationMRJob {
      *
      * @param valueClass the intermediate value class
      * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
-     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids
-     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementLongTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementLongTypeVids
      */
 
     @Override
     public void setValueClass(Class valueClass) {
         try {
-            this.mapValueType = (SerializedPropertyGraphElement) valueClass.newInstance();
+            this.mapValueType = (SerializedGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "GRAPHBUILDER_ERROR: Cannot set value class ( " + valueClass.getName() + ")", LOG, e);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,18 +35,17 @@ import org.apache.hadoop.io.WritableComparable;
  * @param <VidType>
  */
 
-public abstract class SerializedPropertyGraphElement<VidType extends WritableComparable<VidType>>
-        implements Writable {
+public abstract class SerializedGraphElement<VidType extends WritableComparable<VidType>>
+        implements Writable, WritableComparable<Object> {
 
 
     private GraphElement graphElement;
 
-
-    public SerializedPropertyGraphElement() {
+    public SerializedGraphElement() {
         this.graphElement = null;
     }
 
-    protected SerializedPropertyGraphElement(GraphElement graphElement) {
+    protected SerializedGraphElement(GraphElement graphElement) {
         this.graphElement = graphElement;
     }
 
@@ -68,6 +67,8 @@ public abstract class SerializedPropertyGraphElement<VidType extends WritableCom
      */
 
     public GraphElement graphElement() {
+        if (this.graphElement == null)
+            return null;
         return this.graphElement.get();
     }
 
@@ -124,6 +125,19 @@ public abstract class SerializedPropertyGraphElement<VidType extends WritableCom
         output.writeBoolean(isVertex);
 
         graphElement.write(output);
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        int ret = 1;
+        if (this.graphElement.isEdge()) {
+            Edge<VidType> in_edge = (Edge<VidType>) o;
+            ret = in_edge.compareTo((Edge<VidType>) this.graphElement);
+        } else if (this.graphElement.isVertex()) {
+            Vertex<VidType> in_vertex = (Vertex<VidType>) o;
+            ret = in_vertex.compareTo((Vertex<VidType>) this.graphElement);
+        }
+        return ret;
     }
 }
 

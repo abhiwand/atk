@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import org.apache.hadoop.io.Writable;
@@ -250,5 +249,28 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
         id.write(output);
         label.write(output);
         properties.write(output);
+    }
+
+    /**
+     * To compare another vertex from a serializable graph element
+     * @param vertex
+     * @return -1 if less than edge, 0 if equal, 1 otherwise
+     */
+    public int compareTo(Vertex<VertexIdType> vertex) {
+        return equals(vertex) ? 0 : 1;
+    }
+
+    /**
+     * Checks if the input vertex is equal to passed vertex
+     * This is a deep check which means source, destination
+     * vertex ID's and all properties are checked to decide
+     * equality
+     * @param ge
+     */
+    @Override
+    public boolean equals(GraphElement ge) {
+        Vertex<VertexIdType> vertex = (Vertex<VertexIdType>) ge;
+        return (this.id.equals(vertex.getId()) && this.label.equals(vertex.getLabel()) &&
+                this.properties.equals(vertex.getProperties()));
     }
 }
