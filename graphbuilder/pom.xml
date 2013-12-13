@@ -16,7 +16,7 @@
         <powermock.version>1.5.1</powermock.version>
         <tinkerpop.version>2.4.0</tinkerpop.version>
         <titan.version>0.4.1</titan.version>
-        <license.inceptionYear>2012</license.inceptionYear>
+        <license.inceptionYear>2013</license.inceptionYear>
         <license.url>http://www.apache.org/licenses/LICENSE-2.0</license.url>
         <license.project.url>http://www.01.org/GraphBuilder</license.project.url>
         <license.owner>Intel Corporation</license.owner>

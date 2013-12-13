@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,8 +23,8 @@ import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
@@ -57,7 +57,7 @@ public class BaseMapperTest {
     Logger loggerMock;
     BaseMapper baseMapper;
     BaseMapper spiedBaseMapper;
-    SerializedPropertyGraphElement mapVal;
+    SerializedGraphElement mapVal;
 
     @BeforeClass
     public static final void beforeClass(){
@@ -68,7 +68,7 @@ public class BaseMapperTest {
 
     @Before
     public void setUp() throws Exception {
-        mapVal = new SerializedPropertyGraphElementStringTypeVids();
+        mapVal = new SerializedGraphElementStringTypeVids();
 
         mapperContextMock = PowerMockito.mock(Mapper.Context.class);
 
@@ -91,7 +91,7 @@ public class BaseMapperTest {
         HBaseGraphBuildingRule.packDirectedEdgeRulesIntoConfiguration(conf, directedEdgeRules);
 
         //mapper context mocks
-        Class valClass = SerializedPropertyGraphElementStringTypeVids.class;
+        Class valClass = SerializedGraphElementStringTypeVids.class;
         PowerMockito.when(mapperContextMock.getMapOutputValueClass()).thenReturn(valClass);
 
         //wil use later to verify log calls
@@ -102,13 +102,13 @@ public class BaseMapperTest {
         spiedBaseMapper = spy(baseMapper);
         PowerMockito.whenNew(BaseMapper.class).withAnyArguments().thenReturn(spiedBaseMapper);
 
-        spiedBaseMapper.setValClass(SerializedPropertyGraphElementStringTypeVids.class);
+        spiedBaseMapper.setValClass(SerializedGraphElementStringTypeVids.class);
         //ignore any other calls to set the valClass
         doNothing().when(spiedBaseMapper).setValClass(any(Class.class));
 
-        spiedBaseMapper.setMapVal(SerializedPropertyGraphElementStringTypeVids.class.newInstance());
+        spiedBaseMapper.setMapVal(SerializedGraphElementStringTypeVids.class.newInstance());
         //ignore any other calls to set map val
-        doNothing().when(spiedBaseMapper).setMapVal(any(SerializedPropertyGraphElement.class));
+        doNothing().when(spiedBaseMapper).setMapVal(any(SerializedGraphElement.class));
     }
 
     @After
@@ -167,12 +167,12 @@ public class BaseMapperTest {
         //mock our exception call
         PowerMockito.doThrow(new IOException()).
                 when(mapperContextMock).write(any(IntWritable.class),
-                any(SerializedPropertyGraphElement.class));
+                any(SerializedGraphElement.class));
 
         //this will stop the real call to incrementErrorCounter from happening
         //but the mock will still log the  incrementErrorCounter for later verification
         PowerMockito.doNothing().when(spiedBaseMapper).incrementErrorCounter(any(Mapper.Context.class),
-                any(SerializedPropertyGraphElement.class));
+                any(SerializedGraphElement.class));
 
         //any dummy vertex to call context write
         Vertex<StringType> dummyVertex = new Vertex<StringType>(new StringType("test"));
@@ -181,7 +181,7 @@ public class BaseMapperTest {
         spiedBaseMapper.contextWrite(mapperContextMock, new IntWritable(1), mapVal);
 
         verify(spiedBaseMapper).incrementErrorCounter(any(Mapper.Context.class),
-                any(SerializedPropertyGraphElement.class));
+                any(SerializedGraphElement.class));
         verify(loggerMock).error(any(Object.class), any(IOException.class));
     }
 
@@ -191,10 +191,10 @@ public class BaseMapperTest {
 
         PowerMockito.doThrow(new InterruptedException()).
                 when(mapperContextMock).write(any(IntWritable.class),
-                any(SerializedPropertyGraphElement.class));
+                any(SerializedGraphElement.class));
 
         PowerMockito.doNothing().when(spiedBaseMapper).incrementErrorCounter(any(Mapper.Context.class),
-                any(SerializedPropertyGraphElement.class));
+                any(SerializedGraphElement.class));
 
         Vertex<StringType> dummyVertex = new Vertex<StringType>(new StringType("test"));
         mapVal.init(dummyVertex);
@@ -202,7 +202,7 @@ public class BaseMapperTest {
         spiedBaseMapper.contextWrite(mapperContextMock, new IntWritable(1), mapVal);
 
         verify(spiedBaseMapper).incrementErrorCounter(any(Mapper.Context.class),
-                any(SerializedPropertyGraphElement.class));
+                any(SerializedGraphElement.class));
         verify(loggerMock).error(any(Object.class), any(IOException.class));
     }
 }

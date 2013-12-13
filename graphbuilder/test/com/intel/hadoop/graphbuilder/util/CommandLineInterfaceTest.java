@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -102,7 +102,7 @@ public class CommandLineInterfaceTest {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("t", "kd_sample_data");
+        cliArgs.put("t", "employeeData");
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
         cliArgs.put("a", "");
@@ -119,7 +119,7 @@ public class CommandLineInterfaceTest {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("t", "kd_sample_data");
+        cliArgs.put("t", "employeeData");
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
         cliArgs.put("F", "");
@@ -135,7 +135,7 @@ public class CommandLineInterfaceTest {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("i", "kd_sample_data");
+        cliArgs.put("i", "employeeData");
         cliArgs.put("o", "cf:name=cf:age,cf:dept");
         cliArgs.put("t", "");
         cliArgs.put("a", "");
@@ -150,7 +150,7 @@ public class CommandLineInterfaceTest {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("i", "kd_sample_data");
+        cliArgs.put("i", "employeeData");
         cliArgs.put("o", "cf:name=cf:age,cf:dept");
         cliArgs.put("t", "");
         cliArgs.put("a", "");

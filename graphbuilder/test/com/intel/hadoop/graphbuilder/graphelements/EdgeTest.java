@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,11 +25,7 @@ import org.junit.Test;
 
 import java.io.*;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.*;
 
 public class EdgeTest {
 
@@ -249,5 +245,38 @@ public class EdgeTest {
 
         assert (edgeOnTheOtherEnd.getId().equals(edge.getId()));
         assert (edgeOnTheOtherEnd.getProperties().toString().equals(edge.getProperties().toString()));
+    }
+
+    @Test
+    public void testEquals() {
+
+        PropertyMap map0 = new PropertyMap();
+        map0.setProperty("name", new StringType("Alice"));
+        map0.setProperty("age", new StringType("30"));
+        map0.setProperty("dept", new StringType("IntelCorp"));
+
+        PropertyMap map1 = new PropertyMap();
+        map1.setProperty("name", new StringType("Bob"));
+        map1.setProperty("age", new StringType("32"));
+        map1.setProperty("dept", new StringType("IntelLabs"));
+
+        Edge<StringType> edge0 = new Edge<StringType>(
+                new StringType("Employee001"),
+                new StringType("Employee002"),
+                new StringType("isConnected"),
+                map0);
+        Edge<StringType> edge1 = new Edge<StringType>(
+                new StringType("Employee002"),
+                new StringType("Employee003"),
+                new StringType("likes"),
+                map1);
+        Edge<StringType> edge2 = new Edge<StringType>(
+                new StringType("Employee001"),
+                new StringType("Employee002"),
+                new StringType("isConnected"),
+                map0);
+
+        assertFalse("Edge equality check failed", edge0.equals(edge1));
+        assertTrue("Edge equality check failed", edge0.equals(edge2));
     }
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,7 +26,6 @@ import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -56,7 +55,7 @@ import org.apache.log4j.Logger;
  * </p>
  */
 
-public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, NullWritable, Text> {
+public class TextGraphReducer extends Reducer<IntWritable, SerializedGraphElement, NullWritable, Text> {
 
     private static final Logger LOG = Logger.getLogger(TextGraphReducer.class);
 
@@ -118,14 +117,14 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedPropertyGra
     }
 
     @Override
-    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
         edgeSet       = new Hashtable<>();
         vertexSet     = new Hashtable<>();
 
-        for(SerializedPropertyGraphElement serializedPropertyGraphElement: values){
-            GraphElement graphElement = serializedPropertyGraphElement.graphElement();
+        for(SerializedGraphElement serializedGraphElement : values){
+            GraphElement graphElement = serializedGraphElement.graphElement();
 
             if(graphElement.isNull()){
                 continue;

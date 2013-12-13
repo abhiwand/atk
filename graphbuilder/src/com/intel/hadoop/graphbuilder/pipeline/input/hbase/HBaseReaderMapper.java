@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
 import org.apache.hadoop.conf.Configuration;
@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper
  */
-public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedPropertyGraphElement> {
+public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedGraphElement> {
     private static final Logger LOG = Logger.getLogger(HBaseReaderMapper.class);
 
     private BaseMapper baseMapper;
