@@ -59,8 +59,8 @@ public class TO_EDGELIST extends EvalFunc<String> {
      */
 	public TO_EDGELIST(String printProperties) {
         if (printProperties.equals("1") ||
-                    printProperties.equals("TRUE") ||
-                    printProperties.equals("true")) {
+            printProperties.equals("TRUE") ||
+            printProperties.equals("true")) {
             this.printProperties = true;
         } else if (printProperties.equals("0") ||
                    printProperties.equals("FALSE") ||
@@ -91,6 +91,13 @@ public class TO_EDGELIST extends EvalFunc<String> {
         return null;
 	}
 
-    // No OutputSchema is required because the return type of this UDF is String
-    // interpreted as chararray by Pig
+    // OutputSchema same as BagToString UDF
+    @Override
+    public Schema outputSchema(Schema input) {
+        try {
+            return new Schema(new Schema.FieldSchema(null, DataType.CHARARRAY));
+        } catch (Exception e) {
+            throw new RuntimeException("Exception while creating output schema for TO_EDGELIST udf", e);
+        }
+    }
 }

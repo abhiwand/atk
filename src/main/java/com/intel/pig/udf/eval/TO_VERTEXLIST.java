@@ -28,6 +28,7 @@ import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
@@ -90,6 +91,13 @@ public class TO_VERTEXLIST extends EvalFunc<String> {
 		return null;
 	}
 
-    // No OutputSchema is required because the return type of this UDF is String
-    // interpreted as chararray by Pig
+    // OutputSchema same as BagToString UDF
+    @Override
+    public Schema outputSchema(Schema input) {
+        try {
+            return new Schema(new Schema.FieldSchema(null, DataType.CHARARRAY));
+        } catch (Exception e) {
+            throw new RuntimeException("Exception while creating output schema for TO_VERTEXLIST udf", e);
+        }
+    }
 }
