@@ -42,6 +42,7 @@ import static org.junit.Assert.assertTrue;
 public class TestToEdgelist {
     EvalFunc<?> toEdgelistUdf0;
     EvalFunc<?> toEdgelistUdf1;
+    EvalFunc<?> toEdgelistUdf2;
 
     @Before
     public void setup() throws Exception {

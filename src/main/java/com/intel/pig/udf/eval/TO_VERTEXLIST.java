@@ -32,6 +32,7 @@ import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * TO_VERTEXLIST UDF intakes property graph elements and spits out
@@ -47,6 +48,8 @@ import java.io.IOException;
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class TO_VERTEXLIST extends EvalFunc<String> {
 	private boolean printProperties;
+    public static final String[] booleanValues =
+            new String [] {"0", "1", "TRUE", "true", "FALSE", "false"};
 
     /**
      * Constructor of TO_VERTEXLIST
@@ -56,6 +59,11 @@ public class TO_VERTEXLIST extends EvalFunc<String> {
      *                        if set to "0", "FALSE", "false"
      */
     public TO_VERTEXLIST(String printProperties) {
+        if (!Arrays.asList(booleanValues).contains(printProperties)) {
+            throw new IllegalArgumentException(
+                    printProperties + " is not a valid argument." +
+                    "Use '0', '1', 'TRUE', 'true', 'FALSE' or 'false')");
+        }
 		if (printProperties.equals("1") ||
                     printProperties.equals("TRUE") ||
                     printProperties.equals("true")) {
@@ -91,7 +99,6 @@ public class TO_VERTEXLIST extends EvalFunc<String> {
 		return null;
 	}
 
-    // OutputSchema same as BagToString UDF
     @Override
     public Schema outputSchema(Schema input) {
         try {

@@ -31,6 +31,7 @@ import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.pig.data.DataType.BOOLEAN;
@@ -49,6 +50,8 @@ import static org.apache.pig.data.DataType.BOOLEAN;
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class TO_EDGELIST extends EvalFunc<String> {
 	private boolean printProperties;
+    public static final String[] booleanValues =
+            new String [] {"0", "1", "TRUE", "true", "FALSE", "false"};
 
     /**
      * Constructor of TO_EDGELIST
@@ -58,6 +61,12 @@ public class TO_EDGELIST extends EvalFunc<String> {
      *                        if set to "0", "FALSE" or "false"
      */
 	public TO_EDGELIST(String printProperties) {
+
+        if (!Arrays.asList(booleanValues).contains(printProperties)) {
+            throw new IllegalArgumentException(
+                    printProperties + " is not a valid argument." +
+                    "Use '0', '1', 'TRUE', 'true', 'FALSE' or 'false')");
+        }
         if (printProperties.equals("1") ||
             printProperties.equals("TRUE") ||
             printProperties.equals("true")) {
@@ -91,7 +100,6 @@ public class TO_EDGELIST extends EvalFunc<String> {
         return null;
 	}
 
-    // OutputSchema same as BagToString UDF
     @Override
     public Schema outputSchema(Schema input) {
         try {
