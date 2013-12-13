@@ -76,7 +76,6 @@ public class TitanTestBase {
     @Before
     public void setup() throws IOException {
         setHbaseProperties();
-        ensureTitanTableReady();
     }
 
     @After
@@ -85,8 +84,9 @@ public class TitanTestBase {
         LOG.info("***Done with " + getClass().getName() + "****");
     }
 
-    protected void open() {
+    protected void open() throws IOException {
         graph = new TitanTestGraph(titanConfig);
+        ensureTitanTableReady();
         tx = graph.newTransaction();
         if (tx == null) {
             LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
@@ -105,7 +105,7 @@ public class TitanTestBase {
         }
     }
 
-    protected void clopen() {
+    protected void clopen() throws IOException {
         close();
         open();
     }

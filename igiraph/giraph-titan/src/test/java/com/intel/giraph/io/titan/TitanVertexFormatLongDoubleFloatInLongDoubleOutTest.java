@@ -175,7 +175,7 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest extends TitanTe
         }
 
         //verify data is written to Titan
-        //clopen();
+        clopen();
         long[] nid;
         TitanKey resultKey = null;
         String keyName = "rank";

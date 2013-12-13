@@ -63,5 +63,15 @@
            <artifactId>faunus</artifactId>
            <version>${dep.aurelius.version}</version>
      </dependency>
+    <dependency>
+      <groupId>org.apache.giraph</groupId>
+      <artifactId>giraph-core</artifactId>
+      <version>${dep.giraph-core.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.giraph</groupId>
+      <artifactId>giraph-hbase</artifactId>
+      <version>${dep.giraph-hbase.version}</version>
+    </dependency>
   </dependencies>
 </project>

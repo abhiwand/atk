@@ -63,5 +63,10 @@
         <artifactId>zookeeper</artifactId>
         <version>${dep.zookeeper.version}</version>
    </dependency>
+    <dependency>
+      <groupId>org.apache.giraph</groupId>
+      <artifactId>giraph-core</artifactId>
+      <version>${dep.giraph-core.version}</version>
+    </dependency>
   </dependencies>
 </project>
