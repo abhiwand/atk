@@ -79,7 +79,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h2>Overview</h2>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>NEED AN OVERVIEW Graph Builder 2.0 (alpha) is a library of Pig UDFs (user defined functions) enabling users to construct graphs from structured, semi-structured and unstructured data.</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>NEED AN OVERVIEW Graph Builder 2.0 (alpha) is a library of <a href="http://pig.apache.org/">Apache Pig</a> UDFs (user defined functions) and macros to enable graph ETL in the popular Pig Latin scripting language. GB lets users create graphs from structured, semi-structured and unstructured data. The library offloads many of the complexities of graph construction, such as creating property graph elements from raw data, deduplicate property graph elements, bulk loading a graph to a graph database, and serializing property graph elements in different formats such as edge and vertex list formats, and the <a href="http://www.w3.org/RDF/">RDF</a> format. </dd></dl>
 <h2>Release Notes</h2>
 <ul>
 <li>fixed bugs: ...</li>
@@ -99,7 +99,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li><b>Filters:</b> <ul>
 <li>
-Dedup Vertices, Dedup edges </li>
+<a class="el" href="intel__gb2_8pig.html">MERGEDUPLICATEGRAPHELEMENTS </a> </li>
 </ul>
 </li>
 <li><b>Storage:</b> <ul>
@@ -119,15 +119,17 @@ Text </li>
 </ul>
 </li>
 </ul>
+<h2>Prerequisites</h2>
+<p>GB 2.0 (alpha) requires <a href="http://hadoop.apache.org/">Apache Hadoop</a> and <a href="http://pig.apache.org/">Apache Pig</a> installed. To use the <a class="el" href="intel__gb2_8pig.html">LOAD_TITAN </a> macro for bulk loading graphs to Titan, <a href="http://hbase.apache.org/">HBase</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a> are also required. In particular, GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.0.</p>
 <h2>Building The Source Code</h2>
-<p>GB 2.0 (alpha) requires <a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">Java</a>, <a href="http://hadoop.apache.org/">Hadoop</a>, <a href="http://pig.apache.org/">Pig</a>, <a href="http://hbase.apache.org/">HBase (required for the LOAD_TITAN macro)</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a>. In particular GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.0. In addition, <a href="http://maven.apache.org/">Maven</a> is required to build GB 2.0 (alpha). You can build GB with </p>
+<p>GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. You can build GB with </p>
 <div class="fragment"><div class="line">mvn clean <span class="keyword">package </span></div>
 </div><!-- fragment --><p> and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build </p>
 <div class="fragment"><div class="line">mvn clean <span class="keyword">package </span>-DskipTests </div>
-</div><!-- fragment --><p>Finally, to generate the documentation </p>
+</div><!-- fragment --><p> Finally, to generate the documentation </p>
 <div class="fragment"><div class="line">mvn exec:exec</div>
 </div><!-- fragment --> <h2>Using GB 2.0 (alpha)</h2>
-<p>To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT <a class="el" href="intel__gb2_8pig.html">intel_gb2.pig</a> script. The <a class="el" href="intel__gb2_8pig.html">intel_gb2.pig</a> script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments) and LOAD_TITAN macros. The user has to define the other UDFs with the constructor arguments they want; see Tutorial for examples. Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script: </p>
+<p>To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT <a class="el" href="intel__gb2_8pig.html">intel_gb2.pig</a> script. The <a class="el" href="intel__gb2_8pig.html">intel_gb2.pig</a> script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user has to define the other UDFs with the constructor arguments they want; please see Tutorial for how to use GB functionality in your Pig scripts. Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script: </p>
 <div class="fragment"><div class="line">REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;</div>
 <div class="line">IMPORT <span class="stringliteral">&#39;/usr/local/gb/pig/intel_gb2.pig&#39;</span>;</div>
 </div><!-- fragment --><h2>Known Issues:</h2>
@@ -137,7 +139,7 @@ Text </li>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 13 2013 10:34:35 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 13 2013 11:05:34 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

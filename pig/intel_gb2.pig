@@ -10,6 +10,7 @@ DEFINE CreateRowKey com.intel.pig.udf.eval.CreateRowKey();
  * <li>Edges with the same label and matching vertex IDs on their source and destination vertices are treated as equal</li>
  * <li>Property lists are merged between duplicates, with conflicts resolved arbitrarily. </li>
  * </ul> </p>
+ * @param inPropGraph
  *
 */
 
@@ -26,10 +27,10 @@ DEFINE MERGEDUPLICATEGRAPHELEMENTS(inPropGraph) RETURNS outPropGraph {
 * is a wrapper for the com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB MapReduce job.
 * For the details of the command line arguments @see com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB.
 * 
-* input_hbase_table_name : name of the input HBase table that GraphBuilder (GB) will create the graph from <br/>
-* vertex_rule 		   : vertex creation rule <br/>
-* edge_rule			   : edge creation rule <br/>
-* config_file			   : path to the XML configuration file to be used by GB for bulk loading to Titan <br/>
+* @param input_hbase_table_name : name of the input HBase table that GraphBuilder (GB) will create the graph from <br/>
+* @param  vertex_rule 		    : vertex creation rule <br/>
+* @param  edge_rule			    : edge creation rule <br/>
+* @param  config_file		    : path to the XML configuration file to be used by GB for bulk loading to Titan <br/>
 */
 DEFINE LOAD_TITAN(input_hbase_table_name, vertex_rule, edge_rule, config_file) RETURNS void {
 	-- load an empty relation that will be used in the MAPREDUCE operator
