@@ -83,7 +83,7 @@ public class CommandLineInterfaceTest {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("t", "kd_sample_data");
+        cliArgs.put("t", "sample_dataset");
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
         cliArgs.put("a", "");
@@ -100,7 +100,7 @@ public class CommandLineInterfaceTest {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("t", "kd_sample_data");
+        cliArgs.put("t", "sample_dataset");
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
         cliArgs.put("F", "");
@@ -116,7 +116,7 @@ public class CommandLineInterfaceTest {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("i", "kd_sample_data");
+        cliArgs.put("i", "sample_dataset");
         cliArgs.put("o", "cf:name=cf:age,cf:dept");
         cliArgs.put("t", "");
         cliArgs.put("a", "");
@@ -131,7 +131,7 @@ public class CommandLineInterfaceTest {
 
         //the options for the demo app
         HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("i", "kd_sample_data");
+        cliArgs.put("i", "sample_dataset");
         cliArgs.put("o", "cf:name=cf:age,cf:dept");
         cliArgs.put("t", "");
         cliArgs.put("a", "");

@@ -44,8 +44,8 @@ import java.io.IOException;
  *
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
-public class TO_VERTEXLIST extends EvalFunc<Tuple> {
-	private String printProperties;
+public class TO_VERTEXLIST extends EvalFunc<String> {
+	private boolean printProperties;
 
     /**
      * Constructor of TO_VERTEXLIST
@@ -53,48 +53,43 @@ public class TO_VERTEXLIST extends EvalFunc<Tuple> {
      *                        if set to "1", "TRUE" or "true",
      *                        does not print vertex properties
      *                        if set to "0", "FALSE", "false"
-     */	public TO_VERTEXLIST(String printProperties) {
-		this.printProperties = printProperties;
+     */
+    public TO_VERTEXLIST(String printProperties) {
+		if (printProperties.equals("1") ||
+                    printProperties.equals("TRUE") ||
+                    printProperties.equals("true")) {
+            this.printProperties = true;
+        } else if (printProperties.equals("0") ||
+                   printProperties.equals("FALSE") ||
+                   printProperties.equals("false")) {
+            this.printProperties = false;
+        }
 	}
 
 	@Override
-	public Tuple exec(Tuple input) throws IOException {
-		Tuple tuple = TupleFactory.getInstance().newTuple(1);
+	public String exec(Tuple input) throws IOException {
 
-		Object graphElementTuple = input.get(0);
-
-		PropertyGraphElement graphElement = (PropertyGraphElement) graphElementTuple;
+		PropertyGraphElement graphElement = (PropertyGraphElement) input.get(0);
 
 		// Only print vertices, skip edges
 		if (graphElement.graphElementType().equals(GraphElementType.VERTEX)) {
 			Vertex vertex = graphElement.vertex();
 
-            String vertexString = new String("");
-            if (this.printProperties.equals("1") ||
-                    this.printProperties.equals("TRUE") ||
-                    this.printProperties.equals("true")) {
+            String vertexString = "";
+            if (this.printProperties) {
 			    vertexString = vertex.toString();
-            } else if (this.printProperties.equals("0") ||
-                    this.printProperties.equals("FALSE") ||
-                    this.printProperties.equals("false")) {
+            } else {
                 vertexString = vertex.getVertexId().toString();
                 if (vertex.getVertexLabel() != null) {
                     vertexString += "\t" + vertex.getVertexLabel().toString();
                 }
             }
-			tuple.set(0, vertexString);
+			return vertexString;
 		}
 
-		return tuple;
+		return null;
 	}
 
-	@Override
-	public Schema outputSchema(Schema input) {
-		try {
-			return new Schema(new Schema.FieldSchema("vertex_tuple", DataType.CHARARRAY));
-		} catch (Exception e) {
-			throw new RuntimeException("Exception while creating output schema for TO_VERTEXLIST udf", e);
-		}
-	}
-
+    // No OutputSchema is required because the return type of this UDF is String
+    // interpreted as chararray by Pig
 }

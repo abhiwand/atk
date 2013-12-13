@@ -1,5 +1,5 @@
 --This script should be run from the top level directory
-REGISTER target/graphbuilder-2.0alpha-with-deps.jar;
+REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
 IMPORT 'pig/intel_gb2.pig';
 
 --JSON example
@@ -24,9 +24,17 @@ x = LOAD '/etc/passwd' USING PigStorage(':') AS (username:chararray, f1: chararr
 DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "f1" "f2" -e "f1,f2,link,f3"');
 pge = FOREACH x GENERATE CreatePropGraphElements(*); 
 dump pge;
-rdf_triples = FOREACH pge GENERATE TORDF(*);
-DESCRIBE rdf_triples;
-DUMP rdf_triples;
+-- rdf_triples = FOREACH pge GENERATE TORDF(*);
+-- DESCRIBE rdf_triples;
+-- DUMP rdf_triples;
+
+edgelist = FOREACH pge GENERATE TO_EDGELIST(*);
+DESCRIBE edgelist;
+DUMP edgelist;
+
+vertexlist = FOREACH pge GENERATE TO_VERTEXLIST(*);
+DESCRIBE vertexlist;
+-- DUMP vertexlist;
 
 -- STORE some_relation INTO '-' USING store_graph();
 -- STORE_GRAPH(final_graph, 'hbase://pagerank_edge_list', 'Titan');

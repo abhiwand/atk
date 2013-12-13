@@ -71,15 +71,13 @@ public class TestToEdgelist {
         PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
         t.set(0, graphElement);
 
-        Tuple result0 = (Tuple) toEdgelistUdf0.exec(t);
-        String statement0 = (String) result0.get(0);
+        String statement0 = (String) toEdgelistUdf0.exec(t);
         assertEquals(
                 "Edge tuple mismatch",
                 statement0,
                 "Employee001\tEmployee002\tworksWith");
 
-        Tuple result1 = (Tuple) toEdgelistUdf1.exec(t);
-        String statement1 = (String) result1.get(0);
+        String statement1 = (String) toEdgelistUdf1.exec(t);
 
         // property maps write in different orders e.g.
         // Expected :Employee001	Employee002	worksWith	age:30	name:Alice

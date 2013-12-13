@@ -40,7 +40,7 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
  * \brief some documentation
- * 
+ *
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class CreatePropGraphElements extends EvalFunc<Tuple> {
@@ -53,7 +53,7 @@ public class CreatePropGraphElements extends EvalFunc<Tuple> {
 	@Override
 	public Tuple exec(Tuple input) throws IOException {
 		Schema inputSchema = getInputSchema();
-		
+
 		/* assume that the user specified "f1" in the tokenizationRule, you can get the corresponding tuple with the following */
 		int fieldPos = inputSchema.getPosition("f1");
 		Object f1Tuple = input.get(fieldPos);

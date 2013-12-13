@@ -47,56 +47,50 @@ import static org.apache.pig.data.DataType.BOOLEAN;
  *
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
-public class TO_EDGELIST extends EvalFunc<Tuple> {
-	private String printProperties;
+public class TO_EDGELIST extends EvalFunc<String> {
+	private boolean printProperties;
 
     /**
      * Constructor of TO_EDGELIST
      * @param printProperties Prints edge properties
      *                        if set to "1", "TRUE" or "true",
      *                        does not print edge properties
-     *                        if set to "0", "FALSE", "false"
+     *                        if set to "0", "FALSE" or "false"
      */
 	public TO_EDGELIST(String printProperties) {
-		this.printProperties = printProperties;
+        if (printProperties.equals("1") ||
+                    printProperties.equals("TRUE") ||
+                    printProperties.equals("true")) {
+            this.printProperties = true;
+        } else if (printProperties.equals("0") ||
+                   printProperties.equals("FALSE") ||
+                   printProperties.equals("false")) {
+            this.printProperties = false;
+        }
 	}
 
 	@Override
-	public Tuple exec(Tuple input) throws IOException {
-		Tuple tuple = TupleFactory.getInstance().newTuple(1);
+	public String exec(Tuple input) throws IOException {
 
-		Object graphElementTuple = input.get(0);
-
-		PropertyGraphElement graphElement = (PropertyGraphElement) graphElementTuple;
+		PropertyGraphElement graphElement = (PropertyGraphElement) input.get(0);
 
 		// Print edges, skip vertices
 		if (graphElement.graphElementType().equals(GraphElementType.EDGE)) {
 			Edge edge = graphElement.edge();
             String edgeString = "";
-            if (this.printProperties.equals("1") ||
-                    this.printProperties.equals("TRUE") ||
-                    this.printProperties.equals("true")) {
+            if (this.printProperties) {
                 edgeString = edge.toString();
-            } else if (this.printProperties.equals("0") ||
-                    this.printProperties.equals("FALSE") ||
-                    this.printProperties.equals("false")) {
+            } else {
 			    edgeString = edge.getSrc().toString() + "\t" +
                              edge.getDst().toString() + "\t" +
                              edge.getEdgeLabel().toString();
             }
-			tuple.set(0, edgeString);
+			return edgeString;
 		}
 
-		return tuple;
+        return null;
 	}
 
-	@Override
-	public Schema outputSchema(Schema input) {
-		try {
-			return new Schema(new Schema.FieldSchema("edge_tuple", DataType.CHARARRAY));
-		} catch (Exception e) {
-			throw new RuntimeException("Exception while creating output schema for TO_EDGELIST udf", e);
-		}
-	}
-
+    // No OutputSchema is required because the return type of this UDF is String
+    // interpreted as chararray by Pig
 }

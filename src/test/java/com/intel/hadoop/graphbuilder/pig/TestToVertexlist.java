@@ -69,15 +69,13 @@ public class TestToVertexlist {
         PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
         t.set(0, graphElement);
 
-        Tuple result = (Tuple) toEdgelistUdf0.exec(t);
-        String statement0 = (String) result.get(0);
+        String statement0 = (String) toEdgelistUdf0.exec(t);
         assertEquals(
                     "Vertex tuple mismatch",
                     statement0,
                     "Employee001\tHAWK.People");
 
-        result = (Tuple) toEdgelistUdf1.exec(t);
-        String statement1 = (String) result.get(0);
+        String statement1 = (String) toEdgelistUdf1.exec(t);
         boolean flag = statement1.contains("Employee001\tHAWK.People");
         assertTrue("Vertex tuple mismatch", flag);
         flag = statement1.contains("name:Alice");
