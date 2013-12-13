@@ -8966,7 +8966,7 @@ body.error-page {
   body.error-page .code {
     margin: 0;
     padding: 0;
-    color: white; }
+    color: #0071c5; }
     body.error-page .code span {
       font-size: 100px;
       line-height: 100px; }
@@ -8975,7 +8975,7 @@ body.error-page {
           font-size: 150px;
           line-height: 150px; } }
     body.error-page .code [class^="fa-icon-"], body.error-page .code [class*=" fa-icon-"] {
-      color: #0071c5; }
+      color: #000; }
   body.error-page .message {
     font-size: 18px;
     line-height: 24px;
