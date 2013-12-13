@@ -19,45 +19,41 @@
 
 package com.intel.pig.udf.eval;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement.GraphElementType;
-import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
-import org.apache.pig.data.*;
-import org.apache.pig.impl.logicalLayer.FrontendException;
+import org.apache.pig.data.DataType;
+import org.apache.pig.data.Tuple;
+import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
-import java.util.List;
-
-import static org.apache.pig.data.DataType.BOOLEAN;
 
 /**
- * TO_EDGELIST UDF intakes property graph elements and spits out
- * edge list elements which are tuples of (edge source vertex id,
- * edge target vertex id, label), for example,
- * (Employee001, Employee002, worksWith)
+ * TO_VERTEXLIST UDF intakes property graph elements and spits out
+ * vertex list elements which are tuples of (vertex id, vertex label).
+ * For example,
+ * (Employee001, OWL.People)
  * If the constructor parameter is set to "TRUE", "true" or "1",
- * the edge list element also contains edge properties returned
+ * the vertex list element also contains edge properties returned
  * as key value pair, e.g.
- * (Employee001, Employee002, worksWith, workedFor:11yrs)
+ * (Employee002, OWL.People, name:Alice, age:30)
  *
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
-public class TO_EDGELIST extends EvalFunc<Tuple> {
+public class TO_VERTEXLIST extends EvalFunc<Tuple> {
 	private String printProperties;
 
     /**
-     * Constructor of TO_EDGELIST
-     * @param printProperties Prints edge properties
+     * Constructor of TO_VERTEXLIST
+     * @param printProperties Print vertex properties
      *                        if set to "1", "TRUE" or "true",
-     *                        does not print edge properties
+     *                        does not print vertex properties
      *                        if set to "0", "FALSE", "false"
-     */
-	public TO_EDGELIST(String printProperties) {
+     */	public TO_VERTEXLIST(String printProperties) {
 		this.printProperties = printProperties;
 	}
 
@@ -69,22 +65,24 @@ public class TO_EDGELIST extends EvalFunc<Tuple> {
 
 		PropertyGraphElement graphElement = (PropertyGraphElement) graphElementTuple;
 
-		// Print edges, skip vertices
-		if (graphElement.graphElementType().equals(GraphElementType.EDGE)) {
-			Edge edge = graphElement.edge();
-            String edgeString = "";
+		// Only print vertices, skip edges
+		if (graphElement.graphElementType().equals(GraphElementType.VERTEX)) {
+			Vertex vertex = graphElement.vertex();
+
+            String vertexString = new String("");
             if (this.printProperties.equals("1") ||
                     this.printProperties.equals("TRUE") ||
                     this.printProperties.equals("true")) {
-                edgeString = edge.toString();
+			    vertexString = vertex.toString();
             } else if (this.printProperties.equals("0") ||
                     this.printProperties.equals("FALSE") ||
                     this.printProperties.equals("false")) {
-			    edgeString = edge.getSrc().toString() + "\t" +
-                             edge.getDst().toString() + "\t" +
-                             edge.getEdgeLabel().toString();
+                vertexString = vertex.getVertexId().toString();
+                if (vertex.getVertexLabel() != null) {
+                    vertexString += "\t" + vertex.getVertexLabel().toString();
+                }
             }
-			tuple.set(0, edgeString);
+			tuple.set(0, vertexString);
 		}
 
 		return tuple;
@@ -93,9 +91,9 @@ public class TO_EDGELIST extends EvalFunc<Tuple> {
 	@Override
 	public Schema outputSchema(Schema input) {
 		try {
-			return new Schema(new Schema.FieldSchema("edge_tuple", DataType.CHARARRAY));
+			return new Schema(new Schema.FieldSchema("vertex_tuple", DataType.CHARARRAY));
 		} catch (Exception e) {
-			throw new RuntimeException("Exception while creating output schema for TO_EDGELIST udf", e);
+			throw new RuntimeException("Exception while creating output schema for TO_VERTEXLIST udf", e);
 		}
 	}
 

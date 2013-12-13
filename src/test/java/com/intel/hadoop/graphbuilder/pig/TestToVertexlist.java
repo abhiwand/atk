@@ -26,7 +26,6 @@ import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import org.apache.pig.EvalFunc;
-import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.PigContext;
 import org.junit.After;
@@ -34,22 +33,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class TestToEdgelist {
+public class TestToVertexlist {
     EvalFunc<?> toEdgelistUdf0;
     EvalFunc<?> toEdgelistUdf1;
 
     @Before
     public void setup() throws Exception {
-        System.out.println("*** Starting TO_EDGELIST test cases ***");
+        System.out.println("*** Starting TO_VERTEXLIST test cases ***");
         toEdgelistUdf0 = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec("com.intel.pig.udf.eval.TO_EDGELIST('false')");
+                .instantiateFuncFromSpec("com.intel.pig.udf.eval.TO_VERTEXLIST('false')");
         toEdgelistUdf1 = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec("com.intel.pig.udf.eval.TO_EDGELIST('true')");
+                .instantiateFuncFromSpec("com.intel.pig.udf.eval.TO_VERTEXLIST('true')");
     }
 
     @Test
@@ -60,37 +58,32 @@ public class TestToEdgelist {
         map0.setProperty("name", new StringType("Alice"));
         map0.setProperty("age", new StringType("30"));
 
-        Edge<StringType> edge = new Edge<StringType>();
-        edge.configure(
+        Vertex<StringType> vertex = new Vertex<StringType>();
+        vertex.configure(
                 new StringType("Employee001"),
-                new StringType("Employee002"),
-                new StringType("worksWith"),
                 map0);
-        graphElement.init(PropertyGraphElement.GraphElementType.EDGE, edge);
+        vertex.setVertexLabel(new StringType("HAWK.People"));
+
+        graphElement.init(PropertyGraphElement.GraphElementType.VERTEX, vertex);
 
         PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
         t.set(0, graphElement);
 
-        Tuple result0 = (Tuple) toEdgelistUdf0.exec(t);
-        String statement0 = (String) result0.get(0);
+        Tuple result = (Tuple) toEdgelistUdf0.exec(t);
+        String statement0 = (String) result.get(0);
         assertEquals(
-                "Edge tuple mismatch",
-                statement0,
-                "Employee001\tEmployee002\tworksWith");
+                    "Vertex tuple mismatch",
+                    statement0,
+                    "Employee001\tHAWK.People");
 
-        Tuple result1 = (Tuple) toEdgelistUdf1.exec(t);
-        String statement1 = (String) result1.get(0);
-
-        // property maps write in different orders e.g.
-        // Expected :Employee001	Employee002	worksWith	age:30	name:Alice
-        // Actual   :Employee001	Employee002	worksWith	name:Alice	age:30
-        // Hence, we search for the appropriate edge properties
-        boolean flag = statement1.contains("Employee001\tEmployee002\tworksWith");
-        assertTrue("Edge tuple mismatch", flag);
+        result = (Tuple) toEdgelistUdf1.exec(t);
+        String statement1 = (String) result.get(0);
+        boolean flag = statement1.contains("Employee001\tHAWK.People");
+        assertTrue("Vertex tuple mismatch", flag);
         flag = statement1.contains("name:Alice");
-        assertTrue("Edge tuple mismatch", flag);
+        assertTrue("Vertex tuple mismatch", flag);
         flag = statement1.contains("age:30");
-        assertTrue("Edge tuple mismatch", flag);
+        assertTrue("Vertex tuple mismatch", flag);
     }
 
     @After
