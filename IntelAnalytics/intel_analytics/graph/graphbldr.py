@@ -1,3 +1,26 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2013 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
+
 """
 Common Graph Builder classes.
 """
@@ -32,7 +55,8 @@ class GraphTypes:
 
 class GraphBuilderFactory(object):
     """
-    Abstract class for the various graph build factories (in other words, one for Titan).
+    An abstract class for the various graph build factories (in other words, 
+	one for Titan).
     """
     __metaclass__ = abc.ABCMeta
 
@@ -52,7 +76,7 @@ class GraphBuilderFactory(object):
 
 class GraphBuilder(object):
     """
-    Abstract class for the various graph builders to inherit
+    An abstract class for the various graph builders to inherit
     (not to be confused with the Tribeca "GraphBuilder" product or component).
     """
     __metaclass__ = abc.ABCMeta
@@ -70,7 +94,7 @@ class GraphBuilder(object):
 
 class BipartiteGraphBuilder(GraphBuilder):
     """
-    Abstract class for py bipartite graph builders.
+    An abstract class for Python bipartite graph builders.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -110,7 +134,7 @@ class BipartiteGraphBuilder(GraphBuilder):
 
 class PropertyGraphBuilder(GraphBuilder):
     """
-    An abstract class for py property graph builders.
+    An abstract class for Python property graph builders.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -248,8 +272,8 @@ def get_graph(graph_name):
     return factory_class.get_graph(graph_name)
 
 
-# dynamically and lazily load the correct graphbuilder factory,
-# according to config
+# Dynamically and lazily load the correct graphbuilder factory,
+# according to config.
 graphbuilder_factory = None
 def _get_graphbuilder_factory_class():
     global graphbuilder_factory

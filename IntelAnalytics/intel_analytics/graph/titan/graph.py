@@ -45,7 +45,7 @@ import os
 
 #class TitanGraph(object):   # TODO: inherit BigGraph later
 #    """
-#    proxy for a graph stored in Titan
+#    The proxy for a graph stored in Titan.
 #    """
 #    def __init__(self):
 #        self.ml = TitanGiraphMachineLearning(self)
@@ -56,7 +56,7 @@ import os
 #-----------------------------------------------------------------------------
 class TitanGraphBuilderFactory(GraphBuilderFactory):
     """
-    Provides a set of Titan graph builders.
+    This class provides a set of Titan graph builders.
     """
     def __init__(self):
         super(TitanGraphBuilderFactory, self).__init__()
@@ -94,7 +94,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
         return self._name_registry.get_key(self._active_titan_table_name)
 
     def _activate_titan_table(self, titan_table_name):
-        """changes rexster's configuration to point to given graph
+        """Changes rexster's configuration to point to given graph.
         """
         # write new cfg file for rexster to turn its attention to the new graph
         try:
@@ -180,7 +180,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
 
 
 def build(graph_name, source, vertex_list, edge_list, is_directed):
-    # validate column sources
+    # Validates column sources.
     # todo: implement column validation
     if source is None:
         raise Exception("Graph has no source. Try register_source()")
@@ -213,9 +213,9 @@ def generate_titan_table_name(prefix, source):
 
 def get_table_name_from_source(source):
     try:
-        return source._table.table_name  # most likely a BigDataFrame
+        return source._table.table_name  # Most likely a BigDataFrame.
     except:
-        # so what did we get?
+        # So what did we get?
         raise Exception("Could not get table name from source")
 
 
@@ -245,7 +245,7 @@ def edge_str(edge, public=False):
     return s
 
 
-# static templates and commands, validated against config on load
+# static templates and commands, validated against config on load.
 
 from string import Template
 

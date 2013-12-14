@@ -65,7 +65,7 @@ class TitanConfig(object):
         tablename : String
             The name of the destination table in Titan.
         stream : stream
-            An open dest stream, if None, the cfg file is written to cfg-specified file path.
+            An open dest stream, if None, the cfg file is written to the cfg-specified file path.
 
         Returns
         -------

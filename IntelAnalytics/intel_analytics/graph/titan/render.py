@@ -63,13 +63,18 @@ def traverse(vertex, depth, vertex_filter = _true, edge_filter = _true):
        
        Generates a node for each vertex that is reachable within the *depth* steps.
 
-       Required arguments:
-       vertex        -- The vertex from which to start the traversal.
-       depth         -- The number of 'hops', include the starting vertex in the count.
-       vertex_filter -- The filter function - if you use it, this function will be used to filter
-                        out vertices for which the function returns False.
-       edge_filter   -- Filter out edges (and the vertices reachable from them) for which
-			the function returns False.
+       Parameters
+	   ----------
+       vertex :
+           The vertex from which to start the traversal.
+       depth :
+	       The number of 'hops', include the starting vertex in the count.
+       vertex_filter :
+	       The filter function - if you use it, this function will be used to filter
+           out vertices for which the function returns False.
+       edge_filter :
+	       Filter out edges (and the vertices reachable from them) for which
+		   the function returns False.
     """
     todo = [(vertex, depth)]
     found = set()
@@ -123,21 +128,26 @@ def render_radial(vertex, depth = 1,
        
        Renders a node for each vertex that is reachable within the *depth* steps.
 
-       Required arguments:
-       vertex        -- The vertex from which to start the traversal.
-       depth         -- The number of 'hops', include the starting vertex in the count.
-
-       Keyword arguments:
-       vertex_label     -- Which field from the vertex data() dictionary should be used for the vertex label.
-       vertex_filter    -- The filter function - if you provide it, this function will be used to filter
-                           out vertices for which the function returns False.
-       edge_filter      -- Filters out edges (and the vertices reachable from them) for which
-		   	   the function returns False.
-       vertex_formatter -- Generates the JSON for each node. Defaults to vertex_to_json.
-       edge_formatter   -- Generates the JSON for each edge. Defaults to edge_to_json.
-       
+       Parameters
+	   ----------
+       vertex : 
+	       The vertex from which to start the traversal.
+       depth : 
+	       The number of 'hops', include the starting vertex in the count.
+       vertex_label : 
+	       Which field from the vertex data() dictionary should be used for the vertex label.
+       vertex_filter : 
+	       The filter function - if you provide it, this function will be used to filter
+           out vertices for which the function returns False.
+       edge_filter : 
+	       Filters out edges (and the vertices reachable from them) for which the function returns False.
+       vertex_formatter : 
+	       Generates the JSON for each node. Defaults to vertex_to_json.
+       edge_formatter : 
+           Generates the JSON for each edge. Defaults to edge_to_json.
     """
-    height = min(1000, 200 + (depth * 100))
+    
+	height = min(1000, 200 + (depth * 100))
     edge_filter = edge_filter or _true
     vertex_filter = vertex_filter or _true
     nodes = traverse(vertex, depth, edge_filter = edge_filter, vertex_filter = vertex_filter)
@@ -160,7 +170,7 @@ def _render_json(nodes,height):
 	}
 	"""))
 
-	# most of the following JavaScript code from the the InfoVis Toolkit demo page for radial graphs:
+	# Most of the following JavaScript code comes from the the InfoVis Toolkit demo page for radial graphs:
         # http://philogb.github.io/jit/static/v20/Jit/Examples/RGraph/example1.html
 	display(Javascript("""
 		var labelType, useGradients, nativeTextSupport, animate;
@@ -251,9 +261,9 @@ function init(){
             };
         },
     });
-    //load JSON data
+    //Load JSON data.
     rgraph.loadJSON(json);
-    //trigger small animation
+    //Trigger small animation.
     rgraph.graph.eachNode(function(n) {
       var pos = n.getPos();
       pos.setc(-200, -200);
@@ -263,8 +273,8 @@ function init(){
       modes:['polar'],
       duration: 2000
     });
-    //end
-    //append information about the root relations in the right column
+    //End
+    //Append information about the root relations in the right column.
     //$jit.id('inner-details').innerHTML = rgraph.graph.getNode(rgraph.root).data.relation;
 }
 

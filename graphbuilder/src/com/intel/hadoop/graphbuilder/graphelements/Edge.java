@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,7 +15,7 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.graphelements;
 
@@ -30,12 +30,14 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * Represents an Edge object with a source, destination, label, and a (possibly empty) property map.
+ * Represents an Edge object with a source, destination, label, and a 
+ *(possibly empty) property map.
  * <p>
- * This class is mutable. See the {@code configure} and {@code setProperty} methods.
+ * This class is mutable. See the {@code configure} and {@code setProperty} 
+ * methods.
  * </p>
  *
- * @param <VidType> The type of vertex id.
+ * @param {@code <VidType>} The type of vertex id.
  */
 public class Edge<VidType extends WritableComparable<VidType>> implements Writable {
 
@@ -92,8 +94,11 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
      *
      * This changes the property map of the edge.
      *
-     * @param key The lookup key for the value in the edge's property map.
-     * @param val The value to add to the property map.
+     * @param {@code key} The lookup key for the value in the edge's 
+	 * property map.
+     * @param {@code val} The value to add to the property map (if the 
+	 * key is not there already) and that we overwrite the existing value
+	 *(if the key is already in the property map).
      */
     public void setProperty(String key, Writable val) {
         properties.setProperty(key, val);
@@ -121,7 +126,8 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Determines if the edge is a loop - that is, if its source and destination are the same vertex.
+     * Determines if the edge is a loop - that is, if its source and 
+	 * destination are the same vertex.
      * @return True, if the edge's source and destination are equal.
      */
     public boolean isSelfEdge() {
@@ -136,15 +142,18 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
     }
 
     /**
-     * Gets the edge's ID, that is,  the triple of its source vertex ID, destination vertex ID, and its label.
-     * @return  The triple of the edge's source vertex ID, destination vertex ID, and its label.
+     * Gets the edge's ID, that is,  the triple of its source vertex ID, 
+	 * destination vertex ID, and its label.
+     * @return  The triple of the edge's source vertex ID, destination 
+	 * vertex ID, and its label.
      */
     public EdgeID getEdgeID() {
         return new EdgeID(this.src, this.dst, this.label);
     }
 
     /**
-     * Converts an edge into a string for printing. Properties are tab separated.
+     * Converts an edge into a string for printing. The properties are 
+	 * tab separated.
      * @return   The string form of the edge.
      */
     @Override
@@ -155,7 +164,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
 
     /**
      * Reads an edge from an input stream.
-     * @param input The input stream.
+     * @param {@code input} The input stream.
      * @throws IOException
      */
     @Override
@@ -168,7 +177,7 @@ public class Edge<VidType extends WritableComparable<VidType>> implements Writab
 
     /**
      * Writes an edge to an output stream.
-     * @param output The output stream.
+     * @param {@code output} The output stream.
      * @throws IOException
      */
     @Override
