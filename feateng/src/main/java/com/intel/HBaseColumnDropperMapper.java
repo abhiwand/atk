@@ -25,7 +25,11 @@ public class HBaseColumnDropperMapper extends TableMapper<IntWritable, IntWritab
     HTable table;
     @Override
     public void setup(Context context) {
-        //table = new HTable();
+        try {
+            table = new HTable(context.getConfiguration(), "test_output_2");
+        } catch(Exception e) {
+
+        }
     }
 
     @Override
@@ -43,7 +47,11 @@ public class HBaseColumnDropperMapper extends TableMapper<IntWritable, IntWritab
             System.out.println("timestamp:" + HConstants.LATEST_TIMESTAMP);
 
             delete.deleteColumn(columnFamily.getBytes(), columnName.getBytes());
+            try {
+                table.delete(delete);
+            } catch(Exception e) {
 
+            }
             System.out.println("end...");
         }
     }
