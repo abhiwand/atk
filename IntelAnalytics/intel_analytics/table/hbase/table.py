@@ -328,13 +328,16 @@ class HBaseRegistry(Registry):
             If delete_table=True, then table is deleted from HBase
         """
         # test if reusing key
-        tmp = self.get_value(key)
-        if not tmp:
+        try:
+            tmp = self.get_value(key)
+        except:
+            pass
+        else:
             if not overwrite:
                 raise Exception("Big item '" + key + "' already exists.")
             HBaseTable.delete_table(tmp)
         # test if reusing table_name
-        if delete_table and self.get_key(table_name) is not None:
+        if delete_table and self.has_value(table_name):
             HBaseTable.delete_table(table_name)
 
         super(HBaseRegistry, self).register(key, table_name)

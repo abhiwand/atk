@@ -179,6 +179,12 @@ class Registry(object):
         except StopIteration:
             raise ValueError
 
+    def has_value(self, value):
+        try:
+            return (True for k, v in self._d.items() if v == value).next()
+        except StopIteration:
+            return False
+
     def register(self, key, value):
         self._d[key] = value
         self._persist()
