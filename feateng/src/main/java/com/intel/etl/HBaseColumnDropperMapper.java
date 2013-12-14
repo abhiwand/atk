@@ -1,4 +1,4 @@
-package com.intel;
+package com.intel.etl;
 
 import com.intel.etl.HBaseColumnDropper;
 import org.apache.hadoop.conf.Configuration;
