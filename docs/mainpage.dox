@@ -22,17 +22,18 @@
 	 *	    <LI> \link com.intel.pig.udf.eval.CreatePropGraphElements CreatePropGraphElements \endlink Creates \link com.intel.pig.data.PropertyGraphElement PropertyGraphElements \endlink 
 	 *       from raw input given vertex and edge tokenization rules. 
 	 *      </UL> 
-	 * - <B>Filters:</B> 
+	 * - <B>Filters</B> 
 	 *      <UL> 
 	 *	    <LI> \link intel_gb2.pig MERGEDUPLICATEGRAPHELEMENTS \endlink   
 	 *      </UL>  
-	 * - <B>Storage:</B> 
+	 * - <B>Storage</B> 
 	 *      <UL> 
-	 *	    <LI> \link com.intel.pig.udf.eval.TORDF TORDF \endlink Constructs RDF triples from property graph elements.
-	 *      <LI> Text
+	 *	    <LI> \link com.intel.pig.udf.eval.TORDF TORDF \endlink Creates RDF triples from property graph elements.
+	 *      <LI> \link com.intel.pig.udf.eval.TO_EDGELIST TO_EDGELIST \endlink Creates an edge list representation from a property graph element.  
+	 *      <LI> \link com.intel.pig.udf.eval.TO_VERTEXLIST TO_VERTEXLIST \endlink Creates vertex list representation from a property graph element.  	 
 	 *      <LI> \link intel_gb2.pig LOAD_TITAN \endlink Loads a graph from a given HBase table to the Titan graph database.
 	 *      </UL> 
-	 * - <B>Misc:</B>
+	 * - <B>Miscellaneous</B>
 	 *      <UL>  
 	 *      <LI>  \link com.intel.pig.udf.eval.CreateRowKey CreateRowKey \endlink Generates a row key that 
 	 *      <a href="http://pig.apache.org/docs/r0.12.0/api/org/apache/pig/backend/hadoop/hbase/HBaseStorage.html">HBaseStorage</a> 
