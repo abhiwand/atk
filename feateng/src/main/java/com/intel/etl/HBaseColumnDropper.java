@@ -21,6 +21,7 @@ public class HBaseColumnDropper {
 
         conf.set(HBaseColumnDropper.COLUMN_FAMILY, "etl-cf");
         conf.set(HBaseColumnDropper.COLUMN_NAME, "src");
+        conf.set("table_name", "src");
         String srcTableName = "test_output_2";
 
         Job job = new Job(conf, "Drop column");
