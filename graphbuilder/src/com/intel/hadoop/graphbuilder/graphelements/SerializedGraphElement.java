@@ -56,7 +56,7 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
      * Allocate a new vertex ID object.
      * @return new object of type {@code VidType}
      */
-    public abstract VidType createVid();
+    public abstract VertexID<VidType> createVid();
 
     /**
      * Passes in a graphElement to be wrapped.
@@ -93,7 +93,7 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
 
             Vertex<VidType> vertex = new Vertex<VidType>();
 
-            VidType vid = null;
+            VertexID<VidType> vid = null;
 
             try {
                 vid = createVid();
@@ -112,8 +112,8 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
             try {
                 Edge<VidType> edge =  new Edge<VidType>();
 
-                VidType source = createVid();
-                VidType target = createVid();
+                VertexID<VidType> source = createVid();
+                VertexID<VidType> target = createVid();
 
                 StringType  label = new StringType();
                 PropertyMap pm    = new PropertyMap();

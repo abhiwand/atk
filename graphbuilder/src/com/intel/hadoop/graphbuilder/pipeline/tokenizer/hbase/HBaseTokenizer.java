@@ -358,6 +358,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         String srcVertexColName;
         String tgtVertexColName;
 
+        // todo clean this up when tokenizer can handle vertex labels correctly
+        StringType dummyVertexLabel = null;
+
         for (String eLabel : edgeLabelList) {
 
             int          countEdgeAttr  = 0;
@@ -376,8 +379,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 for (String srcVertexName : expandString(srcVertexCellString)) {
                     for (String tgtVertexName: expandString(tgtVertexCellString)) {
 
-                        Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
-                                new StringType(tgtVertexName), new StringType(eLabel));
+                        Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName), dummyVertexLabel,
+                                new StringType(tgtVertexName), dummyVertexLabel, new StringType(eLabel));
 
                         for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
                             propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
@@ -400,8 +403,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                         vertexList.add(tgtVertex);
 
                         if (edgeRule.isBiDirectional()) {
-                            Edge<StringType> opposingEdge = new Edge<StringType>(new StringType(tgtVertexName),
-                                                                new StringType(srcVertexName),
+                            Edge<StringType> opposingEdge = new Edge<StringType>(new StringType(tgtVertexName), dummyVertexLabel,
+                                                                new StringType(srcVertexName),  dummyVertexLabel,
                                                                 new StringType(eLabel));
 
                             // now add the edge properties

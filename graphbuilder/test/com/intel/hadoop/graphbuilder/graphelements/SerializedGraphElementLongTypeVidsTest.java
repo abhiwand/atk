@@ -42,7 +42,7 @@ public class SerializedGraphElementLongTypeVidsTest {
 
         assertNotNull(vid);
 
-        assertEquals(vid.getClass(), LongType.class);
+        assertEquals(vid.getClass(), VertexID.class);
 
     }
 
@@ -91,8 +91,8 @@ public class SerializedGraphElementLongTypeVidsTest {
 
         // Check the false Edge class
         Edge<LongType> edge0 = new Edge<LongType>(
-                new LongType(001L),
-                new LongType(002L),
+                new LongType(001L), null,
+                new LongType(002L), null,
                 new StringType("isConnected"),
                 map0);
 
@@ -100,8 +100,8 @@ public class SerializedGraphElementLongTypeVidsTest {
         element4.init(edge0);
 
         Edge<LongType> edge1 = new Edge<LongType>(
-                new LongType(003L),
-                new LongType(004L),
+                new LongType(003L), null,
+                new LongType(004L), null,
                 new StringType("isConnected"),
                 map1);
 
@@ -112,8 +112,8 @@ public class SerializedGraphElementLongTypeVidsTest {
 
         // Check the true Edge class
         Edge<LongType> edge2 = new Edge<LongType>(
-                new LongType(001L),
-                new LongType(002L),
+                new LongType(001L),  null,
+                new LongType(002L),  null,
                 new StringType("isConnected"),
                 map0);
 

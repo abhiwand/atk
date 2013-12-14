@@ -35,8 +35,8 @@ public class SerializedGraphElementStringTypeVids
      *
      */
 
-    public StringType createVid() {
-        return new StringType();
+    public VertexID<StringType> createVid() {
+        return new VertexID<StringType>();
     }
 
     /**

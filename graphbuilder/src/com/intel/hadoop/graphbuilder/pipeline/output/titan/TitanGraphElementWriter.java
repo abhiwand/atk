@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
@@ -78,7 +79,7 @@ public class TitanGraphElementWriter extends GraphElementWriter {
 
             Vertex tempVertex = new Vertex();
 
-            tempVertex.configure((WritableComparable) vertex.getKey(), writeVertexProperties(vertexId, vertex, bpVertex));
+            tempVertex.configure((VertexID) vertex.getKey(), writeVertexProperties(vertexId, vertex, bpVertex));
 
             outValue.init(tempVertex);
             outKey.set(keyFunction.getVertexKey(tempVertex));
@@ -111,7 +112,7 @@ public class TitanGraphElementWriter extends GraphElementWriter {
 
             writeEdgeProperties(srcTitanId, edge);
 
-            tempEdge.configure((WritableComparable)  src, (WritableComparable)  dst, new StringType(label),
+            tempEdge.configure((VertexID)  src, (VertexID)  dst, new StringType(label),
                     writeEdgeProperties(srcTitanId, edge));
 
             outValue.init(tempEdge);

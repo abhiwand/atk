@@ -33,8 +33,8 @@ public class SerializedGraphElementLongTypeVids
      * @return  a new LongType object
      */
 
-    public LongType createVid() {
-        return new LongType();
+    public VertexID<LongType> createVid() {
+        return new VertexID<LongType>();
     }
 
     /**

@@ -20,10 +20,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
@@ -63,8 +60,7 @@ public class EdgesIntoTitanReducerCallback implements GraphElementTypeCallback {
 
         Vertex vertex = (Vertex) graphElement;
 
-        //get the vertex id, StringType or LongType
-        Object      vertexId      = vertex.getId();
+        VertexID vertexId      = vertex.getId();
         PropertyMap propertyMap   = vertex.getProperties();
         //the Titan id we got assigned during the VerticesIntoTitanReducer
         long        vertexTitanId = ((LongType) propertyMap.getProperty("TitanID")).get();

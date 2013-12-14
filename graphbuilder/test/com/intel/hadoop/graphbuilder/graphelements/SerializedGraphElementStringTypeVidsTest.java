@@ -39,7 +39,7 @@ public class SerializedGraphElementStringTypeVidsTest {
 
         assertNotNull(vid);
 
-        assertEquals(vid.getClass(), StringType.class);
+        assertEquals(vid.getClass(), VertexID.class);
     }
 
     @Test
@@ -61,11 +61,14 @@ public class SerializedGraphElementStringTypeVidsTest {
         assert(vertexElement.graphElement().toString().contains(name));
 
 
-        String srcName = "The Source";
-        String dstName = "Destination Unkown";
+        StringType srcName =  new StringType("The Source");
+        StringType srcLabel = null;
 
-        StringType srcId = new StringType(srcName);
-        StringType dstId = new StringType(dstName);
+        StringType dstName = new StringType("Destination Unkown");
+        StringType dstLabel= new StringType("vlabel");
+
+        VertexID<StringType> srcId = new VertexID<StringType>(srcName, srcLabel);
+        VertexID<StringType> dstId = new VertexID<StringType>(dstName, dstLabel);
 
         String label   = "no labels, please";
         StringType wrappedLabel = new StringType(label);
@@ -76,8 +79,9 @@ public class SerializedGraphElementStringTypeVidsTest {
 
         edgeElement.init(edge);
 
-        assert(edgeElement.graphElement().toString().contains(srcName));
-        assert(edgeElement.graphElement().toString().contains(dstName));
+        assert(edgeElement.graphElement().toString().contains(srcName.toString()));
+        assert(edgeElement.graphElement().toString().contains(dstName.toString()));
+        assert(edgeElement.graphElement().toString().contains(dstLabel.toString()));
         assert(edgeElement.graphElement().toString().contains(label));
 
         // as for the null graph element...
@@ -125,10 +129,11 @@ public class SerializedGraphElementStringTypeVidsTest {
 
         assertEquals(element2.compareTo(element0), 0);
 
+        StringType dummyVertexLabel = null;
         // Check the false Edge class
         Edge<StringType> edge0 = new Edge<StringType>(
-                new StringType("Employee001"),
-                new StringType("Employee002"),
+                new StringType("Employee001"), dummyVertexLabel,
+                new StringType("Employee002"), dummyVertexLabel,
                 new StringType("isConnected"),
                 map0);
 
@@ -136,8 +141,8 @@ public class SerializedGraphElementStringTypeVidsTest {
         element4.init(edge0);
 
         Edge<StringType> edge1 = new Edge<StringType>(
-                new StringType("Employee003"),
-                new StringType("Employee004"),
+                new StringType("Employee003"), dummyVertexLabel,
+                new StringType("Employee004"), dummyVertexLabel,
                 new StringType("isConnected"),
                 map1);
 
@@ -148,8 +153,8 @@ public class SerializedGraphElementStringTypeVidsTest {
 
         // Check the true Edge class
         Edge<StringType> edge2 = new Edge<StringType>(
-                new StringType("Employee001"),
-                new StringType("Employee002"),
+                new StringType("Employee001"), dummyVertexLabel,
+                new StringType("Employee002"), dummyVertexLabel,
                 new StringType("isConnected"),
                 map0);
 

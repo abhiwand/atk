@@ -37,6 +37,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.IntType;
@@ -98,11 +99,9 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
     // tags used to mark each vertex name as either a "document" or a "word"
     // documents are prefixed by 0, words are prefixed by 1...
-    // todo:  investigate eliminating this legacy functionality
-    //        ie. dropping the DOCUMENT_TAG and WORD_TAG and prefixes
 
-    private final char DOCUMENT_TAG = '0';
-    private final char WORD_TAG     = '1';
+    private final StringType DOCUMENT_LABEL = new StringType("document");
+    private final StringType WORD_LABEL = new StringType("word");
 
 
     /**
@@ -241,12 +240,12 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
         ArrayList<Vertex<StringType>> vertexList = new ArrayList<Vertex<StringType>>(wordCountMap.size() + 1);
 
-        vertexList.add(new Vertex<StringType>(new StringType(DOCUMENT_TAG + pageTitle)));
+        vertexList.add(new Vertex<StringType>(new StringType(pageTitle), DOCUMENT_LABEL));
 
         Iterator<String> keyIterator = wordCountMap.keySet().iterator();
 
         while (keyIterator.hasNext()) {
-            vertexList.add(new Vertex<StringType>(new StringType(WORD_TAG + keyIterator.next())));
+            vertexList.add(new Vertex<StringType>(new StringType(WORD_LABEL + keyIterator.next())));
         }
 
         return vertexList.iterator();
@@ -270,9 +269,9 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
         while (entryIterator.hasNext()) {
 
             Entry<String, Integer> entry = entryIterator.next();
-            Edge                   edge  = new Edge<StringType>(new StringType(DOCUMENT_TAG + pageTitle),
-                                                                new StringType(WORD_TAG + entry.getKey()),
-                                                                CONTAINS_STYPE);
+            VertexID<StringType>  srcId = new VertexID<StringType>(DOCUMENT_LABEL, new StringType(pageTitle));
+            VertexID<StringType>  dstId = new VertexID<StringType>(WORD_LABEL, new StringType(entry.getKey()));
+            Edge                   edge  = new Edge<StringType>(srcId, dstId, CONTAINS_STYPE);
 
             edge.setProperty("wordCount", new IntType(entry.getValue()));
 
