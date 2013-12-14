@@ -12,17 +12,21 @@ import org.apache.hadoop.fs.Path;
 
 public class HBaseColumnDropper {
 
-    public static String COLUMN_FAMILY = "column-family";
-    public static String COLUMN_NAME = "column-name";
+    public static final String COLUMN_FAMILY = "column-family";
+    public static final String COLUMN_NAME = "column-name";
+    public static final String TABLE_NAME = "table-name";
     private static Scan scan = new Scan();
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
 
-        conf.set(HBaseColumnDropper.COLUMN_FAMILY, "etl-cf");
-        conf.set(HBaseColumnDropper.COLUMN_NAME, "src");
-        conf.set("table_name", "src");
-        String srcTableName = "test_output_2";
+        String srcTableName = args[2];
+        String columnFamily = args[3];
+        String columnName = args[4];
+
+        conf.set(HBaseColumnDropper.TABLE_NAME, srcTableName);
+        conf.set(HBaseColumnDropper.COLUMN_FAMILY, columnFamily);
+        conf.set(HBaseColumnDropper.COLUMN_NAME, columnName);
 
         Job job = new Job(conf, "Drop column");
         job.setJarByClass(HBaseColumnDropper.class);
