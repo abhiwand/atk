@@ -72,7 +72,7 @@ public class TitanGraphElementWriter extends GraphElementWriter {
             // Major operation - vertex is added to Titan and a new ID is assigned to it
             com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
 
-
+            String debugTest = vertex.getKey().toString();
             bpVertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, vertex.getKey().toString());
 
             long vertexId = getVertexId(bpVertex);

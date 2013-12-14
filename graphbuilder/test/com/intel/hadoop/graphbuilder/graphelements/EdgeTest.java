@@ -49,8 +49,8 @@ public class EdgeTest {
 
         Edge<StringType> edge = new Edge<StringType>(src, dst, label);
 
-        assertSame(src, edge.getSrc());
-        assertSame(dst, edge.getDst());
+        assertSame(src, edge.getSrc().getName());
+        assertSame(dst, edge.getDst().getName());
         assertSame(label, edge.getLabel());
         assertNotNull(edge.getId());
         assertNotNull(edge.getProperties());

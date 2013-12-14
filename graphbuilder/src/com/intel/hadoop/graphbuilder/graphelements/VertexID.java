@@ -47,8 +47,7 @@ public class VertexID<VidType extends WritableComparable> implements WritableCom
     /**
      * Default, no argument constructor.
      */
-    public VertexID() {
-
+    private VertexID() {
     }
 
     /**

@@ -245,7 +245,7 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
         Iterator<String> keyIterator = wordCountMap.keySet().iterator();
 
         while (keyIterator.hasNext()) {
-            vertexList.add(new Vertex<StringType>(new StringType(WORD_LABEL + keyIterator.next())));
+            vertexList.add(new Vertex<StringType>(new StringType(keyIterator.next()), WORD_LABEL));
         }
 
         return vertexList.iterator();
@@ -269,8 +269,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
         while (entryIterator.hasNext()) {
 
             Entry<String, Integer> entry = entryIterator.next();
-            VertexID<StringType>  srcId = new VertexID<StringType>(DOCUMENT_LABEL, new StringType(pageTitle));
-            VertexID<StringType>  dstId = new VertexID<StringType>(WORD_LABEL, new StringType(entry.getKey()));
+            VertexID<StringType>  srcId = new VertexID<StringType>(new StringType(pageTitle),DOCUMENT_LABEL);
+            VertexID<StringType>  dstId = new VertexID<StringType>(new StringType(entry.getKey()), WORD_LABEL);
             Edge                   edge  = new Edge<StringType>(srcId, dstId, CONTAINS_STYPE);
 
             edge.setProperty("wordCount", new IntType(entry.getValue()));

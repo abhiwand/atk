@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.LongType;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
@@ -34,7 +35,7 @@ public class SerializedGraphElementLongTypeVids
      */
 
     public VertexID<LongType> createVid() {
-        return new VertexID<LongType>();
+        return new VertexID<LongType>(new LongType(), new StringType());
     }
 
     /**
