@@ -27,7 +27,7 @@ import unittest
 import os
 import sys
 from shutil import copyfile
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 from testutils import RegistryCallableFactory, get_diff_str
 get_registry_callable = RegistryCallableFactory().get_registry_callable
 
@@ -147,7 +147,108 @@ class TestGraphBuilder(unittest.TestCase):
         g = build(graph_name, frame, [], [], False, overwrite=False)
         self.assertIsNotNone(g)
         self.assertIsNotNone(mock_registry.get_value(graph_name))
-        self.assertIsNotNone(mock_registry.get_value('g3'))
+
+    def _raise_intended_exception(self):
+        raise Exception('mock intended exception')
+
+    @patch('intel_analytics.table.hbase.table.hbase_registry',
+           new_callable=get_registry_callable('test_build_error'))
+    @patch('intel_analytics.graph.titan.graph.hbase_registry',
+           new_callable=get_registry_callable('test_build_error'))
+    @patch('intel_analytics.graph.titan.graph.call')
+    def test_build_error(self, mock_call, mock_registry, mr2):
+        self.assertIs(mock_registry, mr2)
+        mock_registry.initialize(registry)
+        copyfile(os.path.join(_here_folder, 'gold_rexster.xml'),
+                 config['rexster_xml'])
+        graph_name = 'g3'
+        mock_call.side_effect = self._raise_intended_exception
+        self.assertFalse(graph_name in mock_registry)
+        frame = Mock()
+        frame._table.table_name = 'f3_time'
+        try:
+            build(graph_name, frame, [], [], False, overwrite=False)
+        except Exception:
+            # make sure graph_name is not in the registry
+            self.assertFalse(graph_name in mock_registry)
+        else:
+            self.fail("Expected error from build call")
+
+    def test_generate_titan_table_name(self):
+        from intel_analytics.graph.titan.graph import generate_titan_table_name
+        source = Mock()
+        source._table.table_name = "table_name"
+        result = generate_titan_table_name("prefix", source)
+        self.assertEqual("prefix_table_name_titan", result)
+        try:
+            generate_titan_table_name("prefix", "junk")
+        except Exception as e:
+            self.assertEqual("Could not get table name from source", str(e))
+        else:
+            self.fail("Expected error while get table name")
+
+    @patch('intel_analytics.table.hbase.table.hbase_registry',
+           new_callable=get_registry_callable('test_builder_bipartite'))
+    @patch('intel_analytics.graph.titan.graph.hbase_registry',
+           new_callable=get_registry_callable('test_builder_bipartite'))
+    def test_graph_builder_bipartite(self, mock_registry, mr2):
+        self.assertIs(mock_registry, mr2)
+        mock_registry.initialize(registry)
+        copyfile(os.path.join(_here_folder, 'gold_rexster.xml'),
+                 config['rexster_xml'])
+        factory = TitanGraphBuilderFactory()
+        frame = MagicMock()
+        frame.__str__.return_value =\
+            frame._table.table_name = 'bipartite_graph_frame'
+        gb = factory.get_graph_builder(GraphTypes.Bipartite, frame)
+        gb.register_vertex('colA', [])
+        gb.register_vertex('colB', ['colP', 'colQ'])
+        expected = """Source: bipartite_graph_frame
+Vertices:
+colA
+colB=colP,colQ"""
+        self.assertEqual(expected, gb.__repr__())
+        graph_name = "my_bipartite_graph"
+        g = gb.build(graph_name)
+        self.assertIsNotNone(g)
+        self.assertIsNotNone(mock_registry.get_value(graph_name))
+
+
+    @patch('intel_analytics.table.hbase.table.hbase_registry',
+           new_callable=get_registry_callable('test_builder_bipartite'))
+    @patch('intel_analytics.graph.titan.graph.hbase_registry',
+           new_callable=get_registry_callable('test_builder_bipartite'))
+    def test_graph_builder_property(self, mock_registry, mr2):
+        self.assertIs(mock_registry, mr2)
+        mock_registry.initialize(registry)
+        copyfile(os.path.join(_here_folder, 'gold_rexster.xml'),
+                 config['rexster_xml'])
+        factory = TitanGraphBuilderFactory()
+        frame = MagicMock()
+        frame.__str__.return_value = \
+            frame._table.table_name = 'property_graph_frame'
+        gb = factory.get_graph_builder(GraphTypes.Property, frame)
+        gb.register_vertex('colA', [])
+        gb.register_vertex('colB', ['colP', 'colQ'])
+        gb.register_vertices([('colC', ['colR', 'colS']), ('colD',[])])
+        gb.register_edge(('colA', 'colB', 'edgeAB'), ['colT'])
+        gb.register_edges([(('colC', 'colB','edgeCB'), []),
+                           (('colD', 'colB', 'edgeDB'), ['colU'])])
+        expected = """Source: property_graph_frame
+Vertices:
+colA
+colB=colP,colQ
+colC=colR,colS
+colD
+Edges:
+colA,colB,edgeAB,colT
+colC,colB,edgeCB
+colD,colB,edgeDB,colU"""
+        self.assertEqual(expected, gb.__repr__())
+        graph_name = "my_property_graph"
+        g = gb.build(graph_name)
+        self.assertIsNotNone(g)
+        self.assertIsNotNone(mock_registry.get_value(graph_name))
 
 
 class TestGraphConfig(unittest.TestCase):
@@ -210,9 +311,12 @@ class TestGraphConfig(unittest.TestCase):
         rexster_xml = config['rexster_xml']
         from shutil import copyfile
         copyfile(os.path.join(_here_folder, 'gold_rexster.xml'), rexster_xml)
-        titan_config.rexster_xml_delete_graph('g2_f2_time_titan')
+        self.assertTrue(
+            titan_config.rexster_xml_delete_graph('g2_f2_time_titan'))
         expected = ['g1_f1_time_titan']
         self._validate_rexster_xml(expected)
+        self.assertFalse(
+            titan_config.rexster_xml_delete_graph('nonexistent_time_titan'))
 
     def _validate_rexster_xml(self, expected):
         from xml.etree.ElementTree import ElementTree

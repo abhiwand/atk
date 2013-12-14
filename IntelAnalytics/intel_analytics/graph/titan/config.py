@@ -80,7 +80,7 @@ class TitanConfig(object):
         graphs = tree.find("./graphs")
         xpath = "./graph[graph-name='" + titan_table_name + "']"
         graph = graphs.find(xpath)
-        if len(graph):
+        if graph is not None and len(graph):
             graphs.remove(graph)
             tree.write(config['rexster_xml'])
             return True

@@ -170,7 +170,7 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
     # todo: implement column validation
 
     dst_hbase_table_name = generate_titan_table_name(graph_name, source)
-    src_hbase_table_name = get_table_name_from_source(source)
+    src_hbase_table_name = _get_table_name_from_source(source)
 
     # Must register now to make sure the dest table is clean before calling GB
     hbase_registry.register(graph_name,
@@ -203,11 +203,11 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
 
 
 def generate_titan_table_name(prefix, source):
-    source_table_name = get_table_name_from_source(source)
+    source_table_name = _get_table_name_from_source(source)
     return '_'.join([prefix, source_table_name, "titan"])
 
 
-def get_table_name_from_source(source):
+def _get_table_name_from_source(source):
     try:
         return source._table.table_name  # most likely a BigDataFrame
     except:
