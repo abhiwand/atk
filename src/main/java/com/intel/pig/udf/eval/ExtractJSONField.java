@@ -18,11 +18,8 @@
  */
 package com.intel.pig.udf.eval;
 
-import static com.jayway.restassured.path.json.JsonPath.with;
-
-import java.io.IOException;
-import java.util.List;
-
+import com.intel.pig.udf.GBUdfException;
+import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
@@ -30,8 +27,10 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import com.intel.pig.udf.GBUdfException;
-import com.intel.pig.udf.GBUdfExceptionHandler;
+import java.io.IOException;
+import java.util.List;
+
+import static com.jayway.restassured.path.json.JsonPath.with;
 
 /**
  * \brief ExtractJSONField UDF extracts fields from (potentially complex &

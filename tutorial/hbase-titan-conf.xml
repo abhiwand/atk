@@ -4,7 +4,7 @@
 <configuration>
 	<property>
 		<name>graphbuilder.titan.storage_hostname</name>
-		<value>GAO-WSC.jf.intel.com</value>
+		<value>localhost</value>
 	</property>
 
 	<property>

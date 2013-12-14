@@ -18,13 +18,11 @@
  */
 package com.intel.pig.data;
 
-import java.util.List;
-
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import java.util.List;
 
 /**
  * \brief TupleFactory to create tuples of type
@@ -56,12 +54,12 @@ public class GBTupleFactory extends TupleFactory {
 
 	/**
 	 * Creates a new {@link PropertyGraphElementTuple} with the given list of
-	 * {@link PropertyGraphElement}s
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 * 
 	 * @param the
-	 *            list of {@link PropertyGraphElement}s
+	 *            list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 * @return a {@link PropertyGraphElementTuple} containing the list of given
-	 *         {@link PropertyGraphElement}s
+	 *         {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 */
 	@Override
 	public Tuple newTuple(List list) {
@@ -70,12 +68,12 @@ public class GBTupleFactory extends TupleFactory {
 
 	/**
 	 * Creates a new {@link PropertyGraphElementTuple} with the given list of
-	 * {@link PropertyGraphElement}s
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 * 
 	 * @param the
-	 *            list of {@link PropertyGraphElement}s
+	 *            list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 * @return a {@link PropertyGraphElementTuple} containing the list of given
-	 *         {@link PropertyGraphElement}s
+	 *         {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 */
 	@Override
 	public Tuple newTupleNoCopy(List list) {
@@ -83,12 +81,12 @@ public class GBTupleFactory extends TupleFactory {
 	}
 
 	/**
-	 * Create a tuple with a single {@link PropertyGraphElement}
+	 * Create a tuple with a single {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
 	 * 
 	 * @param pge
-	 *            {@link PropertyGraphElement} to put in the tuple
+	 *            {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement} to put in the tuple
 	 * @return A {@link PropertyGraphElementTuple} with one
-	 *         {@link PropertyGraphElement}
+	 *         {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
 	 */
 	@Override
 	public Tuple newTuple(Object pge) {

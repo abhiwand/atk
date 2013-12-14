@@ -1,26 +1,25 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
@@ -28,7 +27,10 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsche
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import com.intel.hadoop.graphbuilder.util.*;
+import com.intel.hadoop.graphbuilder.util.BaseCLI;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.log4j.Logger;
@@ -40,45 +42,41 @@ import java.util.List;
 /**
  * This class handles the configuration time aspects of the graph construction rule (graph tokenizer) that converts
  * hbase records into property graph elements.
- * <p/>
  * <p>
  * It is responsible for:
  * <ul>
  * <li> Parsing of the graph specification rules; including validation of the rules and providing static parsing methods
- * for use by the mapper-time graph construction routines  </li>
- * <li> Generating the property graph schema that this graph construction rule generates </li>
- * <li> At set-up time, populating the configuration with information required by the graph construction routine
- * at MR time </li>
+ * for use by the mapper-time graph construction routines.</li>
+ * <li> Generating the property graph schema that this graph construction rule generates.</li>
+ * <li> At set-up time, populating the configuration with the information required by the graph construction routine
+ * at MR time.</li>
  * </ul>
  * </p>
- * <p/>
  * <p>
  * The rules for specifying a graph are, at present, as follows:
  * </p>
- * <p/>
  * <p>
  * <p>EDGES:
  * The first three attributes in the edge string are source vertex column, destination
- * vertex column and the string label. </p>
+ * vertex column, and the string label. </p>
  * <code> src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code>
  * </p>
  * <p>
- * <p>VERTICES: The first attribute in the string is the vertex ID column. Subsequent attributes denote vertex properties
- * and are separated from the first by an equals sign:</p>
+ * <p>VERTICES: 
+ * The first attribute in the string is the vertex ID column. Subsequent attributes denote vertex properties
+ * and are separated from the first by an equals sign.</p>
  * <code> vertex_id_column=vertex_prop1_column,... vertex_propn_column </code>
- * <p>or in the case there are no properties associated with the vertex id:
+ * <p>Or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_column </code>
  * </p>
- *  * <p>
+ * <p>
  *     EXAMPLE:
- *     <p>
  *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age" -e "
  cf:name,cf:dept,worksAt,cf:seniority"</code>
- *     </p>
+ *     <p>
  *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
  *     one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
  *     seniority in that department.
- * </p>
  * </p>
  *
  * @see GraphBuildingRule
@@ -96,14 +94,15 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     private String[] vertexRules;
     private String[] edgeRules;
     private String[] directedEdgeRules;
-    private boolean  flattenLists = false;
+    private boolean  flattenLists          = false;
+    private boolean  stripColumnFamilyNames = false;
 
     private Class vidClass = StringType.class;
     private Class<? extends GraphTokenizer>  tokenizerClass = HBaseTokenizer.class;
 
     /**
-     * Construct the HBaseGraphBuildingRule from the command line.
-     * <p/>
+     * Constructs the HBaseGraphBuildingRule from the command line.
+	 * <p>
      * The command line is used to obtain the hbase table name used as a data source, as well as the graph generation
      * rules.
      *
@@ -130,6 +129,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
         directedEdgeRules =
                 nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
 
+        this.stripColumnFamilyNames = cmd.hasOption(BaseCLI.Options.stripColumnFamilyNames.getLongOpt());
+
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();
 
@@ -151,6 +152,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
+     * Set the option to strip column family names when creating propery names from HBase column names..
+     * <p><ul><li> when true: cf_name:column_name is used to populate the property names "column_name"</li>
+     * <li> when false: cf_name:column_name is used to populate the property names "cf_name:column_name"</li> </ul></p>
+     * @param stripColumnFamilyNames {@code boolean}
+     */
+    public void setStripColumnFamilyNames(boolean stripColumnFamilyNames) {
+        this.stripColumnFamilyNames = stripColumnFamilyNames;
+    }
+
+    /**
      * A helper function that replaces nulls with empty lists.
      */
     private String[] nullsIntoEmptyStringArrays(String[] in) {
@@ -162,8 +173,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Check that the vertex rules are syntactically correct.
-     * <p/>
+     * Checks that the vertex rules are syntactically correct.
+     * <p>
      * This method does not check if the column names used are present in the hbase table.
      */
     private void checkSyntaxOfVertexRules() {
@@ -171,9 +182,9 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Verify that the edge rules are syntactically correct.
-     * <p/>
-     * This method does not check if the column names are present in the hbase table..
+     * Verifies that the edge rules are syntactically correct.
+     * <p>
+     * This method does not check if the column names are present in the hbase table.
      */
     private void checkSyntaxOfEdgeRules() {
 
@@ -196,12 +207,12 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Check that the vertex generation rules use only legal column families.
+     * Checks that the vertex generation rules use only legal column families.
      * <p/>
      * Because hbase allows different rows to contains different columns under each column family,
      * we cannot validate the full column name against the Hbase table.
      *
-     * @return true iff the supplied vertex rules all have column families valid for the table
+     * @return True if the supplied vertex rules all have column families valid for the table.
      */
     private boolean validateVertexRuleColumnFamilies() {
 
@@ -236,12 +247,12 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Check that the edge generation rules use only legal column families.
-     * <p/>
+     * Checks that the edge generation rules use only legal column families.
+     * <p>
      * Because hbase allows different rows to contains different columns under each column family,
-     * we cannot validate the full column name against the Hbase table
+     * we cannot validate the full column name against the Hbase table.
      *
-     * @return true iff the supplied edge rules have all column families valid for the table
+     * @return True if the supplied edge rules have all column families valid for the table.
      */
 
     private boolean validateEdgeRuleColumnFamilies() {
@@ -284,9 +295,9 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Store the edge and vertex generation rules in the job configuration for use by the MR time graph tokenizer.
+     * Stores the edge and vertex generation rules in the job configuration for use by the MR time graph tokenizer.
      *
-     * @param configuration reference to the job configuration in which rules for tokenizer will be stored
+     * @param configuration A reference to the job configuration in which the rules for the tokenizer will be stored.
      * @see HBaseTokenizer
      */
     public void updateConfigurationForTokenizer(Configuration configuration) {
@@ -294,6 +305,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
         packEdgeRulesIntoConfiguration(configuration, edgeRules);
         packDirectedEdgeRulesIntoConfiguration(configuration, directedEdgeRules);
         configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", flattenLists);
+        configuration.setBoolean("HBASE_TOKENIZER_STRIP_COLUMNFAMILY_NAMES", stripColumnFamilyNames);
     }
 
     /**
@@ -316,15 +328,26 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Get the schema of property graphs generated by this graph construction rule.
+     * Gets the schema of the property graphs generated by this graph construction rule.
      *
-     * @return The schema of property graphs generated by this graph construction rule.
+     * @return The schema of the property graphs generated by this graph construction rule.
      * @see PropertyGraphSchema
      */
     public PropertyGraphSchema getGraphSchema() {
         return graphSchema;
     }
 
+    /*
+     * Extract property name from column name
+     */
+    public static String propertyNameFromColumnName(String columnName, boolean stripColumnFamilyNames) {
+        if (stripColumnFamilyNames) {
+            return columnName.split("\\:")[1];
+
+        } else {
+            return columnName;
+        }
+    }
     private void generateVertexSchemata() {
 
         for (String vertexRule : vertexRules) {
@@ -334,7 +357,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             String[] columnNames = HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
 
             for (String vertexPropertyColumnName : columnNames) {
-                PropertySchema propertySchema = new PropertySchema(vertexPropertyColumnName, String.class);
+                String propertyName = propertyNameFromColumnName(vertexPropertyColumnName, stripColumnFamilyNames);
+                PropertySchema propertySchema = new PropertySchema(propertyName, String.class);
                 vertexSchema.getPropertySchemata().add(propertySchema);
             }
 
@@ -352,8 +376,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             EdgeSchema edgeSchema = new EdgeSchema(label);
 
             for (String columnName : columnNames) {
-                String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
+                String edgePropertyName = propertyNameFromColumnName(columnName, stripColumnFamilyNames);
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }
@@ -369,8 +392,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             EdgeSchema edgeSchema = new EdgeSchema(label);
 
             for (String columnName : columnNames) {
-                String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
+                String edgePropertyName = propertyNameFromColumnName(columnName, stripColumnFamilyNames);
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }
@@ -395,12 +417,12 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Static helper function for unpacking vertex rules from job configuration.
-     * <p/>
+     * Static helper function that unpacks the vertex rules from the job configuration.
+     * <p>
      * Intended to be used by the MR-time tokenizer.
      *
      * @param configuration The job configuration into which the vertex rules have been stored.
-     * @return array of strings, each encoding a vertex rule
+     * @return Array of strings, each encoding a vertex rule.
      * @see HBaseTokenizer
      */
     public static String[] unpackVertexRulesFromConfiguration(Configuration configuration) {
@@ -446,12 +468,12 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
 
     /**
-     * Static helper function for unpacking edge rules from job configuration.
-     * <p/>
+     * Static helper function that unpacks the edge rules from the job configuration.
+     * <p>
      * Intended to be used by the MR-time tokenizer.
      *
      * @param configuration The job configuration into which the edge rules have been stored.
-     * @return array of strings, each encoding a edge rule
+     * @return Array of strings, each encoding a edge rule.
      * @see HBaseTokenizer
      */
 
@@ -472,12 +494,12 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Static helper function for unpacking edge rules from job configuration.
+     * Static helper function that unpacks the edge rules from the job configuration.
      * <p/>
      * Intended to be used by the MR-time tokenizer.
      *
      * @param configuration The job configuration into which the edge rules have been stored.
-     * @return array of strings, each encoding a edge rule
+     * @return Array of strings, each encoding a edge rule.
      * @see HBaseTokenizer
      */
 
@@ -498,11 +520,11 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Obtain vertex ID column name from vertex rule.
-     * <p/>
+     * Obtains the vertex ID column name from vertex rule.
+     * <p>
      * <code>[RDF Object],vertex_col1=vertex_prop1,...vertex_coln</code>
      *
-     * @return the column name of the vertex ID in the given vertex rule
+     * @return The column name of the vertex ID in the given vertex rule.
      */
     public static String getVidColNameFromVertexRule(String vertexRule) {
 
@@ -536,11 +558,11 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Obtain vertex property column names from vertex rule.
-     * <p/>
+     * Obtains the vertex property column names from the vertex rule.
+     * <p>
      * <code>vertex_col1=vertex_prop1,...vertex_coln</code>
      *
-     * @return the column names of the properties in the given vertex rule
+     * @return The column names of the properties in the given vertex rule.
      */
     public static String[] getVertexPropertyColumnsFromVertexRule(String vertexRule) {
         String[] vertexPropertyColumns = null;
@@ -556,13 +578,13 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Obtain the column name of the source vertex ID from an edge rule.
-     * <p/>
-     * The first three attributes in the edge string are source vertex column, destination
-     * vertex column and the string label ie.
+     * Obtains the column name of the source vertex ID from an edge rule.
+     * <p>
+     * The first three attributes in the edge string are the source vertex column, the destination
+     * vertex column, and the string label, as shown in this example.
      * <code>src_vertex_col,dest_vertex_col,label,edge_property_col1,..edge_property_coln</code>
      *
-     * @return the full column name of the source vertex ID
+     * @return The full column name of the source vertex ID.
      */
 
     public static String getSrcColNameFromEdgeRule(String edgeRule) {
@@ -573,10 +595,10 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Obtain the column name of the destination vertex ID from an edge rule.
-     * <p/>
-     * The first three attributes in the edge string are source vertex column, destination
-     * vertex column and the string label ie.
+     * Obtains the column name of the destination vertex ID from an edge rule.
+     * <p>
+     * The first three attributes in the edge string are the source vertex column, the destination
+     * vertex column, and the string label, as shown in this example.
      * <code>src_vertex_col,dest_vertex_col,label,edge_property_col1,..edge_property_coln</code>
      *
      * @return the full column name of the destination vertex ID
@@ -588,13 +610,13 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Obtain the edge label from an edge rule.
-     * <p/>
-     * The first three attributes in the edge string are source vertex column, destination
-     * vertex column and the string label ie.
+     * Obtains the edge label from an edge rule.
+     * <p>
+     * The first three attributes in the edge string are the source vertex column, the destination
+     * vertex column, and the string label, as shown in this example.
      * <code>src_vertex_col,dest_vertex_col,label,edge_property_col1,..edge_property_coln</code>
      *
-     * @return the edge label
+     * @return The edge label.
      */
 
     public static String getLabelFromEdgeRule(String edgeRule) {
@@ -604,13 +626,13 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Obtain the column names for the properties of an edge rule.
-     * <p/>
-     * The first three attributes in the edge string are source vertex column, destination
-     * vertex column and the string label ie.
+     * Obtains the column names for the properties of an edge rule.
+     * <p>
+     * The first three attributes in the edge string are the source vertex column, the destination
+     * vertex column, and the string label, as shown in this example.
      * <code>src_vertex_col,dest_vertex_col,label,edge_property_col1,..edge_property_coln</code>
      *
-     * @return the list of column names for the edge properties
+     * @return The list of column names for the edge properties.
      */
 
     public static ArrayList<String> getEdgePropertyColumnNamesFromEdgeRule(String edgeRule) {

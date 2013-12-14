@@ -19,22 +19,18 @@
 package com.intel.hadoop.graphbuilder.pig;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import org.apache.pig.EvalFunc;
-import org.apache.pig.data.DataType;
-import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.PigContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +51,7 @@ public class TestToEdgelist {
 
     @Test
     public void runTests() throws IOException {
-        PropertyGraphElementStringTypeVids graphElement = new PropertyGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
 
         PropertyMap map0 = new PropertyMap();
         map0.setProperty("name", new StringType("Alice"));
@@ -67,10 +63,10 @@ public class TestToEdgelist {
                 new StringType("Employee002"),
                 new StringType("worksWith"),
                 map0);
-        graphElement.init(PropertyGraphElement.GraphElementType.EDGE, edge);
+        serializedGraphElement.init(edge);
 
         PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
-        t.set(0, graphElement);
+        t.set(0, serializedGraphElement);
 
         String statement0 = (String) toEdgelistUdf0.exec(t);
         assertEquals(

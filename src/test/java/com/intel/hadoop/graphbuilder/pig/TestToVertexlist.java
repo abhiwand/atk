@@ -18,15 +18,13 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import org.apache.pig.EvalFunc;
-import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.PigContext;
 import org.junit.After;
 import org.junit.Before;
@@ -52,7 +50,7 @@ public class TestToVertexlist {
 
     @Test
     public void runTests() throws IOException {
-        PropertyGraphElementStringTypeVids graphElement = new PropertyGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
 
         PropertyMap map0 = new PropertyMap();
         map0.setProperty("name", new StringType("Alice"));
@@ -62,12 +60,12 @@ public class TestToVertexlist {
         vertex.configure(
                 new StringType("Employee001"),
                 map0);
-        vertex.setVertexLabel(new StringType("HAWK.People"));
+        vertex.setLabel(new StringType("HAWK.People"));
 
-        graphElement.init(PropertyGraphElement.GraphElementType.VERTEX, vertex);
+        serializedGraphElement.init(vertex);
 
         PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
-        t.set(0, graphElement);
+        t.set(0, serializedGraphElement);
 
         String statement0 = (String) toEdgelistUdf0.exec(t);
         assertEquals(

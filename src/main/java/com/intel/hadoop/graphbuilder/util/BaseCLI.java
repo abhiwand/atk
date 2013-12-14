@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
+/**
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  *
  * For more about this software visit:
- *      http://www.01.org/GraphBuilder
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.util;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
@@ -49,9 +49,12 @@ public class BaseCLI {
     private static final String CMD_TABLE_OPTION_NAME = HBaseCommandLineOptions.CMD_TABLE_OPTION_NAME;
     private static final String CMD_VERTICES_OPTION_NAME = HBaseCommandLineOptions.CMD_VERTICES_OPTION_NAME;
     private static final String FLATTEN_LISTS_OPTION_NAME = HBaseCommandLineOptions.FLATTEN_LISTS_OPTION_NAME;
+    private static final String STRIP_COLUMNFAMILY_NAMES_OPTION_NAME =
+            HBaseCommandLineOptions.STRIP_COLUMNFAMILY_NAMES_OPTION_NAME;
 
     //titan option long names
     private static final String TITAN_APPEND = TitanCommandLineOptions.APPEND;
+    private static final String TITAN_OVERWRITE = TitanCommandLineOptions.OVERWRITE;
     private static final String TITAN_STORAGE = TitanCommandLineOptions.STORE;
     private static final String TITAN_KEY_INDEX_DECLARATION_CLI_HELP = TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP;
     private static final String TITAN_KEY_INDEX = TitanCommandLineOptions.CMD_KEYS_OPTNAME;
@@ -64,7 +67,9 @@ public class BaseCLI {
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),
         directedEdge(CLI_DIRECTED_EDGE_OPTION), flattenList(CLI_FLATTEN_LIST_OPTION),
+        stripColumnFamilyNames(CLI_STRIP_COLUMNFAMILY_NAMES_OPTION),
         titanAppend(CLI_TITAN_APPEND_OPTION), titanKeyIndex(CLI_TITAN_KEY_INDEX),
+        titanOverwrite(CLI_TITAN_OVERWRITE_OPTION),
         titanStorage(CLI_TITAN_STORAGE_OPTION),
         outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION);
 
@@ -84,9 +89,17 @@ public class BaseCLI {
             .withDescription("Flag that expends lists into multiple items. " )
             .create("F");
 
+    private static final Option CLI_STRIP_COLUMNFAMILY_NAMES_OPTION = OptionBuilder.withLongOpt(STRIP_COLUMNFAMILY_NAMES_OPTION_NAME)
+            .withDescription("Flag that strips HBase column family names from the property names used in the graph. " )
+            .create("s");
+
     private static final Option CLI_TITAN_APPEND_OPTION= OptionBuilder.withLongOpt(TITAN_APPEND)
             .withDescription("Append Graph to Current Graph at Specified Titan Table")
             .create("a");
+
+    private static final Option CLI_TITAN_OVERWRITE_OPTION = OptionBuilder.withLongOpt(TITAN_OVERWRITE)
+            .withDescription("Overwrite the existing graph at the specified Titan Table")
+            .create("O");
 
     private static final Option CLI_TITAN_KEY_INDEX = OptionBuilder.withLongOpt(TITAN_KEY_INDEX)
             .withDescription("Specify keys, please. " + TITAN_KEY_INDEX_DECLARATION_CLI_HELP)

@@ -1,48 +1,32 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.wordcountgraph;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map.Entry;
-import java.util.Scanner;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.IntType;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
-
 import org.apache.commons.collections.iterators.EmptyIterator;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -59,20 +43,28 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-
-import com.intel.hadoop.graphbuilder.types.StringType;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
- * {@code GraphTokenizer} class that converts  a Wiki page (presented as into a set of vertices and edges
+ * The {@code GraphTokenizer} class that converts a Wiki page (presented as a set of vertices and edges
  * by the following rules:
  * <ul>
  *     <li>There is a vertex for each wiki page.</li>
  *     <li>There is a vertex for each word.</li>
  *     <li>There is a "contains" edge between every page and every word that it contains.</li>
- *     <li>The "contains" edge between a page and a word contains the frequency of the word in the page at the property
- *     "wordCount"</li>
+ *     <li>The "contains" edge between a page and a word contains the frequency of the word in the page in the "wordCount"
+ *     property.</li>
  * </ul>
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer
@@ -106,22 +98,23 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
 
     /**
-     * Configure the tokenizer from files.
+     * Configures the tokenizer from files.
      *
-     * In particular, load the dictionary and stopwords files if they are provided.
+     * In particular, loads the dictionary and stopwords files if they are provided.
      */
     @Override
     public void configure(Configuration configuration) {
 
         try {
             fileSystem = FileSystem.get(configuration);
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "GRAPHBUILDER_ERROR: Could not access file system from configuration.", LOG, e);
         }
 
         String dictPath = configuration.get("Dictionary");
 
-        if (dictPath != null && dictPath != "") {
+        if (dictPath != null && !dictPath.isEmpty()) {
             try {
                 loadDictionary(dictPath);
             } catch (IOException e) {
@@ -132,7 +125,7 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
         String stopWordsPath = configuration.get("StopWords");
 
-        if (stopWordsPath != null && stopWordsPath != "") {
+        if (stopWordsPath != null && !stopWordsPath.isEmpty()) {
             try {
                 loadStopWords(stopWordsPath);
             } catch (IOException e) {
@@ -143,15 +136,15 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
     }
 
     /**
-     * Generate vertices and edges from the wikipage.
+     * Generates vertices and edges from the wikipage.
      * <p>
      * <ul>
-     *     <li>There is a "contains" edge between every page and every word that it contains</li>
-     *     <li>The "contains" edge between a page and a word contains the frequency of the word</li>
+     *     <li>There is a "contains" edge between every page and every word that it contains.</li>
+     *     <li>The "contains" edge between a page and a word contains the frequency of the word.</li>
      * </ul>
      * </p>
-     * @param inputString the wikipage as a string
-     * @param context   Hadoop provided mapper context
+     * @param inputString The wikipage as a string.
+     * @param context   The Hadoop provided mapper context.
      */
     public void parse(String inputString, Mapper.Context context) {
 
@@ -228,8 +221,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
     }
 
     /**
-     * Get the list of vertices generated by the tokenizer for this wikipage
-     * @return list of vertices
+     * Gets the list of vertices generated by the tokenizer for this wikipage.
+     * @return A list of vertices.
      */
     @Override
     public Iterator<Vertex<StringType>> getVertices() {
@@ -252,8 +245,8 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
     }
 
     /**
-     * Get the list of edges generated by the tokenizer for this wikipage.
-     * @return  list of generated edges
+     * Gets the list of edges generated by the tokenizer for this wikipage.
+     * @return  A list of generated edges.
      */
     @Override
     public Iterator<Edge<StringType>> getEdges() {

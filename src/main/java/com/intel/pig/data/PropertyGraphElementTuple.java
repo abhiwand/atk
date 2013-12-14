@@ -18,23 +18,17 @@
  */
 package com.intel.pig.data;
 
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import org.apache.pig.PigException;
+import org.apache.pig.backend.executionengine.ExecException;
+import org.apache.pig.data.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.apache.pig.PigException;
-import org.apache.pig.backend.executionengine.ExecException;
-import org.apache.pig.data.AbstractTuple;
-import org.apache.pig.data.DataReaderWriter;
-import org.apache.pig.data.DataType;
-import org.apache.pig.data.DefaultTuple;
-import org.apache.pig.data.SizeUtil;
-import org.apache.pig.data.TupleFactory;
-
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 
 /**
  * \brief PropertyGraphElementTuple is the tuple type processed by the GB 2.0
@@ -46,13 +40,13 @@ import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
  */
 public class PropertyGraphElementTuple extends AbstractTuple {
 
-	List<PropertyGraphElement> propertyGraphElements;
+	List<SerializedGraphElement> serializedGraphElements;
 
 	/**
 	 * Constructs a PropertyGraphElementTuple with zero elements.
 	 */
 	public PropertyGraphElementTuple() {
-		propertyGraphElements = new ArrayList<PropertyGraphElement>();
+		serializedGraphElements = new ArrayList<SerializedGraphElement>();
 	}
 
 	/**
@@ -64,52 +58,52 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 * 
 	 */
 	public PropertyGraphElementTuple(int size) {
-		propertyGraphElements = new ArrayList<PropertyGraphElement>(size);
+		serializedGraphElements = new ArrayList<SerializedGraphElement>(size);
 		for (int i = 0; i < size; i++)
-			propertyGraphElements.add(null);
+			serializedGraphElements.add(null);
 	}
 
 	/**
 	 * Constructs a PropertyGraphElementTuple from a given list of
-	 * {@link PropertyGraphElement}s
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 * 
 	 * @param elements
-	 *            list of {@link PropertyGraphElement}s
+	 *            list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 */
 	public PropertyGraphElementTuple(List elements) {
-		propertyGraphElements = elements;
+		serializedGraphElements = elements;
 	}
 
 	/**
-	 * Returns the number of {@link PropertyGraphElement}s in this tuple.
+	 * Returns the number of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s in this tuple.
 	 * 
-	 * @return the size of the list of {@link PropertyGraphElement}s in this
+	 * @return the size of the list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s in this
 	 *         tuple.
 	 */
 	@Override
 	public int size() {
-		return propertyGraphElements.size();
+		return serializedGraphElements.size();
 	}
 
 	/**
-	 * Get the {@link PropertyGraphElement} in the given <code>fieldNum</code>
+	 * Get the {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement} in the given <code>fieldNum</code>
 	 * 
 	 * @param fieldNum
-	 *            Index of the PropertyGraphElement to get.
-	 * @return the PropertyGraphElement as an Object.
+	 *            Index of the SerializedGraphElement to get.
+	 * @return the SerializedGraphElement as an Object.
 	 * @throws ExecException
 	 *             if the field number is greater than or equal to the number of
 	 *             fields in the tuple.
 	 */
 	@Override
 	public Object get(int fieldNum) throws ExecException {
-		if (fieldNum >= propertyGraphElements.size()) {
+		if (fieldNum >= serializedGraphElements.size()) {
 			throw new ExecException(
 					"Specified fieldNum "
 							+ fieldNum
 							+ " is greater than or equal to the number of fields in this tuple");
 		}
-		return propertyGraphElements.get(fieldNum);
+		return serializedGraphElements.get(fieldNum);
 	}
 
 	/**
@@ -120,7 +114,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 */
 	@Override
 	public List<Object> getAll() {
-		List<? extends Object> casted = propertyGraphElements;
+		List<? extends Object> casted = serializedGraphElements;
 		return (List<Object>) casted;
 	}
 
@@ -142,25 +136,25 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 */
 	@Override
 	public void set(int fieldNum, Object val) throws ExecException {
-		if (fieldNum >= propertyGraphElements.size()) {
+		if (fieldNum >= serializedGraphElements.size()) {
 			throw new ExecException(
 					"Specified fieldNum "
 							+ fieldNum
 							+ " is greater than or equal to the number of fields in this tuple");
 		}
 
-		if (!(val instanceof PropertyGraphElement)) {
+		if (!(val instanceof SerializedGraphElement)) {
 			throw new ExecException("Given value is of type "
 					+ val.getClass().getName() + ". It should be of type "
-					+ PropertyGraphElement.class.getName());
+					+ SerializedGraphElement.class.getName());
 		}
 
-		propertyGraphElements.set(fieldNum, (PropertyGraphElement) val);
+		serializedGraphElements.set(fieldNum, (SerializedGraphElement) val);
 
 	}
 
 	/**
-	 * Append a PropertyGraphElement to this tuple. This method is not efficient
+	 * Append a SerializedGraphElement to this tuple. This method is not efficient
 	 * as it may force copying of existing data in order to grow the data
 	 * structure. Whenever possible you should construct your Tuple with
 	 * {@link TupleFactory#newTuple(int)} and then fill in the values with
@@ -172,12 +166,12 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 */
 	@Override
 	public void append(Object val) {
-		if (!(val instanceof PropertyGraphElement)) {
+		if (!(val instanceof SerializedGraphElement)) {
 			throw new RuntimeException("Given value is of type "
 					+ val.getClass().getName() + ". It should be of type "
-					+ PropertyGraphElement.class.getName());
+					+ SerializedGraphElement.class.getName());
 		}
-		propertyGraphElements.add((PropertyGraphElement) val);
+		serializedGraphElements.add((SerializedGraphElement) val);
 	}
 
 	/**
@@ -192,7 +186,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 */
 	@Override
 	public long getMemorySize() {
-		Iterator<PropertyGraphElement> i = propertyGraphElements.iterator();
+		Iterator<SerializedGraphElement> i = serializedGraphElements.iterator();
 		// fixed overhead
 		long empty_tuple_size = 8 /* tuple object header */
 		+ 8 /*
@@ -205,7 +199,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		// rest of the fixed portion of mfields size is accounted within
 		// empty_tuple_size
 		long mfields_var_size = SizeUtil
-				.roundToEight(4 + 4 * propertyGraphElements.size());
+				.roundToEight(4 + 4 * serializedGraphElements.size());
 		// in java hotspot 32bit vm, there seems to be a minimum tuple size of
 		// 96
 		// which is probably from the minimum size of this array list
@@ -227,7 +221,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	@Override
 	public void readFields(DataInput in) throws IOException {
 		// Clear our fields, in case we're being reused.
-		propertyGraphElements.clear();
+		serializedGraphElements.clear();
 		// Make sure it's a tuple.
 		byte b = in.readByte();
 		if (b != DataType.TUPLE) {
@@ -260,7 +254,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		int sz = size();
 		out.writeInt(sz);
 		for (int i = 0; i < sz; i++) {
-			DataReaderWriter.writeDatum(out, propertyGraphElements.get(i));
+			DataReaderWriter.writeDatum(out, serializedGraphElements.get(i));
 		}
 	}
 
@@ -271,7 +265,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	public int compareTo(Object other) {
 		if (other instanceof PropertyGraphElementTuple) {
 			PropertyGraphElementTuple t = (PropertyGraphElementTuple) other;
-			int mySize = propertyGraphElements.size();
+			int mySize = serializedGraphElements.size();
 			int otherSize = t.size();
 			/**
 			 * Comparable requires us to return a negative integer, zero, or a
@@ -285,10 +279,10 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 				return -1;
 			} else {
 				for (int i = 0; i < mySize; i++) {
-					PropertyGraphElement myPge = propertyGraphElements.get(i);
-					PropertyGraphElement otherPge;
+					SerializedGraphElement myPge = serializedGraphElements.get(i);
+					SerializedGraphElement otherPge;
 					try {
-						otherPge = (PropertyGraphElement) t.get(i);
+						otherPge = (SerializedGraphElement) t.get(i);
 						int comparisonResult = myPge.compareTo(otherPge);
 						/*
 						 * if two PropertyGraphElements are not equal we are

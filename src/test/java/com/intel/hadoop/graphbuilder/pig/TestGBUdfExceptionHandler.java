@@ -18,16 +18,15 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import java.io.IOException;
-
+import com.intel.pig.udf.GBUdfException;
+import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.impl.PigContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.intel.pig.udf.GBUdfException;
-import com.intel.pig.udf.GBUdfExceptionHandler;
+import java.io.IOException;
 
 public class TestGBUdfExceptionHandler {
 	EvalFunc<?> toRdfUdf;

@@ -19,22 +19,18 @@
 
 package com.intel.pig.udf.eval;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement.GraphElementType;
-import com.intel.pig.data.PropertyGraphElementTuple;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
-import org.apache.pig.data.*;
-import org.apache.pig.impl.logicalLayer.FrontendException;
+import org.apache.pig.data.DataType;
+import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
-
-import static org.apache.pig.data.DataType.BOOLEAN;
 
 /**
  * TO_EDGELIST UDF intakes property graph elements and spits out
@@ -81,18 +77,23 @@ public class TO_EDGELIST extends EvalFunc<String> {
 	@Override
 	public String exec(Tuple input) throws IOException {
 
-		PropertyGraphElement graphElement = (PropertyGraphElement) input.get(0);
+		SerializedGraphElement serializedGraphElement = (SerializedGraphElement) input.get(0);
+        GraphElement graphElement = serializedGraphElement.graphElement();
+
+        if (graphElement == null) {
+            warn("Null property graph element", PigWarning.UDF_WARNING_1);
+			return null;
+        }
 
 		// Print edges, skip vertices
-		if (graphElement.graphElementType().equals(GraphElementType.EDGE)) {
-			Edge edge = graphElement.edge();
+		if (graphElement.isEdge()) {
             String edgeString = "";
             if (this.printProperties) {
-                edgeString = edge.toString();
+                edgeString = graphElement.toString();
             } else {
-			    edgeString = edge.getSrc().toString() + "\t" +
-                             edge.getDst().toString() + "\t" +
-                             edge.getEdgeLabel().toString();
+			    edgeString = graphElement.getSrc().toString() + "\t" +
+                             graphElement.getDst().toString() + "\t" +
+                             graphElement.getLabel().toString();
             }
 			return edgeString;
 		}

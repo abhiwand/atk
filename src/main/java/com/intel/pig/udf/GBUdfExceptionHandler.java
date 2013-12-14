@@ -18,12 +18,12 @@
  */
 package com.intel.pig.udf;
 
-import java.io.IOException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.backend.hadoop.executionengine.physicalLayer.util.MonitoredUDFExecutor.ErrorCallback;
+
+import java.io.IOException;
 
 /**
  * GBUdfExceptionHandler is an exception handler used for handling exceptions

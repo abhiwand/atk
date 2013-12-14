@@ -20,20 +20,19 @@ package com.intel.pig.udf.eval;
  */
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
-import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
@@ -55,13 +54,13 @@ import java.util.Iterator;
  * This routine merges properties by simply merging the property lists by brute force.
  *
  * @see PropertyGraphElementTuple
- * @see PropertyGraphElement
+ * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {
 
-    private PropertyGraphElement graphElementFromGroupedBagEntry(Tuple tuple) throws ExecException {
-        return (PropertyGraphElement) tuple.get(1);
+    private SerializedGraphElement graphElementFromGroupedBagEntry(Tuple tuple) throws ExecException {
+        return (SerializedGraphElement) tuple.get(1);
     }
 
     /**
@@ -79,30 +78,25 @@ public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {
         PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) new GBTupleFactory()
                 .newTuple(1);
 
-
         Iterator it = valueBag.iterator();
 
         // the bag contains at least one element
-        PropertyGraphElement baseGraphElement = graphElementFromGroupedBagEntry((Tuple) it.next());
+        SerializedGraphElement serializedGraphElement =
+                graphElementFromGroupedBagEntry((Tuple) it.next());
+        GraphElement graphElement = serializedGraphElement.graphElement();
 
-        if (baseGraphElement.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
-            Vertex baseVertex = baseGraphElement.vertex();
-
-            while (it.hasNext()){
-                Tuple t = (Tuple)it.next();
-                Vertex dupVertex = graphElementFromGroupedBagEntry(t).vertex();
-                baseVertex.getProperties().mergeProperties(dupVertex.getProperties());
-            }
-        } else {
-            Edge baseEdge = baseGraphElement.edge();
-
-            while (it.hasNext()){
-                Tuple t = (Tuple)it.next();
-                Vertex dupEdge = graphElementFromGroupedBagEntry(t).vertex();
-                baseEdge.getProperties().mergeProperties(dupEdge.getProperties());
-            }
+        if (graphElement == null) {
+            warn("Null property graph element", PigWarning.UDF_WARNING_1);
+			return null;
         }
-        outTuple.set(0, baseGraphElement);
+
+        while (it.hasNext()){
+            Tuple t = (Tuple)it.next();
+            GraphElement dupGraphElement = graphElementFromGroupedBagEntry(t).graphElement();
+            graphElement.getProperties().mergeProperties(dupGraphElement.getProperties());
+        }
+
+        outTuple.set(0, serializedGraphElement);
         return outTuple;
     }
 

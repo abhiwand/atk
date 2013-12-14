@@ -69,7 +69,7 @@
  * <H2>Known Issues:</H2>
  *  <B>Using DUMP to print property graph elements fails</B><BR/>
  *  Using Pig's DUMP command to dump property graph elements causes "ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
- *  Could not find class com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids, while attempting to de-serialize it". To fix the problem,
+ *  Could not find class com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids, while attempting to de-serialize it". To fix the problem,
  *  in $HADOOP_HOME/conf/hadoop-env.sh file update the line that exports HADOOP_CLASSPATH and add "$PIG_HOME/pig-0.12.0.jar:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar" 
  *  to the end of this classpath definition ($PIG_HOME and $GB_HOME are the paths where Pig and GB are installed).
  * 

@@ -19,12 +19,7 @@
 
 package com.intel.pig.udf.eval;
 
-import java.io.IOException;
-
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.types.*;
 import com.intel.hadoop.graphbuilder.util.BaseCLI;
@@ -39,10 +34,8 @@ import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.builtin.MonitoredUDF;
-
 import org.apache.pig.data.BagFactory;
 import org.apache.pig.data.DataBag;
-
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
@@ -324,12 +317,12 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory()
                 .newTuple(1);
 
-        PropertyGraphElementStringTypeVids graphElement = new PropertyGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids serializedgraphElement = new SerializedGraphElementStringTypeVids();
 
-        graphElement.init(PropertyGraphElement.GraphElementType.VERTEX, vertex);
+        serializedgraphElement.init(vertex);
 
         try {
-            graphElementTuple.set(0, graphElement);
+            graphElementTuple.set(0, serializedgraphElement);
             outputBag.add(graphElementTuple);
         } catch (ExecException e) {
             // todo raise exception
@@ -341,12 +334,12 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory().newTuple(1);
 
-        PropertyGraphElementStringTypeVids graphElement = new PropertyGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
 
-        graphElement.init(PropertyGraphElement.GraphElementType.EDGE, edge);
+        serializedGraphElement.init(edge);
 
         try {
-            graphElementTuple.set(0, graphElement);
+            graphElementTuple.set(0, serializedGraphElement);
             outputBag.add(graphElementTuple);
         } catch (ExecException e) {
             // todo raise exception
@@ -441,7 +434,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
                     String label = vertexLabelMap.get(fieldName);
                     if (label != null) {
-                        vertex.setVertexLabel(new StringType(label));
+                        vertex.setLabel(new StringType(label));
                     }
                     addVertexToPropElementBag(outputBag, vertex);
                 }

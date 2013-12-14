@@ -19,16 +19,14 @@
 
 package com.intel.pig.udf.eval;
 
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement.GraphElementType;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
-import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
@@ -78,19 +76,24 @@ public class TO_VERTEXLIST extends EvalFunc<String> {
 	@Override
 	public String exec(Tuple input) throws IOException {
 
-		PropertyGraphElement graphElement = (PropertyGraphElement) input.get(0);
+		SerializedGraphElement serializedGraphElement = (SerializedGraphElement) input.get(0);
+        GraphElement graphElement = serializedGraphElement.graphElement();
 
-		// Only print vertices, skip edges
-		if (graphElement.graphElementType().equals(GraphElementType.VERTEX)) {
-			Vertex vertex = graphElement.vertex();
+        if (graphElement == null) {
+            warn("Null property graph element", PigWarning.UDF_WARNING_1);
+			return null;
+        }
+
+        // Only print vertices, skip edges
+		if (graphElement.isVertex()) {
 
             String vertexString = "";
             if (this.printProperties) {
-			    vertexString = vertex.toString();
+			    vertexString = graphElement.toString();
             } else {
-                vertexString = vertex.getVertexId().toString();
-                if (vertex.getVertexLabel() != null) {
-                    vertexString += "\t" + vertex.getVertexLabel().toString();
+                vertexString = graphElement.getId().toString();
+                if (graphElement.getLabel() != null) {
+                    vertexString += "\t" + graphElement.getLabel().toString();
                 }
             }
 			return vertexString;

@@ -19,13 +19,13 @@ package com.intel.pig.udf.eval;
  *      http://www.01.org/GraphBuilder
  */
 
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
-import org.apache.pig.data.DataBag;
 import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
 
 import java.io.IOException;
 
@@ -44,18 +44,19 @@ public class GetPropGraphElementID extends EvalFunc<String>  {
      */
     @Override
     public String exec(Tuple input) throws IOException {
-        Object graphElement =  input.get(0);
 
-        PropertyGraphElement e = (PropertyGraphElement) graphElement;
+        SerializedGraphElement serializedGraphElement = (SerializedGraphElement) input.get(0);
 
-        String objectId = null;
+        GraphElement graphElement = serializedGraphElement.graphElement();
 
-        if (e.graphElementType() == PropertyGraphElement.GraphElementType.VERTEX) {
-            objectId = "VERTEX " + e.vertex().getVertexId().toString();
-        } else {
-            objectId = "EDGE " + e.edge().getEdgeID().toString();
+        if (graphElement == null) {
+            warn("Null property graph element", PigWarning.UDF_WARNING_1);
+			return null;
         }
 
-        return objectId;
+        return (graphElement.isVertex()) ?
+                ("VERTEX " + graphElement.getId().toString()) :
+                ("EDGE " + graphElement.getId().toString());
+
     }
 }

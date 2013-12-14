@@ -18,23 +18,16 @@
  */
 package com.intel.hadoop.graphbuilder.util;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.hadoop.io.Writable;
-
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.DC;
-import com.hp.hpl.jena.vocabulary.LocationMappingVocab;
-import com.hp.hpl.jena.vocabulary.OWL;
-import com.hp.hpl.jena.vocabulary.OWL2;
-import com.hp.hpl.jena.vocabulary.OntDocManagerVocab;
-import com.hp.hpl.jena.vocabulary.RDFS;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.hp.hpl.jena.vocabulary.*;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import org.apache.hadoop.io.Writable;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RDFUtils {
 

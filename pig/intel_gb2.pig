@@ -1,7 +1,6 @@
 DEFINE ExtractJSONField com.intel.pig.udf.eval.ExtractJSONField();
 DEFINE CreateRowKey com.intel.pig.udf.eval.CreateRowKey();
 
-
 /**
  * Remove duplicate property graphelements from a stream.
  *

@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.input.text.textinputformats;
 
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -55,17 +55,23 @@ public class XMLInputFormat extends TextInputFormat {
     private static final Logger LOG = Logger.getLogger(XMLInputFormat.class);
 
     /**
-     * Define start tag of a complete input entry.
+     * Defines the start tag of a complete input entry.
      */
 
     public static final String START_TAG_KEY = "xmlinput.start";
 
     /**
-     * Define end tag of a complete input entry.
+     * Defines the end tag of a complete input entry.
      */
 
     public static final String END_TAG_KEY = "xmlinput.end";
 
+    /**
+     * Hadoop record reader for reading XML documents.
+     * @param inputSplit
+     * @param context
+     * @return
+     */
     @Override
     public RecordReader<LongWritable, Text> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
 
@@ -84,9 +90,9 @@ public class XMLInputFormat extends TextInputFormat {
     }
 
     /**
-     * RecordReader for XML documents Recognizes begin-of-document and
-     * end-of-document tags only: Returning text object of everything in between
-     * delimiters
+     * RecordReader for XML documents recognizes begin-of-document and
+     * end-of-document tags only: Returning a text object of everything in between
+     * the delimiters.
      */
 
     public static class XMLRecordReader extends RecordReader<LongWritable, Text> {
@@ -123,6 +129,12 @@ public class XMLInputFormat extends TextInputFormat {
             endTag   = this.conf.get(END_TAG_KEY).getBytes(TEXT_ENCODING);
         }
 
+        /**
+         *
+         * @param split
+         * @param context
+         * @throws IOException
+         */
         public void initialize(InputSplit split, TaskAttemptContext context) throws IOException {
 
             this.conf = context.getConfiguration();

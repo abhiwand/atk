@@ -18,12 +18,8 @@
  */
 package com.intel.pig.udf.eval;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
-
+import com.intel.pig.udf.GBUdfException;
+import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.backend.hadoop.hbase.HBaseStorage;
@@ -34,8 +30,11 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
-import com.intel.pig.udf.GBUdfException;
-import com.intel.pig.udf.GBUdfExceptionHandler;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * \brief CreateRowKey assigns (prepends) a row key to a given tuple to be used

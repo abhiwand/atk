@@ -17,37 +17,26 @@
  *      http://www.01.org/GraphBuilder
  */package com.intel.pig.udf.eval;
 
-import java.io.IOException;
-
+import com.hp.hpl.jena.rdf.model.*;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.util.RDFUtils;
+import com.intel.pig.data.PropertyGraphElementTuple;
+import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
-import org.apache.pig.data.DataBag;
-import org.apache.pig.data.DataType;
-import org.apache.pig.data.DefaultBagFactory;
-import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
+import org.apache.pig.data.*;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement.GraphElementType;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.util.RDFUtils;
-import com.intel.pig.data.PropertyGraphElementTuple;
-import com.intel.pig.udf.GBUdfExceptionHandler;
+import java.io.IOException;
 
 /**
  * \brief TORDF UDF converts a given {@link PropertyGraphElementTuple} to a bag of RDF statements.
  * <p/>
- * If the {@link PropertyGraphElement} is null, this UDF returns null.
+ * If the {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement} is null, this UDF returns null.
  * 
  * <b>Example:</b>
  * 
@@ -74,7 +63,7 @@ public class TORDF extends EvalFunc<DataBag> {
 	@Override
 	public DataBag exec(Tuple input) throws IOException {
 		DataBag rdfBag = DefaultBagFactory.getInstance().newDefaultBag();
-		PropertyGraphElement e = (PropertyGraphElement) input.get(0);
+		SerializedGraphElement e = (SerializedGraphElement) input.get(0);
 
 		if (e == null) {
 			warn("Null property graph element", PigWarning.UDF_WARNING_1);
@@ -83,31 +72,27 @@ public class TORDF extends EvalFunc<DataBag> {
 
 		Resource resource = null;
 
-		if (e.graphElementType().equals(GraphElementType.EDGE)) {
-			Edge edge = e.edge();
+        GraphElement graphElement = e.graphElement();
 
-			if (edge == null) {
-				warn("Null edge in property graph element",
-						PigWarning.UDF_WARNING_1);
-				return null;
-			}
+        if (graphElement == null) {
+            warn("Null property graph element", PigWarning.UDF_WARNING_1);
+			return null;
+        }
+
+        if (graphElement.isEdge()) {
 
 			// create a Resource from the edge
-			resource = RDFUtils.createResourceFromEdge(rdfNamespace, edge
-					.getSrc().toString(), edge.getDst().toString(), edge
-					.getEdgeLabel().get(), edge.getProperties());
-		} else if (e.graphElementType().equals(GraphElementType.VERTEX)) {
-			Vertex vertex = e.vertex();
-
-			if (vertex == null) {
-				warn("Null vertex in property graph element",
-						PigWarning.UDF_WARNING_1);
-				return null;
-			}
+			resource = RDFUtils.createResourceFromEdge(rdfNamespace,
+                    graphElement.getSrc().toString(),
+                    graphElement.getDst().toString(),
+                    graphElement.getLabel().toString(),
+                    graphElement.getProperties());
+		} else if (graphElement.isVertex()) {
 
 			// create a Resource from the vertex
-			resource = RDFUtils.createResourceFromVertex(rdfNamespace, vertex
-					.getVertexId().toString(), vertex.getProperties());
+			resource = RDFUtils.createResourceFromVertex(rdfNamespace,
+                    graphElement.getId().toString(),
+                    graphElement.getProperties());
 		}
 
 		/*create the RDF statements from the model*/

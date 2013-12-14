@@ -1,37 +1,36 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.types;
+
+import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.Writable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.MapWritable;
-
 /**
- *  Implements a property map
- *  MapWritable with a friendly toString() method
+ *  Implements a property map.
+ *  MapWritable with a friendly toString() method.
  */
 public class PropertyMap implements Writable
 {
@@ -66,6 +65,16 @@ public class PropertyMap implements Writable
         }
     }
 
+    public boolean equals(PropertyMap thatValue) {
+        for (Writable writable : getPropertyKeys()) {
+            Writable value = thatValue.getProperty(writable.toString());
+            if (!value.equals(getProperty(writable.toString()))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public  void readFields(DataInput in) throws IOException {
         this.properties.readFields(in);
@@ -85,20 +94,18 @@ public class PropertyMap implements Writable
     @Override
     public String toString() {
 
-        String s = new String("");
+        StringBuffer s = new StringBuffer();
 
         if (!properties.isEmpty())
         {
-            s.concat("[" + "\t");
 
             for (Map.Entry<Writable, Writable> entry : properties.entrySet())
             {
-               s += (entry.getKey() + ":" + entry.getValue()) + "\t";
+               s.append(entry.getKey() + ":" + entry.getValue() + "\t");
             }
 
-            s.concat("\t" + "]");
         }
 
-        return s;
+        return s.toString();
     }
 }
