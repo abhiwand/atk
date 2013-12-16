@@ -98,8 +98,13 @@ public class VertexID<VidType extends WritableComparable> implements WritableCom
     }
     /**
      * Equality test: Is the other object a {@code VertexID} whose components are equal to those of this vertexID?
+     *
+     * Because the {@code equals} method of the underlying {@code StringType} type for {@code label} and {@code name}
+     * depends only upon the equality of the underlying strings, the {@code equals} method {@code VertexID} depends only
+     * upon the string equality of the labels and names.
      * @param obj  Any object.
-     * @return
+     * @return   {@literal true} if the object is a {@VertexID} of value equal to the current {@code VertexID},
+     * {@literal false} otherwise
      */
     @Override
     public boolean equals(Object obj) {
@@ -112,14 +117,14 @@ public class VertexID<VidType extends WritableComparable> implements WritableCom
     }
 
     /**
-     * compareTo implementation simply calls the equals method
-     * @param vertexID
-     * @return
+     * Hash of the VertexID is determined by the label/name pair as {@code StringType} objects.
+     *
+     * Because hash codes of {@code StringType} objects depend only upon underlying string value, the hashcode of a
+     * {@code VertexID} depends only on the underlying string values of its label and name.
+     *
+     * @return  hash of the VertexID
+     * @see StringType
      */
-    public int compareTo(VertexID<VidType> vertexID) {
-        return equals(vertexID) ? 0 : 1;
-    }
-
     @Override
     public int hashCode() {
         if (label == null && name == null) {
@@ -133,6 +138,18 @@ public class VertexID<VidType extends WritableComparable> implements WritableCom
         }
     }
 
+    /**
+     * compareTo implementation simply calls the equals method
+     * @param vertexID
+     * @return
+     */
+    public int compareTo(VertexID<VidType> vertexID) {
+        return equals(vertexID) ? 0 : 1;
+    }
+
+    /**
+     * @return a string representation of the {@code VertexID}
+     */
     @Override
     public String toString() {
         if (label == null && name == null) {

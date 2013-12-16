@@ -19,6 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
@@ -69,19 +70,23 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
      * Create a vertex with name, label, and property map.
      *
      * @param name vertex name
+     * @param propertyMap a property map
      */
     public Vertex(VidNameType name, StringType label, PropertyMap propertyMap) {
         super();
 
         VertexID<VidNameType> vertexId = new VertexID<VidNameType>(name, label);
         this.vertexId = vertexId;
-        this.properties = new PropertyMap();
+        this.properties = propertyMap;
     }
 
     /**
-     * Create a vertex with name, label, and property map
+     * Create a vertex with name, label (as a {@code String}), and property map
      *
-     * @param name, vertex name.
+     * @param name vertex nam
+     * @param label vertex label as a {@code String}
+     * @param propertyMap a property map
+     *
      */
     public Vertex(VidNameType name, String label, PropertyMap propertyMap) {
         super();
@@ -94,39 +99,39 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     /**
      * Create a vertex from a name and String label
      *
-     * @param vid vertex ID
-     * @param label vertex Label
+     * @param name vertex nam
+     * @param label vertex label as a {@code String}
      */
-    public Vertex(VidNameType vid, String label) {
+    public Vertex(VidNameType name, String label) {
 
-        this(vid, label, new PropertyMap());
+        this(name, label, new PropertyMap());
     }
 
     /**
      * Create a vertex from a name and StringType label
      *
-     * @param vid vertex ID
-     * @param label vertex Label
+     * @param name vertex nam
+     * @param label vertex label as a {@code StringType}
      */
-    public Vertex(VidNameType vid, StringType label) {
+    public Vertex(VidNameType name, StringType label) {
 
-        this(vid, label, new PropertyMap());
+        this(name, label, new PropertyMap());
     }
 
     /**
-     * Create a vertex with Id, and property map.
+     * Create a vertex with name, and property map.
      *
-     * @param vid vertex ID
+     * @param name vertex name
      * @param propertyMap a define property map to set
      */
-    public Vertex(VidNameType vid, PropertyMap propertyMap) {
+    public Vertex(VidNameType name, PropertyMap propertyMap) {
 
-        this(vid, new StringType(), propertyMap);
+        this(name, new StringType(), propertyMap);
     }
 
 
     /**
-     * This is not an edge.
+     * This {@code GraphElement} is not an edge.
      * @return  {@code false}
      */
     @Override
@@ -135,7 +140,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     }
 
     /**
-     * This is not a vertex.
+     * This {@code GraphElement} is a vertex.
      * @return  {@code true}
      */
     @Override
@@ -143,6 +148,10 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
         return true;
     }
 
+    /**
+     * Is this {@code GraphElement} null?
+     * @return  {@literal true} if the {@code VertexID} is null
+     */
     @Override
     public boolean isNull(){
         if(vertexId == null){
@@ -168,7 +177,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     }
 
     /**
- * Return the label of the vertex.
+     * Return the label of the vertex.
      * @return the label of the vertex
      */
     public StringType getLabel() {
@@ -284,8 +293,19 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
      */
     @Override
     public boolean equals(GraphElement ge) {
-        Vertex<VidNameType> vertex = (Vertex<VidNameType>) ge;
-        return (this.vertexId.equals(vertex.getId()) &&
-                this.properties.equals(vertex.getProperties()));
+        if (ge instanceof Vertex) {
+            Vertex<VidNameType> vertex = (Vertex<VidNameType>) ge;
+            return (this.vertexId.equals(vertex.getId()) &&
+                    this.properties.equals(vertex.getProperties()));
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     */
+    @Override
+    public int hashCode() {
+        return HashUtil.hashPair(vertexId, properties);
     }
 }

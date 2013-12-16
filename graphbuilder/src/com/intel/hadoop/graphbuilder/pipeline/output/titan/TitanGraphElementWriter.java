@@ -48,6 +48,12 @@ import java.util.Map;
 public class TitanGraphElementWriter extends GraphElementWriter {
     private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<>();
 
+    /**
+     * Write graph elements to a Titan graph instance.
+     * @param args
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void write(ArgumentBuilder args)
             throws IOException, InterruptedException {
@@ -58,10 +64,22 @@ public class TitanGraphElementWriter extends GraphElementWriter {
         edgeWrite(args);
     }
 
+    /**
+     * btain the Titan-assigned ID from a Blueprints vertex
+     * @param bpVertex  A Blueprints vertex.
+     * @return Its Titan-assigned ID.
+     */
+
     public long getVertexId(com.tinkerpop.blueprints.Vertex bpVertex){
         return ((TitanElement)bpVertex).getID();
     }
 
+    /**
+     * Write vertices to a Titan graph and propagate its Titan-ID through an HDFs file.
+     * @param args
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException {
         initArgs(args);
@@ -72,7 +90,6 @@ public class TitanGraphElementWriter extends GraphElementWriter {
             // Major operation - vertex is added to Titan and a new ID is assigned to it
             com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
 
-            String debugTest = vertex.getKey().toString();
             bpVertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, vertex.getKey().toString());
 
             long vertexId = getVertexId(bpVertex);
@@ -94,6 +111,12 @@ public class TitanGraphElementWriter extends GraphElementWriter {
         context.getCounter(vertexCounter).increment(vertexCount);
     }
 
+    /**
+     * Append the Titan ID of an edge's source to the edge as a property, and write the edge to an HDFS file.
+     * @param args
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void edgeWrite(ArgumentBuilder args)
             throws IOException, InterruptedException {

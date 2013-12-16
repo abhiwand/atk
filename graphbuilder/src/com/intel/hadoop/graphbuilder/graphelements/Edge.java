@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -162,7 +163,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     }
 
     /**
-     * This is an edge.
+     * Tell the callee that this {@code GraphElement} is an edge.
      * @return  {@code true}
      */
     @Override
@@ -171,7 +172,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     }
 
     /**
-     * This is not a vertex.
+     * Tell the callee that this {@code GraphElement} is not a vertex.
      * @return  {@code false}
      */
     @Override
@@ -293,14 +294,37 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      * This is a deep check which means source, destination
      * vertex ID's and all properties are checked to decide
      * equality
-     * @param ge
+     * @param ge  a graphelement being tested for equality with the edge
      */
     @Override
     public boolean equals(GraphElement ge) {
-         Edge<VidType> edge = (Edge<VidType>) ge;
+        if (ge instanceof Edge) {
+
+        Edge<VidType> edge = (Edge<VidType>) ge;
+
         return (this.src.equals(edge.getSrc()) && this.dst.equals(edge.getDst()) &&
-                this.label.equals(edge.getLabel()) && this.properties.equals(edge.getProperties()));
+            this.label.equals(edge.getLabel()) && this.properties.equals(edge.getProperties()));
+
+        } else {
+            return false;
+        }
     }
+
+    /**
+     * Override of hashCode to match the override of equals.
+     *
+     * A deep calcuation that combines the hash of the  source, destination
+     * vertex ID's and all properties.
+     */
+     @Override
+     public int hashCode() {
+         int srcHash   = this.src.hashCode();
+         int dstHash   = this.dst.hashCode();
+         int labelHash = this.label.hashCode();
+         int pmHash    = this.properties.hashCode();
+
+         return HashUtil.hashQuad(src, dst, label,properties);
+     }
 
     /**
      * Gets the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID, and its label.
