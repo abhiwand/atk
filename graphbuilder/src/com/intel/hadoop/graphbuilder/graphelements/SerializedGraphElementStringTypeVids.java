@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.StringType;
+import org.apache.hadoop.io.WritableComparable;
 
 /**
  * Serialized form of GraphElement class that uses StringType vertex IDs
@@ -31,7 +32,9 @@ public class SerializedGraphElementStringTypeVids
     /**
      * Allocate a new vertex ID.
      * @return  a new StringType object
+     *
      */
+
     public StringType createVid() {
         return new StringType();
     }

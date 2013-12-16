@@ -63,6 +63,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     private ArrayList<Edge<StringType>>   edgeList;
 
     private boolean                       flattenLists;
+    private boolean stripColumnFamilyNames;
 
 
 
@@ -154,7 +155,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     @Override
     public void configure(Configuration conf) {
 
-        this.flattenLists = conf.getBoolean("HBASE_TOKENIZER_FLATTEN_LISTS",false);
+        this.flattenLists           = conf.getBoolean("HBASE_TOKENIZER_FLATTEN_LISTS",false);
+        this.stripColumnFamilyNames = conf.getBoolean("HBASE_TOKENIZER_STRIP_COLUMNFAMILY_NAMES", false);
 
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
@@ -284,7 +286,6 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         return outArray;
     }
 
-
     /**
      * Read an hbase record, and generate vertices and edges according to the generation rules
      * previously extracted from the configuration.
@@ -326,7 +327,10 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                             for (String vertexPropertyColumnName : vpColNames) {
                                 value =  getColumnData(columns, vertexPropertyColumnName, context);
                                 if (value != null) {
-                                    vertex.setProperty(vertexPropertyColumnName, new StringType(value));
+                                    String propName =
+                                            HBaseGraphBuildingRule.propertyNameFromColumnName(vertexPropertyColumnName,
+                                                    stripColumnFamilyNames);
+                                    vertex.setProperty(propName, new StringType(value));
                                 }
                             }
                         }
@@ -378,10 +382,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                         for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
                             propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
 
-                            property = edgeAttributes[countEdgeAttr].replaceAll(
-                                    GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                    GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
-
+                            property =
+                                    HBaseGraphBuildingRule.propertyNameFromColumnName(edgeAttributes[countEdgeAttr],
+                                            stripColumnFamilyNames);
                             if (property != null) {
                                 edge.setProperty(property, new StringType(propertyValue));
                             }
@@ -407,9 +410,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                                 propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
 
 
-                                property = edgeAttributes[countEdgeAttr].replaceAll(
-                                        GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
+                                property =
+                                        HBaseGraphBuildingRule.propertyNameFromColumnName(edgeAttributes[countEdgeAttr],
+                                                stripColumnFamilyNames);
 
                                 if (property != null) {
                                     opposingEdge.setProperty(property, new StringType(propertyValue));

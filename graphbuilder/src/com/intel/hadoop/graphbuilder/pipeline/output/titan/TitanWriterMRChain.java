@@ -454,19 +454,23 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         if (hbaseUtils.tableExists(titanTableName)) {
             if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
-            LOG.info("WARNING:  hbase table " + titanTableName +
-                     " already exists. Titan will append new graph to existing data.");
+                LOG.info("WARNING:  hbase table " + titanTableName +
+                         " already exists. Titan will append new graph to existing data.");
+            } else if (cmd.hasOption(BaseCLI.Options.titanOverwrite.getLongOpt())) {
+                LOG.info("WARNING:  hbase table " + titanTableName +
+                        " already exists. Titan will overwrite existing data with the new graph.");
             } else {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "GRAPHBUILDER_FAILURE: hbase table " + titanTableName +
-                                " already exists. Use -a option if you wish to append new graph to existing data.", LOG);
+                                " already exists. Use -a option if you wish to append new graph to existing data."
+                        + " Use -O option if you wish to overwrite the graph.", LOG);
             }
         }
 
         String intermediateDataFileName = "graphbuilder_temp_file-" + random().toString();
         Path   intermediateDataFilePath = new Path("/tmp/" + intermediateDataFileName);
 
-        // nls todo: one more reason to move CLI processing to the top level and use proper parameter interfaces
+        //  todo: one more reason to move CLI processing to the top level and use proper parameter interfaces
         // in the main body of the code
 
         String keyCommandLine = new String("");

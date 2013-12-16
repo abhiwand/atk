@@ -192,7 +192,7 @@ public class CommandLineInterface{
             message = String.format("Parsed -%s -%s:\t %b", option.getOpt(),
                     option.getLongOpt(), cmd.hasOption(option.getOpt()) );
         }
-        LOG.info(message);
+        LOG.debug(message);
     }
 
     /**
@@ -252,7 +252,7 @@ public class CommandLineInterface{
     }
 
     private void _showError(String error){
-        if(error == null || error.trim().length() > 0){
+        if(error == null || error.trim().isEmpty()){
             error = " ";
         }
         HelpFormatter h = new HelpFormatter();

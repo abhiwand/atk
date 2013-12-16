@@ -230,7 +230,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     /**
      * Reads a vertex from an input stream.
      * @param input The input stream.
-     * @throws IOException.
+     * @throws IOException
      */
     @Override
     public void readFields(DataInput input) throws IOException {
@@ -242,7 +242,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     /**
      * Writes a vertex to an output stream.
      * @param output The output stream.
-     * @throws IOException.
+     * @throws IOException
      */
     @Override
     public void write(DataOutput output) throws IOException {

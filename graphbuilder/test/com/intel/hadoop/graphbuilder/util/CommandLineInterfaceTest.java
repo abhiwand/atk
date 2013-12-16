@@ -106,10 +106,12 @@ public class CommandLineInterfaceTest {
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
         cliArgs.put("a", "");
+        cliArgs.put("O", "");
         cliArgs.put("F", "");
         cliArgs.put("d", "directed edge");
         cliArgs.put("k", "keys index");
         cliArgs.put("h", "");
+        cliArgs.put("s", "");
 
         testDemoApp(TableToGraphDB.class, cliArgs);
     }
@@ -126,6 +128,7 @@ public class CommandLineInterfaceTest {
         cliArgs.put("d", "directed edge");
         cliArgs.put("o", outputPath);
         cliArgs.put("h", "");
+        cliArgs.put("s", "");
 
         testDemoApp(TableToTextGraph.class, cliArgs);
     }
@@ -139,6 +142,7 @@ public class CommandLineInterfaceTest {
         cliArgs.put("o", "cf:name=cf:age,cf:dept");
         cliArgs.put("t", "");
         cliArgs.put("a", "");
+        cliArgs.put("O", "");
         cliArgs.put("d", "dictionary path");
         cliArgs.put("s", "stop words");
 
@@ -154,6 +158,7 @@ public class CommandLineInterfaceTest {
         cliArgs.put("o", "cf:name=cf:age,cf:dept");
         cliArgs.put("t", "");
         cliArgs.put("a", "");
+        cliArgs.put("O", "");
 
         testDemoApp(CreateLinkGraph.class, cliArgs);
     }
