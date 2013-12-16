@@ -70,15 +70,15 @@ object Register extends Controller {
                     }
                 }
             )
-
+            response = null;
             response match {
                 case successfulResponse: SuccessfullyRegisterResponse => Redirect("/ipython").withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(getRegisteredCookie)
                 case failedResponse: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
                     "/", None, true, false))
                 case generalErrorResponse: GeneralErrorResponse => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
                     "/", None, true, false)).withCookies(getRegisteredCookie)
-                case _: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
-                  "/", None, true, false))
+                /*case _: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+                  "/", None, true, false))*/
             }
         }
     }

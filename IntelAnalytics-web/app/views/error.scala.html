@@ -1,0 +1,31 @@
+@(message: String, user: database.UserRow)(content: Html)
+
+@main(message,user) {
+    <div class='container'>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <h1 class='code fadeInDown animated'>
+                    <span>4</span>
+                    <span class='fa-icon-question-sign'></span>
+                    <span>4</span>
+                </h1>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <p class='message fadeInLeft animated'>
+                    @content
+                </p>
+                <a class="btn btn-contrast
+           btn-bordered btn-bordered-error btn-lg fadeInRight animated" href="/">Go to homepage</a>
+            </div>
+        </div>
+        <div class='row'>
+            <div class='col-sm-12'>
+                <a href='/'>
+                    <img id='logo-sitewide' class='logo-error' alt="intelanalytics" src="images/tribeca_logo_10-2.png" />
+                </a>
+            </div>
+        </div>
+    </div>
+}

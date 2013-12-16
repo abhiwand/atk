@@ -1,11 +1,13 @@
 import com.typesafe.config.ConfigFactory
-import play.api.mvc._
 import play.api._
+import play.api.mvc._
+import play.api.mvc.Results._
 import java.io.File
 import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.Some
 import play.api.Play.current
+import scala.util.control.NonFatal
 import services.aws.S3
 import play.api.http.HeaderNames._
 import ExecutionContext.Implicits.global
@@ -58,6 +60,21 @@ object Global extends GlobalSettings{
     } else {
       super.onRouteRequest(request)
     }
+  }
+
+  override def onError(request: RequestHeader, throwable: Throwable): Future[SimpleResult] = {
+      if (true) Future.successful(InternalServerError(views.html.error500("", models.Users.anonymousUser())))
+      else super.onError(request, throwable);
+  }
+
+  override def onBadRequest(request: RequestHeader, error: String): Future[SimpleResult] = {
+    if(true)Future.successful(BadRequest(views.html.error404("", models.Users.anonymousUser())))
+    else super.onBadRequest(request, error)
+  }
+
+  override def onHandlerNotFound(request: RequestHeader): Future[SimpleResult] = {
+    if(true) Future.successful(NotFound(views.html.error404("", models.Users.anonymousUser())))
+    else super.onHandlerNotFound(request);
   }
 
 }

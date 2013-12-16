@@ -28,16 +28,20 @@ import controllers.Session._
 
 object Application extends Controller {
 
-  var index = ActionWithSession { request =>
+  def index = ActionWithSession { request =>
     Ok(views.html.index("Home", request.user.userInfo))
   }
 
-  var logout = Action{
+  def logout = Action{
     Redirect("/").withNewSession
   }
 
-  var termsOfUse = ActionWithSession{ request =>
+  def termsOfUse = ActionWithSession{ request =>
     Ok(views.html.termsOfUse("Terms of Use", request.user.userInfo))
+  }
+
+  def error = ActionWithSession{ request =>
+    Ok(views.html.error500("Error", request.user.userInfo))
   }
 
   def redirect = Action { implicit request =>
