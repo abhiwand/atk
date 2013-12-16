@@ -1,20 +1,19 @@
 #!/bin/bash
 #
-#Deploy the desired package to n number of servers with pem files has authentication
-#
+#Deploy the desired package to n number of servers with pem files has authentication. assumes the user is ec2-user on
+# the server box is ec2.
+# example command line
+#--package package/path/intelanalytics-web-1.0-SNAPSHOT.zip -k /home/rodorad/IdeaProjects/deploy_graphtrial/IntelAnalytics-SaaS-Admin.pem  -t ec2-54-200-97-82.us-west-2.compute.amazonaws.com -t ...
+
 #ec2-54-200-245-95.us-west-2.compute.amazonaws.com : web1
 #ec2-54-200-97-82.us-west-2.compute.amazonaws.com: web2
-#ssh -o ProxyCommand='nc -x proxy-socks.jf.intel.com:1080 %h %p' -i IntelAnalytics-SaaS-Admin.pem ec2-user@ec2-54-200-245-95.us-west-2.compute.amazonaws.com
-#scp -o ProxyCommand="nc -x  proxy-socks.jf.intel.com:1080 %h %p" -i IntelAnalytics-SaaS-Admin.pem example.sh  ec2-user@ec2-54-200-245-95.us-west-2.compute.amazonaws.com:~
-#sudo bin/intelanalytics-web -Dplay.config=prod -Dhttp.port=80 -Dhttps.port=443 -Dhttps.keyStore=conf/\\graphtrial.intel.com.pass.keystore.jks -Dhttps.keyStorePassword=frogsare#0071c5 &
 
-#
-echo "arguments"
-echo $@
-echo ""
-
+#validate the command line options
 TEMP=`getopt -o p:k:t: --long package:,key:,targets: -n 'deploy.bash' -- "$@"`
+#the web dir name
 WEB_DIR="web"
+#the package name. I don't think the package name will change but if it does i'll add extra logic to parse it out of the
+#package path
 PACKAGE_NAME="intelanalytics-web-1.0-SNAPSHOT"
 
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
@@ -71,18 +70,10 @@ echo "$PID"
 #ssh to targets and make sure the web dir exist
 for t in "${TARGETS[@]}"
     do
-    echo "connecting to $t and create web dir"
+    echo "connecting to $t and creating web dir"
     ssh -o ProxyCommand='nc -x proxy-socks.jf.intel.com:1080 %h %p' -i "$PEM_FILE" ec2-user@"$t" mkdir web -p
     echo "coping new package over to $t"
     scp -o ProxyCommand="nc -x  proxy-socks.jf.intel.com:1080 %h %p" -i "$PEM_FILE" -p "$PACKAGE"  ec2-user@"$t":~/web/
     ssh -t -t -o ProxyCommand='nc -x proxy-socks.jf.intel.com:1080 %h %p' -i "$PEM_FILE" ec2-user@"$t" <<< "$startNewPackage"
 done
-
-echo "Remaining arguments:"
-for arg do echo '--> '"\`$arg'" ; done
-
-
-echo $PACKAGE
-echo $PEM_FILE
-echo ${TARGETS[@]}
 
