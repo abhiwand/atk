@@ -19,12 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction;
 
+import static junit.framework.Assert.assertEquals;
+
+import org.junit.Test;
+
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import org.junit.Test;
-
-import static junit.framework.Assert.assertEquals;
 
 public class ElementIdKeyFunctionTest {
 

@@ -18,22 +18,22 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.types.StringType;
-import com.intel.pig.data.PropertyGraphElementTuple;
+import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+
 import org.apache.pig.EvalFunc;
 import org.apache.pig.impl.PigContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-
-import static junit.framework.TestCase.assertNotNull;
-import static org.junit.Assert.assertEquals;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.pig.data.PropertyGraphElementTuple;
 
 public class TestGetPropGraphElementID {
     EvalFunc<?> graphElmentIDUDF;

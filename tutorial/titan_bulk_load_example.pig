@@ -4,7 +4,7 @@
 */
 
 REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
-IMPORT 'pig/intel_gb2.pig';
+IMPORT 'pig/graphbuilder.pig';
 
 --cleanup titan hbase table-->TODO: PUT THIS LOGIC IN GB
 --make sure HBase is installed

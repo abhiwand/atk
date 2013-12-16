@@ -19,10 +19,14 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.util.Triple;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertSame;
+
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
+import com.intel.hadoop.graphbuilder.util.Triple;
 
 public class EdgeIDTest {
     @Test

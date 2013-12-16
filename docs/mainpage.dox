@@ -24,14 +24,14 @@
 	 *      </UL> 
 	 * - <B>Filters</B> 
 	 *      <UL> 
-	 *	    <LI> \link intel_gb2.pig MERGEDUPLICATEGRAPHELEMENTS \endlink   
+	 *	    <LI> \link graphbuilder.pig MERGEDUPLICATEGRAPHELEMENTS \endlink   
 	 *      </UL>  
 	 * - <B>Storage</B> 
 	 *      <UL> 
-	 *	    <LI> \link com.intel.pig.udf.eval.TORDF TORDF \endlink Creates RDF triples from property graph elements.
-	 *      <LI> \link com.intel.pig.udf.eval.TO_EDGELIST TO_EDGELIST \endlink Creates an edge list representation from a property graph element.  
-	 *      <LI> \link com.intel.pig.udf.eval.TO_VERTEXLIST TO_VERTEXLIST \endlink Creates vertex list representation from a property graph element.  	 
-	 *      <LI> \link intel_gb2.pig LOAD_TITAN \endlink Loads a graph from a given HBase table to the Titan graph database.
+	 *	    <LI> \link com.intel.pig.udf.eval.RDF RDF \endlink Creates RDF triples from property graph elements.
+	 *      <LI> \link com.intel.pig.udf.eval.EdgeList EdgeList \endlink Creates an edge list representation from a property graph element.  
+	 *      <LI> \link com.intel.pig.udf.eval.VertexList VertexList \endlink Creates vertex list representation from a property graph element.  	 
+	 *      <LI> \link graphbuilder.pig LOAD_TITAN \endlink Loads a graph from a given HBase table to the Titan graph database.
 	 *      </UL> 
 	 * - <B>Miscellaneous</B>
 	 *      <UL>  
@@ -42,7 +42,7 @@
  * 
  * <H2>Prerequisites</H2>
  * GB 2.0 (alpha) requires <a href="http://hadoop.apache.org/">Apache Hadoop</a> and <a href="http://pig.apache.org/">Apache Pig</a> installed. 
- * To use the \link intel_gb2.pig LOAD_TITAN \endlink macro for bulk loading graphs to Titan, 
+ * To use the \link graphbuilder.pig LOAD_TITAN \endlink macro for bulk loading graphs to Titan, 
  * <a href="http://hbase.apache.org/">HBase</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a> are also required. 
  * In particular, GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.0. 
   
@@ -57,13 +57,13 @@
  \endcode
  
  * <H2>Using GB 2.0 (alpha)</H2>
- *  To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT \link intel_gb2.pig \endlink script. The 
- * \link intel_gb2.pig \endlink script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user
+ *  To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT \link graphbuilder.pig \endlink script. The 
+ * \link graphbuilder.pig \endlink script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user
  * has to define the other UDFs with the constructor arguments they want; please see Tutorial for how to use GB functionality in your Pig scripts.
  *  Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script:
     \code
      REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;
-     IMPORT '/usr/local/gb/pig/intel_gb2.pig';
+     IMPORT '/usr/local/gb/pig/graphbuilder.pig';
     \endcode
  * 
  * <H2>Known Issues:</H2>

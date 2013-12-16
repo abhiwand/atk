@@ -19,11 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import org.junit.Test;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNotSame;
+import static junit.framework.Assert.assertSame;
 
 import java.util.HashMap;
 
-import static junit.framework.Assert.*;
+import org.junit.Test;
 
 public class PropertyGraphSchemaTest {
 

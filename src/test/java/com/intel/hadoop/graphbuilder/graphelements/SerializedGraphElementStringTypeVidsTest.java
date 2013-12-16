@@ -19,11 +19,14 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.types.StringType;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
+import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.types.StringType;
 
 public class SerializedGraphElementStringTypeVidsTest {
     @Test

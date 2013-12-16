@@ -19,14 +19,23 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import org.junit.Test;
+
 import com.intel.hadoop.graphbuilder.types.IntType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import org.junit.Test;
-
-import java.io.*;
-
-import static junit.framework.Assert.*;
 
 public class VertexTest {
 

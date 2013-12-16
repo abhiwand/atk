@@ -20,10 +20,18 @@
 package com.intel.hadoop.graphbuilder.util;
 
 
-import com.intel.hadoop.graphbuilder.sampleapplications.CreateLinkGraph;
-import com.intel.hadoop.graphbuilder.sampleapplications.CreateWordCountGraph;
-import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
-import com.intel.hadoop.graphbuilder.sampleapplications.TableToTextGraph;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.support.membermodification.MemberMatcher.method;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Random;
+
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
@@ -37,14 +45,10 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import java.util.*;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.*;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
+import com.intel.hadoop.graphbuilder.sampleapplications.CreateLinkGraph;
+import com.intel.hadoop.graphbuilder.sampleapplications.CreateWordCountGraph;
+import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
+import com.intel.hadoop.graphbuilder.sampleapplications.TableToTextGraph;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(GraphBuilderExit.class)

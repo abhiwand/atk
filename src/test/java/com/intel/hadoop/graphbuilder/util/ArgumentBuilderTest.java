@@ -20,11 +20,14 @@
 package com.intel.hadoop.graphbuilder.util;
 
 
-import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.After;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 
 public class ArgumentBuilderTest {
 

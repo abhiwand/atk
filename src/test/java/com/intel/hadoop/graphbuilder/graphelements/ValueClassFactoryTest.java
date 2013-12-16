@@ -19,12 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.types.LongType;
-import com.intel.hadoop.graphbuilder.types.StringType;
-import org.junit.Test;
-
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+
+import org.junit.Test;
+
+import com.intel.hadoop.graphbuilder.types.LongType;
+import com.intel.hadoop.graphbuilder.types.StringType;
 
 public class ValueClassFactoryTest {
     @Test

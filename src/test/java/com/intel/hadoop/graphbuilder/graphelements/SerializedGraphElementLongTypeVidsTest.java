@@ -19,12 +19,15 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+
+import org.junit.Test;
+
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import org.junit.Test;
-
-import static junit.framework.Assert.*;
 
 
 public class SerializedGraphElementLongTypeVidsTest {

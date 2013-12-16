@@ -19,9 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import org.junit.Test;
-
 import static junit.framework.Assert.assertNotNull;
+
+import org.junit.Test;
 
 
 public class VertexSchemaTest {

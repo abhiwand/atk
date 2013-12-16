@@ -1,6 +1,6 @@
 --This script should be run from the top level directory
 REGISTER target/graphbuilder-2.0alpha-with-deps.jar;
-IMPORT 'pig/intel_gb2.pig';
+IMPORT 'pig/graphbuilder.pig';
 
 --JSON example
 json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
@@ -36,8 +36,8 @@ DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-
 x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
 x = FILTER x by id!='';
 pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
-DEFINE TORDF com.intel.pig.udf.eval.TORDF('OWL');--specify the namespace to use with the constructor
-rdf_triples = FOREACH pge GENERATE FLATTEN(TORDF(*));
+DEFINE RDF com.intel.pig.udf.eval.RDF('OWL');--specify the namespace to use with the constructor
+rdf_triples = FOREACH pge GENERATE FLATTEN(RDF(*));
 DESCRIBE rdf_triples;
 STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
 

@@ -19,10 +19,10 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline;
 
-import org.junit.Test;
-
 import java.lang.reflect.Field;
 import java.util.HashMap;
+
+import org.junit.Test;
 
 public class GraphConstructionPipelineTest {
     @Test
