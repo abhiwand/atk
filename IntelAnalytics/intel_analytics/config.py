@@ -180,10 +180,7 @@ class Registry(object):
             raise ValueError
 
     def has_value(self, value):
-        try:
-            return (True for k, v in self._d.items() if v == value).next()
-        except StopIteration:
-            return False
+        return value in self._d.values()
 
     def register(self, key, value):
         self._d[key] = value
