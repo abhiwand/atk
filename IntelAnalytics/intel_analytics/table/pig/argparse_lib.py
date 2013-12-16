@@ -4,12 +4,12 @@
 
 This module is an optparse-inspired command-line parsing library that:
 
-    - handles both optional and positional arguments
-    - produces highly informative usage messages
-    - supports parsers that dispatch to sub-parsers
+    - handles both optional and positional arguments.
+    - produces highly informative usage messages.
+    - supports parsers that dispatch to sub-parsers.
 
 The following is a simple usage example that sums integers from the
-command-line and writes the result to a file::
+command-line and writes the result to a file.::
 
     parser = argparse.ArgumentParser(
         description='sum the integers at the command line')
@@ -25,38 +25,38 @@ command-line and writes the result to a file::
 
 The module contains the following public classes:
 
-    - ArgumentParser -- The main entry point for command-line parsing. As the
-        example above shows, use the add_argument() method to populate
+    - C{ArgumentParser} -- The main entry point for command-line parsing. As the
+        example above shows, use the C{add_argument()} method to populate
         the parser with actions for optional and positional arguments. Then
-        invoke the parse_args() method to convert the args at the
+        invoke the C{parse_args() method to convert the args at the
         command-line to an object with attributes.
 
-    - ArgumentError -- The exception raised by ArgumentParser objects when
-        there are errors with the parser's actions. Errors raised while
-        parsing the command-line are caught by ArgumentParser and emitted
+    - C{ArgumentError} -- The exception raised by the C{ArgumentParser} objects 
+        when there are errors with the parser's actions. Errors raised while
+        parsing the command-line are caught by the C{ArgumentParser} and emitted
         as command-line messages.
 
-    - FileType -- A factory for defining the types of files to be created. As the
-        example above shows, instances of FileType are typically passed as
-        the type= argument of add_argument() calls.
+    - C{FileType} -- A factory for defining the types of files to be created. As the
+        example above shows, instances of C{FileType} are typically passed as
+        the type= argument of C{add_argument()} calls.
 
-    - Action -- The base class for parser actions. Typically actions are
-        selected by passing strings like 'store_true' or 'append_const' to
-        the action= argument of add_argument(). However, for greater
-        customization of ArgumentParser actions, subclasses of Action may
+    - C{Action} -- The base class for parser actions. Typically actions are
+        selected by passing strings like C{'store_true'} or C{'append_const'} to
+        the action= argument of C{add_argument()}. However, for greater
+        customization of C{ArgumentParser} actions, subclasses of Action may
         be defined and passed as the action= argument.
 
-    - HelpFormatter, RawDescriptionHelpFormatter, RawTextHelpFormatter,
-        ArgumentDefaultsHelpFormatter -- Formatter classes which
-        may be passed as the formatter_class= argument to the
-        ArgumentParser constructor. HelpFormatter is the default,
-        RawDescriptionHelpFormatter and RawTextHelpFormatter tell the parser
+    - C{HelpFormatter}, C{RawDescriptionHelpFormatter}, C{RawTextHelpFormatter},
+        and C{ArgumentDefaultsHelpFormatter} -- Formatter classes which
+        may be passed as the C{formatter_class=} argument to the
+        C{ArgumentParser} constructor. C{HelpFormatter} is the default,
+        C{RawDescriptionHelpFormatter} and C{RawTextHelpFormatter} tell the parser
         not to change the formatting for help text, and
-        ArgumentDefaultsHelpFormatter adds information about argument defaults
+        C{ArgumentDefaultsHelpFormatter} adds information about argument defaults
         to the help.
 
 All other classes in this module are considered implementation details.
-(Also note that HelpFormatter and RawDescriptionHelpFormatter are only
+(Also note that C{HelpFormatter} and C{RawDescriptionHelpFormatter} are only
 considered public as object names -- the API of the formatter objects is
 still considered an implementation detail.)
 """
@@ -133,7 +133,7 @@ _UNRECOGNIZED_ARGS_ATTR = '_unrecognized_args'
 class _AttributeHolder(object):
     """Abstract base class that provides __repr__.
 
-    The __repr__ method returns a string in the format::
+    The __repr__ method returns a string in the format.::
         ClassName(attr=name, attr=name, ...)
     The attributes are determined either by a class-level attribute,
     '_kwarg_names', or by inspecting the instance __dict__.
@@ -166,7 +166,7 @@ def _ensure_value(namespace, name, value):
 # ===============
 
 class HelpFormatter(object):
-    """Formatter for generating usage messages and argument help strings.
+    """A Formatter for generating usage messages and argument help strings.
 
     Only the name of this class is considered a public API. All the methods
     provided by the class are considered an implementation detail.
@@ -312,11 +312,11 @@ class HelpFormatter(object):
         if prefix is None:
             prefix = _('usage: ')
 
-        # if usage is specified, use that
+        # If usage is specified, use that.
         if usage is not None:
             usage = usage % dict(prog=self._prog)
 
-        # if no optionals or positionals are available, usage is just prog
+        # If no optionals or positionals are available, usage is just prog.
         elif usage is None and not actions:
             usage = '%(prog)s' % dict(prog=self._prog)
 
@@ -740,45 +740,45 @@ class Action(_AttributeHolder):
 
     Keyword Arguments:
 
-        - option_strings -- A list of command-line option strings which
+        - C{option_strings} -- A list of command-line option strings which
             should be associated with this action.
 
-        - dest -- The name of the attribute to hold the created object(s)
+        - C{dest} -- The name of the attribute to hold the created object(s).
 
-        - nargs -- The number of command-line arguments that should be
+        - C{nargs} -- The number of command-line arguments that should be
             consumed. By default, one argument will be consumed and a single
-            value will be produced.  Other values include:
-                - N (an integer) consumes N arguments (and produces a list)
-                - '?' consumes zero or one arguments
-                - '*' consumes zero or more arguments (and produces a list)
-                - '+' consumes one or more arguments (and produces a list)
-            Note that the difference between the default and nargs=1 is that
+            value will be produced. Other values include:
+                - C{N} (an integer) consumes N arguments (and produces a list).
+                - C{'?'} consumes zero or one arguments.
+                - C{'*'} consumes zero or more arguments (and produces a list).
+                - C{'+'} consumes one or more arguments (and produces a list).
+            Note that the difference between the default and C{nargs=1} is that
             with the default, a single value will be produced, while with
             nargs=1, a list containing a single value will be produced.
 
-        - const -- The value to be produced if the option is specified and the
+        - C{const} -- The value to be produced if the option is specified and the
             option uses an action that takes no values.
 
-        - default -- The value to be produced if the option is not specified.
+        - C{default} -- The value to be produced if the option is not specified.
 
-        - type -- The type to which the command-line arguments should be converted, 
-		    should be one of 'string', 'int', 'float', 'complex', or a
+        - C{type} -- The type to which the command-line arguments should be converted, 
+		    should be one of C{'string'}, C{'int'}, C{'float'}, C{'complex'}, or a
             callable object that accepts a single string argument. If None,
-            'string' is assumed.
+            C{'string'} is assumed.
 
-        - choices -- A container of values that should be allowed. If not None,
+        - C{choices} -- A container of values that should be allowed. If not None,
             after a command-line argument has been converted to the appropriate
             type, an exception will be raised if it is not a member of this
             collection.
 
-        - required -- True if the action must always be specified at the
+        - C{required} -- True if the action must always be specified at the
             command line. This is only meaningful for optional command-line
             arguments.
 
-        - help -- The help string describing the argument.
+        - C{help} -- The help string describing the argument.
 
-        - metavar -- The name to be used for the option's argument with the
-            help string. If None, the 'dest' value will be used as the name.
+        - C{metavar} -- The name to be used for the option's argument with the
+            help string. If None, the C{'dest'} value will be used as the name.
     """
 
     def __init__(self,
@@ -1121,8 +1121,8 @@ class _SubParsersAction(Action):
 class FileType(object):
     """A Factory for creating file object types.
 
-    Instances of FileType are typically passed as type= arguments to the
-    ArgumentParser add_argument() method.
+    Instances of C{FileType} are typically passed as type= arguments to the
+    C{ArgumentParser} C{add_argument}() method.
 
     Keyword Arguments:
         - mode -- A string indicating how the file is to be opened. Accepts the
