@@ -1,15 +1,12 @@
 #!/bin/bash
 #
-#Deploy zipped play package to n number of servers with pem files has authentication. assumes the user is ec2-user on
-# the server box is ec2.
+#Deploy zipped play package to n number of servers with pem files has authentication. assumes the user is ec2-user. The
+#script must be run from inside intel because the the server can only be reached if you are on the intel network.
 # example command line
 #--package package/path/intelanalytics-web-1.0-SNAPSHOT.zip -k /home/rodorad/IdeaProjects/deploy_graphtrial/IntelAnalytics-SaaS-Admin.pem  -t ec2-54-200-97-82.us-west-2.compute.amazonaws.com -t ec2-54-200-245-95.us-west-2.compute.amazonaws.com
 
-#ec2-54-200-245-95.us-west-2.compute.amazonaws.com : web1
-#ec2-54-200-97-82.us-west-2.compute.amazonaws.com: web2
-
 #validate the command line options
-TEMP=`getopt -o p:k:t: --long package:,key:,targets: -n 'deploy.bash' -- "$@"`
+TEMP=`getopt -o p:k:t: --long package:,key:,targets: -n 'IntelAnalytics_Saas_deploy.sh' -- "$@"`
 #the web dir name
 WEB_DIR="web"
 
