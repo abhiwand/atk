@@ -364,7 +364,7 @@
     border-radius:2px;
 }
 
-body.error-page .message {
+div.error-page .message {
     color: #0071C5;
 }
 

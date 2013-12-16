@@ -1,4 +1,4 @@
-@(message: String, user: database.UserRow)(content: Html)
+@(message: String, user: database.UserRow, cssErrorClass: String)(content: Html)
 
 @main(message,user) {
     <div id='main-content' class="error-page">
@@ -6,7 +6,7 @@
             <div class='col-sm-12'>
                 <h1 class='code fadeInDown animated'>
                     <span>4</span>
-                    <span class='fa-icon-question-sign'></span>
+                    <span class='@cssErrorClass'></span>
                     <span>4</span>
                 </h1>
             </div>
