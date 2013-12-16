@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-#Deploy the desired package to n number of servers with pem files has authentication. assumes the user is ec2-user on
+#Deploy zipped play package to n number of servers with pem files has authentication. assumes the user is ec2-user on
 # the server box is ec2.
 # example command line
-#--package package/path/intelanalytics-web-1.0-SNAPSHOT.zip -k /home/rodorad/IdeaProjects/deploy_graphtrial/IntelAnalytics-SaaS-Admin.pem  -t ec2-54-200-97-82.us-west-2.compute.amazonaws.com -t ...
+#--package package/path/intelanalytics-web-1.0-SNAPSHOT.zip -k /home/rodorad/IdeaProjects/deploy_graphtrial/IntelAnalytics-SaaS-Admin.pem  -t ec2-54-200-97-82.us-west-2.compute.amazonaws.com -t ec2-54-200-245-95.us-west-2.compute.amazonaws.com
 
 #ec2-54-200-245-95.us-west-2.compute.amazonaws.com : web1
 #ec2-54-200-97-82.us-west-2.compute.amazonaws.com: web2
@@ -12,9 +12,6 @@
 TEMP=`getopt -o p:k:t: --long package:,key:,targets: -n 'deploy.bash' -- "$@"`
 #the web dir name
 WEB_DIR="web"
-#the package name. I don't think the package name will change but if it does i'll add extra logic to parse it out of the
-#package path
-PACKAGE_NAME="intelanalytics-web-1.0-SNAPSHOT"
 
 if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 
@@ -38,6 +35,9 @@ while true; do
               *) echo "Internal error!" ; exit 1 ;;
     esac
 done
+
+PACKAGE_NAME=$(basename $PACKAGE ".zip")
+
 
 startNewPackage="
 
