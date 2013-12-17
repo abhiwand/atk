@@ -6,12 +6,7 @@
 REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
 IMPORT 'pig/graphbuilder.pig';
 
---cleanup titan hbase table-->TODO: PUT THIS LOGIC IN GB
---make sure HBase is installed
-sh echo "disable 'test_graph'" | hbase shell --see hbase-titan-conf.xml
-sh echo "drop 'test_graph'" | hbase shell
-
---prepare temp storage
+--prepare temp storage that is used by the LOAD_TITAN macro
 rmf /tmp/empty
 fs -mkdir /tmp/empty
 rmf /tmp/tmp_store_1;
@@ -34,4 +29,4 @@ STORE keyed_x INTO 'hbase://gb_input_table'
 	  		
 LOAD_TITAN('gb_input_table', '"cf:id=cf:name,cf:age,cf:dept" "cf:manager"',
 			   '"cf:id,cf:manager,worksUnder,cf:underManager"',
-			   'tutorial/hbase-titan-conf.xml');
+			   'tutorial/hbase-titan-conf.xml', '-O');-- -O flag specifies overwriting the input Titan table

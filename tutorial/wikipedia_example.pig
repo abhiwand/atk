@@ -24,7 +24,7 @@ sh echo "create 'wiki_table', 'features'" | hbase shell
 DEFINE RegexExtractAllMatches com.intel.pig.udf.eval.RegexExtractAllMatches();
 DEFINE FlattenAsGBString com.intel.pig.udf.eval.FlattenAsGBString();
 
-xml_data = LOAD 'wiki_toy_sample.txt' using com.intel.pig.load.XMLLoader('page') AS (page: chararray);
+xml_data = LOAD 'tutorial/data/wiki_single.txt' using com.intel.pig.load.XMLLoader('page') AS (page: chararray);
 x = FOREACH xml_data GENERATE REGEX_EXTRACT(page, '<id>(.*?)</id>', 1) AS (id: chararray), page;
 x = FOREACH x GENERATE REGEX_EXTRACT(page, '<title>(.*?)</title>', 1) AS (title: chararray), id, page;
 x = FOREACH x GENERATE REGEX_EXTRACT(page, '<text\\s.*>(.*?)</text>', 1) AS (text: chararray), id, title, page;
@@ -33,7 +33,7 @@ y = FOREACH x GENERATE id, title, FlattenAsGBString(links) AS flattened_links:ch
 keyed_y = FOREACH y GENERATE FLATTEN(CreateRowKey(*)); --assign row keys 
 
 STORE keyed_y INTO 'hbase://wiki_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('features:id features:title features:flattened_links');
-LOAD_TITAN_WITH_ARGS('wiki_table', '"features:title=features:id" "features:flattened_links"', 
+LOAD_TITAN('wiki_table', '"features:title=features:id" "features:flattened_links"', 
                              '"features:title,features:flattened_links,LINKS"',
                            'tutorial/hbase-titan-conf.xml', '-F');
  
