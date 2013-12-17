@@ -25,7 +25,7 @@ DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-
 pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
 DESCRIBE pge;
 dump pge;
-merged = MERGEDUPLICATEGRAPHELEMENTS(pge);
+merged = MERGE_DUPLICATE_ELEMENTS(pge);
 DESCRIBE merged;
 dump merged;
 

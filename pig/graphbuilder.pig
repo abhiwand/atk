@@ -13,7 +13,7 @@ DEFINE CreateRowKey com.intel.pig.udf.eval.CreateRowKey();
  *
 */
 
-DEFINE MERGEDUPLICATEGRAPHELEMENTS(inPropGraph) RETURNS outPropGraph {
+DEFINE MERGE_DUPLICATE_ELEMENTS(inPropGraph) RETURNS outPropGraph {
   DEFINE GetPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
   labeled = FOREACH $inPropGraph GENERATE (GetPropGraphEltID(*)), $0;
   grouped = GROUP labeled by $0;
