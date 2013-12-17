@@ -17,14 +17,13 @@ source $ACTIVATE_FILE
 #check if the python libraries are correctly installed by importing them through python. If there is no output then the module exists.
 if [[ -e $(python -c "import nose") ]]; then
     echo "Nosetests is not installed into your python virtual environment please install nose."
-    exit 0
+    exit 1
 fi
 
 if [[ -e $(python -c "import coverage") ]]; then
     echo "Coverage.py is not installed into your python virtual environment please install coverage."
-    exit 0
+    exit 1
 fi
-
 
 DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
 echo "set the following environment variables to a status needed to execute tests"

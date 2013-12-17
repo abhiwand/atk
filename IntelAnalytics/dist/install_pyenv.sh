@@ -26,6 +26,11 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+if [[ -z $HTTP_PROXY &&  -z $http_proxy ]]; then
+   echo "$me requires that the Environment Variable HTTP_PROXY be set"  1>&2
+   exit 1
+fi
+
 #-----------------------------------------
 # PART I - install python 2.7 virtual env
 #-----------------------------------------
@@ -208,29 +213,3 @@ fi
 
 echo $hdr Python Virtual Environment Installation complete
 echo $hdr "To activate enter: 'source $PYTHON_VIRTUALENV/bin/activate'"
-
-# acceptance test:
-#
-# 0. activate the virtual py27 environ
-#    # source /usr/lib/tribeca/virtpy27/bin/activate
-#
-# 1. start IPython Notebook server
-#    # ipython notebook
-#
-# 2. open notebook in browser, verify Python version is 2.7.5
-#    >>> import sys; sys.version
-#
-# 3. verify the following imports at the py interpreter prompt:
-#    >>> import numpy
-#    >>> import scipy
-#    >>> import sympy
-#    >>> import nltk
-#    >>> import jinja2
-#    >>> import tornado
-#    >>> import mrjob
-#    >>> import matplotlib
-#    >>> import pandas
-#    >>> import bulbs
-#    >>> import happybase
-#    >>> import zmq
-
