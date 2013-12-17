@@ -42,7 +42,8 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * string and a regular expression. <br/>
  * This implementation is based on Pig's built in {@link REGEX_EXTRACT_ALL} UDF.
  * The first element of the given tuple is the source string and the second
- * element is the regular expression.
+ * element is the regular expression. Note that this UDF captures groups
+ * specified in regular expression.
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class RegexExtractAllMatches extends EvalFunc<DataBag> {
@@ -67,7 +68,7 @@ public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 					pattern = Pattern.compile(regularExpression);
 				} catch (PatternSyntaxException e) {
 					String msg = "Invalid regular expression: " + input.get(1);
-					throw new IOException(new GBUdfException(msg));
+					throw new IOException(new GBUdfException(msg, e));
 				}
 			}
 		} catch (NullPointerException e) {

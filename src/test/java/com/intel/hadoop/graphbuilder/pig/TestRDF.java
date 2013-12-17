@@ -37,7 +37,7 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
 
-public class TestRDFUdf {
+public class TestRDF {
 	EvalFunc<?> toRdfUdf;
 
 	@Before
