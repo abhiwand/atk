@@ -37,7 +37,12 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
@@ -78,11 +83,11 @@ public class TitanVertexFormatPropertyGraph4CFTest
     public void VertexOutputFormatPropertyGraph4CFTest() throws Exception {
         /*
         String[] graph = new String[] {
-                "[0,[],[l],[[2,1,[tr]],[3,2,[te]]]]",
-                "[1,[],[l],[[2,5,[tr]],[4,3,[va]]]]",
-                "[2,[],[r],[[0,1,[tr]],[1,5,[tr]]]]",
-                "[3,[],[r],[[0,2,[te]]]]",
-                "[4,[],[r],[[1,3,[va]]]]"
+                "[0,[],[L],[[2,1,[tr]],[3,2,[te]]]]",
+                "[1,[],[L],[[2,5,[tr]],[4,3,[va]]]]",
+                "[2,[],[R],[[0,1,[tr]],[1,5,[tr]]]]",
+                "[3,[],[R],[[0,2,[te]]]]",
+                "[4,[],[R],[[1,3,[va]]]]"
         };
         */
 
@@ -102,15 +107,15 @@ public class TitanVertexFormatPropertyGraph4CFTest
         TitanVertex[] nodes;
         nodes = new TitanVertex[5];
         nodes[0] = tx.addVertex();
-        nodes[0].addProperty(vertexType, "l");
+        nodes[0].addProperty(vertexType, "L");
         nodes[1] = tx.addVertex();
-        nodes[1].addProperty(vertexType, "l");
+        nodes[1].addProperty(vertexType, "L");
         nodes[2] = tx.addVertex();
-        nodes[2].addProperty(vertexType, "r");
+        nodes[2].addProperty(vertexType, "R");
         nodes[3] = tx.addVertex();
-        nodes[3].addProperty(vertexType, "r");
+        nodes[3].addProperty(vertexType, "R");
         nodes[4] = tx.addVertex();
-        nodes[4].addProperty(vertexType, "r");
+        nodes[4].addProperty(vertexType, "R");
 
         TitanEdge[] edges;
         edges = new TitanEdge[8];

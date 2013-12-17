@@ -37,7 +37,11 @@ import org.apache.hadoop.io.LongWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 

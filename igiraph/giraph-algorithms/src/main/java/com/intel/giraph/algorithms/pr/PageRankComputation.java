@@ -79,7 +79,7 @@ public class PageRankComputation extends BasicComputation<LongWritable,
     /**
      * Custom argument for convergence progress output interval (default: every superstep)
      */
-    public static final String LEARNING_CURVE_OUTPUT_INTERVAL = "pr.convergenceProgressOutputInterval";
+    public static final String CONVERGENCE_CURVE_OUTPUT_INTERVAL = "pr.convergenceProgressOutputInterval";
     /**
      * Custom argument for enable detailed progress report (default: false)
      */
@@ -146,7 +146,7 @@ public class PageRankComputation extends BasicComputation<LongWritable,
             throw new IllegalArgumentException("Reset probability should be in [0,1] range");
         }
 
-        convergenceProgressOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
+        convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
         if (convergenceProgressOutputInterval < 1) {
             throw new IllegalArgumentException("Learning curve output interval should be >= 1.");
         }
@@ -345,7 +345,7 @@ public class PageRankComputation extends BasicComputation<LongWritable,
                 map.put(entry.getKey(), entry.getValue().toString());
             }
 
-            int convergenceProgressOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
+            int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
             int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
             int realStep = 0;
             if (superstep >= 1) {

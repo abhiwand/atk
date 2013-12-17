@@ -42,7 +42,18 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_AUTOTYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
@@ -59,7 +70,7 @@ import static junit.framework.Assert.assertNotNull;
  * vertex value 4,3 marked as "l", and two edges.
  * First edge has a destination vertex 2, edge value 2.1, marked as "tr".
  * Second edge has a destination vertex 3, edge value 0.7,marked as "va".
- * [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
+ * [1,[4,3],[L],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest 
     extends TitanTestBase<LongWritable, VertexData4CGDWritable, EdgeDataWritable> {
@@ -92,11 +103,11 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest
     public void VertexInputFormatPropertyGraph4CFCGDTest() throws Exception {
         /*
         String[] graph = new String[] {
-            "[0,[],[l],[[2,1,[tr]],[3,2,[te]]]]",
-            "[1,[],[l],[[2,5,[tr]],[4,3,[va]]]]",
-            "[2,[],[r],[[0,1,[tr]],[1,5,[tr]]]]",
-            "[3,[],[r],[[0,2,[te]]]]",
-            "[4,[],[r],[[1,3,[va]]]]"
+            "[0,[],[L],[[2,1,[tr]],[3,2,[te]]]]",
+            "[1,[],[L],[[2,5,[tr]],[4,3,[va]]]]",
+            "[2,[],[R],[[0,1,[tr]],[1,5,[tr]]]]",
+            "[3,[],[R],[[0,2,[te]]]]",
+            "[4,[],[R],[[1,3,[va]]]]"
         };
         */
 
@@ -114,15 +125,15 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest
         TitanLabel edge = tx.makeLabel("edge").make();
 
         TitanVertex n0 = tx.addVertex();
-        n0.addProperty(vertexType, "l");
+        n0.addProperty(vertexType, "L");
         TitanVertex n1 = tx.addVertex();
-        n1.addProperty(vertexType, "l");
+        n1.addProperty(vertexType, "L");
         TitanVertex n2 = tx.addVertex();
-        n2.addProperty(vertexType, "r");
+        n2.addProperty(vertexType, "R");
         TitanVertex n3 = tx.addVertex();
-        n3.addProperty(vertexType, "r");
+        n3.addProperty(vertexType, "R");
         TitanVertex n4 = tx.addVertex();
-        n4.addProperty(vertexType, "r");
+        n4.addProperty(vertexType, "R");
 
         TitanEdge e0 = n0.addEdge(edge, n2);
         e0.setProperty(weight, "1.0");
