@@ -8,25 +8,26 @@ IMPORT 'pig/graphbuilder.pig';
 
 --prepare temp storage that is used by the LOAD_TITAN macro
 --the temp storage is required for doing a dummy LOAD/STORE for the 
---MAPREDUCE operator
+--MAPREDUCE operator use in that macro
 rmf /tmp/empty
 fs -mkdir /tmp/empty
 rmf /tmp/tmp_store_1;
 rmf /tmp/tmp_store_2;
 
-x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
-x = FILTER x BY id!='';
+employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS 
+		(id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+employees_with_valid_ids = FILTER employees BY id!='';
 
 --GB requires the input data to be in HBase so
 --we need to append HBase row keys to the input relation 
-keyed_x = FOREACH x GENERATE FLATTEN(CreateRowKey(*));
+final_relation = FOREACH employees_with_valid_ids GENERATE FLATTEN(CreateRowKey(*));
 
 --create GB input table
 sh echo "disable 'gb_input_table'" | hbase shell
 sh echo "drop 'gb_input_table'" | hbase shell
 sh echo "create 'gb_input_table', {NAME=>'cf'}" | hbase shell --cf is the column family
 
-STORE keyed_x INTO 'hbase://gb_input_table' 
+STORE final_relation INTO 'hbase://gb_input_table' 
   		USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:id cf:name cf:age cf:dept cf:manager cf:underManager');
 	  		
 LOAD_TITAN('gb_input_table', '"cf:id=cf:name,cf:age,cf:dept" "cf:manager"',

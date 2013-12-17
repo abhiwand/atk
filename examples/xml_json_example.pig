@@ -21,5 +21,6 @@ DUMP xml_data;
 
 -- make sure /usr/local/pig/piggybank.jar exists
 REGISTER /usr/local/pig/piggybank.jar;
-xml_data = LOAD 'examples/data/tshirts.xml' using org.apache.pig.piggybank.storage.XMLLoader('tshirts') AS (xml: chararray);--extract the 'tshirts' element with Piggy Bank's XMLLoader
+xml_data = LOAD 'examples/data/tshirts.xml' using org.apache.pig.piggybank.storage.XMLLoader('tshirts') AS 
+				(xml: chararray);--extract the 'tshirts' element with Piggy Bank's XMLLoader
 DUMP xml_data;
