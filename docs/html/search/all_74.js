@@ -37,8 +37,8 @@ var searchData=
   ['titangraphelementwriter',['TitanGraphElementWriter',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::titan']]],
   ['titangraphelementwriter_2ejava',['TitanGraphElementWriter.java',['../TitanGraphElementWriter_8java.html',1,'']]],
   ['titankeyindex',['titanKeyIndex',['../enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1BaseCLI_1_1Options.html#ae4e5bee30ed075a7b015599f2f2a1f7c',1,'com::intel::hadoop::graphbuilder::util::BaseCLI::Options']]],
-  ['titanoutputconfiguration',['TitanOutputConfiguration',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanOutputConfiguration.html#a54d0ca57ce0be14f95910be97a8a5bae',1,'com::intel::hadoop::graphbuilder::pipeline::output::titan::TitanOutputConfiguration']]],
   ['titanoutputconfiguration',['TitanOutputConfiguration',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanOutputConfiguration.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::titan']]],
+  ['titanoutputconfiguration',['TitanOutputConfiguration',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanOutputConfiguration.html#a54d0ca57ce0be14f95910be97a8a5bae',1,'com::intel::hadoop::graphbuilder::pipeline::output::titan::TitanOutputConfiguration']]],
   ['titanoutputconfiguration_2ejava',['TitanOutputConfiguration.java',['../TitanOutputConfiguration_8java.html',1,'']]],
   ['titanoverwrite',['titanOverwrite',['../enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1BaseCLI_1_1Options.html#abbd0f1a0525a4ca88c50dfd808ce3d9f',1,'com::intel::hadoop::graphbuilder::util::BaseCLI::Options']]],
   ['titanstorage',['titanStorage',['../enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1BaseCLI_1_1Options.html#ab6f2448fc346cf5ddbe7750c4109ee65',1,'com::intel::hadoop::graphbuilder::util::BaseCLI::Options']]],
@@ -50,5 +50,6 @@ var searchData=
   ['triple',['Triple',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1Triple_3_01A_00_01B_00_01C_01_4.html#ade8d284f7347a9833aaff84c2d5f869d',1,'com::intel::hadoop::graphbuilder::util::Triple&lt; A, B, C &gt;']]],
   ['triple_2ejava',['Triple.java',['../Triple_8java.html',1,'']]],
   ['triple_3c_20a_2c_20b_2c_20c_20_3e',['Triple&lt; A, B, C &gt;',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1Triple_3_01A_00_01B_00_01C_01_4.html',1,'com::intel::hadoop::graphbuilder::util']]],
-  ['tupleclass',['tupleClass',['../classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html#a124d3200fa10e655aa3d83d118fc13e8',1,'com::intel::pig::data::GBTupleFactory']]]
+  ['tupleclass',['tupleClass',['../classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html#a124d3200fa10e655aa3d83d118fc13e8',1,'com::intel::pig::data::GBTupleFactory']]],
+  ['tutorial_2emd',['Tutorial.md',['../Tutorial_8md.html',1,'']]]
 ];

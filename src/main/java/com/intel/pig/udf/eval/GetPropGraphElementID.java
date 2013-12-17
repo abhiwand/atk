@@ -31,6 +31,9 @@ import java.io.IOException;
 
 /**
  * \brief GetPropGraphElementID ...returns string objectID of its property graph element.
+ *
+ * Input: A singleton tuple containing a {@code SerializedGraphElement}
+ * Output: The {@code String} ID of the {@code SerializedGraphElement}.
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class GetPropGraphElementID extends EvalFunc<String>  {

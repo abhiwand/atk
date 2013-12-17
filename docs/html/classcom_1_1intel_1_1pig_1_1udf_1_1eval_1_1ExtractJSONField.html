@@ -37,6 +37,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Overview</span></a></li>
+      <li><a href="pages.html"><span>Tutorial</span></a></li>
       <li class="current"><a href="annotated.html"><span>Javadoc</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -121,7 +122,7 @@ Public Member Functions</h2></td></tr>
  <br/>
  Then here is the corresponding Pig script:</p>
 <pre>
-<div class="fragment"><div class="line">json_data = LOAD <span class="stringliteral">&#39;examples/data/tshirts.json&#39;</span> USING TextLoader() AS (json: chararray);</div>
+<div class="fragment"><div class="line">json_data = LOAD <span class="stringliteral">&#39;tutorial/data/tshirts.json&#39;</span> USING TextLoader() AS (json: chararray);</div>
 <div class="line">extracted_first_tshirts_price = FOREACH json_data GENERATE *, <a class="code" href="graphbuilder_8pig.html#a48d640abea2d2c77f214589ba430655a">ExtractJSONField</a>(json, &#39;Sizes[0].Price&#39;) AS price: <span class="keywordtype">double</span>;</div>
 </div><!-- fragment --> 
 </pre> </div><h2 class="groupheader">Member Function Documentation</h2>
@@ -229,7 +230,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 14:33:28 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Dec 16 2013 09:15:28 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

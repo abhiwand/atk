@@ -66,17 +66,8 @@
      REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;
      IMPORT '/usr/local/gb/pig/graphbuilder.pig';
     \endcode
-    
- * <H2>Running the Examples</H2>
- * Several sample Pig scripts demonstrating GB 2.0 (alpha) functionality have been provided under the examples directory. These scripts
- * can be run from the top level GB 2.0 (alpha) installation directory. Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, to run the RDF example
-    \code
-     cd /usr/local/gb/
-     pig -x local -f examples/rdf_example.pig     
-    \endcode
-        
  * 
- * <H2>Known Issues</H2>
+ * <H2>Known Issues:</H2>
  *  <B>Using DUMP to print property graph elements fails</B><BR/>
  *  Using Pig's DUMP command to dump property graph elements causes "ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
  *  Could not find class com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids, while attempting to de-serialize it". To fix the problem,

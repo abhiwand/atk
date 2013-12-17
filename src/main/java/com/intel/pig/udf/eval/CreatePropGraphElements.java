@@ -26,6 +26,7 @@ import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
+import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -312,7 +313,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         return  output;
     }
 
-    private void addVertexToPropElementBag(DataBag outputBag, Vertex vertex) {
+    private void addVertexToPropElementBag(DataBag outputBag, Vertex vertex) throws IOException {
 
         PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory()
                 .newTuple(1);
@@ -325,12 +326,12 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             graphElementTuple.set(0, serializedgraphElement);
             outputBag.add(graphElementTuple);
         } catch (ExecException e) {
-            // todo raise exception
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
+            throw new IOException(new GBUdfException(e));
         }
     }
 
-    private void addEdgeToPropElementBag(DataBag outputBag, Edge edge) {
+    private void addEdgeToPropElementBag(DataBag outputBag, Edge edge) throws IOException{
 
         PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory().newTuple(1);
 
@@ -342,13 +343,13 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             graphElementTuple.set(0, serializedGraphElement);
             outputBag.add(graphElementTuple);
         } catch (ExecException e) {
-            // todo raise exception
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
+            throw new IOException(new GBUdfException(e));
         }
 
     }
 
-    private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte) {
+    private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte) throws IllegalArgumentException{
         WritableComparable object = null;
 
         switch(typeByte) {
@@ -371,8 +372,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                 object = new StringType((String) value);
                 break;
             default:
-                // todo raise exception
                 warn("Invalid data type", PigWarning.UDF_WARNING_1);
+                throw new IllegalArgumentException();
 
         }
 
@@ -424,8 +425,12 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
                             value =  getTupleData(input, inputSchema, vertexPropertyFieldName);
                             if (value != null) {
-                                vertex.setProperty(vertexPropertyFieldName, pigTypesToSerializedJavaTypes(value,
-                                        fieldNameToDataType.get(vertexPropertyFieldName)));
+                                try {
+                                    vertex.setProperty(vertexPropertyFieldName, pigTypesToSerializedJavaTypes(value,
+                                            fieldNameToDataType.get(vertexPropertyFieldName)));
+                                } catch (ClassCastException e) {
+                                    warn("Cannot cast Pig type to Java type, skipping entry.", PigWarning.UDF_WARNING_1);
+                                }
                             }
                         }
                     }
@@ -439,12 +444,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                     addVertexToPropElementBag(outputBag, vertex);
                 }
             }  else {
-                // todo raise exception
-                warn("Null data", PigWarning.UDF_WARNING_1);
+                warn("Null data, skipping tuple.", PigWarning.UDF_WARNING_1);
             }
         }// End of vertex block
 
-        // check row for edges
+        // check tuple for edges
 
         Object propertyValue;
         String property;
@@ -531,11 +535,10 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             Schema pgeTuple = new Schema(new Schema.FieldSchema(
                     "property graph element (unary tuple)", DataType.TUPLE));
 
-            Schema pgeBagSchema;
 
-            pgeBagSchema = new Schema(new Schema.FieldSchema("property graph elements",
+            return new Schema(new Schema.FieldSchema("property graph elements",
                     pgeTuple, DataType.BAG));
-            return pgeBagSchema;
+
         } catch (FrontendException e) {
             // This should not happen
             throw new RuntimeException("Bug : exception thrown while "
