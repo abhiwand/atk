@@ -15,7 +15,7 @@ DEFINE FlattenAsGBString com.intel.pig.udf.eval.FlattenAsGBString();
  *
 */
 
-DEFINE MERGEDUPLICATEGRAPHELEMENTS(inPropGraph) RETURNS outPropGraph {
+DEFINE MERGE_DUPLICATE_ELEMENTS(inPropGraph) RETURNS outPropGraph {
   DEFINE GetPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
   labeled = FOREACH $inPropGraph GENERATE (GetPropGraphEltID(*)), $0;
   grouped = GROUP labeled by $0;
