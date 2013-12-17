@@ -1,9 +1,15 @@
 @(message: String, user: database.UserRow)
 
-@error(message, user, "fa-icon-question-sign"){
+    @errorCode = {
+        <h1 class='code fadeInDown animated'>
+            <span>4</span>
+            <span class="fa-icon-question-sign"></span>
+            <span>0</span>
+        </h1>
+    }
 
-        Sorry, the page you are looking for doesn’t exist.
+@error(message, user)(errorCode){
+        (Sorry, the page you are looking for doesn’t exist.
         <br>
-        Take a run around the block or tap the button below.
-
-}
+        Take a run around the block or tap the button below.),
+    }

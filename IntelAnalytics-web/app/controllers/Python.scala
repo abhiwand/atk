@@ -43,10 +43,4 @@ object Python extends Controller {
               .withCookies(new CookieGenerator createCookie(request.user.userInfo.secret.getOrElse(" "), request.user.userInfo.ipythonUrl.getOrElse(" ")))
     }
 
-    /**
-     * direct to documentation page.
-     */
-    def documentation = Authenticated{ request =>
-      Ok(views.html.documentation("documentation", request.user.userInfo))
-    }
 }

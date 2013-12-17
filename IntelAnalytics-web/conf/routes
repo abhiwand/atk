@@ -1,21 +1,26 @@
 # Routes
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
-GET         /                     controllers.Application.index
-GET         /error                controllers.Application.error
-POST        /register             controllers.Register.register
-POST        /login                controllers.Login.login
-GET         /logout               controllers.Application.logout
+GET         /                                      controllers.Application.index
+GET         /error                                 controllers.Application.error
+POST        /register                              controllers.Register.register
+POST        /login                                 controllers.Login.login
+GET         /logout                                controllers.Application.logout
 
-GET         /ipython              controllers.Python.ipython
-GET         /documentation        controllers.Python.documentation
-GET         /termsofuse           controllers.Application.termsOfUse
+GET         /ipython                               controllers.Python.ipython
 
+GET         /termsofuse                            controllers.Application.termsOfUse
+
+GET         /documentation                         controllers.Documentation.documentation
+GET         /documentation/pythonapi               controllers.Documentation.documentation
+GET         /documentation/javaapi                 controllers.Documentation.documentation
+GET         /documentation/javaapi/pigapi          controllers.Documentation.documentation
+GET         /documentation/pythonapi/pigapi        controllers.Documentation.documentation
 #file notifications
-POST        /files/create         controllers.File.create
-POST        /files/delete         controllers.File.delete
+POST        /files/create                          controllers.File.create
+POST        /files/delete                          controllers.File.delete
 
 #GET        /logout               controllers.Application.register
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file         controllers.Assets.at(path="/public", file)
+GET         /assets/*file                          controllers.Assets.at(path="/public", file)
