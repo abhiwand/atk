@@ -157,6 +157,30 @@ class HBaseTable(object):
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
+    def copy(self, new_table_name):
+        script_path = os.path.join(etl_scripts_path, 'pig_copy_table.py')
+        args = _get_pig_args()
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        args += [script_path,
+                 '-i', self.table_name,
+                 '-o', new_table_name,
+                 '-n', feature_names_as_str,
+                 '-t', feature_types_as_str]
+
+        return_code = call(args, report_strategy=progress_report_strategy())
+        if return_code:
+            raise HBaseTableException('Could not copy table')
+
+        # save the schema for the new table
+        etl_schema.save_schema(new_table_name)
+        return HBaseTable(new_table_name, self.file_name)
+
+
     def _get_first_N(self, n):
         first_N_rows = []
         with ETLHBaseClient() as hbase_client:
