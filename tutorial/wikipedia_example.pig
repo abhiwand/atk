@@ -17,10 +17,6 @@ rmf /tmp/tmp_store_1;
 rmf /tmp/tmp_store_2;
 
 		   
-sh echo "disable 'wiki_table'" | hbase shell
-sh echo "drop 'wiki_table'" | hbase shell
-sh echo "create 'wiki_table', 'features'" | hbase shell			   
-			   
 DEFINE RegexExtractAllMatches com.intel.pig.udf.eval.RegexExtractAllMatches();
 DEFINE FlattenAsGBString com.intel.pig.udf.eval.FlattenAsGBString();
 
@@ -35,5 +31,5 @@ keyed_y = FOREACH y GENERATE FLATTEN(CreateRowKey(*)); --assign row keys
 STORE keyed_y INTO 'hbase://wiki_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('features:id features:title features:flattened_links');
 LOAD_TITAN('wiki_table', '"features:title=features:id" "features:flattened_links"', 
                              '"features:title,features:flattened_links,LINKS"',
-                           'tutorial/hbase-titan-conf.xml', '-F');
+                           'tutorial/hbase-titan-conf.xml', '-O -F'); -- overwrite the input table and process the flattened links
  
