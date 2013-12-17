@@ -60,7 +60,7 @@
  * <H2>Using GB 2.0 (alpha)</H2>
  *  To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT \link graphbuilder.pig \endlink script. The 
  * \link graphbuilder.pig \endlink script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user
- * has to define the other UDFs with the constructor arguments they want; please see Tutorial for how to use GB functionality in your Pig scripts.
+ * has to define the other UDFs with the constructor arguments they want; please see examples under the examples/ directory for the use of GB functionality in your Pig scripts.
  *  Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script:
     \code
      REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;

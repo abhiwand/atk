@@ -37,7 +37,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Overview</span></a></li>
-      <li><a href="pages.html"><span>Tutorial</span></a></li>
       <li class="current"><a href="annotated.html"><span>Javadoc</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -120,7 +119,7 @@ Public Member Functions</h2></td></tr>
 <p><b>Example of use in pig sript:</b></p>
 <pre>
 <div class="fragment"><div class="line">* REGISTER target/graphbuilder-2.0alpha-with-deps.jar;</div>
-<div class="line">* x = LOAD <span class="stringliteral">&#39;tutorial/data/employees.csv&#39;</span> USING PigStorage(<span class="charliteral">&#39;,&#39;</span>) AS (<span class="keywordtype">id</span>: <span class="keywordtype">int</span>, name: chararray, age: <span class="keywordtype">int</span>, dept: chararray, managerId: <span class="keywordtype">int</span>, tenure: chararray);</div>
+<div class="line">* x = LOAD <span class="stringliteral">&#39;examples/data/employees.csv&#39;</span> USING PigStorage(<span class="charliteral">&#39;,&#39;</span>) AS (<span class="keywordtype">id</span>: <span class="keywordtype">int</span>, name: chararray, age: <span class="keywordtype">int</span>, dept: chararray, managerId: <span class="keywordtype">int</span>, tenure: chararray);</div>
 <div class="line">* DEFINE <a class="code" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1CreatePropGraphElements.html#ae0569dfa9380e4e3396894020579a242">CreatePropGraphElements</a> com.intel.pig.udf.eval.<a class="code" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1CreatePropGraphElements.html#ae0569dfa9380e4e3396894020579a242">CreatePropGraphElements</a>(&#39;-v &quot;name=age,managerId&quot; -e &quot;name,dept,worksAt,tenure&quot;&#39;);</div>
 <div class="line">* pge = FOREACH x GENERATE flatten(<a class="code" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1CreatePropGraphElements.html#ae0569dfa9380e4e3396894020579a242">CreatePropGraphElements</a>(*));</div>
 <div class="line">*     </div>
@@ -489,7 +488,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 09:13:34 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 17 2013 11:30:06 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

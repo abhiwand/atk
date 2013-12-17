@@ -37,7 +37,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Overview</span></a></li>
-      <li><a href="pages.html"><span>Tutorial</span></a></li>
       <li class="current"><a href="annotated.html"><span>Javadoc</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -117,7 +116,7 @@ Public Member Functions</h2></td></tr>
 <p>Row keys should be designed carefully as they may have significant impact on read/write performance. This UDF only provides a generic randomized row key assignment logic, which may not be suitable for every situation. To understand the implications of row key design please see <a href="http://hbase.apache.org/book/rowkey.design.html">HBase Reference Guide</a></p>
 <p><b>Example:</b></p>
 <pre>
-<div class="fragment"><div class="line">x = LOAD <span class="stringliteral">&#39;tutorial/data/employees.csv&#39;</span> USING PigStorage(<span class="charliteral">&#39;,&#39;</span>) as (<span class="keywordtype">id</span>:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);</div>
+<div class="fragment"><div class="line">x = LOAD <span class="stringliteral">&#39;examples/data/employees.csv&#39;</span> USING PigStorage(<span class="charliteral">&#39;,&#39;</span>) as (<span class="keywordtype">id</span>:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);</div>
 <div class="line">x = FILTER x by <span class="keywordtype">id</span>!=&#39;&#39;;</div>
 <div class="line">keyed_x = FOREACH x GENERATE FLATTEN(<a class="code" href="graphbuilder_8pig.html#a4b4b26238d30c738dbc3d83c8d4d5a50">CreateRowKey</a>(*));</div>
 <div class="line">STORE keyed_x INTO &#39;hbase:<span class="comment">//gb_input_table&#39; </span></div>
@@ -226,7 +225,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 09:13:34 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 17 2013 11:30:06 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
