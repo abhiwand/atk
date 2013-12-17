@@ -45,8 +45,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.intel.hadoop.graphbuilder.sampleapplications.CreateLinkGraph;
-import com.intel.hadoop.graphbuilder.sampleapplications.CreateWordCountGraph;
 import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
 import com.intel.hadoop.graphbuilder.sampleapplications.TableToTextGraph;
 
@@ -135,36 +133,6 @@ public class CommandLineInterfaceTest {
         cliArgs.put("s", "");
 
         testDemoApp(TableToTextGraph.class, cliArgs);
-    }
-
-    @Test
-    public void test_CreateWordCountGraph_cli_options() throws Exception {
-
-        //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("i", "employeeData");
-        cliArgs.put("o", "cf:name=cf:age,cf:dept");
-        cliArgs.put("t", "");
-        cliArgs.put("a", "");
-        cliArgs.put("O", "");
-        cliArgs.put("d", "dictionary path");
-        cliArgs.put("s", "stop words");
-
-        testDemoApp(CreateWordCountGraph.class, cliArgs);
-    }
-
-    @Test
-    public void test_CreateLinkGraph_cli_options() throws Exception {
-
-        //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("i", "employeeData");
-        cliArgs.put("o", "cf:name=cf:age,cf:dept");
-        cliArgs.put("t", "");
-        cliArgs.put("a", "");
-        cliArgs.put("O", "");
-
-        testDemoApp(CreateLinkGraph.class, cliArgs);
     }
 
     @Test
