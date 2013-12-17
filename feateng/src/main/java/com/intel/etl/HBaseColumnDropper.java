@@ -1,5 +1,9 @@
 package com.intel.etl;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.Parser;
+import org.apache.commons.cli.PosixParser;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
@@ -18,20 +22,29 @@ public class HBaseColumnDropper {
     private static Scan scan = new Scan();
 
     public static void main(String[] args) throws Exception {
+
+        Parser parser = new PosixParser();
+        Options options = new Options();
+        options.addOption("f", true,  "Column Family");
+        options.addOption("n", true,  "Column Name");
+        options.addOption("t", true,  "Table Name");
+        CommandLine cmd = parser.parse(options, args);
+
+
+        String srcTableName = cmd.getOptionValue("t");
+        String columnFamily = cmd.getOptionValue("f");
+        String columnName = cmd.getOptionValue("n");
+
         Configuration conf = new Configuration();
-
-        String srcTableName = args[2];
-        String columnFamily = args[3];
-        String columnName = args[4];
-
+        scan.setCaching(500);
+        scan.setCacheBlocks(false);
         conf.set(HBaseColumnDropper.TABLE_NAME, srcTableName);
         conf.set(HBaseColumnDropper.COLUMN_FAMILY, columnFamily);
         conf.set(HBaseColumnDropper.COLUMN_NAME, columnName);
 
         Job job = new Job(conf, "Drop column");
         job.setJarByClass(HBaseColumnDropper.class);
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        job.setOutputFormatClass(org.apache.hadoop.mapreduce.lib.output.NullOutputFormat.class);
 
         TableMapReduceUtil.initTableMapperJob(srcTableName, scan, HBaseColumnDropperMapper.class, IntWritable.class, IntWritable.class, job);
         job.setNumReduceTasks(0);
