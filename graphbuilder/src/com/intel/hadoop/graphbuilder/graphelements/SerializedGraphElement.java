@@ -151,7 +151,7 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
     /**
      * Equality check.
      * @param object  Object being compared against the {@code SerializedGraphElement} for equality.
-     * @return   {@literal true} if and only if the incoming objects is another {@code SerializedGraphElement} and its
+     * @return   {@literal true} if and only if the incoming object is another {@code SerializedGraphElement} and its
      * underlying {@code GraphElement} is equal to that of this {@code SerializedGraphElement} by the {@code equals} test.
      */
     @Override

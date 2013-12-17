@@ -31,7 +31,6 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.thinkaurelius.titan.core.TitanElement;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 
 import java.io.IOException;
 import java.util.Hashtable;
@@ -59,13 +58,13 @@ public class TitanGraphElementWriter extends GraphElementWriter {
             throws IOException, InterruptedException {
         initArgs(args);
 
-        vertexWrite(args);
+        writeVertices(args);
 
-        edgeWrite(args);
+        writeEdges(args);
     }
 
     /**
-     * btain the Titan-assigned ID from a Blueprints vertex
+     * Obtain the Titan-assigned ID from a Blueprints vertex
      * @param bpVertex  A Blueprints vertex.
      * @return Its Titan-assigned ID.
      */
@@ -75,13 +74,13 @@ public class TitanGraphElementWriter extends GraphElementWriter {
     }
 
     /**
-     * Write vertices to a Titan graph and propagate its Titan-ID through an HDFs file.
+     * Writes vertices to a Titan graph and propagate its Titan-ID through an HDFs file.
      * @param args
      * @throws IOException
      * @throws InterruptedException
      */
     @Override
-    public void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+    public void writeVertices(ArgumentBuilder args) throws IOException, InterruptedException {
         initArgs(args);
 
         int vertexCount = 0;
@@ -118,7 +117,7 @@ public class TitanGraphElementWriter extends GraphElementWriter {
      * @throws InterruptedException
      */
     @Override
-    public void edgeWrite(ArgumentBuilder args)
+    public void writeEdges(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
 

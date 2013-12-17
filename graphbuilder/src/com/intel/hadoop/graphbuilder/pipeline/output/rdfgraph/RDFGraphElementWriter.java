@@ -23,9 +23,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 import com.hp.hpl.jena.rdf.model.*;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
@@ -34,7 +32,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 import java.io.IOException;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -56,13 +53,13 @@ public class RDFGraphElementWriter extends GraphElementWriter {
             this.rdfNamespace = conf.get("rdfNamespace");
         }
 
-        vertexWrite(args);
+        writeVertices(args);
 
-        edgeWrite(args);
+        writeEdges(args);
     }
 
     @Override
-    public void vertexWrite(ArgumentBuilder args)
+    public void writeVertices(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
 
@@ -120,7 +117,7 @@ public class RDFGraphElementWriter extends GraphElementWriter {
     }
 
     @Override
-    public void edgeWrite(ArgumentBuilder args)
+    public void writeEdges(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
 

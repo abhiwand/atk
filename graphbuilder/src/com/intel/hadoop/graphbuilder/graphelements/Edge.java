@@ -309,7 +309,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      */
      @Override
      public int hashCode() {
-         return HashUtil.hashQuad(src, dst, label,properties);
+         return HashUtil.hashQuad(src, dst, label, properties);
      }
 
     /**

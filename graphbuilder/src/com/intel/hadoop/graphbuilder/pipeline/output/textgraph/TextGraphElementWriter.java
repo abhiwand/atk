@@ -48,13 +48,13 @@ public class TextGraphElementWriter extends GraphElementWriter {
 
         multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
 
-        vertexWrite(args);
+        writeVertices(args);
 
-        edgeWrite(args);
+        writeEdges(args);
     }
 
     @Override
-    public void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+    public void writeVertices(ArgumentBuilder args) throws IOException, InterruptedException {
         initArgs(args);
 
         int vertexCount = 0;
@@ -76,7 +76,7 @@ public class TextGraphElementWriter extends GraphElementWriter {
     }
 
     @Override
-    public void edgeWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+    public void writeEdges(ArgumentBuilder args) throws IOException, InterruptedException {
         initArgs(args);
 
         Iterator<Map.Entry<EdgeID, Writable>> edgeIterator = edgeSet.entrySet().iterator();
