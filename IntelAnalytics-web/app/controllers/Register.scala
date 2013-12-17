@@ -34,8 +34,6 @@ import models.RegistrationFormMapping
 import play.api.mvc.Cookie
 import scala.Some
 import models.database.UserRow
-import play.api.Play
-import play.api.Play.current
 
 /**
  * Singleton object to handle register request and generate response accordingly.
@@ -53,7 +51,7 @@ object Register extends Controller {
     /**
      * register user to the system.
      */
-    var register = Action {
+    def register = Action {
         request => {
             Registrations.RegistrationFormValidation.bindFromRequest()(request).fold(
                 formWithErrors => {
@@ -70,15 +68,14 @@ object Register extends Controller {
                     }
                 }
             )
-            response = null;
             response match {
                 case successfulResponse: SuccessfullyRegisterResponse => Redirect("/ipython").withNewSession.withSession(SessionValName -> successfulResponse.sessionId).withCookies(getRegisteredCookie)
                 case failedResponse: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
                     "/", None, true, false))
                 case generalErrorResponse: GeneralErrorResponse => Redirect("/").withCookies(Cookie("approvalPending", "true", Some(3600),
                     "/", None, true, false)).withCookies(getRegisteredCookie)
-                /*case _: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
-                  "/", None, true, false))*/
+                case _: FailToValidateResponse => Redirect("/").withCookies(Cookie("authenticationFailed", "true", Some(3600),
+                  "/", None, true, false))
             }
         }
     }
