@@ -64,9 +64,9 @@
       <profile>
         <id>rpm-builder</id>
         <activation>
-          <os>
-            <family>unix</family>
-          </os>
+	  <property>
+            <name>env.BUILD_NUMBER</name>
+          </property>
         </activation>
         <build>
           <plugins>
