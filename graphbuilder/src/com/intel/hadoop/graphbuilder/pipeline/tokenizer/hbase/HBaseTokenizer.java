@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
@@ -25,7 +25,9 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -61,6 +63,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     private ArrayList<Edge<StringType>>   edgeList;
 
     private boolean                       flattenLists;
+    private boolean stripColumnFamilyNames;
 
 
 
@@ -152,7 +155,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     @Override
     public void configure(Configuration conf) {
 
-        this.flattenLists = conf.getBoolean("HBASE_TOKENIZER_FLATTEN_LISTS",false);
+        this.flattenLists           = conf.getBoolean("HBASE_TOKENIZER_FLATTEN_LISTS",false);
+        this.stripColumnFamilyNames = conf.getBoolean("HBASE_TOKENIZER_STRIP_COLUMNFAMILY_NAMES", false);
 
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
@@ -229,6 +233,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     /**
      * Get column data from the HBase table. If any errors are encountered, log them.
      *
+     * Leading and trailing whitespace is trimmed from all entries.
+     *
      * @param columns        The HTable columns for the current row.
      * @param fullColumnName The Name of the HTABLE column - column_family:column_qualifier.
      * @param context        Hadoop's mapper context. Used for error logging.
@@ -239,6 +245,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
         if (null != value) {
             context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_READ).increment(1);
+
+            value = value.trim();
 
             if (value.isEmpty()) {
                 context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
@@ -251,9 +259,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         return value;
     }
 
-    private String[] expandString(String string) {
+    private ArrayList<String> expandString(String string) {
 
-        String[] outArray = null;
+        ArrayList<String> outArray = new ArrayList<String>();
 
         int inLength = string.length();
 
@@ -262,16 +270,21 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             String bracesStrippedString     = string.substring(1,inLength-1);
             String parenthesesDroppedString = bracesStrippedString.replace("(","").replace(")","");
             String[] expandedString         = parenthesesDroppedString.split("\\,");
-            outArray                        = expandedString;
+
+            for (int i = 0; i < expandedString.length; i++) {
+                String trimmedString = expandedString[i].trim();
+
+                if (!trimmedString.isEmpty()) {
+                    outArray.add(trimmedString);
+                }
+            }
 
         }  else {
-            outArray    = new String[1];
-            outArray[0] = string;
+            outArray.add(string);
         }
 
         return outArray;
     }
-
 
     /**
      * Read an hbase record, and generate vertices and edges according to the generation rules
@@ -295,9 +308,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
             String vidCell = getColumnData(columns, columnName, context);
 
-            for (String vertexId : expandString(vidCell)) {
-
-                if (null != vertexId) {
+            if (null != vidCell) {
+                for (String vertexId : expandString(vidCell)) {
 
                     // create vertex
 
@@ -315,7 +327,10 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                             for (String vertexPropertyColumnName : vpColNames) {
                                 value =  getColumnData(columns, vertexPropertyColumnName, context);
                                 if (value != null) {
-                                    vertex.setProperty(vertexPropertyColumnName, new StringType(value));
+                                    String propName =
+                                            HBaseGraphBuildingRule.propertyNameFromColumnName(vertexPropertyColumnName,
+                                                    stripColumnFamilyNames);
+                                    vertex.setProperty(propName, new StringType(value));
                                 }
                             }
                         }
@@ -325,16 +340,16 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                     String rdfLabel = vertexRDFLabelMap.get(columnName);
                     if (rdfLabel != null) {
-                        vertex.setVertexLabel(new StringType(rdfLabel));
+                        vertex.setLabel(new StringType(rdfLabel));
                     }
                     vertexList.add(vertex);
-                } else {
-
-                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
-                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
                 }
+            } else {
+
+                LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + columnName + ", row " + row.toString());
+                context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
             }
-        }// End of vertex block
+        } // End of vertex block
 
         // check row for edges
 
@@ -357,11 +372,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             String srcVertexCellString = getColumnData(columns, srcVertexColName, context);
             String tgtVertexCellString = getColumnData(columns, tgtVertexColName, context);
 
-
-            for (String srcVertexName : expandString(srcVertexCellString)) {
-                for (String tgtVertexName: expandString(tgtVertexCellString)) {
-
-                    if (srcVertexColName != null && tgtVertexColName != null && eLabel != null) {
+            if (srcVertexCellString != null && tgtVertexCellString != null && eLabel != null) {
+                for (String srcVertexName : expandString(srcVertexCellString)) {
+                    for (String tgtVertexName: expandString(tgtVertexCellString)) {
 
                         Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
                                 new StringType(tgtVertexName), new StringType(eLabel));
@@ -369,10 +382,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                         for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
                             propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
 
-                            property = edgeAttributes[countEdgeAttr].replaceAll(
-                                    GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                    GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
-
+                            property =
+                                    HBaseGraphBuildingRule.propertyNameFromColumnName(edgeAttributes[countEdgeAttr],
+                                            stripColumnFamilyNames);
                             if (property != null) {
                                 edge.setProperty(property, new StringType(propertyValue));
                             }
@@ -398,9 +410,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                                 propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
 
 
-                                property = edgeAttributes[countEdgeAttr].replaceAll(
-                                        GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
+                                property =
+                                        HBaseGraphBuildingRule.propertyNameFromColumnName(edgeAttributes[countEdgeAttr],
+                                                stripColumnFamilyNames);
 
                                 if (property != null) {
                                     opposingEdge.setProperty(property, new StringType(propertyValue));
@@ -409,6 +421,22 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                             edgeList.add(opposingEdge);
                         }
                     }
+                }
+            } else {
+
+                if (srcVertexCellString == null) {
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + srcVertexColName + ", row " + row.toString());
+                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
+                }
+
+                if (tgtVertexCellString == null) {
+                    LOG.warn("GRAPHBUILDER_WARN: Null vertex in " + tgtVertexColName + ", row " + row.toString());
+                    context.getCounter(GBHTableConfiguration.Counters.HTABLE_COLS_IGNORED).increment(1l);
+                }
+
+                if (eLabel == null) {
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.INTERNAL_PARSER_ERROR,
+                            "Null edge label during parsing. Possibly a bad mapper configuration.",LOG);
                 }
             }
         }

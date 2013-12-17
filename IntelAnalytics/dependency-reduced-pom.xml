@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <parent>
+    <artifactId>IntelAnalytics</artifactId>
+    <groupId>com.intel.hadoop</groupId>
+    <version>0.5-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>IntelAnalytics-application</artifactId>
+  <name>Intel Tribeca Application</name>
+  <url>http://maven.apache.org</url>
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration />
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>rpm-builder</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <executions>
+              <execution>
+                <id>chmod-shellscripts</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>/bin/chmod</executable>
+                  <arguments>
+                    <argument>+x</argument>
+                    <argument>${basedir}/../scripts/rpm/package.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/fetch_sources.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/build_rpms.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/python.sh</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <execution>
+                <id>build-rpm</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>bash</executable>
+                  <workingDirectory>../scripts/rpm</workingDirectory>
+                  <arguments>
+                    <argument>package.sh</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
+

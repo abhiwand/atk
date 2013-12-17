@@ -104,18 +104,52 @@ for n in `cat ${nodesfile}`; do
     '"
 done
 
+# get the master node ip
+m=`sed '1q;d' ${nodesfile}`
+# get the actual cluster size
+csize=`cat ${nodesfile} | wc -l`
+
+# update slave nodes ganglia config
+${dryrun} scp -i ${pemfile} ${m}:/etc/ganglia/gmond.conf _gmond.master
+for n in `cat ${nodesfile}`; do
+    echo ${n}:Configuring ganglia...;
+    if  [ "${n}" == "${m}" ]; then
+        ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
+        service gmond restart 2>&1 > /dev/null;
+        service gmetad restart 2>&1 > /dev/null;
+        service httpd stop 2>&1 > /dev/null;
+        chkconfig httpd off 2>&1 > /dev/null;
+        service nginx restart 2>&1 > /dev/null;
+        '"
+    else
+        n0=`echo ${n} | awk -F '.' '{print $1}'`
+        nn=`grep ${n0} ${hostsfile} | awk '{print $2}'`
+        sed -e 's/host = \"127.0.0.1\"/host = \"master\"/g' -e 's/master@/'${nn}'@/g' _gmond.master > _gmond.${nn}
+        ${dryrun} scp -i ${pemfile} _gmond.${nn} ${n}:/tmp/_gmond.conf
+        ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
+        echo ${n}:Updating ganglia config file;
+        mv -f /tmp/_gmond.conf /etc/ganglia/gmond.conf;
+        echo ${n}:Disabling webserver;
+        service nginx stop 2>&1 > /dev/null;
+        chkconfig nginx off 2>&1 > /dev/null;
+        service httpd stop 2>&1 > /dev/null;
+        chkconfig httpd off 2>&1 > /dev/null;
+        service gmetad stop 2>&1 > /dev/null;
+        chkconfig gmetad off 2>&1 > /dev/null;
+        service gmond restart 2>&1 > /dev/null;
+        '"
+    fi
+done
+rm _gmond.* 2>&1 > /dev/null
+
 # prepare to start the cluster/hadoop: nothing to do, default is configured
 # with 4 nodes, so if that's the case, we don't have to do anything here as 
 # the node AMI is already built w/ the correct hadoop/hbase configs based on
 # 4-nodes master, node01, etc.
 
-# get the master node ip
-n=`sed '1q;d' ${nodesfile}`
-# get the actual cluster size
-csize=`cat ${nodesfile} | wc -l`
 if [ ${csize} -gt 4 ]
 then
-    ${dryrun} ssh -i ${pemfile} ${IA_USR}@${n} bash -c "'
+    ${dryrun} ssh -i ${pemfile} ${IA_USR}@${m} bash -c "'
     for ((i = 4; i < ${csize}; i++))
     do
         printf "%02d" ${i} >> hadoop/conf/slaves;
@@ -129,46 +163,46 @@ then
     done;
     sed -i \'s/node03/nodes03,"${nodes}"/g\' titan/conf/titan-hbase.properties;
     sed -i \'s/node03/nodes03,"${nodes}"/g\' titan/conf/titan-hbase-es.properties;
+    sed -i \'s/node03/nodes03,"${nodes}"/g\' titan/conf/rexstitan-hbase-es.xml;
     '"
 fi
 
 # start hadoop/hbase, mount is handled by cloud.cfg now in cloud-init
-${dryrun} ssh -i ${pemfile} ${IA_USR}@${n} bash -c "'
+${dryrun} ssh -i ${pemfile} ${IA_USR}@${m} bash -c "'
 pushd ~/IntelAnalytics;
-echo ${n}:Formatting hadoop name node on master node...;
+echo ${m}:Formatting hadoop name node on master node...;
 hadoop/bin/hadoop namenode -format;
 sleep 2;
-echo ${n}:Starting hdfs...;
+echo ${m}:Starting hdfs...;
 hadoop/bin/start-dfs.sh;
 sleep 2;
-echo ${n}:Starting mapred...;
+echo ${m}:Starting mapred...;
 hadoop/bin/start-mapred.sh;
 sleep 2;
-echo ${n}:Starting hbase...;
+echo ${m}:Starting hbase...;
 hbase/bin/start-hbase.sh;
 sleep 2;
-echo ${n}:Starting hbase thrift...;
+echo ${m}:Starting hbase thrift...;
 hbase/bin/hbase-daemon.sh start thrift -threadpool;
 sleep 2;
 popd
 '"
 # Add more sanity check if needed, e.G., word-count, titan gods graph
-${dryrun} ssh -i ${pemfile} ${IA_USR}@${n} bash -c "'
+${dryrun} ssh -i ${pemfile} ${IA_USR}@${m} bash -c "'
 pushd ~/IntelAnalytics;
-echo ${n}:Hadoop test using word count example...;
+echo ${m}:Hadoop test using word count example...;
 hadoop/bin/hadoop fs -mkdir wc;
 sleep 1;
 hadoop/bin/hadoop fs -put 4300.txt wc;
 sleep 1;
 hadoop/bin/hadoop jar hadoop/hadoop-examples-1.2.1.jar wordcount wc wc.out;
 sleep 2;
-echo ${n}:Load Titan gods graph to hbase...;
-if [ ! -d `readlink titan/logs` ]; then
-    echo ${n}:Creat Titan logging directory...;
-    mkdir -p `readlink titan/logs`;
-fi
-titan/bin/gremlin.sh bin/IntelAnalytics_load.grem;
-echo ${n}:Start Titan/Rexster server...;
+echo ${m}:Creat Titan logging directory...;
+mkdir -p /mnt/data1/logs/titan 2>&1 > /dev/null
+ln -s /mnt/data1/logs/titan titan-server/logs 2>&1 > /dev/null
+echo ${m}:Load Titan gods graph to hbase...;
+titan/bin/gremlin.sh -e bin/IntelAnalytics_load.groovy;
+echo ${m}:Start Titan/Rexster server...;
 titan/bin/start-rexstitan.sh;
 sleep 2;
 popd

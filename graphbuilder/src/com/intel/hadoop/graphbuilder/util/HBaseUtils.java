@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
-*/
-
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
+ */
 package com.intel.hadoop.graphbuilder.util;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
@@ -168,6 +168,23 @@ public class HBaseUtils {
      */
     public boolean tableExists(String hTableName) throws IOException {
         return admin.tableExists(hTableName);
+    }
+
+    /**
+     * If the table exists in HBase, it is disabled and dropped.
+     */
+    public void removeTable(String testTableName) throws IOException {
+
+        if (admin.tableExists(testTableName)) {
+            admin.disableTable(testTableName);
+            if (admin.isTableDisabled(testTableName)) {
+                admin.deleteTable(testTableName);
+            } else {
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                        "GRAPHBUILDER ERROR: Unable to delete existing table " + testTableName + ". Please delete it",
+                        LOG);
+            }
+        }
     }
 
     /**

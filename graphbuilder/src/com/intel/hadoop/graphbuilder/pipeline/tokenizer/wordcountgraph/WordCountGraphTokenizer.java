@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.wordcountgraph;
 
 import java.io.BufferedReader;
@@ -115,13 +115,14 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
         try {
             fileSystem = FileSystem.get(configuration);
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "GRAPHBUILDER_ERROR: Could not access file system from configuration.", LOG, e);
         }
 
         String dictPath = configuration.get("Dictionary");
 
-        if (dictPath != null && dictPath != "") {
+        if (dictPath != null && !dictPath.isEmpty()) {
             try {
                 loadDictionary(dictPath);
             } catch (IOException e) {
@@ -132,7 +133,7 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
         String stopWordsPath = configuration.get("StopWords");
 
-        if (stopWordsPath != null && stopWordsPath != "") {
+        if (stopWordsPath != null && !stopWordsPath.isEmpty()) {
             try {
                 loadStopWords(stopWordsPath);
             } catch (IOException e) {

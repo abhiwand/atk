@@ -142,9 +142,14 @@ class TestConfig(unittest.TestCase):
             self.config.load(os.path.join(curdir, "test_config3.properties"))
             self.fail('load 3 should have thrown an error')
         except Exception as e:
-            self.assertTrue(str(e) == 'Environment vars not set: ' +
-                            'OUTRAGEOUS_ENV_VAR_THAT_IS_NEVER_DEFINED')
-
+            self.assertEqual(str(e), 'Environment vars not set: OUTRAGEOUS_ENV_VAR_THAT_IS_NEVER_DEFINED')
+    def test_nested_subs(self):
+        self.config.load(os.path.join(curdir, "test_config_nested.properties"))
+        expected_nested = {'fruit': 'pineapple',
+                           'pwd': os.environ.get("PWD"),
+                           'fruitypwd': 'pineapple'+ os.environ.get("PWD"),
+                           'nesty':'pineapple'+ os.environ.get("PWD")+'!'}
+        self.__compare_dictionaries(expected_nested, self.config.props)
 
 if __name__ == '__main__':
     unittest.main()

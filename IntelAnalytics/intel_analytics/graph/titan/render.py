@@ -166,7 +166,7 @@ def _render_json(nodes,height):
 	display(pb)
 	display(Javascript("""if ($('#jit').length == 0) { 
 			$("head").append(
-				$("<script id = 'jit' src='files/Jit/jit.js'/>"));
+				$("<script id = 'jit' src='static/Jit/jit.js'/>"));
 	}
 	"""))
 

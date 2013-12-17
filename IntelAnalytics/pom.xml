@@ -37,86 +37,100 @@
 	<relativePath>../pom.xml</relativePath>  
 	<version>0.5-SNAPSHOT</version>
   </parent>
-<build>
+  
+  
+  <build>
+
   <plugins>
-	<plugin>
-              <artifactId>maven-assembly-plugin</artifactId>
-	      <configuration>
-	        <descriptors>
-                  <descriptor>src/main/assembly/compile.xml</descriptor>
-                </descriptors>
-	      </configuration>
-              <executions>
-                  <execution>
-                      <id>jar-with-dependencies</id>
-                      <phase>package</phase>
-                      <goals>
-                          <goal>single</goal>
-                      </goals>
-                  </execution>
-              </executions>
-          </plugin>
-	<plugin>
-	  <artifactId>exec-maven-plugin</artifactId>
-	  <groupId>org.codehaus.mojo</groupId>
-	  <version>1.2.1</version>
-	  <executions>
-	    <execution>
-	      <id>chmod-shellscripts</id>
-	      <phase>package</phase>
-	      <goals>
-		<goal>exec</goal>
-	      </goals>
-	  <configuration>
-	    <executable>/bin/chmod</executable>
-	    <arguments>
-	      <argument>+x</argument>
-	      <argument>${basedir}/../scripts/rpm/package.sh</argument>
-	      <argument>${basedir}/../scripts/rpm/fetch_sources.sh</argument>
-	      <argument>${basedir}/../scripts/rpm/build_rpms.sh</argument>
-	      <argument>${basedir}/../scripts/rpm/python.sh</argument>
-	    </arguments>
-	  </configuration>
-	    </execution>
-	    <execution>
-	      <id>build-rpm</id>
-	      <phase>package</phase>
-	      <goals>
-		<goal>exec</goal>
-	      </goals>
-  	      <configuration>
-	        <executable>bash</executable>
-	        <workingDirectory>../scripts/rpm</workingDirectory>
-	        <arguments>
-		  <argument>package.sh</argument>
-	        </arguments>
-	      </configuration>
-            </execution>
-          </executions>
-	</plugin>
+    <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.2</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <!-- <minimizeJar>true</minimizeJar> -->
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
   </plugins>
 </build>
+  <profiles>
+      <profile>
+        <id>rpm-builder</id>
+        <activation>
+          <os>
+            <family>unix</family>
+          </os>
+        </activation>
+        <build>
+          <plugins>
+              <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>1.2.1</version>
+                <executions>
+                  <execution>
+                    <id>chmod-shellscripts</id>
+                    <phase>package</phase>
+                    <goals>
+                <goal>exec</goal>
+                    </goals>
+                <configuration>
+                  <executable>/bin/chmod</executable>
+                  <arguments>
+                    <argument>+x</argument>
+                    <argument>${basedir}/../scripts/rpm/package.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/fetch_sources.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/build_rpms.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/python.sh</argument>
+                  </arguments>
+                </configuration>
+                  </execution>
+                  <execution>
+                    <id>build-rpm</id>
+                    <phase>package</phase>
+                    <goals>
+                <goal>exec</goal>
+                    </goals>
+                      <configuration>
+                      <executable>bash</executable>
+                      <workingDirectory>../scripts/rpm</workingDirectory>
+                      <arguments>
+                  <argument>package.sh</argument>
+                      </arguments>
+                    </configuration>
+                        </execution>
+                      </executions>
+            </plugin>
+          </plugins>
+        </build>
+      </profile>
+  </profiles>
   <dependencies>
-  <dependency>
-	<groupId>com.google.protobuf</groupId>
-	<artifactId>protobuf-java</artifactId>
-	<version>2.5.0</version>
-  </dependency>
-            
-   <dependency>
-	<groupId>org.apache.hbase</groupId>
-	<artifactId>hbase</artifactId>
-	<version>${dep.hbase.version}</version>
-	<classifier>security</classifier>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>imahout</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
-	<groupId>${project.groupId}</groupId>
-  	<artifactId>imahout</artifactId>
-  	<version>${project.version}</version>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>igiraph-titan</artifactId>
+      <version>${project.version}</version>
     </dependency>
-     <dependency>
+    <dependency>
+      <groupId>${project.groupId}.graphbuilder</groupId>
+      <artifactId>graphbuilder</artifactId>
+      <version>2.0</version>
+    </dependency>
+    <dependency>
        <groupId>${project.groupId}</groupId>
-       <artifactId>igiraph-core</artifactId>
+       <artifactId>feature-engineering</artifactId>
        <version>${project.version}</version>
     </dependency>
     <dependency>
@@ -124,20 +138,10 @@
        <artifactId>igiraph-algorithms</artifactId>
        <version>${project.version}</version>
     </dependency>
-     <dependency>
-       <groupId>${project.groupId}</groupId>
-       <artifactId>igiraph-titan</artifactId>
-       <version>${project.version}</version>
-    </dependency>
     <dependency>
-       <groupId>com.intel.hadoop.graphbuilder</groupId>
-       <artifactId>graphbuilder</artifactId>
-       <version>2.0</version>
-    </dependency>
-     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>${dep.slf4j.version}</version>
+       <groupId>${project.groupId}</groupId>
+       <artifactId>igiraph-core</artifactId>
+       <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

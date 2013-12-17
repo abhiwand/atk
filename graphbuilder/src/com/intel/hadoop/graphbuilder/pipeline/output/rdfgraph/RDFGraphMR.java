@@ -1,34 +1,34 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
-*/
-
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
+ */
 package com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.rdf.RDFConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.ElementIdKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -46,7 +46,7 @@ import org.apache.log4j.Logger;
 
 import com.intel.hadoop.graphbuilder.util.Functional;
 /**
- * Sets up a MapReduce jobs to store a property graph elements as RDF triples.
+ * Sets up a MapReduce job to store graph elements as RDF triples.
  *
  * <p>
  *     To run a RDF graph construction job:
@@ -88,7 +88,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
 
-    private PropertyGraphElement mapValueType;
+    private SerializedGraphElement mapValueType;
     private Class vidClass;
 
     private final Class keyFuncClass = ElementIdKeyFunction.class;
@@ -178,18 +178,18 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     /**
      *Sets the value class for the property graph elements coming from the mapper or tokenizer.
      *
-     * <p> This class is one of the instantiations of {@code PropertyGraphElement}, determined the vertex ID type.</p>
+     * <p> This class is one of the instantiations of {@code GraphElement}, determined by the vertex ID type.</p>
      *
      * @param {@code valueClass} The intermediate value class.
-     * @see PropertyGraphElement
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementLongTypeVids
-     * @see com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElementStringTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids
+     * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementLongTypeVids
      */
 
     @Override
     public void setValueClass(Class valueClass) {
         try {
-            this.mapValueType = (PropertyGraphElement) valueClass.newInstance();
+            this.mapValueType = (SerializedGraphElement) valueClass.newInstance();
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "GRAPHBUILDER_ERROR: Cannot set value class ( " + valueClass.getName() + ")", LOG, e);
@@ -204,7 +204,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
      * <p>This can be either a {@code StringType} or {@code LongType}, which are writable encapsulations of the
      * {@code String} and {@code Long} types, respectively. </p>
      * @param {@code vidClass} The class of the vertex IDs.
-     * @see PropertyGraphElement
+     * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
      * @see com.intel.hadoop.graphbuilder.types.StringType
      * @see com.intel.hadoop.graphbuilder.types.LongType
      */
@@ -247,8 +247,6 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     public void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException {
 
         // Set required parameters in configuration
-
-        String test = graphBuildingRule.getClass().getName();
 
         conf.set("GraphTokenizer", graphBuildingRule.getGraphTokenizerClass().getName());
         conf.setBoolean("noBiDir", cleanBidirectionalEdge);

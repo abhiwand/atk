@@ -1,28 +1,9 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
-*/
-
 package com.intel.hadoop.graphbuilder.pipeline.input;
 
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.PropertyGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -54,7 +35,7 @@ public class BaseMapper {
 
     private Logger               log;
     private IntWritable          mapKey;
-    private PropertyGraphElement mapVal;
+    private SerializedGraphElement mapVal;
     private Class                valClass;
     private GraphTokenizer       tokenizer;
     private KeyFunction          keyFunction;
@@ -91,14 +72,14 @@ public class BaseMapper {
         setValClass(context.getMapOutputValueClass());
 
         try {
-            setMapVal((PropertyGraphElement) valClass.newInstance());
+            setMapVal((SerializedGraphElement) valClass.newInstance());
         } catch (InstantiationException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Cannot instantiate map value class (" + PropertyGraphElement.class.getName() + " )", log, e);
+                    "Cannot instantiate map value class (" + SerializedGraphElement.class.getName() + " )", log, e);
         } catch (IllegalAccessException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
                     "Illegal access exception when instantiating map value class ("
-                            + PropertyGraphElement.class.getName() + " )", log, e);
+                            + SerializedGraphElement.class.getName() + " )", log, e);
         }
 
         setMapKey(new IntWritable());
@@ -152,12 +133,12 @@ public class BaseMapper {
      * Increments the correct error Counter, either the Vertex or Edge error counter.
      *
      * @param context The current context for the mapper.
-     * @param val     The {@code PropertyGraphElement} that threw the error.
+     * @param val     The SerializedGraphElement that threw the error.
      */
-    protected void incrementErrorCounter(Mapper.Context context, PropertyGraphElement val) {
-        if (val.graphElementType().equals(PropertyGraphElement.GraphElementType.EDGE)) {
+    protected void incrementErrorCounter(Mapper.Context context, SerializedGraphElement val) {
+        if (val.graphElement().isEdge()) {
             context.getCounter(getEdgeWriteErrorCounter()).increment(1);
-        } else if (val.graphElementType().equals(PropertyGraphElement.GraphElementType.VERTEX)) {
+        } else if (val.graphElement().isVertex()) {
             context.getCounter(getVertexWriteErrorCounter()).increment(1);
         }
     }
@@ -170,7 +151,7 @@ public class BaseMapper {
      * @param key     The vertex and edge key  to write.
      * @param val     The property graph element to write, either vertex or edge.
      */
-    protected void contextWrite(Mapper.Context context, IntWritable key, PropertyGraphElement val) {
+    protected void contextWrite(Mapper.Context context, IntWritable key, SerializedGraphElement val) {
         try {
             context.write(key, val);
         } catch (IOException e) {
@@ -196,7 +177,7 @@ public class BaseMapper {
 
                 Edge edge = edgeIterator.next();
 
-                mapVal.init(PropertyGraphElement.GraphElementType.EDGE, edge);
+                mapVal.init(edge);
                 mapKey.set(keyFunction.getEdgeKey(edge));
 
                 contextWrite(context, mapKey, mapVal);
@@ -220,7 +201,7 @@ public class BaseMapper {
 
                 Vertex vertex = vertexIterator.next();
 
-                mapVal.init(PropertyGraphElement.GraphElementType.VERTEX, vertex);
+                mapVal.init(vertex);
                 mapKey.set(keyFunction.getVertexKey(vertex));
 
                 contextWrite(context, mapKey, mapVal);
@@ -235,7 +216,7 @@ public class BaseMapper {
         this.mapKey = mapKey;
     }
 
-    public void setMapVal(PropertyGraphElement mapVal) {
+    public void setMapVal(SerializedGraphElement mapVal) {
         this.mapVal = mapVal;
     }
 
