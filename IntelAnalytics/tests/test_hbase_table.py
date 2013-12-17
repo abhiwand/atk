@@ -202,7 +202,7 @@ class HbaseTableTest(unittest.TestCase):
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
-        table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
+        table.get_schema = Mock(return_value={config['hbase_column_family'] + 'name':'chararray', config['hbase_column_family'] + 'address':'chararray'})
         table.illustrate()
 
         #column section starting line
@@ -268,6 +268,7 @@ class HbaseTableTest(unittest.TestCase):
 
         #check printout ends here
         self.assertEqual(6, len(write_queue))
+
 
     @patch('intel_analytics.table.hbase.table.sys.stdout')
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')

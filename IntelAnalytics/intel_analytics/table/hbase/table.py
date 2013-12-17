@@ -188,7 +188,7 @@ class HBaseTable(object):
         column_array = []
         print("--------------------------------------------------------------------")
         for i, column in enumerate(columns):
-            header = re.sub(config['hbase_column_family'],'',column)
+            header = re.sub("^" + config['hbase_column_family'],'',column)
             column_array.append(header)
 
         print "\t".join(column_array)
@@ -213,7 +213,7 @@ class HBaseTable(object):
         column_array = []
         html_table+='<tr>'
         for i, column in enumerate(columns):
-            header = re.sub(config['hbase_column_family'],'',column)
+            header = re.sub("^" + config['hbase_column_family'],'',column)
             column_array.append(header)
             html_table+='<th>%s</th>' % header
         html_table+='</tr>'
