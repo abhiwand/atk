@@ -34,6 +34,7 @@ from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 
+
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
 except ImportError, e:
@@ -51,9 +52,6 @@ pig_log4j_path = os.path.join(config['conf_folder'], 'pig_log4j.properties')
 logger.debug('Using %s '% pig_log4j_path)
              
 
-
-
-logger.debug('$JYTHONPATH %s' % os.environ["JYTHONPATH"])
 
 class Imputation:
     """
@@ -188,27 +186,23 @@ class HBaseTable(object):
         schema = self.get_schema()
         columns = schema.keys()
         column_array = []
-        sys.stdout.write("--------------------------------------------------------------------\n")
+        print("--------------------------------------------------------------------")
         for i, column in enumerate(columns):
             header = re.sub(config['hbase_column_family'],'',column)
             column_array.append(header)
-            sys.stdout.write("%s"%(header))
-            if i != len(columns)-1:
-                sys.stdout.write("\t")
-        sys.stdout.write("\n--------------------------------------------------------------------\n")
+
+        print "\t".join(column_array)
+        print("--------------------------------------------------------------------")
 
         for orderedData in first_N_rows:
-
+           data = []
            for col in column_array:
                if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
-                   sys.stdout.write("%s"%(orderedData[col]))
+                   data.append(orderedData[col])
                else:
-                   sys.stdout.write("NA")
+                   data.append("NA")
 
-               if col != column_array[-1]:
-                   sys.stdout.write("  |  ")
-
-           sys.stdout.write("\n")
+           print "  |  ".join(data)
                
     def illustrate_as_html(self, nRows=10):
         first_N_rows = self._get_first_N(nRows)
