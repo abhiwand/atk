@@ -1,6 +1,7 @@
 /**
 * This script should be run from the top level directory
-* Demonstrates how to generate RDF triples from property graph elements
+* Demonstrates how to generate edge list and vertex list
+* from property graph elements
 */
 
 REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;

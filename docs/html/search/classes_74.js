@@ -1,14 +1,11 @@
 var searchData=
 [
   ['tabletographdb',['TableToGraphDB',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1sampleapplications_1_1TableToGraphDB.html',1,'com::intel::hadoop::graphbuilder::sampleapplications']]],
-  ['tabletordfgraph',['TableToRDFGraph',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1sampleapplications_1_1TableToRDFGraph.html',1,'com::intel::hadoop::graphbuilder::sampleapplications']]],
   ['tabletotextgraph',['TableToTextGraph',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1sampleapplications_1_1TableToTextGraph.html',1,'com::intel::hadoop::graphbuilder::sampleapplications']]],
-  ['textfileinputconfiguration',['TextFileInputConfiguration',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1text_1_1TextFileInputConfiguration.html',1,'com::intel::hadoop::graphbuilder::pipeline::input::text']]],
   ['textgraphelementwriter',['TextGraphElementWriter',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphElementWriter.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::textgraph']]],
   ['textgraphmr',['TextGraphMR',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::textgraph']]],
   ['textgraphoutputconfiguration',['TextGraphOutputConfiguration',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphOutputConfiguration.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::textgraph']]],
   ['textgraphreducer',['TextGraphReducer',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphReducer.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::textgraph']]],
-  ['textparsingmapper',['TextParsingMapper',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1text_1_1TextParsingMapper.html',1,'com::intel::hadoop::graphbuilder::pipeline::input::text']]],
   ['timer',['Timer',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1Timer.html',1,'com::intel::hadoop::graphbuilder::util']]],
   ['titancommandlineoptions',['TitanCommandLineOptions',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanCommandLineOptions.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::titan']]],
   ['titanconfig',['TitanConfig',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanConfig.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::titan']]],

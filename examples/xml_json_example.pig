@@ -1,7 +1,7 @@
 /**
 * This script should be run from the top level directory
-* Demonstrates how to manipulate JSON data with JSONPath queries
-* and also how to use GB 2.0 (alpha) XMLLoader to load XML data
+* Demonstrates use of JSONPath queries to process JSON data 
+* and use of XMLLoader to load XML data
 */
 
 REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
