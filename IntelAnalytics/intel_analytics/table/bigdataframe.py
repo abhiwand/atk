@@ -651,7 +651,6 @@ class BigDataFrame(object):
         try:
             self._table.sample(n)
         except Exception, e:
-            print traceback.format_exc()
             raise BigDataFrameException("head exception " + str(e))
 
             # How do I manually create a row? (not doing)
