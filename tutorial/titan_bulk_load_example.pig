@@ -17,8 +17,8 @@ fs -mkdir /tmp/empty
 rmf /tmp/tmp_store_1;
 rmf /tmp/tmp_store_2;
 
-x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
-x = FILTER x by id!='';
+x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') AS (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+x = FILTER x BY id!='';
 
 --GB requires the input data to be in HBase so
 --we need to append HBase row keys to the input relation 
