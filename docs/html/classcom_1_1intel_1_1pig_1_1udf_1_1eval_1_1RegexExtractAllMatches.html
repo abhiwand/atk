@@ -94,7 +94,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="contents">
 
 <p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RegexExtractAllMatches.html" title="RegexExtractAllMatches returns a bag of all matched strings given a string and a regular expression...">RegexExtractAllMatches</a> returns a bag of all matched strings given a string and a regular expression. <br/>
- This implementation is based on Pig's built in <a class="el" href="">REGEX_EXTRACT_ALL</a> UDF. The first element of the given tuple is the source string and the second element is the regular expression.  
+ This implementation is based on Pig's built in <a class="el" href="">REGEX_EXTRACT_ALL</a> UDF. The first element of the given tuple is the source string and the second element is the regular expression. <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RegexExtractAllMatches.html" title="RegexExtractAllMatches returns a bag of all matched strings given a string and a regular expression...">RegexExtractAllMatches</a> UDF only captures the <b>first</b> group specified in regular expression.  
  <a href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RegexExtractAllMatches.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for com.intel.pig.udf.eval.RegexExtractAllMatches:</div>
@@ -114,7 +114,7 @@ Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RegexExtractAllMatches.html" title="RegexExtractAllMatches returns a bag of all matched strings given a string and a regular expression...">RegexExtractAllMatches</a> returns a bag of all matched strings given a string and a regular expression. <br/>
- This implementation is based on Pig's built in <a class="el" href="">REGEX_EXTRACT_ALL</a> UDF. The first element of the given tuple is the source string and the second element is the regular expression. </p>
+ This implementation is based on Pig's built in <a class="el" href="">REGEX_EXTRACT_ALL</a> UDF. The first element of the given tuple is the source string and the second element is the regular expression. <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RegexExtractAllMatches.html" title="RegexExtractAllMatches returns a bag of all matched strings given a string and a regular expression...">RegexExtractAllMatches</a> UDF only captures the <b>first</b> group specified in regular expression. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a7b720b7f6f61eff037f8b13a5904e20c"></a>
 <div class="memitem">
@@ -137,42 +137,42 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;                                                        {</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        Pattern pattern = null;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keywordflow">if</span> (input.size() != 2) {</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            String msg = <span class="stringliteral">&quot;Only 2 parameters are allowed. Must provide string source and regular expression.&quot;</span>;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> IOException(<span class="keyword">new</span> GBUdfException(msg));</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        }</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">if</span> (input.get(0) == null)</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;            <span class="keywordflow">if</span> (!input.get(1).equals(regularExpression)) {</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                    regularExpression = (String) input.get(1);</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                    pattern = Pattern.compile(regularExpression);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                } <span class="keywordflow">catch</span> (PatternSyntaxException e) {</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                    String msg = <span class="stringliteral">&quot;Invalid regular expression: &quot;</span> + input.get(1);</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                    <span class="keywordflow">throw</span> <span class="keyword">new</span> IOException(<span class="keyword">new</span> GBUdfException(msg));</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                }</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            }</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        } <span class="keywordflow">catch</span> (NullPointerException e) {</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            String msg = <span class="stringliteral">&quot;Regular expression is null&quot;</span>;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> IOException(<span class="keyword">new</span> GBUdfException(msg));</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        }</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        Matcher m = pattern.matcher((String) input.get(0));</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        DataBag result = DefaultBagFactory.getInstance().newDefaultBag();</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordflow">while</span> (m.find()) {</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            Tuple matchedString = tupleFactory.newTuple(1);</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            matchedString.set(0, m.group(1));</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            result.add(matchedString);</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        }</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">return</span> result;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                                                        {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        Pattern pattern = null;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordflow">if</span> (input.size() != 2) {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            String msg = <span class="stringliteral">&quot;Only 2 parameters are allowed. Must provide string source and regular expression.&quot;</span>;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> IOException(<span class="keyword">new</span> GBUdfException(msg));</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        }</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordflow">if</span> (input.get(0) == null)</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            <span class="keywordflow">if</span> (!input.get(1).equals(regularExpression)) {</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                    regularExpression = (String) input.get(1);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                    pattern = Pattern.compile(regularExpression);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                } <span class="keywordflow">catch</span> (PatternSyntaxException e) {</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                    String msg = <span class="stringliteral">&quot;Invalid regular expression: &quot;</span> + input.get(1);</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                    <span class="keywordflow">throw</span> <span class="keyword">new</span> IOException(<span class="keyword">new</span> GBUdfException(msg, e));</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                }</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            }</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        } <span class="keywordflow">catch</span> (NullPointerException e) {</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            String msg = <span class="stringliteral">&quot;Regular expression is null&quot;</span>;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> IOException(<span class="keyword">new</span> GBUdfException(msg));</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        }</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        Matcher m = pattern.matcher((String) input.get(0));</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        DataBag result = DefaultBagFactory.getInstance().newDefaultBag();</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keywordflow">while</span> (m.find()) {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            Tuple matchedString = tupleFactory.newTuple(1);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            matchedString.set(0, m.group(1));</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            result.add(matchedString);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        }</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        <span class="keywordflow">return</span> result;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -198,16 +198,16 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RegexExtractAllMatches.html" title="RegexExtractAllMatches returns a bag of all matched strings given a string and a regular expression...">RegexExtractAllMatches</a> UDF returns a bag of extracted strings from the source str. </p>
-<div class="fragment"><div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                                             {</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            Schema innerSchema = <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(null,</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                    DataType.CHARARRAY));</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">new</span> Schema(<span class="keyword">new</span> FieldSchema(null, innerSchema, DataType.BAG));</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        } <span class="keywordflow">catch</span> (FrontendException e) {</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(<span class="stringliteral">&quot;Exception while &quot;</span></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                    + <span class="stringliteral">&quot;creating output schema for RDF udf&quot;</span>, e);</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        }</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                                             {</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            Schema innerSchema = <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(null,</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                    DataType.CHARARRAY));</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">new</span> Schema(<span class="keyword">new</span> FieldSchema(null, innerSchema, DataType.BAG));</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        } <span class="keywordflow">catch</span> (FrontendException e) {</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(<span class="stringliteral">&quot;Exception while &quot;</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                    + <span class="stringliteral">&quot;creating output schema for RDF udf&quot;</span>, e);</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        }</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -217,7 +217,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 13:07:34 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 17 2013 14:33:28 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

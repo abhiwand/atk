@@ -42,8 +42,8 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * string and a regular expression. <br/>
  * This implementation is based on Pig's built in {@link REGEX_EXTRACT_ALL} UDF.
  * The first element of the given tuple is the source string and the second
- * element is the regular expression. Note that this UDF captures groups
- * specified in regular expression.
+ * element is the regular expression. RegexExtractAllMatches UDF only captures
+ * the <b>first</b> group specified in the regular expression.
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class RegexExtractAllMatches extends EvalFunc<DataBag> {
