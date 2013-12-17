@@ -50,7 +50,7 @@ import static com.jayway.restassured.path.json.JsonPath.with;
  * 
  * <pre>
  * {@code
-       json_data = LOAD 'tutorial/data/tshirts.json' USING TextLoader() AS (json: chararray);
+       json_data = LOAD 'examples/data/tshirts.json' USING TextLoader() AS (json: chararray);
        extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(json, 'Sizes[0].Price') AS price: double;
        }
  * </pre>

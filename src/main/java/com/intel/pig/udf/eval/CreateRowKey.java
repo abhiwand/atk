@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  * 
  * <pre>
  * {@code
-       x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+       x = LOAD 'examples/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
        x = FILTER x by id!='';
        keyed_x = FOREACH x GENERATE FLATTEN(CreateRowKey(*));
        STORE keyed_x INTO 'hbase://gb_input_table' 

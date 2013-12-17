@@ -18,7 +18,7 @@ DEFINE EdgeList com.intel.pig.udf.eval.EdgeList('false');
 --specify the vertex list format ('FALSE' - without properties, 'TRUE' - with properties)
 DEFINE VertexList com.intel.pig.udf.eval.VertexList('false');
 
-x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+x = LOAD 'examples/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
 x = FILTER x by id!='';
 
 --TODO need to dedup vertices/edges

@@ -6,19 +6,16 @@
 REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
 IMPORT 'pig/graphbuilder.pig';
 
---cleanup titan hbase table-->TODO: PUT THIS LOGIC IN GB
---make sure HBase is installed
-sh echo "disable 'test_graph'" | hbase shell --see hbase-titan-conf.xml
-sh echo "drop 'test_graph'" | hbase shell
-
---prepare temp storage
+--prepare temp storage that is used by the LOAD_TITAN macro
+--the temp storage is required for doing a dummy LOAD/STORE for the 
+--MAPREDUCE operator
 rmf /tmp/empty
 fs -mkdir /tmp/empty
 rmf /tmp/tmp_store_1;
 rmf /tmp/tmp_store_2;
 
-x = LOAD 'tutorial/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
-x = FILTER x by id!='';
+x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+x = FILTER x BY id!='';
 
 --GB requires the input data to be in HBase so
 --we need to append HBase row keys to the input relation 
@@ -34,4 +31,4 @@ STORE keyed_x INTO 'hbase://gb_input_table'
 	  		
 LOAD_TITAN('gb_input_table', '"cf:id=cf:name,cf:age,cf:dept" "cf:manager"',
 			   '"cf:id,cf:manager,worksUnder,cf:underManager"',
-			   'tutorial/hbase-titan-conf.xml');
+			   'examples/hbase-titan-conf.xml', '-O'); -- -O flag specifies overwriting the input Titan table

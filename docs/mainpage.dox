@@ -16,6 +16,7 @@
 	 *      <UL>
 	 *		<LI> \link com.intel.pig.udf.eval.ExtractJSONField ExtractJSONField \endlink Provides a convenient way of processing complex JSON documents using <a href="https://code.google.com/p/rest-assured/">JSONPath</a> queries.
 	 *      <LI> \link com.intel.pig.load.XMLLoader XMLLoader \endlink Provides a fix for reducing the memory footprint of <a href="https://cwiki.apache.org/confluence/display/PIG/PiggyBank">Piggy Bank</a>'s XMLLoader.
+	 *      <LI> \link com.intel.pig.udf.eval.RegexExtractAllMatches RegexExtractAllMatches \endlink Extracts all strings from a string source that match a regular expression.	 
 	 *      </UL>
 	 * - <B>Graph Construction</B> 
 	 *      <UL>
@@ -59,7 +60,7 @@
  * <H2>Using GB 2.0 (alpha)</H2>
  *  To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT \link graphbuilder.pig \endlink script. The 
  * \link graphbuilder.pig \endlink script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user
- * has to define the other UDFs with the constructor arguments they want; please see Tutorial for how to use GB functionality in your Pig scripts.
+ * has to define the other UDFs with the constructor arguments they want; please see examples under the examples/ directory for the use of GB functionality in your Pig scripts.
  *  Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script:
     \code
      REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;
