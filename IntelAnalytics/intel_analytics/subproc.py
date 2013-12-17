@@ -28,6 +28,7 @@ import time
 
 from threading import Thread
 from subprocess import PIPE, Popen
+from intel_analytics.report import JobReportService
 
 SIGTERM_TO_SIGKILL_SECS = 2 # seconds to wait before send the big kill
 
