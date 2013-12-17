@@ -133,14 +133,18 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <p>To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT <a class="el" href="graphbuilder_8pig.html">graphbuilder.pig</a> script. The <a class="el" href="graphbuilder_8pig.html">graphbuilder.pig</a> script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user has to define the other UDFs with the constructor arguments they want; please see examples under the examples/ directory for the use of GB functionality in your Pig scripts. Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script: </p>
 <div class="fragment"><div class="line">REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;</div>
 <div class="line">IMPORT <span class="stringliteral">&#39;/usr/local/gb/pig/graphbuilder.pig&#39;</span>;</div>
-</div><!-- fragment --><h2>Known Issues:</h2>
+</div><!-- fragment --><h2>Running the Examples</h2>
+<p>Several sample Pig scripts demonstrating GB 2.0 (alpha) functionality have been provided under the examples directory. These scripts can be run from the top level GB 2.0 (alpha) installation directory. Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, to run the RDF example </p>
+<div class="fragment"><div class="line">cd /usr/local/gb/</div>
+<div class="line">pig -x local -f examples/rdf_example.pig     </div>
+</div><!-- fragment --><h2>Known Issues</h2>
 <p><b>Using DUMP to print property graph elements fails</b><br/>
  Using Pig's DUMP command to dump property graph elements causes "ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
    Could not find class com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids, while attempting to de-serialize it". To fix the problem, in $HADOOP_HOME/conf/hadoop-env.sh file update the line that exports HADOOP_CLASSPATH and add "$PIG_HOME/pig-0.12.0.jar:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar" to the end of this classpath definition ($PIG_HOME and $GB_HOME are the paths where Pig and GB are installed). </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 11:30:06 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 17 2013 13:07:34 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
