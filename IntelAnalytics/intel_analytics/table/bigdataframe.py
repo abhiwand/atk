@@ -636,7 +636,7 @@ class BigDataFrame(object):
 
     def sample(self, n=10):
         """
-        Provides string representation of the first sample n lines of the table
+        Provides string representation of the n sample lines of the table
 
         Parameters
         ----------
