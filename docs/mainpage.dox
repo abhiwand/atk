@@ -16,6 +16,7 @@
 	 *      <UL>
 	 *		<LI> \link com.intel.pig.udf.eval.ExtractJSONField ExtractJSONField \endlink Provides a convenient way of processing complex JSON documents using <a href="https://code.google.com/p/rest-assured/">JSONPath</a> queries.
 	 *      <LI> \link com.intel.pig.load.XMLLoader XMLLoader \endlink Provides a fix for reducing the memory footprint of <a href="https://cwiki.apache.org/confluence/display/PIG/PiggyBank">Piggy Bank</a>'s XMLLoader.
+	 *      <LI> \link com.intel.pig.udf.eval.RegexExtractAllMatches RegexExtractAllMatches \endlink Extracts all strings from a string source that match a regular expression.	 
 	 *      </UL>
 	 * - <B>Graph Construction</B> 
 	 *      <UL>
