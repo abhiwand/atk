@@ -9,7 +9,7 @@ ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
 
 if [[ ! -f $ACTIVATE_FILE ]]; then
     echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
-    exit 0
+    exit 1
 fi
 
 source $ACTIVATE_FILE
