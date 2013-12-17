@@ -413,9 +413,17 @@ div.error-page .message {
 
 
 .alert {
+    bottom: 0;
+    height: auto;
+    left: 0;
+    margin: auto;
+    max-height: 50px;
+    min-height: 50px;
     position: fixed;
-    top: 70px;
-    width: auto;
+    right: 0;
+    text-align: center;
+    top: 0;
+    width: 60%;
     z-index: 9999;
 }
 
