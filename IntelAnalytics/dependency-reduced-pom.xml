@@ -46,10 +46,10 @@
                   <executable>/bin/chmod</executable>
                   <arguments>
                     <argument>+x</argument>
-                    <argument>/home/hadoop/source_code/IntelAnalytics/../scripts/rpm/package.sh</argument>
-                    <argument>/home/hadoop/source_code/IntelAnalytics/../scripts/rpm/fetch_sources.sh</argument>
-                    <argument>/home/hadoop/source_code/IntelAnalytics/../scripts/rpm/build_rpms.sh</argument>
-                    <argument>/home/hadoop/source_code/IntelAnalytics/../scripts/rpm/python.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/package.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/fetch_sources.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/build_rpms.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/python.sh</argument>
                   </arguments>
                 </configuration>
               </execution>
