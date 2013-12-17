@@ -27,8 +27,8 @@ from intel_analytics.table.pig.argparse_lib import ArgumentParser
 
 def main(argv):
     parser = ArgumentParser(description='copy data from input table to output table')
-    parser.add_argument('-i', '--input', dest='input', help='the input file path (on HDFS)', required=True)
-    parser.add_argument('-o', '--output', dest='output', help='the output file path (on HDFS)', required=True)
+    parser.add_argument('-i', '--input', dest='input', help='the input table name', required=True)
+    parser.add_argument('-o', '--output', dest='output', help='the output table name', required=True)
     parser.add_argument('-n', '--features', dest='feature_names', help='name of the features as a comma separated string')
     parser.add_argument('-t', '--feature_types', dest='feature_types', help='type of the features as a comma separated string')
 
