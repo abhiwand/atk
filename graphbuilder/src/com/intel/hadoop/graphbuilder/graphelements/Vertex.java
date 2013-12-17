@@ -276,25 +276,18 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     }
 
     /**
-     * To compare another vertex from a serializable graph element
-     * @param vertex
-     * @return -1 if less than edge, 0 if equal, 1 otherwise
-     */
-    public int compareTo(Vertex<VidNameType> vertex) {
-        return equals(vertex) ? 0 : 1;
-    }
-
-    /**
-     * Checks if the input vertex is equal to passed vertex
-     * This is a deep check which means source, destination
+     * Check if the {@code Vertex} is equal to the input {@code Object}
+     *
+     * <p>This is a deep check: Source, destination
      * vertex ID's and all properties are checked to decide
-     * equality
-     * @param ge
+     * equality.
+     * </p>
+     * @param object {@Object} being tested against against the {@code Vertex} for equality.
      */
     @Override
-    public boolean equals(GraphElement ge) {
-        if (ge instanceof Vertex) {
-            Vertex<VidNameType> vertex = (Vertex<VidNameType>) ge;
+    public boolean equals(Object object) {
+        if (object instanceof Vertex) {
+            Vertex<VidNameType> vertex = (Vertex<VidNameType>) object;
             return (this.vertexId.equals(vertex.getId()) &&
                     this.properties.equals(vertex.getProperties()));
         } else {

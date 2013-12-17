@@ -24,10 +24,7 @@ import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-
+import static junit.framework.Assert.*;
 
 public class SerializedGraphElementLongTypeVidsTest {
 
@@ -108,7 +105,8 @@ public class SerializedGraphElementLongTypeVidsTest {
         SerializedGraphElementLongTypeVids element5 = new SerializedGraphElementLongTypeVids();
         element5.init(edge1);
 
-        assertEquals(element4.compareTo(element5), 1);
+        assert(element4.compareTo(element5) != 0);
+        assert(element4.compareTo(element5) == (-1) * element5.compareTo(element4));
 
         // Check the true Edge class
         Edge<LongType> edge2 = new Edge<LongType>(

@@ -101,15 +101,17 @@ public class PropertyMap implements Writable
     /**
      * Property maps are equal if and only if they map exactly the same keys to exactly the same values.
      *
-     * @param inPropMap
+     * @param object
      * @return
      */
-    public boolean equals(PropertyMap inPropMap) {
-        if (inPropMap != null) {
+    public boolean equals(Object object) {
+        if (object instanceof PropertyMap) {
+            PropertyMap inPropMap = (PropertyMap) object;
             if (inPropMap.getPropertyKeys().size() == this.getPropertyKeys().size()) {
                 for (Writable key : this.getPropertyKeys()) {
-                    Writable value = inPropMap.getProperty(key.toString());
-                    if (!value.equals(this.getProperty(key.toString()))) {
+                    String stringKey = key.toString();
+                    Writable value = inPropMap.getProperty(stringKey);
+                    if (!value.equals(this.getProperty(stringKey))) {
                         return false;
                     }
                 }

@@ -23,9 +23,7 @@ import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.*;
 
 public class SerializedGraphElementStringTypeVidsTest {
     @Test
@@ -118,7 +116,8 @@ public class SerializedGraphElementStringTypeVidsTest {
         SerializedGraphElementStringTypeVids element1 = new SerializedGraphElementStringTypeVids();
         element1.init(vertex1);
 
-        assertEquals(element0.compareTo(element1), 1);
+        assert(element0.compareTo(element1) != 0);
+        assert(element0.compareTo(element1) == (-1) * element1.compareTo(element0));
 
         // Check the true case for Vertex class
         Vertex<StringType> vertex2 = new Vertex<StringType>(new StringType("Employee001"),
@@ -149,7 +148,8 @@ public class SerializedGraphElementStringTypeVidsTest {
         SerializedGraphElementStringTypeVids element5 = new SerializedGraphElementStringTypeVids();
         element5.init(edge1);
 
-        assertEquals(element4.compareTo(element5), 1);
+        assert(element4.compareTo(element5) != 0);
+        assert(element4.compareTo(element5) ==  (-1) * element5.compareTo(element4));
 
         // Check the true Edge class
         Edge<StringType> edge2 = new Edge<StringType>(
