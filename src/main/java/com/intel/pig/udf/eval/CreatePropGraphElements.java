@@ -349,7 +349,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     }
 
-    private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte) throws ClassCastException{
+    private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte) throws IllegalArgumentException{
         WritableComparable object = null;
 
         switch(typeByte) {
@@ -373,7 +373,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                 break;
             default:
                 warn("Invalid data type", PigWarning.UDF_WARNING_1);
-                throw new ClassCastException();
+                throw new IllegalArgumentException();
 
         }
 
@@ -535,11 +535,10 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             Schema pgeTuple = new Schema(new Schema.FieldSchema(
                     "property graph element (unary tuple)", DataType.TUPLE));
 
-            Schema pgeBagSchema;
 
-            pgeBagSchema = new Schema(new Schema.FieldSchema("property graph elements",
+            return new Schema(new Schema.FieldSchema("property graph elements",
                     pgeTuple, DataType.BAG));
-            return pgeBagSchema;
+
         } catch (FrontendException e) {
             // This should not happen
             throw new RuntimeException("Bug : exception thrown while "
