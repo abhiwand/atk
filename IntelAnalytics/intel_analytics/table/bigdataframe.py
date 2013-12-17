@@ -260,7 +260,7 @@ class BigDataFrame(object):
         raise BigDataFrameException("Not implemented")
     
     
-    def to_html(self, nRows=10):
+    def sample_as_html(self, nRows=10):
         """
         Get the first nRows as an HTML table
 
@@ -269,7 +269,7 @@ class BigDataFrame(object):
         nRows : int
             number of rows to retrieve in the HTML table
         """
-        return self._table.illustrate_as_html(nRows)
+        return self._table.sample_as_html(nRows)
 
 
     #----------------------------------------------------------------------
@@ -634,24 +634,22 @@ class BigDataFrame(object):
     #    print "Not implemented"
 
 
-    def head(self, n=10):
+    def sample(self, n=10):
         """
-        Provides string representation of the first n lines of the table
+        Provides string representation of the first sample n lines of the table
 
         Parameters
         ----------
         n : int
             number of rows
+            Returns
 
-        Returns
-        -------
-        head : String
         """
         # for IPython, consider dumping 2D array (NDarray) for pretty-print
 
 
         try:
-            self._table.illustrate(n)
+            self._table.sample(n)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("head exception " + str(e))
