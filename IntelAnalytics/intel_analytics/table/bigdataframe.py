@@ -262,12 +262,12 @@ class BigDataFrame(object):
     
     def sample_as_html(self, nRows=10):
         """
-        Get the first nRows as an HTML table
+        Get the nRows as an HTML table
 
         Parameters
         ----------
         nRows : int
-            number of rows to retrieve in the HTML table
+            number of rows to retrieve as an HTML table
         """
         return self._table.sample_as_html(nRows)
 
