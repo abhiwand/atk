@@ -99,8 +99,8 @@ var searchData=
   ['graphbuilderfatalexitexception',['graphbuilderFatalExitException',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1GraphBuilderExit.html#a8c296eaf2a2a57f70633dcfcfa9936bc',1,'com::intel::hadoop::graphbuilder::util::GraphBuilderExit']]],
   ['graphbuilderfatalexitnoexception',['graphbuilderFatalExitNoException',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1GraphBuilderExit.html#a46bfcb62abc12a9bfb01591e7ecbabab',1,'com::intel::hadoop::graphbuilder::util::GraphBuilderExit']]],
   ['graphbuildingrule_2ejava',['GraphBuildingRule.java',['../GraphBuildingRule_8java.html',1,'']]],
-  ['graphconstructionpipeline',['GraphConstructionPipeline',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1GraphConstructionPipeline.html',1,'com::intel::hadoop::graphbuilder::pipeline']]],
   ['graphconstructionpipeline',['GraphConstructionPipeline',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1GraphConstructionPipeline.html#a549bab9e47381842dd9a15e78ce8241f',1,'com::intel::hadoop::graphbuilder::pipeline::GraphConstructionPipeline']]],
+  ['graphconstructionpipeline',['GraphConstructionPipeline',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1GraphConstructionPipeline.html',1,'com::intel::hadoop::graphbuilder::pipeline']]],
   ['graphconstructionpipeline_2ejava',['GraphConstructionPipeline.java',['../GraphConstructionPipeline_8java.html',1,'']]],
   ['graphdatabaseconnector',['GraphDatabaseConnector',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1GraphDatabaseConnector.html',1,'com::intel::hadoop::graphbuilder::util']]],
   ['graphdatabaseconnector_2ejava',['GraphDatabaseConnector.java',['../GraphDatabaseConnector_8java.html',1,'']]],
@@ -120,6 +120,5 @@ var searchData=
   ['graphgenerationmrjob',['GraphGenerationMRJob',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphGenerationMRJob.html',1,'com::intel::hadoop::graphbuilder::pipeline::output']]],
   ['graphgenerationmrjob_2ejava',['GraphGenerationMRJob.java',['../GraphGenerationMRJob_8java.html',1,'']]],
   ['graphtokenizer_2ejava',['GraphTokenizer.java',['../GraphTokenizer_8java.html',1,'']]],
-  ['graphtype',['GraphType',['../enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType.html',1,'com::intel::hadoop::graphbuilder::graphelements::callbacks::GraphElementType']]],
-  ['gb_202_2e0_20_28alpha_29_20tutorial',['GB 2.0 (alpha) Tutorial',['../md_tutorial_Tutorial.html',1,'']]]
+  ['graphtype',['GraphType',['../enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType.html',1,'com::intel::hadoop::graphbuilder::graphelements::callbacks::GraphElementType']]]
 ];

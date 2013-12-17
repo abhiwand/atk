@@ -15,6 +15,5 @@ var searchData=
   ['titangraphelementwriter_2ejava',['TitanGraphElementWriter.java',['../TitanGraphElementWriter_8java.html',1,'']]],
   ['titanoutputconfiguration_2ejava',['TitanOutputConfiguration.java',['../TitanOutputConfiguration_8java.html',1,'']]],
   ['titanwritermrchain_2ejava',['TitanWriterMRChain.java',['../TitanWriterMRChain_8java.html',1,'']]],
-  ['triple_2ejava',['Triple.java',['../Triple_8java.html',1,'']]],
-  ['tutorial_2emd',['Tutorial.md',['../Tutorial_8md.html',1,'']]]
+  ['triple_2ejava',['Triple.java',['../Triple_8java.html',1,'']]]
 ];
