@@ -16,30 +16,28 @@ import java.util.List;
 
 public class HBaseColumnDropperMapper extends TableMapper<IntWritable, IntWritable> {
 
-    byte[] columnFamilyBytes;
-    byte[] columnNameBytes;
     List<Delete> deleteList = new ArrayList<Delete>();
-
-    @Override
-    public void setup(Context context) {
-
-        Configuration conf = context.getConfiguration();
-        columnFamilyBytes = conf.get(HBaseColumnDropper.COLUMN_FAMILY).getBytes();
-        columnNameBytes = conf.get(HBaseColumnDropper.COLUMN_NAME).getBytes();
-    }
 
     @Override
     public void map(ImmutableBytesWritable row, Result columns, Context context) {
 
-        KeyValue kv = columns.getColumnLatest(columnFamilyBytes, columnNameBytes);
+        Configuration conf = context.getConfiguration();
+        String columnNames = conf.get(HBaseColumnDropper.COLUMN_NAME);
+        byte[] columnFamilyBytes = conf.get(HBaseColumnDropper.COLUMN_FAMILY).getBytes();
 
-        if(kv == null || kv.split() == null)
-            return;
+        List<String> listColumns = HBaseColumnDropperMapper.splitFields(columnNames);
 
-        Long timestamp = Bytes.toLong(kv.split().getTimestamp());
-        Delete delete = new Delete(row.get());
-        delete.deleteColumn(columnFamilyBytes, columnNameBytes, timestamp);
-        deleteList.add(delete);
+        for(String column : listColumns) {
+            KeyValue kv = columns.getColumnLatest(columnFamilyBytes, column.getBytes());
+
+            if(kv == null || kv.split() == null)
+                return;
+
+            Long timestamp = Bytes.toLong(kv.split().getTimestamp());
+            Delete delete = new Delete(row.get());
+            delete.deleteColumn(columnFamilyBytes, column.getBytes(), timestamp);
+            deleteList.add(delete);
+        }
     }
 
     @Override
@@ -52,6 +50,15 @@ public class HBaseColumnDropperMapper extends TableMapper<IntWritable, IntWritab
         } catch(Exception e) {
             System.out.println("Error in submitting batch command to hbase");
         }
+    }
+
+    public static List<String> splitFields(String colNames) {
+        String[] splits = colNames.split(",");
+        List<String> fields = new ArrayList<String>();
+        for(String field : splits) {
+            fields.add(field.trim());
+        }
+        return fields;
     }
 }
 
