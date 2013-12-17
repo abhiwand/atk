@@ -480,8 +480,11 @@ hbase_registry = HBaseRegistry(os.path.join(config['conf_folder'],
                                        config['hbase_names_file']))
 
 def _create_table_name(name, overwrite):
-    table_name = hbase_registry[name]
-    if table_name:
+    try:
+        hbase_registry[name]
+    except KeyError:
+        pass
+    else:
         if not overwrite:
             raise Exception("Big item '" + name  + "' already exists.")
     return name + get_time_str()
