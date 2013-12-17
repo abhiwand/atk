@@ -34,6 +34,7 @@ from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 
+
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
 except ImportError, e:
@@ -50,10 +51,7 @@ etl_scripts_path = config['pig_py_scripts']
 pig_log4j_path = os.path.join(config['conf_folder'], 'pig_log4j.properties')
 logger.debug('Using %s '% pig_log4j_path)
              
-os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
-os.environ["JYTHONPATH"] = config['pig_jython_path']#required to ship jython scripts with pig
 
-logger.debug('$JYTHONPATH %s' % os.environ["JYTHONPATH"])
 
 class Imputation:
     """
@@ -111,7 +109,11 @@ class HBaseTable(object):
                   new_column_name,
                   transformation,
                   transformation_args=None):
-        transformation_to_apply = EvalFunctions.to_string(transformation)
+
+        try:
+            transformation_to_apply = EvalFunctions.to_string(transformation)
+        except:
+            raise HBaseTableException('The specified transformation function is invalid')
         
         #by default all transforms are now in-place
         keep_source_column=True#For in-place transformations the source/original feature has to be kept
@@ -182,7 +184,15 @@ class HBaseTable(object):
 
 
     def _get_first_N(self, n):
+
+        if n < 0:
+            raise HBaseTableException('A range smaller than 0 is specified')
+
+        if n == 0:
+            return []
+
         first_N_rows = []
+
         with ETLHBaseClient() as hbase_client:
            table = hbase_client.connection.table(self.table_name)
            nrows_read = 0
@@ -194,56 +204,54 @@ class HBaseTable(object):
                    break
         return first_N_rows
     
-    def head(self, n=10):
-        header_printed = False
+    def sample(self, n=10):
+
         first_N_rows = self._get_first_N(n)
+        schema = self.get_schema()
+        columns = schema.keys()
+        column_array = []
+        print("--------------------------------------------------------------------")
+        for i, column in enumerate(columns):
+            header = re.sub("^" + config['hbase_column_family'],'',column)
+            column_array.append(header)
+
+        print "\t".join(column_array)
+        print("--------------------------------------------------------------------")
+
         for orderedData in first_N_rows:
-           columns = orderedData.keys()
-           items = orderedData.items()
-           if not header_printed:
-               sys.stdout.write("--------------------------------------------------------------------\n")
-               for i, column in enumerate(columns):
-                   header = re.sub(config['hbase_column_family'],'',column)
-                   sys.stdout.write("%s"%(header))
-                   if i != len(columns)-1:
-                       sys.stdout.write("\t")
-               sys.stdout.write("\n--------------------------------------------------------------------\n")
-               header_printed = True
-             
-           for i,(column,value) in enumerate(items):
-               if value == '' or value==None:
-                   sys.stdout.write("NA")
+           data = []
+           for col in column_array:
+               if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
+                   data.append(orderedData[col])
                else:
-                   sys.stdout.write("%s"%(value))
-                       
-               if i != len(items)-1:
-                   sys.stdout.write("  |  ")
-           sys.stdout.write("\n")
+                   data.append("NA")
+
+           print "  |  ".join(data)
                
-    def to_html(self, nRows=10):
-        header_printed = False
+    def sample_as_html(self, nRows=10):
         first_N_rows = self._get_first_N(nRows)
         html_table='<table border="1">'
+
+        schema = self.get_schema()
+        columns = schema.keys()
+        column_array = []
+        html_table+='<tr>'
+        for i, column in enumerate(columns):
+            header = re.sub("^" + config['hbase_column_family'],'',column)
+            column_array.append(header)
+            html_table+='<th>%s</th>' % header
+        html_table+='</tr>'
+
         for orderedData in first_N_rows:
-           columns = orderedData.keys()
-           items = orderedData.items()
-           
-           if not header_printed:
-               html_table+='<tr>'
-               for i, column in enumerate(columns):
-                   header = re.sub(config['hbase_column_family'],'',column)
-                   html_table+='<th>%s</th>' % header
-               html_table+='</tr>'
-               header_printed = True
-             
            html_table+='<tr>'
-           for i,(column,value) in enumerate(items):
-               if value == '' or value==None:
-                   html_table+='<td>NA</td>'
+           for col in column_array:
+               if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
+                   html_table+=("<td>%s</td>" % (orderedData[col]))
                else:
-                   html_table+=("<td>%s</td>" % (value))
+                   html_table+='<td>NA</td>'
+
            html_table+='</tr>'
-                   
+
         html_table+='</table>'
         return html_table
     
@@ -317,7 +325,7 @@ class HBaseTable(object):
             name_registry.get_key(self.table_name)        
         output_table = _create_table_name(frame_name, True)
         if how not in available_imputations:
-            raise HBaseTableException('Please specify a support imputation method. %d is not supported' % (how))
+            raise HBaseTableException('Please specify a support imputation method. %s is not supported' % (str(how)))
         self.__drop(output_table, column_name=column_name, how=None, replace_with=Imputation.to_string(how))
 
     def get_schema(self):
