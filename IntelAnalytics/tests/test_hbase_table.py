@@ -206,32 +206,27 @@ class HbaseTableTest(unittest.TestCase):
         table.illustrate()
 
         #column section starting line
-        self.assertEqual('--------------------------------------------------------------------\n', write_queue[0])
+        self.assertEqual('--------------------------------------------------------------------', write_queue[0])
+        self.assertEqual('\n', write_queue[1])
 
         #column names
-        self.assertEqual('name', write_queue[1])
-        self.assertEqual('\t', write_queue[2])
-        self.assertEqual('address', write_queue[3])
+        self.assertEqual('name\taddress', write_queue[2])
+        self.assertEqual('\n', write_queue[3])
 
         #column section end line
-        self.assertEqual('\n--------------------------------------------------------------------\n', write_queue[4])
+        self.assertEqual('--------------------------------------------------------------------', write_queue[4])
+        self.assertEqual('\n', write_queue[5])
 
         #first row
-        self.assertEqual('A', write_queue[5])
-        self.assertEqual('  |  ', write_queue[6])
-        self.assertEqual('1234 xyz st', write_queue[7])
-
+        self.assertEqual('A  |  1234 xyz st', write_queue[6])
 
 
         #row seperator
-        self.assertEqual('\n', write_queue[8])
+        self.assertEqual('\n', write_queue[7])
 
         #second row
-        self.assertEqual('B', write_queue[9])
-        self.assertEqual('  |  ', write_queue[10])
-        self.assertEqual('5678 def ave', write_queue[11])
-
-
+        self.assertEqual('B  |  5678 def ave', write_queue[8])
+        self.assertEqual('\n', write_queue[9])
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
     def test_illustrate_invalid_range(self, etl_base_client_class):
@@ -259,18 +254,20 @@ class HbaseTableTest(unittest.TestCase):
         table.illustrate(0)
 
         #column section starting line
-        self.assertEqual('--------------------------------------------------------------------\n', write_queue[0])
-
+        self.assertEqual('--------------------------------------------------------------------', write_queue[0])
+        self.assertEqual('\n', write_queue[1])
         #column names
-        self.assertEqual('name', write_queue[1])
-        self.assertEqual('\t', write_queue[2])
-        self.assertEqual('address', write_queue[3])
+        self.assertEqual('name\taddress', write_queue[2])
+
 
         #column section end line
-        self.assertEqual('\n--------------------------------------------------------------------\n', write_queue[4])
+        self.assertEqual('\n', write_queue[3])
+        self.assertEqual('--------------------------------------------------------------------', write_queue[4])
+        self.assertEqual('\n', write_queue[5])
+
 
         #check printout ends here
-        self.assertEqual(5, len(write_queue))
+        self.assertEqual(6, len(write_queue))
 
     @patch('intel_analytics.table.hbase.table.sys.stdout')
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
@@ -289,30 +286,24 @@ class HbaseTableTest(unittest.TestCase):
         table.illustrate()
 
         #column section starting line
-        self.assertEqual('--------------------------------------------------------------------\n', write_queue[0])
+        self.assertEqual('--------------------------------------------------------------------', write_queue[0])
+        self.assertEqual('\n', write_queue[1])
 
         #column names
-        self.assertEqual('name', write_queue[1])
-        self.assertEqual('\t', write_queue[2])
-        self.assertEqual('address', write_queue[3])
+        self.assertEqual('name\taddress', write_queue[2])
 
         #column section end line
-        self.assertEqual('\n--------------------------------------------------------------------\n', write_queue[4])
+        self.assertEqual('\n', write_queue[3])
+        self.assertEqual('--------------------------------------------------------------------', write_queue[4])
+        self.assertEqual('\n', write_queue[5])
 
         #first row
-        self.assertEqual('A', write_queue[5])
-        self.assertEqual('  |  ', write_queue[6])
-        self.assertEqual('1234 xyz st', write_queue[7])
-
-
-
-        #row seperator
-        self.assertEqual('\n', write_queue[8])
+        self.assertEqual('A  |  1234 xyz st', write_queue[6])
+        self.assertEqual('\n', write_queue[7])
 
         #second row
-        self.assertEqual('B', write_queue[9])
-        self.assertEqual('  |  ', write_queue[10])
-        self.assertEqual('NA', write_queue[11])
+        self.assertEqual('B  |  NA', write_queue[8])
+        self.assertEqual('\n', write_queue[9])
 
 
 
