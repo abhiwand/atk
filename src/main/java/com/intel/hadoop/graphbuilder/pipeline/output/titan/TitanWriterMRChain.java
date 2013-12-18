@@ -19,22 +19,23 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.util.*;
 import com.thinkaurelius.titan.core.KeyMaker;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.TitanKey;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
@@ -349,16 +350,12 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         TitanKey gbIdKey = null;
 
-        if (vidClass == LongType.class) {
-            gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(Long.class)
-                    .indexed(Vertex.class).unique().make();
-        } else if (vidClass == StringType.class) {
-            gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(String.class)
-                    .indexed(Vertex.class).unique().make();
-        } else {
-            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Vertex ID Class is not legal class, StrinGtype or LongType.", LOG);
-        }
+        // Because Titan requires combination of vertex names and vertex labels into single strings for unique IDs
+        // the unique GB_ID_FOR_TITAN property must be of StringType
+
+        gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(String.class)
+                .indexed(Vertex.class).unique().make();
+
 
         keyMap.put(TitanConfig.GB_ID_FOR_TITAN, gbIdKey);
 

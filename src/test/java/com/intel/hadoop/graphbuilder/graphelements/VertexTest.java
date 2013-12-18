@@ -19,23 +19,14 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertSame;
-import static junit.framework.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.intel.hadoop.graphbuilder.types.IntType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import org.junit.Test;
+
+import java.io.*;
+
+import static junit.framework.Assert.*;
 
 public class VertexTest {
 
@@ -43,15 +34,18 @@ public class VertexTest {
     public final void testNoArgConstructor() {
         Vertex<StringType> vertex = new Vertex<StringType>();
 
+        VertexID<StringType> nullId = new VertexID<StringType>(null,null);
         assertNotNull(vertex);
-        assertNull(vertex.getId());
+        assertEquals(vertex.getId(), nullId);
         assertNotNull(vertex.getProperties());
     }
 
     @Test
     public final void testConstructorWithArgs() {
-        StringType vertexId = new StringType("The Greatest Vertex EVER");
-        Vertex<StringType> vertex = new Vertex<StringType>(vertexId);
+        StringType vertexName = new StringType("The Greatest Vertex EVER");
+        VertexID<StringType>  vertexId = new VertexID<StringType>(vertexName);
+
+        Vertex<StringType> vertex = new Vertex<StringType>(vertexName);
 
         assertNotNull(vertex);
         assert (vertex.getId().equals(vertexId));
@@ -61,8 +55,12 @@ public class VertexTest {
     @Test
     public final void testConfigureWithGetters() {
 
-        StringType vertexId = new StringType("The Greatest Vertex EVER");
-        Vertex<StringType> vertex = new Vertex<StringType>(vertexId);
+        StringType vertexName = new StringType("The Greatest Vertex EVER");
+        StringType vertexLabel = new StringType("label");
+
+        VertexID<StringType>  vertexId = new VertexID<StringType>(vertexName, vertexLabel);
+
+        Vertex<StringType> vertex = new Vertex<StringType>(vertexName, vertexLabel);
 
         assertNotNull(vertex);
         assert (vertex.getId().equals(vertexId));
@@ -72,9 +70,12 @@ public class VertexTest {
         PropertyMap pm2 = new PropertyMap();
 
         StringType anotherOpinion = new StringType("No that vertex sucks");
+        StringType anotherLabel = new StringType("voice of authority");
 
-        vertex.configure(anotherOpinion, pm2);
-        assert (vertex.getId().equals(anotherOpinion));
+        VertexID<StringType>  diffNameSameLabel = new VertexID<StringType>(anotherOpinion, vertexLabel);
+
+        vertex.configure(diffNameSameLabel, pm2);
+        assert(vertex.getId().equals(diffNameSameLabel));
         assertSame(vertex.getProperties(), pm2);
 
         vertex.configure(vertexId, pm);
