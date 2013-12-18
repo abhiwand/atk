@@ -35,7 +35,7 @@ import java.io.IOException;
  * This class is mutable. See the {@code configure} and {@code setProperty} methods.
  * </p>
  *
- * @param <VertexIdType> The type of the vertex ID.
+ * @param {@code <VertexIdType>}  The type of the vertex ID.
  */
 public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
         extends GraphElement implements Writable {
@@ -57,7 +57,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     /**
      * Creates a vertex with given vertex ID.
      *
-     * @param vid The vertex ID.
+     * @param {@code vid}  The vertex ID.
      */
     public Vertex(VertexIdType vid) {
 
@@ -65,9 +65,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Create a vertex with ID, label, and property map.
+     * Creates a vertex with ID, label, and property map.
      *
-     * @param vid vertex ID
+     * @param {@code vid}  The vertex ID.
      */
     public Vertex(VertexIdType vid, StringType label, PropertyMap propertyMap) {
         this();
@@ -78,9 +78,9 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Create a vertex with ID, label, and property map
+     * Creates a vertex with ID, label, and property map.
      *
-     * @param vid vertex ID
+     * @param {@code vid} The vertex ID.
      */
     public Vertex(VertexIdType vid, String label, PropertyMap propertyMap) {
         this();
@@ -93,8 +93,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     /**
      * Creates a vertex with the given vertex ID.
      *
-     * @param vid The vertex ID.
-     * @param label The vertex Label.
+     * @param {@code vid}   The vertex ID.
+     * @param {@code label} The vertex Label.
      */
     public Vertex(VertexIdType vid, String label) {
 
@@ -104,8 +104,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     /**
      * Create a vertex with Id, and property map.
      *
-     * @param vid vertex ID
-     * @param propertyMap a define property map to set
+     * @param {@code vid}          The vertex ID.
+     * @param {@code propertyMap}  A define property map to set.
      */
     public Vertex(VertexIdType vid, PropertyMap propertyMap) {
 
@@ -114,7 +114,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
 
 
     /**
-     * This is not an edge.
+     * Checks if this is an edge.
      * @return  {@code false}
      */
     @Override
@@ -123,7 +123,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * This is not a vertex.
+     * Checks if this is a vertex.
      * @return  {@code true}
      */
     @Override
@@ -149,7 +149,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * @return get the graph element
+     * @return  Returns the graph element.
      */
     public Vertex get(){
         return this;
@@ -164,8 +164,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
     /**
      * Overwrites the ID and property map of the vertex.
-     * @param vid The new vertex ID.
-     * @param properties The new {@code PropertyMap}.
+     * @param {@code vid}         The new vertex ID.
+     * @param {@code properties}  The new {@code PropertyMap}.
      */
     public void configure(VertexIdType vid, PropertyMap properties) {
         this.id = vid;
@@ -174,41 +174,41 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
 
     /**
      * Returns a property of the vertex.
-     * @param key  The lookup key for the property.
-     * @return The value of the property.
+     * @param {@code key}  The lookup key for the property.
+     * @return  The value of the property.
      */
     public Object getProperty(String key) {
         return properties.getProperty(key);
     }
 
     /**
-     * Set a property of the vertex.
-     * @param key  The key of the property being updated.
-     * @param val  The new value for the property.
+     * Sets a property of the vertex.
+     * @param {@code key}  The key of the property being updated.
+     * @param {@code val}  The new value for the property.
      */
     public void setProperty(String key, Writable val) {
         this.properties.setProperty(key, val);
     }
 
     /**
-     * set the entire property map
-     * @param propertyMap
+     * Sets the entire property map.
+     * @param {@code propertyMap}
      */
     public void setProperties(PropertyMap propertyMap){
         this.properties = propertyMap;
     }
 
-     /**
+    /**
      * Sets the label of the vertex (the RDF label in the case of RDF graphs).
-      * @param label  The label of the vertex, or the RDF label if an RDF graph.
-      */
+     * @param {@code label}  The label of the vertex, or the RDF label if an RDF graph.
+     */
     public void setLabel(StringType label) {
         this.label = label;
     }
 
     /**
      * Gets the property map for the vertex.
-     * @return The vertex property map.
+     * @return  The vertex property map.
      */
     public PropertyMap getProperties() {
         return properties;
@@ -229,7 +229,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
 
     /**
      * Reads a vertex from an input stream.
-     * @param input The input stream.
+     * @param {@code input}  The input stream.
      * @throws IOException
      */
     @Override
@@ -241,7 +241,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
 
     /**
      * Writes a vertex to an output stream.
-     * @param output The output stream.
+     * @param {@code output}  The output stream.
      * @throws IOException
      */
     @Override
@@ -252,8 +252,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * To compare another vertex from a serializable graph element
-     * @param vertex
+     * Compares one vertext to another vertex from a serializable graph element.
+     * @param {@code vertex}
      * @return -1 if less than edge, 0 if equal, 1 otherwise
      */
     public int compareTo(Vertex<VertexIdType> vertex) {
@@ -261,11 +261,11 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * Checks if the input vertex is equal to passed vertex
+     * Checks if the input vertex is equal to the passed vertex.
      * This is a deep check which means source, destination
      * vertex ID's and all properties are checked to decide
-     * equality
-     * @param ge
+     * equality.
+     * @param {@code ge}
      */
     @Override
     public boolean equals(GraphElement ge) {

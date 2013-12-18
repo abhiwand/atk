@@ -20,8 +20,9 @@
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 /**
- * This class holds all the command line long option names. These should not be referenced directly 
- * but through CommonCommandLineOptions. If you add any new option names, also add them to CommonCommandLineOptions.
+ * This class holds all the command line long option names. Do not reference these directly, 
+ * instead reference them through {@code CommonCommandLineOptions}. If you add any new option 
+ * names, make sure to also add them to {@code CommonCommandLineOptions}.
  *
  * @see com.intel.hadoop.graphbuilder.util.BaseCLI
  * @see com.intel.hadoop.graphbuilder.util.CommandLineInterface

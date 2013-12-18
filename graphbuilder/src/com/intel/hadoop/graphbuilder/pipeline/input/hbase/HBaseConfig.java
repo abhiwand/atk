@@ -22,8 +22,8 @@ package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
 
 /**
- * This class holds all of the hbase default configs that can later be overwritten by a config file.
- *
+ * This class holds all of the hbase default configs that can later be 
+ * overwritten by a config file.
  */
 public class HBaseConfig {
     /**

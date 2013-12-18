@@ -1,7 +1,7 @@
 /* Copyright (C) 2013 Intel Corporation.
 *     All rights reserved.
 *
- *  Licensed under the Apache License, Version 2.0 (the "License");
+*  Licensed under the Apache License, Version 2.0 (the "License");
 *  you may not use this file except in compliance with the License.
 *  You may obtain a copy of the License at
 *
@@ -15,7 +15,7 @@
 *
 * For more about this software visit:
 *      http://www.01.org/GraphBuilder
- */
+*/
 
 package com.intel.hadoop.graphbuilder.graphelements;
 
@@ -29,12 +29,12 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Abstract union type of {@code Vertex} and {@code Edge}. Used as an intermediate
+ * The abstract union type of {@code Vertex} and {@code Edge}. Used as an intermediate
  * map output value to hold either a vertex or an edge.
  *
  * <p> This type is abstract only because we need a constructor for {@code VidType}.</p>
  *
- * @param <VidType>
+ * @param {@code <VidType>}  The vertex ID type.
  */
 
 public abstract class PropertyGraphElement<VidType extends WritableComparable<VidType>>

@@ -23,14 +23,15 @@ import com.intel.hadoop.graphbuilder.types.LongType;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Serialized form of GraphElement class that uses LongType vertex IDs
+ * The serialized form of the {@code GraphElement} class that uses 
+ * {@code LongType} vertex IDs.
  */
 public class SerializedGraphElementLongTypeVids
         extends SerializedGraphElement<LongType> {
 
     /**
-     * Allocate a new vertex ID.
-     * @return  a new LongType object
+     * Allocates a new vertex ID.
+     * @return  A new LongType object.
      */
 
     public LongType createVid() {
@@ -39,9 +40,9 @@ public class SerializedGraphElementLongTypeVids
 
     /**
      * The compare function to enable key comparisons for
-     * WritableComparable child classes
-     * @param o
-     * @return -1 if less than o, 0 if equal, 1 otherwise
+     * WritableComparable child classes.
+     * @param {@code o}
+     * @return -1 if less than o, 0 if equal to o, 1 if otherwise.
      */
     public int compareTo(SerializedGraphElementLongTypeVids o) {
         if (this.graphElement() == null && o.graphElement() == null) {

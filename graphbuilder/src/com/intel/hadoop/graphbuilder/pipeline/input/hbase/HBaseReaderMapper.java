@@ -30,8 +30,9 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.log4j.Logger;
 
 /**
- * Reads columns from an HTable and emits vertices and edges. Most of the logic has been moved to a 
- * BaseMapper class that is also used by TextParsingMapper.
+ * Reads columns from an {@code HTable} and emits vertices and edges. Most of the  
+ * logic has been moved to a {@code BaseMapper} class that is also used by 
+ * {@code TextParsingMapper}.
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper
  */
@@ -41,11 +42,12 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedGraphE
     private BaseMapper baseMapper;
 
     /**
-     * Most of the code has been removed from setup and moved to the BaseMapper class. This makes 
-     * everything very simple, including exception handling. Any errors during setup will be caught 
-     * by the BaseMapper class and logged as fatal and a system.exit will be called.
+     * Most of the code has been removed from {@code setup} and moved to the  
+     * {@code BaseMapper} class. This makes everything less complex, including exception handling. 
+	 * Any errors during setup will be caught by the {@code BaseMapper} class and logged as fatal 
+	 * and a {@code system.exit} will be called.
      *
-     * @param context The mapper context.
+     * @param {@code context} The mapper context.
      */
 
     @Override
@@ -63,9 +65,9 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedGraphE
      * {@code contex.write} inside the base mapper class will be caught and logged as errors so we can
      * continue to the next record.	 
      *
-     * @param row     The row key.
-     * @param columns The columns of the row.
-     * @param context The task context.
+     * @param {@code row}      The row key.
+     * @param {@code columns}  The columns of the row.
+     * @param {@code context}  The task context.
      */
 
     @Override
@@ -77,7 +79,7 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedGraphE
 
         baseMapper.getTokenizer().parse(record, context);
 
-        //the base mapper class will handle writing edges and vertices as well as exception handling
+        //The base mapper class handles writing edges and vertices as well as exception handling.
 
         baseMapper.writeEdges(context);
 

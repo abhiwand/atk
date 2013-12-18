@@ -37,8 +37,8 @@ import java.io.IOException;
 /**
  * This class handles the set-up time configuration when the raw input is an Hbase table.
  *
- * For graph construction tasks that require multiple chained MR jobs, this class affects only the 
- * first MR job, as that is the first mapper that deals with raw input.
+ * For graph construction tasks that require multiple chained Map Reduce jobs, this class 
+ * affects only the first Map Reduce job, as that is the first mapper that deals with raw input.
  *
  * <ul>
  * <li> It provides a handle to the mapper class used to read hbase tables ({@code HBaseReaderMapper}).</li>
@@ -64,7 +64,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
     private Class      mapperClass  = HBaseReaderMapper.class;
 
     /**
-     * Allocates and acquires an instance of the singleton HBaseUtils.
+     * Allocates and acquires an instance of the singleton {@code HBaseUtils}.
      */
     public HBaseInputConfiguration(String srcTableName) {
 
@@ -98,7 +98,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     /**
      * Performs setup tasks with hbase.
-     * @param configuration The configuration being prepared for the graph construction job.
+     * @param {@code configuration} The configuration being prepared for the graph construction job.
      */
 
     public void updateConfigurationForMapper(Configuration configuration) {
@@ -112,7 +112,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     /**
      * Initializes the table mapper job.
-     * @param job  The map reduce job in preparation for graph construction.
+     * @param {@code job}  The map reduce job in preparation for graph construction.
      */
     public void updateJobForMapper(Job job) {
         try {

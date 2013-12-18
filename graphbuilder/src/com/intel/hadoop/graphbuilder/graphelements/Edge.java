@@ -1,4 +1,4 @@
-L/**
+/**
  * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
@@ -59,9 +59,9 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     /**
      * Creates an edge with a given source, destination and label.
      *
-     * @param src The vertex ID of the edge's source vertex.
-     * @param dst The vertex ID of the edge's destination vertex.
-     * @param label The edge label.
+     * @param {@code src}   The vertex ID of the edge's source vertex.
+     * @param {@code dst}   The vertex ID of the edge's destination vertex.
+     * @param {@code label} The edge label.
      */
     public Edge(VidType src, VidType dst, StringType label) {
 
@@ -72,9 +72,9 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     /**
      * Creates an edge with given source, destination, label and property map
      *
-     * @param src The vertex ID of the edge's source vertex
-     * @param dst The vertex ID of the edge's destination vertex
-     * @param label the edge label
+     * @param {@code sr}     The vertex ID of the edge's source vertex
+     * @param {@code dst}    The vertex ID of the edge's destination vertex
+     * @param {@code label}  The edge label.
      */
     public Edge(VidType src, VidType dst, StringType label, PropertyMap propertyMap) {
         this();
@@ -104,9 +104,10 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     }
 
     /**
-     * See if this edge is null. If any of the values are nulls the whole thing is null. If we try to write an edge
-     * with any null values it will throw an exception.
-     * @return true/false based upon the null status of the src,dst, and label
+     * Checks to see if this edge is null. If any of the values are nulls the whole 
+	 * thing is null. If we try to write an edge with any null values Graph Builder  
+	 * will throw an exception. 
+     * @return True or false, based upon the null status of the src, dst, and label.
      */
     @Override
     public boolean isNull(){
@@ -120,9 +121,9 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
 
     /**
      *  Overwrites an edge's fields with the given parameters.
-     *  @param src The vertex ID of the edge's source vertex.
-     *  @param dst The vertex ID of the edge's destination vertex.
-     *  @param properties The edge's property map.
+     *  @param {@code src}         The vertex ID of the edge's source vertex.
+     *  @param {@code dst}         The vertex ID of the edge's destination vertex.
+     *  @param {@code properties}  The edge's property map.
      */
     public void configure(VidType src, VidType dst, StringType label, PropertyMap properties) {
         this.src        = src;
@@ -133,7 +134,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
 
     /**
      * Gets a property from the edge's property map.
-     * @param key The lookup key for the value in the edge's property map.
+     * @param {@code key}  The lookup key for the value in the edge's property map.
      */
     public Object getProperty(String key) {
         return properties.getProperty(key);
@@ -192,19 +193,15 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     }
 
     /**
-     * Gets the edge's ID, that is,  the triple of its source vertex ID, 
-	 * destination vertex ID, and its label.
-     * @return  The triple of the edge's source vertex ID, destination 
-	 * vertex ID, and its label.
-     * set the entire property map
-     * @param propertyMap
+     * Sets the entire property map for the edge. Overwrites the existing property map.
+     * @param {@code propertyMap}  Incoming property map.
      */
     public void setProperties(PropertyMap propertyMap){
         this.properties = propertyMap;
     }
 
     /**
-     * @return get the graph element
+     * @return Get the graph element.
      *
      */
     public Edge get(){
@@ -212,20 +209,20 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     }
 
      /**
-     * To compare another edge from a serializable graph element
-     * @param edge
-     * @return -1 if less than edge, 0 if equal, 1 otherwise
+     * To compare another edge from a serializable graph element.
+     * @param {@code edge}  
+     * @return -1 if less than edge, 0 if equal, 1 otherwise.
      */
     public int compareTo(Edge<VidType> edge) {
         return equals(edge) ? 0 : 1;
     }
 
     /**
-     * Checks if the input edge is equal to current object
+     * Checks if the input edge is equal to the current object.
      * This is a deep check which means source, destination
-     * vertex ID's and all properties are checked to decide
-     * equality
-     * @param ge
+     * vertex ID's, and all properties are checked to decide
+     * equality.
+     * @param {@code ge} 
      */
     @Override
     public boolean equals(GraphElement ge) {
@@ -235,7 +232,8 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     }
 
     /**
-     * Gets the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID, and its label.
+     * Gets the edge's ID - that is,  the triple of its source vertex ID, 
+	 * destination vertex ID, and its label.
      * @return  The triple of the edge's source vertex ID, destination vertex ID, and its label.
      */
     public EdgeID getId() {
@@ -245,7 +243,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     /**
      * Converts an edge into a string for printing. The properties are 
 	 * tab separated.
-     * @return   The string form of the edge.
+     * @return  The string form of the edge.
      */
     @Override
     public final String toString() {

@@ -42,7 +42,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
- * The XMLInputFormat class is a builtin InputFormat for XML, borrowed from Cloud9:
+ * The {@code XMLInputFormat} class is a builtin InputFormat for XML, borrowed from Cloud9:
  * { @link https://github.com/lintoolCloud9/blob/master/src/dist/edu/umd/cloud9/collection/XMLInputFormat.java }.
  *
  * The class recognizes only the begin-of-document and end-of-document tags:
@@ -67,10 +67,10 @@ public class XMLInputFormat extends TextInputFormat {
     public static final String END_TAG_KEY = "xmlinput.end";
 
     /**
-     * Hadoop record reader for reading XML documents.
-     * @param inputSplit
-     * @param context
-     * @return
+     * The Hadoop record reader for reading XML documents.
+     * @param {@code inputSplit}
+     * @param {@code context}
+     * @return {@code xmlRecordReader}
      */
     @Override
     public RecordReader<LongWritable, Text> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
@@ -90,7 +90,7 @@ public class XMLInputFormat extends TextInputFormat {
     }
 
     /**
-     * RecordReader for XML documents recognizes only the begin-of-document and
+     * The RecordReader for XML documents recognizes only the begin-of-document and
      * end-of-document tags. Returns a text object of everything in between
      * the delimiters.
      */
@@ -131,8 +131,8 @@ public class XMLInputFormat extends TextInputFormat {
 
         /**
          *
-         * @param split
-         * @param context
+         * @param {@code split}
+         * @param {@code context}
          * @throws IOException
          */
         public void initialize(InputSplit split, TaskAttemptContext context) throws IOException {
@@ -194,14 +194,12 @@ public class XMLInputFormat extends TextInputFormat {
                     } finally {
 
                         // Because input streams of gzipped files are not seekable
-                        // (specifically, do not support
-                        // getPos), we need to keep track of bytes consumed ourselves.
+                        // (specifically, do not support getPos), we need
+                        // to keep track of bytes consumed ourselves.
 
                         // This is a sanity check to make sure our internal computation of
-                        // bytes consumed is
-                        // accurate. This should be removed later for efficiency once we
-                        // confirm that this code
-                        // works correctly.
+                        // bytes consumed is accurate. This should be removed later for 
+                        // efficiency once we confirm that this code works correctly.
 
                         if (fsIn instanceof Seekable) {
 
