@@ -14,9 +14,11 @@ DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-
 --specify the RDF namespace to use
 DEFINE RDF com.intel.pig.udf.eval.RDF('OWL');
 
-x = LOAD 'examples/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
-x = FILTER x by id!='';
-pge = FOREACH x GENERATE FLATTEN(CreatePropGraphElements(*)); -- generate the property graph elements
-rdf_triples = FOREACH pge GENERATE FLATTEN(RDF(*)); -- generate the RDF triples
+employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') 
+				AS (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+employees_with_valid_ids = FILTER employees BY id!='';
+pge = FOREACH employees_with_valid_ids GENERATE FLATTEN(CreatePropGraphElements(*)); -- generate the property graph elements
+merged = MERGE_DUPLICATE_ELEMENTS(pge);
+rdf_triples = FOREACH merged GENERATE FLATTEN(RDF(*)); -- generate the RDF triples
 DESCRIBE rdf_triples;
 STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();

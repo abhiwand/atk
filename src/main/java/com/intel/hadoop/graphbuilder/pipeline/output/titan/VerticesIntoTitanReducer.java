@@ -29,15 +29,19 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.Desti
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.util.*;
 import com.thinkaurelius.titan.core.TitanGraph;
-import org.apache.commons.configuration.BaseConfiguration;
+
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.log4j.Logger;
+
+import org.apache.commons.configuration.BaseConfiguration;
 
 import java.io.IOException;
 import java.util.Hashtable;
+
+import org.apache.hadoop.io.IntWritable;
+
+import org.apache.log4j.Logger;
 
 /**
  * This reducer performs the following tasks:

@@ -36,7 +36,6 @@ import java.util.Hashtable;
  * simple interface for writing the merged edges and vertices
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter
- * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphElementWriter
  */
 public abstract class GraphElementWriter {
     protected Hashtable<EdgeID, Writable> edgeSet;
@@ -69,8 +68,8 @@ public abstract class GraphElementWriter {
 
     public abstract void write(ArgumentBuilder args) throws IOException, InterruptedException;
 
-    public abstract void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException;
+    public abstract void writeVertices(ArgumentBuilder args) throws IOException, InterruptedException;
 
-    public abstract void edgeWrite(ArgumentBuilder args) throws IOException, InterruptedException;
+    public abstract void writeEdges(ArgumentBuilder args) throws IOException, InterruptedException;
 
 }

@@ -1,6 +1,7 @@
 /**
 * This script should be run from the top level directory
-* Demonstrates how to generate RDF triples from property graph elements
+* Demonstrates how to generate edge list and vertex list
+* from property graph elements
 */
 
 REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
@@ -18,15 +19,16 @@ DEFINE EdgeList com.intel.pig.udf.eval.EdgeList('false');
 --specify the vertex list format ('FALSE' - without properties, 'TRUE' - with properties)
 DEFINE VertexList com.intel.pig.udf.eval.VertexList('false');
 
-x = LOAD 'examples/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
-x = FILTER x by id!='';
+employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') 
+				AS (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+employees_with_valid_ids = FILTER employees BY id!='';
 
 --TODO need to dedup vertices/edges
-pge = FOREACH x GENERATE FLATTEN(CreatePropGraphElements(*)); -- generate the property graph elements
+pge = FOREACH employees_with_valid_ids GENERATE FLATTEN(CreatePropGraphElements(*)); -- generate the property graph elements
 vertexlist = FOREACH pge GENERATE VertexList(*); -- generate the vertex list
-filtered_vertices = FILTER vertexlist by $0 != '';--remove the empty tuples, which are created for edges
+filtered_vertices = FILTER vertexlist BY $0 != '';--remove the empty tuples, which are created for edges
 edgelist = FOREACH pge GENERATE EdgeList(*); -- generate the edge list
-filtered_edges = FILTER edgelist by $0 != '';--remove the empty tuples, which are created for vertices
+filtered_edges = FILTER edgelist BY $0 != '';--remove the empty tuples, which are created for vertices
 
 DESCRIBE filtered_vertices;
 DESCRIBE filtered_edges;

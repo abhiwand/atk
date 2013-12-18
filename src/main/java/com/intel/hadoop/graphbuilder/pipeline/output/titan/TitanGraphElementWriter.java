@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
@@ -30,7 +31,6 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.thinkaurelius.titan.core.TitanElement;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 
 import java.io.IOException;
 import java.util.Hashtable;
@@ -47,22 +47,40 @@ import java.util.Map;
 public class TitanGraphElementWriter extends GraphElementWriter {
     private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<>();
 
+    /**
+     * Write graph elements to a Titan graph instance.
+     * @param args
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     public void write(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
 
-        vertexWrite(args);
+        writeVertices(args);
 
-        edgeWrite(args);
+        writeEdges(args);
     }
+
+    /**
+     * Obtain the Titan-assigned ID from a Blueprints vertex
+     * @param bpVertex  A Blueprints vertex.
+     * @return Its Titan-assigned ID.
+     */
 
     public long getVertexId(com.tinkerpop.blueprints.Vertex bpVertex){
         return ((TitanElement)bpVertex).getID();
     }
 
+    /**
+     * Writes vertices to a Titan graph and propagate its Titan-ID through an HDFs file.
+     * @param args
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
-    public void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+    public void writeVertices(ArgumentBuilder args) throws IOException, InterruptedException {
         initArgs(args);
 
         int vertexCount = 0;
@@ -71,14 +89,13 @@ public class TitanGraphElementWriter extends GraphElementWriter {
             // Major operation - vertex is added to Titan and a new ID is assigned to it
             com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
 
-
             bpVertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, vertex.getKey().toString());
 
             long vertexId = getVertexId(bpVertex);
 
             Vertex tempVertex = new Vertex();
 
-            tempVertex.configure((WritableComparable) vertex.getKey(), writeVertexProperties(vertexId, vertex, bpVertex));
+            tempVertex.configure((VertexID) vertex.getKey(), writeVertexProperties(vertexId, vertex, bpVertex));
 
             outValue.init(tempVertex);
             outKey.set(keyFunction.getVertexKey(tempVertex));
@@ -93,8 +110,14 @@ public class TitanGraphElementWriter extends GraphElementWriter {
         context.getCounter(vertexCounter).increment(vertexCount);
     }
 
+    /**
+     * Append the Titan ID of an edge's source to the edge as a property, and write the edge to an HDFS file.
+     * @param args
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
-    public void edgeWrite(ArgumentBuilder args)
+    public void writeEdges(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
 
@@ -111,7 +134,7 @@ public class TitanGraphElementWriter extends GraphElementWriter {
 
             writeEdgeProperties(srcTitanId, edge);
 
-            tempEdge.configure((WritableComparable)  src, (WritableComparable)  dst, new StringType(label),
+            tempEdge.configure((VertexID)  src, (VertexID)  dst, new StringType(label),
                     writeEdgeProperties(srcTitanId, edge));
 
             outValue.init(tempEdge);
