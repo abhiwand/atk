@@ -22,10 +22,13 @@ package com.intel.pig.udf.eval;
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.pig.udf.GBUdfExceptionHandler;
+
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
+import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
 
@@ -62,4 +65,12 @@ public class GetPropGraphElementID extends EvalFunc<String>  {
                 ("EDGE " + graphElement.getId().toString());
 
     }
+    
+	/**
+	 * GetPropGraphElementID UDF returns a chararray
+	 */
+	@Override
+	public Schema outputSchema(Schema input) {
+		return new Schema(new Schema.FieldSchema(null, DataType.CHARARRAY));
+	}
 }

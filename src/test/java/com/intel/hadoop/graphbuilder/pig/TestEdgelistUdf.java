@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.impl.PigContext;
 import org.junit.After;
@@ -60,9 +61,8 @@ public class TestEdgelistUdf {
         map0.setProperty("age", new StringType("30"));
 
         Edge<StringType> edge = new Edge<StringType>();
-        edge.configure(
-                new StringType("Employee001"),
-                new StringType("Employee002"),
+        edge.configure( new VertexID<StringType>(new StringType("Employee001")),
+                new VertexID<StringType>(new StringType("Employee002")),
                 new StringType("worksWith"),
                 map0);
         serializedGraphElement.init(edge);

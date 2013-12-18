@@ -19,22 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertSame;
-import static junit.framework.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-import org.junit.Test;
-
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import org.junit.Test;
+
+import java.io.*;
+
+import static junit.framework.Assert.*;
 
 public class EdgeTest {
 
@@ -58,8 +49,8 @@ public class EdgeTest {
 
         Edge<StringType> edge = new Edge<StringType>(src, dst, label);
 
-        assertSame(src, edge.getSrc());
-        assertSame(dst, edge.getDst());
+        assertSame(src, edge.getSrc().getName());
+        assertSame(dst, edge.getDst().getName());
         assertSame(label, edge.getLabel());
         assertNotNull(edge.getId());
         assertNotNull(edge.getProperties());
@@ -67,32 +58,38 @@ public class EdgeTest {
 
     @Test
     public final void testConfigure() {
-        StringType src = new StringType("src");
-        StringType dst = new StringType("dst");
+        StringType srcName = new StringType("src");
+        VertexID<StringType> srcId = new VertexID<StringType>(srcName, null);
+
+        StringType dstName = new StringType("dst");
+        VertexID<StringType>  dstId = new VertexID<StringType>(dstName, null);
+
         StringType label = new StringType("label");
         PropertyMap pm = new PropertyMap();
 
         Edge<StringType> edge = new Edge<StringType>();
 
-        edge.configure(src, dst, label, pm);
+        edge.configure(srcId, dstId, label, pm);
 
-        assertSame(src, edge.getSrc());
-        assertSame(dst, edge.getDst());
+        assertSame(srcId, edge.getSrc());
+        assertSame(dstId, edge.getDst());
         assertSame(label, edge.getLabel());
         assertSame(pm, edge.getProperties());
 
         // now test against an edge created with arguments in the constructor
 
-        StringType src2 = new StringType("src2");
-        StringType dst2 = new StringType("dst2");
+        StringType srcName2 = new StringType("src2");
+        VertexID<StringType> srcId2 = new VertexID<StringType>(srcName2, null);
+        StringType dstName2 = new StringType("dst2");
+        VertexID<StringType> dstId2 = new VertexID<StringType>(dstName2, null);
         StringType label2 = new StringType("label2");
 
-        Edge<StringType> edge2 = new Edge<StringType>(src2, dst2, label2);
+        Edge<StringType> edge2 = new Edge<StringType>(srcId2, dstId2, label2);
 
-        edge2.configure(src, dst, label, pm);
+        edge2.configure(srcId, dstId, label, pm);
 
-        assertSame(src, edge2.getSrc());
-        assertSame(dst, edge2.getDst());
+        assertSame(srcId, edge2.getSrc());
+        assertSame(dstId, edge2.getDst());
         assertSame(label, edge2.getLabel());
         assertSame(pm, edge2.getProperties());
     }
@@ -100,7 +97,9 @@ public class EdgeTest {
     @Test
     public final void testProperties() {
         StringType src = new StringType("src");
+        VertexID<StringType> srcId = new VertexID<StringType>(src, null);
         StringType dst = new StringType("dst");
+        VertexID<StringType> dstId = new VertexID<StringType>(dst,null);
         StringType label = new StringType("label");
 
         String key1 = new String("key");
@@ -109,7 +108,7 @@ public class EdgeTest {
         StringType value1 = new StringType("Outstanding Value");
         StringType value2 = new StringType("Little Value");
 
-        Edge<StringType> edge = new Edge<StringType>(src, dst, label);
+        Edge<StringType> edge = new Edge<StringType>(srcId, dstId, label);
 
         assert (edge.getProperties().getPropertyKeys().isEmpty());
 
@@ -137,16 +136,20 @@ public class EdgeTest {
     @Test
     public final void testGetEdgeID() {
         StringType src1 = new StringType("src1");
+        VertexID<StringType> srcId1 = new VertexID<StringType>(src1, null);
         StringType dst1 = new StringType("dst1");
+        VertexID<StringType> dstId1 = new VertexID<StringType>(dst1, null);
         StringType label1 = new StringType("label1");
 
         StringType src2 = new StringType("src2");
+        VertexID<StringType> srcId2 = new VertexID<StringType>(src2, null);
         StringType dst2 = new StringType("dst2");
+        VertexID<StringType> dstId2 = new VertexID<StringType>(dst2, null);
         StringType label2 = new StringType("label2");
 
-        Edge<StringType> edge1 = new Edge<>(src1, dst1, label1);
-        Edge<StringType> edge2 = new Edge<>(src2, dst2, label2);
-        Edge<StringType> edge3 = new Edge<>(src1, dst1, label1);
+        Edge<StringType> edge1 = new Edge<>(srcId1, dstId1, label1);
+        Edge<StringType> edge2 = new Edge<>(srcId2, dstId2, label2);
+        Edge<StringType> edge3 = new Edge<>(srcId1, dstId1, label1);
 
         assertNotNull(edge1.getId());
         assertNotNull(edge2.getId());
@@ -166,16 +169,20 @@ public class EdgeTest {
     @Test
     public final void testToString() {
         StringType src1 = new StringType("src1");
+        VertexID<StringType> srcId1 = new VertexID<StringType>(src1, null);
         StringType dst1 = new StringType("dst1");
+        VertexID<StringType> dstId1 = new VertexID<StringType>(dst1, null);
         StringType label1 = new StringType("label1");
 
         StringType src2 = new StringType("src2");
+        VertexID<StringType> srcId2 = new VertexID<StringType>(src2, null);
         StringType dst2 = new StringType("dst2");
+        VertexID<StringType> dstId2 = new VertexID<StringType>(dst2, null);
         StringType label2 = new StringType("label2");
 
-        Edge<StringType> edge1 = new Edge<>(src1, dst1, label1);
-        Edge<StringType> edge2 = new Edge<>(src2, dst2, label2);
-        Edge<StringType> edge3 = new Edge<>(src1, dst1, label1);
+        Edge<StringType> edge1 = new Edge<>(srcId1, dstId1, label1);
+        Edge<StringType> edge2 = new Edge<>(srcId2, dstId2, label2);
+        Edge<StringType> edge3 = new Edge<>(srcId1, dstId1, label1);
 
         assertNotNull(edge1.toString());
         assertNotNull(edge2.toString());
@@ -270,10 +277,10 @@ public class EdgeTest {
         map1.setProperty("dept", new StringType("IntelLabs"));
 
         Edge<StringType> edge0 = new Edge<StringType>(
-                new StringType("Employee001"),
-                new StringType("Employee002"),
+                new StringType("Employee001"), new StringType("Employee002"),
                 new StringType("isConnected"),
                 map0);
+
         Edge<StringType> edge1 = new Edge<StringType>(
                 new StringType("Employee002"),
                 new StringType("Employee003"),

@@ -37,7 +37,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   <div id="navrow1" class="tabs">
     <ul class="tablist">
       <li><a href="index.html"><span>Overview</span></a></li>
-      <li><a href="pages.html"><span>Tutorial</span></a></li>
       <li class="current"><a href="annotated.html"><span>Javadoc</span></a></li>
       <li><a href="files.html"><span>Files</span></a></li>
       <li>
@@ -112,6 +111,13 @@ Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1GetPropGraphElementID.html" title="GetPropGraphElementID ...returns string objectID of its property graph element. ">GetPropGraphElementID</a> ...returns string objectID of its property graph element. </p>
+<p>Input: A singleton tuple containing a</p>
+<div class="fragment"><div class="line">SerializedGraphElement </div>
+</div><!-- fragment --><p> Output: The</p>
+<div class="fragment"><div class="line">String </div>
+</div><!-- fragment --><p> ID of the</p>
+<div class="fragment"><div class="line">SerializedGraphElement </div>
+</div><!-- fragment --><p> . </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="ac97f83efc081712ceb33616c85399aec"></a>
 <div class="memitem">
@@ -148,22 +154,22 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                                                       {</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        SerializedGraphElement serializedGraphElement = (SerializedGraphElement) input.get(0);</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        GraphElement graphElement = serializedGraphElement.graphElement();</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordflow">if</span> (graphElement == null) {</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        }</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordflow">return</span> (graphElement.isVertex()) ?</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                (<span class="stringliteral">&quot;VERTEX &quot;</span> + graphElement.getId().toString()) :</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                (<span class="stringliteral">&quot;EDGE &quot;</span> + graphElement.getId().toString());</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                                                       {</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        SerializedGraphElement serializedGraphElement = (SerializedGraphElement) input.get(0);</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        GraphElement graphElement = serializedGraphElement.graphElement();</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordflow">if</span> (graphElement == null) {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        }</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordflow">return</span> (graphElement.isVertex()) ?</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                (<span class="stringliteral">&quot;VERTEX &quot;</span> + graphElement.getId().toString()) :</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                (<span class="stringliteral">&quot;EDGE &quot;</span> + graphElement.getId().toString());</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -173,7 +179,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Dec 16 2013 09:15:28 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
