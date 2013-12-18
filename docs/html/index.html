@@ -100,7 +100,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 <li><b>Filters</b> <ul>
 <li>
-<a class="el" href="graphbuilder_8pig.html">MERGEDUPLICATEGRAPHELEMENTS </a> </li>
+<a class="el" href="graphbuilder_8pig.html">MERGE_DUPLICATE_ELEMENTS </a> Combine duplicate property graph elements into a single property graph element. Also see <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1MergeDuplicateGraphElements.html">MergeDuplicateGraphElements </a> </li>
 </ul>
 </li>
 <li><b>Storage</b> <ul>
@@ -129,18 +129,22 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="fragment"><div class="line">mvn clean <span class="keyword">package </span></div>
 </div><!-- fragment --><p> and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build </p>
 <div class="fragment"><div class="line">mvn clean <span class="keyword">package </span>-DskipTests </div>
+</div><!-- fragment --><h2>Running the Examples</h2>
+<p>Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, you can run the provided example scripts with </p>
+<div class="fragment"><div class="line">export HADOOP_CLASSPATH=/usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar</div>
+<div class="line">cd /usr/local/gb/</div>
+<div class="line">pig -x local -f examples/rdf_example.pig     </div>
 </div><!-- fragment --><h2>Using GB 2.0 (alpha)</h2>
 <p>To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT <a class="el" href="graphbuilder_8pig.html">graphbuilder.pig</a> script. The <a class="el" href="graphbuilder_8pig.html">graphbuilder.pig</a> script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user has to define the other UDFs with the constructor arguments they want; please see examples under the examples/ directory for the use of GB functionality in your Pig scripts. Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script: </p>
 <div class="fragment"><div class="line">REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;</div>
 <div class="line">IMPORT <span class="stringliteral">&#39;/usr/local/gb/pig/graphbuilder.pig&#39;</span>;</div>
 </div><!-- fragment --><h2>Known Issues:</h2>
-<p><b>Using DUMP to print property graph elements fails</b><br/>
- Using Pig's DUMP command to dump property graph elements causes "ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
-   Could not find class com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids, while attempting to de-serialize it". To fix the problem, in $HADOOP_HOME/conf/hadoop-env.sh file update the line that exports HADOOP_CLASSPATH and add "$PIG_HOME/pig-0.12.0.jar:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar" to the end of this classpath definition ($PIG_HOME and $GB_HOME are the paths where Pig and GB are installed). </p>
+<p><b>ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: Could not find class <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1SerializedGraphElementStringTypeVids.html">com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids</a>, while attempting to de-serialize it</b><br/>
+ Make sure you do not overwrite HADOOP_CLASSPATH variable in $HADOOP_HOME/conf/hadoop-env.sh and in other places. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 15:57:14 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
