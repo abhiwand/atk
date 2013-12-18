@@ -503,20 +503,16 @@ button.close {
     position: relative;
     width: 100%;
     height: 900px;
-   
     border: none;
 
 }
 
 #apidoc {
-     position: relative;
+    position: relative;
     width: 100%;
     height: 900px;
-   
     border: none;
 }
-
-
 
 .fluidMedia {
     position: relative;
