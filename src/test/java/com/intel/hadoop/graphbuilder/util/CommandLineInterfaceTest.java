@@ -46,7 +46,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
-import com.intel.hadoop.graphbuilder.sampleapplications.TableToTextGraph;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(GraphBuilderExit.class)
@@ -116,23 +115,6 @@ public class CommandLineInterfaceTest {
         cliArgs.put("s", "");
 
         testDemoApp(TableToGraphDB.class, cliArgs);
-    }
-
-    @Test
-    public void test_TableToTextGraph_cli_options() throws Exception {
-
-        //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("t", "employeeData");
-        cliArgs.put("v", "cf:name=cf:age,cf:dept");
-        cliArgs.put("e", "cf:name,cf:dept,worksAt");
-        cliArgs.put("F", "");
-        cliArgs.put("d", "directed edge");
-        cliArgs.put("o", outputPath);
-        cliArgs.put("h", "");
-        cliArgs.put("s", "");
-
-        testDemoApp(TableToTextGraph.class, cliArgs);
     }
 
     @Test

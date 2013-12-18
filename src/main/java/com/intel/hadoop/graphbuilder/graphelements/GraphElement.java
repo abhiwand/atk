@@ -1,4 +1,3 @@
-
 /**
  * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
@@ -20,10 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementDst;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementSrc;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementType;
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.*;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
@@ -53,8 +49,6 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     public abstract Object getId();
     //get the graph element
     public abstract GraphElement get();
-
-    public abstract boolean equals(GraphElement graphElement);
 
     /**
      * all the callback classes we will be using
@@ -110,4 +104,5 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
         return this.typeCallback(graphElementSrc);
     }
 }
+
 
