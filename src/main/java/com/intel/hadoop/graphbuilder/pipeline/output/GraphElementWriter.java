@@ -36,7 +36,6 @@ import java.util.Hashtable;
  * simple interface for writing the merged edges and vertices
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter
- * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphElementWriter
  */
 public abstract class GraphElementWriter {
     protected Hashtable<EdgeID, Writable> edgeSet;
