@@ -18,6 +18,7 @@ employees = LOAD 'examples/data/employees.csv' USING PigStorage(',')
 				AS (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
 employees_with_valid_ids = FILTER employees BY id!='';
 pge = FOREACH employees_with_valid_ids GENERATE FLATTEN(CreatePropGraphElements(*)); -- generate the property graph elements
-rdf_triples = FOREACH pge GENERATE FLATTEN(RDF(*)); -- generate the RDF triples
+merged = MERGE_DUPLICATE_ELEMENTS(pge);
+rdf_triples = FOREACH merged GENERATE FLATTEN(RDF(*)); -- generate the RDF triples
 DESCRIBE rdf_triples;
 STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
