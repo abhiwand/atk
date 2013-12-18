@@ -68,7 +68,7 @@ object Global extends GlobalSettings{
   }
 
   override def onBadRequest(request: RequestHeader, error: String): Future[SimpleResult] = {
-    if(true)Future.successful(BadRequest(views.html.error404("", models.Users.anonymousUser())))
+    if(true)Future.successful(BadRequest(views.html.error400("", models.Users.anonymousUser())))
     else super.onBadRequest(request, error)
   }
 
