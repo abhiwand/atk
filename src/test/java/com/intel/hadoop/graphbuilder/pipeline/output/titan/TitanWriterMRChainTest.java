@@ -263,7 +263,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
         PowerMockito.doReturn(dstBlueprintsVertex).when(titanGraph).getVertex(903L);
         PowerMockito.doReturn(bluePrintsEdge).when(titanGraph).addEdge(null, srcBlueprintsVertex, dstBlueprintsVertex, "worksAt");
 
-        List<Pair<IntWritable,SerializedGraphElement>> run = runEdgeR(pairs);
+        runEdgeR(pairs);
 
         assertEquals("check the number of counters", edgesReduceDriver.getCounters().countCounters(), 1);
         assertEquals("check NUM_EDGES counter", edgesReduceDriver.getCounters().findCounter

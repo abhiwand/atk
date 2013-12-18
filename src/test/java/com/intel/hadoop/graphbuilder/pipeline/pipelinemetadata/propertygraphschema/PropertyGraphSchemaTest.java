@@ -73,9 +73,6 @@ public class PropertyGraphSchemaTest {
 
         PropertySchema planetOfStrings = new PropertySchema(PLANET_OF_THE_STRINGS, String.class);
         PropertySchema planetOfFloats  = new PropertySchema(PLANET_OF_THE_FLOATS, Float.class);
-        PropertySchema planetOfLongs   = new PropertySchema(PLANET_OF_THE_LONGS, Long.class);
-
-
 
         EdgeSchema edgeSchemaZ = new EdgeSchema("dr zaius");
 

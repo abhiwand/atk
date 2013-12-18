@@ -19,6 +19,7 @@
 package com.intel.pig.data;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 import org.apache.pig.PigException;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.*;
@@ -306,4 +307,16 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		return DataType.compare(this, other);
 	}
 
+    /**
+     *
+     * @return hash code of the property graph element tuple
+     */
+    public int hashCode() {
+        int hash = 0;
+        for (int i = 0; i < serializedGraphElements.size(); i++) {
+            SerializedGraphElement pge = serializedGraphElements.get(i);
+            hash = HashUtil.combine(hash, pge);
+        }
+        return hash;
+    }
 }

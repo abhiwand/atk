@@ -76,11 +76,13 @@ public class PropertyMapTest {
         IntWritable    two = new IntWritable(2);
         DoubleWritable pi  = new DoubleWritable(3.14159);
 
-        pm.setProperty("foo", one);
-
         // assert for object equality, the maps should not replace objects
+        pm.setProperty("foo", one);
         assertEquals(pm.getProperty("foo"), one);
-        assertEquals(pm.getProperty("foo"), one);
+        pm.setProperty("foo", two);
+        assertEquals(pm.getProperty("foo"), two);
+        pm.setProperty("foo", pi);
+        assertEquals(pm.getProperty("foo"), pi);
     }
 
     @Test

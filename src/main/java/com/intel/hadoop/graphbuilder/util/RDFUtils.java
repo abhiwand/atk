@@ -21,7 +21,10 @@ package com.intel.hadoop.graphbuilder.util;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.Writable;
 
 import java.util.HashMap;
@@ -49,14 +52,14 @@ public class RDFUtils {
 	}
 
 	public static Resource createResourceFromVertex(String rdfNamespace,
-                                                    GraphElement graphElement) {
+                                                    Vertex vertex) {
 
 		// Namespace can be DB, DC, LOCMAP, ONTDOC, ONTEVENTS, OWL, OWL2,
         // RDF, RDFS, RDFSYNTAX, RSS, VCARD or XSD
 
-        String label              = graphElement.getLabel().toString();
-        String vertexKey          = graphElement.getId().toString();
-        PropertyMap vertexPropMap = graphElement.getProperties();
+        String label              = vertex.getLabel().toString();
+        String vertexKey          = vertex.getId().getName().toString();
+        PropertyMap vertexPropMap = vertex.getProperties();
 		String namespace          = null;
         String vertexType         = null;
 
@@ -69,7 +72,7 @@ public class RDFUtils {
 
         if (label.contains(".")) {
             String [] tempArray = label.split("\\.");
-            namespace  = tempArray[0];
+            namespace  = RDFUtils.RDFNamespaceMap.get(tempArray[0]);
             vertexType = tempArray[1];
         } else {
             namespace  = RDFUtils.RDFNamespaceMap.get(rdfNamespace);
@@ -118,7 +121,7 @@ public class RDFUtils {
 
         if (edgeLabel.contains(".")) {
             String [] tempArray = edgeLabel.split("\\.");
-            namespace  = tempArray[0];
+            namespace  = RDFUtils.RDFNamespaceMap.get(tempArray[0]);
             edgeType = tempArray[1];
         } else {
             namespace  = RDFUtils.RDFNamespaceMap.get(rdfNamespace);

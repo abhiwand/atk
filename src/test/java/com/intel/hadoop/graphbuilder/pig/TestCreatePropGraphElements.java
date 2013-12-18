@@ -104,37 +104,6 @@ public class TestCreatePropGraphElements
         DataBag result = (DataBag) createPropGraphElementsUDF.exec(t);
 
         assert(result.size() == 5);
-
-        ArrayList<GraphElement> elements = new ArrayList<GraphElement>();
-
-        Iterator<Tuple> iter = result.iterator();
-
-        while (iter.hasNext()) {
-            PropertyGraphElementTuple pget
-                    = (PropertyGraphElementTuple) iter.next();
-
-            GraphElement element
-                    = ((SerializedGraphElement) (pget.get(0))).graphElement();
-                            elements.add(element);
-        }
-
-        PropertyMap properties = new PropertyMap();
-        properties.setProperty("age", new IntType(age));
-        properties.setProperty("managerId", new StringType(managerId));
-        Vertex<StringType> vertex
-                = new Vertex(new StringType("Heywood Y. Buzzov"),
-                             (StringType) null,
-                             properties);
-
-        // GAO- todo : this code requires TRIB-1260 be integrated
-        // in order to work correctly
-        /*
-        boolean foundVertex = false;
-        for (GraphElement ge : elements) {
-            foundVertex |= ge.equals(vertex);
-        }
-        assert(foundVertex);
-        */
     }
 
     @After

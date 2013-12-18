@@ -56,6 +56,7 @@ public class GBHTableConfiguration {
 
     public static final String NULLKEY                          = "NULLKEY";
 
-    public static RuntimeConfig config = RuntimeConfig.getInstance(GBHTableConfiguration.class);
+    public static final RuntimeConfig config = RuntimeConfig.getInstance
+            (GBHTableConfiguration.class);
 
 }

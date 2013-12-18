@@ -18,6 +18,7 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -115,6 +116,8 @@ public class TestRDF {
 		t = new PropertyGraphElementTuple(1);
 		t.set(0, serializedGraphElement);
 		result = (DataBag) toRdfUdf.exec(t);
+
+        assertNull(result);
 	}
 
 	@After

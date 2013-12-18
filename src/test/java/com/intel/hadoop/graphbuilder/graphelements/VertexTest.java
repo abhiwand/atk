@@ -70,7 +70,6 @@ public class VertexTest {
         PropertyMap pm2 = new PropertyMap();
 
         StringType anotherOpinion = new StringType("No that vertex sucks");
-        StringType anotherLabel = new StringType("voice of authority");
 
         VertexID<StringType>  diffNameSameLabel = new VertexID<StringType>(anotherOpinion, vertexLabel);
 

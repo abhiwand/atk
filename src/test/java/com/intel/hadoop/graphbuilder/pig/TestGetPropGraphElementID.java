@@ -66,8 +66,8 @@ public class TestGetPropGraphElementID {
         assertNotNull("Returned ID is null", result);
 
         assertEquals("Returned ID should have been ==VERTEX " +
-                vertex.getId().toString(), result,
-                "VERTEX "+vertex.getId().toString());
+                vertex.getId().getName().toString(), result,
+                "VERTEX "+vertex.getId().getName().toString());
 
 
 

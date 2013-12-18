@@ -55,9 +55,9 @@ import java.util.Hashtable;
  */
 public class GraphElementMerge implements GraphElementTypeCallback {
 
-    private Hashtable<EdgeID, Writable> edgeSet;
+    private Hashtable<EdgeID, Writable>   edgeSet;
     private Hashtable<Object, Writable>   vertexSet;
-    private Hashtable<Object, StringType>    vertexLabelMap;
+    private Hashtable<Object, StringType> vertexLabelMap;
 
     private Functional edgeReducerFunction;
     private Functional vertexReducerFunction;
@@ -66,7 +66,8 @@ public class GraphElementMerge implements GraphElementTypeCallback {
 
     /**
      *
-     * @param graphElement the property graph element we will check for duplicates
+     * @param graphElement the property graph element we will check for
+     *                     duplicates
      * @param args list of arguments
      * @return the updated edge set
      */

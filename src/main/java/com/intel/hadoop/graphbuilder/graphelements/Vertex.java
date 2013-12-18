@@ -165,7 +165,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
      * Returns the ID of the vertex.
      * @return The ID of the vertex.
      */
-    public VertexID<VidNameType> getId() {
+    public VertexID<VidNameType>getId() {
         return vertexId;
     }
 
@@ -183,6 +183,15 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     public StringType getLabel() {
         return this.vertexId.getLabel();
     }
+
+    /**
+     * Return the name of the vertexID e.g. for 001-VLabel return 001
+     * @return name
+     */
+    public VidNameType getName() {
+        return this.vertexId.getName();
+    }
+
     /**
      * Overwrites the ID and property map of the vertex.
      * @param vid The new vertex ID.
@@ -249,7 +258,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
         } else if (vertexId == null && properties != null) {
             return "null vertex with properties (???) " + properties.toString();
         } else {
-            return this.vertexId.toString() +  properties.toString();
+            return this.vertexId.toString() +  "\t" + properties.toString();
         }
     }
 

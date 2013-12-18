@@ -52,7 +52,8 @@ public abstract class GraphElementWriter {
     protected  void initArgs(ArgumentBuilder args){
         edgeSet = (Hashtable<EdgeID, Writable>)args.get("edgeSet");
         vertexSet = (Hashtable<Object, Writable>)args.get("vertexSet");
-        vertexLabelMap = (Hashtable<Object, StringType>)args.get("vertexLabelMap", new Hashtable<Object, StringType>());
+        vertexLabelMap = (Hashtable<Object, StringType>)args.get
+                ("vertexLabelMap", new Hashtable<Object, StringType>());
 
         vertexCounter = (Enum)args.get("vertexCounter");
         edgeCounter = (Enum)args.get("edgeCounter");

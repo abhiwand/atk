@@ -21,6 +21,7 @@ package com.intel.pig.udf.eval;
 import com.hp.hpl.jena.rdf.model.*;
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.util.RDFUtils;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
@@ -93,7 +94,8 @@ public class RDF extends EvalFunc<DataBag> {
 		} else if (graphElement.isVertex()) {
 
 			// create a Resource from the vertex
-			resource = RDFUtils.createResourceFromVertex(rdfNamespace, graphElement);
+			resource = RDFUtils.createResourceFromVertex(rdfNamespace,
+                    (Vertex) graphElement);
 		}
 
 		/* create the RDF statements from the model */

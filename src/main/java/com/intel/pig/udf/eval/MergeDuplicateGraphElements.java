@@ -1,5 +1,3 @@
-package com.intel.pig.udf.eval;
-
 /* Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
@@ -19,10 +17,10 @@ package com.intel.pig.udf.eval;
  *      http://www.01.org/GraphBuilder
  */
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
+package com.intel.pig.udf.eval;
+
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
@@ -72,7 +70,6 @@ public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {
      */
     @Override
     public Tuple exec(Tuple input) throws IOException {
-        String objectId = (String) input.get(0);
         DataBag valueBag = (DataBag) input.get(1);
 
         PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) new GBTupleFactory()

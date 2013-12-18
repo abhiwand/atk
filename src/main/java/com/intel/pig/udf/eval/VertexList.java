@@ -21,6 +21,7 @@ package com.intel.pig.udf.eval;
 
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
@@ -46,7 +47,7 @@ import java.util.Arrays;
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class VertexList extends EvalFunc<String> {
 	private boolean printProperties;
-    public static final String[] booleanValues =
+    private static final String[] booleanValues =
             new String [] {"0", "1", "TRUE", "true", "FALSE", "false"};
 
     /**
@@ -87,11 +88,12 @@ public class VertexList extends EvalFunc<String> {
         // Only print vertices, skip edges
 		if (graphElement.isVertex()) {
 
+            Vertex vertex = (Vertex) graphElement;
             String vertexString = "";
             if (this.printProperties) {
-			    vertexString = graphElement.toString();
+			    vertexString = vertex.toString();
             } else {
-                vertexString = graphElement.getId().toString();
+                vertexString = vertex.getId().getName().toString();
                 if (graphElement.getLabel() != null) {
                     vertexString += "\t" + graphElement.getLabel().toString();
                 }

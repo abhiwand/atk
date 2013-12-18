@@ -1,5 +1,3 @@
-package com.intel.pig.udf.eval;
-
 /* Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
@@ -19,17 +17,18 @@ package com.intel.pig.udf.eval;
  *      http://www.01.org/GraphBuilder
  */
 
+package com.intel.pig.udf.eval;
+
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.pig.udf.GBUdfExceptionHandler;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
-
 import java.io.IOException;
 
 /**
@@ -61,7 +60,7 @@ public class GetPropGraphElementID extends EvalFunc<String>  {
         }
 
         return (graphElement.isVertex()) ?
-                ("VERTEX " + graphElement.getId().toString()) :
+                ("VERTEX " + ((Vertex) graphElement).getId().getName().toString()) :
                 ("EDGE " + graphElement.getId().toString());
 
     }

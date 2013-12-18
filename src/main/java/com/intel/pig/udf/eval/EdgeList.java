@@ -46,7 +46,7 @@ import java.util.Arrays;
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class EdgeList extends EvalFunc<String> {
 	private boolean printProperties;
-    public static final String[] booleanValues =
+    private static final String[] booleanValues =
             new String [] {"0", "1", "TRUE", "true", "FALSE", "false"};
 
     /**

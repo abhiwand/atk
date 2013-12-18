@@ -40,5 +40,6 @@ public class TitanConfig {
         defaultConfigMap.put("TITAN_IDS_BLOCK-SIZE",            "100000");
     }
 
-    public static RuntimeConfig config = RuntimeConfig.getInstanceWithDefaultConfig(defaultConfigMap);
+    public static final RuntimeConfig config = RuntimeConfig
+            .getInstanceWithDefaultConfig(defaultConfigMap);
 }

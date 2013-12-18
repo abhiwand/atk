@@ -469,13 +469,27 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             String srcVertexCellString = (String) getTupleData(input, inputSchema, srcVertexFieldName);
             String tgtVertexCellString = (String) getTupleData(input, inputSchema, tgtVertexFieldName);
 
+            StringType srcLabel = null;
+            String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
+            if (srcLabelString != null) {
+                srcLabel = new StringType(srcLabelString);
+            }
+
+            StringType tgtLabel = null;
+            String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
+            if (tgtLabelString != null) {
+                tgtLabel = new StringType(tgtLabelString);
+            }
+
             if (srcVertexCellString != null && tgtVertexCellString != null && eLabel != null) {
 
                 for (String srcVertexName : expandString(srcVertexCellString)) {
                     for (String tgtVertexName: expandString(tgtVertexCellString)) {
 
-                        Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
-                                new StringType(tgtVertexName), new StringType(eLabel));
+                        Edge<StringType> edge = new Edge<StringType>(new StringType
+                                (srcVertexName),srcLabel,
+                                new StringType(tgtVertexName),
+                                tgtLabel, new StringType(eLabel));
 
                         for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
                             propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
@@ -489,16 +503,20 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
                         addEdgeToPropElementBag(outputBag, edge);
 
-                        // need to make sure both ends of the edge are proper vertices!
+                        // need to make sure both ends of the edge are proper
+                        // vertices!
 
-                        Vertex<StringType> srcVertex = new Vertex<StringType>(new StringType(srcVertexName));
-                        Vertex<StringType> tgtVertex = new Vertex<StringType>(new StringType(tgtVertexName));
+                        Vertex<StringType> srcVertex = new Vertex<StringType>(new
+                                StringType(srcVertexName), srcLabel);
+                        Vertex<StringType> tgtVertex = new Vertex<StringType>(new
+                                StringType(tgtVertexName), tgtLabel);
                         addVertexToPropElementBag(outputBag, srcVertex);
                         addVertexToPropElementBag(outputBag, tgtVertex);
 
                         if (edgeRule.isBiDirectional()) {
-                            Edge<StringType> opposingEdge = new Edge<StringType>(new StringType(tgtVertexName),
-                                    new StringType(srcVertexName),
+                            Edge<StringType> opposingEdge = new Edge<StringType>(new
+                                    StringType(tgtVertexName), tgtLabel,
+                                    new StringType(srcVertexName), srcLabel,
                                     new StringType(eLabel));
 
                             // now add the edge properties

@@ -16,6 +16,26 @@
  * limitations under the License.
  */
 
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
+ */
+
 package com.intel.pig.load;
 
 import org.apache.commons.logging.Log;
@@ -195,7 +215,7 @@ class XMLLoaderBufferedPositionedInputStream extends
 	 *         stream is reached.
 	 * @exception IOException
 	 *                if an I/O error occurs.
-	 * @see XMLLoaderBufferedPositionedInputStreamInputStream#wrapperIn
+	 * @see XMLLoaderBufferedPositionedInputStream#wrapperIn
 	 */
 	public int read() throws IOException {
 		return wrapperIn.read();
@@ -214,7 +234,7 @@ class XMLLoaderBufferedPositionedInputStream extends
 	 * 
 	 * @return the byte array containing the documents until the end of tag
 	 * 
-	 * @see loader.XMLLoaderBufferedPositionedInputStream.collectUntilEndTag
+	 * @see XMLLoaderBufferedPositionedInputStream#collectUntilEndTag
 	 * 
 	 */
 	private byte[] collectUntilEndTag(String tagName, long limit) {
@@ -298,7 +318,7 @@ class XMLLoaderBufferedPositionedInputStream extends
 	 * 
 	 * @return the byte array containing match of the tag.
 	 * 
-	 * @see loader.XMLLoaderBufferedPositionedInputStream.collectUntilEndTag
+	 * @see XMLLoaderBufferedPositionedInputStream#collectUntilEndTag
 	 * 
 	 */
 	private byte[] skipToTag(String tagName, long limit) throws IOException {
@@ -416,9 +436,9 @@ class XMLLoaderBufferedPositionedInputStream extends
 	 * 
 	 * @return the byte array containing match of the <code><tag>.*</tag><code>.
 	 * 
-	 * @see loader.XMLLoaderBufferedPositionedInputStream.skipToTag
+	 * @see XMLLoaderBufferedPositionedInputStream#skipToTag
 	 * 
-	 * @see loader.XMLLoaderBufferedPositionedInputStream.collectUntilEndTag
+	 * @see XMLLoaderBufferedPositionedInputStream#collectUntilEndTag
 	 * 
 	 */
 	byte[] collectTag(String tagName, long limit) throws IOException {
@@ -599,7 +619,7 @@ public class XMLLoader extends LoadFunc {
 	/**
 	 * to check for equality
 	 * 
-	 * @param object
+	 * @param obj
 	 */
 	public boolean equals(Object obj) {
 		return equals((XMLLoader) obj);
@@ -608,8 +628,7 @@ public class XMLLoader extends LoadFunc {
 	/**
 	 * to check for equality
 	 * 
-	 * @param XMLLoader
-	 *            object
+	 * @param other object
 	 */
 	public boolean equals(XMLLoader other) {
 		return this.recordIdentifier.equals(other.recordIdentifier);

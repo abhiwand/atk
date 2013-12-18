@@ -32,5 +32,6 @@ public class HBaseConfig {
      */
     public static final int    HBASE_CACHE_SIZE            = 500;
 
-    public static RuntimeConfig config = RuntimeConfig.getInstance(HBaseConfig.class);
+    public static final RuntimeConfig config = RuntimeConfig.getInstance
+            (HBaseConfig.class);
 }
