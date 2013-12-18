@@ -93,9 +93,7 @@ public class RDF extends EvalFunc<DataBag> {
 		} else if (graphElement.isVertex()) {
 
 			// create a Resource from the vertex
-			resource = RDFUtils.createResourceFromVertex(rdfNamespace,
-					graphElement.getId().toString(),
-					graphElement.getProperties());
+			resource = RDFUtils.createResourceFromVertex(rdfNamespace, graphElement);
 		}
 
 		/* create the RDF statements from the model */

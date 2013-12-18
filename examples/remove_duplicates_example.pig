@@ -9,6 +9,17 @@ x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id: int, name: 
 DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "name=age,managerId" -e "name,dept,worksAt,tenure"');
 pge = FOREACH x GENERATE FLATTEN(CreatePropGraphElements(*));
 
-merged = MERGE_DUPLICATE_ELEMENTS(pge);;
+rmf /tmp/edgelist;
 
+merged = MERGE_DUPLICATE_ELEMENTS(pge);
 
+DEFINE EdgeList com.intel.pig.udf.eval.EdgeList('true'); -- false means do not print edge properties
+edgelist = FOREACH merged GENERATE EdgeList(*);
+edgelist = FILTER edgelist BY $0 != '';
+DUMP edgelist;
+-- STORE edgelist INTO '/tmp/edgelist' USING PigStorage();
+
+DEFINE VertexList com.intel.pig.udf.eval.VertexList('false'); -- false means do not print vertex properties
+vertexlist = FOREACH merged GENERATE VertexList(*);
+vertexlist = FILTER vertexlist BY $0 != '';
+DUMP vertexlist;

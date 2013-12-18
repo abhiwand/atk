@@ -20,7 +20,7 @@ DEFINE MERGE_DUPLICATE_ELEMENTS(inPropGraph) RETURNS outPropGraph {
   labeled = FOREACH $inPropGraph GENERATE (GetPropGraphEltID(*)), $0;
   grouped = GROUP labeled by $0;
   DEFINE Merge com.intel.pig.udf.eval.MergeDuplicateGraphElements;
-  $outPropGraph = FOREACH grouped GENERATE(Merge(*));
+  $outPropGraph = FOREACH grouped GENERATE FLATTEN(Merge(*));
 };
 
 /**

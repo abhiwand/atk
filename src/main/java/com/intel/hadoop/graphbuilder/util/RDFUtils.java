@@ -18,59 +18,63 @@
  */
 package com.intel.hadoop.graphbuilder.util;
 
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import org.apache.hadoop.io.Writable;
 
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 public class RDFUtils {
 
 	public static final Map<String, String> RDFNamespaceMap;
 	static {
-		RDFNamespaceMap = new HashMap<String, String>();
-		RDFNamespaceMap.put("OWL", OWL.NS);
-		RDFNamespaceMap.put("DC", DC.NS);
-		RDFNamespaceMap.put("LOCMAP", LocationMappingVocab.NS);
-		RDFNamespaceMap.put("ONTDOC", OntDocManagerVocab.NS);
-		RDFNamespaceMap.put("ONTEVENTS", OntDocManagerVocab.NS);
-		RDFNamespaceMap.put("OWL2", OWL2.NS);
-		RDFNamespaceMap.put("RDFS", RDFS.getURI());
-
-		// TODO We will not support XMLSchema in Graphbuilder2.0
-		// RDFNamespaceMap.put("XMLSchema",
-		// "http://www.w3.org/2001/XMLSchema#");
-	}
-
-	public static final Map<String, Property> RDFTagMap;
-	static {
-		RDFTagMap = new HashMap<String, Property>();
-		RDFTagMap.put("DC.contributor", DC.contributor);
-		RDFTagMap.put("DC.coverage", DC.coverage);
-		RDFTagMap.put("DC.creator", DC.creator);
-		RDFTagMap.put("DC.date", DC.date);
-		RDFTagMap.put("DC.description", DC.description);
-		RDFTagMap.put("DC.format", DC.format);
-		RDFTagMap.put("DC.identifier", DC.identifier);
-		RDFTagMap.put("DC.language", DC.language);
-		RDFTagMap.put("DC.publisher", DC.publisher);
-		RDFTagMap.put("DC.relation", DC.relation);
-		RDFTagMap.put("DC.rights", DC.rights);
-		RDFTagMap.put("DC.source", DC.source);
-		RDFTagMap.put("DC.subject", DC.subject);
-		RDFTagMap.put("RDFS.comment", RDFS.comment);
-		RDFTagMap.put("RDFS.domain", RDFS.domain);
+		RDFNamespaceMap = new Hashtable<String, String>();
+        RDFNamespaceMap.put("DB",         DB.getURI());
+        RDFNamespaceMap.put("DC",         DC.NS);
+        RDFNamespaceMap.put("LOCMAP",     LocationMappingVocab.NS);
+        RDFNamespaceMap.put("ONTDOC",     OntDocManagerVocab.NS);
+        RDFNamespaceMap.put("ONTEVENTS",  OntDocManagerVocab.NS);
+        RDFNamespaceMap.put("OWL",        OWL.NS);
+        RDFNamespaceMap.put("OWL2",       OWL2.NS);
+        RDFNamespaceMap.put("RDF",        RDF.getURI());
+        RDFNamespaceMap.put("RDFS",       RDFS.getURI());
+        RDFNamespaceMap.put("RDFSYNTAX",  RDFSyntax.getURI());
+        RDFNamespaceMap.put("RSS",        RSS.getURI());
+        RDFNamespaceMap.put("VCARD",      VCARD.getURI());
+        RDFNamespaceMap.put("XMLSchema",  XSD.getURI());
 	}
 
 	public static Resource createResourceFromVertex(String rdfNamespace,
-			String vertexKey, PropertyMap vertexPropertyMap) {
-		// Namespace can be DC, DB, RDF, OWL, or OWL2
-		String namespace = RDFNamespaceMap.get(rdfNamespace);
+                                                    GraphElement graphElement) {
+
+		// Namespace can be DB, DC, LOCMAP, ONTDOC, ONTEVENTS, OWL, OWL2,
+        // RDF, RDFS, RDFSYNTAX, RSS, VCARD or XSD
+
+        String label              = graphElement.getLabel().toString();
+        String vertexKey          = graphElement.getId().toString();
+        PropertyMap vertexPropMap = graphElement.getProperties();
+		String namespace          = null;
+        String vertexType         = null;
+
+        // Each vertex and edge type should be associated with a namespace
+        // and the same namespace will be used for all its properties. If a
+        // namespace is not specified, then the global namespace specified
+        // with the '-n' command line parameter will be used.
+        // Extra logic needs to be written to reify vertex or edge properties
+        // separately
+
+        if (label.contains(".")) {
+            String [] tempArray = label.split("\\.");
+            namespace  = tempArray[0];
+            vertexType = tempArray[1];
+        } else {
+            namespace  = RDFUtils.RDFNamespaceMap.get(rdfNamespace);
+            vertexType = label;
+        }
 
 		// create an empty Model
 		Model model = ModelFactory.createDefaultModel();
@@ -78,12 +82,19 @@ public class RDFUtils {
 		// create the resource
 		Resource vertexRdf = model.createResource(namespace + vertexKey);
 
-		for (Writable property : vertexPropertyMap.getPropertyKeys()) {
-			Property vertexRDFProperty = model.getProperty(namespace
-					+ property.toString());
-			vertexRdf.addProperty(vertexRDFProperty, vertexPropertyMap
-					.getProperty(property.toString()).toString());
-		}
+		if (vertexType != null && !vertexType.isEmpty()) {
+            Property vertexTypeProperty =
+                    model.getProperty(RDF.type.toString());
+            vertexRdf.addProperty(vertexTypeProperty, vertexType);
+        }
+
+        for (Writable property : vertexPropMap.getPropertyKeys()) {
+            Property vertexRDFProperty =
+                    model.getProperty(namespace + property.toString());
+            Literal propertyValue = model.createLiteral(
+                    vertexPropMap.getProperty(property.toString()).toString());
+            vertexRdf.addLiteral(vertexRDFProperty, propertyValue);
+        }
 
 		return vertexRdf;
 	}
@@ -91,25 +102,41 @@ public class RDFUtils {
 	public static Resource createResourceFromEdge(String rdfNamespace,
 			String source, String target, String edgeLabel,
 			PropertyMap edgePropertyMap) {
-		// Namespace can be DC, DB, RDF, OWL, or OWL2
-		String namespace = RDFNamespaceMap.get(rdfNamespace);
+
+		// Namespace can be DB, DC, LOCMAP, ONTDOC, ONTEVENTS, OWL, OWL2,
+        // RDF, RDFS, RDFSYNTAX, RSS, VCARD or XSD
+
+        String namespace  = null;
+        String edgeType = null;
+
+        // Each edge type should be associated with a namespace
+        // and the same namespace will be used for all its properties. If a
+        // namespace is not specified, then the global namespace specified
+        // with the '-n' command line parameter will be used.
+        // Extra logic needs to be written to reify vertex or edge properties
+        // separately
+
+        if (edgeLabel.contains(".")) {
+            String [] tempArray = edgeLabel.split("\\.");
+            namespace  = tempArray[0];
+            edgeType = tempArray[1];
+        } else {
+            namespace  = RDFUtils.RDFNamespaceMap.get(rdfNamespace);
+            edgeType = edgeLabel;
+        }
 
 		// create an empty Model
-		Model model = ModelFactory.createDefaultModel();
 
-		// create the edge resource
-		Resource edgeRdf = model.createResource(namespace + edgeLabel);
+        Model model = ModelFactory.createDefaultModel();
 
-		Property sourceRDF = model.getProperty(namespace + "source");
-		Property targetRDF = model.getProperty(namespace + "target");
-		edgeRdf.addProperty(sourceRDF, source);
-		edgeRdf.addProperty(targetRDF, target);
-		for (Writable property : edgePropertyMap.getPropertyKeys()) {
-			Property edgeRDFProperty = model.getProperty(namespace
-					+ property.toString());
-			edgeRdf.addProperty(edgeRDFProperty,
-					edgePropertyMap.getProperty(property.toString()).toString());
-		}
-		return edgeRdf;
+        // create the edge triple
+        // edge properties are ignored in this release
+
+        Resource sourceVertexRdf = model.createResource(namespace + source);
+        Resource targetVertexRdf = model.createResource(namespace +  target);
+        Property edgeRDFLabel = model.createProperty(namespace, edgeType);
+
+        sourceVertexRdf.addProperty(edgeRDFLabel, targetVertexRdf);
+		return sourceVertexRdf;
 	}
 }

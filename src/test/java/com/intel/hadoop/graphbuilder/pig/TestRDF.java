@@ -32,7 +32,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements
+        .SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
@@ -49,7 +50,8 @@ public class TestRDF {
 
 	@Test
 	public void runTests() throws IOException {
-		SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
+		SerializedGraphElementStringTypeVids serializedGraphElement =
+                new SerializedGraphElementStringTypeVids();
 		Vertex<StringType> vertex = new Vertex<StringType>(new StringType(
 				"test_vertex"));
 		serializedGraphElement.init(vertex);
@@ -60,16 +62,26 @@ public class TestRDF {
 		t.set(0, serializedGraphElement);
 
 		DataBag result = (DataBag) toRdfUdf.exec(t);
-		assertEquals("Returned bag size should have been 1", result.size(), 1);
+		assertEquals("Returned bag size should have been 2", result.size(), 2);
 		Iterator<Tuple> iter = result.iterator();
 
 		while (iter.hasNext()) {
 			Tuple resultTuple = iter.next();
 			String rdfStatement = (String) resultTuple.get(0);
-			assertEquals(
-					"RDF statement mismatch",
-					rdfStatement,
-					"http://www.w3.org/2002/07/owl#test_vertex http://www.w3.org/2002/07/owl#p-1 v-1 .");
+            if (rdfStatement.contains("rdf-syntax-ns#type")) {
+    			assertEquals(
+	    				"RDF statement mismatch",
+		    			rdfStatement,
+			    		"http://www.w3.org/2002/07/owl#test_vertex " +
+                        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
+                        "vertex_label .");
+            } else {
+                assertEquals(
+	    				"RDF statement mismatch",
+		    			rdfStatement,
+			    		"http://www.w3.org/2002/07/owl#test_vertex " +
+                        "http://www.w3.org/2002/07/owl#p-1 v-1 .");
+            }
 		}
 
 		serializedGraphElement = new SerializedGraphElementStringTypeVids();
@@ -83,28 +95,18 @@ public class TestRDF {
 		t.set(0, serializedGraphElement);
 
 		result = (DataBag) toRdfUdf.exec(t);
-		assertEquals("Returned bag size should have been 3", result.size(), 3);
+		assertEquals("Returned bag size should have been 1", result.size(), 1);
 
 		iter = result.iterator();
 		while (iter.hasNext()) {
 			Tuple resultTuple = iter.next();
 			String rdfStatement = (String) resultTuple.get(0);
-			if (rdfStatement.contains("#p-1")) {
-				assertEquals(
-						"RDF statement mismatch",
-						rdfStatement,
-						"http://www.w3.org/2002/07/owl#edge_label http://www.w3.org/2002/07/owl#p-1 v-1 .");
-			} else if (rdfStatement.contains("#target")) {
-				assertEquals(
-						"RDF statement mismatch",
-						rdfStatement,
-						"http://www.w3.org/2002/07/owl#edge_label http://www.w3.org/2002/07/owl#target target .");
-			} else if (rdfStatement.contains("#source")) {
-				assertEquals(
-						"RDF statement mismatch",
-						rdfStatement,
-						"http://www.w3.org/2002/07/owl#edge_label http://www.w3.org/2002/07/owl#source src .");
-			}
+            assertEquals(
+                    "RDF statement mismatch",
+                    rdfStatement,
+                    "http://www.w3.org/2002/07/owl#src " +
+                    "http://www.w3.org/2002/07/owl#edge_label " +
+                    "http://www.w3.org/2002/07/owl#target .");
 		}
 
 		/* test with a null graph element */
