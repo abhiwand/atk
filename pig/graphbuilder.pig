@@ -4,21 +4,21 @@ DEFINE RegexExtractAllMatches com.intel.pig.udf.eval.RegexExtractAllMatches();
 DEFINE FlattenAsGBString com.intel.pig.udf.eval.FlattenAsGBString();
 
 /**
- * Remove duplicate property graphelements from a stream.
+ * Remove duplicates from a given relation of property graph elements.
  *
  * <p><ul>
  * <li>Vertices with the same IDs are treated as equal</li>
  * <li>Edges with the same label and matching vertex IDs on their source and destination vertices are treated as equal</li>
  * <li>Property lists are merged between duplicates, with conflicts resolved arbitrarily. </li>
  * </ul> </p>
- * @param inPropGraph
+ * @param inPropGraph relation of property graph elements to remove the duplicates from
  *
 */
 
 DEFINE MERGE_DUPLICATE_ELEMENTS(inPropGraph) RETURNS outPropGraph {
   DEFINE GetPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
   labeled = FOREACH $inPropGraph GENERATE (GetPropGraphEltID(*)), $0;
-  grouped = GROUP labeled by $0;
+  grouped = GROUP labeled BY $0;
   DEFINE Merge com.intel.pig.udf.eval.MergeDuplicateGraphElements;
   $outPropGraph = FOREACH grouped GENERATE FLATTEN(Merge(*));
 };
