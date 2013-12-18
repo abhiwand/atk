@@ -1,4 +1,5 @@
 import os
+import re
 from mock import MagicMock, Mock, patch
 import unittest
 import sys
@@ -6,7 +7,7 @@ import sys
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
 
-from intel_analytics.config import global_config as config
+from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
@@ -91,6 +92,8 @@ class HbaseTableTest(unittest.TestCase):
         drop_action_mock = Mock(side_effect=drop_side_effect)
         return drop_action_mock
 
+
+
     @patch('intel_analytics.table.hbase.table.call')
     @patch('intel_analytics.table.hbase.table.ETLSchema')
     def test_transformation(self, etl_schema_class, call_method):
@@ -174,6 +177,46 @@ class HbaseTableTest(unittest.TestCase):
         self.assertEqual(new_table_name, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
         self.assertEqual(",".join(mock_etl_obj.feature_names), result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
         self.assertEqual(",".join(mock_etl_obj.feature_types), result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_drop_column(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        mock_etl_obj = self.create_mock_etl_object(result_holder)
+
+        etl_schema_class.return_value = mock_etl_obj
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        columns_to_drop = "col1,col2"
+        table.drop_columns(columns_to_drop)
+
+        mock_etl_obj.save_schema.assert_called_once_with(table_name)
+        self.assertEqual(result_holder["feature_names"], ["col3"])
+        self.assertEqual(result_holder["feature_types"], ["long"])
+
+        call_args = result_holder["call_args"]
+        self.assertEqual("hadoop", call_args[0])
+        self.assertEqual("jar", call_args[1])
+        self.assertEqual(global_config['intel_analytics_jar'], call_args[2])
+        self.assertEqual(global_config['column_dropper_class'], call_args[3])
+
+        # check call arguments
+        # check table name
+        self.assertEqual(table_name, call_args[call_args.index('-t') + 1])
+        # check column names
+        self.assertEqual(columns_to_drop, call_args[call_args.index('-n') + 1])
+        # check column family
+        self.assertEqual('etl-cf', call_args[call_args.index('-f') + 1])
+
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
     def test_get_first_N_same_columns(self, etl_base_client_class):

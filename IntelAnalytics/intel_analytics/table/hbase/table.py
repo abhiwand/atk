@@ -26,7 +26,7 @@ import sys
 import collections
 
 from intel_analytics.config import Registry, \
-    global_config as config, get_time_str
+    global_config as config, get_time_str, global_config
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
 from schema import ETLSchema
@@ -182,6 +182,39 @@ class HBaseTable(object):
         etl_schema.save_schema(new_table_name)
         return HBaseTable(new_table_name, self.file_name)
 
+
+    def drop_columns(self, columns):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        args = []
+
+        args += ['hadoop',
+                 'jar',
+                 global_config['intel_analytics_jar'],
+                 global_config['column_dropper_class'],
+                 '-t', self.table_name,
+                 '-n', columns,
+                 '-f', re.sub(':', '', global_config['hbase_column_family'])
+                 ]
+
+        return_code = call(args, report_strategy=progress_report_strategy())
+        if return_code:
+            raise HBaseTableException('Could not drop columns from the table')
+
+        # save the schema for the new table
+        new_feature_names = []
+        new_feature_types = []
+
+        list_columns_to_drop = columns.split(',')
+
+        for feature in etl_schema.feature_names:
+            if feature not in list_columns_to_drop:
+                new_feature_names.append(feature)
+                new_feature_types.append(etl_schema.feature_types[etl_schema.feature_names.index(feature)])
+
+        etl_schema.feature_names = new_feature_names
+        etl_schema.feature_types = new_feature_types
+        etl_schema.save_schema(self.table_name)
 
     def _get_first_N(self, n):
 

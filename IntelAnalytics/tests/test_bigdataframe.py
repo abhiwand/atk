@@ -22,10 +22,7 @@
 ##############################################################################
 import unittest
 import os
-import random
 import sys
-import string
-from intel_analytics.table.hbase.schema import ETLSchema
 
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_script_path, '..'))
@@ -33,12 +30,11 @@ sys.path.append(os.path.join(base_script_path, '..'))
 from intel_analytics.table.bigdataframe import BigDataFrame
 from intel_analytics.table.bigdataframe import BigDataFrameException
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
-from intel_analytics.table.hbase.table import HBaseFrameBuilder, HBaseTable, _create_table_name, HBaseFrameBuilderFactory, hbase_frame_builder_factory
+from intel_analytics.table.hbase.table import HBaseFrameBuilder, HBaseTable
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.table import Imputation
 from intel_analytics.config import global_config as CONFIG_PARAMS
-from mock import Mock, MagicMock
-from mock import patch
+from mock import MagicMock
 
 
 class BigDataFrameTest(unittest.TestCase):
