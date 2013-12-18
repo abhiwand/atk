@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.impl.PigContext;
 import org.junit.After;
@@ -57,8 +58,7 @@ public class TestVertexlistUdf {
         map0.setProperty("age", new StringType("30"));
 
         Vertex<StringType> vertex = new Vertex<StringType>();
-        vertex.configure(
-                new StringType("Employee001"),
+        vertex.configure( new VertexID<StringType>(new StringType("Employee001")),
                 map0);
         vertex.setLabel(new StringType("HAWK.People"));
 
