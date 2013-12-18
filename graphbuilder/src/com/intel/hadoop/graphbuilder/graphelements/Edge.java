@@ -207,7 +207,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      * @return -1 if less than edge, 0 if equal, 1 otherwise
      */
     public int compareTo(Edge<VidType> edge) {
-        return equals(edge) ? 0 : 1;
+        return this.equals(edge) ? 0 : 1;
     }
 
     /**

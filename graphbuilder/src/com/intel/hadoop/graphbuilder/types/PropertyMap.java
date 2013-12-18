@@ -69,7 +69,9 @@ public class PropertyMap implements Writable
     public boolean equals(PropertyMap thatValue) {
         for (Writable writable : getPropertyKeys()) {
             Writable value = thatValue.getProperty(writable.toString());
-            if (!value.equals(getProperty(writable.toString()))) {
+            String rhs = value.toString();
+            String lhs = getProperty(writable.toString()).toString();
+            if (!rhs.equals(lhs)) {
                 return false;
             }
         }

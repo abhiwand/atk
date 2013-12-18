@@ -59,7 +59,8 @@ import org.apache.log4j.Logger;
  * </p>
  */
 
-public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement, NullWritable, Text> {
+public class RDFGraphReducer extends Reducer<IntWritable,
+        SerializedGraphElement, NullWritable, Text> {
 
     private static final Logger LOG = Logger.getLogger(RDFGraphReducer.class);
 
@@ -75,47 +76,12 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement
         NUM_EDGES
     }
 
-    private Hashtable<EdgeID, Writable> edgeSet;
+    private Hashtable<EdgeID, Writable>   edgeSet;
     private Hashtable<Object, Writable>   vertexSet;
-    private Hashtable<Object, StringType>    vertexLabelMap = new Hashtable<>();
+    private Hashtable<Object, StringType> vertexLabelMap = new Hashtable<>();
 
     private GraphElementWriter RDFGraphElementWriter;
     private GraphElementTypeCallback propertyGraphElementPut;
-
-    protected static final Map<String, String> RDFNamespaceMap;
-    static {
-        RDFNamespaceMap = new Hashtable<String, String>();
-        RDFNamespaceMap.put("OWL",        OWL.NS);
-        RDFNamespaceMap.put("DC",         DC.NS);
-        RDFNamespaceMap.put("LOCMAP",     LocationMappingVocab.NS);
-        RDFNamespaceMap.put("ONTDOC",     OntDocManagerVocab.NS);
-        RDFNamespaceMap.put("ONTEVENTS",  OntDocManagerVocab.NS);
-        RDFNamespaceMap.put("OWL2",       OWL2.NS);
-        RDFNamespaceMap.put("RDFS",       RDFS.getURI());
-
-        // TODO We will not support XMLSchema in Graphbuilder2.0
-//        RDFNamespaceMap.merge("XMLSchema",  "http://www.w3.org/2001/XMLSchema#");
-    }
-
-    protected static final Map<String, Property> RDFTagMap;
-    static {
-        RDFTagMap = new Hashtable<String, Property>();
-        RDFTagMap.put("DC.contributor", DC.contributor);
-        RDFTagMap.put("DC.coverage", DC.coverage);
-        RDFTagMap.put("DC.creator", DC.creator);
-        RDFTagMap.put("DC.date", DC.date);
-        RDFTagMap.put("DC.description", DC.description);
-        RDFTagMap.put("DC.format", DC.format);
-        RDFTagMap.put("DC.identifier", DC.identifier);
-        RDFTagMap.put("DC.language", DC.language);
-        RDFTagMap.put("DC.publisher", DC.publisher);
-        RDFTagMap.put("DC.relation", DC.relation);
-        RDFTagMap.put("DC.rights", DC.rights);
-        RDFTagMap.put("DC.source", DC.source);
-        RDFTagMap.put("DC.subject", DC.subject);
-        RDFTagMap.put("RDFS.comment", RDFS.comment);
-        RDFTagMap.put("RDFS.domain", RDFS.domain);
-    }
 
     @Override
     public void setup(Context context) {
@@ -129,14 +95,16 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement
         try {
             if (conf.get("edgeReducerFunction") != null) {
                 this.edgeReducerFunction =
-                        (Functional) Class.forName(conf.get("edgeReducerFunction")).newInstance();
+                        (Functional) Class.forName(
+                                conf.get("edgeReducerFunction")).newInstance();
 
                 this.edgeReducerFunction.configure(conf);
             }
 
             if (conf.get("vertexReducerFunction") != null) {
                 this.vertexReducerFunction =
-                        (Functional) Class.forName(conf.get("vertexReducerFunction")).newInstance();
+                        (Functional) Class.forName(
+                               conf.get("vertexReducerFunction")).newInstance();
 
                 this.vertexReducerFunction.configure(conf);
             }
@@ -146,29 +114,39 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement
             }
 
         } catch (InstantiationException e) {
-            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "GRAPHBUILDER_ERROR: Could not instantiate reducer functions", LOG, e);
+            GraphBuilderExit.graphbuilderFatalExitException(
+                    StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "GRAPHBUILDER_ERROR: Could not instantiate reducer " +
+                            "functions", LOG, e);
         } catch (IllegalAccessException e) {
-            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "GRAPHBUILDER_ERROR: Illegal access exception when instantiating reducer functions", LOG, e);
+            GraphBuilderExit.graphbuilderFatalExitException(
+                    StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "GRAPHBUILDER_ERROR: Illegal access exception when " +
+                            "instantiating reducer functions", LOG, e);
         } catch (ClassNotFoundException e) {
-            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "GRAPHBUILDER_ERROR: Class not found exception when instantiating reducer functions", LOG, e);
+            GraphBuilderExit.graphbuilderFatalExitException(
+                    StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "GRAPHBUILDER_ERROR: Class not found exception when " +
+                            "instantiating reducer functions", LOG, e);
         } catch (Functional.FunctionalConfigurationError e) {
-            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "GRAPHBUILDER_ERROR: Configuration error when configuring reducer functionals.", LOG, e);
+            GraphBuilderExit.graphbuilderFatalExitException(
+                    StatusCode.CLASS_INSTANTIATION_ERROR,
+                    "GRAPHBUILDER_ERROR: Configuration error when " +
+                            "configuring reducer functionals.", LOG, e);
         }
 
         initMergerWriter(context);
     }
 
     @Override
-    public void reduce(IntWritable key, Iterable<SerializedGraphElement> values, Context context)
+    public void reduce(IntWritable key,
+                       Iterable<SerializedGraphElement> values,
+                       Context context)
             throws IOException, InterruptedException {
 
-        edgeSet       = new Hashtable<>();
-        vertexSet     = new Hashtable<>();
-        vertexLabelMap       = new Hashtable<>();
+        edgeSet        = new Hashtable<>();
+        vertexSet      = new Hashtable<>();
+        vertexLabelMap = new Hashtable<>();
 
         for(SerializedGraphElement serializedGraphElement : values){
             GraphElement graphElement = serializedGraphElement.graphElement();
@@ -177,8 +155,9 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement
                 continue;
             }
 
-            //try to add the graph element to the existing set of vertices or edges
-            //GraphElementMerge will take care of switching between edge and vertex
+            //try to add the graph element to the existing set of vertices or
+            // edges GraphElementMerge will take care of switching between
+            // edge and vertex
             merge(edgeSet, vertexSet, vertexLabelMap, graphElement);
         }
 
@@ -186,7 +165,8 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement
     }
 
     @Override
-    public void cleanup(Context context) throws IOException, InterruptedException {
+    public void cleanup(Context context)
+            throws IOException, InterruptedException {
         multipleOutputs.close();
     }
 
@@ -194,34 +174,51 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement
     /**
      * remove duplicate edges/vertices and merge their property maps
      *
-     * @param graphElement the graph element to add to our existing vertexSet or edgeSet
+     * @param graphElement the graph element to add to our existing vertexSet
+     *                     or edgeSet
      */
-    private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet, Hashtable<Object,
-                StringType> vertexLabelMap, GraphElement graphElement){
+    private void merge(Hashtable<EdgeID,
+                       Writable> edgeSet,
+                       Hashtable<Object,
+                       Writable> vertexSet,
+                       Hashtable<Object,
+                       StringType> vertexLabelMap,
+                       GraphElement graphElement) {
         graphElement.typeCallback(propertyGraphElementPut,
-                ArgumentBuilder.newArguments().with("edgeSet", edgeSet).with("vertexSet", vertexSet)
+                ArgumentBuilder.newArguments().
+                         with("edgeSet", edgeSet).with("vertexSet", vertexSet)
                         .with("edgeReducerFunction", edgeReducerFunction)
                         .with("vertexReducerFunction", vertexReducerFunction)
-                        .with("noBiDir", noBiDir).with("vertexLabelMap", vertexLabelMap));
+                        .with("noBiDir", noBiDir)
+                        .with("vertexLabelMap", vertexLabelMap));
     }
 
     /**
-     * Call GraphElementWriter function the class  was initiated with to write the edges and vertices.
+     * Call GraphElementWriter function the class was initiated with to
+     * write the edges and vertices.
      *
      * @throws IOException
      * @throws InterruptedException
      */
-    public void write(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
-                      Hashtable<Object, StringType> vertexLabelMap, Context context) throws IOException,
-            InterruptedException {
-        RDFGraphElementWriter.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
-                .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap).with("vertexCounter",
+    public void write(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object,
+                      Writable> vertexSet,
+                      Hashtable<Object, StringType> vertexLabelMap,
+                      Context context)
+            throws IOException, InterruptedException {
+        RDFGraphElementWriter.write(ArgumentBuilder.newArguments()
+                .with("edgeSet", edgeSet)
+                .with("vertexSet", vertexSet)
+                .with("vertexLabelMap", vertexLabelMap).with("vertexCounter",
                         Counters.NUM_VERTICES)
-                .with("edgeCounter", Counters.NUM_EDGES).with("context", context).with("multipleOutputs",multipleOutputs));
+                .with("edgeCounter", Counters.NUM_EDGES)
+                .with("context", context)
+                .with("multipleOutputs",multipleOutputs));
     }
 
     private void initMergerWriter(Context context){
         propertyGraphElementPut = new GraphElementMerge();
-        RDFGraphElementWriter = new com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph.RDFGraphElementWriter();
+        RDFGraphElementWriter =
+                new com.intel.hadoop.graphbuilder.pipeline.output.rdfgraph
+                        .RDFGraphElementWriter();
     }
 }
