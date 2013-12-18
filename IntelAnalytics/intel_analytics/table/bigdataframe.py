@@ -260,7 +260,7 @@ class BigDataFrame(object):
         raise BigDataFrameException("Not implemented")
     
     
-    def sample_as_html(self, nRows=10):
+    def inspect_as_html(self, nRows=10):
         """
         Get the nRows as an HTML table
 
@@ -269,7 +269,7 @@ class BigDataFrame(object):
         nRows : int
             number of rows to retrieve as an HTML table
         """
-        return self._table.sample_as_html(nRows)
+        return self._table.inspect_as_html(nRows)
 
 
     #----------------------------------------------------------------------
@@ -634,7 +634,7 @@ class BigDataFrame(object):
     #    print "Not implemented"
 
 
-    def sample(self, n=10):
+    def inspect(self, n=10):
         """
         Provides string representation of the n sample lines of the table
 
@@ -649,7 +649,7 @@ class BigDataFrame(object):
 
 
         try:
-            self._table.sample(n)
+            self._table.inspect(n)
         except Exception, e:
             raise BigDataFrameException("head exception " + str(e))
 
