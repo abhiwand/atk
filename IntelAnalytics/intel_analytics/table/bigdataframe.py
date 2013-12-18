@@ -799,3 +799,15 @@ class BigDataFrame(object):
             #    the imputation operation
             #"""
             #print "Not implemented"
+
+    def drop_columns(self, column_names):
+        """
+        Drop columns from the data frame
+
+        Parameters
+        ----------
+        column_names : String
+            comma separated column names such as f1,f2,f3
+        """
+        self._table.drop_columns(column_names)
+
