@@ -31,7 +31,6 @@ import org.apache.pig.data.*;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
-
 import java.io.IOException;
 
 /**
@@ -46,19 +45,20 @@ import java.io.IOException;
  * 
  * <pre>
  * {@code
-        DEFINE RDF com.intel.pig.udf.eval.RDF('OWL');--specify the namespace to use with the constructor
-        DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
-        x = LOAD 'examples/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
-        x = FILTER x by id!='';--remove employee records with missing ids
-        pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));--create the property graph elements from raw source data
-        rdf_triples = FOREACH pge GENERATE FLATTEN(RDF(*));--create RDF tuples from the property graph elements
-        STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
-        }
+          DEFINE RDF com.intel.pig.udf.eval.RDF('OWL');--specify the namespace to use with the constructor
+          DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
+          x = LOAD 'examples/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+          x = FILTER x by id!='';--remove employee records with missing ids
+          pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));--create the property graph elements from raw source data
+          rdf_triples = FOREACH pge GENERATE FLATTEN(RDF(*));--create RDF tuples from the property graph elements
+          STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
+  }
  * </pre>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class RDF extends EvalFunc<DataBag> {
 	private String rdfNamespace;
+	private static  BagFactory bagFactory = DefaultBagFactory.getInstance();
 
 	public RDF(String rdfNamespace) {
 		this.rdfNamespace = rdfNamespace;
@@ -66,7 +66,7 @@ public class RDF extends EvalFunc<DataBag> {
 
 	@Override
 	public DataBag exec(Tuple input) throws IOException {
-		DataBag rdfBag = DefaultBagFactory.getInstance().newDefaultBag();
+		DataBag rdfBag = bagFactory.newDefaultBag();
 		SerializedGraphElement e = (SerializedGraphElement) input.get(0);
 
 		if (e == null) {

@@ -59,7 +59,8 @@ public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 			throw new IOException(new GBUdfException(msg));
 		}
 
-		if (input.get(0) == null)
+		String sourceString = (String) input.get(0);
+		if (sourceString == null)
 			return null;
 		try {
 			if (!input.get(1).equals(regularExpression)) {
@@ -76,7 +77,7 @@ public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 			throw new IOException(new GBUdfException(msg));
 		}
 
-		Matcher m = pattern.matcher((String) input.get(0));
+		Matcher m = pattern.matcher(sourceString);
 
 		DataBag result = DefaultBagFactory.getInstance().newDefaultBag();
 
