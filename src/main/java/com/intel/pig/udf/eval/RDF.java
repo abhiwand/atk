@@ -35,23 +35,31 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 import java.io.IOException;
 
 /**
- * \brief RDF UDF converts a given {@link PropertyGraphElementTuple} to a bag of
- * RDF statements.
+ * \brief RDF UDF converts a given {@link PropertyGraphElementTuple}
+ * to a bag of * RDF statements.
  * <p/>
  * If the
- * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement} is
- * null, this UDF returns null.
+ * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+ * is * null, this UDF returns null.
  * 
  * <b>Example:</b>
  * 
  * <pre>
  * {@code
-        DEFINE RDF com.intel.pig.udf.eval.RDF('OWL');--specify the namespace to use with the constructor
-        DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements2('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager" -e "id,manager,OWL.worksUnder,underManager"');
-        x = LOAD 'examples/data/employees.csv' USING PigStorage(',') as (id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
+        DEFINE RDF com.intel.pig.udf.eval.RDF('OWL');--specify the namespace
+        to use with the constructor
+        DEFINE CreatePropGraphElements
+            com.intel.pig.udf.eval.CreatePropGraphElements2
+            ('-v "[OWL.People],id=name,age,dept" "[OWL.People],manager"
+             -e "id,manager,OWL.worksUnder,underManager"');
+        x = LOAD 'examples/data/employees.csv' USING PigStorage(',') as
+                (id:chararray, name:chararray, age:chararray,
+                 dept:chararray, manager:chararray, underManager:chararray);
         x = FILTER x by id!='';--remove employee records with missing ids
-        pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));--create the property graph elements from raw source data
-        rdf_triples = FOREACH pge GENERATE FLATTEN(RDF(*));--create RDF tuples from the property graph elements
+        --create the property graph elements from raw source data
+        pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
+        --create RDF tuples from the property graph elements
+        rdf_triples = FOREACH pge GENERATE FLATTEN(RDF(*));
         STORE rdf_triples INTO '/tmp/rdf_triples' USING PigStorage();
         }
  * </pre>
@@ -94,8 +102,7 @@ public class RDF extends EvalFunc<DataBag> {
 
 			// create a Resource from the vertex
 			resource = RDFUtils.createResourceFromVertex(rdfNamespace,
-					graphElement.getId().toString(),
-					graphElement.getProperties());
+                    graphElement);
 		}
 
 		/* create the RDF statements from the model */

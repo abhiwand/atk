@@ -38,20 +38,22 @@ import com.intel.pig.data.PropertyGraphElementTuple;
 public class TestEdgelistUdf {
     EvalFunc<?> toEdgelistUdf0;
     EvalFunc<?> toEdgelistUdf1;
-    EvalFunc<?> toEdgelistUdf2;
 
     @Before
     public void setup() throws Exception {
         System.out.println("*** Starting EdgeList test cases ***");
         toEdgelistUdf0 = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec("com.intel.pig.udf.eval.EdgeList('false')");
+                .instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.EdgeList('false')");
         toEdgelistUdf1 = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec("com.intel.pig.udf.eval.EdgeList('true')");
+                .instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.EdgeList('true')");
     }
 
     @Test
     public void runTests() throws IOException {
-        SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids serializedGraphElement
+                = new SerializedGraphElementStringTypeVids();
 
         PropertyMap map0 = new PropertyMap();
         map0.setProperty("name", new StringType("Alice"));
@@ -80,7 +82,8 @@ public class TestEdgelistUdf {
         // Expected :Employee001	Employee002	worksWith	age:30	name:Alice
         // Actual   :Employee001	Employee002	worksWith	name:Alice	age:30
         // Hence, we search for the appropriate edge properties
-        boolean flag = statement1.contains("Employee001\tEmployee002\tworksWith");
+        boolean flag
+                = statement1.contains("Employee001\tEmployee002\tworksWith");
         assertTrue("Edge tuple mismatch", flag);
         flag = statement1.contains("name:Alice");
         assertTrue("Edge tuple mismatch", flag);

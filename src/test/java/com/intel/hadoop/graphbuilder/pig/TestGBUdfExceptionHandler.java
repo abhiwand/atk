@@ -38,9 +38,12 @@ public class TestGBUdfExceptionHandler {
 		toRdfUdf = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec("com.intel.pig.udf.eval.RDF('OWL')");
 
-		GBUdfExceptionHandler.handleError(toRdfUdf, new NullPointerException());
-		GBUdfExceptionHandler.handleError(toRdfUdf, new RuntimeException());
-		GBUdfExceptionHandler.handleError(toRdfUdf, new IOException("test_exception"));
+		GBUdfExceptionHandler.handleError(toRdfUdf,
+                new NullPointerException());
+		GBUdfExceptionHandler.handleError(toRdfUdf,
+                new RuntimeException());
+		GBUdfExceptionHandler.handleError(toRdfUdf,
+                new IOException("test_exception"));
 
 	}
 
@@ -52,8 +55,8 @@ public class TestGBUdfExceptionHandler {
 	@Test(expected = RuntimeException.class)
 	public void testFailureCase() throws IOException {
 		System.out.println("Testing failure cases");
-		GBUdfExceptionHandler.handleError(toRdfUdf, new IOException(new GBUdfException(
-				"test_exception")));
+		GBUdfExceptionHandler.handleError(toRdfUdf,
+                new IOException(new GBUdfException("test_exception")));
 	}
 
 	@After

@@ -43,14 +43,17 @@ public class TestVertexlistUdf {
     public void setup() throws Exception {
         System.out.println("*** Starting VertexList test cases ***");
         toEdgelistUdf0 = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec("com.intel.pig.udf.eval.VertexList('false')");
+                .instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.VertexList('false')");
         toEdgelistUdf1 = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec("com.intel.pig.udf.eval.VertexList('true')");
+                .instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.VertexList('true')");
     }
 
     @Test
     public void runTests() throws IOException {
-        SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids serializedGraphElement
+                = new SerializedGraphElementStringTypeVids();
 
         PropertyMap map0 = new PropertyMap();
         map0.setProperty("name", new StringType("Alice"));

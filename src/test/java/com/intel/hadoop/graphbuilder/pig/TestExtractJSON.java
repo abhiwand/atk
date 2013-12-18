@@ -33,13 +33,14 @@ import org.junit.Test;
 
 public class TestExtractJSON {
 	EvalFunc<?> testFn;
-	String testJson = "{ \"Name\": \"T-Shirt 2\", \"Sizes\": [ { \"Size\": \"Large\", \"Price\": 20.00 }, { \"Size\": \"Medium\", \"Price\": 11.00 }, { \"Size\": \"Small\", \"Price\": 5.00 } ], \"Colors\": [ \"Black\", \"White\" ]}";
+	String testJson = "{ \"Name\": \"T-Shirt 2\"," + "\"Sizes\": [ { \"Size\": \"Large\", \"Price\": 20.00 }, { \"Size\": \"Medium\", \"Price\": 11.00 }, { \"Size\": \"Small\", \"Price\": 5.00 } ], \"Colors\": [ \"Black\", \"White\" ]}";
 
 	@Before
 	public void setup() throws Exception {
 		System.out.println("*** Starting ExtractJSONField tests. ***");
 		testFn = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec("com.intel.pig.udf.eval.ExtractJSONField");
+				.instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.ExtractJSONField");
 		System.out.println(testJson);
 	}
 

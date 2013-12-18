@@ -43,7 +43,8 @@ public class TestFlattenAsGBString {
 	public void setup() throws Exception {
 		System.out.println("*** Starting FlattenAsGBString tests. ***");
 		flattenUdf = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec("com.intel.pig.udf.eval.FlattenAsGBString()");
+				.instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.FlattenAsGBString()");
 	}
 
 	@Test

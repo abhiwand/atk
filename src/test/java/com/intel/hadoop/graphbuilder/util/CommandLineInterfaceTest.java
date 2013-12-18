@@ -46,22 +46,27 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
 import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
-import com.intel.hadoop.graphbuilder.sampleapplications.TableToTextGraph;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(GraphBuilderExit.class)
 public class CommandLineInterfaceTest {
     private final static int MAX_RANDOM_RETRIES = 10;
 
-    private final static String configFile = System.getProperty("user.dir") + "/resources/test/graphbuilder.xml";
-    private final static String outputPath = System.getProperty("user.dir") + "/resources/test/output";
-    private static String[] haddopGenericOptionsExample1 = {"-conf", configFile, "-Dtest=test"};
-    private static String[] haddopGenericOptionsExample2 = {"-conf", configFile, "-D", "test=test"};
+    private final static String configFile = System.getProperty("user.dir") +
+            "/resources/test/graphbuilder.xml";
+    private final static String outputPath = System.getProperty("user.dir") +
+            "/resources/test/output";
+    private static String[] haddopGenericOptionsExample1
+            = {"-conf", configFile, "-Dtest=test"};
+    private static String[] haddopGenericOptionsExample2
+            = {"-conf", configFile, "-D", "test=test"};
     private CommandLineInterface spiedCLI;
     private Options options;
-    private Option optionOne =  OptionBuilder.withLongOpt("one").withDescription("sample option one").hasArgs()
+    private Option optionOne = OptionBuilder.withLongOpt("one")
+            .withDescription("sample option one").hasArgs()
             .withArgName("Edge-Column-Name").create("1");
-    private Option optionTwo = OptionBuilder.withLongOpt("two").withDescription("sample option two").hasArgs().isRequired()
+    private Option optionTwo = OptionBuilder.withLongOpt("two")
+            .withDescription("sample option two").hasArgs().isRequired()
             .withArgName("Edge-Column-Name").create("2");
 
 
@@ -85,7 +90,9 @@ public class CommandLineInterfaceTest {
 
         //stub out the exit call so our test keep running
         PowerMockito.doNothing().when(GraphBuilderExit.class,
-                method(GraphBuilderExit.class, "graphbuilderExitNoException", StatusCode.class))
+                method(GraphBuilderExit.class,
+                        "graphbuilderExitNoException",
+                        StatusCode.class))
                 .withArguments(any(StatusCode.class));
 
         //stub out the show help call to keep crud off the command line
@@ -119,30 +126,19 @@ public class CommandLineInterfaceTest {
     }
 
     @Test
-    public void test_TableToTextGraph_cli_options() throws Exception {
-
-        //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <>();
-        cliArgs.put("t", "employeeData");
-        cliArgs.put("v", "cf:name=cf:age,cf:dept");
-        cliArgs.put("e", "cf:name,cf:dept,worksAt");
-        cliArgs.put("F", "");
-        cliArgs.put("d", "directed edge");
-        cliArgs.put("o", outputPath);
-        cliArgs.put("h", "");
-        cliArgs.put("s", "");
-
-        testDemoApp(TableToTextGraph.class, cliArgs);
-    }
-
-    @Test
     public void test_hadoop_generic_options_are_parsed(){
         spiedCLI.checkCli(haddopGenericOptionsExample1);
 
         testRemainingHadoopArgs(0, spiedCLI);
 
-        assertEquals("verify parsed conf option", configFile, spiedCLI.getGenericOptionsParser().getCommandLine().getOptionValue("conf"));
-        assertEquals("verify parsed single option", "test=test", spiedCLI.getGenericOptionsParser().getCommandLine().getOptionValue("D"));
+        assertEquals("verify parsed conf option",
+                configFile,
+                spiedCLI.getGenericOptionsParser()
+                        .getCommandLine().getOptionValue("conf"));
+        assertEquals("verify parsed single option",
+                "test=test",
+                spiedCLI.getGenericOptionsParser()
+                        .getCommandLine().getOptionValue("D"));
 
     }
 
@@ -152,16 +148,25 @@ public class CommandLineInterfaceTest {
 
         testRemainingHadoopArgs(0, spiedCLI);
 
-        assertEquals("verify parsed conf option", configFile, spiedCLI.getGenericOptionsParser().getCommandLine().getOptionValue("conf"));
-        assertEquals("verify parsed single option", "test=test", spiedCLI.getGenericOptionsParser().getCommandLine().getOptionValue("D"));
+        assertEquals("verify parsed conf option",
+                configFile,
+                spiedCLI.getGenericOptionsParser()
+                        .getCommandLine().getOptionValue("conf"));
+        assertEquals("verify parsed single option",
+                "test=test",
+                spiedCLI.getGenericOptionsParser()
+                        .getCommandLine().getOptionValue("D"));
     }
 
     @Test
     public void test_custom_option_parsing(){
         spiedCLI.setOptions(options);
 
-        String[] customArgs = {"-one", "we parsed -one", "-two", "we parsed -two"};
-        String[] cmdArgs = (String[]) ArrayUtils.addAll(haddopGenericOptionsExample1, customArgs);
+        String[] customArgs
+                = {"-one", "we parsed -one", "-two", "we parsed -two"};
+        String[] cmdArgs
+                = (String[]) ArrayUtils.addAll(haddopGenericOptionsExample1,
+                                               customArgs);
         spiedCLI.checkCli(cmdArgs);
 
         testRemainingHadoopArgs(4, spiedCLI);

@@ -42,13 +42,15 @@ public class TestGetPropGraphElementID {
     public void setup() throws Exception {
         System.out.println("*** Starting GetPropGraphElementID tests. ***");
         graphElmentIDUDF = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec("com.intel.pig.udf.eval.GetPropGraphElementID");
+                .instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.GetPropGraphElementID");
     }
 
     @Test
     public void runTests() throws IOException {
 
-        SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids serializedGraphElement
+                = new SerializedGraphElementStringTypeVids();
 
         Vertex<StringType> vertex = new Vertex<StringType>(new StringType(
                 "test_vertex"));
@@ -63,7 +65,8 @@ public class TestGetPropGraphElementID {
 
         assertNotNull("Returned ID is null", result);
 
-        assertEquals("Returned ID should have been ==VERTEX " + vertex.getId().toString(), result,
+        assertEquals("Returned ID should have been ==VERTEX " +
+                vertex.getId().toString(), result,
                 "VERTEX "+vertex.getId().toString());
 
 
@@ -80,7 +83,8 @@ public class TestGetPropGraphElementID {
 
         assertNotNull("Returned ID is null", result);
 
-        assertEquals("Returned ID should have been ==EDGE " + edge.getId().toString(), result,
+        assertEquals("Returned ID should have been ==EDGE " +
+                edge.getId().toString(), result,
                 "EDGE " + edge.getId().toString());
     }
 

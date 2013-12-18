@@ -120,8 +120,10 @@ public class TripleTest {
 
     @Test
     public void testEqualsAndHash() throws Exception {
-        Triple<Object, Object, Object> tripNulls1 = new Triple(null, null, null);
-        Triple<Object, Object, Object> tripNulls2 = new Triple(null, null, null);
+        Triple<Object, Object, Object> tripNulls1 =
+                new Triple(null, null, null);
+        Triple<Object, Object, Object> tripNulls2 =
+                new Triple(null, null, null);
 
         assert(tripNulls1.equals(tripNulls2));
 
@@ -129,11 +131,16 @@ public class TripleTest {
         Integer intObj2      = new Integer(0);
         Integer intDifferent = new Integer(1);
 
-        Triple<Integer, Integer, Integer> tripInts0  = new Triple(intObj1, intObj1, intObj1);
-        Triple<Integer, Integer, Integer> tripInts0a = new Triple(intObj2, intObj2, intObj2);
-        Triple<Integer, Integer, Integer> tripInts1  = new Triple(intDifferent, intObj1, intObj1);
-        Triple<Integer, Integer, Integer> tripInts2  = new Triple(intObj1, intDifferent, intObj1);
-        Triple<Integer, Integer, Integer> tripInts3  = new Triple(intObj1, intObj1, intDifferent);
+        Triple<Integer, Integer, Integer> tripInts0  =
+                new Triple(intObj1, intObj1, intObj1);
+        Triple<Integer, Integer, Integer> tripInts0a =
+                new Triple(intObj2, intObj2, intObj2);
+        Triple<Integer, Integer, Integer> tripInts1  =
+                new Triple(intDifferent, intObj1, intObj1);
+        Triple<Integer, Integer, Integer> tripInts2  =
+                new Triple(intObj1, intDifferent, intObj1);
+        Triple<Integer, Integer, Integer> tripInts3  =
+                new Triple(intObj1, intObj1, intDifferent);
 
         assert(tripInts0.equals(tripInts0a));
         assertFalse(tripInts0.equals((tripInts1)));
@@ -152,6 +159,7 @@ public class TripleTest {
         Triple<Object, Object, Object>  tNulls = new Triple(null, null, null);
 
         assert(t.toString().compareTo(new String("(7, 8, 9)")) == 0);
-        assert(tNulls.toString().compareTo(new String("(null, null, null)")) == 0);
+        assert(tNulls.toString().compareTo(new String("(null, null, null)"))
+                == 0);
     }
 }

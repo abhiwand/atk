@@ -53,21 +53,33 @@ public class TestCreatePropGraphElements
     public void setup() throws Exception {
         System.out.println("*** Starting CreatePropGraphElements tests. ***");
         createPropGraphElementsUDF = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec(new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
-                        "-v name=age,managerId -e name,department,worksAt,tenure"));
+                .instantiateFuncFromSpec(
+                new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
+                "-v name=age,managerId -e name,department,worksAt,tenure"));
     }
 
     @Test
     public void runTests() throws IOException {
 
-        Schema.FieldSchema idField = new Schema.FieldSchema("id", DataType.INTEGER);
-        Schema.FieldSchema nameField = new Schema.FieldSchema("name", DataType.CHARARRAY);
-        Schema.FieldSchema ageField = new Schema.FieldSchema("age", DataType.INTEGER);
-        Schema.FieldSchema managerIdField = new Schema.FieldSchema("managerId", DataType.CHARARRAY);
-        Schema.FieldSchema tenureField = new Schema.FieldSchema("tenure", DataType.CHARARRAY);
-        Schema.FieldSchema departmentField = new Schema.FieldSchema("department", DataType.CHARARRAY);
+        Schema.FieldSchema idField
+                = new Schema.FieldSchema("id", DataType.INTEGER);
+        Schema.FieldSchema nameField
+                = new Schema.FieldSchema("name", DataType.CHARARRAY);
+        Schema.FieldSchema ageField
+                = new Schema.FieldSchema("age", DataType.INTEGER);
+        Schema.FieldSchema managerIdField
+                = new Schema.FieldSchema("managerId", DataType.CHARARRAY);
+        Schema.FieldSchema tenureField
+                = new Schema.FieldSchema("tenure", DataType.CHARARRAY);
+        Schema.FieldSchema departmentField
+                = new Schema.FieldSchema("department", DataType.CHARARRAY);
 
-        List fsList = asList(idField, nameField, ageField, managerIdField, tenureField, departmentField);
+        List fsList = asList(idField,
+                             nameField,
+                             ageField,
+                             managerIdField,
+                             tenureField,
+                             departmentField);
 
         Schema schema = new Schema(fsList);
 
@@ -98,18 +110,24 @@ public class TestCreatePropGraphElements
         Iterator<Tuple> iter = result.iterator();
 
         while (iter.hasNext()) {
-            PropertyGraphElementTuple pget = (PropertyGraphElementTuple) iter.next();
+            PropertyGraphElementTuple pget
+                    = (PropertyGraphElementTuple) iter.next();
 
-            GraphElement element = ((SerializedGraphElement) (pget.get(0))).graphElement();
-            elements.add(element);
+            GraphElement element
+                    = ((SerializedGraphElement) (pget.get(0))).graphElement();
+                            elements.add(element);
         }
 
         PropertyMap properties = new PropertyMap();
         properties.setProperty("age", new IntType(age));
         properties.setProperty("managerId", new StringType(managerId));
-        Vertex<StringType> vertex = new Vertex(new StringType("Heywood Y. Buzzov"), (StringType) null, properties);
+        Vertex<StringType> vertex
+                = new Vertex(new StringType("Heywood Y. Buzzov"),
+                             (StringType) null,
+                             properties);
 
-        // GAO- todo : this code requires TRIB-1260 be integrated in order to work correctly
+        // GAO- todo : this code requires TRIB-1260 be integrated
+        // in order to work correctly
         /*
         boolean foundVertex = false;
         for (GraphElement ge : elements) {
