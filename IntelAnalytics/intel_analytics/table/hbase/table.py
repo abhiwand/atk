@@ -33,13 +33,13 @@ from schema import ETLSchema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
-
+from intel_analytics.report import MapOnlyProgressReportStrategy
 
 try:
-    from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
+    from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
 except ImportError, e:
-    from intel_analytics.report import PrintReportStrategy as progress_report_strategy
-        
+    from intel_analytics.report import PrintReportStrategy as etl_report_strategy
+
 #for quick testing
 try:
     local_run = config['local_run'].lower().strip() == 'true'
@@ -144,7 +144,7 @@ class HBaseTable(object):
 
         logger.debug(args)
 
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
 
         if return_code:
             raise HBaseTableException('Could not apply transformation')
@@ -159,27 +159,20 @@ class HBaseTable(object):
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
-    def copy(self, new_table_name):
+    def copy(self, new_table_name, feature_names, feature_types):
         script_path = os.path.join(etl_scripts_path, 'pig_copy_table.py')
         args = _get_pig_args()
-
-        etl_schema = ETLSchema()
-        etl_schema.load_schema(self.table_name)
-        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
-        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
         args += [script_path,
                  '-i', self.table_name,
                  '-o', new_table_name,
-                 '-n', feature_names_as_str,
-                 '-t', feature_types_as_str]
+                 '-n', feature_names,
+                 '-t', feature_types]
 
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy = etl_report_strategy())
         if return_code:
             raise HBaseTableException('Could not copy table')
 
-        # save the schema for the new table
-        etl_schema.save_schema(new_table_name)
         return HBaseTable(new_table_name, self.file_name)
 
 
@@ -197,7 +190,7 @@ class HBaseTable(object):
                  '-f', re.sub(':', '', global_config['hbase_column_family'])
                  ]
 
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=MapOnlyProgressReportStrategy())
         if return_code:
             raise HBaseTableException('Could not drop columns from the table')
 
@@ -323,7 +316,7 @@ class HBaseTable(object):
 
         logger.debug(args)
         
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
@@ -391,6 +384,23 @@ class HBaseFrameBuilder(FrameBuilder):
     #-------------------------------------------------------------------------
     # Create BigDataFrames
     #-------------------------------------------------------------------------
+    def copy_data_frame(self, data_frame, new_frame_name, overwrite=False):
+
+        new_table_name = _create_table_name(new_frame_name, overwrite)
+        # need to delete/create output table to write the transformed features
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(data_frame._original_table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+        new_table = data_frame._table.copy(new_table_name, feature_names_as_str, feature_types_as_str)
+        etl_schema.save_schema(new_table_name)
+        self._register_table_name(new_frame_name, new_table_name, overwrite)
+        return BigDataFrame(new_frame_name, new_table)
+
     def build_from_csv(self, frame_name, file_name, schema,
                        skip_header=False, overwrite=False):
         table_name = _create_table_name(frame_name, overwrite)
@@ -418,7 +428,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
 
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
         
         if return_code:
             raise Exception('Could not import CSV file')
@@ -454,7 +464,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
             
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
         
         if return_code:
             raise Exception('Could not import JSON file')
