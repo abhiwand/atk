@@ -19,6 +19,7 @@
 package com.intel.pig.udf.eval;
 
 import com.hp.hpl.jena.rdf.model.*;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
@@ -88,9 +89,8 @@ public class RDF extends EvalFunc<DataBag> {
 
 			// create a Resource from the edge
 			resource = RDFUtils.createResourceFromEdge(rdfNamespace,
-					graphElement.getSrc().toString(), graphElement.getDst()
-							.toString(), graphElement.getLabel().toString(),
-					graphElement.getProperties());
+                    (Edge) graphElement);
+
 		} else if (graphElement.isVertex()) {
 
 			// create a Resource from the vertex

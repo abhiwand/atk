@@ -20,14 +20,11 @@ package com.intel.hadoop.graphbuilder.util;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.*;
-import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.Writable;
 
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -103,13 +100,17 @@ public class RDFUtils {
 	}
 
 	public static Resource createResourceFromEdge(String rdfNamespace,
-			String source, String target, String edgeLabel,
-			PropertyMap edgePropertyMap) {
+                                                  Edge edge) {
+	//		String source, String target, String edgeLabel,
+	//		PropertyMap edgePropertyMap) {
 
 		// Namespace can be DB, DC, LOCMAP, ONTDOC, ONTEVENTS, OWL, OWL2,
         // RDF, RDFS, RDFSYNTAX, RSS, VCARD or XSD
 
-        String namespace  = null;
+        String edgeLabel          = edge.getLabel().toString();
+        String sourceVertex       = edge.getSrc().getName().toString();
+        String targetVertex       = edge.getDst().getName().toString();
+		String namespace          = null;
         String edgeType = null;
 
         // Each edge type should be associated with a namespace
@@ -135,8 +136,10 @@ public class RDFUtils {
         // create the edge triple
         // edge properties are ignored in this release
 
-        Resource sourceVertexRdf = model.createResource(namespace + source);
-        Resource targetVertexRdf = model.createResource(namespace +  target);
+        Resource sourceVertexRdf = model.createResource(namespace +
+                sourceVertex);
+        Resource targetVertexRdf = model.createResource(namespace +
+                targetVertex);
         Property edgeRDFLabel = model.createProperty(namespace, edgeType);
 
         sourceVertexRdf.addProperty(edgeRDFLabel, targetVertexRdf);
