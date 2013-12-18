@@ -146,12 +146,8 @@ class HbaseTableTest(unittest.TestCase):
         self.assertRaises(HBaseTableException, table.transform, "random_column", "new_col1", "something random")
 
     @patch('intel_analytics.table.hbase.table.call')
-    @patch('intel_analytics.table.hbase.table.ETLSchema')
-    def test_copy_table(self, etl_schema_class, call_method):
+    def test_copy_table(self, call_method):
         result_holder = {}
-        mock_etl_obj = self.create_mock_etl_object(result_holder)
-
-        etl_schema_class.return_value = mock_etl_obj
 
         def call_side_effect(arg, report_strategy):
             result_holder["call_args"] = arg
@@ -163,20 +159,15 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         new_table_name = "test_output_table"
-        new_table = table.copy(new_table_name)
+        new_table = table.copy(new_table_name, 'f1,f2,f3', 't1,t2,t3')
         self.assertEqual(new_table.table_name, new_table_name)
-        # make sure it is saving schema for the new table
-        self.assertEqual(result_holder["table_name"], new_table_name)
-        mock_etl_obj.save_schema.assert_called_once_with(new_table_name)
-
         # make sure the original table is not affected at all
         self.assertEqual(table_name, table.table_name)
-
         # check call arguments
         self.assertEqual('test_table', result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
         self.assertEqual(new_table_name, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
-        self.assertEqual(",".join(mock_etl_obj.feature_names), result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
-        self.assertEqual(",".join(mock_etl_obj.feature_types), result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
+        self.assertEqual('f1,f2,f3', result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
+        self.assertEqual('t1,t2,t3', result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
 
     @patch('intel_analytics.table.hbase.table.call')
     @patch('intel_analytics.table.hbase.table.ETLSchema')
