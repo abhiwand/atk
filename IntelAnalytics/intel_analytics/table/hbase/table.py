@@ -197,6 +197,7 @@ class HBaseTable(object):
         for orderedData in first_N_rows:
            data = []
            for col in column_array:
+               col = config['hbase_column_family'] + col
                if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
                    data.append(orderedData[col])
                else:
@@ -221,6 +222,7 @@ class HBaseTable(object):
         for orderedData in first_N_rows:
            html_table+='<tr>'
            for col in column_array:
+               col = config['hbase_column_family'] + col
                if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
                    html_table+=("<td>%s</td>" % (orderedData[col]))
                else:
