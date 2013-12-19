@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Builtin functions that can be applied with the transform method on BigDataFrames.
+The Builtin functions that can be applied with the transform method on BigDataFrames.
 """
 class EvalFunctions:
     """String functions
@@ -53,7 +53,7 @@ class EvalFunctions:
         LOG10=1002
         POW=1003
         EXP=1004
-        STND=1005 #STND: standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization)
+        STND=1005 #STND: Standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization).
         
     class Json:
         EXTRACT_FIELD=2000

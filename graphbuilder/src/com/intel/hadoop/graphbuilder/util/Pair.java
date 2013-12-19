@@ -23,16 +23,16 @@ package com.intel.hadoop.graphbuilder.util;
  * A class that represents a pair of objects.
  * 
  * 
- * @param <L>
- * @param <R>
+ * @param {@code <L>}
+ * @param {@code <R>}
  */
 public class Pair<L, R> {
 
   /**
    * Constructs a pair of objects with left = l and right = r.
    * 
-   * @param l
-   * @param r
+   * @param {@code l}
+   * @param {@code r}
    */
   public Pair(L l, R r) {
     this.l = l;
@@ -54,14 +54,14 @@ public class Pair<L, R> {
   }
 
   /**
-   * @param l   The new value for the left value.
+   * @param {@code l}   The new value for the left value.
    */
   public void setL(L l) {
     this.l = l;
   }
 
   /**
-   * @param r   The new value for the right value.
+   * @param {@code r}   The new value for the right value.
    */
   public void setR(R r) {
     this.r = r;

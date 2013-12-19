@@ -37,7 +37,7 @@ __all__ = ['get_frame_builder',
 
 class FrameBuilderFactory(object):
     """
-    Abstract class for the various frame builder factories (i.e. one for Hbase)
+    An abstract class for the various frame builder factories (that is, one for Hbase).
     """
     __metaclass__ = abc.ABCMeta
 
@@ -60,72 +60,76 @@ class FrameBuilderFactory(object):
 
 class FrameBuilder(object):
     """
-   Abstract class for the various table builders to inherit
+   An abstract class for the various table builders to inherit.
    """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def build_from_csv(self, frame_name, file_name, schema, skip_header=False):
         """
-        Reads CSV (comma-separated-value) file and loads into a table
+        Reads a CSV (comma-separated-value) file and loads it into a table.
 
         Parameters
         ----------
-        filename : string
-            path to file
-        schema : string
+        C{filename} : String
+            The path to the CSV file.
+        C{schema} : String
             TODO:
 
-        TODO: others parameters for the csv parser
+        TODO: Other parameters for the csv parser.
 
         Returns
         -------
-        frame : BigDataFrame
+        C{frame} : C{BigDataFrame}
         """
         pass
 
     @abc.abstractmethod
     def build_from_json(self, frame_name, file_name):
         """
-        Reads JSON (www.json.org) file and loads into a table
+        Reads a JSON (www.json.org) file and loads it into a table.
 
         Parameters
         ----------
-        filename : string
-            path to file
+        C{filename} : String
+            The path to the JSON file.
 
-        TODO: others parameters for the parser
+        TODO: Other parameters for the parser.
 
         Returns
         -------
-        frame : BigDataFrame
+        C{frame} : C{BigDataFrame}
         """
         pass
 
     @abc.abstractmethod
     def build_from_xml(self, frame_name, file_name, schema=None):
         """
-        Reads XML file and loads into a table
+        Reads an XML file and loads it into a table.
 
         Parameters
         ----------
-        filename : string
-            path to file
-        schema : string
+        C{filename} : String
+            The path to the XML file.
+        C{schema} : String
             TODO:
 
-        TODO: others parameters for the parser
+        TODO: Other parameters for the parser.
 
         Returns
         -------
-        frame : BigDataFrame
+        frame : C{BigDataFrame}
         """
         pass
 
 
 def get_frame_builder():
     """
+<<<<<<< HEAD
     Returns a frame_builder with which to create BigDataFrame objects
+=======
+    Returns a C{frame_builder} with which to create C{BigDataFrame} objects.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
     """
     factory_class = _get_frame_builder_factory_class()
     return factory_class.get_frame_builder()
@@ -166,9 +170,13 @@ class BigDataFrameException(Exception):
 
 class BigDataFrame(object):
     """
+<<<<<<< HEAD
     BigDataFrame
 
     Proxy for large 2D container to work with table data at scale
+=======
+    The C{BigDataFrame} is a proxy for a large 2D container to work with table data at scale.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
     """
 
     def __init__(self, name, table):
@@ -176,7 +184,7 @@ class BigDataFrame(object):
         (internal constructor)
         Parameters
         ----------
-        table : Table
+        C{table} : Table
         """
         #if not isinstance(table, Table):
         #    raise Exception("bad table given to Constructor")
@@ -187,7 +195,7 @@ class BigDataFrame(object):
 
         self.name = name
         self._table = table
-        #this holds the original table that we imported the data, will be used for understanding which features are derived or not
+        #This holds the original table from which we imported the data, will be used for understanding which features are derived or not.
         self._original_table_name = self._table.table_name
         self.source_file = self._table.file_name
         self.lineage=[]
@@ -217,16 +225,25 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         filename : String
             name of file
         include_header : Boolean
             whether to write the header as the first line
         include_schema : Boolean
             whether also write an schema file with same name
+=======
+        C{filename} : String   
+		    The name of the file.
+        C{include_header} : Boolean
+		    Whether to write the header as the first line.
+        C{include_schema} : Boolean
+		    Whether to also write a schema file with same name.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
-        # We'll create an HDFS folder and shard into files
+        # We'll create an HDFS folder and shard into files.
         # We'll provide a separate, explicit "Download" mechanism to go from
-        # HDFS (or S3) to client
+        # HDFS (or S3) to client.
         raise BigDataFrameException("Not implemented")
 
     def to_json(self, filename, include_schema=True):
@@ -235,10 +252,17 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         file : String
             name of snapshot file
         include_schema : Boolean
             whether also write an schema file with same name
+=======
+        C{file} : String
+		    The name of the snapshot file.
+        C{include_schema} : Boolean
+		    Whether to also write a schema file with same name.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
         #TODO: embed the schema in same file, similar to header?
         raise BigDataFrameException("Not implemented")
@@ -250,10 +274,17 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         file : String
             name of snapshot file
         include_schema : Boolean
             whether also write an schema file with same name
+=======
+        C{file} : String
+		    The name of a snapshot file.
+        C{include_schema} : Boolean
+		    Whether to also write a schema file with same name.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
         #TODO: use a JSON schema (or XML XSD or DTD?) --embed in the same
         #      file, similar to header?
@@ -262,12 +293,21 @@ class BigDataFrame(object):
     
     def sample_as_html(self, nRows=10):
         """
+<<<<<<< HEAD
         Get the nRows as an HTML table
 
         Parameters
         ----------
         nRows : int
             number of rows to retrieve as an HTML table
+=======
+        Gets the first C{nRows} as an HTML table.
+
+        Parameters
+        ----------
+        C{nRows} : int
+            The number of rows to retrieve in the HTML table.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
         return self._table.sample_as_html(nRows)
 
@@ -284,6 +324,7 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         other : DataFrame or list of Series/dict-like objects
         ignore_index : boolean, default False
             If True do not use the index labels. Useful for gluing together
@@ -296,11 +337,24 @@ class BigDataFrame(object):
         If a list of dict is passed and the keys are all contained in the
         DataFrame's index, the order of the columns in the resulting DataFrame
         will be unchanged
+=======
+        C{other} : C{DataFrame} or a list of Series/dict-like objects.
+        C{ignore_index} : Boolean, default False.
+		    If True, do not use the index labels. Useful for gluing together
+            record arrays.
+        C{verify_integrity} : Boolean, default False.
+		    If True, raises Exception on creating index with duplicates.
+
+        Notes
+        -----
+        If you pass a list of C{dict}, and the keys are all contained in the
+        C{DataFrame}'s index, the order of the columns in the resulting C{DataFrame}
+        will not hang.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
         Returns
         -------
-        appended : DataFrame
-
+        C{appended} : DataFrame
         """
         raise BigDataFrameException("Not implemented")
 
@@ -308,6 +362,7 @@ class BigDataFrame(object):
              sort=False):
         """
         (pandas)
+<<<<<<< HEAD
         Join columns with other DataFrame either on index or on a key
         column. Efficiently Join multiple DataFrame objects by index at once by
         passing a list.
@@ -337,15 +392,54 @@ class BigDataFrame(object):
         sort : boolean, default False
             Order result DataFrame lexicographically by the join key. If False,
             preserves the index order of the calling (left) DataFrame
+=======
+        Joins columns with another C{DataFrame}, either on the index or on a key column. 
+		
+		Efficiently Join multiple C{DataFrame} objects by index at once by passing a list.
 
-        Notes
+        Parameters
+        ----------
+        C{other} : C{DataFrame}, Series with name field set, or list of C{DataFrame}s.
+            The index should be similar to one of the columns when using this method.
+            If you pass a Series, you must set its name attribute, which will be
+            used as the column name in the resulting joined C{DataFrame}.
+        C{on} : A column name, tuple or list of column names, or array-like.
+            The column(s) to use for joining, otherwise join on the index. If you give 
+			multiple columns, the passed C{DataFrame} must have a C{MultiIndex}. You can
+            pass an array as the join key, if it is not already contained in the
+            calling C{DataFrame}. This is similar to an Excel VLOOKUP operation.
+        C{how} : {'left', 'right', 'outer', 'inner'}
+            How to handle indexes of the two objects. Default: 'left'
+            for joining on index, None, otherwise:
+            * C{left} : Use calling frame's index.
+            * C{right} : Use input frame's index.
+            * C{outer} : Form union of indexes.
+            * C{inner} : Use intersection of indexes.
+        C{lsuffix} : String
+		    The suffix to use from the left frame's overlapping columns.
+        C{rsuffix} : String
+		    The suffix to use from the right frame's overlapping columns.
+        C{sort} : Boolean, default False.
+            If True, orders the resulting DataFrame lexicographically by the join key. If False,
+            preserves the index order of the calling (left) DataFrame.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
+
+        
+		
+		
+	    Notes
         -----
+<<<<<<< HEAD
         on, lsuffix, and rsuffix options are not supported when passing a list
         of DataFrame objects
+=======
+        The on C{lsuffix} and C{rsuffix} options are not supported when passing a list
+        of C{DataFrame} objects.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
         Returns
         -------
-        joined : DataFrame
+        C{joined} : C{DataFrame}
         """
         raise BigDataFrameException("Not implemented")
 
@@ -354,14 +448,19 @@ class BigDataFrame(object):
               suffixes=('_x', '_y'), copy=True):
         """
         (pandas)
+<<<<<<< HEAD
         Merge DataFrame objects by performing a database-style join operation by
+=======
+        Merges C{DataFrame} objects by performing a database-style join operation by
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         columns or indexes.
 
-        If joining columns on columns, the DataFrame indexes *will be
+        If joining columns on columns, the C{DataFrame} indexes *will be
         ignored*. Otherwise if joining indexes on indexes or indexes on a
         column or columns, the index will be passed on.
 
         Parameters
+<<<<<<< HEAD
         ----------%s
         right : DataFrame
         how : {'left', 'right', 'outer', 'inner'}, default 'inner'
@@ -394,6 +493,41 @@ class BigDataFrame(object):
             side, respectively
         copy : boolean, default True
             If False, do not copy data unnecessarily
+=======
+        ----------
+        C{right} : C{DataFrame}
+        C{how} : {'left', 'right', 'outer', 'inner'}, default 'inner'
+            * C{left} : Use only keys from left frame (SQL: left outer join)
+            * C{right} : Use only keys from right frame (SQL: right outer join)
+            * C{outer} : Use union of keys from both frames (SQL: full outer join)
+            * C{inner} : Use intersection of keys from both frames (SQL: inner join)
+        C{on} : Label or list.
+            The field names to join on. Must be found in both C{DataFrames}. If 
+            C{on} is None and not merging on indexes, then it merges on the 
+            intersection of the columns by default.
+        C{left_on} : Label or list, or array-like.
+            The field names to join on in the left C{DataFrame}. Can be a vector or 
+            list of vectors of the length of the C{DataFrame} to use a particular 
+            vector as the join key instead of columns.
+        C{right_on} : Label or list, or array-like.
+            The field names to join on in the right C{DataFrame} or vector or list of 
+            vectors per left_on docs.
+        C{left_index} : Boolean, default False.
+            Use the index from the left C{DataFrame} as the join key(s). If it is a
+            C{MultiIndex), the number of keys in the other C{DataFrame} (either the
+            index or a number of columns) must match the number of levels.
+        C{right_index} : Boolean, default False
+            Use the index from the right C{DataFrame} as the join key(s). If it is a
+            C{MultiIndex}, the number of keys in the other DataFrame (either the
+            index or a number of columns) must match the number of levels.
+        C{sort} : Boolean, default False.
+            Sort the join keys lexicographically in the resulting DataFrame.
+        C{suffixes} : 2-length sequence (tuple, list, ...)
+            The suffix to apply to overlapping column names in the left and right
+            sides, respectively.
+        C{copy} : Boolean, default True
+            If False, do not copy data unnecessarily.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
         Examples
         --------
@@ -445,6 +579,7 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         column_name : String
             source column for the function
         new_column_name : String
@@ -453,6 +588,18 @@ class BigDataFrame(object):
             transformation to apply
         transformation_args: list
             the arguments for the transformation to apply
+=======
+        C{column_name} : String
+            The source column for the function.
+        C{new_column_name} : String
+            The name for the new column that will be created as a result of applying the transformation.
+        C{transformation} : enumeration
+            The transformation to apply.
+        C{keep_source_column} : Boolean
+            Whether to keep the given column in the output of the transformation.
+        C{transformation_args} : list
+            The arguments for the transformation to apply.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
         try:
             self._table.transform(column_name, new_column_name, transformation, transformation_args)
@@ -469,16 +616,26 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         column_name : String
             src column for the function
         func : function
             function to apply
         output_type: DataType
             data type of the output
+=======
+        C{column_name} : String
+            The source column for the function.
+        C{func} : function
+            The function to apply to the column.
+        C{output_type} : DataType
+            The data type of the output of the function.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
 
-        (pandas)
+        (pandas)::
     #def apply(self, func, axis=0, broadcast=False, raw=False, args=(), **kwds):
+<<<<<<< HEAD
         Applies function along input axis of DataFrame. Objects passed to
         functions are Series objects having index either the DataFrame's index
         (axis=0) or the columns (axis=1). Return type depends on whether passed
@@ -503,6 +660,32 @@ class BigDataFrame(object):
             Positional arguments to pass to function in addition to the
             array/series
         Additional keyword arguments will be passed as keywords to the function
+=======
+        Applies a function along the input axis of a DataFrame. The objects you 
+		can pass to these functions are Series objects having either the 
+		DataFrame's index (C{axis=0}) or the column's (C{axis=1}) as their index. \
+		The return type depends on whether your passed function aggregates or not.
+
+        Parameters
+        ----------
+        C{func} : function
+            The function to apply to each column.
+        C{axis} : C{{0, 1}}
+            0 : Apply function to each column.
+            1 : Apply function to each row.
+        C{broadcast} : Boolean, default False
+            For aggregation functions, return an object of same size with values
+            propagated.
+        C{raw} : Boolean, default False
+            If False, convert each row or column into a Series. If True, the
+            function you pass will receive C{ndarray} objects instead. If you 
+			are just applying a NumPy reduction function, this will achieve much
+            better performance.
+        C{args} : tuple
+            Positional arguments you can pass to the function in addition to the
+            array or series.
+        Pass additional keyword arguments as keywords to the function.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
         Examples
         --------
@@ -512,11 +695,15 @@ class BigDataFrame(object):
 
         See also
         --------
+<<<<<<< HEAD
         DataFrame.applymap: For elementwise operations
+=======
+        C{DataFrame.applymap}: For elementwise operations.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
         Returns
         -------
-        applied : Series or DataFrame
+        C{applied} : Series or DataFrame.
         """
         raise BigDataFrameException("Not implemented")
 
@@ -526,15 +713,25 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         column_name : String
             source column for the function
         func : function
             function to apply
         output_type: DataType
             data type of the output
+=======
+        C{column_name} : String
+            The source column for the function.
+        C{func} : function
+            The function to apply to the column.
+        C{output_type} : C{DataType}
+            The data type of the output of the function.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
-        (pandas frame.py)
+        (pandas frame.py)::
     #def applymap(self, func):
+<<<<<<< HEAD
         Apply a function to a DataFrame that is intended to operate
         elementwise, i.e. like doing map(func, series) for each series in the
         DataFrame
@@ -543,10 +740,20 @@ class BigDataFrame(object):
         ----------
         func : function
             Python function, returns a single value from a single value
+=======
+        Applies a function to a DataFrame that is intended to operate
+        elementwise, in other words, like doing C{map(func, series)} for 
+		each series in the C{DataFrame}.
+
+        Parameters
+        ----------
+        C{func} : function
+            A Python function, that returns a single value from a single value.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
         Returns
         -------
-        applied : DataFrame
+        C{applied} : C{DataFrame}
         """
         raise BigDataFrameException("Not implemented")
 
@@ -557,6 +764,7 @@ class BigDataFrame(object):
         """
         (from pandas/core/generic.py, NDFrame)
 
+<<<<<<< HEAD
         Group series using mapper (dict or key function, apply given function
         to group, return result as series) or by a series of columns
 
@@ -582,6 +790,32 @@ class BigDataFrame(object):
         squeeze : boolean, default False
             reduce the dimensionaility of the return type if possible, otherwise
             return a consistent type
+=======
+        Group series using a mapper (C{dict} or C{key} function, apply given 
+		function to the group, return result as series) or by a series of columns.
+
+        Parameters
+        ----------
+        C{by} : mapping function or list of functions, dict, Series, or tuple or list of column names.
+            The function (or list of functions) that you pass is called on each element of the object 
+			index to determine the groups. If you pass a dict or Series, the Series or dict VALUES 
+			will be used to determine the groups.
+        C{axis} : int, default 0
+        C{level} : int, level name, or sequence of such, default None.
+            If the axis is a MultiIndex (hierarchical), group by a particular
+            level or levels.
+        C{as_index} : Boolean, default True
+            For aggregated output, return the object with group labels as the
+            index. Only relevant for C{DataFrame} input. C{as_index=False} is
+            effectively "SQL-style" grouped output.
+        C{sort} : Boolean, default True
+            Sort group keys. You will get better performance by turning this off.
+        C{group_keys} : Boolean, default True
+            When calling apply, add group keys to the index to identify the pieces.
+        C{squeeze} : Boolean, default False
+            Reduce the dimensionaility of the return type if possible, otherwise
+            return a consistent type.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
         Examples
         --------
@@ -640,15 +874,20 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         n : int
             number of rows
             Returns
+=======
+        C{n} : int
+            The number of rows.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
 
         Returns
         -------
-        head : String
+        C{head} : String
         """
-        # for IPython, consider dumping 2D array (NDarray) for pretty-print
+        # For IPython, consider dumping 2D array (NDarray) for pretty-print.
 
 
         try:
@@ -665,7 +904,7 @@ class BigDataFrame(object):
             #
             #def __setitem__(self, column_name, value):
             #"""
-            #sets/insert the column name
+            #sets/inserts the column name
             #"""
             ## bdf['sqx'] = bdf['x'].apply(sq)
             #print "Not implemented"
@@ -717,11 +956,19 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         column_name : String
             name of column for the function
         func : function
             filter function evaluated at each cell in the given column; if
             result is true, row is dropped
+=======
+        C{column_name} : String
+            The name of the column for the function.
+        C{func} : function
+            The filter function evaluated at each cell in the given column. If
+            the result is true, the row is dropped.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
         raise BigDataFrameException("Not implemented")
 
@@ -733,9 +980,15 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         how : { 'any', 'all' }
             any : if any column has an NA value, drop row
             all : if all the columns have an NA value, drop row
+=======
+        C{how} : { 'any', 'all' }
+            C{any} : If any column has an NA value, drop that row.
+            C{all} : If all the columns have an NA value, drop that row.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
         # Currently we don't support threshold or subset so leave them out for the 0.5 release
         #         thresh : int
@@ -755,10 +1008,17 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         column_name : String
             name of column for the function
         value : Imputation
             the fill value
+=======
+        C{column_name} : String
+            The name of the column for the function.
+        C{value} : Imputation
+            The replacement value.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
 
         try:
@@ -775,10 +1035,17 @@ class BigDataFrame(object):
 
         Parameters
         ----------
+<<<<<<< HEAD
         column_name : String
             name of column for the function
         how : Imputation
             the imputation operation
+=======
+        C{column_name} : String
+            The name of column for the function.
+        C{how} : Imputation
+            The imputation operation to perform.
+>>>>>>> 5564618421cefb85d1d34e03f199405020548e56
         """
         # Imputation will be an enumeration of supported operations, like
         # Imputation.AVG or something

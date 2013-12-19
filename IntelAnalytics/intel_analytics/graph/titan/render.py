@@ -32,15 +32,15 @@ __all__ = ['render_radial', 'vertex_to_json', 'edge_to_json', 'traverse', 'set_d
             'get_name', 'set_format']
 
 def set_data(js, **kwargs):
-  """Updates the ['data'] dictionary on the JSON object"""
+  """Updates the ['data'] dictionary on the JSON object."""
   js['data'].update(kwargs)
 
 def set_name(js, name):
-  """Sets the ['name'] property on the JSON object"""
+  """Sets the ['name'] property on the JSON object."""
   js['name'] = name
     
 def get_name(js):
-  """Gets the ['name'] property on the JSON object"""
+  """Gets the ['name'] property on the JSON object."""
   return js['name']
     
 def get_data(js, name):
@@ -48,7 +48,7 @@ def get_data(js, name):
   return js['data'].get(name)
 
 def set_format(js, **kwargs):
-  """Sets formats in the ['data'] dictionary. Keyword arguments will appear
+  """Sets the format in the ['data'] dictionary. Keyword arguments will appear
      in the data dictionary with '$' prepended."""
   for (k,v) in kwargs.items():
     js['data']['$' + k] = v
@@ -58,18 +58,23 @@ def _true(x):
     return True
 
 def traverse(vertex, depth, vertex_filter = _true, edge_filter = _true):
-    """Traverses the out edges from the given vertex until the specified depth.
-       Returns a generator that yields (vertex,edgelist) pairs
+    """This method traverses the out edges from the given vertex to the specified depth.
+       Returns a generator that yields (vertex,edgelist) pairs.
        
-       Generates a node for each vertex that is reachable within *depth* steps.
+       Generates a node for each vertex that is reachable within the *depth* steps.
 
-       Required arguments:
-       vertex        -- the vertex from which to start the traversal
-       depth         -- how many 'hops' from the starting vertex should be included
-       vertex_filter -- filter function - if provided, this function will be used to filter
-                        out vertices for which the function returns False
-       edge_filter   -- filter out edges (and the vertices reachable from them) for which
-			the function returns False
+       Parameters
+	   ----------
+       vertex :
+           The vertex from which to start the traversal.
+       depth :
+	       The number of 'hops', include the starting vertex in the count.
+       vertex_filter :
+	       The filter function - if you use it, this function will be used to filter
+           out vertices for which the function returns False.
+       edge_filter :
+	       Filter out edges (and the vertices reachable from them) for which
+		   the function returns False.
     """
     todo = [(vertex, depth)]
     found = set()
@@ -85,15 +90,15 @@ def traverse(vertex, depth, vertex_filter = _true, edge_filter = _true):
 	yield (v,edges)
 
 def edge_to_json(edge):
-    """Convert a bulbs.Edge into JSON that can be consumed by the JavaScript InfoVis Toolkit"""
+    """Converts a bulbs.Edge into JSON that can be consumed by the JavaScript InfoVis Toolkit."""
     return {'nodeTo':edge.inV().eid, 'data': {'label':edge.label()}} 
 
 
 
 def vertex_to_json(vertex, edges, vertex_label = 'name', edge_formatter = edge_to_json):
-    """Convert a bulbs.Vertex into JSON that can be consumed by the JavaScript InfoVis Toolkit
+    """Converts a bulbs.Vertex into JSON that can be consumed by the JavaScript InfoVis Toolkit.
        
-       Generates a node with adjacencies for the given vertex
+       Generates a node with adjacencies for the given vertex.
     """
     node = {'id': vertex.eid, 
 		'name':vertex.data().get(vertex_label) or str(vertex.eid), 
@@ -117,27 +122,32 @@ def render_radial(vertex, depth = 1,
 			edge_filter = None,
 			vertex_formatter = vertex_to_json,
 			edge_formatter = edge_to_json):
-    """Renders the given bulbs.Vertex to an IPython notebook
+    """Renders the given bulbs.Vertex to an IPython notebook.
        
-       Traverses the out edges from the given vertex until the specified depth.
+       Traverses the outer edges from the given vertex until the specified depth.
        
-       Renders a node for each vertex that is reachable within *depth* steps.
+       Renders a node for each vertex that is reachable within the *depth* steps.
 
-       Required arguments:
-       vertex        -- the vertex from which to start the traversal
-       depth         -- how many 'hops' from the starting vertex should be included
-
-       Keyword arguments:
-       vertex_label     -- Which field from the vertex data() dictionary should be used for the vertex label
-       vertex_filter    -- filter function - if provided, this function will be used to filter
-                           out vertices for which the function returns False
-       edge_filter      -- filter out edges (and the vertices reachable from them) for which
-		   	   the function returns False
-       vertex_formatter -- Function to generate the JSON for each node. Defaults to vertex_to_json.
-       edge_formatter   -- Function to generate the JSON for each edge. Defaults to edge_to_json.
-       
+       Parameters
+	   ----------
+       vertex : 
+	       The vertex from which to start the traversal.
+       depth : 
+	       The number of 'hops', include the starting vertex in the count.
+       vertex_label : 
+	       Which field from the vertex data() dictionary should be used for the vertex label.
+       vertex_filter : 
+	       The filter function - if you provide it, this function will be used to filter
+           out vertices for which the function returns False.
+       edge_filter : 
+	       Filters out edges (and the vertices reachable from them) for which the function returns False.
+       vertex_formatter : 
+	       Generates the JSON for each node. Defaults to vertex_to_json.
+       edge_formatter : 
+           Generates the JSON for each edge. Defaults to edge_to_json.
     """
-    height = min(1000, 200 + (depth * 100))
+    
+	height = min(1000, 200 + (depth * 100))
     edge_filter = edge_filter or _true
     vertex_filter = vertex_filter or _true
     nodes = traverse(vertex, depth, edge_filter = edge_filter, vertex_filter = vertex_filter)
@@ -160,7 +170,7 @@ def _render_json(nodes,height):
 	}
 	"""))
 
-	# most of the following JavaScript code from the the InfoVis Toolkit demo page for radial graphs:
+	# Most of the following JavaScript code comes from the the InfoVis Toolkit demo page for radial graphs:
         # http://philogb.github.io/jit/static/v20/Jit/Examples/RGraph/example1.html
 	display(Javascript("""
 		var labelType, useGradients, nativeTextSupport, animate;
@@ -173,7 +183,7 @@ def _render_json(nodes,height):
       textSupport = nativeCanvasSupport 
         && (typeof document.createElement('canvas').getContext('2d').fillText == 'function');
   //I'm setting this based on the fact that ExCanvas provides text support for IE
-  //and that as of today iPhone/iPad current text support is lame
+  //and that as of today iPhone/iPad current text support is not good enough.
   labelType = (!nativeCanvasSupport || (textSupport && !iStuff))? 'Native' : 'HTML';
   nativeTextSupport = labelType == 'Native';
   useGradients = nativeCanvasSupport;
@@ -251,9 +261,9 @@ function init(){
             };
         },
     });
-    //load JSON data
+    //Load JSON data.
     rgraph.loadJSON(json);
-    //trigger small animation
+    //Trigger small animation.
     rgraph.graph.eachNode(function(n) {
       var pos = n.getPos();
       pos.setc(-200, -200);
@@ -263,8 +273,8 @@ function init(){
       modes:['polar'],
       duration: 2000
     });
-    //end
-    //append information about the root relations in the right column
+    //End
+    //Append information about the root relations in the right column.
     //$jit.id('inner-details').innerHTML = rgraph.graph.getNode(rgraph.root).data.relation;
 }
 

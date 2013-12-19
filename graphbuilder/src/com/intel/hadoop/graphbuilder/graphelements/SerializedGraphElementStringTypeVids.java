@@ -23,15 +23,15 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Serialized form of GraphElement class that uses StringType vertex IDs
+ * Serialized form of the {@code GraphElement} class that uses {@code StringType} vertex IDs.
  */
 
 public class SerializedGraphElementStringTypeVids
         extends SerializedGraphElement<StringType> {
 
     /**
-     * Allocate a new vertex ID.
-     * @return  a new StringType object
+     * Allocates a new vertex ID.
+     * @return  A new {@code StringType} object.
      *
      */
 
@@ -41,9 +41,9 @@ public class SerializedGraphElementStringTypeVids
 
     /**
      * The compare function to enable key comparisons for
-     * WritableComparable child classes
-     * @param o
-     * @return -1 if less than o, 0 if equal, 1 otherwise
+     * {@code WritableComparable} child classes.
+     * @param {@code o}
+     * @return -1 if less than o, 0 if equal to o, 1 if otherwise.
      */
     public int compareTo(SerializedGraphElementStringTypeVids o) {
         if (this.graphElement() == null && o.graphElement() == null) {

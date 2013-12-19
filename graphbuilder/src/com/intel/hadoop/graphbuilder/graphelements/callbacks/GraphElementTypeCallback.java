@@ -29,12 +29,12 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  * have to worry about weather your vertex or an edge has much.
  * <p/>
  * <P><b>With interface</b><br />
- * SerializedGraphElement.graphElement().getType()
+ * {@code SerializedGraphElement.graphElement().getType()}
  * <b>without interface</b>
- * ((Edge)SerializedGraphElement.graphElement()).getType()
+ * {@code ((Edge)SerializedGraphElement.graphElement()).getType()}
  * </p>
  * <p/>
- * <p>The interface gets called from GraphElement.typeCallback</p>
+ * <p>The interface gets called from {@code GraphElement.typeCallback}.</p>
  * <pre>
  * <code>
  *     public  <T> T typeCallback(GraphElementTypeCallback graphElementTypeCallback,

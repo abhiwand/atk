@@ -31,8 +31,9 @@ from intel_analytics.config import global_config as config
 
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 
-#If the INTEL_ANALYTICS_ETL_RUN_LOCAL env. variable is set, run in local mode
-#useful when running the validation tests, which take quite a lot of time if not run in local mode
+#If the INTEL_ANALYTICS_ETL_RUN_LOCAL env. variable is set, run in local mode.
+#Useful when running the validation tests, which take quite a lot of time if 
+#not run in local mode.
 should_run_local_mode = False
 try:
     value = os.environ["INTEL_ANALYTICS_ETL_RUN_LOCAL"]
@@ -50,7 +51,8 @@ def main(argv):
     cmd_line_args = parser.parse_args()
     print cmd_line_args
 
-    # need to delete/create output table so that we can write the transformed features
+    # Need to delete/create output table so that we can write the transformed 
+	#features.
     with ETLHBaseClient() as hbase_client:
         hbase_client.drop_create_table(cmd_line_args.output,
                                        [config['hbase_column_family']])

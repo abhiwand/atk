@@ -29,9 +29,9 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Serialized wrapper class for {@code GraphElement}
+ * The serialized wrapper class for {@code GraphElement}.
  *
- * @param <VidType>
+ * @param {@code <VidType>}  The vertex ID type.
  * @see GraphElement
  */
 
@@ -42,7 +42,7 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
     private GraphElement graphElement;
 
     /**
-     *  Allocates new object. Wrapped {@code GraphElement} is initialized to {@code null}
+     *  Allocates new object. The wrapped {@code GraphElement} is initialized to {@code null}.
      */
     public SerializedGraphElement() {
         this.graphElement = null;
@@ -53,15 +53,15 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
     }
 
     /**
-     * Allocate a new vertex ID object.
-     * @return new object of type {@code VidType}
+     * Allocates a new vertex ID object.
+     * @return  A new object of type {@code VidType}.
      */
     public abstract VidType createVid();
 
     /**
-     * Passes in a graphElement to be wrapped.
+     * Passes in a {@code graphElement} to be wrapped.
      *
-     * @param graphElement
+     * @param {@code graphElement}  The {@code graphElement} to be wrapped.
      */
     public void init(GraphElement graphElement) {
 
@@ -70,7 +70,7 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
 
 
     /**
-     * @return the base GraphElement
+     * @return  The base {@code GraphElement}.
      */
 
     public GraphElement graphElement() {
@@ -80,8 +80,8 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
     }
 
     /**
-     * Read the SerializedGraphElement from an input stream.
-     * @param input
+     * Reads the {@code SerializedGraphElement} from an input stream.
+     * @param {@code input}  The input stream.
      * @throws IOException
      */
     @Override
@@ -130,8 +130,8 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
     }
 
     /**
-     * Write the SerializedGraphElement to an output stream.
-     * @param output
+     * Writes the {@code SerializedGraphElement} to an output stream.
+     * @param {@code output}  The output stream.
      * @throws IOException
      */
     @Override

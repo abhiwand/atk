@@ -33,7 +33,8 @@ import java.io.IOException;
 import java.util.Hashtable;
 
 /**
- * simple interface for writing the merged edges and vertices
+ * This class provides a simple interface for writing the merged edges 
+ * and vertices.
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter
  * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphElementWriter

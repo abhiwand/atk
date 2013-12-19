@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Titan-base Giraph Machine Learning.
+Titan-based Giraph Machine Learning.
 """
 from intel_analytics.subproc import call
 from intel_analytics.config import global_config, get_time_str
@@ -59,7 +59,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                             curve_title,
                             curve_ylabel):
         """
-        Plot progress curve for algorithms
+        Plots progress curves for algorithms.
         """
         fig, axes = plt.subplots()
         axes.plot(data_x, data_y, 'b')
@@ -76,7 +76,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                             data_t,
                             curve_title):
         """
-        Plot learning curve for algorithms
+        Plots learning curves for algorithms.
         """
         fig = plt.figure()
         axes1 = fig.add_axes([0.1, 0.1, 0.8, 0.8]) #left,bottom,width,height
@@ -107,7 +107,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
     def del_old_output(self, output_path):
         """
-        delete old output directory if already exists
+        Deletes the old output directory if it exists.
         """
         del_cmd = 'if hadoop fs -test -e ' + output_path + \
                          '; then hadoop fs -rmr -skipTrash ' + output_path + '; fi'
@@ -115,7 +115,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
     def get_report(self, output_path, file_name, time_str):
         """
-        get learning curve/convergence progress report
+        Gets the learning curve or convergence progress report.
         """
         report_file = global_config['giraph_report_dir'] + '/' + self._table_name + time_str + '_report.txt'
         cmd = 'hadoop fs -get ' + output_path + '/' + file_name + ' ' + report_file
@@ -132,29 +132,44 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                     smoothing=global_config['giraph_belief_propagation_smoothing'],
                     anchor_threshold=global_config['giraph_belief_propagation_anchor_threshold']):
         """
-        Loopy belief propagation on MRF
+        Loopy belief propagation on MRF.
 
+		This algorithm was originally designed for acyclic graphical models, 
+		then it was found that the Belief Propagation algorithm can be used 
+		in general graphs. The algorithm is then sometimes called "loopy" 
+		belief propagation, because graphs typically contain cycles, or loops. 
+
+        In Giraph, we run the algorithm in iterations until it converges.
+		
         Parameters
         ----------
-        input_vertex_property_list : vertex properties which contains prior vertex value
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        input_edge_property_list: edge properties which contains input edge value
-                                  if more than one edge property is used,
-                                  expect it is a comma separated string list.
-        input_edge_label: edge label
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        max_supersteps : number of super steps to run in Giraph
-        smoothing: the Ising smoothing parameter
-        convergence_threshold: the convergence threshold
-        anchor_threshold: the anchor threshold [0, 1].
-                          Vertices whose normalized prior values are greater than
-                          this threshold will not be updated
+        input_vertex_property_list : 
+		    The vertex properties which contain prior vertex values if you 
+			use more than one vertex property. We expect a comma separated 
+			string list.
+        input_edge_property_list :
+            The edge properties which contain the input edge values if you 
+			use more than one edge property. We expect a comma separated 
+			string list.
+        input_edge_label :
+            edge label
+        output_vertex_property_list : 
+            The vertex properties which contain the output vertex values if 
+			you use more than one vertex property. We expect a comma 
+			separated string list.
+        max_supersteps : 
+		    The number of super steps to run in Giraph.
+        smoothing : 
+		    The Ising smoothing parameter.
+        convergence_threshold : 
+		    The convergence threshold.
+        anchor_threshold : 
+		    The anchor threshold [0, 1].
+            Those vertices whose normalized prior values are greater than this
+			threshold will not be updated.
 
         Returns
-        algorithms results in titan table
+        The algorithm's results in a Titan table.
         -------
         """
 
@@ -241,25 +256,34 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                   convergence_output_interval=global_config['giraph_param_page_rank_convergence_output_interval']
                   ):
         """
-        The PageRank algorithm, http://en.wikipedia.org/wiki/PageRank
+        The PageRank algorithm: http://en.wikipedia.org/wiki/PageRank
 
         Parameters
         ----------
-        input_edge_property_list: edge properties which contains input edge value.
-                                   if more than one edge property is used,
-                                   expect it is a comma separated string list.
-        input_edge_label: edge label
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        max_supersteps : number of super steps to run in Giraph
-        convergence_threshold: the convergence threshold
-        reset_probability: the reset probability
-        convergence_output_interval: convergence progress output interval (default: every superstep)
+        input_edge_property_list : 
+            The edge properties which contain the input edge values if you 
+			use more than one edge property. We expect a comma separated 
+			string list.
+        input_edge_label : 
+		    The edge label.
+        output_vertex_property_list : 
+		     The vertex properties which contain the output vertex values 
+			 if you use one vertex property. We expect a comma separated 
+			 string list.
+        max_supersteps : 
+		    The number of super steps to run in Giraph.
+        convergence_threshold : 
+		    The convergence threshold.
+        reset_probability : 
+		    The reset probability.
+        convergence_output_interval : 
+		    The convergence progress output interval 
+			(default: every superstep).
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through page_rank.stats object
+        The algorithm's results in a Titan table.
+        You can access the convergence curve through the page_rank.stats 
+		object.
         -------
         """
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/pr'
@@ -361,17 +385,19 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list
             ):
         """
-        Average path length calculation:
+        The average path length calculation.
 
         Parameters
         ----------
-        input_edge_label: edge label
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
+        input_edge_label : 
+		    The edge label.
+        output_vertex_property_list : 
+		    The vertex properties which contain the output vertex values if 
+			you use more than one vertex property. We expect a comma separated 
+			string list.
 
         Returns
-        algorithm results in titan table
+        The algorithm's results in a Titan table.
          -------
         """
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/apl'
@@ -433,32 +459,40 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         anchor_threshold=global_config['giraph_label_propagation_anchor_threshold']
         ):
         """
-        Label Propagation on Gaussian Random Fields
-        The algorithm presented in:
+        Label Propagation on Gaussian Random Fields.
+        This algorithm is presented in:
           X. Zhu and Z. Ghahramani. Learning from labeled and unlabeled data with
           label propagation. Technical Report CMU-CALD-02-107, CMU, 2002.
 
         Parameters
         ----------
-        input_vertex_property_list : vertex properties which contains prior vertex value
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        input_edge_property_list: edge properties which contains input edge value
-                                  if more than one edge property is used,
-                                  expect it is a comma separated string list.
-        input_edge_label: edge label
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        max_supersteps : number of super steps to run in Giraph
-        lambda: radeoff parameter: f = (1-lambda)Pf + lambda*h
-        convergence_threshold: the convergence threshold
-        anchor_threshold: the anchor threshold [0, 1].
-                          Vertices whose normalized prior values are greater than
-                          this threshold will not be updated
+        input_vertex_property_list : 
+		    The vertex properties which contain the prior vertex values if 
+			you use more than one vertex property. We expect a comma separated 
+			string list.
+        input_edge_property_list : 
+		    The edge properties which contain the input edge values if you 
+			use more than one edge property. We expect a comma separated 
+			string list.
+        input_edge_label : 
+		    The edge label.
+        output_vertex_property_list : 
+		    The vertex properties which contain the output vertex values if 
+			you use more than one vertex property. We expect a comma separated
+			string list.
+        max_supersteps : 
+		    The number of super steps to run in Giraph.
+        lambda : 
+		    The tradeoff parameter: f = (1-lambda)Pf + lambda*h
+        convergence_threshold : 
+		    The convergence threshold.
+        anchor_threshold : 
+		    The anchor threshold [0, 1].
+            Those vertices whose normalized prior values are greater than this
+			threshold will not be updated.
 
         Returns
-        algorithms results in titan table
+        The algorithm's results in a Titan table.
         -------
         """
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lp'
@@ -549,31 +583,44 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_topics=global_config['giraph_latent_dirichlet_allocation_num_topics']
             ):
         """
-        Latent Dirichlet Allocation, http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
+        The Latent Dirichlet Allocation, see: http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
 
         Parameters
         ----------
-        input_edge_property_list: edge properties which contains input edge value.
-                                   if more than one edge property is used,
-                                   expect it is a comma separated string list.
-        input_edge_label: edge label
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        vertex_type: vertex type
-        edge_type: edge type
-        max_supersteps : number of super steps to run in Giraph
-        alpha: document-topic smoothing parameter
-        beta: term-topic smoothing parameter
-        convergence_threshold: the convergence threshold
-        evaluate_cost: turning on/off cost evaluation
-        max_val: maximum edge weight value
-        min_val: minimum edge weight value
-        num_topics: number of topics to identify
+        input_edge_property_list : 
+		    The edge properties which contain the input edge values if you use
+			more than one edge property. We expect a comma separated string 
+			list.
+        input_edge_label : 
+		    The edge label.
+        output_vertex_property_list : 
+		    The vertex properties which contain the output vertex values if 
+			you use more than one vertex property. We expect a comma separated 
+			string list.
+        vertex_type : 
+		    The type of the vertex.
+        edge_type : 
+		    The type of the edge.
+        max_supersteps : 
+		    The number of super steps to run in Giraph.
+        alpha : 
+		    The document-topic smoothing parameter.
+        beta : 
+		    The term-topic smoothing parameter.
+        convergence_threshold : 
+		    The convergence threshold.
+        evaluate_cost : 
+		    Use this to turn cost evaluation on and off.
+        max_val : 
+		    The maximum edge weight value.
+        min_val : 
+		    The minimum edge weight value.
+        num_topics : 
+		    The number of topics to identify.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through lda.stats object
+        The algorithm's results in a Titan table.
+        The convergence curve is accessible through the lda.stats object.
         -------
         """
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lda'
@@ -709,7 +756,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             bias_on=global_config['giraph_alternative_least_square_bias_on']
             ):
         """
-        Alternating Least Squares with Bias for collaborative filtering
+        The Alternating Least Squares with Bias for collaborative filtering algorithms.
         The algorithms presented in
         (1) Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. Large-Scale
             Parallel Collaborative Filtering for the Netflix Prize. 2008.
@@ -718,29 +765,42 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
-        input_edge_property_list: edge properties which contains input edge value.
-                                   if more than one edge property is used,
-                                   expect it is a comma separated string list.
-        input_edge_label: edge label
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        vertex_type: vertex type
-        edge_type: edge type
-        max_supersteps : number of super steps to run in Giraph
-        feature_dimension: feature dimension
-        als_lambda: regularization parameter, f = L2_error + lambda*Tikhonov_regularization
-        convergence_threshold: the convergence threshold
-        learning_output_interval: learning curve output interval (default: every iteration)
-                                  Since each ALS iteration is composed by 2 super steps,
-                                  one iteration means two super steps.
-        max_val: maximum edge weight value
-        min_val: minimum edge weight value
-        bias_on: turn on/off bias
+        input_edge_property_list : 
+		    The edge properties which contain the input edge values if you use
+			more than one edge property. We expect a comma separated string 
+			list.
+        input_edge_label : 
+		    The edge label.
+        output_vertex_property_list : 
+		    The vertex properties which contain the output vertex values if 
+			you use more than one vertex property. We expect a comma 
+			separated string list.
+        vertex_type : 
+		    The vertex type.
+        edge_type : 
+		    The edge type.
+        max_supersteps : 
+		    The number of super steps to run in Giraph.
+        feature_dimension : 
+		    The feature dimension.
+        als_lambda : The regularization parameter: 
+		f = L2_error + lambda*Tikhonov_regularization
+        convergence_threshold : 
+		    The convergence threshold.
+        learning_output_interval : 
+		    The learning curve output interval (default: every iteration). 
+			Because each ALS iteration is composed of 2 super steps, each 
+			iteration means two super steps.
+        max_val : 
+		    The maximum edge weight value.
+        min_val : 
+		    The minimum edge weight value.
+        bias_on : 
+		    The turn on or off bias.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through als.stats object
+        The algorithm's results in a Titan table.
+        The convergence curve is accessible through the als.stats object.
         -------
         """
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/als'
@@ -884,37 +944,53 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_iters=global_config['giraph_conjugate_gradient_descent_num_iters']
             ):
         """
-        Conjugate Gradient Descent (CGD) with Bias for collaborative filtering
+        The Conjugate Gradient Descent (CGD) with Bias for collaborative 
+		filtering algorithm.
         CGD implementation of the algorithm presented in
-        Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative
-            Filtering Model. In ACM KDD 2008. (Equation 5)
+        Y. Koren. Factorization Meets the Neighborhood: a Multifaceted 
+		Collaborative Filtering Model. In ACM KDD 2008. (Equation 5)
 
         Parameters
         ----------
-        input_edge_property_list: edge properties which contains input edge value.
-                                   if more than one edge property is used,
-                                   expect it is a comma separated string list.
-        input_edge_label: edge label
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        vertex_type: vertex type
-        edge_type: edge type
-        max_supersteps : number of super steps to run in Giraph
-        feature_dimension: feature dimension
-        cgd_lambda: regularization parameter, f = L2_error + lambda*Tikhonov_regularization
-        convergence_threshold: the convergence threshold
-        learning_output_interval: learning curve output interval (default: every iteration)
-                                  Since each CGD iteration is composed by 2 super steps,
-                                  one iteration means two super steps.
-        max_val: maximum edge weight value
-        min_val: minimum edge weight value
-        bias_on: turn on/off bias
-        num_iters: number of CGD iterations in each super step
+        input_edge_property_list : 
+		    The edge properties which contain the input edge values if you 
+			use more than one edge property. We expect a comma separated 
+			string list.
+        input_edge_label : 
+		    The edge label.
+        output_vertex_property_list : 
+		    The vertex properties which contain the output vertex values if
+			you use more than one vertex property. We expect a comma separated
+			string list.
+        vertex_type : 
+		    The vertex type.
+        edge_type : 
+		    The edge type.
+        max_supersteps : 
+		    The number of super steps to run in Giraph.
+        feature_dimension : 
+		    The feature dimension.
+        cgd_lambda : 
+		    The regularization parameter: 
+			f = L2_error + lambda*Tikhonov_regularization
+        convergence_threshold : 
+		    The convergence threshold.
+        learning_output_interval : 
+		    The learning curve output interval (default: every iteration). 
+			Because each CGD iteration is composed of 2 super steps, each 
+			iteration means two super steps.
+        max_val : 
+		    The maximum edge weight value.
+        min_val : 
+		    The minimum edge weight value.
+        bias_on : 
+		    The turn on or off bias.
+        num_iters : 
+		    The number of CGD iterations in each super step.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through cgd.stats object
+        The algorithm's results in a Titan table.
+        The convergence curve is accessible through the cgd.stats object.
         -------
         """
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/cgd'
@@ -1063,40 +1139,56 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             learning_rate=global_config['giraph_gradient_descent_learning_rate']
             ):
         """
-        Gradient Descent (GD) with Bias for collaborative filtering
+        The Gradient Descent (GD) with Bias for collaborative filtering algorithm.
         The algorithm presented in
         Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative
         Filtering Model. In ACM KDD 2008. (Equation 5)
 
         Parameters
         ----------
-        input_edge_property_list: edge properties which contains input edge value.
-                                   if more than one edge property is used,
-                                   expect it is a comma separated string list.
-        input_edge_label: edge label
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-        vertex_type: vertex type
-        edge_type: edge type
-        max_supersteps : number of super steps to run in Giraph
-        feature_dimension: feature dimension
-        cgd_lambda: regularization parameter, f = L2_error + lambda*Tikhonov_regularization
-        convergence_threshold: the convergence threshold
-        learning_output_interval: learning curve output interval (default: every iteration)
-                                  Since each GD iteration is composed by 2 super steps,
-                                  one iteration means two super steps.
-        max_val: maximum edge weight value
-        min_val: minimum edge weight value
-        bias_on: turn on/off bias
-        discount: discount ratio on learning factor
+        input_edge_property_list : 
+		    The edge properties which contain the input edge values if you 
+			use more than one edge property. We expect a comma separated 
+			string list.
+        input_edge_label : 
+		    The edge label.
+        output_vertex_property_list : 
+		    The vertex properties which contain the output vertex values if 
+			you use more than one vertex property. We expect a comma separated 
+			string list.
+        vertex_type : 
+		    The vertex type.
+        edge_type : 
+		    The edge type.
+        max_supersteps : 
+		    The number of super steps to run in Giraph.
+        feature_dimension : 
+		    The feature dimension.
+        cgd_lambda : 
+		    The regularization parameter: 
+			f = L2_error + lambda*Tikhonov_regularization
+        convergence_threshold : 
+		    The convergence threshold.
+        learning_output_interval : 
+		    The learning curve output interval (default: every iteration). 
+			Because each GD iteration is composed of 2 super steps, 
+			each iteration means two super steps.
+        max_val : 
+		    The maximum edge weight value.
+        min_val : 
+		    The minimum edge weight value.
+        bias_on : 
+		    The turn on or off bias.
+        discount : 
+		    The discount ratio on the learning factor:
                   learningRate(i+1) = discount * learningRate(i)
                   where discount should be in the range of (0, 1].
-        learning_rate: learning rate
+        learning_rate : 
+		    The learning rate.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through gd.stats object
+        The algorithm's results in a Titan table.
+        The convergence curve is accessible through the gd.stats object.
         -------
         """
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/gd'
@@ -1232,10 +1324,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
 class BeliefPropagation(object):  #TODO: eventually inherit from base Algo class
     """
-    Descriptive class of Belief Propagation algorithm.
+    The Descriptive class of the Belief Propagation algorithm.
 	
 	Should contain info about the cfg constants, the user supplied parameters
-    and what the results are --can also define a specific
+    and what the results are -- can also define a specific
     BeliefPropagationResults class if necessary.
     """
     pass

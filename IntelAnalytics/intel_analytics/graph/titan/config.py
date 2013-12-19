@@ -95,8 +95,8 @@ class TitanConfig(object):
 
         Parameters
         ----------
-        table_name : string
-           The name of the destination table in Titan.
+        table_names : strings
+           The names of the destination tables in Titan.
         """
         tree = ElementTree()
         tree.parse(config['rexster_xml'])

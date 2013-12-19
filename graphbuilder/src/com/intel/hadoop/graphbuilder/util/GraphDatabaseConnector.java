@@ -39,10 +39,10 @@ public class GraphDatabaseConnector {
     private static RuntimeConfig runtimeConfig = RuntimeConfig.getInstance();
 
     /**
-     * @param graphDB                         The identifier of the target graph database, "titan" for now
-     *                                        "allegrograph" and "neo4j" are placeholders.
-     * @throws UnsupportedOperationException  When it cannot open the graph database, particularly if you try to
-     *                                        open an unsupported graph database.
+     * @param {@code graphDB}                          The identifier of the target graph database, "titan" for now,
+     *                                                 "allegrograph" and "neo4j" are placeholders.
+     * @throws {@code UnsupportedOperationException}   Throws this error when it cannot open the graph database, 
+     *                                                 particularly if you try to open an unsupported graph database.
      */
 
     public static TitanGraph open(String graphDB, org.apache.commons.configuration.Configuration configuration,

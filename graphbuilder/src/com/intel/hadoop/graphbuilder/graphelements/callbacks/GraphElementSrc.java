@@ -24,19 +24,19 @@ import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
- * get the graph element src. if it's an edge it will return whatever src the edge has otherwise it will return null
- * if it's a vertex.
+ * Gets the graph element's {@code src}. If it's an edge it will return whatever 
+ * {@code src} the edge has, otherwise the method returns null if the element is a vertex.
  *
  * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  */
 public class GraphElementSrc implements GraphElementTypeCallback {
 
     /**
-     * cast our graph element to an edge and get it's src
+     * Casts our graph element to an edge and gets the edge's {@code src}.
      *
-     * @param graphElement graph element to perform operations on
-     * @param arguments any arguments that might have been passed
-     * @return edges src
+     * @param {@code graphElement}  The graph element to perform operations on.
+     * @param {@code arguments}     Any arguments that might have been passed.
+     * @return  The edge's {@code src}.
      */
     @Override
     public Object edge(GraphElement graphElement, ArgumentBuilder arguments) {
@@ -45,11 +45,11 @@ public class GraphElementSrc implements GraphElementTypeCallback {
     }
 
     /**
-     * return null since all vertices have no src
+     * Returns null because vertices do not have a {@code src}.
      *
-     * @param graphElement graph element to perform operations on
-     * @param arguments any arguments that might have been passed
-     * @return always null since vertices doesn't have a src
+     * @param {@code graphElement}  The graph element to perform operations on.
+     * @param {@code arguments}     Any arguments that might have been passed.
+     * @return Always returns null, because vertices do not have a {@code src}.
      */
     @Override
     public Object vertex(GraphElement graphElement, ArgumentBuilder arguments) {

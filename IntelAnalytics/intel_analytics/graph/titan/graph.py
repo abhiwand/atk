@@ -44,7 +44,7 @@ from intel_analytics.logger import stdout_logger as logger
 
 #class TitanGraph(object):   # TODO: inherit BigGraph later
 #    """
-#    proxy for a graph stored in Titan
+#    The proxy for a graph stored in Titan.
 #    """
 #    def __init__(self):
 #        self.ml = TitanGiraphMachineLearning(self)
@@ -55,7 +55,7 @@ from intel_analytics.logger import stdout_logger as logger
 #-----------------------------------------------------------------------------
 class TitanGraphBuilderFactory(GraphBuilderFactory):
     """
-    Provides a set of Titan graph builders.
+    This class provides a set of Titan graph builders.
     """
     def __init__(self):
         super(TitanGraphBuilderFactory, self).__init__()
@@ -79,6 +79,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
         return (k for k, v in hbase_registry.items() if v.endswith('_titan'))
 
     def _get_titan_table_name(self, graph_name):
+
         try:
             titan_table_name = hbase_registry[graph_name]
         except KeyError:
@@ -109,7 +110,7 @@ titan_graph_builder_factory = TitanGraphBuilderFactory()
 
 class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
     """
-    The bipartite graph builder for HBase->Titan.
+    The bipartite graph builder for HBase to Titan.
     """
     def __init__(self, source):
         super(HBase2TitanBipartiteGraphBuilder, self).__init__(source)
@@ -141,7 +142,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
 
 class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
     """
-    The property graph builder for HBase->Titan.
+    The property graph builder for HBase to Titan.
     """
     def __init__(self, source):
         super(HBase2TitanPropertyGraphBuilder, self).__init__(source)
@@ -167,6 +168,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
 
 
 def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
+
     # todo: implement column validation
 
     dst_hbase_table_name = generate_titan_table_name(graph_name, source)
@@ -209,9 +211,9 @@ def generate_titan_table_name(prefix, source):
 
 def _get_table_name_from_source(source):
     try:
-        return source._table.table_name  # most likely a BigDataFrame
+        return source._table.table_name  # Most likely a BigDataFrame.
     except:
-        # so what did we get?
+        # So what did we get?
         raise Exception("Could not get table name from source")
 
 
@@ -241,7 +243,7 @@ def edge_str(edge, public=False):
     return s
 
 
-# static templates and commands, validated against config on load
+# static templates and commands, validated against config on load.
 
 def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list,
                          is_directed):
