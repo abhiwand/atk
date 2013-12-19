@@ -38,11 +38,13 @@
 package com.intel.pig.udf.eval;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.builtin.REGEX_EXTRACT_ALL;
 import org.apache.pig.data.DataBag;
@@ -65,7 +67,7 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * element is the regular expression. RegexExtractAllMatches UDF only captures
  * the <b>first</b> group specified in the regular expression.
  */
-@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
+@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 	private static TupleFactory tupleFactory = TupleFactory.getInstance();
 
@@ -80,24 +82,25 @@ public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 		}
 
 		String sourceString = (String) input.get(0);
-		if (sourceString == null)
+		if (sourceString == null || sourceString.isEmpty())
 			return null;
+
+		Matcher m = null;
+
 		try {
-			if (!input.get(1).equals(regularExpression)) {
-				try {
-					regularExpression = (String) input.get(1);
-					pattern = Pattern.compile(regularExpression);
-				} catch (PatternSyntaxException e) {
-					String msg = "Invalid regular expression: " + input.get(1);
-					throw new IOException(new GBUdfException(msg, e));
-				}
-			}
+			regularExpression = (String) input.get(1);
+			pattern = Pattern.compile(regularExpression);
+			m = pattern.matcher(sourceString);
+		} catch (PatternSyntaxException e) {
+			String msg = "Invalid regular expression: " + input.get(1);
+			throw new IOException(new GBUdfException(msg, e));
 		} catch (NullPointerException e) {
 			String msg = "Regular expression is null";
 			throw new IOException(new GBUdfException(msg));
+		} catch (Throwable t) {
+			warn("Match failed", PigWarning.UDF_WARNING_1);
+			return null;
 		}
-
-		Matcher m = pattern.matcher(sourceString);
 
 		DataBag result = DefaultBagFactory.getInstance().newDefaultBag();
 
