@@ -159,7 +159,7 @@ class HBaseTable(object):
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
-    def _get_first_N(self, n):
+    def _peek(self, n):
 
         if n < 0:
             raise HBaseTableException('A range smaller than 0 is specified')
@@ -180,9 +180,9 @@ class HBaseTable(object):
                    break
         return first_N_rows
     
-    def sample(self, n=10):
+    def inspect(self, n=10):
 
-        first_N_rows = self._get_first_N(n)
+        first_N_rows = self._peek(n)
         schema = self.get_schema()
         columns = schema.keys()
         column_array = []
@@ -205,8 +205,8 @@ class HBaseTable(object):
 
            print "  |  ".join(data)
                
-    def sample_as_html(self, nRows=10):
-        first_N_rows = self._get_first_N(nRows)
+    def inspect_as_html(self, nRows=10):
+        first_N_rows = self._peek(nRows)
         html_table='<table border="1">'
 
         schema = self.get_schema()

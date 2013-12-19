@@ -42,6 +42,7 @@ cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
 
 %post
 $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/install_pyenv.sh #install virtual python
+tar xvf $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/template_overrides.tar.gz -C /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/IPython
 ln -sf /usr/lib/IntelAnalytics/virtpy/bin/activate %{_bindir}/virtpy
 
 %postun
