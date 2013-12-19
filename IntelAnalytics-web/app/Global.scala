@@ -7,7 +7,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.Some
 import play.api.Play.current
-import scala.util.control.NonFatal
+import play.api.Logger
 import services.aws.S3
 import play.api.http.HeaderNames._
 import ExecutionContext.Implicits.global
@@ -63,17 +63,28 @@ object Global extends GlobalSettings{
   }
 
   override def onError(request: RequestHeader, throwable: Throwable): Future[SimpleResult] = {
-      if (true) Future.successful(InternalServerError(views.html.error500("", models.Users.anonymousUser())))
+      if (Play.isProd){
+        Logger.error(request.toString)
+        Logger.error(throwable.toString)
+        Future.successful(InternalServerError(views.html.error500("", models.Users.anonymousUser())))
+      }
       else super.onError(request, throwable);
   }
 
   override def onBadRequest(request: RequestHeader, error: String): Future[SimpleResult] = {
-    if(true)Future.successful(BadRequest(views.html.error400("", models.Users.anonymousUser())))
+    if(Play.isProd){
+      Logger.error(request.toString)
+      Logger.error(error)
+      Future.successful(BadRequest(views.html.error400("", models.Users.anonymousUser())))
+    }
     else super.onBadRequest(request, error)
   }
 
   override def onHandlerNotFound(request: RequestHeader): Future[SimpleResult] = {
-    if(true) Future.successful(NotFound(views.html.error404("", models.Users.anonymousUser())))
+    if(Play.isProd){
+      Logger.error(request.toString)
+      Future.successful(NotFound(views.html.error404("", models.Users.anonymousUser())))
+    }
     else super.onHandlerNotFound(request);
   }
 
