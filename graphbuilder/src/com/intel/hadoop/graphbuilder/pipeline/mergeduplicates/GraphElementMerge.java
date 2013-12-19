@@ -33,23 +33,24 @@ import java.util.Hashtable;
 
 /**
  * <p>
- * Remove any duplicate edges and vertices. If duplicates are found either merge their property maps or call an
- * optional Edge/Vertex reducer
+ * Remove any duplicate edges and vertices. If duplicates are found, either merge 
+ * their property maps or call an optional Edge/Vertex reducer.
  * </p>
  * <p>
- * This will be called on the property graph element as we are iterating through the list received by the reducer.
+ * This will be called on the property graph element as we are iterating through 
+ * the list received by the reducer.
  * </p>
  *
  * <p>
- * all arguments are extracted from the argument builder and all are mandatory except the edgeReducerFunction,
- * vertexReducerFunction.
+ * All arguments are extracted from the argument builder and are all mandatory, 
+ * except the {@code edgeReducerFunction} and the {@code vertexReducerFunction}.
  * <ul>
- *      <li>edgeSet - Hashtable with the current list of merged edges</li>
- *      <li>vertexSet - Hashtable with the current list of merged vertices</li>
- *      <li>edgeReducerFunction - optional edge reducer function</li>
- *      <li>vertexReducerFunction - optional vertex reducer function</li>
- *      <li>vertexLabelMap - list of vertex labels to be used for writing rdf output</li>
- *      <li>noBiDir - are we cleaning bidirectional edges. if true then remove bidirectional edge</li>
+ *      <li>{@code edgeSet}                Hashtable with the current list of merged edges.</li>
+ *      <li>{@code vertexSet}              Hashtable with the current list of merged vertices.</li>
+ *      <li>{@code edgeReducerFunction}    Optional edge reducer function.</li>
+ *      <li>{@code vertexReducerFunction}  Optional vertex reducer function.</li>
+ *      <li>{@code vertexLabelMap}         List of vertex labels to be used for writing rdf output.</li>
+ *      <li>{@code noBiDir}                Are we cleaning bidirectional edges. If true then remove bidirectional edge.</li>
  * </ul>
  * </p>
  */
@@ -77,20 +78,20 @@ public class GraphElementMerge implements GraphElementTypeCallback {
         EdgeID edgeID = (EdgeID) graphElement.getId();
 
         if (((Edge) graphElement).isSelfEdge()) {
-            // self edges are omitted
+            // Self edges are omitted.
             return null;
         }
 
         if(edgeSet.containsKey(graphElement.getId())){
-            // edge is a duplicate
+            // Edge is a duplicate.
 
             if (edgeReducerFunction != null) {
                 edgeSet.put(edgeID, edgeReducerFunction.reduce(graphElement.getProperties(), edgeSet.get(edgeID)));
             } else {
 
                 /**
-                 * default behavior is to merge the property maps of duplicate edges
-                 * conflicting key/value pairs get overwritten
+                 * The default behavior is to merge the property maps of duplicate edges.
+                 * Any conflicting key/value pairs get overwritten.
                  */
 
                 PropertyMap existingPropertyMap = (PropertyMap) edgeSet.get(edgeID);
@@ -99,9 +100,9 @@ public class GraphElementMerge implements GraphElementTypeCallback {
 
         }else{
             if (noBiDir && edgeSet.containsKey(edgeID.reverseEdge())) {
-                // in this case, skip the bi-directional edge
+                // In this case, skip the bi-directional edge.
             } else {
-                // edge is either not bi-directional, or we are keeping bi-directional edges
+                // This edge is either not bi-directional, or we are keeping bi-directional edges.
                 if (edgeReducerFunction != null) {
                     edgeSet.put(edgeID, edgeReducerFunction.reduce(graphElement.getProperties(),edgeReducerFunction.identityValue()));
                 } else {
@@ -139,8 +140,8 @@ public class GraphElementMerge implements GraphElementTypeCallback {
             } else {
 
                 /**
-                 * default behavior is to merge the property maps of duplicate vertices
-                 * conflicting key/value pairs get overwritten
+                 * The default behavior is to merge the property maps of duplicate vertices.
+                 * Any conflicting key/value pairs get overwritten.
                  */
 
                 PropertyMap existingPropertyMap = (PropertyMap) vertexSet.get(vid);
@@ -159,16 +160,17 @@ public class GraphElementMerge implements GraphElementTypeCallback {
     }
 
     /**
-     * Gets all our arguments from the argument builder.
+     * Gets all of our arguments from the argument builder.
      * <ul>
-     *      <li>edgeSet - Hashtable with the current list of merged edges</li>
-     *      <li>vertexSet - Hashtable with the current list of merged vertices</li>
-     *      <li>edgeReducerFunction - optional edge reducer function</li>
-     *      <li>vertexReducerFunction - optional vertex reducer function</li>
-     *      <li>vertexLabelMap - list of vertex labels to be used for writing rdf output</li>
-     *      <li>noBiDir - are we cleaning bidirectional edges. if true then remove bidirectional edge</li>
+     *      <li>{@code edgeSet}                Hashtable with the current list of merged edges.</li>
+     *      <li>{@code vertexSet}              Hashtable with the current list of merged vertices.</li>
+     *      <li>{@code edgeReducerFunction}    Optional edge reducer function.</li>
+     *      <li>{@code vertexReducerFunction}  Optional vertex reducer function</li>
+     *      <li>{@code vertexLabelMap}         A list of vertex labels to be used for writing rdf output</li>
+     *      <li>{@code noBiDir}                Are we cleaning bidirectional edges. If true then remove 
+	 *                                         bidirectional edge.</li>
      * </ul>
-     * @param args an ArgumentBuilder with all the necessary arguments
+     * @param {@code args}  An {@code ArgumentBuilder} with all the necessary arguments.
      *
      * @see Functional
      */

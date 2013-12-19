@@ -46,22 +46,25 @@ import org.apache.log4j.Logger;
 
 import com.intel.hadoop.graphbuilder.util.Functional;
 /**
- * Sets up a MapReduce job to store graph elements as RDF triples.
+ * Sets up a Map Reduce job to store graph elements as RDF triples.
  *
  * <p>
  *     To run a RDF graph construction job:
  *     <ul>
- *         <li>Configure the graph building pipeline by providing an {@code InputConfiguration} and {@code GraphBuildingRule}
- *         through the {@code init} method.</li>
+ *         <li>Configure the graph building pipeline by providing an {@code InputConfiguration} and 
+ *         {@code GraphBuildingRule} through the {@code init} method.</li>
  *         <li>Invoke the pipeline with the {@code run} method.</li>
  *     </ul>
  * </p>
  * <p>
  *     <ul>
  *         <li>The mapper for the job is determined by the {@code InputConfiguration}. </li>
- *         <li>The property graph elements are streamed out of the mapper by the {@code GraphTokenizer}.</li>
- *         <li>The reducer, provided by this class, performs a "de-duplification" step, in which duplicate edges and vertices
- * are merged, and then stores the unique vertices in a text file of vertices and a text file of edges.</li>
+ *         <li>The property graph elements are streamed out of the mapper by 
+ *             the {@code GraphTokenizer}.</li>
+ *         <li>The reducer, provided by this class, performs a "de-duplification" step, 
+ *             in which duplicate edges and vertices are merged, and then stores the unique 
+ *             vertices in a text file of vertices and a text file of edges.</li>
+ *     </ul>
  * </p>
  *
  * <p> The output is structured as follows:
@@ -100,7 +103,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
 
     /**
      * The constructor. It requires the pathname for the output as an argument.
-     * @param outputPathName  The pathname as a String.
+     * @param {@code outputPathName}  The pathname as a String.
      */
     public RDFGraphMR(String outputPathName) {
         this.outputPathName = outputPathName;
@@ -167,7 +170,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     /**
      * Sets the option to clean (remove) bidirectional edges.
      *
-     * @param clean The boolean option value, if true then remove bidirectional edges.
+     * @param {@code clean}  The boolean option value, if true then remove bidirectional edges.
      */
 
     @Override
@@ -176,7 +179,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     *Sets the value class for the property graph elements coming from the mapper or tokenizer.
+     * Sets the value class for the property graph elements coming from the mapper or tokenizer.
      *
      * <p> This class is one of the instantiations of {@code GraphElement}, determined by the vertex ID type.</p>
      *
@@ -216,7 +219,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
 
     /**
      * Gets the configuration of the current job.
-     * @return Hadoop configuration of the current job.
+     * @return The Hadoop configuration of the current job.
      */
 
     public Configuration getConf() {
@@ -224,9 +227,9 @@ public class RDFGraphMR extends GraphGenerationMRJob {
     }
 
     /**
-     * Set user defined options.
+     * Sets user defined options.
      *
-     * @param {@code userOpts} A Map of option key value pairs.
+     * @param {@code userOpts} A Map of the option key value pairs.
      */
     @Override
     public void setUserOptions(HashMap<String, String> userOpts) {
@@ -246,14 +249,14 @@ public class RDFGraphMR extends GraphGenerationMRJob {
 
     public void run(CommandLine cmd) throws IOException, ClassNotFoundException, InterruptedException {
 
-        // Set required parameters in configuration
+        // Sets the required parameters in the configuration.
 
         conf.set("GraphTokenizer", graphBuildingRule.getGraphTokenizerClass().getName());
         conf.setBoolean("noBiDir", cleanBidirectionalEdge);
         conf.set("vidClass", vidClass.getName());
         conf.set("KeyFunction", keyFuncClass.getName());
 
-        // Set optional parameters in configuration
+        // Sets the optional parameters in the configuration.
 
         if (vertexReducerFunction != null) {
             conf.set("vertexReducerFunction", vertexReducerFunction.getClass().getName());
@@ -262,39 +265,39 @@ public class RDFGraphMR extends GraphGenerationMRJob {
             conf.set("edgeReducerFunction", edgeReducerFunction.getClass().getName());
         }
 
-        // set the configuration per the input, for example set the input
-        // HBase table name if the input type is HBase
+        // Sets the configuration per the input, for example, set the input
+        // HBase table name if the input type is HBase.
 
         inputConfiguration.updateConfigurationForMapper(conf);
 
-        // update the configuration per the graphBuildingRule
+        // Updates the configuration per the graphBuildingRule.
 
         graphBuildingRule.updateConfigurationForTokenizer(conf);
 
-        // Add RDF namespace
+        // Adds the RDF namespace.
         conf.set(RDFConfiguration.config.getProperty("CMD_RDF_NAMESPACE"), cmd.getOptionValue("n"));
 
-        // create job from configuration and initialize MR parameters
+        // Creates a job from the configuration and initialization Map Reduce parameters.
 
         Job job = new Job(conf, "RDFGraphMR");
         job.setJarByClass(RDFGraphMR.class);
 
-        // configure mapper  and input
+        // Configures the mapper and input.
 
         inputConfiguration.updateJobForMapper(job);
 
         job.setMapOutputKeyClass(IntWritable.class);
         job.setMapOutputValueClass(mapValueType.getClass());
 
-        // configure reducer
+        // Configures the reducer.
 
         job.setReducerClass(RDFGraphReducer.class);
 
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(Text.class);
 
-        // configure output path
-        // (input path handled by the inputconfiguration)
+        // Configures the output path.
+        // (The input path is handled by the inputconfiguration.)
 
         job.setOutputFormatClass(TextOutputFormat.class);
 
@@ -302,7 +305,7 @@ public class RDFGraphMR extends GraphGenerationMRJob {
 
         FileOutputFormat.setOutputPath(job, new Path(this.outputPathName));
 
-        // fired up and ready to go!
+        // Fired up and ready to go!
 
         LOG.info("=========== Job: Creating vertex list and edge list from input data, saving as text file ===========");
 

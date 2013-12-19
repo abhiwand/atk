@@ -130,8 +130,8 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedGraphElemen
                 continue;
             }
 
-            //try to add the graph element to the existing set of vertices or edges
-            //GraphElementMerge will take care of switching between edge and vertex
+            //Tries to add the graph element to the existing set of vertices or edges.
+            //GraphElementMerge will take care of switching between edges and vertices.
             merge(edgeSet, vertexSet, graphElement);
         }
 
@@ -139,9 +139,9 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedGraphElemen
     }
 
     /**
-     * remove duplicate edges/vertices and merge their property maps
+     * Removes duplicate edges and vertices and merges their property maps.
      *
-     * @param graphElement the graph element to add to our existing vertexSet or edgeSet
+     * @param {@code graphElement} The graph element to add to our existing vertexSet or edgeSet.
      */
     private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
                        GraphElement graphElement){
@@ -153,7 +153,8 @@ public class TextGraphReducer extends Reducer<IntWritable, SerializedGraphElemen
     }
 
     /**
-     * Call GraphElementWriter function the class  was initiated with to write the edges and vertices.
+     * Calls the {@code GraphElementWriter) function the class was initiated with to 
+	 * write the edges and vertices.
      *
      * @throws IOException
      * @throws InterruptedException

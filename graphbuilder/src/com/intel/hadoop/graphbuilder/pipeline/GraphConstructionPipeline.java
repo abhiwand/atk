@@ -59,7 +59,8 @@ public class GraphConstructionPipeline {
     private HashMap<String, String> userOpts;
 
     /**
-     * Checks if the remove duplicates phase treats bidirectional edges as duplicates and remove them, or not.
+     * Checks if the remove duplicates phase treats bidirectional edges as 
+	 * duplicates and removes them, or not.
      */
     public enum BiDirectionalHandling {
         KEEP_BIDIRECTIONALEDGES,
@@ -74,9 +75,9 @@ public class GraphConstructionPipeline {
     }
 
     /**
-     * Adds a user option to the configuration that will be available at run time in the subsequent Hadoop 
-     * jobs of the graph construction pipeline.
-     * @param {@code key}  The key of the user option.
+     * Adds a user option to the configuration that will be available at run time in the  
+     * subsequent Hadoop jobs of the graph construction pipeline.
+     * @param {@code key}    The key of the user option.
      * @param {@code value}  The value of the user option.
      */
     public void addUserOpt(String key, String value) {
@@ -84,7 +85,7 @@ public class GraphConstructionPipeline {
     }
 
     /**
-     * Take the pipeline settings and run a graph construction process.
+     * Takes the pipeline settings and runs a graph construction process.
      *
      * @param {@code inputConfiguration}
      * @param {@code graphBuildingRule}
@@ -101,7 +102,7 @@ public class GraphConstructionPipeline {
 
         GraphGenerationMRJob graphGenerationMRJob = outputConfiguration.getGraphGenerationMRJob();
 
-        // "hook up" the input configuration and tokenizer to the MR Job specified by the output configuration
+        // "Hook up" the input configuration and tokenizer to the MR Job specified by the output configuration.
 
         graphGenerationMRJob.init(inputConfiguration, graphBuildingRule);
 
@@ -111,11 +112,11 @@ public class GraphConstructionPipeline {
         graphGenerationMRJob.setVidClass(vidClass);
         graphGenerationMRJob.setValueClass(valueClass);
 
-        // Set optional parameters
+        // Set optional parameters.
 
         graphGenerationMRJob.setCleanBidirectionalEdges(cleanBiDirectionalEdges == BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES);
 
-        // Set user defined parameters
+        // Set user defined parameters.
 
         if (userOpts != null) {
             graphGenerationMRJob.setUserOptions(userOpts);

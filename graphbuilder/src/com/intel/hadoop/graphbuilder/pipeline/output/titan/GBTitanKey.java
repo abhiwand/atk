@@ -33,8 +33,8 @@ public class GBTitanKey {
     private boolean  isUnique;
 
     /**
-     * Constructs a new Titan key from a string name and sets other fields to the default values.
-     *
+     * Constructs a new Titan key from a string name and sets the 
+     * other fields to the default values.
      * <p> Default values:
      * <ul>
      *     <li> {@code dataType}      : {@code String.class}</li>
@@ -42,7 +42,7 @@ public class GBTitanKey {
      *     <li> {@code isVertexIndex} : {@code false}</li>
      *     <li> {@code isUnique}      : {@code false}</li>
      * </ul></p>
-     * @param {2code name}  The name of the property being associated with this Titan key.
+     * @param {@code name}  The name of the property being associated with this Titan key.
      */
     public GBTitanKey (String name) {
         this.name     = name;
@@ -54,7 +54,8 @@ public class GBTitanKey {
     }
 
     /**
-     * Constructs a new Titan key with full specification of all fields - no default values will be provided.
+     * Constructs a new Titan key with full specification of all fields - no default 
+	 * values will be provided.
      * @param {@code dataType}
      * @param {@code isEdgeIndex}
      * @param {@code isVertexIndex}
@@ -101,7 +102,7 @@ public class GBTitanKey {
     }
 
     /**
-     * Checks to see if this key used for edge indexing.
+     * Checks to see if this key is used for edge indexing.
      * @return  {@code true} If, and only if, the key is used for edge indexing.
      */
     public boolean isEdgeIndex() {
@@ -118,7 +119,7 @@ public class GBTitanKey {
 
     /**
      * Checks to see if this key to be used for vertex indexing.
-     * @return {@code true} iff the key is to be used for vertex indexing
+     * @return {@code true} If, and only if, the key is to be used for vertex indexing.
      */
     public boolean isVertexIndex() {
         return isVertexIndex;
@@ -142,7 +143,7 @@ public class GBTitanKey {
     }
 
     /**
-     * Sest if this key is to take only values that are uniquely assigned to vertices.
+     * Sets if this key is to take only values that are uniquely assigned to vertices.
      * @param {@code isUnique}  {@code true} If the key takes values that are unique per vertex.
      */
     public void setIsUnique(boolean isUnique) {

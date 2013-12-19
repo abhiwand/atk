@@ -47,12 +47,14 @@ import org.apache.log4j.Logger;
  * This reducer performs the following tasks:
  * <ul>
  *  <li>removes duplicate edges and vertices.</li>
- *  <li>loads each vertex into Titan and tags each with its Titan ID and passes it to the next Map Reducer job
- *   through the temp file.</li>
- *  <li>tags each edge with the Titan ID of its source vertex and passes it to the next Map Reducer job.</li>
+ *  <li>loads each vertex into Titan and tags each with its Titan ID and passes 
+ *      it to the next Map Reducer job through the temp file.</li>
+ *  <li>tags each edge with the Titan ID of its source vertex and passes it to 
+ *      the next Map Reducer job.</li>
  * </ul>
  * <p>
- *  We expect that the mapper will set the keys so that the edges are gathered with the source vertices during the shuffle.
+ *  We expect that the mapper will set the keys so that the edges are gathered 
+ *  with the source vertices during the shuffle.
  * </p>
  * @see com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction
  */
@@ -85,7 +87,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedGra
     private GraphElementTypeCallback graphElementMerge;
 
     /**
-     * Creates the Titan graph for saving edges and removes the static open method from setup so it can be mocked-up.
+     * Creates the Titan graph for saving edges and removes the static open 
+	 * method from setup so it can be mocked-up.
      *
      * @return {@code TitanGraph}  For saving edges.
      * @throws IOException
@@ -183,8 +186,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedGra
                 continue;
             }
 
-            //try to add the graph element to the existing set of vertices or edges
-            //GraphElementMerge will take care of switching between edge and vertex
+            //Tries to add the graph element to the existing set of vertices or edges.
+            //GraphElementMerge will take care of switching between edge and vertex.
             merge(edgeSet, vertexSet, graphElement);
         }
 
@@ -203,9 +206,9 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedGra
     }
 
     /**
-     * remove duplicate edges/vertices and merge their property maps
+     * Removes duplicate edges and vertices and merges their property maps.
      *
-     * @param graphElement the graph element to add to our existing vertexSet or edgeSet
+     * @param {@code graphElement}  The graph element to add to our existing vertexSet or edgeSet.
      */
     private void merge(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
                        GraphElement graphElement){
@@ -217,7 +220,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedGra
     }
 
     /**
-     * Call GraphElementWriter function the class  was initiated with to write the edges and vertices.
+     * Calls the {@code GraphElementWriter} function the class was initiated with 
+	 * to write the edges and vertices.
      *
      * @throws IOException
      * @throws InterruptedException

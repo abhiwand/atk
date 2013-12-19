@@ -55,11 +55,12 @@ import java.util.*;
 /**
  * This class handles loading the constructed property graph into Titan.
  *
- * <p>There is some configuration of Titan at setup time, followed by  a chain of two map reduce jobs.</p>
+ * <p>There is some configuration of Titan at setup time, followed by  a chain of 
+ * two map reduce jobs.</p>
  *
  * <p>
- *  At setup time, a connection to Titan is established, and all necessary keys, properties and edge signatures are
- *  declared.
+ * At setup time, this class makes a connection to Titan, and declares all necessary 
+ * keys, properties and edge signatures.
  * </p>
  * <p>
  * The first mapper, which generates a multiset of property graph elements,
@@ -68,15 +69,18 @@ import java.util.*;
  * </p>
  *
  * <p>
- * At the first reducer, the vertices are gathered by the hash of their IDs, and the edges
- * are gathered by the hashes of their source vertex IDs, see {@code SourceVertexKeyFunction}.
+ * At the first reducer, the vertices are gathered by the hash of their IDs, and 
+ * the edges are gathered by the hashes of their source vertex IDs, 
+ * see {@code SourceVertexKeyFunction}.
  * </p>
  *
  * The first reducer performs the following tasks:
  * <ul>
- *   <li> Removes any duplicate edges or vertices (default: property maps are combined for duplicates).</li>
+ *   <li> Removes any duplicate edges or vertices. 
+ *       (By default, the class combines the property maps for duplicates).</li>
  *   <li> Stores the vertices in Titan.</li>
- *   <li> Creates a temporary HDFS file containing the property graph elements annotated as follows:
+ *   <li> Creates a temporary HDFS file containing the property graph elements 
+ *        annotated as follows:
  *   <ul>
  *       <li>Vertices are annotated with their Titan IDs.</li>
  *       <li>Edges are annotated with the Titan IDs of their source vertexes.</li>
@@ -84,10 +88,11 @@ import java.util.*;
  *       </ul>
  *
  * <p>
- * At the second reducer, vertices are gathered by the hashes of their IDs, and edges
- * are gathered by the hashes of their destination vertex IDs, see {@code DestinationVertexKeyFunction}.
+ * At the second reducer, the vertices are gathered by the hashes of their 
+ * IDs, and edges are gathered by the hashes of their destination vertex IDs, 
+ * see {@code DestinationVertexKeyFunction}.
  *  </p>
- *  <p>
+ * <p>
  * The second reducer then loads the edges into Titan.
  * </p>
  *
@@ -120,11 +125,12 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
 
     /**
-     * Acquires the set-up time components necessary for creating a graph from the raw data and 
-	 * loading it into Titan.
-     * @param  {@code inputConfiguration}  The object that handles the creation of data records from raw data.
-     * @param  {@code graphBuildingRule}   The object that handles the creation of property graph elements
-	 * from data records.
+     * Acquires the set-up time components necessary for creating a graph from  
+	 * the raw data and loading it into Titan.
+     * @param  {@code inputConfiguration}  The object that handles the creation 
+	 *                                     of data records from raw data.
+     * @param  {@code graphBuildingRule}   The object that handles the creation 
+	 *                                     of property graph elements from data records.
      */
 
     @Override
@@ -147,13 +153,15 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /**
-     * Sets the user defined functions to reduce duplicate vertexes and edges.
+     * Sets the user defined functions to reduce duplicate vertices and edges.
      *
-     * If the user does not specify these functions, the default method of merging property lists 
-	 * will be used.
+     * If the user does not specify these functions, the default method of  
+	 * merging property lists will be used.
      *
-     * @param {@code vertexReducerFunction}   The user specified function for reducing duplicate vertices.
-     * @param {@code edgeReducerFunction}     The user specified function for reducing duplicate edges.
+     * @param {@code vertexReducerFunction}   The user specified function for 
+	 *                                        reducing duplicate vertices.
+     * @param {@code edgeReducerFunction}     The user specified function for 
+	 *                                        reducing duplicate edges.
      */
 
     public void setFunctionClass(Class vertexReducerFunction, Class edgeReducerFunction) {
@@ -177,7 +185,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     /**
      * Sets the option to clean bidirectional edges.
      *
-     * @param {@code true} The boolean option value, if true then remove bidirectional edges.
+     * @param {@code true}  The boolean option value, if true then remove 
+	 *                      bidirectional edges.
      */
 
     @Override
@@ -186,11 +195,12 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /**
-     * Sets the value class for the property graph elements coming from the mapper or tokenizer.
+     * Sets the value class for the property graph elements coming from the 
+	 * mapper or tokenizer.
      *
      * This type can vary depending on the class used for vertex IDs.
      *
-     * @param valueClass   The class of the SerializedGraphElement value
+     * @param {@code valueClass}  The class of the {@code SerializedGraphElement} value.
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementLongTypeVids
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids
@@ -243,7 +253,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     /**
      * Sets the user defined options.
      *
-     * @param {@code userOpts} A Map of option key value pairs.
+     * @param {@code userOpts} A Map of option key and value pairs.
      */
     @Override
     public void setUserOptions(HashMap<String, String> userOpts) {
@@ -267,20 +277,21 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /*
-     * This private method does the parsing of the command line -keys option into  a list of
+     * This private method does the parsing of the command line -keys option into a list of
      * GBTitanKey objects.
      *
      * The -keys option takes a comma separated list of key rules.
      *
      * A key rule is:  <property name>;<option_1>; ... <option_n>
-     * where the options are datatype specifiers, flags to use the key for indexing edges and/or vertices,
-     * or a uniqueness bit,  per the definitions in TitanCommandLineOptions.
+     * where the options are datatype specifiers, flags to use the key for indexing 
+     * edges and vertices, or a uniqueness bit, per the definitions in TitanCommandLineOptions.
      *
      * Example:
      *    -keys  cf:userId;String;U;V,cf:eventId;E;Long
      *
-     *    will generate a key for property cf:UserId that is a unique vertex index taking String values,
-     *    and a key for property cf:eventId that is an edge index taking Long values
+     *    Generates a key for property cf:UserId that is a unique vertex index taking 
+	 *    String values, and a key for property cf:eventId that is an edge index 
+	 *    taking Long values.
      */
     private List<GBTitanKey> parseKeyCommandLine(String keyCommandLine) {
 
@@ -341,7 +352,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /*
-     * Get the set of Titan Key definitions from the command line...
+     * Gets the set of Titan Key definitions from the command line...
      */
 
     private HashMap<String, TitanKey> declareAndCollectKeys(TitanGraph graph, String keyCommandLine) {
@@ -401,7 +412,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /*
-     * Open the Titan graph database, and make the Titan keys required by the graph schema.
+     * Opens the Titan graph database, and make the Titan keys required by the graph schema.
      */
     private void initTitanGraph (String keyCommandLine) {
         TitanGraph graph = null;
@@ -448,7 +459,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
 
-        // warn the user if the Titan table already exists in Hbase
+        // Warns the user if the Titan table already exists in Hbase.
 
         String titanTableName = TitanConfig.config.getProperty("TITAN_STORAGE_TABLENAME");
 
@@ -470,7 +481,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         String intermediateDataFileName = "graphbuilder_temp_file-" + random().toString();
         Path   intermediateDataFilePath = new Path("/tmp/" + intermediateDataFileName);
 
-        //  todo: one more reason to move CLI processing to the top level and use proper parameter interfaces
+        //  TODO: one more reason to move CLI processing to the top level and use proper parameter interfaces
         // in the main body of the code
 
         String keyCommandLine = new String("");
