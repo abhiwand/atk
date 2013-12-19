@@ -42,6 +42,11 @@ links_extracted = FOREACH text_extracted GENERATE RegexExtractAllMatches(page, '
 links_flattened = FOREACH links_extracted GENERATE id, title, FlattenAsGBString(links) AS flattened_links:chararray;--flatten the bag of links in the format GB can process
 final_relation = FOREACH links_flattened GENERATE FLATTEN(CreateRowKey(*)); --assign row keys 
 
+--create GB input table
+sh echo "disable 'wiki_table'" | hbase shell
+sh echo "drop 'wiki_table'" | hbase shell
+sh echo "create 'wiki_table', {NAME=>'features'}" | hbase shell
+
 STORE final_relation INTO 'hbase://wiki_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('features:id features:title features:flattened_links');
 LOAD_TITAN('wiki_table', '"features:title=features:id" "features:flattened_links"', 
                              '"features:title,features:flattened_links,LINKS"',
