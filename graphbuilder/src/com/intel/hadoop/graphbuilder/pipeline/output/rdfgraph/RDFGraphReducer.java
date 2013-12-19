@@ -207,7 +207,18 @@ public class RDFGraphReducer extends Reducer<IntWritable, SerializedGraphElement
     }
 
     /**
+     * Call GraphElementWriter function the class  was initiated with to write the edges and vertices.
+     *
+     * @throws IOException
+     * @throws InterruptedException
      */
+    public void write(Hashtable<EdgeID, Writable> edgeSet, Hashtable<Object, Writable> vertexSet,
+                      Hashtable<Object, StringType> vertexLabelMap, Context context) throws IOException,
+            InterruptedException {
+        RDFGraphElementWriter.write(ArgumentBuilder.newArguments().with("edgeSet", edgeSet)
+                .with("vertexSet", vertexSet).with("vertexLabelMap", vertexLabelMap).with("vertexCounter",
+                        Counters.NUM_VERTICES)
+                .with("edgeCounter", Counters.NUM_EDGES).with("context", context).with("multipleOutputs",multipleOutputs));
     }
 
     private void initMergerWriter(Context context){
