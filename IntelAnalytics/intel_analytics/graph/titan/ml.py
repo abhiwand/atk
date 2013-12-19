@@ -318,7 +318,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                           are greater than this threshold will not be updated. The default value is 1.
 
         Returns
-        algorithms results in titan table
+        algorithms results in database
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -436,8 +436,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                      The default value is 1, which means output every super step.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through page_rank.stats object
+        algorithm results in database
+        Convergence curve and stats are accessible through page_rank.stats object
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -556,7 +556,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         num_worker: number of workers. The default value is 15.
 
         Returns
-        algorithm results in titan table
+        algorithm results in database
          -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -673,7 +673,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                           are greater than this threshold will not be updated. The default value is 1.
 
         Returns
-        algorithms results in titan table
+        algorithms results in database
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -804,8 +804,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         num_topics: number of topics to identify. The default value is 10.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through lda.stats object
+        algorithm results in database
+        Convergence curve and stats are accessible through lda.stats object
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -985,8 +985,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         bias_on: turn on/off bias. The default value is false.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through als.stats object
+        algorithm results in database
+        Convergence curve and stats are accessible through als.stats object
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -1164,8 +1164,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         num_iters: number of CGD iterations in each super step. The default value is 5.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through cgd.stats object
+        algorithm results in database
+        Convergence curve and stats are accessible through cgd.stats object
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -1353,8 +1353,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         learning_rate: learning rate. The default value is 0.001.
 
         Returns
-        algorithm results in titan table
-        Convergence curve is accessible through gd.stats object
+        algorithm results in database
+        Convergence curve and stats are accessible through gd.stats object
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
