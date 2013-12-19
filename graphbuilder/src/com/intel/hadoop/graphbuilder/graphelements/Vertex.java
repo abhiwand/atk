@@ -19,6 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
@@ -35,86 +36,102 @@ import java.io.IOException;
  * This class is mutable. See the {@code configure} and {@code setProperty} methods.
  * </p>
  *
- * @param <VertexIdType> The type of vertex id.
+ * @param <VidNameType> The type of vertex name.
  */
-public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
+public class Vertex<VidNameType extends WritableComparable<VidNameType>>
         extends GraphElement implements Writable {
 
-    private VertexIdType id;
-    private PropertyMap  properties;
-    private StringType label;
+    private VertexID<VidNameType> vertexId;
+    private PropertyMap           properties;
 
     /**
      * Default constructor. Creates a placeholder vertex.
      */
     public Vertex() {
         super();
+        vertexId = new VertexID<VidNameType>(null,null);
+        properties = new PropertyMap();
+    }
 
-        this.label = new StringType();
+    /**
+     * Creates a vertex with given vertex name.
+     *
+     * @param name vertex name
+     */
+    public Vertex(VidNameType name) {
+        super();
+
+        VertexID<VidNameType> vertexId = new VertexID<VidNameType>(name, null);
+        this.vertexId = vertexId;
         this.properties = new PropertyMap();
     }
 
     /**
-     * Creates a vertex with given vertex ID.
+     * Create a vertex with name, label, and property map.
      *
-     * @param vid Vertex ID.
+     * @param name vertex name
+     * @param propertyMap a property map
      */
-    public Vertex(VertexIdType vid) {
+    public Vertex(VidNameType name, StringType label, PropertyMap propertyMap) {
+        super();
 
-        this(vid, new StringType(), new PropertyMap());
-    }
-
-    /**
-     * Create a vertex with ID, label, and property map.
-     *
-     * @param vid vertex ID
-     */
-    public Vertex(VertexIdType vid, StringType label, PropertyMap propertyMap) {
-        this();
-
-        this.id = vid;
+        VertexID<VidNameType> vertexId = new VertexID<VidNameType>(name, label);
+        this.vertexId = vertexId;
         this.properties = propertyMap;
-        this.label = label;
     }
 
     /**
-     * Create a vertex with ID, label, and property map
+     * Create a vertex with name, label (as a {@code String}), and property map
      *
-     * @param vid vertex ID
+     * @param name vertex nam
+     * @param label vertex label as a {@code String}
+     * @param propertyMap a property map
+     *
      */
-    public Vertex(VertexIdType vid, String label, PropertyMap propertyMap) {
-        this();
+    public Vertex(VidNameType name, String label, PropertyMap propertyMap) {
+        super();
 
-        this.id = vid;
+        VertexID<VidNameType> vertexId = new VertexID<VidNameType>(name, new StringType(label));
+        this.vertexId = vertexId;
         this.properties = propertyMap;
-        this.label = new StringType(label);
     }
 
     /**
-     * Create a vertex with an ID.
+     * Create a vertex from a name and String label
      *
-     * @param vid vertex ID
-     * @param label vertex Label
+     * @param name vertex nam
+     * @param label vertex label as a {@code String}
      */
-    public Vertex(VertexIdType vid, String label) {
+    public Vertex(VidNameType name, String label) {
 
-        this(vid, label, new PropertyMap());
+        this(name, label, new PropertyMap());
     }
 
     /**
-     * Create a vertex with Id, and property map.
+     * Create a vertex from a name and StringType label
      *
-     * @param vid vertex ID
+     * @param name vertex nam
+     * @param label vertex label as a {@code StringType}
+     */
+    public Vertex(VidNameType name, StringType label) {
+
+        this(name, label, new PropertyMap());
+    }
+
+    /**
+     * Create a vertex with name, and property map.
+     *
+     * @param name vertex name
      * @param propertyMap a define property map to set
      */
-    public Vertex(VertexIdType vid, PropertyMap propertyMap) {
+    public Vertex(VidNameType name, PropertyMap propertyMap) {
 
-        this(vid, new StringType(), propertyMap);
+        this(name, new StringType(), propertyMap);
     }
 
 
     /**
-     * This is not an edge.
+     * This {@code GraphElement} is not an edge.
      * @return  {@code false}
      */
     @Override
@@ -123,7 +140,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
-     * This is not a vertex.
+     * This {@code GraphElement} is a vertex.
      * @return  {@code true}
      */
     @Override
@@ -131,9 +148,13 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
         return true;
     }
 
+    /**
+     * Is this {@code GraphElement} null?
+     * @return  {@literal true} if the {@code VertexID} is null
+     */
     @Override
     public boolean isNull(){
-        if(id == null){
+        if(vertexId == null){
             return true;
         }else{
             return false;
@@ -144,8 +165,8 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      * Returns the ID of the vertex.
      * @return The ID of the vertex.
      */
-    public VertexIdType getId() {
-        return id;
+    public VertexID<VidNameType> getId() {
+        return vertexId;
     }
 
     /**
@@ -156,19 +177,19 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
     }
 
     /**
- * Return the label of the vertex.
+     * Return the label of the vertex.
      * @return the label of the vertex
      */
     public StringType getLabel() {
-        return this.label;
+        return this.vertexId.getLabel();
     }
     /**
      * Overwrites the ID and property map of the vertex.
      * @param vid The new vertex ID.
      * @param properties The new {@code PropertyMap}.
      */
-    public void configure(VertexIdType vid, PropertyMap properties) {
-        this.id = vid;
+    public void configure(VertexID<VidNameType> vid, PropertyMap properties) {
+        this.vertexId = vid;
         this.properties = properties;
     }
 
@@ -200,10 +221,11 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
 
      /**
      * Set label of the vertex (RDF label in case of RDF graphs)
+      *
       * @param label  the label of the vertex
       */
     public void setLabel(StringType label) {
-        this.label = label;
+        this.vertexId.setLabel(label);
     }
 
     /**
@@ -220,10 +242,14 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      */
     @Override
     public final String toString() {
-        if (this.label == null || this.label.isEmpty()) {
-            return this.id.toString() + "\t" + this.properties.toString();
+        if (vertexId == null && properties == null) {
+            return "null vertex";
+        } else if (vertexId != null && properties == null) {
+            return vertexId.toString();
+        } else if (vertexId == null && properties != null) {
+            return "null vertex with properties (???) " + properties.toString();
         } else {
-            return this.id.toString() + "\t" + this.label.toString() + "\t" + properties.toString();
+            return this.vertexId.toString() +  properties.toString();
         }
     }
 
@@ -234,8 +260,7 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      */
     @Override
     public void readFields(DataInput input) throws IOException {
-        id.readFields(input);
-        label.readFields(input);
+        vertexId.readFields(input);
         this.properties.readFields(input);
     }
 
@@ -246,31 +271,34 @@ public class Vertex<VertexIdType extends WritableComparable<VertexIdType>>
      */
     @Override
     public void write(DataOutput output) throws IOException {
-        id.write(output);
-        label.write(output);
+        vertexId.write(output);
         properties.write(output);
     }
 
     /**
-     * To compare another vertex from a serializable graph element
-     * @param vertex
-     * @return -1 if less than edge, 0 if equal, 1 otherwise
+     * Check if the {@code Vertex} is equal to the input {@code Object}
+     *
+     * <p>This is a deep check: Source, destination
+     * vertex ID's and all properties are checked to decide
+     * equality.
+     * </p>
+     * @param object {@Object} being tested against against the {@code Vertex} for equality.
      */
-    public int compareTo(Vertex<VertexIdType> vertex) {
-        return equals(vertex) ? 0 : 1;
+    @Override
+    public boolean equals(Object object) {
+        if (object instanceof Vertex) {
+            Vertex<VidNameType> vertex = (Vertex<VidNameType>) object;
+            return (this.vertexId.equals(vertex.getId()) &&
+                    this.properties.equals(vertex.getProperties()));
+        } else {
+            return false;
+        }
     }
 
     /**
-     * Checks if the input vertex is equal to passed vertex
-     * This is a deep check which means source, destination
-     * vertex ID's and all properties are checked to decide
-     * equality
-     * @param ge
      */
     @Override
-    public boolean equals(GraphElement ge) {
-        Vertex<VertexIdType> vertex = (Vertex<VertexIdType>) ge;
-        return (this.id.equals(vertex.getId()) && this.label.equals(vertex.getLabel()) &&
-                this.properties.equals(vertex.getProperties()));
+    public int hashCode() {
+        return HashUtil.hashPair(vertexId, properties);
     }
 }
