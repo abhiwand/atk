@@ -146,7 +146,7 @@ public class TitanHBaseVertexInputFormatLongDistanceMapNull extends
             //the edge store name used by Titan
             final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
 
-            while (getRecordReader().nextKeyValue()){
+            while (getRecordReader().nextKeyValue()) {
                 final Vertex temp = graphReader.readGiraphVertex(LONG_DISTANCE_MAP_NULL, getConf(),
                     getRecordReader().getCurrentKey().copyBytes(),
                     getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
