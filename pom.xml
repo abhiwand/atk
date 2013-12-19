@@ -155,7 +155,7 @@
 		<json.path.version>1.8.1</json.path.version>
 		<powermock.version>1.5.1</powermock.version>
 		<tinkerpop.version>2.4.0</tinkerpop.version>
-		<titan.version>0.4.0</titan.version>
+		<titan.version>0.4.1</titan.version>
 		<slf4j.version>1.7.5</slf4j.version>
 	</properties>
 
