@@ -39,8 +39,8 @@ public class RecordTypeHBaseRow {
 
     /**
      * A Constructor that takes a row and its columns.
-     * @param row
-     * @param columns
+     * @param {@code row}      The {@code ImmutableBytesWriteable} row.
+     * @param {@code columns}  The {@code Results columns} of the row.
      */
     public RecordTypeHBaseRow(ImmutableBytesWritable row, Result columns) {
         this.row     = row;

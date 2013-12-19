@@ -61,7 +61,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
         NUM_EDGES
     }
 
-    /**
+    /*
      * Creates the Titan graph for saving edges and removes the static open method from setup 
 	 * so it can be mocked-up.
      *

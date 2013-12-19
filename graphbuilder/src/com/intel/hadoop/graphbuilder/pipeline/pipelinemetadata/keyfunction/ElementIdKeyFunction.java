@@ -33,7 +33,7 @@ public class ElementIdKeyFunction implements KeyFunction {
     /**
      * Generates an integer hash of an edge by hashing its ID.
      *
-     * @param {@code edge}
+     * @param {@code edge}  The edge to be hashed.
      * @return  The hash code of the  edge ID.
      */
     public int getEdgeKey(Edge edge) {
@@ -43,7 +43,7 @@ public class ElementIdKeyFunction implements KeyFunction {
     /**
      * Generates an integer hash of a vertex by hashing its ID.
      *
-     * @param {@code vertex}
+     * @param {@code vertex}  The vertex to be hashed.
      * @return  The hash code of the vertex ID.
      */
     public int getVertexKey(Vertex vertex) {

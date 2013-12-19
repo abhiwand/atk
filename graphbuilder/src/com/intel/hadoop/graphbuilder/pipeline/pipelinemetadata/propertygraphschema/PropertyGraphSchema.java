@@ -25,12 +25,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * The schema or "signature" of a property graph. It contains all the possible types of edges and vertices that it may
- * contain. (It might contain types for edges or vertices that are not witnessed by any element present in the
- * graph.)
+ * The schema or "signature" of a property graph. It contains all the possible 
+ * types of edges and vertices that it may contain. (It might contain types for 
+ * edges or vertices that are not witnessed by any element present in the graph.)
  *
  * <p>
- * The expected use of this information is declaring keys for loading the constructed graph into a graph database. </p>
+ * The expected use of this information is declaring keys for loading the 
+ * constructed graph into a graph database. </p>
  */
 public class PropertyGraphSchema {
 
@@ -47,7 +48,7 @@ public class PropertyGraphSchema {
 
     /**
      * Adds a vertex schema to the vertex schemas of a property graph.
-     * @param {@code vertexSchema}
+     * @param {@code vertexSchema}  The vertex schema to add.
      */
     public void addVertexSchema(VertexSchema vertexSchema) {
         vertexSchemata.add(vertexSchema);
@@ -63,7 +64,7 @@ public class PropertyGraphSchema {
 
     /**
      * Adds an edge schema to the edge schemas of a property graph.
-     * @param {@code edgeSchema}
+     * @param {@code edgeSchema}  The edge schema to add.
      */
     public void addEdgeSchema(EdgeSchema edgeSchema) {
         edgeSchemata.add(edgeSchema);
@@ -78,7 +79,7 @@ public class PropertyGraphSchema {
     }
 
     /**
-     * Obtains a set of the property names used in the schema of the property graph.
+     * Gets a set of the property names used in the schema of the property graph.
      * <p>The set is newly allocated and populated with each call.</p>
      * @return A set of strings containing the names of the properties used by the property graph.
      */

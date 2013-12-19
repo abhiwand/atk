@@ -21,7 +21,8 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 
 /**
  * Encapsulates the name and datatype of a property label.
- * <p>The expected use of this information is declaring keys for loading the constructed graph into a graph database.</p>
+ * <p>The expected use of this information is declaring keys for loading the 
+ * constructed graph into a graph database.</p>
  */
 
 public class PropertySchema {
@@ -50,7 +51,7 @@ public class PropertySchema {
 
     /**
      * Gets the name of the property.
-     * @return
+     * @return  The name of the property.
      */
     public String getName() {
         return this.name;
@@ -66,7 +67,7 @@ public class PropertySchema {
 
     /**
      * Gets the datatype of the property.
-     * @return  {@code datatype} The datatype of the property.
+     * @return {@code datatype} The datatype of the property.
      */
     public Class<?> getType() {
         return this.type;

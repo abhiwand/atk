@@ -33,18 +33,20 @@ import java.util.HashMap;
 import java.io.IOException;
 
 /**
- * The class that is responsible for resolving and configuring the graph construction pipeline prior to execution.
+ * The class that is responsible for resolving and configuring the graph 
+ * construction pipeline prior to execution.
  *
  * <p>
  *  Stages include:
  *  <ul>
  *      <li>The input configuration (raw input into records).</li>
  *      <li>The graphbuilding rule (records into property graph elements).</li>
- *      <li>Duplicate removal settings (are duplicates simply merged, do we keep bidirectional edges, and so on).</li>
- *      <li>Graph storage (to an output file on HDFS in a chosen format, or perhaps to a graph database).</li>
+ *      <li>Duplicate removal settings (are duplicates simply merged, do we 
+ *          keep bidirectional edges, and so on).</li>
+ *      <li>Graph storage (to an output file on HDFS in a chosen format, or 
+ *          perhaps to a graph database).</li>
  *  </ul>
  * </p>
- *
  *
  * @see InputConfiguration
  * @see GraphBuildingRule
@@ -75,8 +77,8 @@ public class GraphConstructionPipeline {
     }
 
     /**
-     * Adds a user option to the configuration that will be available at run time in the  
-     * subsequent Hadoop jobs of the graph construction pipeline.
+     * Adds a user option to the configuration that will be available at run   
+     * time in the subsequent Hadoop jobs of the graph construction pipeline.
      * @param {@code key}    The key of the user option.
      * @param {@code value}  The value of the user option.
      */
@@ -112,11 +114,11 @@ public class GraphConstructionPipeline {
         graphGenerationMRJob.setVidClass(vidClass);
         graphGenerationMRJob.setValueClass(valueClass);
 
-        // Set optional parameters.
+        // Sets the optional parameters.
 
         graphGenerationMRJob.setCleanBidirectionalEdges(cleanBiDirectionalEdges == BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES);
 
-        // Set user defined parameters.
+        // Sets the user defined parameters.
 
         if (userOpts != null) {
             graphGenerationMRJob.setUserOptions(userOpts);

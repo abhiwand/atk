@@ -32,7 +32,7 @@ public class SourceVertexKeyFunction  implements KeyFunction {
     /**
      * Generates an integer hash of an edge using its destination vertex.
      *
-     * @param {@code edge}
+     * @param {@code edge}  The edge to be hashed.
      * @return  The hash code of the edge's destination vertex ID.
      */
     public int getEdgeKey(Edge edge) {
@@ -42,7 +42,7 @@ public class SourceVertexKeyFunction  implements KeyFunction {
     /**
      * Generates an integer hash of a vertex by hashing its ID.
      *
-     * @param {@code vertex}
+     * @param {@code vertex}  The vertext to be hashed.
      * @return  hash code of the  vertex ID
      */
 
