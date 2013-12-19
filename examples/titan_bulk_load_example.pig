@@ -48,7 +48,9 @@ sh echo "create 'gb_input_table', {NAME=>'cf'}" | hbase shell --cf is the column
 
 STORE final_relation INTO 'hbase://gb_input_table' 
   		USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:id cf:name cf:age cf:dept cf:manager cf:underManager');
-	  		
+	  
+--build an undirected graph with the --edges argument		
+-- -O flag specifies overwriting the input Titan table
 LOAD_TITAN('gb_input_table', '"cf:id=cf:name,cf:age,cf:dept" "cf:manager"',
-			   '"cf:id,cf:manager,worksUnder,cf:underManager"',
-			   'examples/hbase-titan-conf.xml', '-O'); -- -O flag specifies overwriting the input Titan table
+			   '--edges "cf:id,cf:manager,worksUnder,cf:underManager"',
+			   'examples/hbase-titan-conf.xml', '-O'); 

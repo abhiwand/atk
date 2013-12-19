@@ -28,6 +28,7 @@ import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.io.WritableComparable;
@@ -46,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 /**
  * \brief CreatePropGraphElements ... converts tuples of scalar data into bag of property graph elements..
  * <p/>
@@ -91,7 +93,7 @@ import java.util.List;
  * </p>
  * </p>
  */
-@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
+@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class CreatePropGraphElements extends EvalFunc<DataBag> {
     private CommandLineInterface commandLineInterface = new CommandLineInterface();
 

@@ -20,6 +20,7 @@ package com.intel.pig.udf.eval;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
@@ -38,7 +39,7 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * The output will be in the format {str1, str2, ..., strN} <br/>
  * </pre>
  */
-@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
+@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class FlattenAsGBString extends EvalFunc<String> {
 
 	/* GB accepts comma delimited fields */

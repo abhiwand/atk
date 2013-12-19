@@ -24,6 +24,7 @@ import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfExceptionHandler;
+
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -35,6 +36,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 /**
  * \brief MergeDuplicateGraphElements ... combine duplicate property graph elements into a single property graph element.
@@ -54,7 +56,7 @@ import java.util.Iterator;
  * @see PropertyGraphElementTuple
  * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement
  */
-@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
+@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {
 
     private SerializedGraphElement graphElementFromGroupedBagEntry(Tuple tuple) throws ExecException {

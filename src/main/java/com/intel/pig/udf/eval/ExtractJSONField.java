@@ -20,6 +20,7 @@ package com.intel.pig.udf.eval;
 
 import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
+
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
@@ -29,6 +30,7 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.jayway.restassured.path.json.JsonPath.with;
 
@@ -55,7 +57,7 @@ import static com.jayway.restassured.path.json.JsonPath.with;
        }
  * </pre>
  */
-@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
+@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class ExtractJSONField extends EvalFunc<String> {
 
 	@Override

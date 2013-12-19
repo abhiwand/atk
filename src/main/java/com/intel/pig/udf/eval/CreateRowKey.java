@@ -60,7 +60,7 @@ import java.util.concurrent.TimeUnit;
        }
  * </pre>
  */
-@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 1, timeUnit = TimeUnit.MINUTES)
+@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class CreateRowKey extends EvalFunc<Tuple> {
 
 	private static TupleFactory tupleFactory = TupleFactory.getInstance();
