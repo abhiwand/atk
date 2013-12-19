@@ -64,7 +64,7 @@ DEFINE LOAD_TITAN(input_hbase_table_name, vertex_rule, edge_rule, config_file, o
 	stored_graph = MAPREDUCE 'target/graphbuilder-2.0-alpha-with-deps.jar' 
 	  		STORE dummy INTO '/tmp/tmp_store_1'
 	  		LOAD '/tmp/empty' USING TextLoader() AS (line:chararray) 
-	  		`com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB -conf $config_file --tablename $input_hbase_table_name --vertices $vertex_rule --edges $edge_rule $other_args`;
+	  		`com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB -conf $config_file --tablename $input_hbase_table_name --vertices $vertex_rule $edge_rule $other_args`;
 	  		
 	STORE stored_graph INTO '/tmp/tmp_store_2';
 };

@@ -48,7 +48,11 @@ sh echo "drop 'wiki_table'" | hbase shell
 sh echo "create 'wiki_table', {NAME=>'features'}" | hbase shell
 
 STORE final_relation INTO 'hbase://wiki_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('features:id features:title features:flattened_links');
+
+--build a directed graph with the --directedEdges argument		
+-- -O flag specifies overwriting the input Titan table
+-- -F flag specifies to unflatten the links (see links_flattened relation above) during tokenization 
 LOAD_TITAN('wiki_table', '"features:title=features:id" "features:flattened_links"', 
-                             '"features:title,features:flattened_links,LINKS"',
-                           'examples/hbase-titan-conf.xml', '-O -F'); -- overwrite the input table and process the flattened links
+                             '--directedEdges "features:title,features:flattened_links,LINKS"',
+                           'examples/hbase-titan-conf.xml', '-O -F'); 
  
