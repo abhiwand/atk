@@ -43,6 +43,11 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LEFT_VERTEX_TYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.RIGHT_VERTEX_TYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TRAIN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_VALIDATION;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TEST;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
@@ -107,42 +112,42 @@ public class TitanVertexFormatPropertyGraph4CFTest
         TitanVertex[] nodes;
         nodes = new TitanVertex[5];
         nodes[0] = tx.addVertex();
-        nodes[0].addProperty(vertexType, "L");
+        nodes[0].addProperty(vertexType, LEFT_VERTEX_TYPE);
         nodes[1] = tx.addVertex();
-        nodes[1].addProperty(vertexType, "L");
+        nodes[1].addProperty(vertexType, LEFT_VERTEX_TYPE);
         nodes[2] = tx.addVertex();
-        nodes[2].addProperty(vertexType, "R");
+        nodes[2].addProperty(vertexType, RIGHT_VERTEX_TYPE);
         nodes[3] = tx.addVertex();
-        nodes[3].addProperty(vertexType, "R");
+        nodes[3].addProperty(vertexType, RIGHT_VERTEX_TYPE);
         nodes[4] = tx.addVertex();
-        nodes[4].addProperty(vertexType, "R");
+        nodes[4].addProperty(vertexType, RIGHT_VERTEX_TYPE);
 
         TitanEdge[] edges;
         edges = new TitanEdge[8];
         edges[0] = nodes[0].addEdge(edge, nodes[2]);
         edges[0].setProperty(weight, "1.0");
-        edges[0].setProperty(edgeType, "tr");
+        edges[0].setProperty(edgeType, EDGE_TYPE_TRAIN);
         edges[1] = nodes[0].addEdge(edge, nodes[3]);
         edges[1].setProperty(weight, "2.0");
-        edges[1].setProperty(edgeType, "te");
+        edges[1].setProperty(edgeType, EDGE_TYPE_TEST);
         edges[2] = nodes[1].addEdge(edge, nodes[2]);
         edges[2].setProperty(weight, "5.0");
-        edges[2].setProperty(edgeType, "tr");
+        edges[2].setProperty(edgeType, EDGE_TYPE_TRAIN);
         edges[3] = nodes[1].addEdge(edge, nodes[4]);
         edges[3].setProperty(weight, "3.0");
-        edges[3].setProperty(edgeType, "va");
+        edges[3].setProperty(edgeType, EDGE_TYPE_VALIDATION);
         edges[4] = nodes[2].addEdge(edge, nodes[0]);
         edges[4].setProperty(weight, "1.0");
-        edges[4].setProperty(edgeType, "tr");
+        edges[4].setProperty(edgeType, EDGE_TYPE_TRAIN);
         edges[5] = nodes[2].addEdge(edge, nodes[1]);
         edges[5].setProperty(weight, "5.0");
-        edges[5].setProperty(edgeType, "tr");
+        edges[5].setProperty(edgeType, EDGE_TYPE_TRAIN);
         edges[6] = nodes[3].addEdge(edge, nodes[0]);
         edges[6].setProperty(weight, "2.0");
-        edges[6].setProperty(edgeType, "te");
+        edges[6].setProperty(edgeType, EDGE_TYPE_TEST);
         edges[7] = nodes[4].addEdge(edge, nodes[1]);
         edges[7].setProperty(weight, "3.0");
-        edges[7].setProperty(edgeType, "va");
+        edges[7].setProperty(edgeType, EDGE_TYPE_VALIDATION);
 
         tx.commit();
 

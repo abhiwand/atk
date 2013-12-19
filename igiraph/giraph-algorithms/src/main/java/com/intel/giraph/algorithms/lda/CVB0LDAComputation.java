@@ -436,6 +436,8 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         private static String FILENAME;
         /** Saved output stream to write to */
         private FSDataOutputStream output;
+        /**super step number*/
+        int lastStep = 0;
 
         public static String getFilename() {
             return FILENAME;
@@ -475,12 +477,8 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
 
             boolean costEval = getConf().getBoolean(COST_EVAL, false);
             int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
-            int realStep = 0;
-            if (superstep >= 1) {
-                realStep = (int) superstep - 1;
-            } else if (superstep == -1) {
-                realStep = maxSupersteps;
-            }
+            int realStep = lastStep;
+
             if (superstep == 0) {
                 // output graph statistics
                 long numDocVertices = Long.parseLong(map.get(SUM_DOC_VERTEX_COUNT));
@@ -521,6 +519,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
                 output.writeBytes("maxDelta = " + maxDelta + "\n");
             }
             output.flush();
+            lastStep =  (int) superstep;
         }
 
         @Override

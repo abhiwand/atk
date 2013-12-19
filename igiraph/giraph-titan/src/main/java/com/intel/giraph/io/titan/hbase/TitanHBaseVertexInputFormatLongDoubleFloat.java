@@ -105,7 +105,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
         /**
          * Giraph Veretex
          */
-        private Vertex vertex;
+        private Vertex vertex = null;
         /**
          * task context
          */
@@ -147,23 +147,16 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
             //the edge store name used by Titan
             final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
 
-            if (getRecordReader().nextKeyValue()) {
+            while (getRecordReader().nextKeyValue()) {
                 final Vertex temp = graphReader.readGiraphVertex(LONG_DOUBLE_FLOAT, getConf(),
                     getRecordReader().getCurrentKey().copyBytes(),
                     getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
                 if (null != temp) {
                     vertex = temp;
                     return true;
-                } else if (getRecordReader().nextKeyValue()) {
-                    final Vertex temp1 = graphReader.readGiraphVertex(LONG_DOUBLE_FLOAT, getConf(),
-                        getRecordReader().getCurrentKey().copyBytes(),
-                        getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
-                    if (null != temp1) {
-                        vertex = temp1;
-                        return true;
-                    }
                 }
             }
+            vertex = null;
             return false;
         }
 

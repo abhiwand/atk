@@ -117,23 +117,18 @@ public class AveragePathLengthComputation extends BasicComputation
             // source vertex id
             long source = message.getSource();
 
-            // distance between source and current vertex
-            int distance = message.getDistance();
-
             if (source == vertex.getId().get()) {
                 // packet returned to the original sender
                 continue;
             }
 
-            if (vertex.getValue().distanceMapContainsKey(source)) {
-                if (vertex.getValue().distanceMapGet(source) > distance) {
-                    //double delta = vertex.getValue().distanceMapGet(source) - distance;
-                    aggregate(SUM_UPDATES, new DoubleWritable(1d));
-                    //LOG.info("APL : " + delta);
-                    vertex.getValue().distanceMapPut(source, distance);
-                    floodMessage(vertex, source, distance + 1);
-                }
-            } else {
+            // distance between source and current vertex
+            int distance = message.getDistance();
+
+            DistanceMapWritable vertexValue = vertex.getValue();
+            if ((vertexValue.distanceMapContainsKey(source) &&
+                 vertexValue.distanceMapGet(source) > distance) ||
+                (!vertexValue.distanceMapContainsKey(source))){
                 vertex.getValue().distanceMapPut(source, distance);
                 floodMessage(vertex, source, distance + 1);
                 aggregate(SUM_UPDATES, new DoubleWritable(1d));
@@ -178,7 +173,7 @@ public class AveragePathLengthComputation extends BasicComputation
         /**
          * super step number
          */
-        long lastStep = 0;
+        int lastStep = 0;
 
         public static String getFilename() {
             return FILENAME;
@@ -217,9 +212,7 @@ public class AveragePathLengthComputation extends BasicComputation
             for (Map.Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
             }
-            long realStep = lastStep ++;
-            lastStep = superstep;
-
+            int realStep = lastStep;
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
             if (superstep == 0) {
                 output.writeBytes("==================Average Path Length Configuration====================\n");
@@ -227,12 +220,13 @@ public class AveragePathLengthComputation extends BasicComputation
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
                 output.writeBytes("===================Convergence Progress======================\n");
-            }  else if (realStep >= 0 && realStep % convergenceProgressOutputInterval == 0 ) {
+            }  else if (realStep > 0 && realStep % convergenceProgressOutputInterval == 0 ) {
                     // output learning progress
                     double sumUpdates = Double.parseDouble(map.get(SUM_UPDATES));
                     output.writeBytes("superstep = " + realStep + "\tsumDelta = " + sumUpdates + "\n");
             }
             output.flush();
+            lastStep = (int) superstep;
         }
 
         @Override

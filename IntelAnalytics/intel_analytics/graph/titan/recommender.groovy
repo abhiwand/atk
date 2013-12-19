@@ -5,26 +5,40 @@ import com.tinkerpop.blueprints.Vertex
 import com.tinkerpop.blueprints.Direction
 import groovy.lang.Binding
 
-String graphDB = args[0]
-String vertexID = args[1]
-String key4Results = args[2]
-String leftName = args[3]
-String rightName = args[4]
-String key4VertexType = args[5]
-String key4VertexID = args[6]
-String key4EdgeType = args[7]
-String trainStr = args[8]
+String[] inputs = args[0].split("\\::")
+String graphDB = inputs[0]
+String vertexID = inputs[1]
+String key4Results = inputs[2]
+String leftName = inputs[6]
+String rightName = inputs[7]
+String leftTypeStr = inputs[8]
+String rightTypeStr = inputs[9]
+String trainStr = inputs[10]
+String key4VertexID = inputs[11]
+String key4VertexType = inputs[12]
+String key4EdgeType = inputs[13]
 String[] propertyList = key4Results.tokenize(",")
 
 BaseConfiguration conf = new BaseConfiguration()
-conf.setProperty("storage.backend", "hbase")
-conf.setProperty("storage.hostname", "localhost")
-conf.setProperty("storage.port","2181")
+conf.setProperty("storage.backend", inputs[3])
+conf.setProperty("storage.hostname", inputs[4])
+conf.setProperty("storage.port",inputs[5])
 conf.setProperty("storage.tablename", graphDB)
 Graph g = TitanFactory.open(conf)
 
 Vertex v = g.V(key4VertexID, vertexID).next()
-recommend(v, g, propertyList, leftName, rightName, key4VertexType, key4VertexID, vertexID, key4EdgeType, trainStr)
+recommend(v,
+        g,
+        propertyList,
+        leftName,
+        rightName,
+        key4VertexType,
+        key4VertexID,
+        vertexID,
+        key4EdgeType,
+        trainStr,
+        leftTypeStr,
+        rightTypeStr)
 
 def recommend(Vertex v,
               Graph g,
@@ -35,16 +49,18 @@ def recommend(Vertex v,
               String key4VertexID,
               String vertexID,
               String key4EdgeType,
-              String trainStr) {
-    entities = ['l':leftName + '  ', 'r':rightName+'  ']
+              String trainStr,
+              String leftTypeStr,
+              String rightTypeStr) {
+    entities = [(leftTypeStr):leftName + '  ', (rightTypeStr):rightName+'  ']
     commonStr = 'Top 10 recommendations to '
-    comments = ['l':commonStr + leftName + ': ', 'r':commonStr + rightName + ': ']
+    comments = [(leftTypeStr):commonStr + leftName + ': ', (rightTypeStr):commonStr + rightName + ': ']
     vertexType = v.getProperty(key4VertexType)
-    recommendType = 'r'
-    if (vertexType == 'r') {
-        recommendType = 'l'
+    recommendType = rightTypeStr
+    if (vertexType == rightTypeStr) {
+        recommendType = leftTypeStr
     }
-    println "================" + comments[vertexType] + vertexID + "================"
+    println "================" + comments[recommendType] + vertexID + "================"
     list1 = getResults(v, propertyList)
 
     def list = []
@@ -53,7 +69,7 @@ def recommend(Vertex v,
         list2 = getResults(v2, propertyList)
         score = calculateScore(list1, list2)
         if (v2.outE.filter{it.getProperty(key4EdgeType) != trainStr}){
-            list.add new movie(id:v2.getProperty(key4VertexID), rec:score)
+            list.add new recommendation(id:v2.getProperty(key4VertexID), rec:score)
         }
     }
     sortedlist = list.sort{a,b -> b.rec<=>a.rec}[0..10]
@@ -61,7 +77,7 @@ def recommend(Vertex v,
     println 'complete recommend'
 }
 
-class movie {
+class recommendation {
    def id
    def rec
 }
