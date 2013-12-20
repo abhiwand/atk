@@ -41,12 +41,12 @@ import java.util.Map;
 /**
  * Loads edges into Titan.
  * <p>
- * It gathers each vertex with the edges that point to that vertex, that is,
- * those edges for whom the vertex is the destination.  Because the edges were tagged with the
- * Titan IDs of their sources in the previous MR job and each vertex is tagged with its Titan ID,
- * we now know the Titan ID of the source and destination of the edges and can add them to Titan.
+ * This class gathers each vertex with the edges that point to that vertex, that is,
+ * those edges for which the vertex is the destination. Because the edges were tagged with the
+ * Titan IDs of their sources in the previous Map Reduce job and each vertex is tagged with 
+ * its Titan ID, we now know the Titan ID of the source and destination of the edges and can 
+ * add them to Titan.
  * </p>
- *
  */
 
 public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphElement, IntWritable, SerializedGraphElement> {
@@ -63,11 +63,11 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
         NUM_EDGES
     }
 
-    /**
+    /*
      * Creates the Titan graph for saving edges and removes the static open method from setup 
 	 * so it can be mocked-up.
      *
-     * @return TitanGraph For saving edges.
+     * @return {@code TitanGraph}  For saving edges.
      * @throws IOException
      */
     private TitanGraph getTitanGraphInstance (Context context) throws IOException {
@@ -76,9 +76,9 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
     }
 
     /**
-     * Set up the Titan connection.
+     * Sets up the Titan connection.
      *
-     * @param context  The reducer context provided by Hadoop.
+     * @param {@code context}  The reducer context provided by Hadoop.
      * @throws IOException
      * @throws InterruptedException
      */
@@ -94,17 +94,18 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
     /**
      * Hadoop-called routine for loading edges into Titan.
      * <p>
-     * We assume that edges and vertices have been gathered so that every
+     * We assume that the edges and vertices have been gathered so that every
      * edge shares the reducer of its destination vertex, and that every edge has previously
-     * been assigned the TitanID of its source vertex.
+     * been assigned the Titan ID of its source vertex.
      * </p>
      * <p>
      * Titan IDs are propagated from the destination vertices to each edge and the edges are loaded 
-     * into Titan using the BluePrints API
+     * into Titan using the BluePrints API.
      * </p>
-     * @param key      A mapreduce key; a hash of a vertex ID.
-     * @param values   Either a vertex with that hashed vertex ID, or an edge with said vertex as its destination.
-     * @param context  A reducer context provided by Hadoop.
+     * @param {@code key}      A map reduce key; a hash of a vertex ID.
+     * @param {@code values}   Either a vertex with that hashed vertex ID, or an edge with said 
+	 *                         vertex as its destination.
+     * @param {@code context}  A reducer context provided by Hadoop.
      * @throws IOException
      * @throws InterruptedException
      */
@@ -116,9 +117,9 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
 
         for(SerializedGraphElement graphElement: values){
             /*
-             * this is calling
-             * EdgesIntoTitanReducerCallback which is an implementation of GraphElementTypeCallback
-             * to add all the edges and vertices into edgePropertyTable and vertexNameToTitanID hashmaps
+             * This is calling EdgesIntoTitanReducerCallback which is an implementation
+             * of GraphElementTypeCallback to add all the edges and vertices into
+             * the edgePropertyTable and vertexNameToTitanID hashmaps.
              */
             graphElement.graphElement().typeCallback(edgesIntoTitanReducerCallback,
                     ArgumentBuilder.newArguments().with("edgePropertyTable", edgePropertyTable)
@@ -156,10 +157,10 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
                         LOG, e);
             }
 
-            // Edge is added to the graph; now add the edge properties
+            // The edge is added to the graph; now add the edge properties.
 
-            // the "srcTitanID" property was added during this MR job to propagate the Titan ID of the edge's
-            // source vertex to this reducer... we can remove it now
+            // The "srcTitanID" property was added during this MR job to propagate the 
+            // Titan ID of the edge's source vertex to this reducer ... we can remove it now.
 
             propertyMap.removeProperty("srcTitanID");
 
@@ -194,10 +195,10 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
     }
 
     /**
-     * Perform cleanup tasks after the reducer is finished.
+     * Performs cleanup tasks after the reducer finishes.
      *
-     * In particular, close the Titan graph.
-     * @param context    Hadoop provided reducer context.
+     * In particular, closes the Titan graph.
+     * @param {@code context}  Hadoop provided reducer context.
      * @throws IOException
      * @throws InterruptedException
      */

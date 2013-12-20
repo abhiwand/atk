@@ -24,6 +24,7 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
+
  * Serialized form of GraphElement class that uses {@code LongType} vertex names in its vertex IDs.
  *
  * We have this class because in Java, a parameterized type cannot be instantiated.
@@ -33,6 +34,7 @@ public class SerializedGraphElementLongTypeVids
         extends SerializedGraphElement<LongType> {
 
     /**
+
      * Allocate a new {@code VertexID}.
      * @return  a new {@code VertexID} with a {@code LongType} vertex name and a {@StringType} vertex label
      */

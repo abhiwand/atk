@@ -23,7 +23,8 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 
 /**
- * Generates a key for map reduce by hashing the vertices by their ID and edges by the ID of their destination vertex.
+ * Generates a key for map reduce by hashing the vertices by their IDs and 
+ * the edges by the ID of their destination vertex.
  *
  * @see KeyFunction
  */
@@ -32,7 +33,7 @@ public class DestinationVertexKeyFunction  implements KeyFunction {
     /**
      * Generates an integer hash of an edge using its destination vertex.
      *
-     * @param edge
+     * @param {@code edge}  The edge to be hashed.
      * @return  The hash code of the edge's destination vertex ID.
      */
     public int getEdgeKey(Edge edge) {
@@ -42,7 +43,7 @@ public class DestinationVertexKeyFunction  implements KeyFunction {
     /**
      * Generates an integer hash of a vertex by hashing its ID.
      *
-     * @param vertex
+     * @param {@code vertex}  The vertext to be hashed.
      * @return  The hash code of the vertex ID.
      */
     public int getVertexKey(Vertex vertex) {

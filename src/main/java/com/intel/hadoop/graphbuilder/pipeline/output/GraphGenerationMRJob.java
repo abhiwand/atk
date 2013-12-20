@@ -27,8 +27,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 /**
- * These are the methods that the (chained) MR job(s) for generating a graph must provide.
- * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR
+ * These are the methods that must be provided by the (chained) Map Reducer 
+ * job(s) for generating a graph.
  * @see  com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain
  */
 public abstract class GraphGenerationMRJob {

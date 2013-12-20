@@ -30,9 +30,11 @@ import org.apache.hadoop.io.Writable;
 import java.util.Hashtable;
 
 /**
- *  Add all the edges and vertices into the their respective hashmaps. the edgePropertyTable hash is keyed by edge
- *  id(src, dst, label) with the value being the property map. the  vertexNameToTitanID has is keyed by vertex id
- *  which should be a StringType or LongType with the value bing the titan ID for the vertex.
+ *  Adds all of the edges and vertices into the their respective hashmaps. The 
+ *  {@code edgePropertyTable} hash is keyed by edge id (src, dst, label) with 
+ *  the value being the property map. The {@code vertexNameToTitanID} is keyed 
+ *  by vertex id, which should be a {@code StringType} or {@code LongType} 
+ *  with the value being the titan ID for the vertex.
  *
  * @see LongType
  * @see com.intel.hadoop.graphbuilder.types.StringType

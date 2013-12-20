@@ -31,46 +31,46 @@ import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
 /**
- * Generate a graph from rows of a big table, store in a graph database.
+ * Generates a graph from rows of a big table, store in a graph database.
  * <p>
  *    <ul>
- *        <li>At present, only Hbase is supported for the big table</li>
- *        <li>At present, only Titan is supported for the graph database</li>
+ *        <li>We support only Hbase for the big table.</li>
+ *        <li>We support only Titan for the graph database.</li>
  *    </ul>
  * </p>
  *
  * <p>
  *     Path Arguments:
  *     <ul>
- *         <li> <code>-t</code> specifies the HBase table from which to read</li>
- *         <li> <code>-conf</code> specifies configuration file</li>
- *         <li><code>-a</code> an option that tells Titan it can append the newly generated graph to an existing
- *         one in the same table. Default behavior is to abort if you try to use an existing Titan table name</li>
+ *         <li>The <code>-t</code> option specifies the HBase table from which to read.</li>
+ *         <li>The <code>-conf</code> option specifies configuration file.</li>
+ *         <li>The <code>-a</code> option tells Titan it can append the newly generated graph to an existing
+ *         one in the same table. The default behavior is to abort if you try to use an existing Titan table name.</li>
  *     </ul>
- *     The Titan table name is specified in the configuration file in the property
+ *     Specify the Titan table name in the configuration file in the property:
  *     <code>graphbuilder.titan.storage_tablename</code>
  * </p>
  *
  * <p>TO SPECIFY EDGES:
- * Edges are specified by a sequence of "edge rules" following the flag <code>-e</code> (for undirected edges) or
- * <code>-d</code> (for directed edges). The rules for edge construction are the same for both directed and
+ * Specify the edges with a sequence of "edge rules" following the <code>-e</code> flag (for undirected edges) or
+ * <code>-d</code> flag (for directed edges). The rules for edge construction are the same for both directed and
  * undirected edges.
- * The first three attributes in the edge rule are source vertex column, destination
- * vertex column and the string label. </p>
+ * The first three attributes in the edge rule are the source vertex column, the destination
+ * vertex column, and the string label.</p>
  * <code> -e src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code>
  * </p>
  * <p> <code> -d src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code></p>
  * <p>
- * <p>TO SPECIFY VERTICES: The first attribute in the string is the vertex ID column. Subsequent attributes
- * denote vertex properties
- * and are separated from the first by an equals sign:</p>
+ * <p>TO SPECIFY VERTICES: 
+ * The first attribute in the string is the vertex ID column. Subsequent attributes
+ * denote vertex properties and are separated from the first by an equals sign:</p>
  * <code> -v vertex_id_column=vertex_prop1_column,... vertex_propn_column </code>
  * <p>or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_column </code>
  * <p>
- *     The option <code>-F</code> (for "flatten lists") specifies that when a cell containing a JSon list is read as a vertex ID, it is to be
- *     expanded into one vertex for each entry in the list. This applies to the source and destination columns for
- *     edges as well. It does not apply to properties.
+ *     The <code>-F</code> option (for "flatten lists") specifies that when a cell containing a JSon list is read 
+ *     as a vertex ID, it is to be expanded into one vertex for each entry in the list. This applies to the source 
+ *     and destination columns for edges as well. It does not apply to properties.
  * </p>
  * </p>
  *  Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices.
@@ -90,15 +90,15 @@ import org.apache.log4j.Logger;
  *  <code>-keys <key rule 1>,<key rule 2>, ... <key rule n></code>
  *  where a key rule is a ; separated list beginning with a column name and including the following options:
  *  <ul>
- *    <li>{@code String} selects String datatype for the key's values <default value></li>
- *    <li>{@code Float} selects Float datatype for the key's values</li>
- *    <li>{@code Double} selects Double datatype for the key's values</li>
- *    <li>{@code Integer} selects Integer datatype for the key's values</li>
- *    <li>{@code Long} selects Long datatype for the key's value</li>
- *    <li>{@code E} marks the key to be used as an edge index</li>
- *    <li>{@code V} marks the kye to be used as a vertex index (edge and vertex indexing are not exclusive)</li>
- *     <li>{@code U} marks the key as taking values unique to each vertex</li>
- *    <li> {@code NU} marks the key as taking values that are not necessarily unique to each vertex</li>
+ *    <li>{@code String} selects the String datatype for the key's values <default value>.</li>
+ *    <li>{@code Float} selects the Float datatype for the key's values.</li>
+ *    <li>{@code Double} selects the Double datatype for the key's values.</li>
+ *    <li>{@code Integer} selects the Integer datatype for the key's values.</li>
+ *    <li>{@code Long} selects the Long datatype for the key's value.</li>
+ *    <li>{@code E} marks the key to be used as an edge index.</li>
+ *    <li>{@code V} marks the key to be used as a vertex index (edge and vertex indexing are not exclusive).</li>
+ *     <li>{@code U} marks the key as taking values unique to each vertex.</li>
+ *    <li> {@code NU} marks the key as taking values that are not necessarily unique to each vertex.</li>
  *</ul>
  * </p>
  *
@@ -140,9 +140,9 @@ public class TableToGraphDB {
     }
 
     /**
-     * Main method for feature table to graph database construction
+     * The main method for feature table to graph database construction.
      *
-     * @param args Command line arguments
+     * @param args Command line arguments.
      */
 
     public static void main(String[] args)  {

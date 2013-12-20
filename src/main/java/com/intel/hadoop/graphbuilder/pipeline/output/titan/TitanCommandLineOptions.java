@@ -28,7 +28,7 @@ public class TitanCommandLineOptions {
     public static final String OVERWRITE = "overwrite";
 
 
-    // constants for key/index declarations
+    // The constants for the key/index declarations.
     public static final String CMD_KEYS_OPTNAME  = "keys";
 
     static public final String STRING_DATATYPE = new String("String");

@@ -19,11 +19,12 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
+import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
@@ -36,8 +37,8 @@ import java.io.IOException;
 /**
  * This class handles the set-up time configuration when the raw input is an Hbase table.
  *
- * For graph construction tasks that require multiple chained MR jobs, this class affects only the 
- * first MR job, as that is the first mapper that deals with raw input.
+ * For graph construction tasks that require multiple chained Map Reduce jobs, this class 
+ * affects only the first Map Reduce job, as that is the first mapper that deals with raw input.
  *
  * <ul>
  * <li> It provides a handle to the mapper class used to read hbase tables ({@code HBaseReaderMapper}).</li>
@@ -63,7 +64,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
     private Class      mapperClass  = HBaseReaderMapper.class;
 
     /**
-     * Allocates and acquires an instance of the singleton HBaseUtils.
+     * Allocates and acquires an instance of the singleton {@code HBaseUtils}.
      */
     public HBaseInputConfiguration(String srcTableName) {
 
@@ -97,7 +98,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     /**
      * Performs setup tasks with hbase.
-     * @param configuration The configuration being prepared for the graph construction job.
+     * @param {@code configuration} The configuration being prepared for the graph construction job.
      */
 
     public void updateConfigurationForMapper(Configuration configuration) {
@@ -110,8 +111,8 @@ public class HBaseInputConfiguration implements InputConfiguration {
     }
 
     /**
-     * Initialize the table mapper job.
-     * @param job  The map reduce job in preparation for graph construction.
+     * Initializes the table mapper job.
+     * @param {@code job}  The map reduce job in preparation for graph construction.
      */
     public void updateJobForMapper(Job job) {
         try {
@@ -133,7 +134,7 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     /**
      * Obtains a description of the input configuration for logging purposes.
-     * @return  "Hbase table name: " appended with source table name.
+     * @return  "Hbase table name: " Appended with the source table name.
      */
     public String getDescription() {
         return "Hbase table name: " + srcTableName;
