@@ -43,7 +43,7 @@ PID=\$(cat $WEB_DIR/$PACKAGE_NAME/RUNNING_PID)
 ls -l $WEB_DIR
 
 echo \"unziping package $WEB_DIR\$PACKAGE_NAME.zip\"
-unzip -o $WEB_DIR/$PACKAGE_NAME.zip
+unzip -o $WEB_DIR/$PACKAGE_NAME.zip -d $WEB_DIR
 
 if [\$PID == \"\"]; then
     echo \"no current process\"
@@ -58,6 +58,9 @@ fi
 
 echo \"Run new process\"
 sudo $WEB_DIR/$PACKAGE_NAME/bin/intelanalytics-web -Dplay.config=prod -Dhttp.port=80 -Dhttps.port=443 -Dhttps.keyStore=$WEB_DIR/$PACKAGE_NAME/conf/\\\\graphtrial.intel.com.pass.keystore.jks -Dhttps.keyStorePassword=frogsare#0071c5 &
+ll -l $WEB_DIR
+sleep 15
+exit
 "
 
 PID= cat RUNNING_PID
@@ -73,4 +76,3 @@ for t in "${TARGETS[@]}"
     scp -o ProxyCommand="nc -x  proxy-socks.jf.intel.com:1080 %h %p" -i "$PEM_FILE" -p "$PACKAGE"  ec2-user@"$t":~/web/
     ssh -t -t -o ProxyCommand='nc -x proxy-socks.jf.intel.com:1080 %h %p' -i "$PEM_FILE" ec2-user@"$t" <<< "$startNewPackage"
 done
-
