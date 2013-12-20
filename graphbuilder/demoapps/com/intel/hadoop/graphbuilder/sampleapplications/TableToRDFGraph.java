@@ -133,9 +133,7 @@ public class TableToRDFGraph {
 
         if (cmd.hasOption("n")) {
             String namespace = cmd.getOptionValue("n");
-            System.out.println("I'm here 1 " + namespace);
             if (!com.intel.hadoop.graphbuilder.util.RDFUtils.isValidNamespace(namespace)) {
-                System.out.println("I'm here 2 " + namespace);
                 GraphBuilderExit.graphbuilderFatalExitNoException(BAD_COMMAND_LINE,
                         "GRAPHBUILDER_ERROR: Invalid RDF namspace" + namespace,
                         LOG);
