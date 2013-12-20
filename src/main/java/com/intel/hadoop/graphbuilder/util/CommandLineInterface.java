@@ -303,7 +303,13 @@ public class CommandLineInterface{
      * @return A boolean indicating weather or not the {@code String} option is the missing option for which we are looking.
      */
     public static boolean lookForOptionException(ParseException e, String option) {
-        MissingOptionException missingOptions = (MissingOptionException) e;
+
+        MissingOptionException missingOptions;
+        if (e instanceof MissingOptionException) {
+            missingOptions = (MissingOptionException) e;
+        } else {
+            return false;
+        }
 
         for (int index = 0; index < missingOptions.getMissingOptions().size(); index++) {
 
@@ -321,9 +327,9 @@ public class CommandLineInterface{
     public static String getMissingArgumentFromException(ParseException ex){
         MissingArgumentException missingArgumentException;
 
-        try{
+        if (ex instanceof MissingArgumentException) {
             missingArgumentException = (MissingArgumentException) ex;
-        } catch (ClassCastException e){
+        } else {
             return null;
         }
 
@@ -343,9 +349,9 @@ public class CommandLineInterface{
     public static String getUnrecognizedOptionFromException(ParseException ex){
         UnrecognizedOptionException unrecognizedOption;
 
-        try{
+        if (ex instanceof UnrecognizedOptionException) {
             unrecognizedOption = (UnrecognizedOptionException) ex;
-        } catch (ClassCastException e){
+        } else {
             return null;
         }
 
@@ -364,9 +370,9 @@ public class CommandLineInterface{
     public static String getFirstMissingOptionFromException(ParseException ex){
         MissingOptionException missingOptions;
 
-        try{
+        if (ex instanceof MissingOptionException) {
             missingOptions = (MissingOptionException) ex;
-        } catch (ClassCastException e){
+        } else {
             return null;
         }
 

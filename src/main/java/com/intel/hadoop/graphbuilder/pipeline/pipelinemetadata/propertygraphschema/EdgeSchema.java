@@ -22,10 +22,12 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 import java.util.ArrayList;
 
 /**
- * The type of an edge declaration used in graph construction. It encapsulates the label of the edge, as well as
- * the names and datatypes of the properties that can be associated with edges of this type.
+ * The type of an edge declaration used in graph construction. It encapsulates the 
+ * label of the edge, as well as the names and datatypes of the properties that can 
+ * be associated with edges of this type.
  *
- * The expected use of this information is declaring keys for loading the constructed graph into a graph database.
+ * The expected use of this information is declaring keys for loading the constructed 
+ * graph into a graph database.
  */
 public class EdgeSchema {
 

@@ -17,13 +17,14 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.pipeline.input;
+ 
+ package com.intel.hadoop.graphbuilder.pipeline.input;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
@@ -35,17 +36,16 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
- * The basic mapper tasks of context.writes of keyed property graph elements are done here.
+ * This class implements the basic mapper {@code context.writes} tasks 
+ * of the keyed property graph elements.
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper
- * @see com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper
  */
 public class BaseMapper {
 
     /**
-     * The vertex and edge counters. You should never call this directly, use the getter methods instead.
-     *
-     * Need to add regular non-error counters.
+     * Implements the vertex and edge counters. You should never call this 
+	 * directly, use the getter methods instead.
      */
     private enum Counters {
         VERTEX_WRITE_ERROR,
@@ -62,12 +62,12 @@ public class BaseMapper {
     private Configuration        conf;
 
     /**
-     * An Exception construction will log fatal and cause a system.exit. Their is no point in 
-     * going forward if we can't initialize the tokenizer class, key function, map val or map key.
+     * An Exception construction will log a fatal error and cause a {@code system.exit}. There is no point in 
+     * going forward if we can't initialize the tokenizer class, key function, map val, or map key.
      *
-     * @param context The Mapper.Context for the running mapper.
-     * @param conf    The current conf for the mapper.
-     * @param log     The log instance so all logs are attributed to the calling class.
+     * @param {@code context}  The {@code Mapper.Context} for the running mapper.
+     * @param {@code conf}     The current conf for the mapper.
+     * @param {@code log}      The log instance so all logs are attributed to the calling class.
      */
     public BaseMapper(Mapper.Context context, Configuration conf, Logger log) {
         this.context = context;
@@ -78,11 +78,11 @@ public class BaseMapper {
 
     /**
      * Mapper bootstrapping. Initializes the tokenizer for parsing the edges and vertices, the key 
-     * function for getting the context.write key, and initializes the mapKey mapValue. 
-     * InstantiationException, IllegalAccessException, and ClassNotFoundException will all be caught,  
+     * function for getting the {@code context.write} key, and initializes the {@code mapKey mapValue}. 
+     * The {@code InstantiationException}, {@code IllegalAccessException}, and {@code ClassNotFoundException} will all be caught,  
      * logged, and a system exit will be called. There is no reason to continue if we can't boot strap.
      *
-     * @param conf The mappers current configuration, usually context.getConfiguration().
+     * @param {@code conf}  The mapper's current configuration, usually {@code context.getConfiguration()}.
      */
     public void setUp(Configuration conf) {
 
@@ -105,10 +105,10 @@ public class BaseMapper {
     }
 
     /**
-     * A wrapper method to initialize the key function. This makes it easier to mockup in a unit test,
-	 * and it is general good practice to encapsulate.
+     * A wrapper method to initialize the key function. This makes it easier to mock-up in a unit test,
+	 * and it is a general good practice to encapsulate.
      *
-     * @param conf The mappers conf, usually context.getConfiguration().
+     * @param {@code conf}  The mappers configuration, usually {@code context.getConfiguration()}.
      */
 
     protected void initializeKeyFunction(Configuration conf) {
@@ -127,10 +127,10 @@ public class BaseMapper {
     }
 
     /**
-     * A wrapper method to initialize the tokenizer. This makes it easier to mockup in a unit test, 
-     * and it is general good practice to encapsulate.
+     * A wrapper method that initializes the tokenizer. This makes it easier to mockup in a unit test, 
+     * and it is a general good practice to encapsulate.
      *
-     * @param conf The mappers conf, usually context.getConfiguration().
+     * @param {@code conf}  The mappers configuration, usually {@code context.getConfiguration()}.
      */
     protected void initializeTokenizer(Configuration conf) {
         try {
@@ -149,10 +149,10 @@ public class BaseMapper {
     }
 
     /**
-     * Increments the correct error Counter, either the Vertex or Edge error counter.
+     * Increments the correct error counter, either the Vertex or Edge error counter.
      *
-     * @param context The current context for the mapper.
-     * @param val     the SerializedGraphElement that threw the error.
+     * @param {@code context}  The current context for the mapper.
+     * @param {@code val}      The {@code SerializedGraphElement} that threw the error.
      */
     protected void incrementErrorCounter(Mapper.Context context, SerializedGraphElement val) {
         if (val.graphElement().isEdge()) {
@@ -163,12 +163,12 @@ public class BaseMapper {
     }
 
     /**
-     * Attempts to write the key and value pair. IOException, InterruptedException will be logged and 
+     * Attempts to write the key and value pair. IOException or InterruptedException will be logged and 
      * the appropriate edge or vertex counter will be incremented.
      *
-     * @param context The current mapper context.
-     * @param key     The vertex and edge key  to write.
-     * @param val     The property graph element to write, either vertex or edge.
+     * @param {@code context}  The current mapper context.
+     * @param {@code key}      The vertex and edge key  to write.
+     * @param {@code val}      The property graph element to write, either vertex or edge.
      */
     protected void contextWrite(Mapper.Context context, IntWritable key, SerializedGraphElement val) {
         try {
@@ -183,10 +183,10 @@ public class BaseMapper {
     }
 
     /**
-     * Iterates through the edge list, creates the Edge graph element, get it's key and writes it. 
-     * NullPointerException are captured whenever edge or vertex has any null values.
+     * Iterates through the edge list, creates the Edge graph element, gets its key and writes it. 
+     * {@code NullPointerException}s are captured whenever edge or vertex has any null values.
      *
-     * @param context The mapper's current context.
+     * @param {@code context}  The mapper's current context.
      */
     public void writeEdges(Mapper.Context context) {
         try {
@@ -208,10 +208,10 @@ public class BaseMapper {
     }
 
     /**
-     * Iterate through the vertex list, creates a vertex graph element, get it's key, and writes it. 
-     * NullPointerExceptions are captured whenever the edge or vertex has any null values.
+     * Iterates through the vertex list, creates a vertex graph element, gets its key, and writes it. 
+     * {@code NullPointerException}s are captured whenever the edge or vertex has any null values.
      *
-     * @param context The mapper's current context.
+     * @param {@code context} The mapper's current context.
      */
     public void writeVertices(Mapper.Context context) {
         try {
