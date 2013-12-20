@@ -23,11 +23,13 @@ package com.intel.hadoop.graphbuilder.util;
 import java.util.HashMap;
 
 /**
- * Argument Builder makes it a litter nicer to deal with variable length argument params. instead of doing Type ... name
- * and getting an array you would do ArgumentBuilder.newArguments().with("Var name", var) or
- * new ArgumentBuilder().with("var name", var). To get a variable do ArgumentBuilder.get("var name").
- * it keeps you from having to remembering the exact param order in the variable length arrays. It's a wrapper on a
- * String, Object hash map
+ * Argument Builder makes it a little nicer to deal with variable length argument 
+ * params. Instead of using {@code Type ... name} and getting an array, you would use 
+ * {@code ArgumentBuilder.newArguments().with("Var name", var)} or
+ * {@code new ArgumentBuilder().with("var name", var)}. To get a variable use 
+ * {@code ArgumentBuilder.get("var name")}. This way, you do not have to remember
+ * the exact param order in the variable length arrays. It's a wrapper on a
+ * String, Object hash map.
  *
  */
 public class ArgumentBuilder {
@@ -38,7 +40,7 @@ public class ArgumentBuilder {
     }
 
     /**
-     * a static constructor to save folks from having to do a new
+     * A static constructor to save folks from having to do a new
      *
      * @return ArgumentBuilder instance
      */
@@ -47,11 +49,11 @@ public class ArgumentBuilder {
     }
 
     /**
-     * add an argument
+     * Adds an argument.
      *
-     * @param argumentName variable name
-     * @param object variable to set
-     * @return updated ArgumentBuilder instance
+     * @param {@code argumentName} The variable name.
+     * @param {@code object} The variable to set.
+     * @return  An updated ArgumentBuilder instance.
      */
     public ArgumentBuilder with(String argumentName, Object object){
 
@@ -61,10 +63,10 @@ public class ArgumentBuilder {
     }
 
     /**
-     * remove an argument
+     * Removes an argument.
      *
-     * @param argumentName the variables name
-     * @return updated ArgumentBuilder instance
+     * @param {@code argumentName} The name of the variable.
+     * @return An updated ArgumentBuilder instance.
      */
     public ArgumentBuilder withOut(String argumentName){
 
@@ -74,10 +76,10 @@ public class ArgumentBuilder {
     }
 
     /**
-     * get the stored object
+     * Gets the stored object.
      *
-     * @param argumentName the name of the variable to return
-     * @return the requested argument
+     * @param {@code argumentName} The name of the variable to return.
+     * @return The requested argument.
      */
     public Object get(String argumentName){
 
@@ -85,11 +87,11 @@ public class ArgumentBuilder {
     }
 
     /**
-     * get an argument if it exists else return the default value
+     * Gets an argument if it exists, otherwise returns the default value.
      *
-     * @param argumentName the arguments name
-     * @param defaultValue desired default value if the argument doesn't exists
-     * @return requested argument
+     * @param {@code argumentName}  The name of the argument.
+     * @param {@code defaultValue}  The desired default value if the argument doesn't exist.
+     * @return The requested argument.
      */
     public Object get(String argumentName, Object defaultValue){
         if(this.exists(argumentName)){
@@ -101,9 +103,9 @@ public class ArgumentBuilder {
 
 
     /**
-     * see if the argument list empty
+     * See if the argument list empty.
      *
-     * @return empty argument list status
+     * @return The empty argument list status.
      */
     public boolean isEmpty(){
 
@@ -111,11 +113,11 @@ public class ArgumentBuilder {
     }
 
     /**
-     * check a stored arguments type vs the given type
+     * Checks the type of a stored argument type against the given type.
      *
-     * @param argumentName the argument to check
-     * @param klass the class to verify against
-     * @return status of the type check
+     * @param {@code argumentName} The argument to check.
+     * @param {@code klass} The class to verify against.
+     * @return The status of the type check.
      */
     public boolean isType(String argumentName, Class klass){
         if(this.exists(argumentName) && this.get(argumentName).getClass().equals(klass)){
@@ -128,10 +130,10 @@ public class ArgumentBuilder {
     }
 
     /**
-     * does the argument exists
+     * Checks if the argument exists.
      *
-     * @param argumentName argument name to check for
-     * @return status of an argument
+     * @param {@code argumentName}  The argument name for which to check.
+     * @return The status of an argument.
      */
     public boolean exists(String argumentName){
 
@@ -139,10 +141,10 @@ public class ArgumentBuilder {
     }
 
     /**
-     * does the argument exists
+     * Checks if the argument exists.
      *
-     * @param object object to check for
-     * @return status of an argument
+     * @param {@code object}  The object for which to check.
+     * @return The status of the argument.
      */
     public boolean exists(Object object){
 
