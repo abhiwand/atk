@@ -250,7 +250,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #out = p.communicate()
         time_str = get_time_str()
         start_time = time.time()
-        out = call(rec_cmd, shell=True, report_strategy=RecommenderProgressReportStrategy(), communicate=1)
+        out = call(rec_cmd, shell=True, report_strategy=RecommenderProgressReportStrategy(), return_stdout=1)
         exec_time = time.time() - start_time
         recommend_id = []
         recommend_score = []

@@ -33,7 +33,7 @@ from intel_analytics.report import JobReportService
 
 SIGTERM_TO_SIGKILL_SECS = 2 # seconds to wait before send the big kill
 
-def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, communicate=0):
+def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, return_stdout=0):
     """
     Runs the command described by args in a subprocess, with or without polling.
 
@@ -66,12 +66,12 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, commun
 
     # Spawns a thread to consume the subprocess's STDERR in a non-blocking manner.
     err_txt = []
-    te = Thread(target=_process_error_output, args=(p.stderr, err_txt, report_service, communicate))
+    te = Thread(target=_process_error_output, args=(p.stderr, err_txt, report_service))
     te.daemon = True  # thread dies with the called process
     te.start()
 
     out_txt = []
-    to = Thread(target=_report_output, args=(p.stdout, out_txt, report_service, communicate))
+    to = Thread(target=_report_output, args=(p.stdout, out_txt, report_service, return_stdout))
     to.daemon = True # thread dies with the called process
     to.start()
 
@@ -97,7 +97,7 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, commun
     #there is case where rc = 0 when stderr occurs
     if rc != 0 or len(err_txt) > 0:
         msg = ''.join(err_txt) if len(err_txt) > 0 else "(no msg provided)"
-        if communicate > 0:
+        if return_stdout > 0:
             report_service.handle_error(rc, msg)
             print msg
         else:
@@ -106,7 +106,7 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, commun
                 print rc, msg
     #    raise Exception("Error {0}: {1}".format(rc,msg))
 
-    if communicate > 0:
+    if return_stdout > 0:
         if len(out_txt) > 0:
             output = ' '.join(out_txt)
             return output.split('\n')
@@ -116,14 +116,14 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, commun
         return rc
 
 
-def _report_output(out, string_list, report_service, communicate):
+def _report_output(out, string_list, report_service, return_stdout):
     for line in iter(out.readline, b''):
         report_service.report_line(line)
-        if communicate > 0:
+        if return_stdout > 0:
             string_list.append(line)
     out.close()
 
-def _process_error_output(out, string_list, report_service, communicate):
+def _process_error_output(out, string_list, report_service):
     """
     Continously reads from the stream and appends to a list of strings.
     """
