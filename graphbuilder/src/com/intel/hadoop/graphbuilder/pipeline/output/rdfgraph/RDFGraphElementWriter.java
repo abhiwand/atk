@@ -107,7 +107,7 @@ public class RDFGraphElementWriter extends GraphElementWriter {
 
         if (label.contains(".")) {
             String [] tempArray = label.split("\\.");
-            namespace  = tempArray[0];
+            namespace  = RDFUtils.RDFNamespaceMap.get(tempArray[0]);
             vertexType = tempArray[1];
         } else {
             namespace  = RDFUtils.RDFNamespaceMap.get(this.rdfNamespace);
@@ -204,7 +204,7 @@ public class RDFGraphElementWriter extends GraphElementWriter {
 
         if (label.contains(".")) {
             String [] tempArray = label.split("\\.");
-            namespace  = tempArray[0];
+            namespace  = RDFUtils.RDFNamespaceMap.get(tempArray[0]);
             edgeType = tempArray[1];
         } else {
             namespace  = RDFUtils.RDFNamespaceMap.get(this.rdfNamespace);
