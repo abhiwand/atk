@@ -15,7 +15,7 @@
 
                                     <div class='lead'>Intel®Analytics Registration Form<div class='imglead'><img class='imglead' alt="intelanalytics" src="assets/images/logo-intel.png" /></div></div>
 
-                                    <small class='text-muted'>Thank you for requesting an invitation to our test group. We are looking for users who can dive in and help us build a better product through your experience and feedback. After you fill out the simple form below, we can verify your identity as a human being and analyze your request. You will receive a response with your approval which is based on availability!</small>
+                                    <small class='text-muted'>Intel is committed to respecting your privacy. By completing this form you are providing Intel your personal information. This information will be used for the purpose of communicating with you regarding the graph analytics pilot and sharing information related to Intel’s graph analytic and machine learning products. To learn more about Intel’s privacy practices, please visit Intel's <a href="http://www.intel.com/privacy" target="_blank" class="registration-link">privacy page</a>. View Intel's Cookie Notice <a href="http://itdoclib.intel.com/Documents/Active/10/96/68/intel.com/cookies" target="_blank" class="registration-link">here</a>.</small>
                                     </div>
                                     <form method="post" class="DA_custom_form" id="registration-form" action="register">
             <div class="DA_holder horizontal">
@@ -89,29 +89,29 @@
             </div>
             <div class='DA_holder '>
                 <label>Why do you Want to Participate in This Beta Test?</label>
-                <div class='textarea-frame' tabindex='7'>
-                        <textarea name="whyParticipate" id="message1" class="field" rows="8" cols="40"></textarea>
+                <div class='textarea-frame'>
+                        <textarea name="whyParticipate" id="message1" class="field" rows="8" cols="40" tabindex='7'></textarea>
                         <span><i class="fa-icon-remove"></i></span>
 
                 </div>    
             </div>
             <div class='DA_holder '>
                 <label>What tools for graph analytics are you currently using or evaluating?</label>
-                <div class='textarea-frame' tabindex='8'>
-                        <textarea name="whatTools" id="message2" class="field" rows="8" cols="40"></textarea>
+                <div class='textarea-frame'>
+                        <textarea name="whatTools" id="message2" class="field" rows="8" cols="40"  tabindex='8'></textarea>
                         <span><i class="fa-icon-remove"></i></span>
 
                 </div>    
             </div>           
 
             <div class="DA_holder">
-                    <label>Terms & Conditions</label>
+                    <label>Terms & Conditions <a href="http://localhost/termsofuse" target="_blank" class="registration-link">View Terms</a></label>
                     <div class="DA_field_container">
 
-                        <input type="text" class="field" id="terms" name="terms" placeholder='Type "I agree" if you agree to the terms and conditions below.'/>
+                        <input tabindex="9" type="text" class="field" id="terms" name="terms" placeholder='Type "I agree" if you agree to the terms and conditions below.'/>
                          <span><i class="fa-icon-remove"></i></span>
                     </div>
-                    <div class="terms" >
+                    <div class="terms" tabindex="10">
                         
                       <h9><strong>INTEL® GRAPH ANALYTICS TRIAL SERVICE AGREEMENT</strong></h9> </br>
                       <h9><strong>Important: Read carefully before accessing or using.</strong></h9>
@@ -204,7 +204,7 @@
             </div>
     
             <div class="modal-footer">
-                     <div id='googleRegisterButton' class="btnp"><input type="submit"  value="Sign Up With Google +" /></div>
+                     <div tabindex="11" id='googleRegisterButton' class="btnp"><input type="submit"  value="Sign Up With Google +" /></div>
 
                         </div>
                         <input id="registerAuthResult" type="hidden" name="authResult" value=""/>
