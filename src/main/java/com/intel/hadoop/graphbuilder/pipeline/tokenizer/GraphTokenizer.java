@@ -19,48 +19,48 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.WritableComparable;
-import org.apache.hadoop.mapreduce.Mapper;
-
 import java.util.Iterator;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.WritableComparable;
+
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import org.apache.hadoop.mapreduce.Mapper;
+
 /**
- * Tokenizes the input provided as a string to a list of
- * {@code Edge} and {@code Vertex}objects. This should be the
- * first step to implement along with the design of the InputConfiguration of
- * the raw input.
+ * Tokenizes the input provided as a string to a list of {@code Edge} and 
+ * {@code Vertex} objects. This should be the first step to implement along 
+ * with the design of the {@code InputConfiguration} of the raw input.
  *
- * @param <RecordType>
- * @param <VidType>
+ * @param {@code <RecordType>}  The record type.
+ * @param {@code <VidType>}     The vertex ID type.
  * @see com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration
  */
 public interface GraphTokenizer<RecordType, VidType extends WritableComparable<VidType>> {
     /**
-     * Configure the tokenizer from JobConf.
+     * Configures the tokenizer from {@code JobConf}.
      *
      * @param configuration
      */
     void configure(Configuration configuration);
 
     /**
-     * Parses the input record and adds edges and vertices to lists returned by
-     * @code getEdges
-     * @code getVertices
-     * @param record
-     * @param context
+     * Parses the input record and adds edges and vertices to lists returned by:
+     * {@code getEdges}
+     * {@code getVertices}
+     * @param {@code record}   The record type.
+     * @param {@code context}  The mapper context.
      */
     void parse(RecordType record, Mapper.Context context);
 
     /**
-     * @return A list of {@code Vertex} extracted from the input.
+     * @return A list of vertices extracted from the input.
      */
     Iterator<Vertex<VidType>> getVertices();
 
     /**
-     * @return A list of {@code Edge} extracted from the input.
+     * @return A list of edges extracted from the input.
      */
     Iterator<Edge<VidType>> getEdges();
 

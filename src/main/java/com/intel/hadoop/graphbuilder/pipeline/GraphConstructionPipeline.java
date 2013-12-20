@@ -20,31 +20,33 @@
 package com.intel.hadoop.graphbuilder.pipeline;
 
 import com.intel.hadoop.graphbuilder.graphelements.ValueClassFactory;
+import com.intel.hadoop.graphbuilder.pipeline.output.OutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
-import com.intel.hadoop.graphbuilder.pipeline.output.OutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.util.HashMap;
+import java.io.IOException;
 
 /**
- * The class that is responsible for resolving and configuring the graph construction pipeline prior to execution.
+ * The class that is responsible for resolving and configuring the graph 
+ * construction pipeline prior to execution.
  *
  * <p>
  *  Stages include:
  *  <ul>
- *      <li>The input configuration (raw input into records)</li>
- *      <li>The graphbuilding rule (records into property graph elements</li>
- *      <li>Duplicate removal settings (are duplicates simply merged, do we keep bidirectional edges, etc) </li>
- *      <li>Graph storage   (to an output file on HDFS in a chosen format, or perhaps to a graph database)</li>
+ *      <li>The input configuration (raw input into records).</li>
+ *      <li>The graphbuilding rule (records into property graph elements).</li>
+ *      <li>Duplicate removal settings (are duplicates simply merged, do we 
+ *          keep bidirectional edges, and so on).</li>
+ *      <li>Graph storage (to an output file on HDFS in a chosen format, or 
+ *          perhaps to a graph database).</li>
  *  </ul>
  * </p>
- *
  *
  * @see InputConfiguration
  * @see GraphBuildingRule
@@ -59,7 +61,8 @@ public class GraphConstructionPipeline {
     private HashMap<String, String> userOpts;
 
     /**
-     * Does the remove duplicates phase treat bidirectional edges as duplicates and remove them?
+     * Checks if the remove duplicates phase treats bidirectional edges as 
+	 * duplicates and removes them, or not.
      */
     public enum BiDirectionalHandling {
         KEEP_BIDIRECTIONALEDGES,
@@ -74,23 +77,23 @@ public class GraphConstructionPipeline {
     }
 
     /**
-     * Add a user option to the configuration that will be available at run time in the subsequent Hadoop jobs of the
-     * graph construction pipeline.
-     * @param key  The key of the user option
-     * @param value  The value of the user option
+     * Adds a user option to the configuration that will be available at run   
+     * time in the subsequent Hadoop jobs of the graph construction pipeline.
+     * @param {@code key}    The key of the user option.
+     * @param {@code value}  The value of the user option.
      */
     public void addUserOpt(String key, String value) {
         userOpts.put(key, value);
     }
 
     /**
-     * Take the pipeline settings and run a graph construction process.
+     * Takes the pipeline settings and runs a graph construction process.
      *
-     * @param inputConfiguration
-     * @param graphBuildingRule
-     * @param cleanBiDirectionalEdges
-     * @param outputConfiguration
-     * @param cmd
+     * @param {@code inputConfiguration}
+     * @param {@code graphBuildingRule}
+     * @param {@code cleanBiDirectionalEdges}
+     * @param {@code outputConfiguration}
+     * @param {@code cmd}
      */
     public void run(InputConfiguration    inputConfiguration,
                     GraphBuildingRule     graphBuildingRule,
@@ -101,7 +104,7 @@ public class GraphConstructionPipeline {
 
         GraphGenerationMRJob graphGenerationMRJob = outputConfiguration.getGraphGenerationMRJob();
 
-        // "hook up" the input configuration and tokenizer to the MR Job specified by the output configuration
+        // "Hook up" the input configuration and tokenizer to the MR Job specified by the output configuration.
 
         graphGenerationMRJob.init(inputConfiguration, graphBuildingRule);
 
@@ -111,11 +114,11 @@ public class GraphConstructionPipeline {
         graphGenerationMRJob.setVidClass(vidClass);
         graphGenerationMRJob.setValueClass(valueClass);
 
-        // Set optional parameters
+        // Sets the optional parameters.
 
         graphGenerationMRJob.setCleanBidirectionalEdges(cleanBiDirectionalEdges == BiDirectionalHandling.KEEP_BIDIRECTIONALEDGES);
 
-        // Set user defined parameters
+        // Sets the user defined parameters.
 
         if (userOpts != null) {
             graphGenerationMRJob.setUserOptions(userOpts);
