@@ -51,6 +51,8 @@ etl_scripts_path = config['pig_py_scripts']
 pig_log4j_path = os.path.join(config['conf_folder'], 'pig_log4j.properties')
 logger.debug('Using %s '% pig_log4j_path)
              
+os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
+os.environ["JYTHONPATH"] = config['pig_jython_path']#required to ship jython scripts with pig
 
 
 class Imputation:

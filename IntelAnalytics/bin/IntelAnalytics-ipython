@@ -5,7 +5,7 @@ if [ -d intel_analytics ]
 	then
 		export INTEL_ANALYTICS_PYTHON="$DIR/.."
 else 
-	export INTEL_ANALYTICS_PYTHON="$INTEL_ANALYTICS_HOME/virtpy/lib/python2.7/lib/site-packages"
+	export INTEL_ANALYTICS_PYTHON="$INTEL_ANALYTICS_HOME/virtpy/lib/python2.7/site-packages"
 fi
 export HOSTNAME=`hostname`
 if [ -d /home/hadoop/IntelAnalytics/hadoop ] 
