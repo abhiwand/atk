@@ -188,7 +188,7 @@ public class HBaseReaderMapperTest {
         //only the map values is validated not the key since it can change all the time
 
         //set up our matching edge to test against
-        Edge<StringType> edge = new Edge<StringType>(new StringType("Alice"), new StringType("GAO123"),
+        Edge<StringType> edge = new Edge<StringType>(new StringType("Alice"),null, new StringType("GAO123"), null,
                 new StringType("worksAt"));
         //verify the 1st map value is an edge and matches our edge object
         verifyPairSecond(writables.get(0), "EDGE", edge, null);
@@ -219,7 +219,7 @@ public class HBaseReaderMapperTest {
         HBaseTokenizer spiedHBaseTokenizer = getTokenizer();
 
         //create the broken edge list to return
-        Edge<StringType> brokenEdge = new Edge<StringType>(new StringType(null), new StringType("GAO123"),
+        Edge<StringType> brokenEdge = new Edge<StringType>(new StringType(null),null, new StringType("GAO123"), null,
                 new StringType("worksAt"));
         ArrayList<Edge<StringType>> brokenEdgeList = new ArrayList<Edge<StringType>>(Arrays.asList(brokenEdge));
         //mocked edgelist return
@@ -250,7 +250,7 @@ public class HBaseReaderMapperTest {
         HBaseTokenizer spiedHBaseTokenizer = getTokenizer();
 
 
-        Edge<StringType> brokenEdge = new Edge<StringType>(new StringType("Alice"), new StringType(null),
+        Edge<StringType> brokenEdge = new Edge<StringType>(new StringType("Alice"), null, new StringType(null), null,
                 new StringType("worksAt"));
         ArrayList<Edge<StringType>> brokenEdgeList = new ArrayList<Edge<StringType>>(Arrays.asList(brokenEdge));
         //mock edge list return
@@ -278,7 +278,7 @@ public class HBaseReaderMapperTest {
 
         HBaseTokenizer spiedHBaseTokenizer = getTokenizer();
 
-        Edge<StringType> brokenEdge = new Edge<StringType>(new StringType("Alice"), new StringType("GAO123"),
+        Edge<StringType> brokenEdge = new Edge<StringType>(new StringType("Alice"), null, new StringType("GAO123"), null,
                 new StringType(null));
         ArrayList<Edge<StringType>> brokenEdgeList = new ArrayList<Edge<StringType>>(Arrays.asList(brokenEdge));
         when(spiedHBaseTokenizer.getEdges()).thenReturn(brokenEdgeList.iterator());

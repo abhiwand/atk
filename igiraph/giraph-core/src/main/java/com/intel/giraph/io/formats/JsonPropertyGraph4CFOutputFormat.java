@@ -79,10 +79,10 @@ public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<Lon
                 String vs = null;
                 switch (vt) {
                 case LEFT:
-                    vs = "l";
+                    vs = "L";
                     break;
                 case RIGHT:
-                    vs = "r";
+                    vs = "R";
                     break;
                 default:
                     throw new IllegalArgumentException(String.format("Unrecognized vertex type: %s", vt.toString()));

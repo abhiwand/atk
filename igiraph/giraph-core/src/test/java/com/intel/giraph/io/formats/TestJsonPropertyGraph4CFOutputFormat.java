@@ -61,7 +61,7 @@ public class TestJsonPropertyGraph4CFOutputFormat extends JsonPropertyGraph4CFOu
 
     @Test
     public void testOuputFormat() throws IOException, InterruptedException {
-        Text expected = new Text("[1,[0],[4,5],[l]]");
+        Text expected = new Text("[1,[0],[4,5],[L]]");
 
         TaskAttemptContext tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);

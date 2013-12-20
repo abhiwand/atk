@@ -54,6 +54,8 @@ public class TitanVertexFormatLongIDDistanceMapTest
     @Override
     protected void configure() throws Exception {
         giraphConf.setComputationClass(AveragePathLengthComputation.class);
+        giraphConf.setMasterComputeClass(AveragePathLengthComputation.AveragePathLengthMasterCompute.class);
+        giraphConf.setAggregatorWriterClass(AveragePathLengthComputation.AveragePathLengthAggregatorWriter.class);
         giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDistanceMapNull.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDistanceMap.class);
 

@@ -34,6 +34,7 @@ from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 
+
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
 except ImportError, e:
@@ -50,10 +51,7 @@ etl_scripts_path = config['pig_py_scripts']
 pig_log4j_path = os.path.join(config['conf_folder'], 'pig_log4j.properties')
 logger.debug('Using %s '% pig_log4j_path)
              
-os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
-os.environ["JYTHONPATH"] = config['pig_jython_path']#required to ship jython scripts with pig
 
-logger.debug('$JYTHONPATH %s' % os.environ["JYTHONPATH"])
 
 class Imputation:
     """
@@ -111,7 +109,11 @@ class HBaseTable(object):
                   new_column_name,
                   transformation,
                   transformation_args=None):
-        transformation_to_apply = EvalFunctions.to_string(transformation)
+
+        try:
+            transformation_to_apply = EvalFunctions.to_string(transformation)
+        except:
+            raise HBaseTableException('The specified transformation function is invalid')
         
         #by default all transforms are now in-place
         keep_source_column=True#For in-place transformations the source/original feature has to be kept
@@ -157,8 +159,16 @@ class HBaseTable(object):
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
-    def _get_first_N(self, n):
+    def _peek(self, n):
+
+        if n < 0:
+            raise HBaseTableException('A range smaller than 0 is specified')
+
+        if n == 0:
+            return []
+
         first_N_rows = []
+
         with ETLHBaseClient() as hbase_client:
            table = hbase_client.connection.table(self.table_name)
            nrows_read = 0
@@ -170,56 +180,56 @@ class HBaseTable(object):
                    break
         return first_N_rows
     
-    def head(self, n=10):
-        header_printed = False
-        first_N_rows = self._get_first_N(n)
+    def inspect(self, n=10):
+
+        first_N_rows = self._peek(n)
+        schema = self.get_schema()
+        columns = schema.keys()
+        column_array = []
+        print("--------------------------------------------------------------------")
+        for i, column in enumerate(columns):
+            header = re.sub("^" + config['hbase_column_family'],'',column)
+            column_array.append(header)
+
+        print "\t".join(column_array)
+        print("--------------------------------------------------------------------")
+
         for orderedData in first_N_rows:
-           columns = orderedData.keys()
-           items = orderedData.items()
-           if not header_printed:
-               sys.stdout.write("--------------------------------------------------------------------\n")
-               for i, column in enumerate(columns):
-                   header = re.sub(config['hbase_column_family'],'',column)
-                   sys.stdout.write("%s"%(header))
-                   if i != len(columns)-1:
-                       sys.stdout.write("\t")
-               sys.stdout.write("\n--------------------------------------------------------------------\n")
-               header_printed = True
-             
-           for i,(column,value) in enumerate(items):
-               if value == '' or value==None:
-                   sys.stdout.write("NA")
+           data = []
+           for col in column_array:
+               col = config['hbase_column_family'] + col
+               if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
+                   data.append(orderedData[col])
                else:
-                   sys.stdout.write("%s"%(value))
-                       
-               if i != len(items)-1:
-                   sys.stdout.write("  |  ")
-           sys.stdout.write("\n")
+                   data.append("NA")
+
+           print "  |  ".join(data)
                
-    def to_html(self, nRows=10):
-        header_printed = False
-        first_N_rows = self._get_first_N(nRows)
+    def inspect_as_html(self, nRows=10):
+        first_N_rows = self._peek(nRows)
         html_table='<table border="1">'
+
+        schema = self.get_schema()
+        columns = schema.keys()
+        column_array = []
+        html_table+='<tr>'
+        for i, column in enumerate(columns):
+            header = re.sub("^" + config['hbase_column_family'],'',column)
+            column_array.append(header)
+            html_table+='<th>%s</th>' % header
+        html_table+='</tr>'
+
         for orderedData in first_N_rows:
-           columns = orderedData.keys()
-           items = orderedData.items()
-           
-           if not header_printed:
-               html_table+='<tr>'
-               for i, column in enumerate(columns):
-                   header = re.sub(config['hbase_column_family'],'',column)
-                   html_table+='<th>%s</th>' % header
-               html_table+='</tr>'
-               header_printed = True
-             
            html_table+='<tr>'
-           for i,(column,value) in enumerate(items):
-               if value == '' or value==None:
-                   html_table+='<td>NA</td>'
+           for col in column_array:
+               col = config['hbase_column_family'] + col
+               if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
+                   html_table+=("<td>%s</td>" % (orderedData[col]))
                else:
-                   html_table+=("<td>%s</td>" % (value))
+                   html_table+='<td>NA</td>'
+
            html_table+='</tr>'
-                   
+
         html_table+='</table>'
         return html_table
     
@@ -263,37 +273,26 @@ class HBaseTable(object):
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
 
-        key = hbase_frame_builder_factory.\
-            name_registry.get_key(self.table_name)
-            
-        try:
-            HBaseTable.delete_table(self.table_name)
-        except:
-            raise HBaseTableException('Could not clean the dataset')
+        hbase_registry.replace_value(self.table_name, output_table)
 
-        self.table_name = output_table # update the table_name
-        etl_schema.save_schema(self.table_name) # save the schema for the new table
-        hbase_frame_builder_factory. \
-            name_registry.register(key, self.table_name)
+        self.table_name = output_table  # update table_name
+        etl_schema.save_schema(self.table_name)  # save schema for new table
 
     def dropna(self, how='any', column_name=None):
-        frame_name = hbase_frame_builder_factory.\
-            name_registry.get_key(self.table_name)       
+        frame_name = hbase_registry.get_key(self.table_name)
         output_table = _create_table_name(frame_name, True)
         self.__drop(output_table, column_name=column_name, how=how, replace_with=None)
 
     def fillna(self, column_name, value):
-        frame_name = hbase_frame_builder_factory.\
-            name_registry.get_key(self.table_name)        
+        frame_name = hbase_registry.get_key(self.table_name)
         output_table = _create_table_name(frame_name, True)
         self.__drop(output_table, column_name=column_name, how=None, replace_with=value)
 
     def impute(self, column_name, how):
-        frame_name = hbase_frame_builder_factory.\
-            name_registry.get_key(self.table_name)        
+        frame_name = hbase_registry.get_key(self.table_name)
         output_table = _create_table_name(frame_name, True)
         if how not in available_imputations:
-            raise HBaseTableException('Please specify a support imputation method. %d is not supported' % (how))
+            raise HBaseTableException('Please specify a support imputation method. %s is not supported' % (str(how)))
         self.__drop(output_table, column_name=column_name, how=None, replace_with=Imputation.to_string(how))
 
     def get_schema(self):
@@ -311,14 +310,68 @@ class HBaseTable(object):
     def delete_table(cls, victim_table_name):
         with ETLHBaseClient() as hbase_client:
             hbase_client.delete_table(victim_table_name)
-            hbase_frame_builder_factory.\
-                name_registry.unregister_value(victim_table_name)
             #clean the schema entry used by the old table
             schema_table = config['hbase_schema_table']
             row = hbase_client.get(schema_table, victim_table_name)
             if len(row) > 0:
                 hbase_client.delete(schema_table, victim_table_name)
 
+
+class HBaseRegistry(Registry):
+    """
+    Registry to map HBase table names and also handle garbage collection
+    """
+
+    def __init__(self, filename):
+        super(HBaseRegistry, self).__init__(filename)
+
+    def register(self, key, table_name, overwrite=False, delete_table=False):
+        """
+        Registers an HBaseTable name with key and does table garbage collection
+
+        If key is already being used in the registry:
+            If overwrite=True, then currently registered table is deleted from
+                                    HBase and the new key-name is registered
+            If overwrite=False, exception is raised
+
+        If table_name is already being used in the registry:
+            If delete_table=True, then table is deleted from HBase
+        """
+        # test if reusing key
+        try:
+            tmp = self.get_value(key)
+        except:
+            pass
+        else:
+            if not overwrite:
+                raise Exception("Big item '" + key + "' already exists.")
+            HBaseTable.delete_table(tmp)
+        # test if reusing table_name
+        if delete_table and self.has_value(table_name):
+            HBaseTable.delete_table(table_name)
+
+        super(HBaseRegistry, self).register(key, table_name)
+
+    def unregister_key(self, key, delete_table=False):
+        name = self.get_value(key)
+        if name and delete_table:
+            HBaseTable.delete_table(name)
+        super(HBaseRegistry, self).unregister_key(key)
+
+    def unregister_value(self, value, delete_table=False):
+        key = self.get_key(value)
+        if key and delete_table:
+            HBaseTable.delete_table(value)
+        super(HBaseRegistry, self).unregister_value(value)
+
+    def replace_value(self, victim, replacement, delete_table=False):
+        key = self.get_key(victim)
+        if not key:
+            raise("Internal error: no key found for big item")
+        HBaseTable.delete_table(victim)
+        if delete_table and self.get_key(replacement):
+            HBaseTable.delete_table(replacement)
+        super(HBaseRegistry, self).replace_value(victim, replacement)
 
 
 class HBaseFrameBuilder(FrameBuilder):
@@ -359,7 +412,7 @@ class HBaseFrameBuilder(FrameBuilder):
             raise Exception('Could not import CSV file')
 
         hbase_table = HBaseTable(table_name, file_name)
-        self._register_table_name(frame_name, table_name, overwrite)
+        hbase_registry.register(frame_name, table_name, overwrite)
         return BigDataFrame(frame_name, hbase_table)
 
     def build_from_json(self, frame_name, file_name, overwrite=False):
@@ -394,47 +447,31 @@ class HBaseFrameBuilder(FrameBuilder):
         if return_code:
             raise Exception('Could not import JSON file')
 
-        self._register_table_name(frame_name, table_name, overwrite)
+        hbase_registry.register(frame_name, table_name, overwrite)
         
         return new_frame
             
     def build_from_xml(self, frame_name, file_name, schema=None):
         raise Exception("Not implemented")
 
-    def _register_table_name(self, frame_name, table_name, overwrite):
-        tmp_name =  hbase_frame_builder_factory.name_registry[frame_name]
-        if tmp_name is not None:
-            if overwrite:
-                HBaseTable.delete_table(tmp_name)
-            else:
-                raise Exception("Frame '" + frame_name
-                                + "' already exists.")
-        hbase_frame_builder_factory. \
-            name_registry.register(frame_name, table_name)
-        return table_name
 
 
 class HBaseFrameBuilderFactory(object):
     def __init__(self):
         super(HBaseFrameBuilderFactory, self).__init__()
-        table_names_file = os.path.join(config['conf_folder'],
-                                        config['hbase_names_file'])
-        #print "Initializing name registry for Frame Builder Factory with " \
-        #      + table_names_file
-        self.name_registry = Registry(table_names_file)
 
     def get_frame_builder(self):
         return HBaseFrameBuilder()
 
     def get_frame(self, frame_name):
         try:
-            hbase_table_name = self.name_registry[frame_name]
+            hbase_table_name = hbase_registry[frame_name]
         except KeyError:
             raise KeyError("Could not stored table for '" + frame_name + "'")
         return self._get_frame(frame_name, hbase_table_name)
 
     def get_frame_names(self):
-        return self.name_registry.keys()
+        return hbase_registry.keys()
 
     def _get_frame(self, frame_name, hbase_table_name):
         hbase_table = HBaseTable(hbase_table_name, ': from database')
@@ -449,11 +486,15 @@ class HBaseFrameBuilderFactory(object):
 
 #global singleton instance
 hbase_frame_builder_factory = HBaseFrameBuilderFactory()
+hbase_registry = HBaseRegistry(os.path.join(config['conf_folder'],
+                                       config['hbase_names_file']))
 
-
-def _create_table_name(frame_name, overwrite):
-    table_name =  hbase_frame_builder_factory.name_registry[frame_name]
-    if table_name is not None:
+def _create_table_name(name, overwrite):
+    try:
+        hbase_registry[name]
+    except KeyError:
+        pass
+    else:
         if not overwrite:
-            raise Exception("Frame '" + frame_name  + "' already exists.")
-    return frame_name + get_time_str()
+            raise Exception("Big item '" + name  + "' already exists.")
+    return name + get_time_str()

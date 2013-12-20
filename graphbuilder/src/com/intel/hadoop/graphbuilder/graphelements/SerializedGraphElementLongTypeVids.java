@@ -20,37 +20,24 @@
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.LongType;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Serialized form of GraphElement class that uses LongType vertex IDs
+ * Serialized form of GraphElement class that uses {@code LongType} vertex names in its vertex IDs.
+ *
+ * We have this class because in Java, a parameterized type cannot be instantiated.
+ * In particular, we cannot express {@code createVid} inside {@code SerializedGraphElement}
  */
 public class SerializedGraphElementLongTypeVids
         extends SerializedGraphElement<LongType> {
 
     /**
-     * Allocate a new vertex ID.
-     * @return  a new LongType object
+     * Allocate a new {@code VertexID}.
+     * @return  a new {@code VertexID} with a {@code LongType} vertex name and a {@StringType} vertex label
      */
 
-    public LongType createVid() {
-        return new LongType();
-    }
-
-    /**
-     * The compare function to enable key comparisons for
-     * WritableComparable child classes
-     * @param o
-     * @return -1 if less than o, 0 if equal, 1 otherwise
-     */
-    public int compareTo(SerializedGraphElementLongTypeVids o) {
-        if (this.graphElement() == null && o.graphElement() == null) {
-            return 0;
-        } else if (this.graphElement() == null || o.graphElement() == null) {
-            return 1;
-        } else {
-            return (this.graphElement().equals(o.graphElement())) ? 0 : 1;
-        }
-
+    public VertexID<LongType> createVid() {
+        return new VertexID<LongType>(new LongType(), new StringType());
     }
 }
