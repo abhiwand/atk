@@ -27,7 +27,9 @@ import com.hp.hpl.jena.vocabulary.*;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import org.apache.hadoop.io.Writable;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,4 +57,28 @@ public class RDFUtils {
         RDFNamespaceMap.put("VCARD",      VCARD.getURI());
         RDFNamespaceMap.put("XMLSchema",  XSD.getURI());
 	}
+
+    public static final ArrayList<String> RDFNamespaces;
+    static {
+        RDFNamespaces = new ArrayList<String>();
+        RDFNamespaces.add("DB");
+        RDFNamespaces.add("DC");
+        RDFNamespaces.add("LOCMAP");
+        RDFNamespaces.add("ONTDOC");
+        RDFNamespaces.add("ONTEVENTS");
+        RDFNamespaces.add("OWL");
+        RDFNamespaces.add("OWL2");
+        RDFNamespaces.add("RDF");
+        RDFNamespaces.add("RDFS");
+        RDFNamespaces.add("RDFSYNTAX");
+        RDFNamespaces.add("RSS");
+        RDFNamespaces.add("VCARD");
+        RDFNamespaces.add("XMLSchema");
+    }
+
+    public static boolean isValidNamespace(String namespace) {
+        if (RDFNamespaces.contains((String) namespace)) return true;
+        else return false;
+    }
+
 }
