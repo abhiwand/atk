@@ -32,7 +32,7 @@ import java.io.IOException;
 /**
  * Represents a vertex object with a vertex ID and a (potentially empty) property map.
  *
- *  * <p>
+ * <p>
  * This class is mutable. See the {@code configure} and {@code setProperty} methods.
  * </p>
  *
@@ -45,7 +45,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     private PropertyMap           properties;
 
     /**
-     * Default constructor. Creates a placeholder vertex.
+     * The default vertex constructor. Creates a placeholder vertex.
      */
     public Vertex() {
         super();
@@ -165,12 +165,12 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
      * Returns the ID of the vertex.
      * @return The ID of the vertex.
      */
-    public VertexID<VidNameType>getId() {
+    public VertexID<VidNameType> getId() {
         return vertexId;
     }
 
     /**
-     * @return get the graph element
+     * @return  Returns the graph element.
      */
     public Vertex get(){
         return this;
@@ -183,19 +183,10 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     public StringType getLabel() {
         return this.vertexId.getLabel();
     }
-
-    /**
-     * Return the name of the vertexID e.g. for 001-VLabel return 001
-     * @return name
-     */
-    public VidNameType getName() {
-        return this.vertexId.getName();
-    }
-
     /**
      * Overwrites the ID and property map of the vertex.
-     * @param vid The new vertex ID.
-     * @param properties The new {@code PropertyMap}.
+     * @param {@code vid}         The new vertex ID.
+     * @param {@code properties}  The new {@code PropertyMap}.
      */
     public void configure(VertexID<VidNameType> vid, PropertyMap properties) {
         this.vertexId = vid;
@@ -204,42 +195,41 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
 
     /**
      * Returns a property of the vertex.
-     * @param key The lookup key for the property.
-     * @return The value of the property.
+     * @param {@code key}  The lookup key for the property.
+     * @return  The value of the property.
      */
     public Object getProperty(String key) {
         return properties.getProperty(key);
     }
 
     /**
-     * Set a property of the vertex.
-     * @param key  The key of the property being updated.
-     * @param val  The new value for the property.
+     * Sets a property of the vertex.
+     * @param {@code key}  The key of the property being updated.
+     * @param {@code val}  The new value for the property.
      */
     public void setProperty(String key, Writable val) {
         this.properties.setProperty(key, val);
     }
 
     /**
-     * set the entire property map
-     * @param propertyMap
+     * Sets the entire property map.
+     * @param {@code propertyMap}
      */
     public void setProperties(PropertyMap propertyMap){
         this.properties = propertyMap;
     }
 
-     /**
-     * Set label of the vertex (RDF label in case of RDF graphs)
-      *
-      * @param label  the label of the vertex
-      */
+    /**
+     * Sets the label of the vertex (the RDF label in the case of RDF graphs).
+     * @param {@code label}  The label of the vertex, or the RDF label if an RDF graph.
+     */
     public void setLabel(StringType label) {
         this.vertexId.setLabel(label);
     }
 
     /**
      * Gets the property map for the vertex.
-     * @return The property map.
+     * @return  The vertex property map.
      */
     public PropertyMap getProperties() {
         return properties;
@@ -247,7 +237,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
 
     /**
      * Converts the vertex to a string.
-     * @return  AA string representation of the vertex.
+     * @return  A string representation of the vertex.
      */
     @Override
     public final String toString() {
@@ -258,13 +248,13 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
         } else if (vertexId == null && properties != null) {
             return "null vertex with properties (???) " + properties.toString();
         } else {
-            return this.vertexId.toString() +  "\t" + properties.toString();
+            return this.vertexId.toString() +  properties.toString();
         }
     }
 
     /**
      * Reads a vertex from an input stream.
-     * @param input The input stream.
+     * @param {@code input}  The input stream.
      * @throws IOException
      */
     @Override
@@ -275,7 +265,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
 
     /**
      * Writes a vertex to an output stream.
-     * @param output The output stream.
+     * @param {@code output}  The output stream.
      * @throws IOException
      */
     @Override
@@ -304,8 +294,6 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
         }
     }
 
-    /**
-     */
     @Override
     public int hashCode() {
         return HashUtil.hashPair(vertexId, properties);

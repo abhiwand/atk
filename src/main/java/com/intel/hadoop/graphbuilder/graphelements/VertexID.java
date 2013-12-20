@@ -36,10 +36,6 @@ import java.util.Objects;
  * Edges are considered duplicate if they have identical source, destination and label.
  * Property maps are <i>not</i> used for purposes of comparison.
  *    </p>
-<<<<<<< HEAD
- * @see com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphReducer
-=======
->>>>>>> kushal
  * @see com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducer
  */
 public class VertexID<VidType extends WritableComparable> implements WritableComparable<VertexID<VidType>> {

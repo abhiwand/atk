@@ -24,18 +24,18 @@ import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
- * get the graph elements dst. if it's an edge it will return the dst otherwise it will return null
- *
+ * Gets the graph elements {@code dst}. If it's an edge it will return 
+ * the {@code dst}, otherwise it will return null.
  * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  */
 public class GraphElementDst implements GraphElementTypeCallback {
 
     /**
-     * cast our graph element to an edge and get it's dst
+     * Casts our graph element to an edge and get the edge's {@code dst}.
      *
-     * @param graphElement graph element to perform operations on
-     * @param arguments any arguments that might have been passed
-     * @return edges dst
+     * @param {@code graphElement}  The graph element to perform operations on.
+     * @param {@code arguments}     Any arguments that might have been passed
+     * @return The edge's {@code dst}.
      */
     @Override
     public Object edge(GraphElement graphElement, ArgumentBuilder arguments) {
@@ -44,11 +44,11 @@ public class GraphElementDst implements GraphElementTypeCallback {
     }
 
     /**
-     * return null since all vertices have no dst
+     * Returns null because vertices do not have a {@code dst}.
      *
-     * @param graphElement graph element to perform operations on
-     * @param arguments any arguments that might have been passed
-     * @return always null since vertices doesn't have a dst
+     * @param {@code graphElement} The graph element to perform operations on.
+     * @param {@code arguments}    Any arguments that might have been passed.
+     * @return Always null because vertices do not have a {@code dst}.
      */
     @Override
     public Object vertex(GraphElement graphElement, ArgumentBuilder arguments) {

@@ -33,13 +33,12 @@ public class SerializedGraphElementStringTypeVids
         extends SerializedGraphElement<StringType> {
 
     /**
-     * Allocate a new vertex ID.
-     * @return  a new StringType object
+     * Allocates a new vertex ID.
+     * @return  A new {@code StringType} object.
      *
      */
 
     public VertexID<StringType> createVid() {
         return new VertexID<StringType>(new StringType(), new StringType());
     }
-
 }
