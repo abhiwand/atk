@@ -113,7 +113,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     private Hashtable<String, Byte> fieldNameToDataType;
 
-    private boolean                       flattenList;
     /**
      * Encapsulation of the rules for creating edges.
      *
@@ -201,7 +200,9 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         options.addOption(BaseCLI.Options.edge.get());
 
         options.addOption(BaseCLI.Options.directedEdge.get());
-;
+        
+        options.addOption(BaseCLI.Options.flattenList.get());
+        
         commandLineInterface.setOptions(options);
 
         CommandLine cmd = commandLineInterface.checkCli(tokenizationRule.split(" "));
@@ -223,7 +224,9 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         rawDirectedEdgeRules =
                 nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
-
+        
+        flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
+        
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
 
