@@ -262,11 +262,6 @@
 
 }
 
-
-
-
-
-
 .btn-info {
     background-color: #0071C5;
     background-image: none;
@@ -286,25 +281,21 @@
     color: #999;
 }
 
-
-
 .progress-button{
+    background-color: #51b7e6;
+    background-image:-moz-linear-gradient(top, #51b7e6, #4dafdd);
+    background-image:-webkit-linear-gradient(top, #51b7e6, #4dafdd);
+    background-image:linear-gradient(top, #51b7e6, #4dafdd);
+    border-radius:2px;
+    box-shadow:0 1px 1px #ccc;
+    color:#fff !important;
     display: inline-block;
     font-size:24px;
-    color:#fff !important;
-    text-decoration: none !important;
-    padding:14px 60px;
     line-height:1;
     overflow: hidden;
+    padding:14px 60px;
     position:relative;
-
-    box-shadow:0 1px 1px #ccc;
-    border-radius:2px;
-
-    background-color: #51b7e6;
-    background-image:-webkit-linear-gradient(top, #51b7e6, #4dafdd);
-    background-image:-moz-linear-gradient(top, #51b7e6, #4dafdd);
-    background-image:linear-gradient(top, #51b7e6, #4dafdd);
+    text-decoration: none !important;
 }
 
 /* Hide the original text of the button. Then the loading or finished
@@ -373,7 +364,7 @@
     border-radius:2px;
 }
 
-body.error-page .message {
+div.error-page .message {
     color: #0071C5;
 }
 
@@ -422,9 +413,17 @@ body.error-page .message {
 
 
 .alert {
+    bottom: 0;
+    height: auto;
+    left: 0;
+    margin: auto;
+    max-height: 50px;
+    min-height: 50px;
     position: fixed;
-    top: 70px;
-    width: auto;
+    right: 0;
+    text-align: center;
+    top: 0;
+    width: 60%;
     z-index: 9999;
 }
 
@@ -504,12 +503,16 @@ button.close {
     position: relative;
     width: 100%;
     height: 900px;
-   
     border: none;
 
 }
 
-
+#apidoc {
+    position: relative;
+    width: 100%;
+    height: 900px;
+    border: none;
+}
 
 .fluidMedia {
     position: relative;
@@ -530,6 +533,12 @@ button.close {
 .logo {
     width: 100%;
     height: 35px;
+}
+
+.logo-error {
+    width: auto;
+    height: 35px;
+    margin-top: 45px;
 }
 
 #footer-front a {
@@ -618,4 +627,14 @@ ul, li {
 
 .carousel-blur .flex-direction-nav .flex-next, .carousel-blur .flex-direction-nav .flex-prev {
     top: 41.5%;
+}
+
+
+.btn-contrast.btn-bordered-error {
+    border-color: #0071C5;
+    color: #0071C5;
+}
+
+.registration-link {
+    color: #0071C5;
 }

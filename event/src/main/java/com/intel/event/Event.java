@@ -1,41 +1,52 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2013 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.event;
-
-/* Copyright (C) 2013 Intel Corporation.
- *     All rights reserved.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- *   Unless required by applicable law or agreed to in writing, software
- *   distributed under the License is distributed on an "AS IS" BASIS,
- *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *   See the License for the specific language governing permissions and
- *   limitations under the License.
- *
- */
-
-
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.UUID;
 
 /**
  * Event encapsulates data related to something that happened at a particular point in time.
  */
 public class Event {
 
-    private static DateFormat iso8601Format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+    private static final DateFormat ISO_8601_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
 
     static {
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        iso8601Format.setTimeZone(tz);
+        ISO_8601_FORMAT.setTimeZone(tz);
     }
 
     private final String id = UUID.randomUUID().toString();
@@ -55,11 +66,12 @@ public class Event {
                  Instant instant,
                  EventData data) {
 
-        if (instant == null)
+        if (instant == null) {
             throw new IllegalArgumentException("Instant cannot be null");
-        if (data == null)
+        }
+        if (data == null) {
             throw new IllegalArgumentException("Data cannot be null");
-
+        }
         this.context = context;
         this.instant = instant;
         this.data = data;
@@ -67,6 +79,8 @@ public class Event {
 
     /**
      * Identifier for this event. Event IDs are universally unique.
+     *
+     * @return the id
      */
     public String getId() {
         return id;
@@ -78,22 +92,26 @@ public class Event {
      *
      * @return a map of useful contextual information at the time the event was created
      */
-    public Map<String,String> getData() {
-        HashMap<String,String> map = new HashMap<>();
-        if (context != null)
+    public Map<String, String> getData() {
+        HashMap<String, String> map = new HashMap<>();
+        if (context != null) {
             map.putAll(context.getData());
-        if (data.getData() != null)
+        }
+        if (data.getData() != null) {
             map.putAll(data.getData());
+        }
         return map;
     }
 
     /**
      * The names of all the contexts in effect on the thread when this event was created.
+     *
+     * @return the context names
      */
     public String[] getContextNames() {
         ArrayList<String> names = new ArrayList<>();
         EventContext current = context;
-        while(current != null) {
+        while (current != null) {
             names.add(current.getName());
             current = current.getParent();
         }
@@ -103,6 +121,8 @@ public class Event {
 
     /**
      * Returns the details of the event and contexts in JSON format
+     *
+     * @return a JSON string describing the event
      */
     @Override
     public String toString() {
@@ -110,6 +130,7 @@ public class Event {
         return json.toJSONString();
     }
 
+    @SuppressWarnings("unchecked")
     JSONObject toJson() {
         List<JSONObject> contexts = new ArrayList<>();
         EventContext current = context;
@@ -126,7 +147,7 @@ public class Event {
         json.put("user", getUser());
         json.put("threadId", getThreadId());
         json.put("threadName", getThreadName());
-        json.put("date", iso8601Format.format(getDate()));
+        json.put("date", ISO_8601_FORMAT.format(getDate()));
         json.put("substitutions", toJsonArray(getSubstitutions()));
         json.put("markers", toJsonArray(getMarkers()));
         json.put("errors", toJsonArray(getErrors()));
@@ -139,8 +160,9 @@ public class Event {
 
     private JSONArray toJsonArray(Object[] array) {
         JSONArray jsonArray = new JSONArray();
-        for (int i = 0; i < array.length; i++) {
-            jsonArray.add(String.valueOf(array[i]));
+        for (Object anArray : array) {
+            //noinspection unchecked
+            jsonArray.add(String.valueOf(anArray));
         }
         return jsonArray;
     }
@@ -148,7 +170,7 @@ public class Event {
     /**
      * Returns the instant at which the event occurred.
      */
-    public Date getDate() {
+    Date getDate() {
         return instant.getDate();
     }
 

@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.input.text.textinputformats;
 
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -42,11 +42,11 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 /**
- * XMLInputFormat is a builtin InputFormat for XML, borrowed from Cloud9:
+ * The {@code XMLInputFormat} class is a builtin InputFormat for XML, borrowed from Cloud9:
  * { @link https://github.com/lintoolCloud9/blob/master/src/dist/edu/umd/cloud9/collection/XMLInputFormat.java }.
  *
- * The class recognizes begin-of-document and end-of-document tags only:
- * everything between those delimiting tags is returned in an uninterpreted Text
+ * The class recognizes only the begin-of-document and end-of-document tags:
+ * everything between those delimiting tags is returned as an uninterpreted Text
  * object.
  */
 
@@ -66,6 +66,12 @@ public class XMLInputFormat extends TextInputFormat {
 
     public static final String END_TAG_KEY = "xmlinput.end";
 
+    /**
+     * The Hadoop record reader for reading XML documents.
+     * @param {@code inputSplit}
+     * @param {@code context}
+     * @return {@code xmlRecordReader}
+     */
     @Override
     public RecordReader<LongWritable, Text> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
 
@@ -84,8 +90,8 @@ public class XMLInputFormat extends TextInputFormat {
     }
 
     /**
-     * RecordReader for XML documents recognizes begin-of-document and
-     * end-of-document tags only: Returning a text object of everything in between
+     * The RecordReader for XML documents recognizes only the begin-of-document and
+     * end-of-document tags. Returns a text object of everything in between
      * the delimiters.
      */
 
@@ -123,6 +129,12 @@ public class XMLInputFormat extends TextInputFormat {
             endTag   = this.conf.get(END_TAG_KEY).getBytes(TEXT_ENCODING);
         }
 
+        /**
+         *
+         * @param {@code split}
+         * @param {@code context}
+         * @throws IOException
+         */
         public void initialize(InputSplit split, TaskAttemptContext context) throws IOException {
 
             this.conf = context.getConfiguration();
@@ -182,14 +194,12 @@ public class XMLInputFormat extends TextInputFormat {
                     } finally {
 
                         // Because input streams of gzipped files are not seekable
-                        // (specifically, do not support
-                        // getPos), we need to keep track of bytes consumed ourselves.
+                        // (specifically, do not support getPos), we need
+                        // to keep track of bytes consumed ourselves.
 
                         // This is a sanity check to make sure our internal computation of
-                        // bytes consumed is
-                        // accurate. This should be removed later for efficiency once we
-                        // confirm that this code
-                        // works correctly.
+                        // bytes consumed is accurate. This should be removed later for 
+                        // efficiency once we confirm that this code works correctly.
 
                         if (fsIn instanceof Seekable) {
 

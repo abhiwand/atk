@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.util;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 
 /**
- * Utility library for graphbuilder's hbase operations.
+ * The utility library for graphbuilder's hbase operations.
  *
  * Implemented as a singleton.
  */
@@ -58,7 +58,7 @@ public class HBaseUtils {
     }
 
     /**
-     * Private constructor method
+     * Private constructor method.
      *
      * @throws IOException
      */
@@ -69,7 +69,7 @@ public class HBaseUtils {
     }
 
     /**
-     *  Returns the unique instance of HBaseUtils; creates one if there isn't one already.
+     *  Returns the unique instance of {@code HBaseUtils}; creates one if there isn't one already.
      *
      *  @throws IOException
      *
@@ -94,7 +94,7 @@ public class HBaseUtils {
     /**
      * Parses the column name to return the family and qualifier in a string array.
      *
-     * @param columnName The column name in HBase "column family:column qualifier".
+     * @param {@code columnName}  The column name in HBase "column family:column qualifier".
      * @return The family and qualifier in string array.
      */
     public static byte[][] parseColumnName(String columnName) {
@@ -104,8 +104,8 @@ public class HBaseUtils {
     /**
      * Gets the cell value from HBase given a column handler and column name.
      *
-     * @param columns        The scanned columns from an HTable row passed from a mapper or reducer.
-     * @param fullColumnName The full column key, for example: "family:qualifier"
+     * @param {@code columns}         The scanned columns from an HTable row passed from a mapper or reducer.
+     * @param {@Code fullColumnName}  The full column key, for example: "family:qualifier".
      * @return The cell value as a byte array.
      */
     public static byte[] getColumnData(Result columns, String fullColumnName) {
@@ -123,9 +123,9 @@ public class HBaseUtils {
     /**
      * Gets the column value from HBase given a table handler, rowkey, and column key.
      *
-     * @param Key           The row key.
-     * @param colFamilyName The column family name.
-     * @param colName       The column name.
+     * @param {@code Key}            The row key.
+     * @param {@code colFamilyName}  The column family name.
+     * @param {@code colName}        The column name.
      * @return The column value as a byte array.
      */
 
@@ -142,11 +142,11 @@ public class HBaseUtils {
     /**
      * Writes a cell value to HBase.
      *
-     * @param key             The HBase row key.
-     * @param columnFamily    The HBase column family (default - "VertexID").
-     * @param columnQualifier The HBase column name.
-     * @param value           The value to write.
-     * @param context         The context of Hadoop's reducer.
+     * @param {@code key}              The HBase row key.
+     * @param {@code columnFamily}     The HBase column family (default - "VertexID").
+     * @param {@code columnQualifier}  The HBase column name.
+     * @param {@code value}            The value to write.
+     * @param {@code context}          The context of Hadoop's reducer.
      * @return value          The value that was written.
      */
     public static byte[] putValue(byte[] key,
@@ -163,11 +163,28 @@ public class HBaseUtils {
     /**
      * Checks if the table exists in HBase.
      *
-     * @param hTableName The HBase table name.
+     * @param {@code hTableName}  The HBase table name.
      * @return true If, and only if, the table with the given name exists.
      */
     public boolean tableExists(String hTableName) throws IOException {
         return admin.tableExists(hTableName);
+    }
+
+    /**
+     * If the table exists in HBase, it is disabled and dropped.
+     */
+    public void removeTable(String testTableName) throws IOException {
+
+        if (admin.tableExists(testTableName)) {
+            admin.disableTable(testTableName);
+            if (admin.isTableDisabled(testTableName)) {
+                admin.deleteTable(testTableName);
+            } else {
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                        "GRAPHBUILDER ERROR: Unable to delete existing table " + testTableName + ". Please delete it",
+                        LOG);
+            }
+        }
     }
 
     /**
@@ -185,8 +202,8 @@ public class HBaseUtils {
     /**
      * Checks if the given full column has a column family that is present in the table.
      *
-     * @param fullColumnName  The full column name.
-     * @param tableName       The table name.
+     * @param {@code fullColumnName}  The full column name.
+     * @param {@code tableName}       The table name.
      * @return  true If, and only if, the column's family is present in the table.
      */
     public boolean columnHasValidFamily( String fullColumnName, String tableName) {
@@ -208,7 +225,7 @@ public class HBaseUtils {
 
     /**
      * Returns the configuration of the {@code HBaseUtils} instance.
-     * @return the configuration of the {@code HBaseUtils} instance
+     * @return The configuration of the {@code HBaseUtils} instance.
      */
     public Configuration getConfiguration() {
         return this.configuration;
@@ -217,8 +234,8 @@ public class HBaseUtils {
     /**
      * Creates an HBase table.
      *
-     * @param hTableName           The name of the HBase table to be created.
-     * @param hTableColumnFamilies The names of the table column families.
+     * @param {@code hTableName}            The name of the HBase table to be created.
+     * @param {@code hTableColumnFamilies}  The names of the table column families.
      * @return A scan for the table.
      */
     public Scan createTable(String hTableName, String[] hTableColumnFamilies) throws IOException {
@@ -260,15 +277,15 @@ public class HBaseUtils {
     /**
      * Creates an HBase table with a single column family.
      *
-     * @param hTableName         The name of the HBase table to be created.
-     * @param hTableColumnFamily The names of the table column family.
+     * @param {@code hTableName}          The name of the HBase table to be created.
+     * @param {@code hTableColumnFamily}  The names of the table column family.
      * @return A scan for the table.
      */
     public Scan createTable(String hTableName, String hTableColumnFamily) throws IOException {
 
         Scan scan = getTableScanner(hTableName);
 
-        // Delete the vertex ID temporary table and create it again for this job
+        // Deletes the vertex ID temporary table and creates it again for this job.
 
         if (admin.tableExists(this.hTableName)) {
 
@@ -301,7 +318,7 @@ public class HBaseUtils {
 
     /**
      * Gets a scanner for the specified table.
-     * @param tableName   The name of the table in question.
+     * @param {@code tableName}   The name of the table in question.
      * @return  A scanner for the specified table.
      */
     public Scan getTableScanner(String tableName) {

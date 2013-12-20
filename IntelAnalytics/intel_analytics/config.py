@@ -21,7 +21,6 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-The global configuration class.
 
 Provides the 'global_config' singleton.
 """
@@ -32,13 +31,43 @@ from string import Template
 import os
 import time
 import datetime
+import platform
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
+_here_folder = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+
+if not os.getenv('INTEL_ANALYTICS_PYTHON'):
+    #If this file is running, we must know where to find our python files...
+    os.environ['INTEL_ANALYTICS_PYTHON'] = _here_folder
+
+if not os.getenv('INTEL_ANALYTICS_HOME'):
+    #If we can find a conf folder from here, that's probably home.
+    maybe_home = os.path.abspath(os.path.join(_here_folder, ".."))
+    maybe_conf = os.path.join(maybe_home, "conf")
+    if os.path.exists(maybe_conf):
+        os.environ['INTEL_ANALYTICS_HOME'] = maybe_home
+    elif "virtpy" in maybe_home:
+        maybe_home = maybe_home[:maybe_home.index("virtpy")]
+        if os.path.exists(maybe_home):
+            os.environ['INTEL_ANALYTICS_HOME'] = maybe_home
+
+if not os.getenv('HOSTNAME'):
+    os.environ['HOSTNAME'] = platform.node()
+
+if not os.getenv('HADOOP_HOME'):
+    if os.path.exists('/home/hadoop/IntelAnalytics/hadoop'):
+        os.environ['HADOOP_HOME'] = '/home/hadoop/IntelAnalytics/hadoop'
+
+if not os.getenv('TITAN_HOME'):
+    if os.path.exists('/home/hadoop/IntelAnalytics/titan-server'):
+        os.environ['TITAN_HOME'] = '/home/hadoop/IntelAnalytics/titan-server'
+
 properties_file = os.path.join(
-    os.getenv('INTEL_ANALYTICS_HOME', os.path.dirname(__file__)),
-    'conf',
-    'intel_analytics.properties')
+        os.getenv('INTEL_ANALYTICS_HOME', _here_folder),
+        'conf',
+        'intel_analytics.properties')
+
 
 
 def get_time_str():
@@ -87,18 +116,8 @@ def dynamic_import(attr_path):
     Dynamically imports and returns an attribute according to the given path.
     """
     module_path, attr_name = attr_path.rsplit(".", 1)
-
-    try:
-        # import importlib
-        # module = importlib.import_module(module_path) --requires 2.7
-        module = __import__(module_path, fromlist=[attr_name])
-    except ImportError:
-        raise ValueError("Could not import module '%s'" % (module_path,))
-    try:
-        attr = getattr(module, attr_name)
-    except ImportError:
-        raise ValueError("Error trying to find '%s' in module '%s'" %
-                         (attr_name, module_path))
+    module = __import__(module_path, fromlist=[attr_name])
+    attr = getattr(module, attr_name)
     return attr
 
 
@@ -152,28 +171,32 @@ class Registry(object):
         self.unregister_key(key)
 
     def get_value(self, key):
-        try:
-            return self._d[key]
-        except:
-            return None
+        return self._d[key]
 
     def get_key(self, value):
         try:
             return (k for k, v in self._d.items() if v == value).next()
         except StopIteration:
-            return None
+            raise ValueError
+
+    def has_value(self, value):
+        return value in self._d.values()
 
     def register(self, key, value):
         self._d[key] = value
         self._persist()
 
     def unregister_key(self, key):
-        del self._d[key]
-        self._persist()
+        if key in self._d[key]:
+            del self._d[key]
+            self._persist()
 
     def unregister_value(self, value):
-        key = self.get_key(value)
-        if key is not None:
+        try:
+            key = self.get_key(value)
+        except ValueError:
+            pass
+        else:
             del self._d[key]
             self._persist()
 

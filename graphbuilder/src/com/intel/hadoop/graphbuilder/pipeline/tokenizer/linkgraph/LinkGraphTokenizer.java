@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.linkgraph;
 
 import java.io.IOException;
@@ -34,6 +34,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -83,7 +84,6 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
 
     /**
      * Allocates and initializes the parser and graph elements store.
-     *
      */
     public LinkGraphTokenizer()  {
 
@@ -106,17 +106,17 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
     }
 
     /**
-     * Configures the tokenizer from the MR  configuration.
-     * @param configuration   The MR configuration.
+     * Configures the tokenizer from the Map Reduce  configuration.
+     * @param {@code configuration}  The Map Reduce configuration.
      */
     @Override
     public void configure(Configuration configuration) {
     }
 
     /**
-     * Generates the property graph elements from parsing of a wiki page.
-     * @param string  Wikipage presented as a string.
-     * @param context  The Hadoop supplied mapper context.
+     * Generates the property graph elements from the parsing of a wiki page.
+     * @param {@code string}   Wikipage presented as a string.
+     * @param {@code context}  The Hadoop supplied mapper context.
      */
     public void parse(String string, Mapper.Context context) {
 
@@ -175,15 +175,16 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         final StringType LINKSTO_STYPE  = new StringType(LINKSTO);
 
         while (iterator.hasNext()) {
-            edgeList.add(new Edge<StringType>(new StringType(title),
-                    new StringType(iterator.next()), LINKSTO_STYPE));
+            VertexID<StringType>  srcId = new VertexID<StringType>(new StringType(title), null);
+            VertexID<StringType>  dstId = new VertexID<StringType>(new StringType(iterator.next()), null);
+            edgeList.add(new Edge<StringType>(srcId, dstId,LINKSTO_STYPE));
         }
 
         return edgeList.iterator();
     }
 
     /*
-     * This function is taken and modified from wikixmlj WikiTextParser
+     * This function is taken and modified from wikixmlj WikiTextParser.
      */
 
     private void parseLinks(String text) {

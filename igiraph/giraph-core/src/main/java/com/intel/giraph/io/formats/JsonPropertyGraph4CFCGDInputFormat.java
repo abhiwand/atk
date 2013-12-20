@@ -67,7 +67,7 @@ public class JsonPropertyGraph4CFCGDInputFormat extends TextVertexInputFormat<Lo
      * Here is an example with vertex id 1, vertex value 4,3 marked as "l",
      * and two edges. First edge has a destination vertex 2, edge value 2.1,
      * marked as "tr". Second edge has a destination vertex 3, edge value 0.7,
-     * marked as "va". [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
+     * marked as "va". [1,[4,3],[L],[[2,2.1,[tr]],[3,0.7,[va]]]]
      */
     class JsonPropertyGraph4CFCGDReader extends
         TextVertexReaderFromEachLineProcessedHandlingExceptions<JSONArray, JSONException> {
@@ -147,9 +147,9 @@ public class JsonPropertyGraph4CFCGDInputFormat extends TextVertexInputFormat<Lo
             }
             String vs = valueVector.getString(0);
             VertexType vt = null;
-            if (vs.equals("l")) {
+            if (vs.equals("L")) {
                 vt = VertexType.LEFT;
-            } else if (vs.equals("r")) {
+            } else if (vs.equals("R")) {
                 vt = VertexType.RIGHT;
             } else {
                 throw new IllegalArgumentException(String.format("Vertex type string: %s isn't supported.", vs));

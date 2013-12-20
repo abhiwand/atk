@@ -26,31 +26,20 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation;
 import com.intel.giraph.io.formats.JsonLongIDVectorValueOutputFormat;
-import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
-import com.intel.giraph.io.titan.TitanTestGraph;
+import com.intel.giraph.io.titan.TitanTestBase;
 import com.intel.mahout.math.DoubleWithVectorWritable;
 import com.intel.mahout.math.TwoVectorWritable;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanKey;
 import com.thinkaurelius.titan.core.TitanLabel;
-import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.core.TitanVertex;
-import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
-import org.apache.hadoop.hbase.client.HBaseAdmin;
-import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
@@ -66,8 +55,6 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
-//import org.junit.Ignore;
-
 /**
  * Test TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector
  * which loads vertex with <code>long</code> vertex ID's,
@@ -79,66 +66,21 @@ import static junit.framework.Assert.assertTrue;
  * TitanHBaseVertexInputFormat. Then run algorithm with input data.
  */
 
-public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest {
-    /**
-     * LOG class
-     */
-    private static final Logger LOG = Logger
-        .getLogger(TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest.class);
+public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest
+    extends TitanTestBase<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> {
 
-    public TitanTestGraph graph = null;
-    public TitanTransaction tx = null;
-    private GiraphConfiguration giraphConf;
-    private ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> conf;
-
-    @Before
-    public void setUp() throws Exception {
-        giraphConf = new GiraphConfiguration();
+    @Override
+    protected void configure() throws Exception {
         giraphConf.setComputationClass(LabelPropagationComputation.class);
         giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongTwoVectorDoubleVector.class);
         giraphConf.setVertexOutputFormatClass(JsonLongIDVectorValueOutputFormat.class);
         giraphConf.set("lp.maxSupersteps", "10");
 
-        GIRAPH_TITAN_STORAGE_BACKEND.set(giraphConf, "hbase");
-        GIRAPH_TITAN_STORAGE_HOSTNAME.set(giraphConf, "localhost");
-        GIRAPH_TITAN_STORAGE_TABLENAME.set(giraphConf, "titan");
-        GIRAPH_TITAN_STORAGE_PORT.set(giraphConf, "2181");
-        GIRAPH_TITAN_STORAGE_READ_ONLY.set(giraphConf, "false");
-        GIRAPH_TITAN_AUTOTYPE.set(giraphConf, "none");
-        GIRAPH_TITAN.set(giraphConf, "giraph.titan.input");
         INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "red,blue,yellow");
         INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "friend");
-
-        HBaseAdmin hbaseAdmin = new HBaseAdmin(giraphConf);
-        String tableName = GIRAPH_TITAN_STORAGE_TABLENAME.get(giraphConf);
-        //even delete an existing table needs the table is enabled before deletion
-        if (hbaseAdmin.isTableDisabled(tableName)) {
-            hbaseAdmin.enableTable(tableName);
-        }
-
-        if (hbaseAdmin.isTableAvailable(tableName)) {
-            hbaseAdmin.disableTable(tableName);
-            hbaseAdmin.deleteTable(tableName);
-        }
-
-
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithVectorWritable>(
-            giraphConf);
-
-        BaseConfiguration baseConfig = GiraphToTitanGraphFactory.generateTitanConfiguration(conf,
-            GIRAPH_TITAN.get(giraphConf));
-        GraphDatabaseConfiguration titanConfig = new GraphDatabaseConfiguration(baseConfig);
-        graph = new TitanTestGraph(titanConfig);
-        tx = graph.newTransaction();
-        if (tx == null) {
-            LOG.error("IGIRAPH ERROR: Unable to create Titan transaction! ");
-            throw new RuntimeException(
-                "execute: Failed to create Titan transaction!");
-        }
     }
 
-    //@Ignore("Interacts with real resource")
     @Test
     public void VertexInputFormatLongTwoVectorDoubleVectorTest() throws Exception {
         /* a small four vertex graph
@@ -208,9 +150,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest {
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0], new String[0]);
         Assert.assertNotNull(results);
-        Iterator<String> result = results.iterator();
-        while (result.hasNext()) {
-            String resultLine = result.next();
+        for (String resultLine : results) {
             LOG.info(" got: " + resultLine);
         }
 
@@ -219,26 +159,10 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest {
         for (Map.Entry<Long, Double[]> entry : vertexValues.entrySet()) {
             Double[] vertexValue = entry.getValue();
             assertEquals(3, vertexValue.length);
-            assertTrue(vertexValue[1].doubleValue() > 0.42d);
+            assertTrue(vertexValue[1] > 0.42d);
         }
 
 
-    }
-
-    @After
-    public void done() throws IOException {
-        close();
-        LOG.info("***Done with VertexInputFormatLongTwoVectorDoubleVectorTest****");
-    }
-
-    public void close() {
-        if (null != tx && tx.isOpen()) {
-            tx.rollback();
-        }
-
-        if (null != graph) {
-            graph.shutdown();
-        }
     }
 
     private Map<Long, Double[]> parseVertexValues(Iterable<String> results) {
@@ -265,5 +189,4 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVectorTest {
         }
         return vertexValues;
     }
-
 }

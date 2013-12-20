@@ -404,7 +404,7 @@
 
               var value = getValue($this);
 
-              // Get a list of the errors to apply
+              // Get a list of the error to apply
               var errorsFound = [];
 
               $.each(validators, function (validatorType, validatorTypeArray) {
@@ -470,12 +470,12 @@
 
               errorsFound = $.unique(errorsFound.sort());
 
-              // Were there any errors?
+              // Were there any error?
               if (errorsFound.length) {
                 // Better flag it up as a warning.
                 $controlGroup.removeClass("success error").addClass("warning");
 
-                // How many errors did we find?
+                // How many error did we find?
                 if (settings.options.semanticallyStrict && errorsFound.length === 1) {
                   // Only one? Being strict? Just output it.
                   $helpBlock.html(errorsFound[0] + 

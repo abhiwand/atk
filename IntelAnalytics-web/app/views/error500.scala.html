@@ -1,0 +1,12 @@
+@(message: String, user: database.UserRow)
+
+    @errorCode = {
+        <h1 class='code fadeInDown animated'>
+            <span>5</span>
+            <span class="fa-icon-question-sign"></span>
+            <span>0</span>
+        </h1>
+    }
+@error(message,user)(errorCode){
+        Sorry, we encountered a server error while processing your request.
+    }

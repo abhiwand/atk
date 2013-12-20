@@ -1,22 +1,22 @@
-/* Copyright (C) 2013 Intel Corporation.
-*     All rights reserved.
-*
- *  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*       http://www.apache.org/licenses/LICENSE-2.0
-*
-*   Unless required by applicable law or agreed to in writing, software
-*   distributed under the License is distributed on an "AS IS" BASIS,
-*   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*   See the License for the specific language governing permissions and
-*   limitations under the License.
-*
-* For more about this software visit:
-*      http://www.01.org/GraphBuilder
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.util;
 
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
@@ -30,14 +30,14 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * A general command line parsing utility for graph builder. This CLI class is a wrapper around the GenericOptionsParser
- * and the apache commons cli PosixParser. It manages and centralizes much of the error checking and parser instantiation
- * to one class versus having it distributed across all the demo apps.
+ * A general command line parsing utility for graph builder. This CLI class is a wrapper around the 
+ * GenericOptionsParser and the apache commons cli PosixParser. It manages and centralizes much of 
+ * the error checking and parser instantiation to one class versus distributing across all the demo apps.
  *
  * Uses the Hadoop generic options parser to parse config files.
- * The reserved options: -conf, -D, -fs, -jt, -files, -libjars, and -archives are already used by the Hadoop generic options parser.
- * Don't use any of the reserved options to avoid conflicts. All the hadoop generic options must be placed before any
- * app specific options.
+ * The reserved options: -conf, -D, -fs, -jt, -files, -libjars, and -archives are already used by the 
+ * Hadoop generic options parser. Don't use any of the reserved options to avoid conflicts. All the 
+ * Hadoop generic options must be placed before any app specific options.
  *
  * Usage:
  * <p>
@@ -60,9 +60,9 @@ public class CommandLineInterface{
     private GenericOptionsParser genericOptionsParser;
 
     /**
-     * A wrapper to the regular hasOption command line class.
-     * Does this command line have the specified option?
-     * @param option  The name of the option being requested.
+     * A wrapper to the regular {@code hasOption} command line class.
+     * Checks for a given command line option.
+     * @param {@code option}  The name of the option being requested.
      * @return  true  If and only if the command line has the option.
      */
     public boolean hasOption(String option) {
@@ -70,9 +70,9 @@ public class CommandLineInterface{
     }
 
     /**
-     * A wrapper to the regular getOptionValue command line class.
+     * A wrapper to the regular {@code getOptionValue} command line class.
      * Gets the value of the option from the command line.
-     * @param option The name of the option whose value is requested.
+     * @param {@code option} The name of the option whose value is requested.
      * @return value The value of the option as specified by the command line.
      */
     public String getOptionValue(String option) {
@@ -82,8 +82,8 @@ public class CommandLineInterface{
 
     /**
      * A simple wrapper to reduce the length of the call in the demo app.
-     * @param job The GraphConstructionPipeline(hadoop) job to which we will attach our config.
-     * @return The same GraphConstructionPipeline(hadoop) job with our config.
+     * @param {@code job} The {@code GraphConstructionPipeline(hadoop)} job to which we will attach our config.
+     * @return The same {@code GraphConstructionPipeline(hadoop)} job with our config.
      */
     public GraphConstructionPipeline addConfig(GraphConstructionPipeline job){
         return this.getRuntimeConfig().addConfig(job);
@@ -91,7 +91,7 @@ public class CommandLineInterface{
 
     /**
      * Parses the raw arguments into a {@code CommandLine} object.
-     * @param args The raw command line arguments as a string array.
+     * @param {@code args} The raw command line arguments as a string array.
      * @return  A nicely packaged {@code CommandLine} object.
      */
     public CommandLine parseArgs(String[] args) {
@@ -142,8 +142,8 @@ public class CommandLineInterface{
     }
 
     /**
-     * Makes sure that all required options are present in the raw arguments.
-     * @param args  The raw arguments as a string array.
+     * Makes sure that all of the required options are present in the raw arguments.
+     * @param {@code args}  The raw arguments as a string array.
      */
     public CommandLine checkCli(String[] args) {
         CommandLine cmd = parseArgs(args);
@@ -181,7 +181,7 @@ public class CommandLineInterface{
 
     /**
      * Displays the parsed options for the given option name.
-     * @param option The name of option as a string.
+     * @param {@code option} The name of option as a string.
      */
     public void showParsedOption(Option option){
         String message;
@@ -192,7 +192,7 @@ public class CommandLineInterface{
             message = String.format("Parsed -%s -%s:\t %b", option.getOpt(),
                     option.getLongOpt(), cmd.hasOption(option.getOpt()) );
         }
-        LOG.info(message);
+        LOG.debug(message);
     }
 
     /**
@@ -209,16 +209,16 @@ public class CommandLineInterface{
     }
 
     /**
-     * Display a help message when a user sets the help option.
-     * @param message  The error message to display.
+     * Displays a help message when a user sets the help option.
+     * @param {@code message}  The error message to display.
      */
     public void showHelp(String message){
         _showHelp(message);
     }
 
     /**
-     * Display help message after a bad command line param
-     * @param message error message to display on the command line
+     * Displays a help message after a bad command line param.
+     * @param {@code message} The error message to display on the command line.
      */
     public void showError(String message){
         _showError(message);
@@ -252,7 +252,7 @@ public class CommandLineInterface{
     }
 
     private void _showError(String error){
-        if(error == null || error.trim().length() > 0){
+        if(error == null || error.trim().isEmpty()){
             error = " ";
         }
         HelpFormatter h = new HelpFormatter();
@@ -298,9 +298,9 @@ public class CommandLineInterface{
 
     /**
      * Checks if the lack of an option caused a parsing exception.
-     * @param e      The parse exception that was thrown.
-     * @param option The option that should be in the MissingOptionException.
-     * @return A boolean indicating weather or not the String option is the missing option for which we are looking.
+     * @param {@code e}       The parse exception that was thrown.
+     * @param {@code option}  The option that should be in the {@code MissingOptionException}.
+     * @return A boolean indicating weather or not the {@code String} option is the missing option for which we are looking.
      */
     public static boolean lookForOptionException(ParseException e, String option) {
         MissingOptionException missingOptions = (MissingOptionException) e;
@@ -316,7 +316,7 @@ public class CommandLineInterface{
 
     /**
      * Converts the missing argument exception into a string message.
-     * @param ex A ParseException.
+     * @param {@code ex} A {@code ParseException}.
      */
     public static String getMissingArgumentFromException(ParseException ex){
         MissingArgumentException missingArgumentException;
@@ -337,7 +337,7 @@ public class CommandLineInterface{
     /**
      * Checks if an unrecognized option caused a parsing exception.
      *
-     * @param ex The parsing exception.
+     * @param {@code ex} The parsing exception.
      * @return The name of the unrecognized option.
      */
     public static String getUnrecognizedOptionFromException(ParseException ex){
@@ -358,7 +358,7 @@ public class CommandLineInterface{
 
     /**
      * Finds the first missing option from a parsing exception.
-     * @param ex The parsing exception.
+     * @param {@code ex} The parsing exception.
      * @return  The name of the first missing option.
      */
     public static String getFirstMissingOptionFromException(ParseException ex){

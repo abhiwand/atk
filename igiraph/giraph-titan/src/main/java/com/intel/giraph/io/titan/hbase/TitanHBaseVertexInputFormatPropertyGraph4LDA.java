@@ -167,7 +167,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
             //the edge store name used by Titan
             final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
 
-            if (getRecordReader().nextKeyValue()) {
+            while (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> temp = graphReader
                     .readGiraphVertex(PROPERTY_GRAPH_4_LDA, getConf(), getRecordReader()
                         .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
@@ -175,17 +175,9 @@ public class TitanHBaseVertexInputFormatPropertyGraph4LDA extends
                 if (null != temp) {
                     vertex = temp;
                     return true;
-                } else if (getRecordReader().nextKeyValue()) {
-                    final Vertex<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> temp1 = graphReader
-                        .readGiraphVertex(PROPERTY_GRAPH_4_LDA, getConf(), getRecordReader()
-                            .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                            .get(edgeStoreFamily));
-                    if (null != temp1) {
-                        vertex = temp1;
-                        return true;
-                    }
                 }
             }
+            vertex = null;
             return false;
         }
 
