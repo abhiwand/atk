@@ -35,11 +35,18 @@ _here_folder = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
     os.path.join(os.path.join(_here_folder, os.pardir), os.pardir)))
 
-# mock imports
-sys.modules['bulbs.titan'] = __import__('mock_bulbs_titan')
-sys.modules['bulbs.config'] = __import__('mock_bulbs_config')
-sys.modules['intel_analytics.config'] = __import__('mock_config')
-sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
+if __name__ != '__main__':
+    # This is to allow the tests to execute from both directly executing the script or through test discovery via nosetests
+    # nos is unable to find mock_bulbs_titan but it can find intel_analytics.tests.mock_bulbs_titan
+    mock_prefix='intel_analytics.tests.'
+else:
+    mock_prefix=''
+
+sys.modules['bulbs.titan'] = __import__('%smock_bulbs_titan' % mock_prefix)
+sys.modules['bulbs.config'] = __import__('%smock_bulbs_config' % mock_prefix)
+sys.modules['intel_analytics.config'] = __import__('%smock_config' % mock_prefix)
+sys.modules['intel_analytics.subproc'] = __import__('%smock_subproc' % mock_prefix)
+
 
 # mock config
 from intel_analytics.config import global_config as config

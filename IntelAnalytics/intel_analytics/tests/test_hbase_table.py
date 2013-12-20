@@ -27,6 +27,8 @@ import sys
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
 
+sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir, os.pardir)))
+
 from intel_analytics.config import global_config as config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
