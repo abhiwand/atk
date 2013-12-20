@@ -2,7 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 GET         /                                      controllers.Application.index
-GET         /error                                 controllers.Application.error
+
 POST        /register                              controllers.Register.register
 POST        /login                                 controllers.Login.login
 GET         /logout                                controllers.Application.logout
@@ -17,9 +17,15 @@ GET         /documentation/pythonapi/pigapi        controllers.Documentation.pyt
 GET         /documentation/javaapi                 controllers.Documentation.javaApi
 GET         /documentation/javaapi/pigapi          controllers.Documentation.javaPigApi
 
+#error pages adding to do reverse routing
+GET         /error                                 controllers.Application.error500
+GET         /404                              controllers.Application.error404
+GET         /400                              controllers.Application.error400
+GET         /500                              controllers.Application.error500
+
 #file notifications
 POST        /files/create                          controllers.File.create
 POST        /files/delete                          controllers.File.delete
 
 # Map static resources from the /public folder to the /assets URL path
-GET         /assets/*file                       controllers.Assets.at(path="/public", file)
+GET         /assets/*file                          controllers.Assets.at(path="/public", file)

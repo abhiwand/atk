@@ -25,6 +25,7 @@ package controllers
 
 import play.api.mvc._
 import controllers.Session._
+import play.api.mvc.SimpleResult
 
 object Application extends Controller {
 
@@ -40,12 +41,20 @@ object Application extends Controller {
     Ok(views.html.termsOfUse("Terms of Use", request.user.userInfo))
   }
 
-  def error = ActionWithSession{ request =>
-    Ok(views.html.error500("Error", request.user.userInfo))
-  }
-
   def redirect = Action { implicit request =>
     //redirect the request to https
     MovedPermanently("https://" + request.host + request.uri).withHeaders("X-Forwarded-Proto" -> "https")
+  }
+
+  def error400 = ActionWithSession{ request =>
+    Ok(views.html.error400("Error", request.user.userInfo))
+  }
+
+  def error404 = ActionWithSession{ request =>
+    Ok(views.html.error404("Error", request.user.userInfo))
+  }
+
+  def error500 = ActionWithSession{ request =>
+    Ok(views.html.error500("Error", request.user.userInfo))
   }
 }

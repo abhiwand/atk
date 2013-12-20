@@ -1,4 +1,5 @@
 import com.typesafe.config.ConfigFactory
+import controllers.routes
 import play.api._
 import play.api.mvc._
 import play.api.mvc.Results._
@@ -62,11 +63,11 @@ object Global extends GlobalSettings{
     }
   }
 
-  override def onError(request: RequestHeader, throwable: Throwable): Future[SimpleResult] = {
+  override def onError(request: RequestHeader, throwable: Throwable) = {
       if (Play.isProd){
         Logger.error(request.toString)
         Logger.error(throwable.toString)
-        Future.successful(InternalServerError(views.html.error500("", models.Users.anonymousUser())))
+        Future.successful(Redirect(routes.Application.error500))
       }
       else super.onError(request, throwable);
   }
@@ -75,7 +76,7 @@ object Global extends GlobalSettings{
     if(Play.isProd){
       Logger.error(request.toString)
       Logger.error(error)
-      Future.successful(BadRequest(views.html.error400("", models.Users.anonymousUser())))
+      Future.successful(Redirect(routes.Application.error400))
     }
     else super.onBadRequest(request, error)
   }
@@ -83,7 +84,7 @@ object Global extends GlobalSettings{
   override def onHandlerNotFound(request: RequestHeader): Future[SimpleResult] = {
     if(Play.isProd){
       Logger.error(request.toString)
-      Future.successful(NotFound(views.html.error404("", models.Users.anonymousUser())))
+      Future.successful(Redirect(routes.Application.error404))
     }
     else super.onHandlerNotFound(request);
   }
