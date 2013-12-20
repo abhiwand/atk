@@ -126,12 +126,12 @@ HADOOP_CLASSPATH=$HADOOP_CLASSPATH:myjar.jar:otherjar.jar
 
 2. Tuning
 
-We highly recommend that you tune both the Hadoop and HBase installations
-to successfully create large graphs (typically more than a million edges or
-vertices). In a 16-node cluster with 64GB RAM and Intel Xeon processors,
-we used the following configuration parameter values for HBase to create a
-link-page graph from the Wikipedia English language data (link provided
-earlier):
+Hadoop, HBase and Titan must be tuned carefully to successfully create large
+graphs (typically more than a million edges or vertices). We refer to
+https://github.com/thinkaurelius/titan/wiki/Bulk-Loading for tuning Titan.
+We recommend the following HBase configuration
+parameter values to create a link-page graph from the Wikipedia English
+language data (link provided earlier):
 
 - hbase-site.xml
 
@@ -154,6 +154,8 @@ earlier):
     <name>hbase.rpc.timeout</name>
     <value>6000000</value>
   </property>
+
+Please carefully tune the Titan configuration parameters as suggested in:
 
 
 

@@ -34,8 +34,21 @@
  * the edge list exports.
 
  * <H2>Release Notes</H2>
- * - fixed bugs: ...
- * - new features on top of GB 1.0: ...
+ * + Added the following UDF's and MACRO's:
+ *   \ [CreatePropGraphElements]
+ *   \ [CreateRowKey]
+ *   \ [EdgeList]
+ *   \ [ExtractJSONField]
+ *   \ [FlattenAsGBString]
+ *   \ [GetPropGraphElementID]
+ *   \ [MergeDuplicateGraphElements]
+ *   \ [RDF]
+ *   \ [RegexExtractAllMatches]
+ *   \ [VertexList]
+ * + Added the TableToTitanGraph Java MapReduce code to bulk load property graphs
+ *   from HBase Tables to the open source Titan graph database.
+ * - Removed ID Normalization and Partitioning.
+ * - Removed the wordpage graph and the linkgraph tokenizer from the demoapps.
  * - Several UDFs for graph ETL and a macro for bulk loading the <a href="http://thinkaurelius.github.io/titan/">Titan graph database:</a>
 	 * - <B>Raw Data Input</B> 
 	 *      <UL>
