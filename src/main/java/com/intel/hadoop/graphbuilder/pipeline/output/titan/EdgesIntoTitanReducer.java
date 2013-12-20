@@ -56,6 +56,8 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
 
     private EdgesIntoTitanReducerCallback edgesIntoTitanReducerCallback;
 
+    private static int BULK_EDGE_COMMIT_SIZE = 10000;
+
     private static enum Counters {
         EDGE_PROPERTIES_WRITTEN,
         NUM_EDGES
@@ -176,6 +178,16 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
             }
 
             edgeCount++;
+
+            if (edgeCount != 0 && edgeCount % BULK_EDGE_COMMIT_SIZE == 0) {
+                try {
+                    this.graph.commit();
+                    LOG.info("Successfully committed " + BULK_EDGE_COMMIT_SIZE
+                            + " edges to Titan");
+                } catch (Throwable e) {
+                    LOG.info("Commit failed for edge count: " + edgeCount);
+                }
+            }
         }
 
         context.getCounter(Counters.NUM_EDGES).increment(edgeCount);
