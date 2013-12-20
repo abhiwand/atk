@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -41,8 +42,8 @@ import java.util.Objects;
  */
 public class Edge<VidType extends WritableComparable<VidType>>  extends GraphElement implements Writable {
 
-    private VidType     src;
-    private VidType     dst;
+    private VertexID<VidType>     src;
+    private VertexID<VidType>     dst;
     private StringType  label;
     private PropertyMap properties;
 
@@ -63,11 +64,66 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      * @param {@code dst}   The vertex ID of the edge's destination vertex.
      * @param {@code label} The edge label.
      */
-    public Edge(VidType src, VidType dst, StringType label) {
+    public Edge(VertexID<VidType> src, VertexID<VidType> dst, StringType label) {
 
         this(src, dst, label, new PropertyMap());
     }
 
+    /**
+     * Creates an edge with given source name, source label, destination name, destination label, and edge label..
+     *
+     * @param srcName the name of the source vertex.
+     * @param srcLabel the label of the source vertex
+     * @param dstName the name of the destination vertex
+     * @param dstLabel the label of the destination vertex
+     * @param edgeLabel the label of the edge
+     */
+    public Edge(VidType srcName, StringType srcLabel, VidType dstName, StringType dstLabel, StringType edgeLabel) {
+        super();
+
+        VertexID<VidType> srcId = new VertexID<VidType>(srcName, srcLabel);
+        VertexID<VidType> dstId = new VertexID<VidType>(dstName, dstLabel);
+        this.src = srcId;
+        this.dst = dstId;
+        this.label = edgeLabel;
+        this.properties=  new PropertyMap();
+    }
+
+    /**
+     * Creates an edge with given source name, source label, destination name, destination label, and edge label..
+     *
+     * @param srcName the name of the source vertex.
+     * @param dstName the name of the destination vertex
+     * @param edgeLabel the label of the edge
+     */
+    public Edge(VidType srcName, VidType dstName, StringType edgeLabel) {
+        super();
+
+        VertexID<VidType> srcId = new VertexID<VidType>(srcName, null);
+        VertexID<VidType> dstId = new VertexID<VidType>(dstName, null);
+        this.src = srcId;
+        this.dst = dstId;
+        this.label = edgeLabel;
+        this.properties=  new PropertyMap();
+    }
+
+    /**
+     * Creates an edge with given source name, source label, destination name, destination label, and edge label..
+     *
+     * @param srcName the name of the source vertex.
+     * @param dstName the name of the destination vertex
+     * @param edgeLabel the label of the edge
+     */
+    public Edge(VidType srcName, VidType dstName, StringType edgeLabel, PropertyMap propertyMap) {
+        super();
+
+        VertexID<VidType> srcId = new VertexID<VidType>(srcName, null);
+        VertexID<VidType> dstId = new VertexID<VidType>(dstName, null);
+        this.src = srcId;
+        this.dst = dstId;
+        this.label = edgeLabel;
+        this.properties =  propertyMap;
+    }
 
     /**
      * Creates an edge with given source, destination, label and property map
@@ -76,8 +132,8 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      * @param {@code dst}    The vertex ID of the edge's destination vertex
      * @param {@code label}  The edge label.
      */
-    public Edge(VidType src, VidType dst, StringType label, PropertyMap propertyMap) {
-        this();
+    public Edge(VertexID<VidType> src, VertexID<VidType> dst, StringType label, PropertyMap propertyMap) {
+        super();
 
         this.src = src;
         this.dst = dst;
@@ -86,7 +142,30 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     }
 
     /**
-     * This is an edge.
+     * Creates an edge with given source name, source label, destination name, destination label, edge label, and
+     * property map
+     *
+     * @param srcName the name of the source vertex.
+     * @param srcLabel the label of the source vertex
+     * @param dstName the name of the destination vertex
+     * @param dstLabel the label of the destination vertex
+     * @param edgeLabel the label of the edge
+     * @param propertyMap the property map of the edge
+     */
+    public Edge(VidType srcName, StringType srcLabel, VidType dstName, StringType dstLabel, StringType edgeLabel,
+                PropertyMap propertyMap) {
+        super();
+
+        VertexID<VidType> srcId = new VertexID<VidType>(srcName, srcLabel);
+        VertexID<VidType> dstId = new VertexID<VidType>(dstName, dstLabel);
+        this.src = srcId;
+        this.dst = dstId;
+        this.label = edgeLabel;
+        this.properties =  propertyMap;
+    }
+
+    /**
+     * Tell the callee that this {@code GraphElement} is an edge.
      * @return  {@code true}
      */
     @Override
@@ -95,7 +174,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     }
 
     /**
-     * This is not a vertex.
+     * Tell the callee that this {@code GraphElement} is not a vertex.
      * @return  {@code false}
      */
     @Override
@@ -125,7 +204,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      *  @param {@code dst}         The vertex ID of the edge's destination vertex.
      *  @param {@code properties}  The edge's property map.
      */
-    public void configure(VidType src, VidType dst, StringType label, PropertyMap properties) {
+    public void configure(VertexID<VidType> src, VertexID<VidType> dst, StringType label, PropertyMap properties) {
         this.src        = src;
         this.dst        = dst;
         this.label      = label;
@@ -165,14 +244,14 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
     /**
      * @return The vertex ID of the edge's source.
      */
-    public VidType getSrc() {
+    public VertexID<VidType> getSrc() {
         return src;
     }
 
     /**
      * @return The vertex ID of the edge's destination.
      */
-    public VidType getDst() {
+    public VertexID<VidType> getDst() {
         return dst;
     }
 
@@ -208,32 +287,40 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
         return this;
     }
 
-     /**
-     * To compare another edge from a serializable graph element.
-     * @param {@code edge}  
-     * @return -1 if less than edge, 0 if equal, 1 otherwise.
-     */
-    public int compareTo(Edge<VidType> edge) {
-        return equals(edge) ? 0 : 1;
-    }
-
     /**
      * Checks if the input edge is equal to the current object.
      * This is a deep check which means source, destination
-     * vertex ID's, and all properties are checked to decide
-     * equality.
-     * @param {@code ge} 
+     * vertex ID's and all properties are checked to decide
+     * equality
+     * @param object an object being tested for equality with the edge
      */
     @Override
-    public boolean equals(GraphElement ge) {
-         Edge<VidType> edge = (Edge<VidType>) ge;
+    public boolean equals(Object object) {
+        if (object instanceof Edge) {
+
+        Edge<VidType> edge = (Edge<VidType>) object;
+
         return (this.src.equals(edge.getSrc()) && this.dst.equals(edge.getDst()) &&
-                this.label.equals(edge.getLabel()) && this.properties.equals(edge.getProperties()));
+            this.label.equals(edge.getLabel()) && this.properties.equals(edge.getProperties()));
+
+        } else {
+            return false;
+        }
     }
 
     /**
-     * Gets the edge's ID - that is,  the triple of its source vertex ID, 
-	 * destination vertex ID, and its label.
+     * Override of hashCode to match the override of equals.
+     *
+     * A deep calcuation that combines the hash of the  source, destination
+     * vertex ID's and all properties.
+     */
+     @Override
+     public int hashCode() {
+         return HashUtil.hashQuad(src, dst, label, properties);
+     }
+
+    /**
+     * Gets the edge's ID - that is,  the triple of its source vertex ID, destination vertex ID, and its label.
      * @return  The triple of the edge's source vertex ID, destination vertex ID, and its label.
      */
     public EdgeID getId() {

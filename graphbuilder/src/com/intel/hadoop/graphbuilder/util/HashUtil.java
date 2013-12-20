@@ -20,27 +20,50 @@
 package com.intel.hadoop.graphbuilder.util;
 
 /**
- * Implements a hash combine from boost.
- * 
- * 
+ * Implementation of a hash combine from boost.
  */
 public class HashUtil {
 
-  /**
-   * @param {@code o1}
-   * @param {@code o2}
-   * @return The hash value of a pair of objects.
-   */
-  public static int hashPair(Object o1, Object o2) {
-    return combine(combine(0, o1), o2);
-  }
+    /**
+     * Calculate hashcode of a pair of objects.
+     * @param o1  An object.
+     * @param o2  An object.
+     * @return The hash value of a pair of objects.
+     */
+    public static int hashPair(Object o1, Object o2) {
+        return combine(combine(0, o1), o2);
+    }
 
-  public static int hashTriple(Object o1, Object o2, Object o3) {
-    return combine(combine(combine(0, o1), o2),o3);
-  }
+    /**
+     * Calculate hashcode of a triple of objects.
+     * @param o1  An object.
+     * @param o2  An object.
+     * @param o3  An object.
+     * @return The hash value of a pair of objects.
+     */
+    public static int hashTriple(Object o1, Object o2, Object o3) {
+        return combine(combine(combine(0, o1), o2), o3);
+    }
 
-  private static int combine(long seed, Object val) {
-    return (int) (val.hashCode() + 0x9e3779b9 + (seed << 6) + (seed >> 2));
-  }
+    /**
+     * Calculate hashcode of a triple of objects.
+     * @param o1  An object.
+     * @param o2  An object.
+     * @param o3  An object.
+     * @param o4 An object.
+     * @return The hash value of a pair of objects.
+     */
+    public static int hashQuad(Object o1, Object o2, Object o3, Object o4) {
+        return combine(combine(combine(combine(0, o1), o2), o3), o4);
+    }
 
+    /**
+     * Combine that hashcode of an object with an long  seed.
+     * @param seed Incoming seed value.
+     * @param val  An object to be hashed.
+     * @return     A hashcode.
+     */
+    public static int combine(long seed, Object val) {
+        return (int) (val.hashCode() + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+    }
 }

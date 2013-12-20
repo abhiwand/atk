@@ -23,37 +23,36 @@
 """
 Titan-based Giraph Machine Learning.
 """
+import matplotlib.pyplot as plt
+import re
+import time
+
 from intel_analytics.subproc import call
 from intel_analytics.config import global_config, get_time_str
-from intel_analytics.report import ProgressReportStrategy, find_progress,\
-    MapReduceProgress
-import matplotlib as mpl
-mpl.use('Agg')
-#matplotlib object-oriented api
-import matplotlib.pyplot as plt
-#from IPython.display import display
-#import numpy as np
-# MATLAB-like API
-#from pylab import *
-import re
-
+from intel_analytics.report import ProgressReportStrategy, find_progress, \
+    MapReduceProgress, ReportStrategy
+from intel_analytics.progress import Progress
 
 
 class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     """
-    Titan-based Giraph Machine Learning instance for a graph.
+    Titan-based Giraph Machine Learning instance for a graph
     """
 
     def __init__(self, graph):
+        """
+        initialize the global variables in TitanGiraphMachineLearning
+        """
         self._graph = graph
         self._table_name = graph.titan_table_name
-        #pagerank_graph"
-        #"small_netflix_titan_graph"
-        #"small_lda_titan_graph"
-        #"ivy_titan4_bi"
-        #"small_apl_titan_graph"
+        self._output_vertex_property_list = ''
+        self._vertex_type = ''
+        self._edge_type = ''
+        self.report = []
+        self._label_font_size = 12
+        self._title_font_size = 14
 
-    def plot_progress_curve(self,
+    def _plot_progress_curve(self,
                             data_x,
                             data_y,
                             curve_title,
@@ -64,12 +63,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         fig, axes = plt.subplots()
         axes.plot(data_x, data_y, 'b')
 
-        axes.set_title(curve_title, fontsize=14)
-        axes.set_xlabel("Number of SuperStep", fontsize=12)
-        axes.set_ylabel(curve_ylabel, fontsize=12)
+        axes.set_title(curve_title, fontsize=self._title_font_size)
+        axes.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
+        axes.set_ylabel(curve_ylabel, fontsize=self._label_font_size)
         axes.grid(True, linestyle='-', color='0.75')
 
-    def plot_learning_curve(self,
+    def _plot_learning_curve(self,
                             data_x,
                             data_y,
                             data_v,
@@ -79,54 +78,214 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Plots learning curves for algorithms.
         """
         fig = plt.figure()
-        axes1 = fig.add_axes([0.1, 0.1, 0.8, 0.8]) #left,bottom,width,height
+        axes1 = fig.add_axes([0.1, 0.1, 0.8, 0.8])  # left,bottom,width,height
         axes1.plot(data_x, data_y, 'b')
-        axes1.set_xlabel("Number of SuperStep", fontsize=12)
-        axes1.set_ylabel("Cost (Train)", fontsize=12)
+        axes1.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
+        axes1.set_ylabel("Cost (Train)", fontsize=self._label_font_size)
         title_str = [curve_title, " (Train)"]
-        axes1.set_title(' '.join(map(str, title_str)), fontsize=14)
+        axes1.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
         axes1.grid(True, linestyle='-', color='0.75')
 
         axes2 = fig.add_axes([1.1, 0.1, 0.8, 0.8])
         axes2.plot(data_x, data_v, 'g')
-        axes2.set_xlabel("Number of SuperStep", fontsize=12)
-        axes2.set_ylabel("RMSE (Validate)", fontsize=12)
+        axes2.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
+        axes2.set_ylabel("RMSE (Validate)", fontsize=self._label_font_size)
         title_str = [curve_title, " (Validate)"]
-        axes2.set_title(' '.join(map(str, title_str)), fontsize=14)
+        axes2.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
         axes2.grid(True, linestyle='-', color='0.75')
 
         axes3 = fig.add_axes([2.1, 0.1, 0.8, 0.8])
         axes3.plot(data_x, data_t, 'y')
-        axes3.set_xlabel("Number of SuperStep", fontsize=12)
-        axes3.set_ylabel("RMSE (Test)", fontsize=12)
+        axes3.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
+        axes3.set_ylabel("RMSE (Test)", fontsize=self._label_font_size)
         title_str = [curve_title, " (Test)"]
-        axes3.set_title(' '.join(map(str, title_str)), fontsize=14)
+        axes3.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
         axes3.grid(True, linestyle='-', color='0.75')
         #axes1.legend(['train', 'validate', 'test'], loc='upper right')
         #show()
 
-    def del_old_output(self, output_path):
+    def _update_progress_curve(self,
+                               output_path,
+                               file_name,
+                               time_str,
+                               curve_title,
+                               curve_ylabel):
+        report_file = self._get_report(output_path, file_name, time_str)
+        #find progress info
+        with open(report_file) as result:
+            lines = result.readlines()
+
+        data_x = []
+        data_y = []
+        progress_results = []
+        for i in range(len(lines)):
+            if re.search(r'superstep', lines[i]):
+                results = lines[i].split()
+                data_x.append(results[2])
+                data_y.append(results[5])
+        progress_results.append(data_x)
+        progress_results.append(data_y)
+        self._plot_progress_curve(data_x, data_y, curve_title, curve_ylabel)
+        return progress_results
+
+    def _update_learning_curve(self,
+                               output_path,
+                               file_name,
+                               time_str,
+                               curve_title):
+        report_file = self._get_report(output_path, file_name, time_str)
+        #find progress info
+        with open(report_file) as result:
+            lines = result.readlines()
+
+        data_x = []
+        data_y = []
+        data_v = []
+        data_t = []
+        learning_results = []
+        for i in range(len(lines)):
+            if re.search(r'superstep', lines[i]):
+                results = lines[i].split()
+                data_x.append(results[2])
+                data_y.append(results[5])
+                data_v.append(results[8])
+                data_t.append(results[11])
+        learning_results.append(data_x)
+        learning_results.append(data_y)
+        learning_results.append(data_v)
+        learning_results.append(data_t)
+        self._plot_learning_curve(data_x, data_y, data_v, data_t, curve_title)
+        return learning_results
+
+    def _del_old_output(self, output_path):
         """
         Deletes the old output directory if it exists.
         """
         del_cmd = 'if hadoop fs -test -e ' + output_path + \
-                         '; then hadoop fs -rmr -skipTrash ' + output_path + '; fi'
+                  '; then hadoop fs -rmr -skipTrash ' + output_path + '; fi'
         call(del_cmd, shell=True)
 
-    def get_report(self, output_path, file_name, time_str):
+    def _get_report(self, output_path, file_name, time_str):
         """
         Gets the learning curve or convergence progress report.
         """
+        cmd = 'if [ ! -d ' + global_config['giraph_report_dir'] + ' ]; then mkdir ' + global_config['giraph_report_dir'] + '; fi'
+        call(cmd, shell=True)
         report_file = global_config['giraph_report_dir'] + '/' + self._table_name + time_str + '_report.txt'
         cmd = 'hadoop fs -get ' + output_path + '/' + file_name + ' ' + report_file
         call(cmd, shell=True)
         return report_file
+
+    def recommend(self,
+                  vertex_id,
+                  output_vertex_property_list='',
+                  key_4_vertex_type='',
+                  key_4_edge_type='',
+                  left_vertex_name=global_config['giraph_recommend_left_name'],
+                  right_vertex_name=global_config['giraph_recommend_right_name']):
+        """
+        do recommendation based on trained model
+
+        Required Parameters
+        ----------
+        vertex_id : vertex id to get commendation for
+
+        Optional Parameters
+        (They come with default values. Overwrite it when default does not work for you.)
+        ----------
+        output_vertex_property_list: vertex properties which contains output vertex value.
+                                     if more than one vertex property is used,
+                                     expect it is a comma separated string list.
+                                     The default value is the latest vertex_type set by
+                                     algorithm execution.
+        key_4_vertex_type: the property name for vertex type. The default value is the
+                           latest vertex_type set by algorithm execution.
+        key_4_edge_type: the property name for vertex type. The default value is the
+                           latest vertex_type set by algorithm execution.
+        left_vertex_name: left-side vertex name. The default value is "user".
+        right_vertex_name : right-side vertex name. The default value is "movie".
+
+        Returns
+        Top 10 recommendations for the input vertex id
+        -------
+        """
+        if output_vertex_property_list == '':
+            if self._output_vertex_property_list == '':
+                raise ValueError("output_vertex_property_list is empty!")
+            else:
+                output_vertex_property_list = self._output_vertex_property_list
+
+        if key_4_vertex_type == '':
+            if self._vertex_type == '':
+                raise ValueError("key_4_vertex_type is empty!")
+            else:
+                key_4_vertex_type = self._vertex_type
+
+        if key_4_edge_type == '':
+            if self._edge_type == '':
+                raise ValueError("key_4_edge_type is empty!")
+            else:
+                key_4_edge_type = self._edge_type
+
+        rec_cmd1 = 'gremlin.sh -e ' + global_config['giraph_recommend_script']
+        rec_command = [self._table_name,
+                       vertex_id,
+                       output_vertex_property_list,
+                       global_config['titan_storage_backend'],
+                       global_config['titan_storage_hostname'],
+                       global_config['titan_storage_port'],
+                       left_vertex_name,
+                       right_vertex_name,
+                       global_config['giraph_left_vertex_type_str'],
+                       global_config['giraph_right_vertex_type_str'],
+                       global_config['giraph_train_str'],
+                       global_config['giraph_vertex_true_name'],
+                       key_4_vertex_type,
+                       key_4_edge_type]
+        rec_cmd2 = '::'.join(rec_command)
+        rec_cmd = rec_cmd1 + ' ' + rec_cmd2
+        #print rec_cmd
+        #if want to directly use subprocess without progress bar, it is like this:
+        #p = subprocess.Popen(rec_cmd, shell=True, stdout=subprocess.PIPE)
+        #out = p.communicate()
+        time_str = get_time_str()
+        start_time = time.time()
+        out = call(rec_cmd, shell=True, report_strategy=RecommenderProgressReportStrategy(), communicate=1)
+        exec_time = time.time() - start_time
+        recommend_id = []
+        recommend_score = []
+        width = 10
+        for i in range(len(out)):
+            if re.search(r'======', out[i]):
+                print out[i]
+            if re.search(r'score', out[i]):
+                results = out[i].split()
+                recommend_id.append(results[1])
+                recommend_score.append(results[3])
+                print '{0:{width}}'.format(results[0], width=width),
+                print '{0:{width}}'.format(results[1], width=width),
+                print '{0:{width}}'.format("=>", width=width),
+                print '{0:{width}}'.format(results[2], width=width),
+                print '{0:{width}}'.format(results[3], width=width),
+                print
+
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.recommend_id = list(recommend_id)
+        output.recommend_score = list(recommend_score)
+        self.report.append(output)
+        return output
+
+
 
     def belief_prop(self,
                     input_vertex_property_list,
                     input_edge_property_list,
                     input_edge_label,
                     output_vertex_property_list,
+                    num_worker=global_config['giraph_workers'],
                     max_supersteps=global_config['giraph_belief_propagation_max_supersteps'],
                     convergence_threshold=global_config['giraph_belief_propagation_convergence_threshold'],
                     smoothing=global_config['giraph_belief_propagation_smoothing'],
@@ -143,75 +302,85 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 		
         Parameters
         ----------
-        input_vertex_property_list : 
-		    The vertex properties which contain prior vertex values if you 
-			use more than one vertex property. We expect a comma separated 
+        input_vertex_property_list :
+		    The vertex properties which contain prior vertex values if you
+			use more than one vertex property. We expect a comma separated
 			string list.
         input_edge_property_list :
-            The edge properties which contain the input edge values if you 
-			use more than one edge property. We expect a comma separated 
+            The edge properties which contain the input edge values if you
+			use more than one edge property. We expect a comma separated
 			string list.
         input_edge_label :
             edge label
-        output_vertex_property_list : 
-            The vertex properties which contain the output vertex values if 
-			you use more than one vertex property. We expect a comma 
+        output_vertex_property_list :
+            The vertex properties which contain the output vertex values if
+			you use more than one vertex property. We expect a comma
 			separated string list.
-        max_supersteps : 
+        max_supersteps :
 		    The number of super steps to run in Giraph.
-        smoothing : 
+        smoothing :
 		    The Ising smoothing parameter.
-        convergence_threshold : 
+        convergence_threshold :
 		    The convergence threshold.
-        anchor_threshold : 
+        anchor_threshold :
 		    The anchor threshold [0, 1].
             Those vertices whose normalized prior values are greater than this
 			threshold will not be updated.
 
         Returns
         The algorithm's results in a Titan table.
+
         -------
         """
-
+        self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lbp'
-        lbp_command = self.get_lbp_command(
+        lbp_command = self._get_lbp_command(
             self._table_name,
             input_vertex_property_list,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_worker,
             max_supersteps,
             convergence_threshold,
             smoothing,
             anchor_threshold,
             output_path)
-        lbp_cmd = ' '.join(map(str, lbp_command))
+        lbp_cmd = ' '.join(lbp_command)
         #delete old output directory if already there
-        self.del_old_output(output_path)
+        self._del_old_output(output_path)
         time_str = get_time_str()
+        start_time = time.time()
         call(lbp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
-        report = {'graph_name': self._graph.user_graph_name,
-               'time_run': time_str,
-               'max_superstep': max_supersteps,
-               'convergence_threshold': convergence_threshold,
-               'smoothing': smoothing,
-               'anchor_threshold': anchor_threshold
-               }
-        self._graph.report = report
-        return self._graph
+        exec_time = time.time() - start_time
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.max_superstep = max_supersteps
+        output.convergence_threshold = convergence_threshold
+        output.smoothing = smoothing
+        output.anchor_threshold = anchor_threshold
+        output.graph = self._graph
+        self.report.append(output)
+        return output
 
-    def get_lbp_command(
-        self,
-        table_name,
-        input_vertex_property_list,
-        input_edge_property_list,
-        input_edge_label,
-        output_vertex_property_list,
-        max_supersteps,
-        convergence_threshold,
-        smoothing,
-        anchor_threshold,
-        output):
+    def _get_lbp_command(
+            self,
+            table_name,
+            input_vertex_property_list,
+            input_edge_property_list,
+            input_edge_label,
+            output_vertex_property_list,
+            num_worker,
+            max_supersteps,
+            convergence_threshold,
+            smoothing,
+            anchor_threshold,
+            output):
+        """
+        generate loopy belief propagation command line
+        """
 
         return ['hadoop',
                 'jar',
@@ -225,7 +394,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_tablename'] + table_name,
                 global_config['giraph_param_input_vertex_property_list'] + global_config['hbase_column_family'] +
                 input_vertex_property_list,
-                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family'] +
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
@@ -237,114 +406,111 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output,
                 '-w',
-                global_config['giraph_workers'],
+                num_worker,
                 global_config['giraph_param_belief_propagation_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_belief_propagation_convergence_threshold'] + convergence_threshold,
                 global_config['giraph_param_belief_propagation_smoothing'] + smoothing,
                 global_config['giraph_param_belief_propagation_anchor_threshold'] + anchor_threshold]
 
-        #print '%s' % ' '.join(map(str, myList))
-        #return myList
 
     def page_rank(self,
                   input_edge_property_list,
                   input_edge_label,
                   output_vertex_property_list,
+                  num_worker=global_config['giraph_workers'],
                   max_supersteps=global_config['giraph_page_rank_max_supersteps'],
                   convergence_threshold=global_config['giraph_page_rank_convergence_threshold'],
                   reset_probability=global_config['giraph_page_rank_reset_probability'],
-                  convergence_output_interval=global_config['giraph_param_page_rank_convergence_output_interval']
-                  ):
+                  convergence_output_interval=global_config['giraph_convergence_output_interval']
+    ):
         """
         The PageRank algorithm: http://en.wikipedia.org/wiki/PageRank
 
         Parameters
         ----------
-        input_edge_property_list : 
-            The edge properties which contain the input edge values if you 
-			use more than one edge property. We expect a comma separated 
+        input_edge_property_list :
+            The edge properties which contain the input edge values if you
+			use more than one edge property. We expect a comma separated
 			string list.
-        input_edge_label : 
+        input_edge_label :
 		    The edge label.
-        output_vertex_property_list : 
-		     The vertex properties which contain the output vertex values 
-			 if you use one vertex property. We expect a comma separated 
+        output_vertex_property_list :
+		     The vertex properties which contain the output vertex values
+			 if you use one vertex property. We expect a comma separated
 			 string list.
-        max_supersteps : 
+        max_supersteps :
 		    The number of super steps to run in Giraph.
-        convergence_threshold : 
+        convergence_threshold :
 		    The convergence threshold.
-        reset_probability : 
+        reset_probability :
 		    The reset probability.
-        convergence_output_interval : 
-		    The convergence progress output interval 
+        convergence_output_interval :
+		    The convergence progress output interval
 			(default: every superstep).
 
         Returns
         The algorithm's results in a Titan table.
-        You can access the convergence curve through the page_rank.stats 
+        You can access the convergence curve through the page_rank.stats
 		object.
         -------
         """
+        self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/pr'
-        pr_command = self.get_pr_command(
+        pr_command = self._get_pr_command(
             self._table_name,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_worker,
             max_supersteps,
             convergence_threshold,
             reset_probability,
             convergence_output_interval,
             output_path
         )
-        pr_cmd = ' '.join(map(str, pr_command))
-        print pr_cmd
+        pr_cmd = ' '.join(pr_command)
+        #print pr_cmd
         #delete old output directory if already there
-        self.del_old_output(output_path)
+        self._del_old_output(output_path)
         time_str = get_time_str()
+        start_time = time.time()
         call(pr_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
-        report_file = self.get_report(output_path, 'pr-convergence-report_0', time_str)
-        #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        exec_time = time.time() - start_time
+        pr_results = self._update_progress_curve(output_path,
+                                                 'pr-convergence-report_0',
+                                                 time_str,
+                                                 'Page Rank Convergence Curve',
+                                                 'Vertex Value Change')
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.max_superstep = max_supersteps
+        output.convergence_threshold = convergence_threshold
+        output.reset_probability = reset_probability
+        output.convergence_output_interval = convergence_output_interval
+        output.super_steps = list(pr_results[0])
+        output.convergence_progress = list(pr_results[1])
+        output.graph = self._graph
+        self.report.append(output)
+        return output
 
-        #r = re.compiler(r'superstep')
-        data_x = []
-        data_y = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
-
-        curve_title = 'Page Rank Convergence Curve'
-        curve_ylabel = 'Vertex Value Change'
-        self.plot_progress_curve(data_x, data_y, curve_title, curve_ylabel)
-        report = {'graph_name': self._graph.user_graph_name,
-               'time_run': time_str,
-               'max_superstep': max_supersteps,
-               'convergence_threshold': convergence_threshold,
-               'reset_probability': reset_probability,
-               'convergence_output_interval': convergence_output_interval,
-               'supersteps': data_x,
-               'convergence_progress': data_y
-               }
-        self._graph.report = report
-        return self._graph
-
-    def get_pr_command(
+    def _get_pr_command(
             self,
             table_name,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_worker,
             max_supersteps,
             convergence_threshold,
             reset_probability,
             convergence_output_interval,
             output_path
-            ):
+    ):
+        """
+        generate page rank command line
+        """
 
         return ['hadoop',
                 'jar',
@@ -356,7 +522,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family'] +
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
@@ -372,7 +538,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output_path,
                 '-w',
-                global_config['giraph_workers'],
+                num_worker,
                 global_config['giraph_param_page_rank_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_page_rank_convergence_threshold'] + convergence_threshold,
                 global_config['giraph_param_page_rank_reset_probability'] + reset_probability,
@@ -382,8 +548,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     def avg_path_len(
             self,
             input_edge_label,
-            output_vertex_property_list
-            ):
+            output_vertex_property_list,
+            convergence_output_interval=global_config['giraph_convergence_output_interval'],
+            num_worker=global_config['giraph_workers']
+    ):
         """
         The average path length calculation.
 
@@ -396,35 +564,63 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			you use more than one vertex property. We expect a comma separated 
 			string list.
 
+        Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        convergence_output_interval: convergence progress output interval.
+                                     The default value is 1, which means output every super step.
+        num_worker: number of workers. The default value is 15.
+
         Returns
         The algorithm's results in a Titan table.
+
          -------
         """
+        self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/apl'
-        apl_command = self.get_apl_command(
+        apl_command = self._get_apl_command(
             self._table_name,
             input_edge_label,
             output_vertex_property_list,
-            output_path
+            output_path,
+            num_worker
         )
-        apl_cmd = ' '.join(map(str, apl_command))
+        apl_cmd = ' '.join(apl_command)
+        #print apl_cmd
         #delete old output directory if already there
-        self.del_old_output(output_path)
+        self._del_old_output(output_path)
         time_str = get_time_str()
+        start_time = time.time()
         call(apl_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
-        report = {'graph_name': self._graph.user_graph_name,
-                  'time_run': time_str
-                  }
-        self._graph.report = report
-        return self._graph
+        exec_time = time.time() - start_time
+        apl_results = self._update_progress_curve(output_path,
+                                                  'apl-convergence-report_0',
+                                                  time_str,
+                                                  'Avg. Path Length Progress Curve',
+                                                  'Num of Vertex Updates')
 
-    def get_apl_command(
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.convergence_output_interval = convergence_output_interval
+        output.super_steps = list(apl_results[0])
+        output.convergence_progress = list(apl_results[1])
+        output.graph = self._graph
+        self.report.append(output)
+        return output
+
+    def _get_apl_command(
             self,
             table_name,
             input_edge_label,
             output_vertex_property_list,
-            output_path
-            ):
+            output_path,
+            num_worker,
+    ):
+        """
+        generate average path length command line
+        """
 
         return ['hadoop',
                 'jar',
@@ -439,25 +635,31 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_average_path_length_class'],
+                '-mc',
+                global_config['giraph_average_path_length_class'] + '\$' + global_config['giraph_average_path_length_master_compute'],
+                '-aw',
+                global_config['giraph_average_path_length_class'] + '\$' + global_config['giraph_average_path_length_aggregator'],
                 '-vif',
                 global_config['giraph_average_path_length_input_format'],
                 '-vof',
                 global_config['giraph_average_path_length_output_format'],
                 '-op',
-                output_path,                '-w',
-                global_config['giraph_workers']]
+                output_path,
+                '-w',
+                num_worker]
 
     def label_prop(
-        self,
-        input_vertex_property_list,
-        input_edge_property_list,
-        input_edge_label,
-        output_vertex_property_list,
-        max_supersteps=global_config['giraph_label_propagation_max_supersteps'],
-        convergence_threshold=global_config['giraph_label_propagation_convergence_threshold'],
-        lp_lambda=global_config['giraph_label_propagation_lambda'],
-        anchor_threshold=global_config['giraph_label_propagation_anchor_threshold']
-        ):
+            self,
+            input_vertex_property_list,
+            input_edge_property_list,
+            input_edge_label,
+            output_vertex_property_list,
+            num_worker=global_config['giraph_workers'],
+            max_supersteps=global_config['giraph_label_propagation_max_supersteps'],
+            convergence_threshold=global_config['giraph_label_propagation_convergence_threshold'],
+            lp_lambda=global_config['giraph_label_propagation_lambda'],
+            anchor_threshold=global_config['giraph_label_propagation_anchor_threshold']
+    ):
         """
         Label Propagation on Gaussian Random Fields.
         This algorithm is presented in:
@@ -466,27 +668,28 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
-        input_vertex_property_list : 
-		    The vertex properties which contain the prior vertex values if 
-			you use more than one vertex property. We expect a comma separated 
-			string list.
-        input_edge_property_list : 
-		    The edge properties which contain the input edge values if you 
-			use more than one edge property. We expect a comma separated 
-			string list.
-        input_edge_label : 
-		    The edge label.
-        output_vertex_property_list : 
-		    The vertex properties which contain the output vertex values if 
+
+        input_vertex_property_list :
+		    The vertex properties which contain the prior vertex values if
 			you use more than one vertex property. We expect a comma separated
 			string list.
-        max_supersteps : 
+        input_edge_property_list :
+		    The edge properties which contain the input edge values if you
+			use more than one edge property. We expect a comma separated
+			string list.
+        input_edge_label :
+		    The edge label.
+        output_vertex_property_list :
+		    The vertex properties which contain the output vertex values if
+			you use more than one vertex property. We expect a comma separated
+			string list.
+        max_supersteps :
 		    The number of super steps to run in Giraph.
-        lambda : 
+        lambda :
 		    The tradeoff parameter: f = (1-lambda)Pf + lambda*h
-        convergence_threshold : 
+        convergence_threshold :
 		    The convergence threshold.
-        anchor_threshold : 
+        anchor_threshold :
 		    The anchor threshold [0, 1].
             Those vertices whose normalized prior values are greater than this
 			threshold will not be updated.
@@ -495,47 +698,57 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         The algorithm's results in a Titan table.
         -------
         """
+        self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lp'
-        lp_command = self.get_lp_command(
+        lp_command = self._get_lp_command(
             self._table_name,
             input_vertex_property_list,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_worker,
             max_supersteps,
             convergence_threshold,
             lp_lambda,
             anchor_threshold,
             output_path
         )
-        lp_cmd = ' '.join(map(str, lp_command))
+        lp_cmd = ' '.join(lp_command)
         #delete old output directory if already there
-        self.del_old_output(output_path)
+        self._del_old_output(output_path)
         time_str = get_time_str()
+        start_time = time.time()
         call(lp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
-        report = {'graph_name': self._graph.user_graph_name,
-               'time_run': time_str,
-               'max_superstep': max_supersteps,
-               'convergence_threshold': convergence_threshold,
-               'lambda': lp_lambda,
-               'anchor_threshold': anchor_threshold
-               }
-        self._graph.report = report
-        return self._graph
+        exec_time = time.time() - start_time
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.max_superstep = max_supersteps
+        output.convergence_threshold = convergence_threshold
+        output.param_lambda = lp_lambda
+        output.anchor_threshold = anchor_threshold
+        output.graph = self._graph
+        self.report.append(output)
+        return output
 
-    def get_lp_command(
+    def _get_lp_command(
             self,
             table_name,
             input_vertex_property_list,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_worker,
             max_supersteps,
             convergence_threshold,
             lp_lambda,
             anchor_threshold,
             output_path
-            ):
+    ):
+        """
+        generate label propagation command line
+        """
 
         return ['hadoop',
                 'jar',
@@ -549,7 +762,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_tablename'] + table_name,
                 global_config['giraph_param_input_vertex_property_list'] + global_config['hbase_column_family'] +
                 input_vertex_property_list,
-                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family'] +
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
@@ -561,7 +774,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output_path,
                 '-w',
-                global_config['giraph_workers'],
+                num_worker,
                 global_config['giraph_param_label_propagation_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_label_propagation_convergence_threshold'] + convergence_threshold,
                 global_config['giraph_param_label_propagation_lambda'] + lp_lambda,
@@ -573,6 +786,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
+            edge_type,
+            num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_latent_dirichlet_allocation_max_supersteps'],
             alpha=global_config['giraph_latent_dirichlet_allocation_alpha'],
             beta=global_config['giraph_latent_dirichlet_allocation_beta'],
@@ -581,13 +796,14 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             max_val=global_config['giraph_latent_dirichlet_allocation_maxVal'],
             min_val=global_config['giraph_latent_dirichlet_allocation_minVal'],
             num_topics=global_config['giraph_latent_dirichlet_allocation_num_topics']
-            ):
+    ):
         """
         The Latent Dirichlet Allocation, see: http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
 
         Parameters
         ----------
-        input_edge_property_list : 
+
+        input_edge_property_list :
 		    The edge properties which contain the input edge values if you use
 			more than one edge property. We expect a comma separated string 
 			list.
@@ -621,15 +837,21 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Returns
         The algorithm's results in a Titan table.
         The convergence curve is accessible through the lda.stats object.
+
         -------
         """
+        self._output_vertex_property_list = output_vertex_property_list
+        self._vertex_type = global_config['hbase_column_family'] + vertex_type
+        self._edge_type = global_config['hbase_column_family'] + edge_type
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lda'
-        lda_command = self.get_lda_command(
+        lda_command = self._get_lda_command(
             self._table_name,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            vertex_type,
+            self._vertex_type,
+            self._edge_type,
+            num_worker,
             max_supersteps,
             alpha,
             beta,
@@ -640,55 +862,52 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_topics,
             output_path
         )
-        lda_cmd = ' '.join(map(str, lda_command))
-        print lda_cmd
+        lda_cmd = ' '.join(lda_command)
+        #print lda_cmd
         #delete old output directory if already there
-        self.del_old_output(output_path)
+        self._del_old_output(output_path)
         time_str = get_time_str()
+        start_time = time.time()
         call(lda_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
-        report_file = self.get_report(output_path, 'lda-learning-report_0', time_str)
-        #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        exec_time = time.time() - start_time
 
-        #r = re.compiler(r'superstep')
-        data_x = []
-        data_y = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
-
-        curve_title = 'LDA Learning Curve'
         if evaluate_cost:
             curve_ylabel = 'Cost'
         else:
             curve_ylabel = 'Max Vertex Value Change'
-        self.plot_progress_curve(data_x, data_y, curve_title, curve_ylabel)
-        report = {'graph_name': self._graph.user_graph_name,
-               'time_run': time_str,
-               'max_superstep': max_supersteps,
-               'convergence_threshold': convergence_threshold,
-               'alpha': alpha,
-               'beta': beta,
-               'evaluate_cost': evaluate_cost,
-               'max_val': max_val,
-               'min_val': min_val,
-               'num_topics': num_topics,
-               'supersteps': data_x,
-               'cost': data_y
-               }
-        self._graph.report = report
-        return self._graph
+        lda_results = self._update_progress_curve(output_path,
+                                                  'lda-learning-report_0',
+                                                  time_str,
+                                                  'LDA Learning Curve',
+                                                  curve_ylabel)
 
-    def get_lda_command(
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.max_superstep = max_supersteps
+        output.convergence_threshold = convergence_threshold
+        output.alpha = alpha
+        output.beta = beta
+        output.evaluate_cost = evaluate_cost
+        output.max_val = max_val
+        output.min_val = min_val
+        output.num_topics = num_topics
+        output.super_steps = list(lda_results[0])
+        output.cost = list(lda_results[1])
+        output.graph = self._graph
+        self.report.append(output)
+        return output
+
+    def _get_lda_command(
             self,
             table_name,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_worker,
             vertex_type,
+            edge_type,
             max_supersteps,
             alpha,
             beta,
@@ -698,7 +917,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             min_val,
             num_topics,
             output_path
-           ):
+    ):
+        """
+        generate latent Dirichlet allocation command line
+        """
 
         return ['hadoop',
                 'jar',
@@ -710,17 +932,19 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family'] +
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
-                global_config['giraph_param_vertex_type'] + global_config['hbase_column_family'] +
-                vertex_type,
+                global_config['giraph_param_vertex_type'] + vertex_type,
+                global_config['giraph_param_edge_type'] + edge_type,
                 global_config['giraph_latent_dirichlet_allocation_class'],
                 '-mc',
-                global_config['giraph_latent_dirichlet_allocation_class'] + '\$' + global_config['giraph_latent_dirichlet_allocation_master_compute'],
+                global_config['giraph_latent_dirichlet_allocation_class'] + '\$' + global_config[
+                    'giraph_latent_dirichlet_allocation_master_compute'],
                 '-aw',
-                global_config['giraph_latent_dirichlet_allocation_class'] + '\$' + global_config['giraph_latent_dirichlet_allocation_aggregator'],
+                global_config['giraph_latent_dirichlet_allocation_class'] + '\$' + global_config[
+                    'giraph_latent_dirichlet_allocation_aggregator'],
                 '-vif',
                 global_config['giraph_latent_dirichlet_allocation_input_format'],
                 '-vof',
@@ -728,7 +952,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output_path,
                 '-w',
-                global_config['giraph_workers'],
+                num_worker,
                 global_config['giraph_param_latent_dirichlet_allocation_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_latent_dirichlet_allocation_alpha'] + alpha,
                 global_config['giraph_param_latent_dirichlet_allocation_beta'] + beta,
@@ -746,15 +970,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_alternative_least_square_max_supersteps'],
             feature_dimension=global_config['giraph_alternative_least_square_feature_dimension'],
             als_lambda=global_config['giraph_alternative_least_square_lambda'],
             convergence_threshold=global_config['giraph_alternative_least_square_convergence_threshold'],
-            learning_output_interval=global_config['giraph_alternative_least_square_learning_output_interval'],
+            learning_output_interval=global_config['giraph_learning_output_interval'],
             max_val=global_config['giraph_alternative_least_square_maxVal'],
             min_val=global_config['giraph_alternative_least_square_minVal'],
             bias_on=global_config['giraph_alternative_least_square_bias_on']
-            ):
+    ):
         """
         The Alternating Least Squares with Bias for collaborative filtering algorithms.
         The algorithms presented in
@@ -765,6 +990,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
+
         input_edge_property_list : 
 		    The edge properties which contain the input edge values if you use
 			more than one edge property. We expect a comma separated string 
@@ -801,16 +1027,21 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Returns
         The algorithm's results in a Titan table.
         The convergence curve is accessible through the als.stats object.
+
         -------
         """
+        self._output_vertex_property_list = output_vertex_property_list
+        self._vertex_type = global_config['hbase_column_family'] + vertex_type
+        self._edge_type = global_config['hbase_column_family'] + edge_type
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/als'
-        als_command = self.get_als_command(
+        als_command = self._get_als_command(
             self._table_name,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            vertex_type,
-            edge_type,
+            self._vertex_type,
+            self._edge_type,
+            num_worker,
             max_supersteps,
             feature_dimension,
             als_lambda,
@@ -821,51 +1052,40 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             bias_on,
             output_path
         )
-        als_cmd = ' '.join(map(str, als_command))
-        print als_cmd
+        als_cmd = ' '.join(als_command)
+        #print als_cmd
         #delete old output directory if already there
-        self.del_old_output(output_path)
+        self._del_old_output(output_path)
         time_str = get_time_str()
+        start_time = time.time()
         call(als_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
-        report_file = self.get_report(output_path, 'als-learning-report_0', time_str)
-        #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        exec_time = time.time() - start_time
+        als_results = self._update_learning_curve(output_path,
+                                                  'als-learning-report_0',
+                                                  time_str,
+                                                  'ALS Learning Curve')
 
-        data_x = []
-        data_y = []
-        data_v = []
-        data_t = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
-                data_v.append(results[8])
-                data_t.append(results[11])
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.max_superstep = max_supersteps
+        output.convergence_threshold = convergence_threshold
+        output.feature_dimension = feature_dimension
+        output.param_lambda = als_lambda
+        output.learning_output_interval = learning_output_interval
+        output.max_val = max_val
+        output.min_val = min_val
+        output.bias_on = bias_on
+        output.super_steps = list(als_results[0])
+        output.cost_train = list(als_results[1])
+        output.rmse_validate = list(als_results[2])
+        output.rmse_test = list(als_results[3])
+        output.graph = self._graph
+        self.report.append(output)
+        return output
 
-        curve_title = "ALS Learning Curve"
-        #curve_ylabel = 'Cost (RMSE)'
-        self.plot_learning_curve(data_x, data_y, data_v, data_t, curve_title)
-        report = {'graph_name': self._graph.user_graph_name,
-               'time_run': time_str,
-               'max_superstep': max_supersteps,
-               'convergence_threshold': convergence_threshold,
-               'feature_dimension': feature_dimension,
-               'lambda': als_lambda,
-               'learning_output_interval': learning_output_interval,
-               'max_val': max_val,
-               'min_val': min_val,
-               'bias_on': bias_on,
-               'supersteps': data_x,
-               'cost_train': data_y,
-               'rmse_validate': data_v,
-               'rmse_test': data_t
-               }
-        self._graph.report = report
-        return self._graph
-
-    def get_als_command(
+    def _get_als_command(
             self,
             table_name,
             input_edge_property_list,
@@ -873,6 +1093,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_worker,
             max_supersteps,
             feature_dimension,
             als_lambda,
@@ -882,7 +1103,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             min_val,
             bias_on,
             output_path
-           ):
+    ):
+        """
+        generate alternating least squares command line
+        """
 
         return ['hadoop',
                 'jar',
@@ -894,20 +1118,20 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family'] +
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_param_output_bias'] + bias_on,
-                global_config['giraph_param_vertex_type'] + global_config['hbase_column_family'] +
-                vertex_type,
-                global_config['giraph_param_edge_type'] + global_config['hbase_column_family_edge'] +
-                edge_type,
+                global_config['giraph_param_vertex_type'] + vertex_type,
+                global_config['giraph_param_edge_type'] + edge_type,
                 global_config['giraph_alternative_least_square_class'],
                 '-mc',
-                global_config['giraph_alternative_least_square_class'] + '\$' + global_config['giraph_alternative_least_square_master_compute'],
+                global_config['giraph_alternative_least_square_class'] + '\$' + global_config[
+                    'giraph_alternative_least_square_master_compute'],
                 '-aw',
-                global_config['giraph_alternative_least_square_class'] + '\$' + global_config['giraph_alternative_least_square_aggregator'],
+                global_config['giraph_alternative_least_square_class'] + '\$' + global_config[
+                    'giraph_alternative_least_square_aggregator'],
                 '-vif',
                 global_config['giraph_alternative_least_square_input_format'],
                 '-vof',
@@ -915,12 +1139,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output_path,
                 '-w',
-                global_config['giraph_workers'],
+                num_worker,
                 global_config['giraph_param_alternative_least_square_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_alternative_least_square_feature_dimension'] + feature_dimension,
                 global_config['giraph_param_alternative_least_square_lambda'] + als_lambda,
                 global_config['giraph_param_alternative_least_square_convergence_threshold'] + convergence_threshold,
-                global_config['giraph_param_alternative_least_square_learning_output_interval'] + learning_output_interval,
+                global_config[
+                    'giraph_param_alternative_least_square_learning_output_interval'] + learning_output_interval,
                 global_config['giraph_param_alternative_least_square_maxVal'] + max_val,
                 global_config['giraph_param_alternative_least_square_minVal'] + min_val,
                 global_config['giraph_param_alternative_least_square_bias_on'] + bias_on]
@@ -933,16 +1158,17 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_conjugate_gradient_descent_max_supersteps'],
             feature_dimension=global_config['giraph_conjugate_gradient_descent_feature_dimension'],
             cgd_lambda=global_config['giraph_conjugate_gradient_descent_lambda'],
             convergence_threshold=global_config['giraph_conjugate_gradient_descent_convergence_threshold'],
-            learning_output_interval=global_config['giraph_conjugate_gradient_descent_learning_output_interval'],
+            learning_output_interval=global_config['giraph_learning_output_interval'],
             max_val=global_config['giraph_conjugate_gradient_descent_maxVal'],
             min_val=global_config['giraph_conjugate_gradient_descent_minVal'],
             bias_on=global_config['giraph_conjugate_gradient_descent_bias_on'],
             num_iters=global_config['giraph_conjugate_gradient_descent_num_iters']
-            ):
+    ):
         """
         The Conjugate Gradient Descent (CGD) with Bias for collaborative 
 		filtering algorithm.
@@ -952,7 +1178,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
-        input_edge_property_list : 
+        input_edge_property_list :
 		    The edge properties which contain the input edge values if you 
 			use more than one edge property. We expect a comma separated 
 			string list.
@@ -991,16 +1217,21 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Returns
         The algorithm's results in a Titan table.
         The convergence curve is accessible through the cgd.stats object.
+
         -------
         """
+        self._output_vertex_property_list = output_vertex_property_list
+        self._vertex_type = global_config['hbase_column_family'] + vertex_type
+        self._edge_type = global_config['hbase_column_family'] + edge_type
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/cgd'
-        cgd_command = self.get_cgd_command(
+        cgd_command = self._get_cgd_command(
             self._table_name,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            vertex_type,
-            edge_type,
+            self._vertex_type,
+            self._edge_type,
+            num_worker,
             max_supersteps,
             feature_dimension,
             cgd_lambda,
@@ -1012,52 +1243,42 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_iters,
             output_path
         )
-        cgd_cmd = ' '.join(map(str, cgd_command))
-        print cgd_cmd
+        cgd_cmd = ' '.join(cgd_command)
+        #print cgd_cmd
         #delete old output directory if already there
-        self.del_old_output(output_path)
+        self._del_old_output(output_path)
         time_str = get_time_str()
+        start_time = time.time()
         call(cgd_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
-        report_file = self.get_report(output_path, 'cgd-learning-report_0', time_str)
-        #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        exec_time = time.time() - start_time
 
-        data_x = []
-        data_y = []
-        data_v = []
-        data_t = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
-                data_v.append(results[8])
-                data_t.append(results[11])
+        cgd_results = self._update_learning_curve(output_path,
+                                                  'cgd-learning-report_0',
+                                                  time_str,
+                                                  'CGD Learning Curve')
 
-        curve_title = "CGD Learning Curve"
-        #curve_ylabel = 'Cost (RMSE)'
-        self.plot_learning_curve(data_x, data_y, data_v, data_t, curve_title)
-        report = {'graph_name': self._graph.user_graph_name,
-               'time_run': time_str,
-               'max_superstep': max_supersteps,
-               'convergence_threshold': convergence_threshold,
-               'feature_dimension': feature_dimension,
-               'lambda': cgd_lambda,
-               'learning_output_interval': learning_output_interval,
-               'max_val': max_val,
-               'min_val': min_val,
-               'bias_on': bias_on,
-               'num_iters': num_iters,
-               'supersteps': data_x,
-               'cost_train': data_y,
-               'rmse_validate': data_v,
-               'rmse_test': data_t
-               }
-        self._graph.report = report
-        return self._graph
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.max_superstep = max_supersteps
+        output.convergence_threshold = convergence_threshold
+        output.feature_dimension = feature_dimension
+        output.param_lambda = cgd_lambda
+        output.learning_output_interval = learning_output_interval
+        output.max_val = max_val
+        output.min_val = min_val
+        output.bias_on = bias_on
+        output.num_iters = num_iters
+        output.super_steps = list(cgd_results[0])
+        output.cost_train = list(cgd_results[1])
+        output.rmse_validate = list(cgd_results[2])
+        output.rmse_test = list(cgd_results[3])
+        output.graph = self._graph
+        self.report.append(output)
+        return output
 
-    def get_cgd_command(
+    def _get_cgd_command(
             self,
             table_name,
             input_edge_property_list,
@@ -1065,6 +1286,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_worker,
             max_supersteps,
             feature_dimension,
             cgd_lambda,
@@ -1075,7 +1297,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             bias_on,
             num_iters,
             output_path
-           ):
+    ):
+        """
+        generate conjugate gradient descent command line
+        """
 
         return ['hadoop',
                 'jar',
@@ -1087,20 +1312,20 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family'] +
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_param_output_bias'] + bias_on,
-                global_config['giraph_param_vertex_type'] + global_config['hbase_column_family'] +
-                vertex_type,
-                global_config['giraph_param_edge_type'] + global_config['hbase_column_family_edge'] +
-                edge_type,
+                global_config['giraph_param_vertex_type'] + vertex_type,
+                global_config['giraph_param_edge_type'] + edge_type,
                 global_config['giraph_conjugate_gradient_descent_class'],
                 '-mc',
-                global_config['giraph_conjugate_gradient_descent_class'] + '\$' + global_config['giraph_conjugate_gradient_descent_master_compute'],
+                global_config['giraph_conjugate_gradient_descent_class'] + '\$' + global_config[
+                    'giraph_conjugate_gradient_descent_master_compute'],
                 '-aw',
-                global_config['giraph_conjugate_gradient_descent_class'] + '\$' + global_config['giraph_conjugate_gradient_descent_aggregator'],
+                global_config['giraph_conjugate_gradient_descent_class'] + '\$' + global_config[
+                    'giraph_conjugate_gradient_descent_aggregator'],
                 '-vif',
                 global_config['giraph_conjugate_gradient_descent_input_format'],
                 '-vof',
@@ -1108,17 +1333,18 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output_path,
                 '-w',
-                global_config['giraph_workers'],
+                num_worker,
                 global_config['giraph_param_conjugate_gradient_descent_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_conjugate_gradient_descent_feature_dimension'] + feature_dimension,
                 global_config['giraph_param_conjugate_gradient_descent_lambda'] + cgd_lambda,
                 global_config['giraph_param_conjugate_gradient_descent_convergence_threshold'] + convergence_threshold,
-                global_config['giraph_param_conjugate_gradient_descent_learning_output_interval'] + learning_output_interval,
+                global_config[
+                    'giraph_param_conjugate_gradient_descent_learning_output_interval'] + learning_output_interval,
                 global_config['giraph_param_conjugate_gradient_descent_maxVal'] + max_val,
                 global_config['giraph_param_conjugate_gradient_descent_minVal'] + min_val,
                 global_config['giraph_param_conjugate_gradient_descent_bias_on'] + bias_on,
-                global_config['giraph_conjugate_gradient_descent_num_iters'] + num_iters
-                ]
+                global_config['giraph_param_conjugate_gradient_descent_num_iters'] + num_iters
+        ]
 
     def gd(
             self,
@@ -1127,17 +1353,18 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_gradient_descent_max_supersteps'],
             feature_dimension=global_config['giraph_gradient_descent_feature_dimension'],
             gd_lambda=global_config['giraph_gradient_descent_lambda'],
             convergence_threshold=global_config['giraph_gradient_descent_convergence_threshold'],
-            learning_output_interval=global_config['giraph_gradient_descent_learning_output_interval'],
+            learning_output_interval=global_config['giraph_learning_output_interval'],
             max_val=global_config['giraph_gradient_descent_maxVal'],
             min_val=global_config['giraph_gradient_descent_minVal'],
             bias_on=global_config['giraph_gradient_descent_bias_on'],
             discount=global_config['giraph_gradient_descent_discount'],
             learning_rate=global_config['giraph_gradient_descent_learning_rate']
-            ):
+    ):
         """
         The Gradient Descent (GD) with Bias for collaborative filtering algorithm.
         The algorithm presented in
@@ -1146,7 +1373,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
-        input_edge_property_list : 
+        input_edge_property_list :
 		    The edge properties which contain the input edge values if you 
 			use more than one edge property. We expect a comma separated 
 			string list.
@@ -1189,16 +1416,21 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Returns
         The algorithm's results in a Titan table.
         The convergence curve is accessible through the gd.stats object.
+
         -------
         """
+        self._output_vertex_property_list = output_vertex_property_list
+        self._vertex_type = global_config['hbase_column_family'] + vertex_type
+        self._edge_type = global_config['hbase_column_family'] + edge_type
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/gd'
-        gd_command = self.get_gd_command(
+        gd_command = self._get_gd_command(
             self._table_name,
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            vertex_type,
-            edge_type,
+            self._vertex_type,
+            self._edge_type,
+            num_worker,
             max_supersteps,
             feature_dimension,
             gd_lambda,
@@ -1211,52 +1443,42 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             learning_rate,
             output_path
         )
-        gd_cmd = ' '.join(map(str, gd_command))
+        gd_cmd = ' '.join(gd_command)
+        #print gd_cmd
         #delete old output directory if already there
-        self.del_old_output(output_path)
+        self._del_old_output(output_path)
         time_str = get_time_str()
+        start_time = time.time()
         call(gd_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
-        report_file = self.get_report(output_path, 'gd-learning-report_0', time_str)
-        #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        exec_time = time.time() - start_time
 
-        data_x = []
-        data_y = []
-        data_v = []
-        data_t = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
-                data_v.append(results[8])
-                data_t.append(results[11])
+        gd_results = self._update_learning_curve(output_path,
+                                  'gd-learning-report_0',
+                                  time_str,
+                                  'GD Learning Curve')
 
-        curve_title = "GD Learning Curve"
-        #curve_ylabel = 'Cost (RMSE)'
-        self.plot_learning_curve(data_x, data_y, data_v, data_t, curve_title)
-        report = {'graph_name': self._graph.user_graph_name,
-               'time_run': time_str,
-               'max_superstep': max_supersteps,
-               'convergence_threshold': convergence_threshold,
-               'feature_dimension': feature_dimension,
-               'lambda': gd_lambda,
-               'learning_output_interval': learning_output_interval,
-               'max_val': max_val,
-               'min_val': min_val,
-               'bias_on': bias_on,
-               'discount': discount,
-               'learning_rate': learning_rate,
-               'supersteps': data_x,
-               'cost_train': data_y,
-               'rmse_validate': data_v,
-               'rmse_test': data_t
-               }
-        self._graph.report = report
-        return self._graph
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.max_superstep = max_supersteps
+        output.convergence_threshold = convergence_threshold
+        output.feature_dimension = feature_dimension
+        output.param_lambda = gd_lambda
+        output.learning_output_interval = learning_output_interval
+        output.max_val = max_val
+        output.min_val = min_val
+        output.bias_on = bias_on
+        output.discount = discount
+        output.learning_rate = learning_rate
+        output.super_steps = list(gd_results[0])
+        output.cost_train = list(gd_results[1])
+        output.rmse_validate = list(gd_results[2])
+        output.rmse_test = list(gd_results[3])
+        self.report.append(output)
+        return output
 
-    def get_gd_command(
+    def _get_gd_command(
             self,
             table_name,
             input_edge_property_list,
@@ -1264,6 +1486,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_worker,
             max_supersteps,
             feature_dimension,
             gd_lambda,
@@ -1275,8 +1498,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             discount,
             learning_rate,
             output_path
-           ):
-
+    ):
+        """
+        generate gradient descent command line
+        """
         return ['hadoop',
                 'jar',
                 global_config['giraph_jar'],
@@ -1287,20 +1512,20 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family_edge'] +
+                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family'] +
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_param_output_bias'] + bias_on,
-                global_config['giraph_param_vertex_type'] + global_config['hbase_column_family'] +
-                vertex_type,
-                global_config['giraph_param_edge_type'] + global_config['hbase_column_family_edge'] +
-                edge_type,
+                global_config['giraph_param_vertex_type'] + vertex_type,
+                global_config['giraph_param_edge_type'] + edge_type,
                 global_config['giraph_gradient_descent_class'],
                 '-mc',
-                global_config['giraph_gradient_descent_class'] + '\$' + global_config['giraph_gradient_descent_master_compute'],
+                global_config['giraph_gradient_descent_class'] + '\$' + global_config[
+                    'giraph_gradient_descent_master_compute'],
                 '-aw',
-                global_config['giraph_gradient_descent_class'] + '\$' + global_config['giraph_gradient_descent_aggregator'],
+                global_config['giraph_gradient_descent_class'] + '\$' + global_config[
+                    'giraph_gradient_descent_aggregator'],
                 '-vif',
                 global_config['giraph_gradient_descent_input_format'],
                 '-vof',
@@ -1308,7 +1533,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output_path,
                 '-w',
-                global_config['giraph_workers'],
+                num_worker,
                 global_config['giraph_param_gradient_descent_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_gradient_descent_feature_dimension'] + feature_dimension,
                 global_config['giraph_param_gradient_descent_lambda'] + gd_lambda,
@@ -1319,11 +1544,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_gradient_descent_bias_on'] + bias_on,
                 global_config['giraph_param_gradient_descent_discount'] + discount,
                 global_config['giraph_param_gradient_descent_learning_rate'] + learning_rate
-                ]
+        ]
 
 
-class BeliefPropagation(object):  #TODO: eventually inherit from base Algo class
+class InitReport():
     """
+
     The Descriptive class of the Belief Propagation algorithm.
 	
 	Should contain info about the cfg constants, the user supplied parameters
@@ -1333,12 +1559,17 @@ class BeliefPropagation(object):  #TODO: eventually inherit from base Algo class
     pass
 
 
-job_completion_pattern = re.compile(r".*?mapred.JobClient: Job complete")
+job_completion_pattern = re.compile(r".*?Giraph Stats")
 
 
 class GiraphProgressReportStrategy(ProgressReportStrategy):
-
+    """
+    The progress report strategy for Giraph jobs
+    """
     def report(self, line):
+        """
+        to report progress of Giraph job
+        """
         progress = find_progress(line)
 
         if progress and len(self.progress_list) < 2:
@@ -1357,6 +1588,7 @@ class GiraphProgressReportStrategy(ProgressReportStrategy):
             # giraph does not print any message indicating beginning of the second phase
             if progress.mapper_progress == 100:
                 self.job_progress_bar_list.append(self.get_new_progress_bar(self.get_next_step_title()))
+                self.job_progress_bar_list[-1]._enable_animation()
                 self.job_progress_bar_list[-1].update(100)
                 self.job_progress_bar_list[-1]._enable_animation()
                 self.progress_list.append(MapReduceProgress(0, 0))
@@ -1372,3 +1604,31 @@ class GiraphProgressReportStrategy(ProgressReportStrategy):
         else:
             return False
 
+
+class RecommenderProgressReportStrategy(ReportStrategy):
+    """
+    The progress report strategy for recommender task
+    """
+    def __init__(self):
+        """
+        initialize the progress bar
+        """
+        self.progress_list = []
+        progress_bar = Progress("Progress")
+        progress_bar._repr_html_()
+        progress_bar._enable_animation()
+        progress_bar.update(100)
+        self.progress_bar = progress_bar
+
+    def report(self, line):
+        """
+        to report progress of recommender task
+        """
+        if re.search(r"complete recommend", line):
+            self.progress_bar._disable_animation()
+
+    def handle_error(self, error_code, error_message):
+        """
+        turn the progress bar to red if there is error during execution
+        """
+        self.progress_bar.alert()

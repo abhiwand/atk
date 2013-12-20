@@ -70,8 +70,8 @@ public abstract class GraphElementWriter {
 
     public abstract void write(ArgumentBuilder args) throws IOException, InterruptedException;
 
-    public abstract void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException;
+    public abstract void writeVertices(ArgumentBuilder args) throws IOException, InterruptedException;
 
-    public abstract void edgeWrite(ArgumentBuilder args) throws IOException, InterruptedException;
+    public abstract void writeEdges(ArgumentBuilder args) throws IOException, InterruptedException;
 
 }

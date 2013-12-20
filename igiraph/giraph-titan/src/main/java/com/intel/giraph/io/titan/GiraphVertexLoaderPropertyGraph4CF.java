@@ -45,11 +45,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TEST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TRAIN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_VALIDATION;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LEFT_VERTEX_TYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.RIGHT_VERTEX_TYPE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 
 /**
@@ -65,7 +70,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_
  * vertex value 4,3 marked as "l", and two edges.
  * First edge has a destination vertex 2, edge value 2.1, marked as "tr".
  * Second edge has a destination vertex 3, edge value 0.7,marked as "va".
- * [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
+ * [1,[4,3],[L],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
 public class GiraphVertexLoaderPropertyGraph4CF {
     /**
@@ -318,9 +323,9 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                     Vector priorVector = vertexValueVector.getVector();
 
                     String vertexTypeString = vertexTypeObject.toString();
-                    if (vertexTypeString.equals("l")) {
+                    if (vertexTypeString.equals(LEFT_VERTEX_TYPE)) {
                         vertexType = VertexType.LEFT;
-                    } else if (vertexTypeString.equals("r")) {
+                    } else if (vertexTypeString.equals(RIGHT_VERTEX_TYPE)) {
                         vertexType = VertexType.RIGHT;
                     } else {
                         LOG.error("Vertex type string: %s isn't supported." + vertexTypeString);
@@ -345,11 +350,11 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                                 } else if (edgeTypePropertyKey.equals(entry.getKey())) {
                                     final Object edgeTypeObject = entry.getValue();
                                     edgeTypeString = edgeTypeObject.toString();
-                                    if (edgeTypeString.equals("tr")) {
+                                    if (edgeTypeString.equals(EDGE_TYPE_TRAIN)) {
                                         edgeType = EdgeType.TRAIN;
-                                    } else if (edgeTypeString.equals("va")) {
+                                    } else if (edgeTypeString.equals(EDGE_TYPE_VALIDATION)) {
                                         edgeType = EdgeType.VALIDATE;
-                                    } else if (edgeTypeString.equals("te")) {
+                                    } else if (edgeTypeString.equals(EDGE_TYPE_TEST)) {
                                         edgeType = EdgeType.TEST;
                                     } else {
                                         LOG.error("Edge type string: %s isn't supported." + edgeTypeString);

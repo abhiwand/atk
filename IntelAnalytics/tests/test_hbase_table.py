@@ -9,7 +9,7 @@ from intel_analytics.config import global_config as config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
-from tests.mock import patch, Mock, MagicMock
+from mock import patch, Mock, MagicMock
 
 
 class HbaseTableTest(unittest.TestCase):
@@ -42,40 +42,40 @@ class HbaseTableTest(unittest.TestCase):
 
     def create_mock_hbase_client_same_columns_in_rows(self):
         def get_result():
-            yield "row1", {"name": "A", "address": "1234 xyz st"}
-            yield "row2", {"name": "B", "address": "5678 def ave"}
+            yield "row1", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row2", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
 
         return self.create_mock_hbase_client(get_result)
 
     def create_mock_hbase_client_different_columns_in_rows(self):
         def get_result():
-            yield "row1", {"name": "A", "address": "1234 xyz st"}
-            yield "row2", {"name": "B", "office": "5678 def ave"}
+            yield "row1", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row2", {"etl-cf:name": "B", "etl-cf:office": "5678 def ave"}
 
         return self.create_mock_hbase_client(get_result)
 
     def create_mock_hbase_client_20_rows_in_table_scan(self):
         def get_result():
-            yield "row1", {"name": "A", "address": "1234 xyz st"}
-            yield "row2", {"name": "B", "address": "5678 def ave"}
-            yield "row3", {"name": "A", "address": "1234 xyz st"}
-            yield "row4", {"name": "B", "address": "5678 def ave"}
-            yield "row5", {"name": "A", "address": "1234 xyz st"}
-            yield "row6", {"name": "B", "address": "5678 def ave"}
-            yield "row7", {"name": "A", "address": "1234 xyz st"}
-            yield "row8", {"name": "B", "address": "5678 def ave"}
-            yield "row9", {"name": "A", "address": "1234 xyz st"}
-            yield "row10", {"name": "B", "address": "5678 def ave"}
-            yield "row11", {"name": "A", "address": "1234 xyz st"}
-            yield "row12", {"name": "B", "address": "5678 def ave"}
-            yield "row13", {"name": "A", "address": "1234 xyz st"}
-            yield "row14", {"name": "B", "address": "5678 def ave"}
-            yield "row15", {"name": "A", "address": "1234 xyz st"}
-            yield "row16", {"name": "B", "address": "5678 def ave"}
-            yield "row17", {"name": "A", "address": "1234 xyz st"}
-            yield "row18", {"name": "B", "address": "5678 def ave"}
-            yield "row19", {"name": "A", "address": "1234 xyz st"}
-            yield "row20", {"name": "B", "address": "5678 def ave"}
+            yield "row1", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row2", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row3", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row4", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row5", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row6", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row7", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row8", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row9", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row10", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row11", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row12", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row13", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row14", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row15", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row16", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row17", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row18", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
+            yield "row19", {"etl-cf:name": "A", "etl-cf:address": "1234 xyz st"}
+            yield "row20", {"etl-cf:name": "B", "etl-cf:address": "5678 def ave"}
 
         return self.create_mock_hbase_client(get_result)
 
@@ -147,17 +147,17 @@ class HbaseTableTest(unittest.TestCase):
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
-        n_rows = table._get_first_N(10)
+        n_rows = table._peek(10)
 
         first_row = n_rows[0]
         second_row = n_rows[1]
 
         self.assertEqual(2, len(n_rows))
-        self.assertEqual('1234 xyz st', first_row['address'])
-        self.assertEqual('A', first_row['name'])
+        self.assertEqual('1234 xyz st', first_row['etl-cf:address'])
+        self.assertEqual('A', first_row['etl-cf:name'])
 
-        self.assertEqual('5678 def ave', second_row['address'])
-        self.assertEqual('B', second_row['name'])
+        self.assertEqual('5678 def ave', second_row['etl-cf:address'])
+        self.assertEqual('B', second_row['etl-cf:name'])
 
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
@@ -167,7 +167,7 @@ class HbaseTableTest(unittest.TestCase):
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
-        n_rows = table._get_first_N(10)
+        n_rows = table._peek(10)
         self.assertEqual(10, len(n_rows))
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
@@ -177,17 +177,17 @@ class HbaseTableTest(unittest.TestCase):
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
-        n_rows = table._get_first_N(10)
+        n_rows = table._peek(10)
 
         first_row = n_rows[0]
         second_row = n_rows[1]
 
         self.assertEqual(2, len(n_rows))
-        self.assertEqual('1234 xyz st', first_row['address'])
-        self.assertEqual('A', first_row['name'])
+        self.assertEqual('1234 xyz st', first_row['etl-cf:address'])
+        self.assertEqual('A', first_row['etl-cf:name'])
 
-        self.assertEqual('5678 def ave', second_row['office'])
-        self.assertEqual('B', second_row['name'])
+        self.assertEqual('5678 def ave', second_row['etl-cf:office'])
+        self.assertEqual('B', second_row['etl-cf:name'])
 
     @patch('intel_analytics.table.hbase.table.sys.stdout')
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
@@ -203,7 +203,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={config['hbase_column_family'] + 'name':'chararray', config['hbase_column_family'] + 'address':'chararray'})
-        table.sample()
+        table.inspect()
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -234,7 +234,7 @@ class HbaseTableTest(unittest.TestCase):
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
-        self.assertRaises(HBaseTableException, table.sample, -1)
+        self.assertRaises(HBaseTableException, table.inspect, -1)
 
 
     @patch('intel_analytics.table.hbase.table.sys.stdout')
@@ -251,7 +251,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        table.sample(0)
+        table.inspect(0)
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -284,7 +284,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        table.sample()
+        table.inspect()
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -317,7 +317,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        html = table.sample_as_html()
+        html = table.inspect_as_html()
         expected = '<table border="1"><tr><th>name</th><th>address</th></tr><tr><td>A</td><td>1234 xyz st</td></tr><tr><td>B</td><td>5678 def ave</td></tr></table>'
         self.assertEqual(expected, html)
 
@@ -331,7 +331,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        html = table.sample_as_html()
+        html = table.inspect_as_html()
         expected = '<table border="1"><tr><th>name</th><th>address</th></tr><tr><td>A</td><td>1234 xyz st</td></tr><tr><td>B</td><td>NA</td></tr></table>'
         self.assertEqual(expected, html)
 

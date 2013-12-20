@@ -361,16 +361,12 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         TitanKey gbIdKey = null;
 
-        if (vidClass == LongType.class) {
-            gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(Long.class)
-                    .indexed(Vertex.class).unique().make();
-        } else if (vidClass == StringType.class) {
-            gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(String.class)
-                    .indexed(Vertex.class).unique().make();
-        } else {
-            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                    "Vertex ID Class is not legal class, StrinGtype or LongType.", LOG);
-        }
+        // Because Titan requires combination of vertex names and vertex labels into single strings for unique IDs
+        // the unique GB_ID_FOR_TITAN property must be of StringType
+
+        gbIdKey = graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(String.class)
+                .indexed(Vertex.class).unique().make();
+
 
         keyMap.put(TitanConfig.GB_ID_FOR_TITAN, gbIdKey);
 

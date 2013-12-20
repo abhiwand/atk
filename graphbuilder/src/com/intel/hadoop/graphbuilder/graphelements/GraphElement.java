@@ -50,8 +50,6 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     //get the graph element
     public abstract GraphElement get();
 
-    public abstract boolean equals(GraphElement graphElement);
-
     /**
      * All of the callback classes we will be using.
      */

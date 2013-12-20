@@ -373,6 +373,18 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             srcVertexColName     = edgeRule.getSrcColumnName();
             tgtVertexColName     = edgeRule.getDstColumnName();
 
+            StringType srcLabel = null;
+            String srcLabelString = vertexRDFLabelMap.get(srcVertexColName);
+            if (srcLabelString != null) {
+                srcLabel = new StringType(srcLabelString);
+            }
+
+            StringType tgtLabel = null;
+            String tgtLabelString = vertexRDFLabelMap.get(tgtVertexColName);
+            if (tgtLabelString != null) {
+                tgtLabel = new StringType(tgtLabelString);
+            }
+
             String srcVertexCellString = getColumnData(columns, srcVertexColName, context);
             String tgtVertexCellString = getColumnData(columns, tgtVertexColName, context);
 
@@ -380,8 +392,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 for (String srcVertexName : expandString(srcVertexCellString)) {
                     for (String tgtVertexName: expandString(tgtVertexCellString)) {
 
-                        Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName),
-                                new StringType(tgtVertexName), new StringType(eLabel));
+
+                        Edge<StringType> edge = new Edge<StringType>(new StringType(srcVertexName), srcLabel,
+                                new StringType(tgtVertexName), tgtLabel, new StringType(eLabel));
 
                         for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
                             propertyValue = getColumnData(columns, edgeAttributes[countEdgeAttr], context);
@@ -398,14 +411,14 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                         // need to make sure both ends of the edge are proper vertices!
 
-                        Vertex<StringType> srcVertex = new Vertex<StringType>(new StringType(srcVertexName));
-                        Vertex<StringType> tgtVertex = new Vertex<StringType>(new StringType(tgtVertexName));
+                        Vertex<StringType> srcVertex = new Vertex<StringType>(new StringType(srcVertexName), srcLabel);
+                        Vertex<StringType> tgtVertex = new Vertex<StringType>(new StringType(tgtVertexName), tgtLabel);
                         vertexList.add(srcVertex);
                         vertexList.add(tgtVertex);
 
                         if (edgeRule.isBiDirectional()) {
-                            Edge<StringType> opposingEdge = new Edge<StringType>(new StringType(tgtVertexName),
-                                                                new StringType(srcVertexName),
+                            Edge<StringType> opposingEdge = new Edge<StringType>(new StringType(tgtVertexName),tgtLabel ,
+                                                                new StringType(srcVertexName),  srcLabel,
                                                                 new StringType(eLabel));
 
                             // now add the edge properties

@@ -31,13 +31,14 @@ class Progress:
         self.max_value = max_value
         self.value = 0
         self.is_in_alert = False
+        self.is_in_animation = False
 
     def _repr_html_(self):
         pb = HTML(
             """
             <div id="%s" class='status'>
-                <span class="label span3">%s</span>
-                <span class="span5 progress">
+                <span class="label span2">%s</span>
+                <span class="span7 progress">
                       <div class="bar" style= "width:0%%">&nbsp;</div>
                 </span>
             </div>
@@ -49,18 +50,41 @@ class Progress:
         self.value = value
         display(Javascript("$('#%s div').first().width('%i%%')" %
                            (self.id, (float(value) / float(self.max_value)) * 100)))
+        if (value == self.max_value) and (not self.is_in_animation) and (not self.is_in_alert):
+            self._update_text()
 
     def delete(self):
         display(Javascript("$('#%s div').first().parents('.status').remove()" % self.id))
 
     def _enable_animation(self):
         display(Javascript("$('#%s span').last().addClass(\"progress-striped active\")" % self.id))
+        self.is_in_animation = True
 
     def _disable_animation(self):
         display(Javascript("$('#%s span').last().removeClass(\"progress-striped active\")" % self.id))
+        if not self.is_in_alert:
+            self._update_text()
+        self.is_in_animation = False
 
     def alert(self):
+        self.is_in_alert = True
+        self._update_text()
         self._disable_animation()
         display(Javascript("$('#%s span').last().addClass(\"progress-danger\")" % self.id))
-        self.is_in_alert = True
 
+    def _update_text(self):
+        """
+        update the title of progress bar when the step is completed.
+        """
+        if self.name == 'Progress':
+            if self.is_in_alert:
+                self.name = 'Execution failed'
+            else:
+                self.name = 'Execution completed'
+        else:
+            if self.is_in_alert:
+                self.name = self.name + ' failed'
+            else:
+                self.name = self.name + ' completed'
+
+        display(Javascript("""$('#%s span').first().text('%s')""" % (self.id, self.name)))

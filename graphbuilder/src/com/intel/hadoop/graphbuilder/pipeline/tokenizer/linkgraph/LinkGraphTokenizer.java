@@ -34,6 +34,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
@@ -174,8 +175,9 @@ public class LinkGraphTokenizer implements GraphTokenizer<String, StringType> {
         final StringType LINKSTO_STYPE  = new StringType(LINKSTO);
 
         while (iterator.hasNext()) {
-            edgeList.add(new Edge<StringType>(new StringType(title),
-                    new StringType(iterator.next()), LINKSTO_STYPE));
+            VertexID<StringType>  srcId = new VertexID<StringType>(new StringType(title), null);
+            VertexID<StringType>  dstId = new VertexID<StringType>(new StringType(iterator.next()), null);
+            edgeList.add(new Edge<StringType>(srcId, dstId,LINKSTO_STYPE));
         }
 
         return edgeList.iterator();
