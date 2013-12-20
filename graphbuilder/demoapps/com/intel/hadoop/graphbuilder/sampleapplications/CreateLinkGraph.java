@@ -35,23 +35,23 @@ import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
 /**
- * Generate a link graph from a collection of wiki pages.
+ * Generates a link graph from a collection of wiki pages.
  * <p>
  * <ul>
- *     <li>There is vertex for every wiki page in the specified input file.</li>
+ *     <li>There is a vertex for every wiki page in the specified input file.</li>
  *     <li>There is a "linksTO" edge from each page to every page to which it links.</li>
  * </ul>
  * </p>
  *
- * <p>At present there are two possible datasinks, a TextGraph, or a load into the Titan graph database. At present,
+ * <p>In this release, there are two possible datasinks, a TextGraph, or a load into the Titan graph database. At present,
  * only one datasink can be specified for each run.
  * <ul>
- *     <li>To specify a text output: use option <code>-o directory_name </code></li>
- *     <li>To specify a Titan load, use the option <code>-t</code>
- *     <ul><li>The tablename used by Titan is specified in the config file specified at <code> -conf conf_path </code></li>
- *     <li>If no tablename is specified, Titan uses the default table name <code>titan</code></li>
- *     <li><code>-a</code> an option that tells Titan it can append the newly generated graph to an existing
- *         one in the same table. Default behavior is to abort if you try to use an existing Titan table name</li></ul>
+ *     <li>To specify a text output use this option: <code>-o directory_name </code></li>
+ *     <li>To specify a Titan load, use this option: <code>-t</code>
+ *     <ul><li>Specify the tablename for Titan to use in the config file you specify at: <code> -conf conf_path </code></li>
+ *     <li>If you do not specify a tablename, Titan uses the default table name: <code>titan</code></li>
+ *     <li>Use the <code>-a</code> option to tell Titan it can append the newly generated graph to an existing
+ *         one in the same table. The default behavior is to abort if you try to use an existing Titan table name.</li></ul>
  * </ul>
  * </p>
  *
@@ -112,8 +112,8 @@ public class CreateLinkGraph {
     }
 
     /**
-     * Main method for creating the link graph
-     * @param args raw command line
+     * This is the main method for creating the link graph.
+     * @param args The raw command line.
      */
 
     public static void main(String[] args) {

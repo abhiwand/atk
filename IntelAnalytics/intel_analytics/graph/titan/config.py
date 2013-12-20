@@ -20,195 +20,136 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-from time import strftime
-import os
+"""
+Titan/Rexster-specific configuration
 
-__all__ = [ 'titan_config']
+Includes the Rexster XML config file template and Graph Builder XML template
+"""
+from intel_analytics.config import global_config as config
+from xml.etree.ElementTree import ElementTree, fromstring
+
+__all__ = ['titan_config']
+
 
 class TitanConfig(object):
-    from intel_analytics.config import global_config
+    """
+    Config methods specifically for working with Titan, Rexster
+    """
 
-    def __init__(self, config=global_config):
-        self.config = config
-
-    def write_gb_cfg(self, tablename, stream=None):
+    def write_gb_cfg(self, table_name):
         """
         Writes a GraphBuilder config XML file.
 
         Parameters
         ----------
-        tablename : String
-            The name of the destination table in Titan.
-        stream : stream
-            An open dest stream, if None, the cfg file is written to the cfg-specified file path.
+        table_name : string
+            Then name of the destination table in Titan
 
         Returns
         -------
         filename : String
             The full path of the config file created by this method.
         """
-        self.config['titan_storage_tablename'] = tablename
-        filename = os.path.join(self.config['conf_folder'],
-                                "graphbuilder_titan.xml")
-        return self._write_cfg(tablename,
-                               stream,
-                               filename,
-                               gb_keys,
-                               self._write_gb)
+        if not table_name or not table_name.endswith('_titan'):
+            raise Exception("Internal error: bad graph table")
+        filename = config['graph_builder_titan_xml']
+        with open(filename, 'w') as out:
+            params = {k: config[k] for k in gb_keys}
+            params['titan_storage_tablename'] = table_name
+            out.write("<!-- Auto-generated Graph Builder cfg file -->\n\n")
+            out.write("<configuration>\n")
+            keys = sorted(params.keys())
+            for k in keys:
+                out.write("  <property>\n    <name>graphbuilder.")
+                out.write(k)
+                out.write("</name>\n    <value>")
+                out.write(params[k])
+                out.write("</value>\n  </property>\n")
+            out.write("</configuration>\n")
+        return filename
 
-    def write_rexster_cfg(self, tablename, stream=None):
+    def get_rexster_server_uri(self, table_name):
+        return '{0}:{1}/graphs/{2}'.format(
+            config['rexster_baseuri'],
+            config['rexster_bulbs_port'],
+            table_name)
+
+    def rexster_xml_delete_graph(self, titan_table_name):
+        tree = ElementTree()
+        tree.parse(config['rexster_xml'])
+        graphs = tree.find("./graphs")
+        xpath = "./graph[graph-name='" + titan_table_name + "']"
+        graph = graphs.find(xpath)
+        if graph is not None and len(graph):
+            graphs.remove(graph)
+            tree.write(config['rexster_xml'])
+            return True
+        return False
+
+    def rexster_xml_add_graph(self, titan_table_name):
+        return self.rexster_xml_add_graphs([titan_table_name])
+
+    def rexster_xml_add_graphs(self, titan_table_names):
         """
-        Writes a Rexster config XML file.
+        Adds a graph to the Rexster config XML file
 
         Parameters
         ----------
-        tablename : String
-            The name of the destination table in Titan.
-        stream : stream
-            An open dest stream, if None, the cfg file is written to cfg-specified file path.
-
-        Returns
-        -------
-        filename : String
-            The full path of the config file created by this method.
+        table_names : strings
+           The names of the destination tables in Titan.
         """
-        return self._write_cfg(tablename,
-                               stream,
-                               self.config['rexster_xml'],
-                               rexster_keys,
-                               self._write_rexster)
+        tree = ElementTree()
+        tree.parse(config['rexster_xml'])
 
+        graphs = tree.find("./graphs")
+        params = {k: config[k] for k in rexster_keys}
+        for name in titan_table_names:
+            # check for duplicate entry
+            xpath = "./graph[graph-name='" + name + "']"
+            graph = graphs.find(xpath)
+            if graph is None:
+                params['titan_storage_tablename'] = name
+                s = Template(rexster_xml_graph_template_str).substitute(params)
+                graph = fromstring(s)
+                graphs.append(graph)
+        if 'titan_storage_tablename' in params:
+            del params['titan_storage_tablename']
+        tree.write(config['rexster_xml'])
 
-    def _write_cfg(self, tablename, stream, filename, keys, func):
-        if tablename is None: raise Exception("tablename is None")
-
-        self.config.verify(keys)
-
-        if stream is not None:
-            func(stream)
-            return ""
-        else:
-            with open(filename, 'w') as out:
-                func(out)
-            return filename
-
-    def _write_gb(self, out):
-        _write_header(out, "GraphBuilder")
-        out.write("<configuration>\n")
-        for k in gb_keys:
-            _write_gb_prop(out, k, self.config[k])
-        out.write("</configuration>\n")
-
-    def _write_rexster(self, out):
-        _write_header(out, "Rexster")
-        out.write(rexster_template.substitute(self.config))
-
-
-def _write_header(out, cfg_name):
-    out.write("<!-- ")
-    out.write(cfg_name)
-    out.write(strftime(" cfg file generated at %Y-%m-%d %H:%M:%S-->\n\n"))
-
-def _write_gb_prop(out, name, value):
-    out.write("  <property>\n    <name>graphbuilder.")
-    out.write(name)
-    out.write("</name>\n    <value>")
-    out.write(value)
-    out.write("</value>\n  </property>\n")
+    # Here the start/stop rexster server code, should we need it:
+    # from intel_analytics.table.hbase.table import hbase_registry
+    # from intel_analytics.subproc import call
+    #
+    # def refresh_rexster_cfg(self):
+    #     """Refreshes Rexster's configuration file to the hbase registry"""
+    #     self._stop_rexster()
+    #     self._generate_rexster_xml()
+    #     self._start_rexster()
+    #
+    # def _start_rexster(self):
+    #     call(config['rexster_start_cmd'], shell=True)
+    #
+    # def _stop_rexster(self):
+    #     call(config['rexster_stop_cmd'], shell=True)
+    #
+    # def _generate_rexster_xml(self):
+    #     self._rexster_xml_clear_graphs()
+    #     values = hbase_registry.values()
+    #     titan_table_names = (for value in values if value.endswith('_titan'))
+    #     self.rexster_xml_add_graphs(titan_table_names)
+    #
+    # def _rexster_xml_clear_graphs(self):
+    #     tree = ElementTree()
+    #     tree.parse(config['rexster_xml'])
+    #     graphs = tree.find("./graphs")
+    #     for child in graphs:
+    #         graphs.remove(child)
+    #     tree.write(config['rexster_xml'])
 
 #--------------------------------------------------------------------------
 # Rexster
 #--------------------------------------------------------------------------
-rexster_template_str = """
- <rexster>
-    <http>
-        <server-port>8182</server-port>
-        <server-host>${rexster_serverhost}</server-host>
-        <base-uri>${rexster_baseuri}</base-uri>
-        <web-root>public</web-root>
-        <character-set>UTF-8</character-set>
-        <enable-jmx>false</enable-jmx>
-        <enable-doghouse>true</enable-doghouse>
-        <max-post-size>2097152</max-post-size>
-        <max-header-size>8192</max-header-size>
-        <upload-timeout-millis>30000</upload-timeout-millis>
-        <thread-pool>
-            <worker>
-                <core-size>8</core-size>
-                <max-size>8</max-size>
-            </worker>
-            <kernal>
-                <core-size>4</core-size>
-                <max-size>4</max-size>
-            </kernal>
-        </thread-pool>
-        <io-strategy>leader-follower</io-strategy>
-    </http>
-    <rexpro>
-        <server-port>8184</server-port>
-        <server-host>${rexster_serverhost}</server-host>
-        <session-max-idle>1790000</session-max-idle>
-        <session-check-interval>3000000</session-check-interval>
-        <connection-max-idle>180000</connection-max-idle>
-        <connection-check-interval>3000000</connection-check-interval>
-        <enable-jmx>false</enable-jmx>
-        <thread-pool>
-            <worker>
-                <core-size>8</core-size>
-                <max-size>8</max-size>
-            </worker>
-            <kernal>
-                <core-size>4</core-size>
-                <max-size>4</max-size>
-            </kernal>
-        </thread-pool>
-        <io-strategy>leader-follower</io-strategy>
-    </rexpro>
-    <shutdown-port>8183</shutdown-port>
-    <shutdown-host>${rexster_serverhost}</shutdown-host>
-    <script-engines>
-        <script-engine>
-            <name>gremlin-groovy</name>
-            <reset-threshold>-1</reset-threshold>
-            <init-scripts>config/init.groovy</init-scripts>
-            <imports>com.tinkerpop.rexster.client.*</imports>
-            <static-imports>java.lang.Math.PI</static-imports>
-        </script-engine>
-    </script-engines>
-    <security>
-        <authentication>
-            <type>none</type>
-            <configuration>
-                <users>
-                    <user>
-                        <username>rexster</username>
-                        <password>rexster</password>
-                    </user>
-                </users>
-            </configuration>
-        </authentication>
-    </security>
-    <metrics>
-        <reporter>
-            <type>jmx</type>
-        </reporter>
-        <reporter>
-            <type>http</type>
-        </reporter>
-        <reporter>
-            <type>console</type>
-            <properties>
-                <rates-time-unit>SECONDS</rates-time-unit>
-                <duration-time-unit>SECONDS</duration-time-unit>
-                <report-period>10</report-period>
-                <report-time-unit>MINUTES</report-time-unit>
-                <includes>http.rest.*</includes>
-                <excludes>http.rest.*.delete</excludes>
-            </properties>
-        </reporter>
-    </metrics>
-    <graphs>
-        <graph>
+rexster_xml_graph_template_str = """        <graph>
             <graph-name>${titan_storage_tablename}</graph-name>
             <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
             <graph-location></graph-location>
@@ -221,21 +162,20 @@ rexster_template_str = """
             </properties>
             <extensions>
                 <allows>
-                        <allow>tp:gremlin</allow>
+                    <allow>tp:gremlin</allow>
                 </allows>
             </extensions>
         </graph>
-    </graphs>
-</rexster>
 """
 
 from string import Template
 from collections import defaultdict
-rexster_template = Template(rexster_template_str)
 
 # pull the required keys from the template
-d = defaultdict(lambda : None)
-rexster_template.substitute(d)
+d = defaultdict(lambda: None)
+Template(rexster_xml_graph_template_str).substitute(d)
+# remove the keys whose values are dynamically supplied:
+del d['titan_storage_tablename']
 rexster_keys = d.keys()
 rexster_keys.sort()
 
@@ -243,7 +183,7 @@ rexster_keys.sort()
 # GraphBuilder
 #--------------------------------------------------------------------------
 gb_keys = ['conf_folder']
-for k in ['hostname', 'tablename', 'backend', 'port', 'connection_timeout']:
+for k in ['hostname', 'backend', 'port', 'connection_timeout']:
     gb_keys.append('titan_storage_' + k)
 gb_keys.sort()
 

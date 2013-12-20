@@ -24,6 +24,15 @@ Buildroot: /tmp/intelanaylticsrpm
 
 The Intel Graph Analytics System.
 
+%define __os_install_post    \
+    /usr/lib/rpm/redhat/brp-compress \
+    %{!?__debug_package:/usr/lib/rpm/redhat/brp-strip %{__strip}} \
+    /usr/lib/rpm/redhat/brp-strip-static-archive %{__strip} \
+    /usr/lib/rpm/redhat/brp-strip-comment-note %{__strip} %{__objdump} \
+    /usr/lib/rpm/brp-python-bytecompile \
+    /usr/lib/rpm/redhat/brp-python-hardlink \
+%{nil}
+
 %prep
 
 %setup -q

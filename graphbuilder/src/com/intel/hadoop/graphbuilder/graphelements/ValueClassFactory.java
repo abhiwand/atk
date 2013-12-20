@@ -29,7 +29,7 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 public class ValueClassFactory {
 
     /**
-     * @param  vidClassName
+     * @param  {@code vidClassName}  The name of the vertex ID class.
      * @return A Class which inherits {@code SerializedGraphElement} and
      *         overrides {@code createVid} to return the correct vertex ID class.
      * @throws IllegalArgumentException

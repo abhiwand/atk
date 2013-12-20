@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-BigGraph and Graph Builder common classes
+The BigGraph and Graph Builder common classes.
 """
 
 import abc
@@ -33,7 +33,7 @@ __all__ = ['get_graph_builder',
            'get_graph_names',
            'GraphTypes',
            'BigGraph'
-]
+           ]
 
 
 class BigGraph(object):   # note: not using this for 0.5
@@ -42,17 +42,18 @@ class BigGraph(object):   # note: not using this for 0.5
 
 class GraphTypes:
     """
-    Collection of classes which represent the supported graph builder types
+    A collection of classes which represent the supported graph builder types.
     """
     class Bipartite:
         """
-        Bipartite Graph
+        The Bipartite Graph class.
         """
         # todo: write a better description
         pass
+
     class Property:
         """
-        Property Graph
+        The Property Graph class.
         """
         # todo: write a better description
         pass
@@ -60,7 +61,8 @@ class GraphTypes:
 
 class GraphBuilderFactory(object):
     """
-    Abstract class for the various graph build factories (i.e. one for Titan)
+    An abstract class for the various graph build factories 
+	(for example, one for Titan).
     """
     __metaclass__ = abc.ABCMeta
 
@@ -70,38 +72,69 @@ class GraphBuilderFactory(object):
 
     @abc.abstractmethod
     def get_graph_builder(self, graph_type, source):
+        """
+        Returns a new graph builder
+
+        Gets a graph builder which will build the given type of graph for the
+        given source
+
+        Parameters
+        ----------
+        graph_type : (GraphTypes.Property | GraphTypes.Bipartite | GraphTypes.*)
+            the type of graph to create.  See GraphTypes class
+        source : BigDataFrame
+            the source of the data for the graph to build
+
+        Returns
+        -------
+        graph_builder : GraphBuilder
+            new graph builder object
+        """
         raise Exception("Not overridden")
 
     @abc.abstractmethod
     def get_graph(self, graph_name):
+        """
+        Returns a graph object for a previously created graph
+
+        Parameters
+        ----------
+        graph_name : string
+            user-given name of a previously created graph
+
+        Returns
+        -------
+        graph : Graph
+            new graph object
+        """
         raise Exception("Not overridden")
 
     @abc.abstractmethod
     def get_graph_names(self):
+        """
+        Returns a list of names of all the previously created graphs on record.
+        """
         raise Exception("Not overridden")
+
 
 class GraphBuilder(object):
     """
-    Abstract class for the various graph builders to inherit
-    (not to be confused by the Tribeca "GraphBuilder" product or component)
+    An abstract class for the various graph builders to inherit
+    (not to be confused with the Tribeca "GraphBuilder" product or component).
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, source=None):
-        self.register_source(source)
-        pass
-
-    def register_source(self, source):
+    def __init__(self, source):
         self._source = source
 
     @abc.abstractmethod
-    def build(self, graph_name):
+    def build(self, graph_name, overwrite):
         pass
 
 
 class BipartiteGraphBuilder(GraphBuilder):
     """
-    Abstract class for py bipartite graph builders
+    An abstract class for Python bipartite graph builders.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -110,7 +143,7 @@ class BipartiteGraphBuilder(GraphBuilder):
         self._vertex_list = []
 
     @abc.abstractmethod
-    def build(self, graph_name):
+    def build(self, graph_name, overwrite):
         pass
 
     def register_vertex(self, key, properties=None):
@@ -119,17 +152,23 @@ class BipartiteGraphBuilder(GraphBuilder):
         register_vertex('id', ['name', 'age', 'dept'])
         """
         if len(self._vertex_list) > 2:
-            raise ValueError(
-                """ERROR: Attempt to register more than two vertex sources for a bipartite
-                graph; check vertex registration or switch to a property graph builder""")
+
+            raise ValueError("""
+ERROR: Attempt to register more than two vertex sources for a bipartite
+graph; check vertex registration or switch to a property graph builder""")
+
         self._vertex_list.append(GraphBuilderVertex(key, properties))
 
     def register_vertices(self, vertices):
         """
-        Parameters:
-        vertices: List of (id and list of properties)'s
-        Example: register_vertices([('id', ['name', 'age', 'dept']),
-                                    ('manager', ['income', 'org'])])
+        Parameters
+		----------
+        vertices : 
+		    List of (id and list of properties)'s.
+			
+        Example : 
+		register_vertices([('id', ['name', 'age', 'dept']),
+                           ('manager', ['income', 'org'])])
         """
         for entry in vertices:
             if len(entry) != 2:
@@ -139,7 +178,7 @@ class BipartiteGraphBuilder(GraphBuilder):
 
 class PropertyGraphBuilder(GraphBuilder):
     """
-    Abstract class for py property graph builders
+    An abstract class for Python property graph builders.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -149,22 +188,27 @@ class PropertyGraphBuilder(GraphBuilder):
         self._edge_list = []
 
     @abc.abstractmethod
-    def build(self, graph_name):
+    def build(self, graph_name, build):
         pass
 
     def register_vertex(self, key, properties=None):
         """
-        register_vertex('id')
+        Example:
+		register_vertex('id')
         register_vertex('id', ['name', 'age', 'dept'])
         """
         self._vertex_list.append(GraphBuilderVertex(key, properties))
 
     def register_vertices(self, vertices):
         """
-        Parameters:
-        vertices: List of (key and list of properties)'s
-        Example: register_vertices([('id', ['name', 'age', 'dept']),
-                                    ('manager', ['income', 'org'])])
+        Parameters
+		----------
+        vertices : 
+		    List of (key and list of properties)'s.
+        
+		Example: 
+		register_vertices([('id', ['name', 'age', 'dept']),
+                           ('manager', ['income', 'org'])])
         """
         for entry in vertices:
             if len(entry) != 2:
@@ -173,18 +217,26 @@ class PropertyGraphBuilder(GraphBuilder):
 
     def register_edge(self, edge_tuple, properties=None):
         """
-        Parameters:
-        edge: Tuple of source, target and label
-        properties: List of property sources
-        Example: register_edge(('src', 'tgt', 'label'), ['ep1', 'ep2'])
+        Parameters
+		- - - - - 
+        edge : 
+		    Tuple of source, target, and label.
+        properties : 
+		    List of property sources.
+			
+        Example: 
+		register_edge(('src', 'tgt', 'label'), ['ep1', 'ep2'])
         """
         self._edge_list.append(GraphBuilderEdge(edge_tuple, properties))
 
     def register_edges(self, edges):
         """
-        Parameters:
-        edges: List of tuples of tuples and lists
-        Example:
+        Parameters
+		----------
+        edges : 
+		    List of tuples of tuples and lists.
+
+		Example:
          register_edges([(('src', 'tgt', 'label'), ['ep1', 'ep2']), (), ()])
         """
         for edge in edges:
@@ -195,7 +247,7 @@ class PropertyGraphBuilder(GraphBuilder):
 
 class GraphBuilderVertex:
     """
-    An entry for GraphBuilder vertex registration
+    An entry for GraphBuilder vertex registration.
     """
     def __init__(self, key, properties=None):
         if key is None:
@@ -225,7 +277,7 @@ class GraphBuilderVertex:
 
 class GraphBuilderEdge:
     """
-    An entry for GraphBuilder edge registration
+    An entry for GraphBuilder edge registration.
     """
     def __init__(self, edge_tuple, properties=None):
         if len(edge_tuple) != 3:
@@ -268,11 +320,12 @@ class GraphBuilderEdge:
 
 def get_graph_builder(graph_type, source=None):
     """
-    Returns a graph_builder for given graph type
+    Returns a graph_builder for a given graph type.
 
     Parameters
     ----------
-    graph_type : GraphTypes.*
+    graph_type : 
+	    GraphTypes.*
         Class indicating the type of graph, like GraphTypes.Property
         or GraphTypes.Bipartite
     """
@@ -282,14 +335,15 @@ def get_graph_builder(graph_type, source=None):
 
 def get_graph(graph_name):
     """
-    Returns a previously created graph
+    Returns a previously created graph.
     """
     factory_class = _get_graph_builder_factory_class()
     return factory_class.get_graph(graph_name)
 
+
 def get_graph_names():
     """
-    Returns list of graph names
+    Returns a list of graph names.
     """
     factory_class = _get_graph_builder_factory_class()
     return factory_class.get_graph_names()

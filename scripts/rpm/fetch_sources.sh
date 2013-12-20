@@ -17,6 +17,7 @@ mkdir $source_folder
 shopt -s extglob
 cp -R $src/!(exclude|dist|target|build|src|tests|*.ipynb|ipython|install_pyenv.sh) $source_folder
 cp $src/target/*.jar $source_folder
+rm $source_folder/original-*.jar
 rm -rf $source_folder/intel_analytics
 rm -rf $source_folder/bin/*python*
 rm -rf $source_folder/conf/*python*
@@ -35,6 +36,7 @@ cp -R $src/bin/IntelAnalytics-ipython $python_folder/bin
 mkdir $python_dependencies_folder
 
 cp $src/install_pyenv.sh $python_dependencies_folder
+tar -cvzf $python_dependencies_folder/template_overrides.tar.gz -C $src/ipython/TemplateOverrides .
 
 tar czvf $source_folder.tar.gz $source_folder
 tar czvf $python_folder.tar.gz $python_folder

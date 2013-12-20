@@ -31,11 +31,11 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 /**
- * The methods in this class are used by the full MR chain to properly configure the first MR job 
- * to work with the TextParsingMapper.
+ * The methods in this class are used by the full Map Reduce chain to properly  
+ * configure the first Map Reduce job to work with the {@code TextParsingMapper}.
  *
- * Called when setting up the first MR job of a chain,
- * it sets up the input path and input format
+ * Called when setting up the first Map Reduce job of a chain,
+ * it sets up the input path and input format.
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration
  * @see TextParsingMapper

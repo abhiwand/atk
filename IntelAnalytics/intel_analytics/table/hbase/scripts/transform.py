@@ -31,8 +31,9 @@ from intel_analytics.config import global_config as config
 
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 
-#If the INTEL_ANALYTICS_ETL_RUN_LOCAL env. variable is set, run in local mode
-#useful when running the validation tests, which take quite a lot of time if not run in local mode
+#If the INTEL_ANALYTICS_ETL_RUN_LOCAL env. variable is set, run in local mode.
+#Useful when running the validation tests, which takes quite a lot of time if 
+#not run in local mode.
 should_run_local_mode = False
 try:
     value = os.environ["INTEL_ANALYTICS_ETL_RUN_LOCAL"]
@@ -47,7 +48,7 @@ def validate_args(cmd_line_args):
     if cmd_line_args.take_a_diff:
         if not cmd_line_args.output:
             errors.append("-o/--output is required")
-        #if the user is taking a diff, this is the only arg we need
+        #If the user is taking a diff, this is the only arg we need.
         return errors    
     if not cmd_line_args.feature_to_transform:
         errors.append("-f/--feature is required")    
@@ -84,7 +85,7 @@ def main(argv):
     feature_names_as_str = etl_schema.get_feature_names_as_CSV()
     feature_types_as_str = etl_schema.get_feature_types_as_CSV()
     
-    #print the schema info from the input hbase table
+    #Print the schema info from the input hbase table.
     if cmd_line_args.print_schema:
         with ETLHBaseClient() as hbase_client:
             for i,feature_name in enumerate(etl_schema.feature_names):
@@ -92,7 +93,7 @@ def main(argv):
                 print "%s:%s"%(feature_name,feature_type)
         sys.exit(1)
         
-    if (cmd_line_args.input == cmd_line_args.output) and (not cmd_line_args.keep_original_feature):#in-place transformation AND don't keep source
+    if (cmd_line_args.input == cmd_line_args.output) and (not cmd_line_args.keep_original_feature):#In-place transformation AND don't keep source.
         raise Exception("For in-place transformations the source/original feature has to be kept")
    
     errors = validate_args(cmd_line_args)
@@ -120,7 +121,7 @@ def main(argv):
         sys.exit(1)
     
     with ETLHBaseClient() as hbase_client:
-        #create if output table doesn't exist
+        #Create if output table does not exist.
         if not hbase_client.table_exists(cmd_line_args.output):          
             hbase_client.drop_create_table(cmd_line_args.output,
                                            [config['hbase_column_family']])
@@ -144,20 +145,23 @@ def main(argv):
     if cmd_line_args.keep_original_feature:  
         args += ['-k']        
     
-    #start the pig process
+    #Start the pig process.
     ret = subprocess.call(args)
     
     if ret == 0:#success
-        #need to update schema here as it's difficult to pass the updated schema info from jython to python
+        #Need to update the schema here as it's difficult to pass the updated 
+		#schema info from jython to python.
         if not cmd_line_args.keep_original_feature:
-            if not cmd_line_args.output == cmd_line_args.input:#if NOT an in place transform (the output table is the same as the input table)
-                #if the transform is an inplace transform the feature is NOT removed from the source table!
+            if not cmd_line_args.output == cmd_line_args.input:#If NOT an in 
+			    #place transform (the output table is the same as the input table).
+                #If the transform is an inplace transform the feature is NOT 
+				#removed from the source table!
                 feature_index = etl_schema.feature_names.index(cmd_line_args.feature_to_transform)
                 del etl_schema.feature_names[feature_index]
                 del etl_schema.feature_types[feature_index]
         etl_schema.feature_names.append(cmd_line_args.new_feature_name)
-        #for now make the new feature bytearray, because all UDF's have different return types
-        #and we cannot know their return types
+        #For now make the new feature bytearray, because all UDF's have 
+		#different return types and we cannot know their return types.
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(cmd_line_args.output)
 

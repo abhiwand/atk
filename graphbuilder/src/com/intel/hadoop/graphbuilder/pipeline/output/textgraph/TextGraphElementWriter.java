@@ -32,9 +32,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * - each vertex is loaded into Titan and is tagged with its Titan ID and passed to the next MR job
- *   through the temp file
- * - each edge is tagged with the Titan ID of its source vertex and passed to the next MR job
+ *  Writes vertices and edges into a text file. 
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge
  */
@@ -48,19 +46,19 @@ public class TextGraphElementWriter extends GraphElementWriter {
 
         multipleOutputs = new MultipleOutputs<NullWritable, Text>(context);
 
-        vertexWrite(args);
+        writeVertices(args);
 
-        edgeWrite(args);
+        writeEdges(args);
     }
 
     @Override
-    public void vertexWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+    public void writeVertices(ArgumentBuilder args) throws IOException, InterruptedException {
         initArgs(args);
 
         int vertexCount = 0;
         String outPath = new String("vdata/part");
 
-        // Output vertex records
+        // Output vertex records.
 
         Iterator<Map.Entry<Object, Writable>> vertexIterator = vertexSet.entrySet().iterator();
 
@@ -76,7 +74,7 @@ public class TextGraphElementWriter extends GraphElementWriter {
     }
 
     @Override
-    public void edgeWrite(ArgumentBuilder args) throws IOException, InterruptedException {
+    public void writeEdges(ArgumentBuilder args) throws IOException, InterruptedException {
         initArgs(args);
 
         Iterator<Map.Entry<EdgeID, Writable>> edgeIterator = edgeSet.entrySet().iterator();

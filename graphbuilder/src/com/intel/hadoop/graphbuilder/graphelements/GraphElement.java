@@ -29,8 +29,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 /**
- * Base for the vertex/edge graph element.
- * @param <VidType>
+ * Base for the vertex or edge graph element.
+ * @param {@code <VidType>}  The vertex ID type.
  * @code
  */
 public abstract class GraphElement<VidType extends WritableComparable<VidType>> {
@@ -50,10 +50,8 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     //get the graph element
     public abstract GraphElement get();
 
-    public abstract boolean equals(GraphElement graphElement);
-
     /**
-     * all the callback classes we will be using
+     * All of the callback classes we will be using.
      */
     private final GraphElementType graphElementType;
     private final GraphElementDst graphElementDst;
@@ -66,12 +64,15 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     }
 
     /**
-     * Call the edge/vertex GraphElementTypeCallback
+     * Calls the edge or vertex {@code GraphElementTypeCallback}.
      *
      * @see com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback
      *
-     * @param graphElementTypeCallback any instance of GraphElementTypeCallback
-     * @param args variable length of arguments that might be used by the instance of GraphElementTypeCallback
+     * @param {@code graphElementTypeCallback}  Any instance of 
+	 *                                         {@code GraphElementTypeCallback}.
+     * @param {@code args}                     The variable length of arguments that 
+	 *                                         might be used by the instance of 
+	 *                                         {@code GraphElementTypeCallback}.
      * @return anything that gets returned by the instance of GraphElementTypeCallback
      */
     public  <T> T typeCallback(GraphElementTypeCallback graphElementTypeCallback, ArgumentBuilder args){

@@ -1,11 +1,14 @@
 import com.typesafe.config.ConfigFactory
-import play.api.mvc._
+import controllers.routes
 import play.api._
+import play.api.mvc._
+import play.api.mvc.Results._
 import java.io.File
 import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.Some
 import play.api.Play.current
+import play.api.Logger
 import services.aws.S3
 import play.api.http.HeaderNames._
 import ExecutionContext.Implicits.global
@@ -58,6 +61,32 @@ object Global extends GlobalSettings{
     } else {
       super.onRouteRequest(request)
     }
+  }
+
+  override def onError(request: RequestHeader, throwable: Throwable) = {
+      if (Play.isProd){
+        Logger.error(request.toString)
+        Logger.error(throwable.toString)
+        Future.successful(Redirect(routes.Application.error500))
+      }
+      else super.onError(request, throwable);
+  }
+
+  override def onBadRequest(request: RequestHeader, error: String): Future[SimpleResult] = {
+    if(Play.isProd){
+      Logger.error(request.toString)
+      Logger.error(error)
+      Future.successful(Redirect(routes.Application.error400))
+    }
+    else super.onBadRequest(request, error)
+  }
+
+  override def onHandlerNotFound(request: RequestHeader): Future[SimpleResult] = {
+    if(Play.isProd){
+      Logger.error(request.toString)
+      Future.successful(Redirect(routes.Application.error404))
+    }
+    else super.onHandlerNotFound(request);
   }
 
 }

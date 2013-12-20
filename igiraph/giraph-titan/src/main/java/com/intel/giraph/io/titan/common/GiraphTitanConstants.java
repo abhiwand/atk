@@ -305,7 +305,34 @@ public class GiraphTitanConstants {
      * configured default
      */
     public static final String FAILED_CONNECT_HBASE_TABLE = "Failed to connect to HBase table ";
-
+    /**
+     * vertex type on the left side
+     */
+    public static final String LEFT_VERTEX_TYPE = "L";
+    /**
+     * vertex type on the right side
+     */
+    public static final String RIGHT_VERTEX_TYPE = "R";
+    /**
+     * edge type for training data
+     */
+    public static final String EDGE_TYPE_TRAIN = "tr";
+    /**
+     * edge type for validation data
+     */
+    public static final String EDGE_TYPE_VALIDATION = "va";
+    /**
+     * edge type for test data
+     */
+    public static final String EDGE_TYPE_TEST = "te";
+    /**
+     * vertex type for document
+     */
+    public static final String DOC_VERTEX = "d";
+    /**
+     * vertex type for word
+     */
+    public static final String WORD_VERTEX = "w";
 
     /**
      * prevent instantiation of utility class

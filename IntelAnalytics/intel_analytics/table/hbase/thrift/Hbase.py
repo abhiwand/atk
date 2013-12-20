@@ -20,20 +20,24 @@ except:
 class Iface:
   def enableTable(self, tableName):
     """
-    Brings a table on-line (enables it)
+    Brings a table on-line (enables it).
 
-    Parameters:
-     - tableName: name of the table
-    """
+    Parameters
+	----------
+    tableName : 
+	    The name of the table.
+		"""
     pass
 
   def disableTable(self, tableName):
     """
-    Disables a table (takes it off-line) If it is being served, the master
+    Disables a table (takes it off-line). If it is being served, the master
     will tell the servers to stop serving it.
 
-    Parameters:
-     - tableName: name of the table
+    Parameters
+	----------
+    tableName : 
+	     The name of the table.
     """
     pass
 
@@ -41,30 +45,36 @@ class Iface:
     """
     @return true if table is on-line
 
-    Parameters:
-     - tableName: name of the table to check
+    Parameters
+	----------
+    tableName : 
+	    The name of the table to check.
     """
     pass
 
   def compact(self, tableNameOrRegionName):
     """
-    Parameters:
-     - tableNameOrRegionName
+    Parameters
+	----------
+    tableNameOrRegionName :
+	    The table name or region name.
     """
     pass
 
   def majorCompact(self, tableNameOrRegionName):
     """
-    Parameters:
-     - tableNameOrRegionName
+    Parameters
+	----------
+    tableNameOrRegionName :
+	    The table name or region name.
     """
     pass
 
   def getTableNames(self):
     """
-    List all the userspace tables.
+    Lists all the userspace tables.
 
-    @return returns a list of names
+    @return Returns a list of names.
     """
     pass
 

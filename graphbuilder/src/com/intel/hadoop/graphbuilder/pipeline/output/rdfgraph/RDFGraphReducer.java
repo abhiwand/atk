@@ -46,15 +46,15 @@ import org.apache.log4j.Logger;
 
 /**
  * The Reducer class applies user defined {@code Functional}s to reduce
- * duplicate edges and vertices. If no such {@code Functional} is provide, it
+ * duplicate edges and vertices. If no such {@code Functional} is provided, it
  * outputs the first instance and discards the rest with the same identifier. It
- * also discards self edges: v - > v. An option for discard bidirectional edge
+ * also discards self edges: v - > v. An option to discard bi-directional edges
  * is provided by {@code setCleanBidirectionalEdges(boolean)}.
  * <p>
  * Output directory structure:
  * <ul>
- * <li>$outputdir/edata contains edge data output</li>
- * <li>$outputdir/vdata contains vertex data output</li>
+ * <li>{@code $outputdir/edata} Contains the edge data output.</li>
+ * <li>{@code $outputdir/vdata} Contains the vertex data output.</li>
  * </ul>
  * </p>
  */
@@ -155,9 +155,8 @@ public class RDFGraphReducer extends Reducer<IntWritable,
                 continue;
             }
 
-            //try to add the graph element to the existing set of vertices or
-            // edges GraphElementMerge will take care of switching between
-            // edge and vertex
+            //Tries to add the graph element to the existing set of vertices or edges.
+            //GraphElementMerge will take care of switching between edge and vertex.
             merge(edgeSet, vertexSet, vertexLabelMap, graphElement);
         }
 
@@ -172,10 +171,10 @@ public class RDFGraphReducer extends Reducer<IntWritable,
 
 
     /**
-     * remove duplicate edges/vertices and merge their property maps
+     * Removes duplicate edges and vertices and merges their property maps.
      *
-     * @param graphElement the graph element to add to our existing vertexSet
-     *                     or edgeSet
+     * @param {@code graphElement}  The graph element to add to our existing
+	 *                              {@code vertexSet} or {@code edgeSet}.
      */
     private void merge(Hashtable<EdgeID,
                        Writable> edgeSet,

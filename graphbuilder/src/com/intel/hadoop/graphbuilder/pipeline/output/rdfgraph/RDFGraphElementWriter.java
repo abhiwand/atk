@@ -54,13 +54,13 @@ public class RDFGraphElementWriter extends GraphElementWriter {
             this.rdfNamespace = conf.get("rdfNamespace");
         }
 
-        vertexWrite(args);
+        writeVertices(args);
 
-        edgeWrite(args);
+        writeEdges(args);
     }
 
     @Override
-    public void vertexWrite(ArgumentBuilder args)
+    public void writeVertices(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
 
@@ -152,7 +152,7 @@ public class RDFGraphElementWriter extends GraphElementWriter {
     }
 
     @Override
-    public void edgeWrite(ArgumentBuilder args)
+    public void writeEdges(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
 

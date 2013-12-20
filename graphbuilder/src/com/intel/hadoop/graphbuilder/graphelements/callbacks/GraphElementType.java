@@ -23,8 +23,8 @@ import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 
 /**
- * return the type of the graph element. Very use full when you don't care if it's an edge or vertex you just want a
- * type
+ * Returns the type of the graph element. Very useful when you just want a type,
+ * and you don't care if it's an edge or vertex.
  *
  * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  */
@@ -32,12 +32,13 @@ public class GraphElementType implements GraphElementTypeCallback {
     public enum GraphType {EDGE, VERTEX}
 
     /**
-     * returns the edge enum type. Although the graphElement and arguments are not used here they must be part of the
-     * method definition to satisfy the implementation.
+     * Returns the edge's enum type. Although the {@code graphElement} and arguments 
+	 * are not used here, they must be part of the method definition to satisfy 
+	 * the implementation.
      *
-     * @param graphElement graph element to perform operations on
-     * @param arguments any arguments that might have been passed
-     * @return Edge enum type
+     * @param {@code graphElement}  The graph element to perform operations on.
+     * @param {@code arguments}     Any arguments that might have been passed.
+     * @return  The edge's enum type.
      */
     @Override
     public GraphType edge(GraphElement graphElement, ArgumentBuilder arguments) {
@@ -45,12 +46,13 @@ public class GraphElementType implements GraphElementTypeCallback {
     }
 
     /**
-     * returns the vertex enum type. Although the graphElement and arguments are not used here they must be part of the
+     * Returns the vertex enum type. Although the {@code graphElement} and 
+	 * {@code arguments} are not used here, they must be part of the
      * method definition to satisfy the implementation.
      *
-     * @param graphElement graph element to perform operations on
-     * @param arguments any arguments that might have been passed
-     * @return Vertex enum type
+     * @param {@code graphElement}  The graph element to perform operations on.
+     * @param {@code arguments}     Any arguments that might have been passed.
+     * @return The vertex's enum type.
      */
     @Override
     public GraphType vertex(GraphElement graphElement, ArgumentBuilder arguments) {

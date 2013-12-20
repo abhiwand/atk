@@ -30,12 +30,12 @@ import org.apache.hadoop.conf.Configuration;
 
 
 /**
- * This class manages the set-up time state for the graph construction phase that emits vertices and edges of a link
- * graph from a wiki page (presented as a string).
+ * This class manages the set-up time state for the graph construction phase that 
+ * emits vertices and edges of a link graph from a wiki page (presented as a string).
  *
  * <p>
  * <ul>
- *     <li>There is vertex for every wiki page in the specified input file.</li>
+ *     <li>There is a vertex for every wiki page in the specified input file.</li>
  *     <li>There is a "linksTO" edge from each page to every page to which it links.</li>
  * </ul>
  * </p>
@@ -70,16 +70,16 @@ public class LinkGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Gets the property graph schmea for the link graph.
-     * @return  The property graph schmea for the link graph.
+     * Gets the property graph schema for the link graph.
+     * @return  The property graph schema for the link graph.
      */
     public PropertyGraphSchema getGraphSchema() {
         return graphSchema;
     }
 
     /**
-     * Updates the MR configuration for use by the {@code LinkGraphTokenizer}.
-     * @param conf The hadoop configuration being updated.
+     * Updates the Map Reduce configuration for use by the {@code LinkGraphTokenizer}.
+     * @param {@code conf}  The hadoop configuration being updated.
      */
     public void updateConfigurationForTokenizer(Configuration conf) {
     }

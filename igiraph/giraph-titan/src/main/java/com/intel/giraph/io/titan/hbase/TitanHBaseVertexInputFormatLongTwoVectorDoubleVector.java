@@ -110,7 +110,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
         /**
          * Giraph vertex
          */
-        private Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> vertex;
+        private Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> vertex = null;
         /**
          * task context
          */
@@ -158,7 +158,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
             //the edge store name used by Titan
             final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
 
-            if (getRecordReader().nextKeyValue()) {
+            while (getRecordReader().nextKeyValue()) {
                 final Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> temp = graphReader
                     .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_VECTOR, getConf(), getRecordReader()
                         .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
@@ -166,17 +166,9 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleVector extends
                 if (null != temp) {
                     vertex = temp;
                     return true;
-                } else if (getRecordReader().nextKeyValue()) {
-                    final Vertex<LongWritable, TwoVectorWritable, DoubleWithVectorWritable> temp1 = graphReader
-                        .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_VECTOR, getConf(), getRecordReader()
-                            .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
-                            .get(edgeStoreFamily));
-                    if (null != temp1) {
-                        vertex = temp1;
-                        return true;
-                    }
                 }
             }
+            vertex = null;
             return false;
         }
 

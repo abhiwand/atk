@@ -39,10 +39,17 @@ var messages = {
     approvalPending:"",
     registrationRequired:"",
     authFailed:"",
+    accessRequired:"",
     getMessagesHtml: function(){
         messages.approvalPending = $("#approvalPendingParent").html();
         messages.registrationRequired = $("#registrationRequiredParent").html();
         messages.authFailed = $("#authenticationFailedParent").html();
+        messages.accessRequired = $("#accessRequiredParent").html();
+    },
+    showAccessRequired: function(){
+        $("#accessRequired").remove();
+        $("body").append(messages.accessRequired)
+        $("#accessRequired").removeClass("hidden")
     },
     showApprovalPending: function(){
         $("#approvalPending").remove();

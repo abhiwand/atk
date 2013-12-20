@@ -29,9 +29,9 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 /**
- * Serialized wrapper class for {@code GraphElement}
+ * The serialized wrapper class for {@code GraphElement}.
  *
- * @param <VidType>
+ * @param {@code <VidType>}  The vertex ID type.
  * @see GraphElement
  */
 
@@ -42,26 +42,30 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
     private GraphElement graphElement;
 
     /**
-     *  Allocates new object. Wrapped {@code GraphElement} is initialized to {@code null}
+     *  Allocates new object. The wrapped {@code GraphElement} is initialized to {@code null}.
      */
     public SerializedGraphElement() {
         this.graphElement = null;
     }
 
-    protected SerializedGraphElement(GraphElement graphElement) {
+    /**
+     *  Allocates new object. Wrapped {@code GraphElement} is initialized to input parameter.
+     *  @param graphElement Value to initialize the wrapped graphElement
+     */
+    public SerializedGraphElement(GraphElement graphElement) {
         this.graphElement = graphElement;
     }
 
     /**
-     * Allocate a new vertex ID object.
-     * @return new object of type {@code VidType}
+     * Allocates a new vertex ID object.
+     * @return  A new object of type {@code VidType}.
      */
-    public abstract VidType createVid();
+    public abstract VertexID<VidType> createVid();
 
     /**
-     * Passes in a graphElement to be wrapped.
+     * Passes in a {@code graphElement} to be wrapped.
      *
-     * @param graphElement
+     * @param {@code graphElement}  The {@code graphElement} to be wrapped.
      */
     public void init(GraphElement graphElement) {
 
@@ -70,7 +74,7 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
 
 
     /**
-     * @return the base GraphElement
+     * @return  The base {@code GraphElement}.
      */
 
     public GraphElement graphElement() {
@@ -80,8 +84,8 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
     }
 
     /**
-     * Read the SerializedGraphElement from an input stream.
-     * @param input
+     * Reads the {@code SerializedGraphElement} from an input stream.
+     * @param {@code input}  The input stream.
      * @throws IOException
      */
     @Override
@@ -93,7 +97,7 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
 
             Vertex<VidType> vertex = new Vertex<VidType>();
 
-            VidType vid = null;
+            VertexID<VidType> vid = null;
 
             try {
                 vid = createVid();
@@ -112,8 +116,8 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
             try {
                 Edge<VidType> edge =  new Edge<VidType>();
 
-                VidType source = createVid();
-                VidType target = createVid();
+                VertexID<VidType> source = createVid();
+                VertexID<VidType> target = createVid();
 
                 StringType  label = new StringType();
                 PropertyMap pm    = new PropertyMap();
@@ -130,8 +134,8 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
     }
 
     /**
-     * Write the SerializedGraphElement to an output stream.
-     * @param output
+     * Writes the {@code SerializedGraphElement} to an output stream.
+     * @param {@code output}  The output stream.
      * @throws IOException
      */
     @Override
@@ -144,17 +148,61 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
         graphElement.write(output);
     }
 
+    /**
+     * Equality check.
+     * @param object  Object being compared against the {@code SerializedGraphElement} for equality.
+     * @return   {@literal true} if and only if the incoming object is another {@code SerializedGraphElement} and its
+     * underlying {@code GraphElement} is equal to that of this {@code SerializedGraphElement} by the {@code equals} test.
+     */
     @Override
-    public int compareTo(Object o) {
-        int ret = 1;
-        if (this.graphElement.isEdge()) {
-            Edge<VidType> in_edge = (Edge<VidType>) o;
-            ret = in_edge.compareTo((Edge<VidType>) this.graphElement);
-        } else if (this.graphElement.isVertex()) {
-            Vertex<VidType> in_vertex = (Vertex<VidType>) o;
-            ret = in_vertex.compareTo((Vertex<VidType>) this.graphElement);
+    public boolean equals (Object object) {
+        if (object instanceof SerializedGraphElement) {
+            GraphElement incomingGraphElement = ((SerializedGraphElement) object).graphElement();
+            if (this.graphElement().isNull()) {
+                return (incomingGraphElement.isNull());
+            } else {
+                return this.graphElement().equals(incomingGraphElement);
+            }
+        } else {
+            return false;
         }
-        return ret;
+    }
+
+    /**
+     * Hash code of the {@code SerializedGraphElement}
+     * @return  {@literal 0} if the underlying {@code GraphELement} is {@literal null}, hash code of the underlying
+     * {@code GraphElement} otherwise.
+     */
+    @Override
+    public int hashCode() {
+        if (this.graphElement() == null) {
+            return 0;
+        } else {
+            return this.graphElement().hashCode();
+        }
+    }
+
+    /**
+     * Compare the {@code SerializedGraphElement} against an {@code Object} using their hashcodes as integers.
+     * @param object  The object to be compared against the {@code SerializedGraphElement}
+     * @return {@literal -1} if this {@code SerializedGraphElement} has a hashcode strictly less than that of the
+     * incoming {@code Object}, 0 if the two hashcodes are equal, and 1 if the hashcode of the {@code SerializedGraphElement}
+     * is strictly greater than the of the incoming {@code Object}
+     */
+    @Override
+    public int compareTo(Object object) {
+
+        int thisHash = this.hashCode();
+
+        int thatHash = (object != null) ? object.hashCode() : 0;
+
+        if (thisHash < thatHash) {
+            return -1;
+        } else if (thisHash == thatHash) {
+            return 0;
+        } else {
+            return 1;
+        }
     }
 }
 

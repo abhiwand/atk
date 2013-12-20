@@ -25,23 +25,36 @@ package controllers
 
 import play.api.mvc._
 import controllers.Session._
+import play.api.mvc.SimpleResult
 
 object Application extends Controller {
 
-  var index = ActionWithSession { request =>
+  def index = ActionWithSession { request =>
     Ok(views.html.index("Home", request.user.userInfo))
   }
 
-  var logout = Action{
+  def logout = Action{
     Redirect("/").withNewSession
   }
 
-  var termsOfUse = ActionWithSession{ request =>
+  def termsOfUse = ActionWithSession{ request =>
     Ok(views.html.termsOfUse("Terms of Use", request.user.userInfo))
   }
 
   def redirect = Action { implicit request =>
     //redirect the request to https
     MovedPermanently("https://" + request.host + request.uri).withHeaders("X-Forwarded-Proto" -> "https")
+  }
+
+  def error400 = ActionWithSession{ request =>
+    Ok(views.html.error400("Error", request.user.userInfo))
+  }
+
+  def error404 = ActionWithSession{ request =>
+    Ok(views.html.error404("Error", request.user.userInfo))
+  }
+
+  def error500 = ActionWithSession{ request =>
+    Ok(views.html.error500("Error", request.user.userInfo))
   }
 }

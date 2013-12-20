@@ -37,16 +37,10 @@ object Python extends Controller {
     /**
      * direct to ipython page.
      */
-    var ipython = Authenticated {
+    def ipython = Authenticated {
         request =>
             Ok(views.html.ipython("Ipython", request.user.userInfo))
               .withCookies(new CookieGenerator createCookie(request.user.userInfo.secret.getOrElse(" "), request.user.userInfo.ipythonUrl.getOrElse(" ")))
     }
 
-    /**
-     * direct to documentation page.
-     */
-    var documentation = Authenticated{ request =>
-      Ok(views.html.documentation("documentation", request.user.userInfo))
-    }
 }

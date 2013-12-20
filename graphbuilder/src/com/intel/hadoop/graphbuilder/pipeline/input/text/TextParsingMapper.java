@@ -33,8 +33,9 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 /**
- * The Mapper that processes Text values (with long keys), applies a string-based parser to the text,
- * and emits property graph elements.
+ * The Mapper that processes Text values (with long keys). 
+ *
+ * Applies a string-based parser to the text, and emits the property graph elements.
  *
  * @see GraphTokenizer
  * @see KeyFunction

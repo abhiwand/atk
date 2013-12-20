@@ -61,7 +61,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPE
  * vertex value 4,3 marked as "l", and two edges.
  * First edge has a destination vertex 2, edge value 2.1, marked as "tr".
  * Second edge has a destination vertex 3, edge value 0.7,marked as "va".
- * [1,[4,3],[l],[[2,2.1,[tr]],[3,0.7,[va]]]]
+ * [1,[4,3],[L],[[2,2.1,[tr]],[3,0.7,[va]]]]
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value

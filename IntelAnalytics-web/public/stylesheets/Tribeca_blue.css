@@ -8940,18 +8940,18 @@ table {
 /*------------------------------------*\
     $ERROR PAGE
 \*------------------------------------*/
-html.no-touch body.error-page {
+html.no-touch div.error-page {
   height: 100%; }
-  html.no-touch body.error-page #wrapper {
+  html.no-touch div.error-page #wrapper {
     display: table;
     height: 100%;
     margin-left: auto;
     margin-right: auto; }
-    html.no-touch body.error-page #wrapper .container {
+    html.no-touch div.error-page #wrapper .container {
       vertical-align: middle;
       display: table-cell; }
 
-body.error-page {
+div.error-page {
   background: url("../images/bg_fullsize.jpg") no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -8960,23 +8960,23 @@ body.error-page {
   text-align: center;
   font-family: "Neo Sans Intel";
   -ms-behavior: url("/assets/images/ie/backgroundsize.min.htc"); }
-  body.error-page #wrapper {
+div.error-page #wrapper {
     padding: 20px 0;
     background-image: none !important; }
-  body.error-page .code {
+div.error-page .code {
     margin: 0;
     padding: 0;
-    color: white; }
-    body.error-page .code span {
+    color: #0071c5; }
+div.error-page .code span {
       font-size: 100px;
       line-height: 100px; }
       @media (min-width: 768px) {
-        body.error-page .code span {
+          div.error-page .code span {
           font-size: 150px;
           line-height: 150px; } }
-    body.error-page .code [class^="fa-icon-"], body.error-page .code [class*=" fa-icon-"] {
-      color: #0071c5; }
-  body.error-page .message {
+div.error-page .code [class^="fa-icon-"], div.error-page .code [class*=" fa-icon-"] {
+      color: #000; }
+div.error-page .message {
     font-size: 18px;
     line-height: 24px;
     margin-top: 50px;
@@ -8984,13 +8984,13 @@ body.error-page {
     font-weight: 300;
     color: white; }
     @media (min-width: 768px) {
-      body.error-page .message {
+        div.error-page .message {
         font-size: 24px;
         line-height: 34px; } }
-  body.error-page .btn {
+div.error-page .btn {
     margin-top: 50px;
     font-weight: 300; }
-  body.error-page .logo {
+div.error-page .logo {
     margin-top: 50px;
     display: inline-block; }
 
