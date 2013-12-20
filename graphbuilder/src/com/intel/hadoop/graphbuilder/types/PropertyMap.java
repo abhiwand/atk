@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,6 +66,16 @@ public class PropertyMap implements Writable
         }
     }
 
+    public boolean equals(PropertyMap thatValue) {
+        for (Writable writable : getPropertyKeys()) {
+            Writable value = thatValue.getProperty(writable.toString());
+            if (!value.equals(getProperty(writable.toString()))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public  void readFields(DataInput in) throws IOException {
         this.properties.readFields(in);
@@ -85,20 +95,18 @@ public class PropertyMap implements Writable
     @Override
     public String toString() {
 
-        String s = new String("");
+        StringBuffer s = new StringBuffer();
 
         if (!properties.isEmpty())
         {
-            s.concat("[" + "\t");
 
             for (Map.Entry<Writable, Writable> entry : properties.entrySet())
             {
-               s += (entry.getKey() + ":" + entry.getValue()) + "\t";
+               s.append(entry.getKey() + ":" + entry.getValue() + "\t");
             }
 
-            s.concat("\t" + "]");
         }
 
-        return s;
+        return s.toString();
     }
 }

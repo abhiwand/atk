@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,8 @@ package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
  * hold all the command line long options names. These should not be referenced directly but through CommonCommandLineOptions.
  * if any new options names are added they should also be added to CommonCommandLineOptions
  *
- * @see com.intel.hadoop.graphbuilder.util.CommonCommandLineOptions
+ * @see com.intel.hadoop.graphbuilder.util.BaseCLI
+ * @see com.intel.hadoop.graphbuilder.util.CommandLineInterface
  */
 public class HBaseCommandLineOptions {
     public static final String CMD_EDGES_OPTION_NAME = "edges";
@@ -31,4 +32,5 @@ public class HBaseCommandLineOptions {
     public static final String CMD_TABLE_OPTION_NAME = "tablename";
     public static final String CMD_VERTICES_OPTION_NAME = "vertices";
     public static final String FLATTEN_LISTS_OPTION_NAME = "flattenlists";
+    public static final String STRIP_COLUMNFAMILY_NAMES_OPTION_NAME = "stripcolumnfamilynames";
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,31 +17,30 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.StringType;
 
 /**
- * A Factory class that creates a concrete {@code SerializedPropertyGraphElement}
+ * A Factory class that creates a concrete {@code SerializedGraphElement}
  * which is used in {@code TextGraphMR} as the intermediate value type.
  */
 public class ValueClassFactory {
 
     /**
      * @param  vidClassName
-     * @return A Class which inherits {@code SerializedPropertyGraphElement} and
+     * @return A Class which inherits {@code SerializedGraphElement} and
      *         overrides {@code createVid} to return the correct vertex ID class.
-     * @throws IllegalArgumentException.
+     * @throws IllegalArgumentException
      */
 
     public static Class getValueClassByVidClassName(String vidClassName) throws IllegalArgumentException {
 
         if (vidClassName.equals(StringType.class.getName())) {
-            return SerializedPropertyGraphElementStringTypeVids.class;
+            return SerializedGraphElementStringTypeVids.class;
         } else if (vidClassName.equals(LongType.class.getName())) {
-            return SerializedPropertyGraphElementLongTypeVids.class;
+            return SerializedGraphElementLongTypeVids.class;
         } else {
             throw new IllegalArgumentException("Illegal vertex ID class " + vidClassName);
         }

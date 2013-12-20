@@ -44,14 +44,10 @@ class PigProgressReportStrategy(ReportStrategy):
             if not self.progress_bar:
                 self.initialization_progressbar._disable_animation()
                 progress_bar = Progress("Progress")
-                progress_bar._enable_animation()
                 progress_bar._repr_html_()
                 self.progress_bar = progress_bar
 
             self.progress_bar.update(progress)
-            
-        if self._is_computation_complete(line):
-            self.progress_bar._disable_animation()
 
     def _is_computation_complete(self, line):
         match = re.match(job_completion_pattern, line)

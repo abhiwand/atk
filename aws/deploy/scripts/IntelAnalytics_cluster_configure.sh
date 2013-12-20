@@ -124,7 +124,7 @@ for n in `cat ${nodesfile}`; do
     else
         n0=`echo ${n} | awk -F '.' '{print $1}'`
         nn=`grep ${n0} ${hostsfile} | awk '{print $2}'`
-        sed -e 's/host = \"127.0.0.1\"/host = \"maser\"/g' -e 's/master@/'${nn}'@/g' _gmond.master > _gmond.${nn}
+        sed -e 's/host = \"127.0.0.1\"/host = \"master\"/g' -e 's/master@/'${nn}'@/g' _gmond.master > _gmond.${nn}
         ${dryrun} scp -i ${pemfile} _gmond.${nn} ${n}:/tmp/_gmond.conf
         ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
         echo ${n}:Updating ganglia config file;
@@ -146,23 +146,21 @@ rm _gmond.* 2>&1 > /dev/null
 # with 4 nodes, so if that's the case, we don't have to do anything here as 
 # the node AMI is already built w/ the correct hadoop/hbase configs based on
 # 4-nodes master, node01, etc.
-
-if [ ${csize} -gt 4 ]
+if [ ${csize} -ne 4 ]
 then
+    nodes="master"
+    for ((i = 1; i < ${csize}; i++))
+    do
+        nodes="${nodes},`printf "%02d" ${i}`"
+    done
     ${dryrun} ssh -i ${pemfile} ${IA_USR}@${m} bash -c "'
-    for ((i = 4; i < ${csize}; i++))
-    do
-        printf "%02d" ${i} >> hadoop/conf/slaves;
-        printf "%02d" ${i} >> hbase/conf/regionservers;
-    done;
-    for ((i = 4; i < ${csize}; i++))
-    do
-        if [ ! -z "${nodes}" ]; then
-            nodes="${nodes},`printf "%02d" ${i}`";
-        fi
-    done;
-    sed -i \'s/node03/nodes03,"${nodes}"/g\' titan/conf/titan-hbase.properties;
-    sed -i \'s/node03/nodes03,"${nodes}"/g\' titan/conf/titan-hbase-es.properties;
+    echo $nodes | sed 's/,/\n/g' > hadoop/conf/slaves;
+    echo $nodes | sed 's/,/\n/g' > hbase/conf/regionservers;
+    sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase.properties;
+    sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase-es.properties;
+    sed -i \"s/<storage.hostname.*storage.hostname>/<storage.hostname>"${nodes}"</storage.hostname>/g\" titan/conf/rexstitan-hbase-es.xml;
+    sed -i \"s/<server-host>.*/<server-host>0.0.0.0<\/server-host>/g\" titan/conf/rexstitan-hbase-es.xml;
+    sed -i \"s/<base-uri>.*/<base-uri>http:\/\/localhost<\/base-uri>/g\" titan/conf/rexstitan-hbase-es.xml;
     '"
 fi
 
@@ -200,7 +198,7 @@ echo ${m}:Creat Titan logging directory...;
 mkdir -p /mnt/data1/logs/titan 2>&1 > /dev/null
 ln -s /mnt/data1/logs/titan titan-server/logs 2>&1 > /dev/null
 echo ${m}:Load Titan gods graph to hbase...;
-titan/bin/gremlin.sh -e bin/IntelAnalytics_load.groovy 2>&1 > /dev/null;
+titan/bin/gremlin.sh -e bin/IntelAnalytics_load.groovy;
 echo ${m}:Start Titan/Rexster server...;
 titan/bin/start-rexstitan.sh;
 sleep 2;

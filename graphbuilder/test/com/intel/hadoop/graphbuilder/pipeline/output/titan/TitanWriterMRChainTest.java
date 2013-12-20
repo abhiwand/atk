@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,8 +43,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -58,12 +56,12 @@ import static org.powermock.api.support.membermodification.MemberMatcher.method;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(TitanElement.class)
 public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
-    SerializedPropertyGraphElementLongTypeVids graphElement;
+    SerializedGraphElementLongTypeVids graphElement;
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        graphElement = new SerializedPropertyGraphElementLongTypeVids();
+        graphElement = new SerializedGraphElementLongTypeVids();
     }
 
     @After
@@ -89,7 +87,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
         PowerMockito.doReturn(900L).doReturn(901L).doReturn(902L).when(spiedTitanMergedGraphElementWrite).getVertexId
                 (any(com.tinkerpop.blueprints.Vertex.class));
 
-        List<Pair<IntWritable,SerializedPropertyGraphElement>> run =
+        List<Pair<IntWritable,SerializedGraphElement>> run =
                 runVertexHbaseMR(pairs);
 
         assertTrue("check the number of writables", run.size() == 3);
@@ -152,7 +150,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
         PowerMockito.doReturn(900L).doReturn(901L).doReturn(902L).doReturn(903L).doReturn(904L)
                 .when(spiedTitanMergedGraphElementWrite).getVertexId(any(com.tinkerpop.blueprints.Vertex.class));
 
-        List<Pair<IntWritable,SerializedPropertyGraphElement>> run = runVertexHbaseMR(pairs);
+        List<Pair<IntWritable,SerializedGraphElement>> run = runVertexHbaseMR(pairs);
 
         assertTrue("check the number of writables", run.size() == 6);
         assertEquals("check the number of counters", gbVertexMapReduceDriver.getCounters().countCounters(), 4);
@@ -237,7 +235,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
         vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<>(new StringType("GAO123"));
         vertex.setProperty("TitanID", new LongType(903L));
 
-        SerializedPropertyGraphElementStringTypeVids elementTwo = new SerializedPropertyGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids elementTwo = new SerializedGraphElementStringTypeVids();
         elementTwo.init(vertex);
 
         //set up our matching edge to test against
@@ -246,15 +244,15 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
                 new StringType("worksAt"));
         edge.setProperty("srcTitanID", new LongType(900L));
 
-        SerializedPropertyGraphElementStringTypeVids elementOne = new SerializedPropertyGraphElementStringTypeVids();
+        SerializedGraphElementStringTypeVids elementOne = new SerializedGraphElementStringTypeVids();
         elementOne.init(edge);
 
-        SerializedPropertyGraphElement[] elements = {elementOne, elementTwo};
+        SerializedGraphElement[] elements = {elementOne, elementTwo};
 
-        Pair<IntWritable, SerializedPropertyGraphElement[]> alice = new Pair<IntWritable, SerializedPropertyGraphElement[]>
+        Pair<IntWritable, SerializedGraphElement[]> alice = new Pair<IntWritable, SerializedGraphElement[]>
                 (new IntWritable(1), elements);
 
-        Pair<IntWritable, SerializedPropertyGraphElement[]>[] pairs = new Pair[]{alice};
+        Pair<IntWritable, SerializedGraphElement[]>[] pairs = new Pair[]{alice};
 
         com.tinkerpop.blueprints.Vertex srcBlueprintsVertex = mock(com.tinkerpop.blueprints.Vertex.class);
         com.tinkerpop.blueprints.Vertex dstBlueprintsVertex = mock(com.tinkerpop.blueprints.Vertex.class);
@@ -264,7 +262,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
         PowerMockito.doReturn(dstBlueprintsVertex).when(titanGraph).getVertex(903L);
         PowerMockito.doReturn(bluePrintsEdge).when(titanGraph).addEdge(null, srcBlueprintsVertex, dstBlueprintsVertex, "worksAt");
 
-        List<Pair<IntWritable,SerializedPropertyGraphElement>> run = runEdgeR(pairs);
+        List<Pair<IntWritable,SerializedGraphElement>> run = runEdgeR(pairs);
 
         assertEquals("check the number of counters", edgesReduceDriver.getCounters().countCounters(), 1);
         assertEquals("check NUM_EDGES counter", edgesReduceDriver.getCounters().findCounter

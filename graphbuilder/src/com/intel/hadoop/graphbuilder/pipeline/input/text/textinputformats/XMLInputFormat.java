@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -66,6 +66,12 @@ public class XMLInputFormat extends TextInputFormat {
 
     public static final String END_TAG_KEY = "xmlinput.end";
 
+    /**
+     * Hadoop record reader for reading XML documents.
+     * @param inputSplit
+     * @param context
+     * @return
+     */
     @Override
     public RecordReader<LongWritable, Text> createRecordReader(InputSplit inputSplit, TaskAttemptContext context) {
 
@@ -123,6 +129,12 @@ public class XMLInputFormat extends TextInputFormat {
             endTag   = this.conf.get(END_TAG_KEY).getBytes(TEXT_ENCODING);
         }
 
+        /**
+         *
+         * @param split
+         * @param context
+         * @throws IOException
+         */
         public void initialize(InputSplit split, TaskAttemptContext context) throws IOException {
 
             this.conf = context.getConfiguration();

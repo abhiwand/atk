@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -97,6 +97,8 @@ public class TableToTextGraph {
         options.addOption(BaseCLI.Options.hbaseTable.get());
 
         options.addOption(BaseCLI.Options.flattenList.get());
+
+        options.addOption(BaseCLI.Options.stripColumnFamilyNames.get());
 
         options.addOption(BaseCLI.Options.vertex.get());
 

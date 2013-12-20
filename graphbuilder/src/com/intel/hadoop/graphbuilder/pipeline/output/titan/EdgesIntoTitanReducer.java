@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,9 +35,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -51,7 +49,7 @@ import java.util.Map;
  *
  */
 
-public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> {
+public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphElement, IntWritable, SerializedGraphElement> {
     private static final Logger LOG = Logger.getLogger(EdgesIntoTitanReducer.class);
     private TitanGraph            graph;
     private Hashtable<Object, Long> vertexNameToTitanID;
@@ -109,12 +107,12 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedProper
      * @throws InterruptedException
      */
     @Override
-    public void reduce(IntWritable key, Iterable<SerializedPropertyGraphElement> values, Context context)
+    public void reduce(IntWritable key, Iterable<SerializedGraphElement> values, Context context)
             throws IOException, InterruptedException {
 
         Hashtable<EdgeID, Writable> edgePropertyTable  = new Hashtable();
 
-        for(SerializedPropertyGraphElement graphElement: values){
+        for(SerializedGraphElement graphElement: values){
             /*
              * this is calling
              * EdgesIntoTitanReducerCallback which is an implementation of GraphElementTypeCallback

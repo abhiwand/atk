@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.output;
 
 import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
@@ -46,7 +46,7 @@ public abstract class GraphElementWriter {
     protected Enum edgeCounter;
     protected Reducer.Context context;
     protected TitanGraph graph;
-    protected SerializedPropertyGraphElement outValue;
+    protected SerializedGraphElement outValue;
     protected IntWritable outKey;
     protected KeyFunction keyFunction;
 
@@ -62,7 +62,7 @@ public abstract class GraphElementWriter {
 
         graph = (TitanGraph)args.get("graph");
 
-        outValue = (SerializedPropertyGraphElement)args.get("outValue");
+        outValue = (SerializedGraphElement)args.get("outValue");
         outKey = (IntWritable)args.get("outKey");
         keyFunction = (KeyFunction)args.get("keyFunction");
     }

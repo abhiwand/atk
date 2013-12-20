@@ -46,6 +46,8 @@ public class AveragePathLengthComputationTest {
 
         // Configuration.
         conf.setComputationClass(AveragePathLengthComputation.class);
+        conf.setMasterComputeClass(AveragePathLengthComputation.AveragePathLengthMasterCompute.class);
+        conf.setAggregatorWriterClass(AveragePathLengthComputation.AveragePathLengthAggregatorWriter.class);
         conf.setEdgeInputFormatClass(LongNullTextEdgeInputFormat.class);
         conf.setVertexOutputFormatClass(AveragePathLengthComputationOutputFormat.class);
 

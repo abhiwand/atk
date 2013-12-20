@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -89,7 +89,9 @@ public class GraphDatabaseConnector {
             LOG.fatal("GRAPHBUILDER ERROR: attempt to open graph database using null parameter string");
         }
         finally {
-            g.shutdown();
+            if (g != null) {
+                g.shutdown();
+            }
         }
     }
 }

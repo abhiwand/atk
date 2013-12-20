@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -90,16 +90,16 @@ public abstract class TestMapReduceDriverUtils {
     protected Mapper.Context mapContext;
 
     protected HBaseReaderMapper spiedHBaseReaderMapper;
-    protected MapDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement> mapDriver;
+    protected MapDriver<ImmutableBytesWritable, Result, IntWritable, SerializedGraphElement> mapDriver;
 
     protected VerticesIntoTitanReducer spiedVerticesIntoTitanReducer;
-    protected ReduceDriver<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> verticesReduceDriver;
+    protected ReduceDriver<IntWritable, SerializedGraphElement, IntWritable, SerializedGraphElement> verticesReduceDriver;
 
     protected EdgesIntoTitanReducer spiedEdgesIntoTitanReducer;
-    protected ReduceDriver<IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> edgesReduceDriver;
+    protected ReduceDriver<IntWritable, SerializedGraphElement, IntWritable, SerializedGraphElement> edgesReduceDriver;
 
-    protected GBMapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> gbVertexMapReduceDriver;
-    protected GBMapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedPropertyGraphElement, IntWritable, SerializedPropertyGraphElement> gbEdgeMapReduceDriver;
+    protected GBMapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedGraphElement, IntWritable, SerializedGraphElement> gbVertexMapReduceDriver;
+    protected GBMapReduceDriver<ImmutableBytesWritable, Result, IntWritable, SerializedGraphElement, IntWritable, SerializedGraphElement> gbEdgeMapReduceDriver;
 
     protected Mapper.Context mapperContextMock;
     protected Reducer.Context vertexReducerContextMock;
@@ -114,8 +114,8 @@ public abstract class TestMapReduceDriverUtils {
     protected TitanGraphElementWriter spiedTitanMergedGraphElementWrite;
     protected TitanGraph titanGraph;
 
-    protected static final Class klass = SerializedPropertyGraphElementStringTypeVids.class;
-    protected static final Class valClass = SerializedPropertyGraphElementStringTypeVids.class;
+    protected static final Class klass = SerializedGraphElementStringTypeVids.class;
+    protected static final Class valClass = SerializedGraphElementStringTypeVids.class;
     protected static final String getTitanGraphInstance = "getTitanGraphInstance";
 
     @BeforeClass
@@ -295,7 +295,7 @@ public abstract class TestMapReduceDriverUtils {
      * @return any reducer context.write output
      * @throws IOException
      */
-    protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runMapReduceDriver( GBMapReduceDriver mapReduceDriver,
+    protected List<Pair<IntWritable,SerializedGraphElement>> runMapReduceDriver( GBMapReduceDriver mapReduceDriver,
             Pair<ImmutableBytesWritable,Result>[] pairs) throws IOException {
 
         mapReduceDriver.withConfiguration(conf);
@@ -318,7 +318,7 @@ public abstract class TestMapReduceDriverUtils {
      * @return any context.write output from the reducer
      * @throws IOException
      */
-    protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runVertexHbaseMR(
+    protected List<Pair<IntWritable,SerializedGraphElement>> runVertexHbaseMR(
             Pair<ImmutableBytesWritable,Result>[] pairs) throws IOException {
 
         return runMapReduceDriver(gbVertexMapReduceDriver, pairs);
@@ -331,12 +331,12 @@ public abstract class TestMapReduceDriverUtils {
      * @return any context.write output
      * @throws IOException
      */
-    protected List<Pair<IntWritable,SerializedPropertyGraphElement>> runEdgeR(
-            Pair<IntWritable, com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement[]>[] pairs) throws IOException{
+    protected List<Pair<IntWritable,SerializedGraphElement>> runEdgeR(
+            Pair<IntWritable, SerializedGraphElement[]>[] pairs) throws IOException{
 
         edgesReduceDriver.withConfiguration(conf);
 
-        for(Pair<IntWritable, com.intel.hadoop.graphbuilder.graphelements.SerializedPropertyGraphElement[]> kv: pairs){
+        for(Pair<IntWritable, SerializedGraphElement[]> kv: pairs){
             edgesReduceDriver.withInput(kv.getFirst(), Arrays.asList(kv.getSecond()) );
         }
 
@@ -448,7 +448,7 @@ public abstract class TestMapReduceDriverUtils {
 
             spiedVertexPropertyGraphElements = spy(new PropertyGraphElements(spiedTitanMergedGraphElementWrite, null, null,
                     vertexReducerContextMock, titanGraph,
-                    (SerializedPropertyGraphElement)valClass.newInstance(), spiedVerticesIntoTitanReducer.getEdgeCounter(),
+                    (SerializedGraphElement)valClass.newInstance(), spiedVerticesIntoTitanReducer.getEdgeCounter(),
                     spiedVerticesIntoTitanReducer.getVertexCounter()));
 
             *//**
@@ -729,8 +729,8 @@ public abstract class TestMapReduceDriverUtils {
      * @param pair             the writable pair from the mapper
      *
      */
-    public final void verifyPairSecond(Pair<IntWritable, SerializedPropertyGraphElement> pair,
-                                       SerializedPropertyGraphElement graphElement){
+    public final void verifyPairSecond(Pair<IntWritable, SerializedGraphElement> pair,
+                                       SerializedGraphElement graphElement){
 
         //checking the graphElement type of pair and graphElement i'm verifying against
         assertEquals("graph types must match", pair.getSecond().graphElement().getType(),

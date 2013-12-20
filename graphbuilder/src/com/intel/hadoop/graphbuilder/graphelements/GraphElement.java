@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +17,6 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.*;
@@ -51,17 +50,19 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     //get the graph element
     public abstract GraphElement get();
 
+    public abstract boolean equals(GraphElement graphElement);
+
     /**
      * all the callback classes we will be using
      */
-    private final GraphElementType propertyGraphElementType;
+    private final GraphElementType graphElementType;
     private final GraphElementDst graphElementDst;
-    private final GraphElementSrc propertyGraphElementSrc;
+    private final GraphElementSrc graphElementSrc;
 
     public GraphElement(){
-        propertyGraphElementType = new GraphElementType();
-        graphElementDst = new GraphElementDst();
-        propertyGraphElementSrc = new GraphElementSrc();
+        graphElementType = new GraphElementType();
+        graphElementDst  = new GraphElementDst();
+        graphElementSrc  = new GraphElementSrc();
     }
 
     /**
@@ -94,7 +95,7 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     }
 
     public Enum getType(){
-        return this.typeCallback(propertyGraphElementType);
+        return this.typeCallback(graphElementType);
     }
 
     public Object getDst(){
@@ -102,7 +103,7 @@ public abstract class GraphElement<VidType extends WritableComparable<VidType>> 
     }
 
     public Object getSrc(){
-        return this.typeCallback(propertyGraphElementSrc);
+        return this.typeCallback(graphElementSrc);
     }
 }
 

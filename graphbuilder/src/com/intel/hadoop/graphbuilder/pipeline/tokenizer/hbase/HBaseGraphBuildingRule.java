@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,7 +92,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     private String[] vertexRules;
     private String[] edgeRules;
     private String[] directedEdgeRules;
-    private boolean  flattenLists = false;
+    private boolean  flattenLists          = false;
+    private boolean  stripColumnFamilyNames = false;
 
     private Class vidClass = StringType.class;
     private Class<? extends GraphTokenizer>  tokenizerClass = HBaseTokenizer.class;
@@ -126,6 +127,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
         directedEdgeRules =
                 nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
 
+        this.stripColumnFamilyNames = cmd.hasOption(BaseCLI.Options.stripColumnFamilyNames.getLongOpt());
+
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();
 
@@ -144,6 +147,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      */
     public void setFlattenLists(boolean flattenLists) {
         this.flattenLists = flattenLists;
+    }
+
+    /**
+     * Set the option to strip column family names when creating propery names from HBase column names..
+     * <p><ul><li> when true: cf_name:column_name is used to populate the property names "column_name"</li>
+     * <li> when false: cf_name:column_name is used to populate the property names "cf_name:column_name"</li> </ul></p>
+     * @param stripColumnFamilyNames {@code boolean}
+     */
+    public void setStripColumnFamilyNames(boolean stripColumnFamilyNames) {
+        this.stripColumnFamilyNames = stripColumnFamilyNames;
     }
 
     /**
@@ -290,6 +303,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
         packEdgeRulesIntoConfiguration(configuration, edgeRules);
         packDirectedEdgeRulesIntoConfiguration(configuration, directedEdgeRules);
         configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", flattenLists);
+        configuration.setBoolean("HBASE_TOKENIZER_STRIP_COLUMNFAMILY_NAMES", stripColumnFamilyNames);
     }
 
     /**
@@ -321,6 +335,17 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
         return graphSchema;
     }
 
+    /*
+     * Extract property name from column name
+     */
+    public static String propertyNameFromColumnName(String columnName, boolean stripColumnFamilyNames) {
+        if (stripColumnFamilyNames) {
+            return columnName.split("\\:")[1];
+
+        } else {
+            return columnName;
+        }
+    }
     private void generateVertexSchemata() {
 
         for (String vertexRule : vertexRules) {
@@ -330,7 +355,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             String[] columnNames = HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
 
             for (String vertexPropertyColumnName : columnNames) {
-                PropertySchema propertySchema = new PropertySchema(vertexPropertyColumnName, String.class);
+                String propertyName = propertyNameFromColumnName(vertexPropertyColumnName, stripColumnFamilyNames);
+                PropertySchema propertySchema = new PropertySchema(propertyName, String.class);
                 vertexSchema.getPropertySchemata().add(propertySchema);
             }
 
@@ -348,8 +374,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             EdgeSchema edgeSchema = new EdgeSchema(label);
 
             for (String columnName : columnNames) {
-                String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
+                String edgePropertyName = propertyNameFromColumnName(columnName, stripColumnFamilyNames);
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }
@@ -365,8 +390,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             EdgeSchema edgeSchema = new EdgeSchema(label);
 
             for (String columnName : columnNames) {
-                String edgePropertyName = columnName.replaceAll(GBHTableConfiguration.config.getProperty("HBASE_COLUMN_SEPARATOR"),
-                        GBHTableConfiguration.config.getProperty("GRAPHBUILDER_PROPERTY_SEPARATOR"));
+                String edgePropertyName = propertyNameFromColumnName(columnName, stripColumnFamilyNames);
                 PropertySchema propertySchema = new PropertySchema(edgePropertyName, String.class);
                 edgeSchema.getPropertySchemata().add(propertySchema);
             }

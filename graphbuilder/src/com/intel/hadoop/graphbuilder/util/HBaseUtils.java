@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -168,6 +168,23 @@ public class HBaseUtils {
      */
     public boolean tableExists(String hTableName) throws IOException {
         return admin.tableExists(hTableName);
+    }
+
+    /**
+     * If the table exists in HBase, it is disabled and dropped.
+     */
+    public void removeTable(String testTableName) throws IOException {
+
+        if (admin.tableExists(testTableName)) {
+            admin.disableTable(testTableName);
+            if (admin.isTableDisabled(testTableName)) {
+                admin.deleteTable(testTableName);
+            } else {
+                GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.HBASE_ERROR,
+                        "GRAPHBUILDER ERROR: Unable to delete existing table " + testTableName + ". Please delete it",
+                        LOG);
+            }
+        }
     }
 
     /**

@@ -32,10 +32,10 @@
   <url>http://maven.apache.org</url>
 
  <parent>
-	<groupId>com.intel.hadoop</groupId>
-	<artifactId>IntelAnalytics</artifactId>
-	<relativePath>../pom.xml</relativePath>  
-	<version>0.5-SNAPSHOT</version>
+  	<groupId>com.intel.hadoop</groupId>
+  	<artifactId>IntelAnalytics</artifactId>
+  	<relativePath>../pom.xml</relativePath>  
+  	<version>0.5-SNAPSHOT</version>
   </parent>
 
   <dependencies>

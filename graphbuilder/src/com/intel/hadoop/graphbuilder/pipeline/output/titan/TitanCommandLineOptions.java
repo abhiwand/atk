@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,6 +25,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 public class TitanCommandLineOptions {
     public static final String APPEND = "append";
     public static final String STORE = "titan";
+    public static final String OVERWRITE = "overwrite";
 
 
     // constants for key/index declarations

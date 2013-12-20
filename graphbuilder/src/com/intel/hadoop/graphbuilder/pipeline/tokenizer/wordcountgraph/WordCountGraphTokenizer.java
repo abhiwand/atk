@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -115,13 +115,14 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
         try {
             fileSystem = FileSystem.get(configuration);
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
+                    "GRAPHBUILDER_ERROR: Could not access file system from configuration.", LOG, e);
         }
 
         String dictPath = configuration.get("Dictionary");
 
-        if (dictPath != null && dictPath != "") {
+        if (dictPath != null && !dictPath.isEmpty()) {
             try {
                 loadDictionary(dictPath);
             } catch (IOException e) {
@@ -132,7 +133,7 @@ public class WordCountGraphTokenizer implements GraphTokenizer<String, StringTyp
 
         String stopWordsPath = configuration.get("StopWords");
 
-        if (stopWordsPath != null && stopWordsPath != "") {
+        if (stopWordsPath != null && !stopWordsPath.isEmpty()) {
             try {
                 loadStopWords(stopWordsPath);
             } catch (IOException e) {

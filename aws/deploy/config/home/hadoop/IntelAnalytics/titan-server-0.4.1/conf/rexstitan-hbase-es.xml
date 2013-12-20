@@ -4,8 +4,8 @@
  <rexster>
     <http>
         <server-port>8182</server-port>
-        <server-host>ip-10-0-64-83</server-host>
-        <base-uri>http://ip-10-0-64-83</base-uri>
+        <server-host>0.0.0.0</server-host>
+        <base-uri>http://localhost</base-uri>
         <web-root>public</web-root>
         <character-set>UTF-8</character-set>
         <enable-jmx>false</enable-jmx>
@@ -15,19 +15,19 @@
         <upload-timeout-millis>30000</upload-timeout-millis>
         <thread-pool>
             <worker>
-                <core-size>8</core-size>
-                <max-size>8</max-size>
+                <core-size>32</core-size>
+                <max-size>32</max-size>
             </worker>
             <kernal>
-                <core-size>4</core-size>
-                <max-size>4</max-size>
+                <core-size>16</core-size>
+                <max-size>16</max-size>
             </kernal>
         </thread-pool>
         <io-strategy>leader-follower</io-strategy>
     </http>
     <rexpro>
         <server-port>8184</server-port>
-        <server-host>ip-10-0-64-83</server-host>
+        <server-host>0.0.0.0</server-host>
         <session-max-idle>1790000</session-max-idle>
         <session-check-interval>3000000</session-check-interval>
         <connection-max-idle>180000</connection-max-idle>
@@ -89,16 +89,21 @@
         </reporter>
     </metrics>
     <graphs>
+    <graphs>
         <graph>
-            <graph-name>mygraph_myframe_2013-12-05-08-52-22</graph-name>
+            <graph-name>TitanGods</graph-name>
             <graph-type>com.thinkaurelius.titan.tinkerpop.rexster.TitanGraphConfiguration</graph-type>
             <graph-location></graph-location>
             <graph-read-only>false</graph-read-only>
             <properties>
                 <storage.backend>hbase</storage.backend>
-                <storage.hostname>ip-10-0-64-83</storage.hostname>
+                <storage.hostname>master,node01,node02,node03</storage.hostname>
                 <storage.port>2181</storage.port>
-                <storage.tablename>mygraph_myframe_2013-12-05-08-52-22</storage.tablename>
+                <storage.tablename>TitanGods</storage.tablename>
+                <storage.index.search.backend>elasticsearch</storage.index.search.backend>
+                <storage.index.search.directory>/mnt/data1/titan/searchindex</storage.index.search.directory>
+                <storage.index.search.client-only>false</storage.index.search.client-only>
+                <storage.index.search.local-mode>true</storage.index.search.local-mode>
             </properties>
             <extensions>
                 <allows>

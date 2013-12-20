@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2012 Intel Corporation.
+ * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -112,6 +112,7 @@ import org.apache.log4j.Logger;
 public class TableToGraphDB {
 
     private static final Logger LOG = Logger.getLogger(TableToGraphDB.class);
+    private static boolean configFilePresent = false;
 
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
@@ -119,7 +120,11 @@ public class TableToGraphDB {
 
         options.addOption(BaseCLI.Options.titanAppend.get());
 
+        options.addOption(BaseCLI.Options.titanOverwrite.get());
+
         options.addOption(BaseCLI.Options.flattenList.get());
+
+        options.addOption(BaseCLI.Options.stripColumnFamilyNames.get());
 
         options.addOption(BaseCLI.Options.hbaseTable.get());
 
@@ -143,8 +148,13 @@ public class TableToGraphDB {
     public static void main(String[] args)  {
 
         Timer timer = new Timer();
+        configFilePresent = (args[0].equals("-conf"));
+        if (!configFilePresent) {
+            commandLineInterface.showError("When writing to Titan, the Titan config file must be specified by -conf <config> ");
+        }
 
         CommandLine cmd = commandLineInterface.checkCli(args);
+
 
         GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
         commandLineInterface.getRuntimeConfig().addConfig(pipeline);
