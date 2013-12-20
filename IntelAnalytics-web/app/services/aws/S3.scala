@@ -37,10 +37,7 @@ import scala.collection.mutable
 import sun.misc.BASE64Encoder
 import play.api.Play
 import play.api.Play.current
-import services.aws
 import scala.collection.JavaConversions._
-import java.util
-import com.amazonaws.AmazonClientException
 
 object S3 {
   //one week

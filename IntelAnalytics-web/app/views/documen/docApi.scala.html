@@ -1,9 +1,6 @@
-@(message: String, user: models.database.UserRow)
+@(message: String, user: models.database.UserRow, iframeSrcUrl: String)
 
-@import play.api.Play
-@import play.api.Play.current
-
-@mainLoggedIn(message, user) {
+@doc(message,user) {
     <div id='main-content'>
 
         <div id='main-content-upload'>
@@ -12,7 +9,7 @@
                     <div class='col-sm-12'>
 
                         <div class="row-fluid">
-                            <iframe id='ipython' src="https://@user.ipythonUrl" ></iframe>
+                            <iframe id='apidoc' src="@iframeSrcUrl" ></iframe>
                         </div>
                         
                     </div>

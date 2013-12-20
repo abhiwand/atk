@@ -12,7 +12,7 @@ object File {
   implicit val fileUpload = Json.reads[FileUpload]
   implicit val fileDelete = Json.reads[FileDelete]
 
-  val create = Authenticated(parse.json){ request =>
+  def create = Authenticated(parse.json){ request =>
     request.body.validate[FileUpload](fileUpload).map{
       case(file) =>
         //create the que
@@ -28,7 +28,7 @@ object File {
     }
   }
 
-  val delete = Authenticated(parse.json){ request =>
+  def delete = Authenticated(parse.json){ request =>
     request.body.validate[FileDelete](fileDelete).map{
       case(file) =>
         //check file name  on the users dir s3
