@@ -179,7 +179,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable, SerializedGraphE
 
             edgeCount++;
 
-            if (edgeCount != 0 && edgeCount % BULK_EDGE_COMMIT_SIZE == 0) {
+            if (edgeCount > 0 && edgeCount % BULK_EDGE_COMMIT_SIZE == 0) {
                 try {
                     this.graph.commit();
                     LOG.info("Successfully committed " + BULK_EDGE_COMMIT_SIZE
