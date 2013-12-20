@@ -76,6 +76,7 @@ public class CommandLineInterfaceTest {
         options.addOption(optionTwo);
 
 
+
         hadoopOptions.put("-conf", configFile);
         hadoopOptions.put("-D", "test=0");
 
