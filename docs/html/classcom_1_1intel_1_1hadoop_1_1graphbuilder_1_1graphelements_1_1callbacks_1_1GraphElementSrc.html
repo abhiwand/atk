@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -109,7 +109,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a0f2dfec0d1a53efbcb160b5c6b225c6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>get the graph element src. if it's an edge it will return whatever src the edge has otherwise it will return null if it's a vertex.</p>
+<div class="textblock"><p>Gets the graph element's</p>
+<div class="fragment"><div class="line">src </div>
+</div><!-- fragment --><p> . If it's an edge it will return whatever </p>
+<div class="fragment"><div class="line">src </div>
+</div><!-- fragment --><p> the edge has, otherwise the method returns null if the element is a vertex.</p>
 <dl class="section see"><dt>See Also</dt><dd>com.intel.hadoop.graphbuilder.graphelements.GraphElement </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a7410771b27a22a518de254688f0f94ae"></a>
@@ -143,15 +147,18 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>cast our graph element to an edge and get it's src</p>
+<p>Casts our graph element to an edge and gets the edge's</p>
+<div class="fragment"><div class="line">src </div>
+</div><!-- fragment --><p> .</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">graphElement</td><td>graph element to perform operations on </td></tr>
-    <tr><td class="paramname">arguments</td><td>any arguments that might have been passed </td></tr>
+    <tr><td class="paramname">@code</td><td>graphElement  The graph element to perform operations on. </td></tr>
+    <tr><td class="paramname">@code</td><td>arguments  Any arguments that might have been passed. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>edges src </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>The edge's<div class="fragment"><div class="line">src </div>
+</div><!-- fragment --> . </dd></dl>
 <div class="fragment"><div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                                                                             {</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        Edge <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementSrc.html#a7410771b27a22a518de254688f0f94ae">edge</a> = (Edge) graphElement;</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordflow">return</span> edge.getSrc();</div>
@@ -191,15 +198,18 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>return null since all vertices have no src</p>
+<p>Returns null because vertices do not have a</p>
+<div class="fragment"><div class="line">src </div>
+</div><!-- fragment --><p> .</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">graphElement</td><td>graph element to perform operations on </td></tr>
-    <tr><td class="paramname">arguments</td><td>any arguments that might have been passed </td></tr>
+    <tr><td class="paramname">@code</td><td>graphElement  The graph element to perform operations on. </td></tr>
+    <tr><td class="paramname">@code</td><td>arguments  Any arguments that might have been passed. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>always null since vertices doesn't have a src </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Always returns null, because vertices do not have a<div class="fragment"><div class="line">src </div>
+</div><!-- fragment --> . </dd></dl>
 <div class="fragment"><div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;                                                                               {</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keywordflow">return</span> null;</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    }</div>
@@ -212,7 +222,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:02 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

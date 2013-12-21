@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -132,11 +132,11 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Allocate a new property graph schema. </p>
-<div class="fragment"><div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;                                 {</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        vertexSchemata = <span class="keyword">new</span> ArrayList&lt;VertexSchema&gt;();</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        edgeSchemata   = <span class="keyword">new</span> ArrayList&lt;EdgeSchema&gt;();</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    }</div>
+<p>Allocates a new property graph schema. </p>
+<div class="fragment"><div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;                                 {</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        vertexSchemata = <span class="keyword">new</span> ArrayList&lt;VertexSchema&gt;();</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        edgeSchemata   = <span class="keyword">new</span> ArrayList&lt;EdgeSchema&gt;();</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -162,16 +162,16 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Add an edge schema to the edge schemata of a property graph. </p>
+<p>Adds an edge schema to the edge schemas of a property graph. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">edgeSchema</td><td></td></tr>
+    <tr><td class="paramname">@code</td><td>edgeSchema  The edge schema to add. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                                                     {</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        edgeSchemata.add(edgeSchema);</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                                                     {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        edgeSchemata.add(edgeSchema);</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -196,16 +196,16 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Add a vertex schema to the vertex schemata of a property graph </p>
+<p>Adds a vertex schema to the vertex schemas of a property graph. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">vertexSchema</td><td></td></tr>
+    <tr><td class="paramname">@code</td><td>vertexSchema  The vertex schema to add. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;                                                           {</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        vertexSchemata.add(vertexSchema);</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                                                           {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        vertexSchemata.add(vertexSchema);</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -229,11 +229,11 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the edge schemata of the property graph. </p>
-<dl class="section return"><dt>Returns</dt><dd>reference to the property graph's edge schemata list </dd></dl>
-<div class="fragment"><div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                                                   {</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">return</span> edgeSchemata;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    }</div>
+<p>Gets the edge schemas of the property graph. </p>
+<dl class="section return"><dt>Returns</dt><dd>A reference to the property graph's edge schemas list. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                                                   {</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keywordflow">return</span> edgeSchemata;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -257,26 +257,26 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Obtain a set of the property names used in the schema of the property graph. </p>
+<p>Gets a set of the property names used in the schema of the property graph. </p>
 <p>The set is newly allocated and populated with each call.</p>
-<dl class="section return"><dt>Returns</dt><dd>set of strings containing the names of the properties used by the property graph </dd></dl>
-<div class="fragment"><div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                                                                        {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        HashMap&lt;String, Class&lt;?&gt;&gt; map = <span class="keyword">new</span> HashMap&lt;String, Class&lt;?&gt;&gt;();</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keywordflow">for</span> (EdgeSchema edgeSchema : edgeSchemata) {</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            <span class="keywordflow">for</span> (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                map.put(propertySchema.getName(), propertySchema.getType());</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            }</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        }</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keywordflow">for</span> (VertexSchema vertexSchema : vertexSchemata) {</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            <span class="keywordflow">for</span> (PropertySchema propertySchema : vertexSchema.getPropertySchemata()) {</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                map.put(propertySchema.getName(), propertySchema.getType());</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            }</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        }</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keywordflow">return</span> map;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    }</div>
+<dl class="section return"><dt>Returns</dt><dd>A set of strings containing the names of the properties used by the property graph. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                                                                        {</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        HashMap&lt;String, Class&lt;?&gt;&gt; map = <span class="keyword">new</span> HashMap&lt;String, Class&lt;?&gt;&gt;();</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">for</span> (EdgeSchema edgeSchema : edgeSchemata) {</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <span class="keywordflow">for</span> (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                map.put(propertySchema.getName(), propertySchema.getType());</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            }</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        }</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        <span class="keywordflow">for</span> (VertexSchema vertexSchema : vertexSchemata) {</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            <span class="keywordflow">for</span> (PropertySchema propertySchema : vertexSchema.getPropertySchemata()) {</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                map.put(propertySchema.getName(), propertySchema.getType());</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;            }</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        }</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordflow">return</span> map;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -300,11 +300,11 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the vertex schemata of the property graph. </p>
-<dl class="section return"><dt>Returns</dt><dd>reference to the property graph's vertex schemata list </dd></dl>
-<div class="fragment"><div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                                                       {</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordflow">return</span> vertexSchemata;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    }</div>
+<p>Gets the vertex schemas of the property graph. </p>
+<dl class="section return"><dt>Returns</dt><dd>A reference to the property graph's vertex schemas list. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                                                       {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordflow">return</span> vertexSchemata;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -314,7 +314,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -108,6 +108,8 @@ Inheritance diagram for com.intel.pig.udf.eval.GetPropGraphElementID:</div>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ac97f83efc081712ceb33616c85399aec"><td class="memItemLeft" align="right" valign="top">String&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1GetPropGraphElementID.html#ac97f83efc081712ceb33616c85399aec">exec</a> (Tuple input)  throws IOException </td></tr>
 <tr class="separator:ac97f83efc081712ceb33616c85399aec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab397d7fabd24d6f574394b2d71806223"><td class="memItemLeft" align="right" valign="top">Schema&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1GetPropGraphElementID.html#ab397d7fabd24d6f574394b2d71806223">outputSchema</a> (Schema input)</td></tr>
+<tr class="separator:ab397d7fabd24d6f574394b2d71806223"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1GetPropGraphElementID.html" title="GetPropGraphElementID ...returns string objectID of its property graph element. ">GetPropGraphElementID</a> ...returns string objectID of its property graph element. </p>
@@ -154,22 +156,50 @@ Public Member Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                                                       {</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        SerializedGraphElement serializedGraphElement = (SerializedGraphElement) input.get(0);</div>
+<div class="fragment"><div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                                                       {</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        GraphElement graphElement = serializedGraphElement.graphElement();</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        SerializedGraphElement serializedGraphElement = (SerializedGraphElement) input.get(0);</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordflow">if</span> (graphElement == null) {</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        }</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordflow">return</span> (graphElement.isVertex()) ?</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                (<span class="stringliteral">&quot;VERTEX &quot;</span> + graphElement.getId().toString()) :</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                (<span class="stringliteral">&quot;EDGE &quot;</span> + graphElement.getId().toString());</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    }</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        GraphElement graphElement = serializedGraphElement.graphElement();</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordflow">if</span> (graphElement == null) {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        }</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordflow">return</span> (graphElement.isVertex()) ?</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                (<span class="stringliteral">&quot;VERTEX &quot;</span> + ((Vertex) graphElement).getId().getName().toString()) :</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                (<span class="stringliteral">&quot;EDGE &quot;</span> + graphElement.getId().toString());</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    }</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="ab397d7fabd24d6f574394b2d71806223"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Schema com.intel.pig.udf.eval.GetPropGraphElementID.outputSchema </td>
+          <td>(</td>
+          <td class="paramtype">Schema&#160;</td>
+          <td class="paramname"><em>input</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1GetPropGraphElementID.html" title="GetPropGraphElementID ...returns string objectID of its property graph element. ">GetPropGraphElementID</a> UDF returns a chararray </p>
+<div class="fragment"><div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                                             {</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(null, DataType.CHARARRAY));</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -179,7 +209,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:04 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

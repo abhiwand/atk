@@ -20,7 +20,6 @@ var searchData=
   ['pipelinemetadata',['pipelinemetadata',['../namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1pipelinemetadata.html',1,'com::intel::hadoop::graphbuilder::pipeline']]],
   ['propertygraphschema',['propertygraphschema',['../namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1pipelinemetadata_1_1propertygraphschema.html',1,'com::intel::hadoop::graphbuilder::pipeline::pipelinemetadata']]],
   ['sampleapplications',['sampleapplications',['../namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1sampleapplications.html',1,'com::intel::hadoop::graphbuilder']]],
-  ['textgraph',['textgraph',['../namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph.html',1,'com::intel::hadoop::graphbuilder::pipeline::output']]],
   ['titan',['titan',['../namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan.html',1,'com::intel::hadoop::graphbuilder::pipeline::output']]],
   ['tokenizer',['tokenizer',['../namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1tokenizer.html',1,'com::intel::hadoop::graphbuilder::pipeline']]],
   ['types',['types',['../namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1types.html',1,'com::intel::hadoop::graphbuilder']]],

@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -119,7 +119,15 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:af691b725598200624eff0826270f7d06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Argument Builder makes it a litter nicer to deal with variable length argument params. instead of doing Type ... name and getting an array you would do <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#af691b725598200624eff0826270f7d06">ArgumentBuilder.newArguments()</a>.with("Var name", var) or new ArgumentBuilder().with("var name", var). To get a variable do <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#a0316a9df6c25e9e21a29d18211039e51">ArgumentBuilder.get</a>("var name"). it keeps you from having to remembering the exact param order in the variable length arrays. It's a wrapper on a String, Object hash map </p>
+<div class="textblock"><p>Argument Builder makes it a little nicer to deal with variable length argument params. Instead of using</p>
+<div class="fragment"><div class="line">Type ... name </div>
+</div><!-- fragment --><p> and getting an array, you would use </p>
+<div class="fragment"><div class="line">ArgumentBuilder.newArguments().<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ac274f0705eadde049d911801bce597c1">with</a>(<span class="stringliteral">&quot;Var name&quot;</span>, var) </div>
+</div><!-- fragment --><p> or </p>
+<div class="fragment"><div class="line"><span class="keyword">new</span> ArgumentBuilder().with(<span class="stringliteral">&quot;var name&quot;</span>, var) </div>
+</div><!-- fragment --><p> . To get a variable use </p>
+<div class="fragment"><div class="line">ArgumentBuilder.get(<span class="stringliteral">&quot;var name&quot;</span>) </div>
+</div><!-- fragment --><p> . This way, you do not have to remember the exact param order in the variable length arrays. It's a wrapper on a String, Object hash map. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="ade3983849a392af083c21e083351a3ec"></a>
 <div class="memitem">
@@ -142,18 +150,18 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>does the argument exists</p>
+<p>Checks if the argument exists.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">argumentName</td><td>argument name to check for </td></tr>
+    <tr><td class="paramname">@code</td><td>argumentName  The argument name for which to check. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>status of an argument </dd></dl>
-<div class="fragment"><div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;                                              {</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;</div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;        <span class="keywordflow">return</span> arguments.containsKey(argumentName);</div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    }</div>
+<dl class="section return"><dt>Returns</dt><dd>The status of an argument. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;                                              {</div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;</div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;        <span class="keywordflow">return</span> arguments.containsKey(argumentName);</div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -178,18 +186,18 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>does the argument exists</p>
+<p>Checks if the argument exists.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">object</td><td>object to check for </td></tr>
+    <tr><td class="paramname">@code</td><td>object  The object for which to check. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>status of an argument </dd></dl>
-<div class="fragment"><div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;                                        {</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        <span class="keywordflow">return</span> arguments.containsValue(object);</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    }</div>
+<dl class="section return"><dt>Returns</dt><dd>The status of the argument. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;                                        {</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        <span class="keywordflow">return</span> arguments.containsValue(object);</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -214,18 +222,18 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>get the stored object</p>
+<p>Gets the stored object.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">argumentName</td><td>the name of the variable to return </td></tr>
+    <tr><td class="paramname">@code</td><td>argumentName  The name of the variable to return. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>the requested argument </dd></dl>
-<div class="fragment"><div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;                                          {</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keywordflow">return</span> arguments.get(argumentName);</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    }</div>
+<dl class="section return"><dt>Returns</dt><dd>The requested argument. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                                          {</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keywordflow">return</span> arguments.get(argumentName);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -260,23 +268,23 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>get an argument if it exists else return the default value</p>
+<p>Gets an argument if it exists, otherwise returns the default value.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">argumentName</td><td>the arguments name </td></tr>
-    <tr><td class="paramname">defaultValue</td><td>desired default value if the argument doesn't exists </td></tr>
+    <tr><td class="paramname">@code</td><td>argumentName  The name of the argument. </td></tr>
+    <tr><td class="paramname">@code</td><td>defaultValue  The desired default value if the argument doesn't exist. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>requested argument </dd></dl>
-<div class="fragment"><div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                                                               {</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;        <span class="keywordflow">if</span>(this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ade3983849a392af083c21e083351a3ec">exists</a>(argumentName)){</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            <span class="keywordflow">return</span> this.get(argumentName);</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        }<span class="keywordflow">else</span>{</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            <span class="keywordflow">return</span> defaultValue;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        }</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder_html_ade3983849a392af083c21e083351a3ec"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ade3983849a392af083c21e083351a3ec">com.intel.hadoop.graphbuilder.util.ArgumentBuilder.exists</a></div><div class="ttdeci">boolean exists(String argumentName)</div><div class="ttdef"><b>Definition:</b> ArgumentBuilder.java:136</div></div>
+<dl class="section return"><dt>Returns</dt><dd>The requested argument. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                                                               {</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordflow">if</span>(this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ade3983849a392af083c21e083351a3ec">exists</a>(argumentName)){</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            <span class="keywordflow">return</span> this.get(argumentName);</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        }<span class="keywordflow">else</span>{</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            <span class="keywordflow">return</span> defaultValue;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        }</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder_html_ade3983849a392af083c21e083351a3ec"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ade3983849a392af083c21e083351a3ec">com.intel.hadoop.graphbuilder.util.ArgumentBuilder.exists</a></div><div class="ttdeci">boolean exists(String argumentName)</div><div class="ttdef"><b>Definition:</b> ArgumentBuilder.java:138</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -300,12 +308,12 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>see if the argument list empty</p>
-<dl class="section return"><dt>Returns</dt><dd>empty argument list status </dd></dl>
-<div class="fragment"><div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;                            {</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;        <span class="keywordflow">return</span> this.arguments.isEmpty();</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    }</div>
+<p>See if the argument list empty.</p>
+<dl class="section return"><dt>Returns</dt><dd>The empty argument list status. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                            {</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <span class="keywordflow">return</span> this.arguments.isEmpty();</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -340,25 +348,25 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>check a stored arguments type vs the given type</p>
+<p>Checks the type of a stored argument type against the given type.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">argumentName</td><td>the argument to check </td></tr>
-    <tr><td class="paramname">klass</td><td>the class to verify against </td></tr>
+    <tr><td class="paramname">@code</td><td>argumentName  The argument to check. </td></tr>
+    <tr><td class="paramname">@code</td><td>klass  The class to verify against. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>status of the type check </dd></dl>
-<div class="fragment"><div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;                                                           {</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <span class="keywordflow">if</span>(this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ade3983849a392af083c21e083351a3ec">exists</a>(argumentName) &amp;&amp; this.<span class="keyword">get</span>(argumentName).getClass().equals(klass)){</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        }<span class="keywordflow">else</span>{</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;        }</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder_html_ade3983849a392af083c21e083351a3ec"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ade3983849a392af083c21e083351a3ec">com.intel.hadoop.graphbuilder.util.ArgumentBuilder.exists</a></div><div class="ttdeci">boolean exists(String argumentName)</div><div class="ttdef"><b>Definition:</b> ArgumentBuilder.java:136</div></div>
+<dl class="section return"><dt>Returns</dt><dd>The status of the type check. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                                                           {</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keywordflow">if</span>(this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ade3983849a392af083c21e083351a3ec">exists</a>(argumentName) &amp;&amp; this.<span class="keyword">get</span>(argumentName).getClass().equals(klass)){</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;        }<span class="keywordflow">else</span>{</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        }</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder_html_ade3983849a392af083c21e083351a3ec"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html#ade3983849a392af083c21e083351a3ec">com.intel.hadoop.graphbuilder.util.ArgumentBuilder.exists</a></div><div class="ttdeci">boolean exists(String argumentName)</div><div class="ttdef"><b>Definition:</b> ArgumentBuilder.java:138</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -382,11 +390,11 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>a static constructor to save folks from having to do a new</p>
+<p>A static constructor to save folks from having to do a new</p>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> instance </dd></dl>
-<div class="fragment"><div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                                                {</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> ArgumentBuilder();</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;                                                {</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> ArgumentBuilder();</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -421,21 +429,21 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>add an argument</p>
+<p>Adds an argument.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">argumentName</td><td>variable name </td></tr>
-    <tr><td class="paramname">object</td><td>variable to set </td></tr>
+    <tr><td class="paramname">@code</td><td>argumentName  The variable name. </td></tr>
+    <tr><td class="paramname">@code</td><td>object  The variable to set. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>updated <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> instance </dd></dl>
-<div class="fragment"><div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                                                                   {</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        this.arguments.put(argumentName, object);</div>
+<dl class="section return"><dt>Returns</dt><dd>An updated <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> instance. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                                                                   {</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">this</span>;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        this.arguments.put(argumentName, object);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">this</span>;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -460,20 +468,20 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>remove an argument</p>
+<p>Removes an argument.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">argumentName</td><td>the variables name </td></tr>
+    <tr><td class="paramname">@code</td><td>argumentName  The name of the variable. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>updated <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> instance </dd></dl>
-<div class="fragment"><div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;                                                       {</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        this.arguments.remove(argumentName);</div>
+<dl class="section return"><dt>Returns</dt><dd>An updated <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> instance. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;                                                       {</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">this</span>;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    }</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        this.arguments.remove(argumentName);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">this</span>;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -483,7 +491,7 @@ Static Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

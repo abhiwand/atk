@@ -6,6 +6,5 @@ var searchData=
   ['basemapper',['BaseMapper',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1BaseMapper.html',1,'com::intel::hadoop::graphbuilder::pipeline::input']]],
   ['basemapper',['BaseMapper',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1BaseMapper.html#a74a58ecb8a8a5c240409bbda47d1ff80',1,'com::intel::hadoop::graphbuilder::pipeline::input::BaseMapper']]],
   ['basemapper_2ejava',['BaseMapper.java',['../BaseMapper_8java.html',1,'']]],
-  ['bidirectionalhandling',['BiDirectionalHandling',['../enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1GraphConstructionPipeline_1_1BiDirectionalHandling.html',1,'com::intel::hadoop::graphbuilder::pipeline::GraphConstructionPipeline']]],
-  ['booleanvalues',['booleanValues',['../classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList.html#aa6e2ca9acc7d5452895e42689f3db2f4',1,'com.intel.pig.udf.eval.EdgeList.booleanValues()'],['../classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1VertexList.html#a739756f8d085f046aef9f5d074216206',1,'com.intel.pig.udf.eval.VertexList.booleanValues()']]]
+  ['bidirectionalhandling',['BiDirectionalHandling',['../enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1GraphConstructionPipeline_1_1BiDirectionalHandling.html',1,'com::intel::hadoop::graphbuilder::pipeline::GraphConstructionPipeline']]]
 ];

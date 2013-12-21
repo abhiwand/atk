@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -99,30 +99,30 @@ Static Public Member Functions</h2></td></tr>
 <tr class="separator:ad9e5397a5ab4a9a14dc869b60d71df3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Generate a graph from rows of a big table, store in a graph database. </p>
+<div class="textblock"><p>Generates a graph from rows of a big table, store in a graph database. </p>
 <ul>
 <li>
-At present, only Hbase is supported for the big table </li>
+We support only Hbase for the big table. </li>
 <li>
-At present, only Titan is supported for the graph database </li>
+We support only Titan for the graph database. </li>
 </ul>
 <p>Path Arguments: </p>
 <ul>
 <li>
-<code>-t</code> specifies the HBase table from which to read </li>
+The <code>-t</code> option specifies the HBase table from which to read. </li>
 <li>
-<code>-conf</code> specifies configuration file </li>
+The <code>-conf</code> option specifies configuration file. </li>
 <li>
-<code>-a</code> an option that tells Titan it can append the newly generated graph to an existing one in the same table. Default behavior is to abort if you try to use an existing Titan table name </li>
+The <code>-a</code> option tells Titan it can append the newly generated graph to an existing one in the same table. The default behavior is to abort if you try to use an existing Titan table name. </li>
 </ul>
-<p>The Titan table name is specified in the configuration file in the property <code>graphbuilder.titan.storage_tablename</code> </p>
-<p>TO SPECIFY EDGES: Edges are specified by a sequence of "edge rules" following the flag <code>-e</code> (for undirected edges) or <code>-d</code> (for directed edges). The rules for edge construction are the same for both directed and undirected edges. The first three attributes in the edge rule are source vertex column, destination vertex column and the string label. </p>
+<p>Specify the Titan table name in the configuration file in the property: <code>graphbuilder.titan.storage_tablename</code> </p>
+<p>TO SPECIFY EDGES: Specify the edges with a sequence of "edge rules" following the <code>-e</code> flag (for undirected edges) or <code>-d</code> flag (for directed edges). The rules for edge construction are the same for both directed and undirected edges. The first three attributes in the edge rule are the source vertex column, the destination vertex column, and the string label.</p>
 <p><code> -e src_col,dest_col&gt;,label,edge_property_col1,...edge_property_coln </code> </p>
 <p><code> -d src_col,dest_col&gt;,label,edge_property_col1,...edge_property_coln </code></p>
 <p>TO SPECIFY VERTICES: The first attribute in the string is the vertex ID column. Subsequent attributes denote vertex properties and are separated from the first by an equals sign:</p>
 <p><code> -v vertex_id_column=vertex_prop1_column,... vertex_propn_column </code> </p>
 <p>or in the case there are no properties associated with the vertex id: <code> vertex_id_column </code> </p>
-<p>The option <code>-F</code> (for "flatten lists") specifies that when a cell containing a JSon list is read as a vertex ID, it is to be expanded into one vertex for each entry in the list. This applies to the source and destination columns for edges as well. It does not apply to properties. </p>
+<p>The <code>-F</code> option (for "flatten lists") specifies that when a cell containing a JSon list is read as a vertex ID, it is to be expanded into one vertex for each entry in the list. This applies to the source and destination columns for edges as well. It does not apply to properties. </p>
 <p>Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices. (The declaration is implicit, but the vertices really end up in the graph database.) </p>
 <p>EXAMPLES: </p>
 <p><code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age" -d "cf:name,cf:dept,worksAt,cf:seniority"</code> </p>
@@ -131,31 +131,31 @@ At present, only Titan is supported for the graph database </li>
 <ul>
 <li>
 <div class="fragment"><div class="line">String </div>
-</div><!-- fragment --> selects String datatype for the key's values &lt;default value&gt;=""&gt; </li>
+</div><!-- fragment --> selects the String datatype for the key's values &lt;default value&gt;=""&gt;. </li>
 <li>
 <div class="fragment"><div class="line">Float </div>
-</div><!-- fragment --> selects Float datatype for the key's values </li>
+</div><!-- fragment --> selects the Float datatype for the key's values. </li>
 <li>
 <div class="fragment"><div class="line">Double </div>
-</div><!-- fragment --> selects Double datatype for the key's values </li>
+</div><!-- fragment --> selects the Double datatype for the key's values. </li>
 <li>
 <div class="fragment"><div class="line">Integer </div>
-</div><!-- fragment --> selects Integer datatype for the key's values </li>
+</div><!-- fragment --> selects the Integer datatype for the key's values. </li>
 <li>
 <div class="fragment"><div class="line">Long </div>
-</div><!-- fragment --> selects Long datatype for the key's value </li>
+</div><!-- fragment --> selects the Long datatype for the key's value. </li>
 <li>
 <div class="fragment"><div class="line">E </div>
-</div><!-- fragment --> marks the key to be used as an edge index </li>
+</div><!-- fragment --> marks the key to be used as an edge index. </li>
 <li>
 <div class="fragment"><div class="line">V </div>
-</div><!-- fragment --> marks the kye to be used as a vertex index (edge and vertex indexing are not exclusive) </li>
+</div><!-- fragment --> marks the key to be used as a vertex index (edge and vertex indexing are not exclusive). </li>
 <li>
 <div class="fragment"><div class="line">U </div>
-</div><!-- fragment --> marks the key as taking values unique to each vertex </li>
+</div><!-- fragment --> marks the key as taking values unique to each vertex. </li>
 <li>
 <div class="fragment"><div class="line">NU </div>
-</div><!-- fragment --> marks the key as taking values that are not necessarily unique to each vertex </li>
+</div><!-- fragment --> marks the key as taking values that are not necessarily unique to each vertex. </li>
 </ul>
 <p>EXAMPLE: <code>-keys cf:name;V;U,cf:tenure:E;V;Integer</code> </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
@@ -180,10 +180,10 @@ At present, only Titan is supported for the graph database </li>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Main method for feature table to graph database construction</p>
+<p>The main method for feature table to graph database construction.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">args</td><td>Command line arguments </td></tr>
+    <tr><td class="paramname">args</td><td>Command line arguments. </td></tr>
   </table>
   </dd>
 </dl>
@@ -228,7 +228,7 @@ At present, only Titan is supported for the graph database </li>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

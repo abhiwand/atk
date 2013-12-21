@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -146,52 +146,52 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;                                                       {</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        <span class="keywordflow">if</span> (input == null || input.size() == 0) {</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            warn(<span class="stringliteral">&quot;Input tuple is null or empty&quot;</span>, PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        }</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        String inString = (String) input.get(0);</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        String query = (String) input.get(1);</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        Object queryResult = null;</div>
+<div class="fragment"><div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                                                       {</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="keywordflow">if</span> (input == null || input.size() == 0) {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            warn(<span class="stringliteral">&quot;Input tuple is null or empty&quot;</span>, PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        }</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        String inString = (String) input.get(0);</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        String query = (String) input.get(1);</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            queryResult = with(inString).get(query);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        } <span class="keywordflow">catch</span> (IllegalArgumentException e) {</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            warn(<span class="stringliteral">&quot;Failed to process input; error - &quot;</span> + e.getMessage(),</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;                    PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        }</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="keywordflow">if</span> (queryResult == null) {</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (queryResult instanceof List) {</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            List result = (List) queryResult;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;            <span class="comment">/*</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">             * restrict the query expression to return a single primitive value</span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">             */</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <span class="keywordflow">if</span> (result.size() == 1) {</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                Object o = result.get(0);</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                <span class="keywordflow">return</span> String.valueOf(o);</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;            } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                String err = <span class="stringliteral">&quot;The query returned multiple results, it has to return a single value.&quot;</span>;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;                warn(err, PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                <span class="keywordflow">throw</span> <span class="keyword">new</span> IOException(<span class="keyword">new</span> GBUdfException(err));</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            }</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            <span class="comment">/* for other data types try to convert the output to String */</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            String result = <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;                result = String.valueOf(queryResult);</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            } <span class="keywordflow">catch</span> (Throwable t) {</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                warn(<span class="stringliteral">&quot;Error converting query output to String.&quot;</span>, PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;            }</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;            <span class="keywordflow">return</span> result;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        }</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    }</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        Object queryResult = null;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;            queryResult = with(inString).get(query);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        } <span class="keywordflow">catch</span> (IllegalArgumentException e) {</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;            warn(<span class="stringliteral">&quot;Failed to process input; error - &quot;</span> + e.getMessage(),</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                    PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        }</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keywordflow">if</span> (queryResult == null) {</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (queryResult instanceof List) {</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;            List result = (List) queryResult;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            <span class="comment">/*</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">             * restrict the query expression to return a single primitive value</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">             */</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            <span class="keywordflow">if</span> (result.size() == 1) {</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                Object o = result.get(0);</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;                <span class="keywordflow">return</span> String.valueOf(o);</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;                String err = <span class="stringliteral">&quot;The query returned multiple results, it has to return a single value.&quot;</span>;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                warn(err, PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                <span class="keywordflow">throw</span> <span class="keyword">new</span> IOException(<span class="keyword">new</span> GBUdfException(err));</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;            }</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            <span class="comment">/* for other data types try to convert the output to String */</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;            String result = <span class="stringliteral">&quot;&quot;</span>;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                result = String.valueOf(queryResult);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;            } <span class="keywordflow">catch</span> (Throwable t) {</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;                warn(<span class="stringliteral">&quot;Error converting query output to String.&quot;</span>, PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            }</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            <span class="keywordflow">return</span> result;</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        }</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -217,9 +217,9 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1ExtractJSONField.html" title="ExtractJSONField UDF extracts fields from (potentially complex &amp; nested) JSON data with JSONPath expr...">ExtractJSONField</a> UDF returns an extracted JSON field, which is of type chararray </p>
-<div class="fragment"><div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                                             {</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(null, DataType.CHARARRAY));</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                                             {</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(null, DataType.CHARARRAY));</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -229,7 +229,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:04 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

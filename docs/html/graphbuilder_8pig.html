@@ -67,7 +67,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -212,20 +212,20 @@ intel pig udf eval&#160;</td><td class="memItemRight" valign="bottom"><a class="
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                                                                                                        {</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    -- load an empty relation that will be used in the MAPREDUCE <span class="keyword">operator</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    dummy = LOAD <span class="stringliteral">&#39;/tmp/empty&#39;</span> USING TextLoader() AS (line:chararray);</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    -- we do a dummy STORE/LOAD below as the MAPREDUCE operator </div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    -- requires a STORE and then a LOAD operation</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    </div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    stored_graph = MAPREDUCE &#39;target/graphbuilder-2.0-alpha-with-deps.jar&#39; </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;            STORE dummy INTO &#39;/tmp/tmp_store_1&#39;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            LOAD &#39;/tmp/empty&#39; USING TextLoader() AS (line:chararray) </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;            `com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB -conf $config_file --tablename $input_hbase_table_name --vertices $vertex_rule --edges $edge_rule $other_args`;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            </div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    STORE stored_graph INTO &#39;/tmp/tmp_store_2&#39;;</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;};</div>
+<div class="fragment"><div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                                                                                                        {</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    -- load an empty relation that will be used in the MAPREDUCE <span class="keyword">operator</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    dummy = LOAD <span class="stringliteral">&#39;/tmp/empty&#39;</span> USING TextLoader() AS (line:chararray);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    -- we do a dummy STORE/LOAD below as the MAPREDUCE operator </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    -- requires a STORE and then a LOAD operation</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    stored_graph = MAPREDUCE &#39;target/graphbuilder-2.0-alpha-with-deps.jar&#39; </div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;            STORE dummy INTO &#39;/tmp/tmp_store_1&#39;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;            LOAD &#39;/tmp/empty&#39; USING TextLoader() AS (line:chararray) </div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            `com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB -conf $config_file --tablename $input_hbase_table_name --vertices $vertex_rule $edge_rule $other_args`;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    STORE stored_graph INTO &#39;/tmp/tmp_store_2&#39;;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -242,7 +242,7 @@ intel pig udf eval&#160;</td><td class="memItemRight" valign="bottom"><a class="
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Remove duplicate property graphelements from a stream.</p>
+<p>Remove duplicates from a given relation of property graph elements.</p>
 <ul>
 <li>
 Vertices with the same IDs are treated as equal </li>
@@ -253,17 +253,17 @@ Property lists are merged between duplicates, with conflicts resolved arbitraril
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">inPropGraph</td><td></td></tr>
+    <tr><td class="paramname">inPropGraph</td><td>relation of property graph elements to remove the duplicates from </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;                                                                  {</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  DEFINE GetPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;  labeled = FOREACH $inPropGraph GENERATE (GetPropGraphEltID(*)), $0;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;  grouped = GROUP labeled by $0;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  DEFINE Merge com.intel.pig.udf.eval.MergeDuplicateGraphElements;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  $outPropGraph = FOREACH grouped GENERATE FLATTEN(Merge(*));</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;};</div>
+<div class="fragment"><div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                                                                  {</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  DEFINE GetPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;  labeled = FOREACH $inPropGraph GENERATE (GetPropGraphEltID(*)), $0;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;  grouped = GROUP labeled BY $0;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;  DEFINE Merge com.intel.pig.udf.eval.MergeDuplicateGraphElements;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;  $outPropGraph = FOREACH grouped GENERATE FLATTEN(Merge(*));</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;};</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -285,7 +285,7 @@ Property lists are merged between duplicates, with conflicts resolved arbitraril
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:02 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

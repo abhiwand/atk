@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -148,9 +148,9 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                                    {</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        this.rdfNamespace = rdfNamespace;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                                    {</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        this.rdfNamespace = rdfNamespace;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -176,37 +176,35 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;                                                        {</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        DataBag rdfBag = DefaultBagFactory.getInstance().newDefaultBag();</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        SerializedGraphElement e = (SerializedGraphElement) input.get(0);</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keywordflow">if</span> (e == null) {</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        }</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        Resource resource = null;</div>
+<div class="fragment"><div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;                                                        {</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        DataBag rdfBag = bagFactory.newDefaultBag();</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        SerializedGraphElement e = (SerializedGraphElement) input.get(0);</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keywordflow">if</span> (e == null) {</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        }</div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        GraphElement graphElement = e.graphElement();</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        Resource resource = null;</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="keywordflow">if</span> (graphElement == null) {</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        }</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <span class="keywordflow">if</span> (graphElement.isEdge()) {</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        GraphElement graphElement = e.graphElement();</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="keywordflow">if</span> (graphElement == null) {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        }</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            <span class="comment">// create a Resource from the edge</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            resource = RDFUtils.createResourceFromEdge(rdfNamespace,</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                    graphElement.getSrc().toString(), graphElement.getDst()</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                            .toString(), graphElement.getLabel().toString(),</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                    graphElement.getProperties());</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (graphElement.isVertex()) {</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            <span class="comment">// create a Resource from the vertex</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            resource = RDFUtils.createResourceFromVertex(rdfNamespace,</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;                    graphElement.getId().toString(),</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                    graphElement.getProperties());</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">if</span> (graphElement.isEdge()) {</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            <span class="comment">// create a Resource from the edge</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;            resource = RDFUtils.createResourceFromEdge(rdfNamespace,</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                    (Edge) graphElement);</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;        } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (graphElement.isVertex()) {</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            <span class="comment">// create a Resource from the vertex</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;            resource = RDFUtils.createResourceFromVertex(rdfNamespace,</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                    (Vertex) graphElement);</div>
 <div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        }</div>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        <span class="comment">/* create the RDF statements from the model */</span></div>
@@ -270,7 +268,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:04 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

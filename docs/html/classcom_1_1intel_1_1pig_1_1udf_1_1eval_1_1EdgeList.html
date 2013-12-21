@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -87,7 +87,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-static-attribs">Static Public Attributes</a> &#124;
 <a href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">com.intel.pig.udf.eval.EdgeList Class Reference</div>  </div>
@@ -110,11 +109,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aefea5fdb199fe580dfff3ec293f6772f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06b94faa58d2ba7bb1bd129a0a238d61"><td class="memItemLeft" align="right" valign="top">Schema&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList.html#a06b94faa58d2ba7bb1bd129a0a238d61">outputSchema</a> (Schema input)</td></tr>
 <tr class="separator:a06b94faa58d2ba7bb1bd129a0a238d61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
-Static Public Attributes</h2></td></tr>
-<tr class="memitem:aa6e2ca9acc7d5452895e42689f3db2f4"><td class="memItemLeft" align="right" valign="top">static final String[]&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList.html#aa6e2ca9acc7d5452895e42689f3db2f4">booleanValues</a></td></tr>
-<tr class="separator:aa6e2ca9acc7d5452895e42689f3db2f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList.html">EdgeList</a> UDF intakes property graph elements and spits out edge list elements which are tuples of (edge source vertex id, edge target vertex id, label), for example, (Employee001, Employee002, worksWith) If the constructor parameter is set to "TRUE", "true" or "1", the edge list element also contains edge properties returned as key value pair, e.g. (Employee001, Employee002, worksWith, workedFor:11yrs) </p>
@@ -149,7 +143,7 @@ Static Public Attributes</h2></td></tr>
 </dl>
 <div class="fragment"><div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                                            {</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">if</span> (!Arrays.asList(<a class="code" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList.html#aa6e2ca9acc7d5452895e42689f3db2f4">booleanValues</a>).contains(printProperties)) {</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">if</span> (!Arrays.asList(booleanValues).contains(printProperties)) {</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> IllegalArgumentException(</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                    printProperties + <span class="stringliteral">&quot; is not a valid argument.&quot;</span> +</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                    <span class="stringliteral">&quot;Use &#39;0&#39;, &#39;1&#39;, &#39;TRUE&#39;, &#39;true&#39;, &#39;FALSE&#39; or &#39;false&#39;)&quot;</span>);</div>
@@ -164,7 +158,6 @@ Static Public Attributes</h2></td></tr>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;            this.printProperties = <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        }</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList_html_aa6e2ca9acc7d5452895e42689f3db2f4"><div class="ttname"><a href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList.html#aa6e2ca9acc7d5452895e42689f3db2f4">com.intel.pig.udf.eval.EdgeList.booleanValues</a></div><div class="ttdeci">static final String[] booleanValues</div><div class="ttdef"><b>Definition:</b> EdgeList.java:49</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -249,36 +242,13 @@ Static Public Attributes</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="aa6e2ca9acc7d5452895e42689f3db2f4"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">final String [] com.intel.pig.udf.eval.EdgeList.booleanValues</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">=</div>
-<div class="line">            <span class="keyword">new</span> String [] {<span class="stringliteral">&quot;0&quot;</span>, <span class="stringliteral">&quot;1&quot;</span>, <span class="stringliteral">&quot;TRUE&quot;</span>, <span class="stringliteral">&quot;true&quot;</span>, <span class="stringliteral">&quot;FALSE&quot;</span>, <span class="stringliteral">&quot;false&quot;</span>}</div>
-</div><!-- fragment -->
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>src/main/java/com/intel/pig/udf/eval/<a class="el" href="EdgeList_8java.html">EdgeList.java</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:04 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

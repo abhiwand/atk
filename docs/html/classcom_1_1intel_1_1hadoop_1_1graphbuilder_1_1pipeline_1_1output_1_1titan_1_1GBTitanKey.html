@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -146,7 +146,7 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Construct a new Titan key from a string name and set other fields to default values.</p>
+<p>Constructs a new Titan key from a string name and sets the other fields to the default values. </p>
 <p>Default values: </p>
 <ul>
 <li>
@@ -168,7 +168,7 @@ Public Member Functions</h2></td></tr>
 </ul>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">name</td><td>name of the property being associated with this Titan key </td></tr>
+    <tr><td class="paramname">@code</td><td>name  The name of the property being associated with this Titan key. </td></tr>
   </table>
   </dd>
 </dl>
@@ -232,26 +232,26 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Construct a new Titan key with full specification of all fields - no default values will be provided. </p>
+<p>Constructs a new Titan key with full specification of all fields - no default values will be provided. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">dataType</td><td></td></tr>
-    <tr><td class="paramname">isEdgeIndex</td><td></td></tr>
-    <tr><td class="paramname">isVertexIndex</td><td></td></tr>
-    <tr><td class="paramname">isUnique</td><td></td></tr>
+    <tr><td class="paramname">@code</td><td>dataType  </td></tr>
+    <tr><td class="paramname">@code</td><td>isEdgeIndex  </td></tr>
+    <tr><td class="paramname">@code</td><td>isVertexIndex  </td></tr>
+    <tr><td class="paramname">@code</td><td>isUnique  </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;                                                                                                                    {</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        this.name          = name;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        this.dataType      = dataType;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        this.isEdgeIndex   = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">isEdgeIndex</a>;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        this.isVertexIndex = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">isVertexIndex</a>;</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        this.isUnique      = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">isUnique</a>;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a3a4a9676b07e391144a0e6e5565df8a5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isVertexIndex</a></div><div class="ttdeci">boolean isVertexIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:123</div></div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_acf64076e0a01ad72ba6431aebbfc95b5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isEdgeIndex</a></div><div class="ttdeci">boolean isEdgeIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:107</div></div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a8ba978ab2c6dfbef6c9e8727c909e695"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isUnique</a></div><div class="ttdeci">boolean isUnique()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:140</div></div>
+<div class="fragment"><div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                                                                                                                    {</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        this.name          = name;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        this.dataType      = dataType;</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        this.isEdgeIndex   = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">isEdgeIndex</a>;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        this.isVertexIndex = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">isVertexIndex</a>;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        this.isUnique      = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">isUnique</a>;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a3a4a9676b07e391144a0e6e5565df8a5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isVertexIndex</a></div><div class="ttdeci">boolean isVertexIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:124</div></div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_acf64076e0a01ad72ba6431aebbfc95b5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isEdgeIndex</a></div><div class="ttdeci">boolean isEdgeIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:108</div></div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a8ba978ab2c6dfbef6c9e8727c909e695"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isUnique</a></div><div class="ttdeci">boolean isUnique()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:141</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -276,12 +276,12 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the data type of the Titan key. </p>
-<dl class="section return"><dt>Returns</dt><dd>the key's datatype, a<div class="fragment"><div class="line">Class&lt;?&gt; </div>
-</div><!-- fragment --> object </dd></dl>
-<div class="fragment"><div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;                                  {</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keywordflow">return</span> dataType;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    }</div>
+<p>Gets the data type of the Titan key. </p>
+<dl class="section return"><dt>Returns</dt><dd>The key's datatype, a<div class="fragment"><div class="line">Class&lt;?&gt; </div>
+</div><!-- fragment --> object. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;                                  {</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keywordflow">return</span> dataType;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -305,11 +305,11 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the name of the Titan key. </p>
-<dl class="section return"><dt>Returns</dt><dd>name of the Titan key. </dd></dl>
-<div class="fragment"><div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;                            {</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        <span class="keywordflow">return</span> name;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    }</div>
+<p>Gets the name of the Titan key. </p>
+<dl class="section return"><dt>Returns</dt><dd>The name of the Titan key. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                            {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="keywordflow">return</span> name;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -333,13 +333,13 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Is this key used for edge indexing? </p>
+<p>Checks to see if this key is used for edge indexing. </p>
 <dl class="section return"><dt>Returns</dt><dd><div class="fragment"><div class="line"><span class="keyword">true</span> </div>
-</div><!-- fragment --> iff the key is used for edge indexing </dd></dl>
-<div class="fragment"><div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;                                 {</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">isEdgeIndex</a>;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_acf64076e0a01ad72ba6431aebbfc95b5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isEdgeIndex</a></div><div class="ttdeci">boolean isEdgeIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:107</div></div>
+</div><!-- fragment --> If, and only if, the key is used for edge indexing. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;                                 {</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">isEdgeIndex</a>;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_acf64076e0a01ad72ba6431aebbfc95b5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isEdgeIndex</a></div><div class="ttdeci">boolean isEdgeIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:108</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -363,14 +363,14 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Does this key take values that are unique per vertex? </p>
-<p>I.e. no two vertices can share a non-null value for this key</p>
+<p>Checks if this key takes values that are unique per vertex. </p>
+<p>That is, no two vertices can share a non-null value for this key.</p>
 <dl class="section return"><dt>Returns</dt><dd><div class="fragment"><div class="line"><span class="keyword">true</span> </div>
-</div><!-- fragment --> if the key takes values that are unique per vertex </dd></dl>
-<div class="fragment"><div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;                              {</div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">isUnique</a>;</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a8ba978ab2c6dfbef6c9e8727c909e695"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isUnique</a></div><div class="ttdeci">boolean isUnique()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:140</div></div>
+</div><!-- fragment --> If the key takes values that are unique per vertex. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;                              {</div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">isUnique</a>;</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a8ba978ab2c6dfbef6c9e8727c909e695"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isUnique</a></div><div class="ttdeci">boolean isUnique()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:141</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -394,13 +394,13 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Is this key to be used for vertex indexing? </p>
+<p>Checks to see if this key to be used for vertex indexing. </p>
 <dl class="section return"><dt>Returns</dt><dd><div class="fragment"><div class="line"><span class="keyword">true</span> </div>
-</div><!-- fragment --> iff the key is to be used for vertex indexing </dd></dl>
-<div class="fragment"><div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                                   {</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">isVertexIndex</a>;</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a3a4a9676b07e391144a0e6e5565df8a5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isVertexIndex</a></div><div class="ttdeci">boolean isVertexIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:123</div></div>
+</div><!-- fragment --> If, and only if, the key is to be used for vertex indexing. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;                                   {</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">isVertexIndex</a>;</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a3a4a9676b07e391144a0e6e5565df8a5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isVertexIndex</a></div><div class="ttdeci">boolean isVertexIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:124</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -425,17 +425,17 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set the data type of the Titan key. </p>
+<p>Sets the data type of the Titan key. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">dataType</td><td>the key's datatype, a<div class="fragment"><div class="line">Class&lt;?&gt; </div>
-</div><!-- fragment --> object </td></tr>
+    <tr><td class="paramname">@code</td><td>dataType  The key's datatype, a<div class="fragment"><div class="line">Class&lt;?&gt; </div>
+</div><!-- fragment --> object. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                                                {</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        this.dataType = dataType;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                                                {</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        this.dataType = dataType;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -460,17 +460,18 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set if this key is to be used for edge indexing. </p>
+<p>Sets if this key is to be used for edge indexing. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">isEdgeIndex@code</td><td>true  iff the key is to be used for edge indexing </td></tr>
+    <tr><td class="paramname">@code</td><td>isEdgeIndex <div class="fragment"><div class="line"><span class="keyword">true</span> </div>
+</div><!-- fragment --> If, and only if, the key is to be used for edge indexing. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                                                    {</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        this.isEdgeIndex = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">isEdgeIndex</a>;</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_acf64076e0a01ad72ba6431aebbfc95b5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isEdgeIndex</a></div><div class="ttdeci">boolean isEdgeIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:107</div></div>
+<div class="fragment"><div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;                                                    {</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        this.isEdgeIndex = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">isEdgeIndex</a>;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_acf64076e0a01ad72ba6431aebbfc95b5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#acf64076e0a01ad72ba6431aebbfc95b5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isEdgeIndex</a></div><div class="ttdeci">boolean isEdgeIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:108</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -495,17 +496,18 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set if this key is to take only values that are uniquely assigned to vertices. </p>
+<p>Sets if this key is to take only values that are uniquely assigned to vertices. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">isUnique@code</td><td>true  if the key takes values that are unique per vertex </td></tr>
+    <tr><td class="paramname">@code</td><td>isUnique <div class="fragment"><div class="line"><span class="keyword">true</span> </div>
+</div><!-- fragment --> If the key takes values that are unique per vertex. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;                                              {</div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        this.isUnique = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">isUnique</a>;</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a8ba978ab2c6dfbef6c9e8727c909e695"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isUnique</a></div><div class="ttdeci">boolean isUnique()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:140</div></div>
+<div class="fragment"><div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;                                              {</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        this.isUnique = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">isUnique</a>;</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a8ba978ab2c6dfbef6c9e8727c909e695"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a8ba978ab2c6dfbef6c9e8727c909e695">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isUnique</a></div><div class="ttdeci">boolean isUnique()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:141</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -530,17 +532,18 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set if this key is to be used for vertex indexing. </p>
+<p>Sets if this key is to be used for vertex indexing. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">isVertexIndex@code</td><td>true  iff the key is to be used for vertex indexing </td></tr>
+    <tr><td class="paramname">@code</td><td>isVertexIndex <div class="fragment"><div class="line"><span class="keyword">true</span> </div>
+</div><!-- fragment --> If, and only if, the key is to be used for vertex indexing. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                                                        {</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;        this.isVertexIndex = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">isVertexIndex</a>;</div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a3a4a9676b07e391144a0e6e5565df8a5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isVertexIndex</a></div><div class="ttdeci">boolean isVertexIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:123</div></div>
+<div class="fragment"><div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;                                                        {</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;        this.isVertexIndex = <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">isVertexIndex</a>;</div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey_html_a3a4a9676b07e391144a0e6e5565df8a5"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html#a3a4a9676b07e391144a0e6e5565df8a5">com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey.isVertexIndex</a></div><div class="ttdeci">boolean isVertexIndex()</div><div class="ttdef"><b>Definition:</b> GBTitanKey.java:124</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -565,16 +568,16 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set the name of the Titan key. </p>
+<p>Sets the name of the Titan key. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">name</td><td></td></tr>
+    <tr><td class="paramname">@code</td><td>name  The name of the Titan key to set. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;                                     {</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        this.name = name;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                                     {</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        this.name = name;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -584,7 +587,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

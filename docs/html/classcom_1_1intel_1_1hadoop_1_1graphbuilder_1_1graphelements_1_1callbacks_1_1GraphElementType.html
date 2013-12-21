@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -115,7 +115,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad74660db8b175af76569d16c463813e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>return the type of the graph element. Very use full when you don't care if it's an edge or vertex you just want a type</p>
+<div class="textblock"><p>Returns the type of the graph element. Very useful when you just want a type, and you don't care if it's an edge or vertex.</p>
 <dl class="section see"><dt>See Also</dt><dd>com.intel.hadoop.graphbuilder.graphelements.GraphElement </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a5f74721710761ff6d0d026c2bd0fe719"></a>
@@ -149,18 +149,20 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>returns the edge enum type. Although the graphElement and arguments are not used here they must be part of the method definition to satisfy the implementation.</p>
+<p>Returns the edge's enum type. Although the</p>
+<div class="fragment"><div class="line">graphElement </div>
+</div><!-- fragment --><p> and arguments are not used here, they must be part of the method definition to satisfy the implementation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">graphElement</td><td>graph element to perform operations on </td></tr>
-    <tr><td class="paramname">arguments</td><td>any arguments that might have been passed </td></tr>
+    <tr><td class="paramname">@code</td><td>graphElement  The graph element to perform operations on. </td></tr>
+    <tr><td class="paramname">@code</td><td>arguments  Any arguments that might have been passed. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Edge enum type </dd></dl>
-<div class="fragment"><div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;                                                                                {</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType.html#a9875c8511b96ca6cb4dfb47c6df29ca5">GraphType.EDGE</a>;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    }</div>
+<dl class="section return"><dt>Returns</dt><dd>The edge's enum type. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;                                                                                {</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType.html#a9875c8511b96ca6cb4dfb47c6df29ca5">GraphType.EDGE</a>;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    }</div>
 <div class="ttc" id="enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType_html_a9875c8511b96ca6cb4dfb47c6df29ca5"><div class="ttname"><a href="enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType.html#a9875c8511b96ca6cb4dfb47c6df29ca5">com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementType.GraphType.EDGE</a></div><div class="ttdeci">EDGE</div><div class="ttdef"><b>Definition:</b> GraphElementType.java:32</div></div>
 </div><!-- fragment -->
 </div>
@@ -196,18 +198,22 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>returns the vertex enum type. Although the graphElement and arguments are not used here they must be part of the method definition to satisfy the implementation.</p>
+<p>Returns the vertex enum type. Although the</p>
+<div class="fragment"><div class="line">graphElement </div>
+</div><!-- fragment --><p> and </p>
+<div class="fragment"><div class="line">arguments </div>
+</div><!-- fragment --><p> are not used here, they must be part of the method definition to satisfy the implementation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">graphElement</td><td>graph element to perform operations on </td></tr>
-    <tr><td class="paramname">arguments</td><td>any arguments that might have been passed </td></tr>
+    <tr><td class="paramname">@code</td><td>graphElement  The graph element to perform operations on. </td></tr>
+    <tr><td class="paramname">@code</td><td>arguments  Any arguments that might have been passed. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Vertex enum type </dd></dl>
-<div class="fragment"><div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                                                                                  {</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType.html#a0f1f92beb34e52190eeae01942100607">GraphType.VERTEX</a>;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    }</div>
+<dl class="section return"><dt>Returns</dt><dd>The vertex's enum type. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;                                                                                  {</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType.html#a0f1f92beb34e52190eeae01942100607">GraphType.VERTEX</a>;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    }</div>
 <div class="ttc" id="enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType_html_a0f1f92beb34e52190eeae01942100607"><div class="ttname"><a href="enumcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1callbacks_1_1GraphElementType_1_1GraphType.html#a0f1f92beb34e52190eeae01942100607">com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementType.GraphType.VERTEX</a></div><div class="ttdeci">VERTEX</div><div class="ttdef"><b>Definition:</b> GraphElementType.java:32</div></div>
 </div><!-- fragment -->
 </div>
@@ -218,7 +224,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:02 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.5"/>
-<title>GraphBuilder 2.0 (alpha): src/main/java/com/intel/hadoop/graphbuilder/pipeline/output/textgraph/TextGraphMR.java File Reference</title>
+<title>GraphBuilder 2.0 (alpha): src/main/java/com/intel/hadoop/graphbuilder/graphelements/VertexID.java File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -67,7 +67,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -78,7 +78,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_58e0a63a247d5488019612bcf41a540f.html">src</a></li><li class="navelem"><a class="el" href="dir_0b357515f8fbcc4ce05a58ba3b8ff111.html">main</a></li><li class="navelem"><a class="el" href="dir_f51fe8ea2771ba2be18fdfd3baabf039.html">java</a></li><li class="navelem"><a class="el" href="dir_3ffe2899a701ac5ab5d52a111a67832b.html">com</a></li><li class="navelem"><a class="el" href="dir_c001e756f1e8b38ec6321935944d89ad.html">intel</a></li><li class="navelem"><a class="el" href="dir_0ad4a0663202f65115e3395e164c9287.html">hadoop</a></li><li class="navelem"><a class="el" href="dir_3ea8a2d9b305322841f7ef74620a5c8c.html">graphbuilder</a></li><li class="navelem"><a class="el" href="dir_60208e53d40433f7d2019fffea86e32a.html">pipeline</a></li><li class="navelem"><a class="el" href="dir_9766cd39e204a0c43b5f8d627df6edc0.html">output</a></li><li class="navelem"><a class="el" href="dir_a247ad6d9dc2698813d7f6d0031f8e26.html">textgraph</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_58e0a63a247d5488019612bcf41a540f.html">src</a></li><li class="navelem"><a class="el" href="dir_0b357515f8fbcc4ce05a58ba3b8ff111.html">main</a></li><li class="navelem"><a class="el" href="dir_f51fe8ea2771ba2be18fdfd3baabf039.html">java</a></li><li class="navelem"><a class="el" href="dir_3ffe2899a701ac5ab5d52a111a67832b.html">com</a></li><li class="navelem"><a class="el" href="dir_c001e756f1e8b38ec6321935944d89ad.html">intel</a></li><li class="navelem"><a class="el" href="dir_0ad4a0663202f65115e3395e164c9287.html">hadoop</a></li><li class="navelem"><a class="el" href="dir_3ea8a2d9b305322841f7ef74620a5c8c.html">graphbuilder</a></li><li class="navelem"><a class="el" href="dir_0fe9b1785f7eb418f65c009155c145e2.html">graphelements</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -86,24 +86,24 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#namespaces">Packages</a>  </div>
   <div class="headertitle">
-<div class="title">TextGraphMR.java File Reference</div>  </div>
+<div class="title">VertexID.java File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1VertexID_3_01VidType_01extends_01WritableComparable_01_4.html">com.intel.hadoop.graphbuilder.graphelements.VertexID&lt; VidType extends WritableComparable &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Packages</h2></td></tr>
-<tr class="memitem:namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph"><td class="memItemLeft" align="right" valign="top">package &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph.html">com.intel.hadoop.graphbuilder.pipeline.output.textgraph</a></td></tr>
+<tr class="memitem:namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements"><td class="memItemLeft" align="right" valign="top">package &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements.html">com.intel.hadoop.graphbuilder.graphelements</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:02 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

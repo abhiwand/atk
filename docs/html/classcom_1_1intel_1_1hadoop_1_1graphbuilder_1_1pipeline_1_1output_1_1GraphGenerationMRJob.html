@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -98,8 +98,7 @@ Inheritance diagram for com.intel.hadoop.graphbuilder.pipeline.output.GraphGener
  <div class="center">
   <img src="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphGenerationMRJob.png" usemap="#com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob_map" alt=""/>
   <map id="com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob_map" name="com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob_map">
-<area href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html" alt="com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR" shape="rect" coords="0,56,414,80"/>
-<area href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html" alt="com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain" shape="rect" coords="424,56,838,80"/>
+<area href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html" alt="com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain" shape="rect" coords="0,56,414,80"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -113,16 +112,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa89f260827aad530b7c94d5882a88953"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d7d9566c1d7fbe5033352e387a03e56"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphGenerationMRJob.html#a0d7d9566c1d7fbe5033352e387a03e56">setUserOptions</a> (HashMap&lt; String, String &gt; userOpts)</td></tr>
 <tr class="separator:a0d7d9566c1d7fbe5033352e387a03e56"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a36d872b15d6dc3a2fc38460cade4f84b"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphGenerationMRJob.html#a36d872b15d6dc3a2fc38460cade4f84b">init</a> (<a class="el" href="interfacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1InputConfiguration.html">InputConfiguration</a> inputConfiguration, GraphBuildingRule graphBuildingRule)</td></tr>
+<tr class="memitem:a36d872b15d6dc3a2fc38460cade4f84b"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphGenerationMRJob.html#a36d872b15d6dc3a2fc38460cade4f84b">init</a> (<a class="el" href="interfacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1InputConfiguration.html">InputConfiguration</a> inputConfiguration, <a class="el" href="interfacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1tokenizer_1_1GraphBuildingRule.html">GraphBuildingRule</a> graphBuildingRule)</td></tr>
 <tr class="separator:a36d872b15d6dc3a2fc38460cade4f84b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade5b60bbaf9d0ac09fa48761517d7f35"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphGenerationMRJob.html#ade5b60bbaf9d0ac09fa48761517d7f35">run</a> (CommandLine cmd)  throws IOException, ClassNotFoundException, InterruptedException</td></tr>
 <tr class="separator:ade5b60bbaf9d0ac09fa48761517d7f35"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>These are the methods that the (chained) MR job(s) for generating a graph must provide. </p>
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR</a> </dd>
-<dd>
-<a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a> </dd></dl>
+<div class="textblock"><p>These are the methods that must be provided by the (chained) Map Reducer job(s) for generating a graph. </p>
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a> </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a36d872b15d6dc3a2fc38460cade4f84b"></a>
 <div class="memitem">
@@ -140,7 +137,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">GraphBuildingRule&#160;</td>
+          <td class="paramtype"><a class="el" href="interfacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1tokenizer_1_1GraphBuildingRule.html">GraphBuildingRule</a>&#160;</td>
           <td class="paramname"><em>graphBuildingRule</em>&#160;</td>
         </tr>
         <tr>
@@ -156,7 +153,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a759dfeed5b8b9ce4d3b7aec581d8997b">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html#ac94ec164886685edf13fec3da653d3f3">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR</a>.</p>
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a759dfeed5b8b9ce4d3b7aec581d8997b">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>.</p>
 
 </div>
 </div>
@@ -182,7 +179,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a82d81c91b33c094c06be0ceb714dccae">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html#a948bdf1ce0a064c86ad46d456a3c4b32">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR</a>.</p>
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a82d81c91b33c094c06be0ceb714dccae">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>.</p>
 
 </div>
 </div>
@@ -208,7 +205,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a700dc5277daa31b9219b6aa751e9ee15">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html#ab2014fa166cc1723bf8fd553214a805b">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR</a>.</p>
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a700dc5277daa31b9219b6aa751e9ee15">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>.</p>
 
 </div>
 </div>
@@ -234,7 +231,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a3dab61f332f3c1495ab8c076f7efdd5b">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html#a4f2e4f35b7d549640c9dd922c891b762">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR</a>.</p>
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a3dab61f332f3c1495ab8c076f7efdd5b">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>.</p>
 
 </div>
 </div>
@@ -260,7 +257,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a1ac073e706ca8a70c525c808a87e35f1">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html#af1edcf9304e152051c46c4bc935fe2ae">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR</a>.</p>
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#a1ac073e706ca8a70c525c808a87e35f1">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>.</p>
 
 </div>
 </div>
@@ -286,7 +283,7 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#af95e3d536c9401410db1b78539bd25c6">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphMR.html#ac05ca9ab84b3afd415d3dc98a025d2b9">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphMR</a>.</p>
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanWriterMRChain.html#af95e3d536c9401410db1b78539bd25c6">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanWriterMRChain</a>.</p>
 
 </div>
 </div>
@@ -296,7 +293,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

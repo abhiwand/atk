@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -158,33 +158,32 @@ com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement </dd></dl>
   </dd>
 </dl>
 <div class="fragment"><div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                                                      {</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        String objectId = (String) input.get(0);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        DataBag valueBag = (DataBag) input.get(1);</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) <span class="keyword">new</span> GBTupleFactory()</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                .newTuple(1);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        Iterator it = valueBag.iterator();</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <span class="comment">// the bag contains at least one element</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        SerializedGraphElement serializedGraphElement =</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;                graphElementFromGroupedBagEntry((Tuple) it.next());</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        GraphElement graphElement = serializedGraphElement.graphElement();</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        <span class="keywordflow">if</span> (graphElement == null) {</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;            <span class="keywordflow">return</span> null;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;        }</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keywordflow">while</span> (it.hasNext()){</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            Tuple t = (Tuple)it.next();</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            GraphElement dupGraphElement = graphElementFromGroupedBagEntry(t).graphElement();</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;            graphElement.getProperties().mergeProperties(dupGraphElement.getProperties());</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        }</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        outTuple.set(0, serializedGraphElement);</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        <span class="keywordflow">return</span> outTuple;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    }</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        DataBag valueBag = (DataBag) input.get(1);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) <span class="keyword">new</span> GBTupleFactory()</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;                .newTuple(1);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        Iterator it = valueBag.iterator();</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="comment">// the bag contains at least one element</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        SerializedGraphElement serializedGraphElement =</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;                graphElementFromGroupedBagEntry((Tuple) it.next());</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        GraphElement graphElement = serializedGraphElement.graphElement();</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        <span class="keywordflow">if</span> (graphElement == null) {</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;            warn(<span class="stringliteral">&quot;Null property graph element&quot;</span>, PigWarning.UDF_WARNING_1);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;            <span class="keywordflow">return</span> null;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        }</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="keywordflow">while</span> (it.hasNext()){</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;            Tuple t = (Tuple)it.next();</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;            GraphElement dupGraphElement = graphElementFromGroupedBagEntry(t).graphElement();</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;            graphElement.getProperties().mergeProperties(dupGraphElement.getProperties());</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        }</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        outTuple.set(0, serializedGraphElement);</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordflow">return</span> outTuple;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -217,12 +216,12 @@ com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement </dd></dl>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Schema for a property graph element packed into a unary tuple. </dd></dl>
-<div class="fragment"><div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;                                             {</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;        Schema pgeTuple = <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                <span class="stringliteral">&quot;property graph element (unary tuple)&quot;</span>, DataType.TUPLE));</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="keywordflow">return</span> pgeTuple;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;                                             {</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        Schema pgeTuple = <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                <span class="stringliteral">&quot;property graph element (unary tuple)&quot;</span>, DataType.TUPLE));</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        <span class="keywordflow">return</span> pgeTuple;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -232,7 +231,7 @@ com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement </dd></dl>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:04 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

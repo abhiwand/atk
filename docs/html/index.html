@@ -63,7 +63,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -78,11 +78,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h2>Overview</h2>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>NEED AN OVERVIEW Graph Builder 2.0 (alpha) is a library of <a href="http://pig.apache.org/">Apache Pig</a> UDFs (user defined functions) and macros to enable scalable graph ETL in the popular Pig Latin scripting language. GB lets users create graphs from structured, semi-structured and unstructured data. The library offloads many of the complexities of graph construction, such as creating property graph elements from raw data, deduplicate property graph elements, bulk loading a graph to a graph database, and serializing property graph elements in different formats such as edge and vertex list formats, and the <a href="http://www.w3.org/RDF/">RDF</a> format. </dd></dl>
+<p>Intel Graph Builder (alpha) 2.0 is a library of user defined functions (UDF's) and macros in <a href="http://pig.apache.org/">Apache Pig</a> to construct graphs in Hadoop(TM). The 2 .0-alpha version supports multi-relational graphs, or property graphs, in which both objects and relationships may be labeled with multiple properties and property values. Graphs can be constructed from structured, semi-structured, or unstructured data. In case of structured data, columns of HBase tables or fields in CSV/TSV files for example can be annotated as objects, relationships, or their properties. To do the same from nested XML and JSON we have provided an improved XMLLoader function (available in the Apache Piggy Bank repository) to parse XML files, an ExtractJSONField UDF to extract JSON Path matches from a JSON string and an RegexExtractAllMatches utility which extracts all text matches in a string.</p>
+<p>Once a graph is constructed the deduplication macro can be used to merge duplicate elements. These capabilities can easily be extended writing your own custom user defined function.</p>
+<p>Of course, there’s no point in building a graph if it can’t be queried, analyzed or visualized. So, we have introduced new bulk load and export methods. The LOAD_TITAN macro bulk loads the open source Titan distributed graph database via the Blueprints API so that the graphs can be explored using the Gremlin query language. In addition, we have extended Graph Builder to support the Resource Description Framework (<a href="http://www.w3.org/RDF/">RDF</a>) export format. RDF triples for property graph elements are formed using Apache Jena library. We only export graphs in the N-TRIPLES format. All the Jena RDF namespaces are accepted. Last, but not least this version of the Graph Builder library can also export simple edge (object) lists and vertex (relationship) lists. Graph visualization tools such as Gephi can be used with the edge list exports.</p>
 <h2>Release Notes</h2>
 <ul>
-<li>fixed bugs: ...</li>
-<li>new features on top of GB 1.0: ...</li>
+<li>Added the TableToTitanGraph Java MapReduce code to bulk load property graphs from HBase Tables to the open source Titan graph database.</li>
+<li>Removed ID Normalization and Partitioning.</li>
+<li>Removed the wordpage graph and the linkgraph tokenizer from the demoapps.</li>
 <li>Several UDFs for graph ETL and a macro for bulk loading the <a href="http://thinkaurelius.github.io/titan/">Titan graph database:</a><ul>
 <li><b>Raw Data Input</b> <ul>
 <li>
@@ -96,9 +99,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li><b>Graph Construction</b> <ul>
 <li>
 <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1CreatePropGraphElements.html">CreatePropGraphElements </a> Creates <a class="el" href="">PropertyGraphElements </a> from raw input given vertex and edge tokenization rules. </li>
-</ul>
-</li>
-<li><b>Filters</b> <ul>
 <li>
 <a class="el" href="graphbuilder_8pig.html">MERGE_DUPLICATE_ELEMENTS </a> Combine duplicate property graph elements into a single property graph element. Also see <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1MergeDuplicateGraphElements.html">MergeDuplicateGraphElements </a> </li>
 </ul>
@@ -144,7 +144,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:04 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

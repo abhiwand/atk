@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -115,7 +115,13 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a9b996289d2a4b5b8628e77fcede67b35"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Reads columns from an HTable and emits vertices and edges. Most of the magic has been moved to a <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1BaseMapper.html">BaseMapper</a> class that is also used by TextParsingMapper.</p>
+<div class="textblock"><p>Reads columns from an</p>
+<div class="fragment"><div class="line">HTable </div>
+</div><!-- fragment --><p> and emits vertices and edges. Most of the logic has been moved to a</p>
+<div class="fragment"><div class="line">BaseMapper </div>
+</div><!-- fragment --><p> class that is also used by </p>
+<div class="fragment"><div class="line">TextParsingMapper </div>
+</div><!-- fragment --><p> .</p>
 <dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1BaseMapper.html">com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper</a> </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a40ed97a6bc6b76c5fbab325970acc8a5"></a>
@@ -155,29 +161,31 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Maps the input of HTable rows and columns to vertices and edges. Any exception thrown by contex.write inside the base mapper class will be caught and logged as errors so we can continue to the next record.</p>
+<p>Maps the input of HTable rows and columns to vertices and edges. Any exception thrown by </p>
+<div class="fragment"><div class="line">contex.write </div>
+</div><!-- fragment --><p> inside the base mapper class will be caught and logged as errors so we can continue to the next record.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">row</td><td>The row key. </td></tr>
-    <tr><td class="paramname">columns</td><td>The columns of the row. </td></tr>
-    <tr><td class="paramname">context</td><td>The task context. </td></tr>
+    <tr><td class="paramname">@code</td><td>row  The row key. </td></tr>
+    <tr><td class="paramname">@code</td><td>columns  The columns of the row. </td></tr>
+    <tr><td class="paramname">@code</td><td>context  The task context. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                                                                                 {</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        context.getCounter(GBHTableConfiguration.Counters.HTABLE_ROWS_READ).increment(1);</div>
+<div class="fragment"><div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                                                                                 {</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        RecordTypeHBaseRow record = getRecordTypeHBaseRow(row, columns);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;        context.getCounter(GBHTableConfiguration.Counters.HTABLE_ROWS_READ).increment(1);</div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        baseMapper.getTokenizer().parse(record, context);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        RecordTypeHBaseRow record = getRecordTypeHBaseRow(row, columns);</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="comment">//the base mapper class will handle writing edges and vertices as well as exception handling</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        baseMapper.getTokenizer().parse(record, context);</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        baseMapper.writeEdges(context);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <span class="comment">//The base mapper class handles writing edges and vertices as well as exception handling.</span></div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        baseMapper.writeVertices(context);</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    }</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        baseMapper.writeEdges(context);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        baseMapper.writeVertices(context);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -202,9 +210,9 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                                                     {</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        this.baseMapper = baseMapper;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                                                     {</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;        this.baseMapper = baseMapper;</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -229,22 +237,30 @@ Protected Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Most of the code has been removed from setup and moved to the <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1BaseMapper.html">BaseMapper</a> class. This makes everything very simple, including exception handling. Any errors during setup will be caught by the <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1BaseMapper.html">BaseMapper</a> class and logged as fatal and a system.exit will be called.</p>
+<p>Most of the code has been removed from</p>
+<div class="fragment"><div class="line"><a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper.html#a9b996289d2a4b5b8628e77fcede67b35">setup</a> </div>
+</div><!-- fragment --><p> and moved to the </p>
+<div class="fragment"><div class="line">BaseMapper </div>
+</div><!-- fragment --><p> class. This makes everything less complex, including exception handling. Any errors during setup will be caught by the</p>
+<div class="fragment"><div class="line">BaseMapper </div>
+</div><!-- fragment --><p> class and logged as fatal and a</p>
+<div class="fragment"><div class="line">system.exit </div>
+</div><!-- fragment --><p> will be called.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">context</td><td>The mapper context. </td></tr>
+    <tr><td class="paramname">@code</td><td>context  The mapper context. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                                          {</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        Configuration conf = context.getConfiguration();</div>
+<div class="fragment"><div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;                                          {</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="comment">//this will initialize the tokenizer key function and map key and map values</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        Configuration conf = context.getConfiguration();</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper.html#ad5f729095d3fbfaa639e91275f8b5d38">setBaseMapper</a>(<span class="keyword">new</span> BaseMapper(context, conf, LOG));</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper_html_ad5f729095d3fbfaa639e91275f8b5d38"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper.html#ad5f729095d3fbfaa639e91275f8b5d38">com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper.setBaseMapper</a></div><div class="ttdeci">void setBaseMapper(BaseMapper baseMapper)</div><div class="ttdef"><b>Definition:</b> HBaseReaderMapper.java:87</div></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="comment">//Initializes the tokenizer key function and map key and map values.</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper.html#ad5f729095d3fbfaa639e91275f8b5d38">setBaseMapper</a>(<span class="keyword">new</span> BaseMapper(context, conf, LOG));</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper_html_ad5f729095d3fbfaa639e91275f8b5d38"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper.html#ad5f729095d3fbfaa639e91275f8b5d38">com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper.setBaseMapper</a></div><div class="ttdeci">void setBaseMapper(BaseMapper baseMapper)</div><div class="ttdef"><b>Definition:</b> HBaseReaderMapper.java:89</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -254,7 +270,7 @@ Protected Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:02 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

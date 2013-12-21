@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -120,12 +120,10 @@ Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The identifying information of an edge: Its source, its destination, and its label.</p>
-<p>It is used in the initial reducer of an</p>
+<p>This class is used in the initial reducer of an</p>
 <div class="fragment"><div class="line">GraphGenerationJob </div>
-</div><!-- fragment --><p> to detect and handle duplicate edges. Edges are considered duplicate if they have identical source, destination and label. Property maps are <em>not</em> used for purposes of comparison. </p>
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphReducer.html">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphReducer</a> </dd>
-<dd>
-<a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducer.html">com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducer</a> </dd></dl>
+</div><!-- fragment --><p> to detect and handle duplicate edges. Edges are considered duplicate if they have identical source, destination, and label. Property maps are <em>not</em> used for purposes of comparison. </p>
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducer.html">com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducer</a> </dd></dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a3055912083db09a60cd68c791bee2c92"></a>
 <div class="memitem">
@@ -169,15 +167,15 @@ Public Member Functions</h2></td></tr>
 </div><!-- fragment --><p> from parameters. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">src</td><td>The source vertex of the edge. </td></tr>
-    <tr><td class="paramname">dst</td><td>The destination vertex of the edge. </td></tr>
-    <tr><td class="paramname">label</td><td>The label of the edge. </td></tr>
+    <tr><td class="paramname">@code</td><td>src  The source vertex of the edge. </td></tr>
+    <tr><td class="paramname">@code</td><td>dst  The destination vertex of the edge. </td></tr>
+    <tr><td class="paramname">@code</td><td>label  The label of the edge. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;                                                        {</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        triple = <span class="keyword">new</span> Triple(src, dst, label);</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;                                                        {</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        triple = <span class="keyword">new</span> Triple(src, dst, label);</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -208,19 +206,19 @@ Public Member Functions</h2></td></tr>
 </div><!-- fragment --><p> whose components are the same objects as this one? </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">obj</td><td>Any object. </td></tr>
+    <tr><td class="paramname">@code</td><td>obj  Any object. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd></dd></dl>
-<div class="fragment"><div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;                                      {</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;        <span class="keywordflow">if</span> (obj instanceof <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">EdgeID</a>) {</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            EdgeID k = (<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">EdgeID</a>) obj;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;            <span class="keywordflow">return</span> this.triple.equals(k.triple);</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;        }</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a3055912083db09a60cd68c791bee2c92"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">com.intel.hadoop.graphbuilder.graphelements.EdgeID.EdgeID</a></div><div class="ttdeci">EdgeID(Object src, Object dst, Object label)</div><div class="ttdef"><b>Definition:</b> EdgeID.java:46</div></div>
+<dl class="section return"><dt>Returns</dt><dd>A triple ... </dd></dl>
+<div class="fragment"><div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                                      {</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <span class="keywordflow">if</span> (obj instanceof <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">EdgeID</a>) {</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;            EdgeID k = (<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">EdgeID</a>) obj;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            <span class="keywordflow">return</span> this.triple.equals(k.triple);</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;        }</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a3055912083db09a60cd68c791bee2c92"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">com.intel.hadoop.graphbuilder.graphelements.EdgeID.EdgeID</a></div><div class="ttdeci">EdgeID(Object src, Object dst, Object label)</div><div class="ttdef"><b>Definition:</b> EdgeID.java:45</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -245,9 +243,9 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>The destination vertex of the edge. </dd></dl>
-<div class="fragment"><div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                           {</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">return</span> triple.getB();</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;                           {</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordflow">return</span> triple.getB();</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -272,9 +270,9 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>The label of the edge. </dd></dl>
-<div class="fragment"><div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                             {</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordflow">return</span> triple.getC();</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                             {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="keywordflow">return</span> triple.getC();</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -299,9 +297,9 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <dl class="section return"><dt>Returns</dt><dd>The source vertex of the edge. </dd></dl>
-<div class="fragment"><div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;                           {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        <span class="keywordflow">return</span> triple.getA();</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;                           {</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">return</span> triple.getA();</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -325,9 +323,9 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;                          {</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        <span class="keywordflow">return</span> triple.hashCode();</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                          {</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        <span class="keywordflow">return</span> triple.hashCode();</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -352,14 +350,14 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Reverses the direction of a given edge. </p>
-<dl class="section return"><dt>Returns</dt><dd>A new edge, whose source is the destination of the base edge, whose destination is the source of the base edge, and whose label is the same label as the base edge. </dd></dl>
-<div class="fragment"><div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                                {</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">EdgeID</a>(this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a39099fb1d4c880947d87ccc443f3d134">getDst</a>(), this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a37a8a596522b3f75de5abd9ec7591674">getSrc</a>(), this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a033b22e2ca8da914ed1b40c72e5d929a">getLabel</a>());</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a033b22e2ca8da914ed1b40c72e5d929a"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a033b22e2ca8da914ed1b40c72e5d929a">com.intel.hadoop.graphbuilder.graphelements.EdgeID.getLabel</a></div><div class="ttdeci">Object getLabel()</div><div class="ttdef"><b>Definition:</b> EdgeID.java:67</div></div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a3055912083db09a60cd68c791bee2c92"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">com.intel.hadoop.graphbuilder.graphelements.EdgeID.EdgeID</a></div><div class="ttdeci">EdgeID(Object src, Object dst, Object label)</div><div class="ttdef"><b>Definition:</b> EdgeID.java:46</div></div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a37a8a596522b3f75de5abd9ec7591674"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a37a8a596522b3f75de5abd9ec7591674">com.intel.hadoop.graphbuilder.graphelements.EdgeID.getSrc</a></div><div class="ttdeci">Object getSrc()</div><div class="ttdef"><b>Definition:</b> EdgeID.java:53</div></div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a39099fb1d4c880947d87ccc443f3d134"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a39099fb1d4c880947d87ccc443f3d134">com.intel.hadoop.graphbuilder.graphelements.EdgeID.getDst</a></div><div class="ttdeci">Object getDst()</div><div class="ttdef"><b>Definition:</b> EdgeID.java:60</div></div>
+<dl class="section return"><dt>Returns</dt><dd>A new edge, whose source is the destination of the base edge, and whose label is the same label as the base edge. </dd></dl>
+<div class="fragment"><div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;                                {</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">new</span> <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">EdgeID</a>(this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a39099fb1d4c880947d87ccc443f3d134">getDst</a>(), this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a37a8a596522b3f75de5abd9ec7591674">getSrc</a>(), this.<a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a033b22e2ca8da914ed1b40c72e5d929a">getLabel</a>());</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a033b22e2ca8da914ed1b40c72e5d929a"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a033b22e2ca8da914ed1b40c72e5d929a">com.intel.hadoop.graphbuilder.graphelements.EdgeID.getLabel</a></div><div class="ttdeci">Object getLabel()</div><div class="ttdef"><b>Definition:</b> EdgeID.java:66</div></div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a3055912083db09a60cd68c791bee2c92"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a3055912083db09a60cd68c791bee2c92">com.intel.hadoop.graphbuilder.graphelements.EdgeID.EdgeID</a></div><div class="ttdeci">EdgeID(Object src, Object dst, Object label)</div><div class="ttdef"><b>Definition:</b> EdgeID.java:45</div></div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a37a8a596522b3f75de5abd9ec7591674"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a37a8a596522b3f75de5abd9ec7591674">com.intel.hadoop.graphbuilder.graphelements.EdgeID.getSrc</a></div><div class="ttdeci">Object getSrc()</div><div class="ttdef"><b>Definition:</b> EdgeID.java:52</div></div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID_html_a39099fb1d4c880947d87ccc443f3d134"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html#a39099fb1d4c880947d87ccc443f3d134">com.intel.hadoop.graphbuilder.graphelements.EdgeID.getDst</a></div><div class="ttdeci">Object getDst()</div><div class="ttdef"><b>Definition:</b> EdgeID.java:59</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -386,13 +384,13 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">val</td><td>The new value for <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html">EdgeID</a>'s destination vertex. </td></tr>
+    <tr><td class="paramname">@code</td><td>val  The new value for <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html">EdgeID</a>'s destination vertex. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                                   {</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        triple.setB(val);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                                   {</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        triple.setB(val);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -419,13 +417,13 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">val</td><td>The new value for <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html">EdgeID</a>'s label. </td></tr>
+    <tr><td class="paramname">@code</td><td>val  The new value for <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html">EdgeID</a>'s label. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                                     {</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        triple.setC(val);</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;                                     {</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;        triple.setC(val);</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -452,13 +450,13 @@ Public Member Functions</h2></td></tr>
 </div><div class="memdoc">
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">val</td><td>The new value for <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html">EdgeID</a>'s source vertex. </td></tr>
+    <tr><td class="paramname">@code</td><td>val  The new value for <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1graphelements_1_1EdgeID.html">EdgeID</a>'s source vertex. </td></tr>
   </table>
   </dd>
 </dl>
-<div class="fragment"><div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                                   {</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        triple.setA(val);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                                   {</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        triple.setA(val);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -482,9 +480,9 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                             {</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keywordflow">return</span> triple.toString();</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;                             {</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        <span class="keywordflow">return</span> triple.toString();</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -494,7 +492,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:02 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

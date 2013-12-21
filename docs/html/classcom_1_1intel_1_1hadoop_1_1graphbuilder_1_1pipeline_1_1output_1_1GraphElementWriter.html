@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -100,8 +100,7 @@ Inheritance diagram for com.intel.hadoop.graphbuilder.pipeline.output.GraphEleme
  <div class="center">
   <img src="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphElementWriter.png" usemap="#com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter_map" alt=""/>
   <map id="com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter_map" name="com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter_map">
-<area href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphElementWriter.html" alt="com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphElementWriter" shape="rect" coords="0,56,466,80"/>
-<area href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html" alt="com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter" shape="rect" coords="476,56,942,80"/>
+<area href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html" alt="com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter" shape="rect" coords="0,56,441,80"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -109,10 +108,10 @@ Inheritance diagram for com.intel.hadoop.graphbuilder.pipeline.output.GraphEleme
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a72dac412861647672895336bfdb0e546"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphElementWriter.html#a72dac412861647672895336bfdb0e546">write</a> (<a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> args)  throws IOException, InterruptedException</td></tr>
 <tr class="separator:a72dac412861647672895336bfdb0e546"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a7e2d16c0bfe98dd0a08400e440614b"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphElementWriter.html#a3a7e2d16c0bfe98dd0a08400e440614b">vertexWrite</a> (<a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> args)  throws IOException, InterruptedException</td></tr>
-<tr class="separator:a3a7e2d16c0bfe98dd0a08400e440614b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a5f2b0fe1b86b8615ec0a107af4117b"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphElementWriter.html#a5a5f2b0fe1b86b8615ec0a107af4117b">edgeWrite</a> (<a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> args)  throws IOException, InterruptedException</td></tr>
-<tr class="separator:a5a5f2b0fe1b86b8615ec0a107af4117b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac707e0cc44d584d8e42449a7d16cce8e"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphElementWriter.html#ac707e0cc44d584d8e42449a7d16cce8e">writeVertices</a> (<a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> args)  throws IOException, InterruptedException</td></tr>
+<tr class="separator:ac707e0cc44d584d8e42449a7d16cce8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab196dcecbb7bee393387e7f75a918b0f"><td class="memItemLeft" align="right" valign="top">abstract void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1GraphElementWriter.html#ab196dcecbb7bee393387e7f75a918b0f">writeEdges</a> (<a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a> args)  throws IOException, InterruptedException</td></tr>
+<tr class="separator:ab196dcecbb7bee393387e7f75a918b0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -143,37 +142,9 @@ Protected Attributes</h2></td></tr>
 <tr class="separator:a686d3dc60e5ceaaead059653f6084e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>simple interface for writing the merged edges and vertices</p>
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter</a> </dd>
-<dd>
-<a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphElementWriter.html">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphElementWriter</a> </dd></dl>
+<div class="textblock"><p>This class provides a simple interface for writing the merged edges and vertices.</p>
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter</a> </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a5a5f2b0fe1b86b8615ec0a107af4117b"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">abstract void com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter.edgeWrite </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a>&#160;</td>
-          <td class="paramname"><em>args</em></td><td>)</td>
-          <td> throws IOException, InterruptedException</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html#ab378db0d38b6c993014aa5833f13f0bf">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphElementWriter.html#a906b3d144d847c3b20524a62e4819093">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphElementWriter</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="a026f3e0bb8d070abb03683a9f56e1111"></a>
 <div class="memitem">
 <div class="memproto">
@@ -224,32 +195,6 @@ Protected Attributes</h2></td></tr>
 </div><!-- fragment -->
 </div>
 </div>
-<a class="anchor" id="a3a7e2d16c0bfe98dd0a08400e440614b"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">abstract void com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter.vertexWrite </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a>&#160;</td>
-          <td class="paramname"><em>args</em></td><td>)</td>
-          <td> throws IOException, InterruptedException</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html#a97b4709e735f2b27fdf698410e1d076c">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphElementWriter.html#a55d4a8022f6facd7f1986e2c685f0f10">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphElementWriter</a>.</p>
-
-</div>
-</div>
 <a class="anchor" id="a72dac412861647672895336bfdb0e546"></a>
 <div class="memitem">
 <div class="memproto">
@@ -272,7 +217,59 @@ Protected Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html#a061e8da81b4926d12b09140838d9e398">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter</a>, and <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1textgraph_1_1TextGraphElementWriter.html#a34c2f1cc9db9a4b0ea68e12767010155">com.intel.hadoop.graphbuilder.pipeline.output.textgraph.TextGraphElementWriter</a>.</p>
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html#a061e8da81b4926d12b09140838d9e398">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ab196dcecbb7bee393387e7f75a918b0f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">abstract void com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter.writeEdges </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a>&#160;</td>
+          <td class="paramname"><em>args</em></td><td>)</td>
+          <td> throws IOException, InterruptedException</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html#ae84b48a38eb0e4f85adb1ff34c0968d9">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="ac707e0cc44d584d8e42449a7d16cce8e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">abstract void com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter.writeVertices </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1util_1_1ArgumentBuilder.html">ArgumentBuilder</a>&#160;</td>
+          <td class="paramname"><em>args</em></td><td>)</td>
+          <td> throws IOException, InterruptedException</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Implemented in <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1TitanGraphElementWriter.html#a8dfa04d224c3b2cb4da70ecc75eab7bf">com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphElementWriter</a>.</p>
 
 </div>
 </div>
@@ -483,7 +480,7 @@ Protected Attributes</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

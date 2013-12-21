@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -109,7 +109,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a4458f67f8c050e4abe5a9c35473542c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Add all the edges and vertices into the their respective hashmaps. the edgePropertyTable hash is keyed by edge id(src, dst, label) with the value being the property map. the vertexNameToTitanID has is keyed by vertex id which should be a StringType or LongType with the value bing the titan ID for the vertex.</p>
+<div class="textblock"><p>Adds all of the edges and vertices into the their respective hashmaps. The </p>
+<div class="fragment"><div class="line">edgePropertyTable </div>
+</div><!-- fragment --><p> hash is keyed by edge id (src, dst, label) with the value being the property map. The</p>
+<div class="fragment"><div class="line">vertexNameToTitanID </div>
+</div><!-- fragment --><p> is keyed by vertex id, which should be a</p>
+<div class="fragment"><div class="line">StringType </div>
+</div><!-- fragment --><p> or</p>
+<div class="fragment"><div class="line">LongType </div>
+</div><!-- fragment --><p> with the value being the titan ID for the vertex.</p>
 <dl class="section see"><dt>See Also</dt><dd>LongType </dd>
 <dd>
 <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1types_1_1StringType.html">com.intel.hadoop.graphbuilder.types.StringType</a> </dd>
@@ -147,17 +155,17 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;                                                                                              {</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;        initArguments(args);</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        Edge <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback.html#a2bf389ab6a00d48235cd9dcfaafd0147">edge</a>   = (Edge) graphElement;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        EdgeID edgeID = <span class="keyword">new</span> EdgeID(edge.getSrc(), edge.getDst(), edge.getLabel());</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        edgePropertyTable.put(edgeID, edge.getProperties());</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <span class="keywordflow">return</span> edgePropertyTable;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback_html_a2bf389ab6a00d48235cd9dcfaafd0147"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback.html#a2bf389ab6a00d48235cd9dcfaafd0147">com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducerCallback.edge</a></div><div class="ttdeci">Hashtable&lt; EdgeID, Writable &gt; edge(GraphElement graphElement, ArgumentBuilder args)</div><div class="ttdef"><b>Definition:</b> EdgesIntoTitanReducerCallback.java:49</div></div>
+<div class="fragment"><div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;                                                                                              {</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        initArguments(args);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        Edge <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback.html#a2bf389ab6a00d48235cd9dcfaafd0147">edge</a>   = (Edge) graphElement;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        EdgeID edgeID = <span class="keyword">new</span> EdgeID(edge.getSrc(), edge.getDst(), edge.getLabel());</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        edgePropertyTable.put(edgeID, edge.getProperties());</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keywordflow">return</span> edgePropertyTable;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback_html_a2bf389ab6a00d48235cd9dcfaafd0147"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback.html#a2bf389ab6a00d48235cd9dcfaafd0147">com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducerCallback.edge</a></div><div class="ttdeci">Hashtable&lt; EdgeID, Writable &gt; edge(GraphElement graphElement, ArgumentBuilder args)</div><div class="ttdef"><b>Definition:</b> EdgesIntoTitanReducerCallback.java:48</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -192,21 +200,20 @@ Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<div class="fragment"><div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;                                                                                           {</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        initArguments(args);</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        Vertex <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback.html#a4458f67f8c050e4abe5a9c35473542c0">vertex</a> = (Vertex) graphElement;</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="comment">//get the vertex id, StringType or LongType</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        Object      vertexId      = vertex.getId();</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        PropertyMap propertyMap   = vertex.getProperties();</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;        <span class="comment">//the Titan id we got assigned during the VerticesIntoTitanReducer</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <span class="keywordtype">long</span>        vertexTitanId = ((LongType) propertyMap.getProperty(<span class="stringliteral">&quot;TitanID&quot;</span>)).<span class="keyword">get</span>();</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        vertexNameToTitanID.put(vertexId, vertexTitanId);</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="keywordflow">return</span> vertexNameToTitanID;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    }</div>
-<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback_html_a4458f67f8c050e4abe5a9c35473542c0"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback.html#a4458f67f8c050e4abe5a9c35473542c0">com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducerCallback.vertex</a></div><div class="ttdeci">Hashtable&lt; Object, Long &gt; vertex(GraphElement graphElement, ArgumentBuilder args)</div><div class="ttdef"><b>Definition:</b> EdgesIntoTitanReducerCallback.java:61</div></div>
+<div class="fragment"><div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;                                                                                           {</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        initArguments(args);</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;        Vertex <a class="code" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback.html#a4458f67f8c050e4abe5a9c35473542c0">vertex</a> = (Vertex) graphElement;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        VertexID vertexId      = vertex.getId();</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        PropertyMap propertyMap   = vertex.getProperties();</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="comment">//the Titan id we got assigned during the VerticesIntoTitanReducer</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        <span class="keywordtype">long</span>        vertexTitanId = ((LongType) propertyMap.getProperty(<span class="stringliteral">&quot;TitanID&quot;</span>)).<span class="keyword">get</span>();</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        vertexNameToTitanID.put(vertexId, vertexTitanId);</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;        <span class="keywordflow">return</span> vertexNameToTitanID;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    }</div>
+<div class="ttc" id="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback_html_a4458f67f8c050e4abe5a9c35473542c0"><div class="ttname"><a href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1EdgesIntoTitanReducerCallback.html#a4458f67f8c050e4abe5a9c35473542c0">com.intel.hadoop.graphbuilder.pipeline.output.titan.EdgesIntoTitanReducerCallback.vertex</a></div><div class="ttdeci">Hashtable&lt; Object, Long &gt; vertex(GraphElement graphElement, ArgumentBuilder args)</div><div class="ttdef"><b>Definition:</b> EdgesIntoTitanReducerCallback.java:60</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -216,7 +223,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:03 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

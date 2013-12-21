@@ -70,7 +70,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -134,10 +134,10 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a03d93fc24ef5050b1c37a6be51171341"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The basic mapper tasks of context.writes of keyed property graph elements are done here.</p>
-<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper.html">com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper</a> </dd>
-<dd>
-com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
+<div class="textblock"><p>This class implements the basic mapper</p>
+<div class="fragment"><div class="line">context.writes </div>
+</div><!-- fragment --><p> tasks of the keyed property graph elements.</p>
+<dl class="section see"><dt>See Also</dt><dd><a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1HBaseReaderMapper.html">com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper</a> </dd></dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="a74a58ecb8a8a5c240409bbda47d1ff80"></a>
 <div class="memitem">
@@ -176,12 +176,15 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>An Exception construction will log fatal and cause a system.exit. Their is no point in going forward if we can't initialize the tokenizer class, key function, map val or map key.</p>
+<p>An Exception construction will log a fatal error and cause a</p>
+<div class="fragment"><div class="line">system.exit </div>
+</div><!-- fragment --><p> . There is no point in going forward if we can't initialize the tokenizer class, key function, map val, or map key.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">context</td><td>The Mapper.Context for the running mapper. </td></tr>
-    <tr><td class="paramname">conf</td><td>The current conf for the mapper. </td></tr>
-    <tr><td class="paramname">log</td><td>The log instance so all logs are attributed to the calling class. </td></tr>
+    <tr><td class="paramname">@code</td><td>context  The<div class="fragment"><div class="line">Mapper.Context </div>
+</div><!-- fragment --> for the running mapper. </td></tr>
+    <tr><td class="paramname">@code</td><td>conf  The current conf for the mapper. </td></tr>
+    <tr><td class="paramname">@code</td><td>log  The log instance so all logs are attributed to the calling class. </td></tr>
   </table>
   </dd>
 </dl>
@@ -233,12 +236,12 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Attempts to write the key and value pair. IOException, InterruptedException will be logged and the appropriate edge or vertex counter will be incremented.</p>
+<p>Attempts to write the key and value pair. IOException or InterruptedException will be logged and the appropriate edge or vertex counter will be incremented.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">context</td><td>The current mapper context. </td></tr>
-    <tr><td class="paramname">key</td><td>The vertex and edge key to write. </td></tr>
-    <tr><td class="paramname">val</td><td>The property graph element to write, either vertex or edge. </td></tr>
+    <tr><td class="paramname">@code</td><td>context  The current mapper context. </td></tr>
+    <tr><td class="paramname">@code</td><td>key  The vertex and edge key to write. </td></tr>
+    <tr><td class="paramname">@code</td><td>val  The property graph element to write, either vertex or edge. </td></tr>
   </table>
   </dd>
 </dl>
@@ -370,11 +373,12 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Increments the correct error Counter, either the Vertex or Edge error counter.</p>
+<p>Increments the correct error counter, either the Vertex or Edge error counter.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">context</td><td>The current context for the mapper. </td></tr>
-    <tr><td class="paramname">val</td><td>the SerializedGraphElement that threw the error. </td></tr>
+    <tr><td class="paramname">@code</td><td>context  The current context for the mapper. </td></tr>
+    <tr><td class="paramname">@code</td><td>val  The<div class="fragment"><div class="line">SerializedGraphElement </div>
+</div><!-- fragment --> that threw the error. </td></tr>
   </table>
   </dd>
 </dl>
@@ -411,10 +415,11 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>A wrapper method to initialize the key function. This makes it easier to mockup in a unit test, and it is general good practice to encapsulate.</p>
+<p>A wrapper method to initialize the key function. This makes it easier to mock-up in a unit test, and it is a general good practice to encapsulate.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">conf</td><td>The mappers conf, usually context.getConfiguration(). </td></tr>
+    <tr><td class="paramname">@code</td><td>conf  The mappers configuration, usually<div class="fragment"><div class="line">context.getConfiguration() </div>
+</div><!-- fragment --> . </td></tr>
   </table>
   </dd>
 </dl>
@@ -457,10 +462,11 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>A wrapper method to initialize the tokenizer. This makes it easier to mockup in a unit test, and it is general good practice to encapsulate.</p>
+<p>A wrapper method that initializes the tokenizer. This makes it easier to mockup in a unit test, and it is a general good practice to encapsulate.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">conf</td><td>The mappers conf, usually context.getConfiguration(). </td></tr>
+    <tr><td class="paramname">@code</td><td>conf  The mappers configuration, usually<div class="fragment"><div class="line">context.getConfiguration() </div>
+</div><!-- fragment --> . </td></tr>
   </table>
   </dd>
 </dl>
@@ -558,10 +564,21 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Mapper bootstrapping. Initializes the tokenizer for parsing the edges and vertices, the key function for getting the context.write key, and initializes the mapKey mapValue. InstantiationException, IllegalAccessException, and ClassNotFoundException will all be caught, logged, and a system exit will be called. There is no reason to continue if we can't boot strap.</p>
+<p>Mapper bootstrapping. Initializes the tokenizer for parsing the edges and vertices, the key function for getting the</p>
+<div class="fragment"><div class="line">context.write </div>
+</div><!-- fragment --><p> key, and initializes the</p>
+<div class="fragment"><div class="line">mapKey mapValue </div>
+</div><!-- fragment --><p> . The</p>
+<div class="fragment"><div class="line">InstantiationException </div>
+</div><!-- fragment --><p> ,</p>
+<div class="fragment"><div class="line">IllegalAccessException </div>
+</div><!-- fragment --><p> , and</p>
+<div class="fragment"><div class="line">ClassNotFoundException </div>
+</div><!-- fragment --><p> will all be caught, logged, and a system exit will be called. There is no reason to continue if we can't boot strap.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">conf</td><td>The mappers current configuration, usually context.getConfiguration(). </td></tr>
+    <tr><td class="paramname">@code</td><td>conf  The mapper's current configuration, usually<div class="fragment"><div class="line">context.getConfiguration() </div>
+</div><!-- fragment --> . </td></tr>
   </table>
   </dd>
 </dl>
@@ -641,10 +658,12 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Iterates through the edge list, creates the Edge graph element, get it's key and writes it. NullPointerException are captured whenever edge or vertex has any null values.</p>
+<p>Iterates through the edge list, creates the Edge graph element, gets its key and writes it. </p>
+<div class="fragment"><div class="line">NullPointerException </div>
+</div><!-- fragment --><p> s are captured whenever edge or vertex has any null values.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">context</td><td>The mapper's current context. </td></tr>
+    <tr><td class="paramname">@code</td><td>context  The mapper's current context. </td></tr>
   </table>
   </dd>
 </dl>
@@ -692,10 +711,12 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Iterate through the vertex list, creates a vertex graph element, get it's key, and writes it. NullPointerExceptions are captured whenever the edge or vertex has any null values.</p>
+<p>Iterates through the vertex list, creates a vertex graph element, gets its key, and writes it. </p>
+<div class="fragment"><div class="line">NullPointerException </div>
+</div><!-- fragment --><p> s are captured whenever the edge or vertex has any null values.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">context</td><td>The mapper's current context. </td></tr>
+    <tr><td class="paramname">@code</td><td>context  The mapper's current context. </td></tr>
   </table>
   </dd>
 </dl>
@@ -727,7 +748,7 @@ com.intel.hadoop.graphbuilder.pipeline.input.text.TextParsingMapper </dd></dl>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Dec 17 2013 17:46:38 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 17:11:02 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
