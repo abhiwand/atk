@@ -135,9 +135,9 @@ class BigDataFrameTest(unittest.TestCase):
 
     def test_data_frame_get_html(self):
         hbase_table = HBaseTable("test_table", "test_file")
-        hbase_table.sample_as_html = MagicMock(return_value="<table></table>")
+        hbase_table.inspect_as_html = MagicMock(return_value="<table></table>")
         data_frame = BigDataFrame("test_frame", hbase_table)
-        self.assertEqual("<table></table>", data_frame.sample_as_html(10))
+        self.assertEqual("<table></table>", data_frame.inspect_as_html(10))
 
     def test_data_frame_append(self):
         hbase_table = HBaseTable("test_table", "test_file")
@@ -280,30 +280,30 @@ class BigDataFrameTest(unittest.TestCase):
         fp.close()
 
         big_frame = HBaseFrameBuilder().build_from_json('test_json', '/tmp/test.json')
-        big_frame.sample()
+        big_frame.inspect()
 
         big_frame.transform('json', 'first_book_author', EvalFunctions.Json.EXTRACT_FIELD,
                             transformation_args=["store.book[0].author"])
-        big_frame.sample()
+        big_frame.inspect()
 
         big_frame.transform('json', 'first_book_empty_field', EvalFunctions.Json.EXTRACT_FIELD,
                             transformation_args=["store.book[0].empty_field"])
 
         big_frame.transform('json', 'first_books_price', EvalFunctions.Json.EXTRACT_FIELD,
                             transformation_args=["store.book[0].price"])
-        big_frame.sample()
+        big_frame.inspect()
 
         big_frame.transform('json', 'first_books_integer_field', EvalFunctions.Json.EXTRACT_FIELD,
                             transformation_args=["store.book[0].integer_field"])
-        big_frame.sample()
+        big_frame.inspect()
 
         big_frame.transform('json', 'first_books_boolean_field', EvalFunctions.Json.EXTRACT_FIELD,
                             transformation_args=["store.book[0].boolean_field"])
-        big_frame.sample()
+        big_frame.inspect()
 
         big_frame.transform('json', 'first_price_data_greater_than_10', EvalFunctions.Json.EXTRACT_FIELD,
                             transformation_args=["store.book.findAll{book -> book.price>10}[0].price"])
-        big_frame.sample()
+        big_frame.inspect()
 
         big_frame.transform('json', 'category', EvalFunctions.Json.EXTRACT_FIELD,
                             transformation_args=["store.book[1].category"])

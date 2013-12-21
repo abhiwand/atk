@@ -35,6 +35,7 @@ from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy
 
+
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
 except ImportError, e:
@@ -89,7 +90,7 @@ class HBaseTableException(Exception):
 
 class HBaseTable(object):
     """
-    Table Implementation for HBase.
+    Table Implementation for HBase
     """
     def __init__(self, table_name, file_name):
         """
@@ -97,7 +98,7 @@ class HBaseTable(object):
         Parameters
         ----------
         table_name : String
-            The name of the table in Hbase.
+            name of table in Hbase
         file_name : String
             name of file from which this table came
         """
@@ -208,8 +209,8 @@ class HBaseTable(object):
         etl_schema.feature_names = new_feature_names
         etl_schema.feature_types = new_feature_types
         etl_schema.save_schema(self.table_name)
-
-    def _get_first_N(self, n):
+        
+    def _peek(self, n):
 
         if n < 0:
             raise HBaseTableException('A range smaller than 0 is specified')
@@ -230,9 +231,9 @@ class HBaseTable(object):
                    break
         return first_N_rows
     
-    def sample(self, n=10):
+    def inspect(self, n=10):
 
-        first_N_rows = self._get_first_N(n)
+        first_N_rows = self._peek(n)
         schema = self.get_schema()
         columns = schema.keys()
         column_array = []
@@ -247,6 +248,7 @@ class HBaseTable(object):
         for orderedData in first_N_rows:
            data = []
            for col in column_array:
+               col = config['hbase_column_family'] + col
                if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
                    data.append(orderedData[col])
                else:
@@ -254,8 +256,8 @@ class HBaseTable(object):
 
            print "  |  ".join(data)
                
-    def sample_as_html(self, nRows=10):
-        first_N_rows = self._get_first_N(nRows)
+    def inspect_as_html(self, nRows=10):
+        first_N_rows = self._peek(nRows)
         html_table='<table border="1">'
 
         schema = self.get_schema()
@@ -271,6 +273,7 @@ class HBaseTable(object):
         for orderedData in first_N_rows:
            html_table+='<tr>'
            for col in column_array:
+               col = config['hbase_column_family'] + col
                if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
                    html_table+=("<td>%s</td>" % (orderedData[col]))
                else:
@@ -316,7 +319,7 @@ class HBaseTable(object):
 
         logger.debug(args)
         
-        return_code = call(args, report_strategy=etl_report_strategy())
+        return_code = call(args, report_strategy=progress_report_strategy())
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
@@ -356,7 +359,7 @@ class HBaseTable(object):
 
     def get_schema(self):
         """
-        Returns the list of column names and types.
+        Returns the list of column names/types
         """
         columns = {}
         etl_schema = ETLSchema()
@@ -384,23 +387,6 @@ class HBaseFrameBuilder(FrameBuilder):
     #-------------------------------------------------------------------------
     # Create BigDataFrames
     #-------------------------------------------------------------------------
-    def copy_data_frame(self, data_frame, new_frame_name, overwrite=False):
-
-        new_table_name = _create_table_name(new_frame_name, overwrite)
-        # need to delete/create output table to write the transformed features
-        with ETLHBaseClient() as hbase_client:
-            hbase_client.drop_create_table(new_table_name,
-                                           [config['hbase_column_family']])
-
-        etl_schema = ETLSchema()
-        etl_schema.load_schema(data_frame._original_table_name)
-        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
-        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
-        new_table = data_frame._table.copy(new_table_name, feature_names_as_str, feature_types_as_str)
-        etl_schema.save_schema(new_table_name)
-        self._register_table_name(new_frame_name, new_table_name, overwrite)
-        return BigDataFrame(new_frame_name, new_table)
-
     def build_from_csv(self, frame_name, file_name, schema,
                        skip_header=False, overwrite=False):
         table_name = _create_table_name(frame_name, overwrite)
@@ -428,7 +414,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
 
-        return_code = call(args, report_strategy=etl_report_strategy())
+        return_code = call(args, report_strategy=progress_report_strategy())
         
         if return_code:
             raise Exception('Could not import CSV file')
@@ -464,7 +450,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
             
-        return_code = call(args, report_strategy=etl_report_strategy())
+        return_code = call(args, report_strategy=progress_report_strategy())
         
         if return_code:
             raise Exception('Could not import JSON file')
