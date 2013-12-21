@@ -1,4 +1,6 @@
 import os
+import re
+from mock import MagicMock, Mock, patch
 import unittest
 import sys
 
@@ -9,7 +11,7 @@ from intel_analytics.config import global_config as config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
-from mock import patch, Mock, MagicMock
+
 
 
 class HbaseTableTest(unittest.TestCase):
@@ -17,13 +19,14 @@ class HbaseTableTest(unittest.TestCase):
     def create_mock_etl_object(self, result_holder):
 
         object = ETLSchema()
-        object.load_schema = Mock()
+        object.load_schema = MagicMock()
 
         def etl_effect(arg):
+            result_holder["table_name"] = arg
             result_holder["feature_names"] = object.feature_names
             result_holder["feature_types"] = object.feature_types
 
-        save_action = Mock()
+        save_action = MagicMock()
         save_action.side_effect = etl_effect
         object.save_schema = save_action
         object.feature_names = ["col1", "col2", "col3"]
@@ -31,10 +34,10 @@ class HbaseTableTest(unittest.TestCase):
         return object
 
     def create_mock_hbase_client(self, get_result):
-        object = Mock()
-        mock_hbase_table = Mock()
+        object = MagicMock()
+        mock_hbase_table = MagicMock()
 
-        mock_hbase_table.scan = Mock(return_value=get_result())
+        mock_hbase_table.scan = MagicMock(return_value=get_result())
         object.connection.table = MagicMock(return_value=mock_hbase_table)
         object.__exit__ = MagicMock()
         object.__enter__ = MagicMock(return_value=object)
@@ -140,6 +143,70 @@ class HbaseTableTest(unittest.TestCase):
         table = HBaseTable(table_name, file_name)
         self.assertRaises(HBaseTableException, table.transform, "random_column", "new_col1", "something random")
 
+    @patch('intel_analytics.table.hbase.table.call')
+    def test_copy_table(self, call_method):
+        result_holder = {}
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        new_table_name = "test_output_table"
+        new_table = table.copy(new_table_name, 'f1,f2,f3', 't1,t2,t3')
+        self.assertEqual(new_table.table_name, new_table_name)
+        # make sure the original table is not affected at all
+        self.assertEqual(table_name, table.table_name)
+        # check call arguments
+        self.assertEqual('test_table', result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
+        self.assertEqual(new_table_name, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
+        self.assertEqual('f1,f2,f3', result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
+        self.assertEqual('t1,t2,t3', result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_drop_column(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        mock_etl_obj = self.create_mock_etl_object(result_holder)
+
+        etl_schema_class.return_value = mock_etl_obj
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        columns_to_drop = "col1,col2"
+        table.drop_columns(columns_to_drop)
+
+        mock_etl_obj.save_schema.assert_called_once_with(table_name)
+        self.assertEqual(result_holder["feature_names"], ["col3"])
+        self.assertEqual(result_holder["feature_types"], ["long"])
+
+        call_args = result_holder["call_args"]
+        self.assertEqual("hadoop", call_args[0])
+        self.assertEqual("jar", call_args[1])
+        self.assertEqual(global_config['intel_analytics_jar'], call_args[2])
+        self.assertEqual(global_config['column_dropper_class'], call_args[3])
+
+        # check call arguments
+        # check table name
+        self.assertEqual(table_name, call_args[call_args.index('-t') + 1])
+        # check column names
+        self.assertEqual(columns_to_drop, call_args[call_args.index('-n') + 1])
+        # check column family
+        self.assertEqual('etl-cf', call_args[call_args.index('-f') + 1])
+
+
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
     def test_get_first_N_same_columns(self, etl_base_client_class):
 
@@ -183,11 +250,11 @@ class HbaseTableTest(unittest.TestCase):
         second_row = n_rows[1]
 
         self.assertEqual(2, len(n_rows))
-        self.assertEqual('1234 xyz st', first_row['etl-cf:address'])
-        self.assertEqual('A', first_row['etl-cf:name'])
+        self.assertEqual('1234 xyz st', first_row['address'])
+        self.assertEqual('A', first_row['name'])
 
-        self.assertEqual('5678 def ave', second_row['etl-cf:office'])
-        self.assertEqual('B', second_row['etl-cf:name'])
+        self.assertEqual('5678 def ave', second_row['office'])
+        self.assertEqual('B', second_row['name'])
 
     @patch('intel_analytics.table.hbase.table.sys.stdout')
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
@@ -203,7 +270,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={config['hbase_column_family'] + 'name':'chararray', config['hbase_column_family'] + 'address':'chararray'})
-        table.inspect()
+        table.sample()
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -234,7 +301,7 @@ class HbaseTableTest(unittest.TestCase):
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
-        self.assertRaises(HBaseTableException, table.inspect, -1)
+        self.assertRaises(HBaseTableException, table.sample, -1)
 
 
     @patch('intel_analytics.table.hbase.table.sys.stdout')
@@ -251,7 +318,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        table.inspect(0)
+        table.sample(0)
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -284,7 +351,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        table.inspect()
+        table.sample()
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -317,7 +384,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        html = table.inspect_as_html()
+        html = table.sample_as_html()
         expected = '<table border="1"><tr><th>name</th><th>address</th></tr><tr><td>A</td><td>1234 xyz st</td></tr><tr><td>B</td><td>5678 def ave</td></tr></table>'
         self.assertEqual(expected, html)
 
@@ -331,7 +398,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        html = table.inspect_as_html()
+        html = table.sample_as_html()
         expected = '<table border="1"><tr><th>name</th><th>address</th></tr><tr><td>A</td><td>1234 xyz st</td></tr><tr><td>B</td><td>NA</td></tr></table>'
         self.assertEqual(expected, html)
 
