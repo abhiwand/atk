@@ -228,7 +228,7 @@ class BigDataFrameTest(unittest.TestCase):
         def copy_side_effect(name, feature_name, feature_types):
             return HBaseTable(name, "")
 
-        data_frame._table.copy_data_frame = MagicMock(side_effect = copy_side_effect)
+        data_frame._table.copy = MagicMock(side_effect = copy_side_effect)
         new_frame_name = "test_frame_11"
         new_data_frame = HBaseFrameBuilder().copy_data_frame(data_frame, new_frame_name)
         self.assertEqual(new_data_frame.name, new_frame_name)
