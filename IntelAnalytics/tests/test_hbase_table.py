@@ -7,7 +7,7 @@ import sys
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
 
-from intel_analytics.config import global_config as config
+from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
@@ -250,11 +250,11 @@ class HbaseTableTest(unittest.TestCase):
         second_row = n_rows[1]
 
         self.assertEqual(2, len(n_rows))
-        self.assertEqual('1234 xyz st', first_row['address'])
-        self.assertEqual('A', first_row['name'])
+        self.assertEqual('1234 xyz st', first_row['etl-cf:address'])
+        self.assertEqual('A', first_row['etl-cf:name'])
 
-        self.assertEqual('5678 def ave', second_row['office'])
-        self.assertEqual('B', second_row['name'])
+        self.assertEqual('5678 def ave', second_row['etl-cf:office'])
+        self.assertEqual('B', second_row['etl-cf:name'])
 
     @patch('intel_analytics.table.hbase.table.sys.stdout')
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
@@ -270,7 +270,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={config['hbase_column_family'] + 'name':'chararray', config['hbase_column_family'] + 'address':'chararray'})
-        table.sample()
+        table.inspect()
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -301,7 +301,7 @@ class HbaseTableTest(unittest.TestCase):
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
-        self.assertRaises(HBaseTableException, table.sample, -1)
+        self.assertRaises(HBaseTableException, table.inspect, -1)
 
 
     @patch('intel_analytics.table.hbase.table.sys.stdout')
@@ -318,7 +318,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        table.sample(0)
+        table.inspect(0)
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -351,7 +351,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        table.sample()
+        table.inspect()
 
         #column section starting line
         self.assertEqual('--------------------------------------------------------------------', write_queue[0])
@@ -384,7 +384,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        html = table.sample_as_html()
+        html = table.inspect_as_html()
         expected = '<table border="1"><tr><th>name</th><th>address</th></tr><tr><td>A</td><td>1234 xyz st</td></tr><tr><td>B</td><td>5678 def ave</td></tr></table>'
         self.assertEqual(expected, html)
 
@@ -398,7 +398,7 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         table.get_schema = Mock(return_value={'name':'chararray', 'address':'chararray'})
-        html = table.sample_as_html()
+        html = table.inspect_as_html()
         expected = '<table border="1"><tr><th>name</th><th>address</th></tr><tr><td>A</td><td>1234 xyz st</td></tr><tr><td>B</td><td>NA</td></tr></table>'
         self.assertEqual(expected, html)
 

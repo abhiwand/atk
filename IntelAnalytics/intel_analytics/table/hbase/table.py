@@ -321,7 +321,7 @@ class HBaseTable(object):
 
         logger.debug(args)
         
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=MapOnlyProgressReportStrategy())
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
@@ -429,6 +429,23 @@ class HBaseRegistry(Registry):
 
 class HBaseFrameBuilder(FrameBuilder):
 
+    def copy_data_frame(self, data_frame, new_frame_name, overwrite=False):
+
+        new_table_name = _create_table_name(new_frame_name, overwrite)
+        # need to delete/create output table to write the transformed features
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(data_frame._original_table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+        new_table = data_frame._table.copy(new_table_name, feature_names_as_str, feature_types_as_str)
+        etl_schema.save_schema(new_table_name)
+        self._register_table_name(new_frame_name, new_table_name, overwrite)
+        return BigDataFrame(new_frame_name, new_table)
+
     #-------------------------------------------------------------------------
     # Create BigDataFrames
     #-------------------------------------------------------------------------
@@ -459,7 +476,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
 
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
         
         if return_code:
             raise Exception('Could not import CSV file')
@@ -495,7 +512,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
             
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
         
         if return_code:
             raise Exception('Could not import JSON file')
