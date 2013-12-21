@@ -78,15 +78,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><h2>Overview</h2>
-<p>Intel Graph Builder (alpha) 2.0 is a library of user defined functions (UDF's) and macros in <a href="http://pig.apache.org/">Apache Pig</a> to construct graphs in Hadoop(TM). The 2 .0-alpha version supports multi-relational graphs, or property graphs, in which both objects and relationships may be labeled with multiple properties and property values. Graphs can be constructed from structured, semi-structured, or unstructured data. In case of structured data, columns of HBase tables or fields in CSV/TSV files for example can be annotated as objects, relationships, or their properties. To do the same from nested XML and JSON we have provided an improved XMLLoader function (available in the Apache Piggy Bank repository) to parse XML files, an ExtractJSONField UDF to extract JSON Path matches from a JSON string and an RegexExtractAllMatches utility which extracts all text matches in a string.</p>
-<p>Once a graph is constructed the deduplication macro can be used to merge duplicate elements. These capabilities can easily be extended writing your own custom user defined function.</p>
-<p>Of course, there’s no point in building a graph if it can’t be queried, analyzed or visualized. So, we have introduced new bulk load and export methods. The LOAD_TITAN macro bulk loads the open source Titan distributed graph database via the Blueprints API so that the graphs can be explored using the Gremlin query language. In addition, we have extended Graph Builder to support the Resource Description Framework (<a href="http://www.w3.org/RDF/">RDF</a>) export format. RDF triples for property graph elements are formed using Apache Jena library. We only export graphs in the N-TRIPLES format. All the Jena RDF namespaces are accepted. Last, but not least this version of the Graph Builder library can also export simple edge (object) lists and vertex (relationship) lists. Graph visualization tools such as Gephi can be used with the edge list exports.</p>
+<p>Intel Graph Builder (alpha) 2.0 is a library of user defined functions (UDF's) and macros in <a href="http://pig.apache.org/">Apache Pig</a> to construct graphs in Hadoop(TM). The 2 .0 (alpha) version supports multi-relational graphs, or property graphs, in which both objects and relationships may be labeled with multiple properties and property values. Graphs can be constructed from structured, semi-structured, or unstructured data. In case of structured data, columns of HBase tables or fields in CSV/TSV files for example can be annotated as objects, relationships, or their properties. To do the same from complex XML and JSON documents we have improved the memory footprint of Piggy Bank's XMLLoader function, and we have provided ExtractJSONField UDF to extract fields from JSON documents with JSONPath queries. In addition, we have provided a RegexExtractAllMatches utility to extract all text matches from a given string.</p>
+<p>Once a graph is constructed the deduplication macro can be used to merge duplicate elements. These capabilities can be easily extended with your custom user defined functions.</p>
+<p>Of course, there’s no point in building a graph if it can’t be queried, analyzed or visualized. So, we have introduced new bulk load and export methods. The LOAD_TITAN macro bulk loads the open source Titan distributed graph database via the Blueprints API so that graphs can be explored using the Gremlin query language. In addition, we have extended Graph Builder to support the Resource Description Framework (<a href="http://www.w3.org/RDF/">RDF</a>) format. RDF triples for property graph elements are formed using Apache Jena library. We only export graphs in the N-TRIPLES format. All the Jena RDF namespaces are accepted. Last but not least this version of the Graph Builder library can also export simple edge (relationship) lists and vertex (object) lists. Graph visualization tools such as Gephi can be used with the edge list exports.</p>
 <h2>Release Notes</h2>
 <ul>
-<li>Added the TableToTitanGraph Java MapReduce code to bulk load property graphs from HBase Tables to the open source Titan graph database.</li>
-<li>Removed ID Normalization and Partitioning.</li>
-<li>Removed the wordpage graph and the linkgraph tokenizer from the demoapps.</li>
-<li>Several UDFs for graph ETL and a macro for bulk loading the <a href="http://thinkaurelius.github.io/titan/">Titan graph database:</a><ul>
+<li>Added the <a class="el" href="classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1sampleapplications_1_1TableToGraphDB.html">TableToGraphDB </a> MapReduce application to bulk load property graphs from HBase tables to the open source Titan graph database.</li>
+<li>Removed ID normalization and partitioning.</li>
+<li>Removed the demoapps and provided several sample pig scripts under the examples directory</li>
+<li>Added several UDFs for graph ETL and a macro for bulk loading the <a href="http://thinkaurelius.github.io/titan/">Titan graph database:</a><ul>
 <li><b>Raw Data Input</b> <ul>
 <li>
 <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1ExtractJSONField.html">ExtractJSONField </a> Provides a convenient way of processing complex JSON documents using <a href="https://code.google.com/p/rest-assured/">JSONPath</a> queries. </li>
@@ -103,13 +103,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a class="el" href="graphbuilder_8pig.html">MERGE_DUPLICATE_ELEMENTS </a> Combine duplicate property graph elements into a single property graph element. Also see <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1MergeDuplicateGraphElements.html">MergeDuplicateGraphElements </a> </li>
 </ul>
 </li>
-<li><b>Storage</b> <ul>
+<li><b>Graph Export</b> <ul>
 <li>
 <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RDF.html">RDF </a> Creates RDF triples from property graph elements. </li>
 <li>
 <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1EdgeList.html">EdgeList </a> Creates an edge list representation from a property graph element. </li>
 <li>
-<a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1VertexList.html">VertexList </a> Creates vertex list representation from a property graph element. </li>
+<a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1VertexList.html">VertexList </a> Creates vertex list representation from a property graph element.</li>
+</ul>
+</li>
+<li><b>Graph Bulk Loading</b> <ul>
 <li>
 <a class="el" href="graphbuilder_8pig.html">LOAD_TITAN </a> Loads a graph from a given HBase table to the Titan graph database. </li>
 </ul>
@@ -123,7 +126,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </li>
 </ul>
 <h2>Prerequisites</h2>
-<p>GB 2.0 (alpha) requires <a href="http://hadoop.apache.org/">Apache Hadoop</a> and <a href="http://pig.apache.org/">Apache Pig</a> installed. To use the <a class="el" href="graphbuilder_8pig.html">LOAD_TITAN </a> macro for bulk loading graphs to Titan, <a href="http://hbase.apache.org/">HBase</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a> are also required. In particular, GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.0.</p>
+<p>GB 2.0 (alpha) requires <a href="http://hadoop.apache.org/">Apache Hadoop</a> and <a href="http://pig.apache.org/">Apache Pig</a> installed. To use the <a class="el" href="graphbuilder_8pig.html">LOAD_TITAN </a> macro for bulk loading graphs to Titan, <a href="http://hbase.apache.org/">HBase</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a> are also required. In particular, GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.1.</p>
 <h2>Building The Source Code</h2>
 <p>GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. You can build GB with </p>
 <div class="fragment"><div class="line">mvn clean <span class="keyword">package </span></div>
@@ -131,7 +134,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="fragment"><div class="line">mvn clean <span class="keyword">package </span>-DskipTests </div>
 </div><!-- fragment --><h2>Running the Examples</h2>
 <p>Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, you can run the provided example scripts with </p>
-<div class="fragment"><div class="line">export HADOOP_CLASSPATH=/usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar</div>
+<div class="fragment"><div class="line">export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar</div>
 <div class="line">cd /usr/local/gb/</div>
 <div class="line">pig -x local -f examples/rdf_example.pig     </div>
 </div><!-- fragment --><h2>Using GB 2.0 (alpha)</h2>
@@ -144,7 +147,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 20 2013 17:11:04 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Dec 20 2013 18:43:59 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
