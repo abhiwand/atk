@@ -443,7 +443,7 @@ class HBaseFrameBuilder(FrameBuilder):
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
         new_table = data_frame._table.copy(new_table_name, feature_names_as_str, feature_types_as_str)
         etl_schema.save_schema(new_table_name)
-        self._register_table_name(new_frame_name, new_table_name, overwrite)
+        hbase_registry.register(new_frame_name, new_table_name, overwrite)
         return BigDataFrame(new_frame_name, new_table)
 
     #-------------------------------------------------------------------------
