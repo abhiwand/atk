@@ -566,8 +566,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         runEdgeLoadMRJob(intermediateDataFilePath, intermediateEdgeFilePath);
         runEdgeLoadMapOnlyJob(intermediateEdgeFilePath);
 
-        FileSystem fs = FileSystem.get(getConf());
-        fs.delete(intermediateDataFilePath, true);
+        //FileSystem fs = FileSystem.get(getConf());
+        //fs.delete(intermediateDataFilePath, true);
     }
 
     private void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath,

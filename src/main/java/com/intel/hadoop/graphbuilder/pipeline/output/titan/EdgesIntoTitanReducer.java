@@ -65,6 +65,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
     private final KeyFunction keyFunction = new SourceVertexKeyFunction();
     private IntWritable            outKey;
     private SerializedGraphElement outValue;
+    private Class                  outClass;
 
     private static enum Counters {
         EDGE_PROPERTIES_WRITTEN,
@@ -101,7 +102,26 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
         //this.graph               = getTitanGraphInstance(context);
 
         edgesIntoTitanReducerCallback = new EdgesIntoTitanReducerCallback();
+
+        outClass = context.getMapOutputValueClass();
+        outKey   = new IntWritable();
+
+        try {
+            outValue   = (SerializedGraphElement) outClass.newInstance();
+        } catch (InstantiationException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode
+                    .CLASS_INSTANTIATION_ERROR, "GRAPHBUILDER_ERROR: Cannot " +
+                    "instantiate new reducer output value ( " + outClass
+                    .getName() + ")", LOG, e);
+        } catch (IllegalAccessException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode
+                    .CLASS_INSTANTIATION_ERROR, "GRAPHBUILDER_ERROR: Illegal " +
+                    "access exception when instantiating reducer output value" +
+                    " ( " + outClass.getName() + ")", LOG, e);
+        }
+
     }
+
 
     /**
      * Hadoop-called routine for loading edges into Titan.
@@ -145,7 +165,6 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
         }
 
         int edgeCount   = 0;
-        Edge tempEdge = new Edge();
         StringType edgeLabel = new StringType();
 
         // Output edge records
@@ -160,6 +179,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
             edgeLabel.set(edgeMapEntry.getKey().getLabel().toString());
             PropertyMap propertyMap = (PropertyMap) edgeMapEntry.getValue();
 
+            Edge tempEdge = new Edge();
             tempEdge.configure(srcVertexId, tgtVertexId, edgeLabel, propertyMap);
 
             // Add the Titan ID of the target vertex
@@ -172,6 +192,9 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
             outKey.set(keyFunction.getEdgeKey(tempEdge));
 
             context.write(outKey, outValue);
+
+            tempEdge = null;
+
             /*
             com.tinkerpop.blueprints.Vertex srcBlueprintsVertex =
                     this.graph.getVertex(srcTitanId);

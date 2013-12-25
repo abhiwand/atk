@@ -112,6 +112,10 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
                 .toString();
         try {
 
+            System.out.println("Src vertex: " + serializedGraphElement
+                    .graphElement().getProperty("srcTitanID"));
+            System.out.println("Tgt vertex: " + serializedGraphElement
+                    .graphElement().getProperty("tgtTitanID"));
             bluePrintsEdge = this.graph.addEdge(null,
                         srcBlueprintsVertex,
                         tgtBlueprintsVertex,
@@ -132,14 +136,18 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
         // reducer ... we can remove it now.
 
         propertyMap.removeProperty("srcTitanID");
+        propertyMap.removeProperty("tgtTitanID");
 
         for (Writable propertyKey : propertyMap.getPropertyKeys()) {
            EncapsulatedObject mapEntry = (EncapsulatedObject)
                         propertyMap.getProperty(propertyKey.toString());
 
            try {
+               System.out.println("Writing properties : " +
+                       propertyKey.toString() + "," + mapEntry.getBaseObject()
+                       .toString());
                bluePrintsEdge.setProperty(propertyKey.toString(),
-                       mapEntry.getBaseObject());
+                       mapEntry.getBaseObject().toString());
            } catch (IllegalArgumentException e) {
                LOG.fatal("GRAPHBUILDER_ERROR: Could not add edge " +
                             "property; probably a schema error. The label on " +
@@ -167,6 +175,7 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
     public void cleanup(Context context) throws IOException,
             InterruptedException {
         this.graph.shutdown();
+        System.out.println("Graph written and shutdown");
     }
 
     public  Enum getEdgeCounter(){
