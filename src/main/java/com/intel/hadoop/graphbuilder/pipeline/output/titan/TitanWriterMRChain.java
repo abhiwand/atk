@@ -30,6 +30,7 @@ import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.util.*;
+import com.intel.hadoop.graphbuilder.util.Timer;
 import com.thinkaurelius.titan.core.KeyMaker;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.TitanKey;
@@ -554,6 +555,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         String keyCommandLine = new String("");
 
+        Timer time = new Timer();
+        time.start();
         if (cmd.hasOption(BaseCLI.Options.titanKeyIndex.getLongOpt())) {
             keyCommandLine = cmd.getOptionValue(BaseCLI.Options.titanKeyIndex
                     .getLongOpt());
@@ -566,8 +569,13 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         runEdgeLoadMRJob(intermediateDataFilePath, intermediateEdgeFilePath);
         runEdgeLoadMapOnlyJob(intermediateEdgeFilePath);
 
-        //FileSystem fs = FileSystem.get(getConf());
-        //fs.delete(intermediateDataFilePath, true);
+        Long runtime = time.time_since_last();
+        LOG.info("Time taken to load the graph to Titan: "
+                + runtime +  " seconds");
+
+        FileSystem fs = FileSystem.get(getConf());
+        fs.delete(intermediateDataFilePath, true);
+        fs.delete(intermediateEdgeFilePath, true);
     }
 
     private void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath,
@@ -769,4 +777,4 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         LOG.info("=================== Done " +
                 "====================================\n");
     }
-}
+}   // End of TitanWriterMRChain

@@ -42,7 +42,7 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * Loads edges into Titan.
+ * Write edges with Titan vertex ID of the target vertex to HDFS.
  * <p>
  * This class gathers each vertex with the edges that point to that vertex,
  * that is, those edges for which the vertex is the destination. Because the
@@ -57,7 +57,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
         SerializedGraphElement, IntWritable, SerializedGraphElement> {
     private static final Logger LOG = Logger.getLogger(
                 EdgesIntoTitanReducer.class);
-    //private TitanGraph            graph;
+
     private Hashtable<Object, Long> vertexNameToTitanID;
 
     private EdgesIntoTitanReducerCallback edgesIntoTitanReducerCallback;
@@ -99,7 +99,6 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
             InterruptedException {
 
         this.vertexNameToTitanID = new Hashtable<Object, Long>();
-        //this.graph               = getTitanGraphInstance(context);
 
         edgesIntoTitanReducerCallback = new EdgesIntoTitanReducerCallback();
 
@@ -122,9 +121,9 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
 
     }
 
-
     /**
-     * Hadoop-called routine for loading edges into Titan.
+     * This routine is called by Hadoop to write edges to an
+     * intermediate HDFS  location
      * <p>
      * We assume that the edges and vertices have been gathered so that every
      * edge shares the reducer of its destination vertex,
@@ -195,79 +194,12 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
 
             tempEdge = null;
 
-            /*
-            com.tinkerpop.blueprints.Vertex srcBlueprintsVertex =
-                    this.graph.getVertex(srcTitanId);
-            com.tinkerpop.blueprints.Vertex tgtBlueprintsVertex =
-                    this.graph.getVertex(dstTitanId);
-
-            // Major operation - add the edge to Titan graph
-
-            com.tinkerpop.blueprints.Edge bluePrintsEdge = null;
-            try {
-
-                bluePrintsEdge = this.graph.addEdge(null,
-                        srcBlueprintsVertex,
-                        tgtBlueprintsVertex,
-                        label);
-
-            } catch (IllegalArgumentException e) {
-
-                GraphBuilderExit.graphbuilderFatalExitException(
-                        StatusCode.TITAN_ERROR,
-                        "Could not add edge to Titan; likely a schema error. " +
-                                "The label on the edge is  " + label, LOG, e);
-            }
-
-            // The edge is added to the graph; now add the edge properties.
-
-            // The "srcTitanID" property was added during this MR job to
-            // propagate the Titan ID of the edge's source vertex to this
-            // reducer ... we can remove it now.
-
-            propertyMap.removeProperty("srcTitanID");
-
-            for (Writable propertyKey : propertyMap.getPropertyKeys()) {
-                EncapsulatedObject mapEntry = (EncapsulatedObject)
-                        propertyMap.getProperty(propertyKey.toString());
-
-                try {
-                    bluePrintsEdge.setProperty(propertyKey.toString(),
-                            mapEntry.getBaseObject());
-                } catch (IllegalArgumentException e) {
-                    LOG.fatal("GRAPHBUILDER_ERROR: Could not add edge " +
-                            "property; probably a schema error. The label on " +
-                            "the edge is  " + label);
-                    LOG.fatal("GRAPHBUILDER_ERROR: The property on the edge " +
-                            "is " + propertyKey.toString());
-                    LOG.fatal(e.getMessage());
-                    GraphBuilderExit.graphbuilderFatalExitException
-                            (StatusCode.INDESCRIBABLE_FAILURE, "", LOG, e);
-                }
-            }
-
-            */
-
             edgeCount++;
 
          }  // End of for loop on edges
 
         context.getCounter(Counters.NUM_EDGES).increment(edgeCount);
     }   // End of reduce
-
-    /**
-     * Performs cleanup tasks after the reducer finishes.
-     *
-     * In particular, closes the Titan graph.
-     * @param {@code context}  Hadoop provided reducer context.
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    @Override
-    public void cleanup(Context context) throws IOException,
-            InterruptedException {
-        //this.graph.shutdown();
-    }
 
     public  Enum getEdgeCounter(){
         return Counters.NUM_EDGES;

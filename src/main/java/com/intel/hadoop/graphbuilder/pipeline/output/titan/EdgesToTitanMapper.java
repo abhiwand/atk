@@ -20,7 +20,6 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -30,13 +29,11 @@ import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 public class EdgesToTitanMapper extends Mapper<IntWritable,
         SerializedGraphElement, NullWritable, NullWritable> {
@@ -50,7 +47,7 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
 
     TitanGraph graph;
 
-    /*
+    /**
      * Creates the Titan graph for saving edges and removes the static open
      * method from setup so it can be mocked-up.
      *
@@ -91,9 +88,10 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
 
         if (serializedGraphElement.graphElement().isVertex()) {
             // This is a strange case, throw an exception
-            throw new IllegalArgumentException("GRAPHBUILDER_ERROR: Recheck " +
-                    "the vertex and edge graph elements. Vertex is showing up" +
-                    " in the edge mapper to Titan");
+            throw new IllegalArgumentException("GRAPHBUILDER_ERROR: " +
+                    "Found unexpected Vertex element in the edge write " +
+                    "mapper. Please recheck the logic to create vertices and " +
+                    "edges.");
         }
 
         com.tinkerpop.blueprints.Vertex srcBlueprintsVertex =
@@ -112,10 +110,6 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
                 .toString();
         try {
 
-            System.out.println("Src vertex: " + serializedGraphElement
-                    .graphElement().getProperty("srcTitanID"));
-            System.out.println("Tgt vertex: " + serializedGraphElement
-                    .graphElement().getProperty("tgtTitanID"));
             bluePrintsEdge = this.graph.addEdge(null,
                         srcBlueprintsVertex,
                         tgtBlueprintsVertex,
@@ -143,11 +137,8 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
                         propertyMap.getProperty(propertyKey.toString());
 
            try {
-               System.out.println("Writing properties : " +
-                       propertyKey.toString() + "," + mapEntry.getBaseObject()
-                       .toString());
                bluePrintsEdge.setProperty(propertyKey.toString(),
-                       mapEntry.getBaseObject().toString());
+                       mapEntry.getBaseObject());
            } catch (IllegalArgumentException e) {
                LOG.fatal("GRAPHBUILDER_ERROR: Could not add edge " +
                             "property; probably a schema error. The label on " +
@@ -175,7 +166,6 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
     public void cleanup(Context context) throws IOException,
             InterruptedException {
         this.graph.shutdown();
-        System.out.println("Graph written and shutdown");
     }
 
     public  Enum getEdgeCounter(){
