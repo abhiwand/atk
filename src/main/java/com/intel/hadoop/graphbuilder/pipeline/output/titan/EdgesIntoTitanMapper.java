@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -35,10 +36,19 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 
-public class EdgesToTitanMapper extends Mapper<IntWritable,
+/**
+ * This class reads edges from HDFS by IntermediateEdgeWriterReducer. The
+ * Titan ID of both source and target vertices are written along with
+ * the edge properties in the previous step. In this map-only job,
+ * the map function fetches the reference to the source and target vertices
+ * from Titan and adds the edges to Titan using the Blueprints addEdge() API.
+ * The edge properties are also written to Titan
+ */
+
+public class EdgesIntoTitanMapper extends Mapper<IntWritable,
         SerializedGraphElement, NullWritable, NullWritable> {
     private static final Logger LOG = Logger.getLogger(
-            EdgesToTitanMapper.class);
+            EdgesIntoTitanMapper.class);
 
     private static enum Counters {
         EDGE_PROPERTIES_WRITTEN,
@@ -47,13 +57,6 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
 
     TitanGraph graph;
 
-    /**
-     * Creates the Titan graph for saving edges and removes the static open
-     * method from setup so it can be mocked-up.
-     *
-     * @return {@code TitanGraph}  For saving edges.
-     * @throws IOException
-     */
     private TitanGraph getTitanGraphInstance (Context context) throws
             IOException {
         BaseConfiguration titanConfig = new BaseConfiguration();
@@ -77,7 +80,16 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
     }
 
     /**
-     * @param key
+     * The map function reads the references of the source and target
+     * vertices of a given edge and writes the edge and its properties to
+     * Titan using the Blueprints addEdge() call
+     *
+     * @param key The data structure of the input file is every record
+     *            per line is a serialized edge. Input of this
+     *            map comes from the output directory written by
+     *            IntermediateEdgeWriterReducer.java
+     * @param value A serialized edge
+     * @param context Hadoop Job context
      */
 
     @Override
@@ -96,10 +108,12 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
 
         com.tinkerpop.blueprints.Vertex srcBlueprintsVertex =
                     this.graph.getVertex(serializedGraphElement.graphElement
-                            ().getProperty("srcTitanID"));
+                            ().getProperty(GraphElementWriter
+                            .PROPERTY_KEY_SRC_TITAN_ID));
         com.tinkerpop.blueprints.Vertex tgtBlueprintsVertex =
                     this.graph.getVertex(serializedGraphElement.graphElement
-                            ().getProperty("tgtTitanID"));
+                            ().getProperty(GraphElementWriter
+                            .PROPERTY_KEY_TGT_TITAN_ID));
         PropertyMap propertyMap = (PropertyMap) serializedGraphElement
                 .graphElement().getProperties();
 
@@ -129,8 +143,10 @@ public class EdgesToTitanMapper extends Mapper<IntWritable,
         // propagate the Titan ID of the edge's source vertex to this
         // reducer ... we can remove it now.
 
-        propertyMap.removeProperty("srcTitanID");
-        propertyMap.removeProperty("tgtTitanID");
+        propertyMap.removeProperty(GraphElementWriter
+                .PROPERTY_KEY_SRC_TITAN_ID);
+        propertyMap.removeProperty(GraphElementWriter
+                .PROPERTY_KEY_TGT_TITAN_ID);
 
         for (Writable propertyKey : propertyMap.getPropertyKeys()) {
            EncapsulatedObject mapEntry = (EncapsulatedObject)

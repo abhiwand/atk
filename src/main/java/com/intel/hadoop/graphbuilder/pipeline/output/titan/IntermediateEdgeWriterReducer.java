@@ -22,7 +22,6 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 import com.intel.hadoop.graphbuilder.graphelements.*;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
-import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
@@ -53,14 +52,14 @@ import java.util.Map;
  * </p>
  */
 
-public class EdgesIntoTitanReducer extends Reducer<IntWritable,
+public class IntermediateEdgeWriterReducer extends Reducer<IntWritable,
         SerializedGraphElement, IntWritable, SerializedGraphElement> {
     private static final Logger LOG = Logger.getLogger(
-                EdgesIntoTitanReducer.class);
+                IntermediateEdgeWriterReducer.class);
 
     private Hashtable<Object, Long> vertexNameToTitanID;
 
-    private EdgesIntoTitanReducerCallback edgesIntoTitanReducerCallback;
+    private IntermediateEdgeWriterReducerCallback intermediateEdgeWriterReducerCallback;
 
     private final KeyFunction keyFunction = new SourceVertexKeyFunction();
     private IntWritable            outKey;
@@ -100,7 +99,7 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
 
         this.vertexNameToTitanID = new Hashtable<Object, Long>();
 
-        edgesIntoTitanReducerCallback = new EdgesIntoTitanReducerCallback();
+        intermediateEdgeWriterReducerCallback = new IntermediateEdgeWriterReducerCallback();
 
         outClass = context.getMapOutputValueClass();
         outKey   = new IntWritable();
@@ -132,7 +131,6 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
      * </p>
      * <p>
      * Titan IDs are propagated from the destination vertices to each edge
-     * and the edges are loaded into Titan using the BluePrints API.
      * </p>
      * @param {@code key}      A map reduce key; a hash of a vertex ID.
      * @param {@code values}   Either a vertex with that hashed vertex ID,
@@ -150,13 +148,13 @@ public class EdgesIntoTitanReducer extends Reducer<IntWritable,
 
         for(SerializedGraphElement graphElement: values){
             /*
-             * This is calling EdgesIntoTitanReducerCallback which is an
+             * This is calling IntermediateEdgeWriterReducerCallback which is an
              * implementation of GraphElementTypeCallback to add all the
              * edges and vertices into  the edgePropertyTable and
              * vertexNameToTitanID hashmaps
              */
             graphElement.graphElement().typeCallback(
-                    edgesIntoTitanReducerCallback,
+                    intermediateEdgeWriterReducerCallback,
                     ArgumentBuilder.newArguments()
                             .with("edgePropertyTable", edgePropertyTable)
                             .with("vertexNameToTitanID",

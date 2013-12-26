@@ -26,8 +26,6 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsche
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
-import com.intel.hadoop.graphbuilder.types.LongType;
-import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.util.*;
 import com.intel.hadoop.graphbuilder.util.Timer;
@@ -543,15 +541,14 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             }
         }
 
-        String intermediateDataFileName = "graphbuilder_temp_file-" +
-                random().toString();
+        String intermediateDataFileName = "graphElements-" + random()
+                .toString();
         Path   intermediateDataFilePath =
-                new Path("/tmp/" +  intermediateDataFileName);
+                new Path("/tmp/graphbuilder/" +  intermediateDataFileName);
 
-        String intermediateEdgeFileName = "graphbuilder_edge_file-" +
-                random().toString();
+        String intermediateEdgeFileName = "labeledEdges-" + random().toString();
         Path   intermediateEdgeFilePath =
-                new Path("/tmp/" + intermediateEdgeFileName);
+                new Path("/tmp/graphbuilder/" + intermediateEdgeFileName);
 
         String keyCommandLine = new String("");
 
@@ -566,7 +563,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         runReadInputLoadVerticesMRJob(intermediateDataFilePath, cmd);
 
-        runEdgeLoadMRJob(intermediateDataFilePath, intermediateEdgeFilePath);
+        runIntermediateEdgeWriteMRJob(intermediateDataFilePath,
+                intermediateEdgeFilePath);
         runEdgeLoadMapOnlyJob(intermediateEdgeFilePath);
 
         Long runtime = time.time_since_last();
@@ -670,8 +668,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
     }
 
-    private void runEdgeLoadMRJob(Path intermediateDataFilePath,
-                                  Path intermediateEdgeFilePath) throws
+    private void runIntermediateEdgeWriteMRJob(
+            Path intermediateDataFilePath,
+            Path intermediateEdgeFilePath) throws
             IOException, ClassNotFoundException, InterruptedException {
 
         // create MR Job to load edges into Titan from configuration and
@@ -703,12 +702,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                     LOG, e);
         }
 
-        //writeEdgesJob.setOutputFormatClass(org.apache.hadoop.mapreduce.lib
-        //        .output.NullOutputFormat.class);
-
         // configure reducer
 
-        writeEdgesJob.setReducerClass(EdgesIntoTitanReducer.class);
+        writeEdgesJob.setReducerClass(IntermediateEdgeWriterReducer.class);
 
         // now we set up those temporary storage locations...;
 
@@ -742,7 +738,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         // configure mapper  and input
 
-        addEdgesJob.setMapperClass(EdgesToTitanMapper.class);
+        addEdgesJob.setMapperClass(EdgesIntoTitanMapper.class);
 
         addEdgesJob.setMapOutputKeyClass(NullWritable.class);
         addEdgesJob.setMapOutputValueClass(NullWritable.class);

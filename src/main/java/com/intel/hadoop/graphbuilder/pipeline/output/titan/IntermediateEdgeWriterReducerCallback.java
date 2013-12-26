@@ -38,9 +38,9 @@ import java.util.Hashtable;
  *
  * @see LongType
  * @see com.intel.hadoop.graphbuilder.types.StringType
- * @see EdgesIntoTitanReducer
+ * @see IntermediateEdgeWriterReducer
  */
-public class EdgesIntoTitanReducerCallback implements GraphElementTypeCallback {
+public class IntermediateEdgeWriterReducerCallback implements GraphElementTypeCallback {
     private Hashtable<EdgeID, Writable> edgePropertyTable;
     private Hashtable<Object, Long> vertexNameToTitanID;
 
