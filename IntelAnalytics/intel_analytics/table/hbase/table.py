@@ -26,20 +26,21 @@ import sys
 import collections
 
 from intel_analytics.config import Registry, \
-    global_config as config, get_time_str
+    global_config as config, get_time_str, global_config
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
 from schema import ETLSchema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
+from intel_analytics.report import MapOnlyProgressReportStrategy
 
 
 try:
-    from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as progress_report_strategy#depends on ipython
+    from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
 except ImportError, e:
-    from intel_analytics.report import PrintReportStrategy as progress_report_strategy
-        
+    from intel_analytics.report import PrintReportStrategy as etl_report_strategy
+
 #for quick testing
 try:
     local_run = config['local_run'].lower().strip() == 'true'
@@ -51,6 +52,8 @@ etl_scripts_path = config['pig_py_scripts']
 pig_log4j_path = os.path.join(config['conf_folder'], 'pig_log4j.properties')
 logger.debug('Using %s '% pig_log4j_path)
              
+os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
+os.environ["JYTHONPATH"] = config['pig_jython_path']#required to ship jython scripts with pig
 
 
 class Imputation:
@@ -89,7 +92,7 @@ class HBaseTableException(Exception):
 
 class HBaseTable(object):
     """
-    Table Implementation for HBase.
+    Table Implementation for HBase
     """
     def __init__(self, table_name, file_name):
         """
@@ -97,7 +100,7 @@ class HBaseTable(object):
         Parameters
         ----------
         table_name : String
-            The name of the table in Hbase.
+            name of table in Hbase
         file_name : String
             name of file from which this table came
         """
@@ -144,7 +147,7 @@ class HBaseTable(object):
 
         logger.debug(args)
 
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
 
         if return_code:
             raise HBaseTableException('Could not apply transformation')
@@ -159,6 +162,56 @@ class HBaseTable(object):
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
+    def copy(self, new_table_name, feature_names, feature_types):
+        script_path = os.path.join(etl_scripts_path, 'pig_copy_table.py')
+        args = _get_pig_args()
+
+        args += [script_path,
+                 '-i', self.table_name,
+                 '-o', new_table_name,
+                 '-n', feature_names,
+                 '-t', feature_types]
+
+        return_code = call(args, report_strategy = etl_report_strategy())
+        if return_code:
+            raise HBaseTableException('Could not copy table')
+
+        return HBaseTable(new_table_name, self.file_name)
+
+
+    def drop_columns(self, columns):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        args = []
+
+        args += ['hadoop',
+                 'jar',
+                 global_config['intel_analytics_jar'],
+                 global_config['column_dropper_class'],
+                 '-t', self.table_name,
+                 '-n', columns,
+                 '-f', re.sub(':', '', global_config['hbase_column_family'])
+                 ]
+
+        return_code = call(args, report_strategy=MapOnlyProgressReportStrategy())
+        if return_code:
+            raise HBaseTableException('Could not drop columns from the table')
+
+        # save the schema for the new table
+        new_feature_names = []
+        new_feature_types = []
+
+        list_columns_to_drop = columns.split(',')
+
+        for feature in etl_schema.feature_names:
+            if feature not in list_columns_to_drop:
+                new_feature_names.append(feature)
+                new_feature_types.append(etl_schema.feature_types[etl_schema.feature_names.index(feature)])
+
+        etl_schema.feature_names = new_feature_names
+        etl_schema.feature_types = new_feature_types
+        etl_schema.save_schema(self.table_name)
+        
     def _peek(self, n):
 
         if n < 0:
@@ -268,7 +321,7 @@ class HBaseTable(object):
 
         logger.debug(args)
         
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=MapOnlyProgressReportStrategy())
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
@@ -297,7 +350,7 @@ class HBaseTable(object):
 
     def get_schema(self):
         """
-        Returns the list of column names and types.
+        Returns the list of column names/types
         """
         columns = {}
         etl_schema = ETLSchema()
@@ -376,6 +429,23 @@ class HBaseRegistry(Registry):
 
 class HBaseFrameBuilder(FrameBuilder):
 
+    def copy_data_frame(self, data_frame, new_frame_name, overwrite=False):
+
+        new_table_name = _create_table_name(new_frame_name, overwrite)
+        # need to delete/create output table to write the transformed features
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(data_frame._original_table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+        new_table = data_frame._table.copy(new_table_name, feature_names_as_str, feature_types_as_str)
+        etl_schema.save_schema(new_table_name)
+        hbase_registry.register(new_frame_name, new_table_name, overwrite)
+        return BigDataFrame(new_frame_name, new_table)
+
     #-------------------------------------------------------------------------
     # Create BigDataFrames
     #-------------------------------------------------------------------------
@@ -406,7 +476,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
 
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
         
         if return_code:
             raise Exception('Could not import CSV file')
@@ -442,7 +512,7 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
             
-        return_code = call(args, report_strategy=progress_report_strategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
         
         if return_code:
             raise Exception('Could not import JSON file')

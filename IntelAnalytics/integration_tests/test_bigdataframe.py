@@ -22,9 +22,7 @@
 ##############################################################################
 import unittest
 import os
-import random
 import sys
-import string
 from intel_analytics.table.hbase.schema import ETLSchema
 
 base_script_path = os.path.dirname(os.path.abspath(__file__))
@@ -33,15 +31,32 @@ sys.path.append(os.path.join(base_script_path, '..//'))
 from intel_analytics.table.bigdataframe import BigDataFrame
 from intel_analytics.table.bigdataframe import BigDataFrameException
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
-from intel_analytics.table.hbase.table import HBaseFrameBuilder, HBaseTable, _create_table_name, HBaseFrameBuilderFactory, hbase_frame_builder_factory
+from intel_analytics.table.hbase.table import HBaseFrameBuilder, HBaseTable
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.table import Imputation
 from intel_analytics.config import global_config as CONFIG_PARAMS
-from mock import Mock, MagicMock
-from mock import patch
+from mock import MagicMock, patch
 
 
 class BigDataFrameTest(unittest.TestCase):
+
+    def create_mock_etl_object(self, result_holder):
+
+        object = ETLSchema()
+        object.load_schema = MagicMock()
+
+        def etl_effect(arg):
+            result_holder["table_name"] = arg
+            result_holder["feature_names"] = object.feature_names
+            result_holder["feature_types"] = object.feature_types
+
+        save_action = MagicMock()
+        save_action.side_effect = etl_effect
+        object.save_schema = save_action
+        object.feature_names = ["col1", "col2", "col3"]
+        object.feature_types = ["long", "chararray", "long"]
+        return object
+
     def validate_nonnull(self, table, col_to_check):
         with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
             table = hbase_client.connection.table(table)
@@ -188,6 +203,50 @@ class BigDataFrameTest(unittest.TestCase):
         data_frame.impute("column_name", Imputation.MEAN)
         new_lineage_length = len(data_frame.lineage)
         self.assertEqual(old_lineage_length + 1, new_lineage_length)
+
+    @patch('intel_analytics.table.hbase.table._create_table_name')
+    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    @patch('intel_analytics.table.hbase.table.hbase_frame_builder_factory')
+    def test_copy(self, hbase_frame_builder_factory, etl_schema_class, etl_base_client_class, _create_table_name):
+        result_holder = {}
+
+        hbase_client = MagicMock()
+        hbase_client.__exit__ = MagicMock()
+        hbase_client.__enter__ = MagicMock(return_value=hbase_client)
+        hbase_client.drop_create_table = MagicMock()
+
+        _create_table_name.return_value = "test_new_table"
+
+        etl_base_client_class.return_value = hbase_client
+        mock_etl_obj = self.create_mock_etl_object(result_holder)
+        etl_schema_class.return_value = mock_etl_obj
+
+        hbase_frame_builder_factory.name_registry.__getitem__ = MagicMock(return_value = None)
+        hbase_table = HBaseTable("test_table", "test_file")
+        data_frame = BigDataFrame("test_frame", hbase_table)
+        def copy_side_effect(name, feature_name, feature_types):
+            return HBaseTable(name, "")
+
+        data_frame._table.copy = MagicMock(side_effect = copy_side_effect)
+        new_frame_name = "test_frame_11"
+        new_data_frame = HBaseFrameBuilder().copy_data_frame(data_frame, new_frame_name)
+        self.assertEqual(new_data_frame.name, new_frame_name)
+        self.assertNotEqual(data_frame._original_table_name, new_data_frame._original_table_name)
+        self.assertEqual(new_data_frame._original_table_name, new_data_frame._table.table_name)
+        mock_etl_obj.save_schema.assert_called_once_with(new_data_frame._table.table_name)
+        hbase_client.drop_create_table.assert_called_once_with("test_new_table", [CONFIG_PARAMS['hbase_column_family']])
+
+    def test_drop_columns(self):
+        hbase_table = HBaseTable("test_table", "test_file")
+        data_frame = BigDataFrame("test_frame", hbase_table)
+        drop_action = MagicMock()
+        data_frame._table.drop_columns = drop_action
+
+        columns_to_drop = "f1,f2"
+        data_frame.drop_columns(columns_to_drop)
+        drop_action.assert_called_once_with(columns_to_drop)
+
 
     # @patch('intel_analytics.table.hbase.table.call')
     # @patch('intel_analytics.table.hbase.table.hbase_frame_builder_factory.name_registry.get_key')

@@ -41,6 +41,7 @@ class PrintReportStrategy(ReportStrategy):
         print line
 
 
+
 class ProgressReportStrategy(ReportStrategy):
     """
     Subclass of ReportStrategy which captures map reduce job progress
@@ -103,6 +104,20 @@ class ProgressReportStrategy(ReportStrategy):
         else:
             self.job_progress_bar_list[-1].alert()
 
+
+class MapOnlyProgressReportStrategy(ProgressReportStrategy):
+    def report(self, line):
+        progress = find_progress(line)
+        if progress:
+            if len(self.progress_list) == 0:
+                self.initialization_progressbar._disable_animation()
+
+            if len(self.progress_list) == 0 or self.progress_list[-1].mapper_progress > progress.mapper_progress:
+                self.job_progress_bar_list.append(self.get_new_progress_bar(self.get_next_step_title()))
+                self.progress_list.append(progress)
+
+            self.job_progress_bar_list[-1].update(progress.mapper_progress)
+            self.progress_list[-1] = progress
 
 mr_progress_output_pattern = re.compile(r".*?mapred.JobClient:.*?map.*?([0-9]*?%).*?reduce.*?([0-9]*?%)")
 def find_progress(line_value):
