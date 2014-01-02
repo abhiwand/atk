@@ -27,12 +27,14 @@ import sys
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
 
+
 from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
 from mock import patch, Mock, MagicMock
 
+config['hbase_column_family'] = "etl-cf:"
 
 class HbaseTableTest(unittest.TestCase):
 
@@ -202,6 +204,7 @@ class HbaseTableTest(unittest.TestCase):
         call_method.return_value = None
         call_method.side_effect = call_side_effect
 
+
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
@@ -223,6 +226,7 @@ class HbaseTableTest(unittest.TestCase):
         self.assertEqual(table_name, call_args[call_args.index('-t') + 1])
         # check column names
         self.assertEqual(columns_to_drop, call_args[call_args.index('-n') + 1])
+
         # check column family
         self.assertEqual('etl-cf', call_args[call_args.index('-f') + 1])
 
@@ -443,9 +447,6 @@ class HbaseTableTest(unittest.TestCase):
         call_method.side_effect = call_side_effect
 
         frame_name = "test_frame"
-        hbase_frame_builder_factory.name_registry.register = Mock(side_effect = register_side_effect)
-        hbase_frame_builder_factory.name_registry.get_key = Mock(return_value = frame_name)
-
 
         hbase_registry.register = Mock(side_effect = register_side_effect)
         hbase_registry.get_key = Mock(return_value = frame_name)
@@ -456,8 +457,8 @@ class HbaseTableTest(unittest.TestCase):
         table = HBaseTable(table_name, file_name)
         table._HBaseTable__drop(output_table, 'col1', replace_with="replace")
 
-        self.assertEqual(frame_name, result_holder["key"])
-        self.assertEqual(output_table, result_holder["output_table"])
+        #self.assertEqual(frame_name, result_holder["key"])  This is never added to the registry during the drop call
+        self.assertEqual(output_table, result_holder["table_name"])  #table name is replaced with value of output table during drop function
 
         # validate call arguments
         self.assertEqual("pig", result_holder["call_args"][0])
@@ -499,8 +500,9 @@ class HbaseTableTest(unittest.TestCase):
         table = HBaseTable(table_name, file_name)
         table._HBaseTable__drop(output_table, how="any", replace_with="replace")
 
-        self.assertEqual(frame_name, result_holder["key"])
-        self.assertEqual(output_table, result_holder["output_table"])
+
+        #self.assertEqual(frame_name, result_holder["key"]) This is never added to the registry during the drop call
+        self.assertEqual(output_table, result_holder["table_name"])  #table name is replaced with value of output table during drop function
 
         # validate call arguments
         self.assertEqual("pig", result_holder["call_args"][0])

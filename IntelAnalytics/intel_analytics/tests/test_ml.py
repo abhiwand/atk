@@ -34,10 +34,33 @@ sys.path.append(os.path.abspath(
     os.path.join(os.path.join(_current_dir, os.pardir), os.pardir)))
 _test_data_dir = os.path.join(_current_dir, 'test_data')
 
-sys.modules['intel_analytics.config'] = __import__('mock_config')
-sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
-#sys.modules['intel_analytics.report'] = __import__('mock_report')
-sys.modules['intel_analytics.progress'] = __import__('mock_progress')
+if __name__ == '__main__':
+    sys.modules['intel_analytics.config'] = __import__('mock_config')
+    sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
+    #sys.modules['intel_analytics.report'] = __import__('mock_report')
+    sys.modules['intel_analytics.progress'] = __import__('mock_progress')
+else:
+    #to get coverage on all of our modules we need to execute the unit tests utilizing a test runner
+    #this runner executes all of the test files in the same execution space making it so that import from previous
+    #files are still in sys.modules we need to do the following to reset the required modules so that imports work as
+    #expected
+    import intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc, intel_analytics.tests.mock_progress
+
+    print intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc, intel_analytics.tests.mock_progress
+
+    mocked_modules = ['intel_analytics.config', 'intel_analytics.subproc', 'intel_analytics.progress']
+
+    old_modules = {}
+    for module in mocked_modules:
+        if module in sys.modules:
+            old_modules[module] = sys.modules[module]
+        else:
+            old_modules[module] = None
+
+
+    sys.modules['intel_analytics.config'] = sys.modules['intel_analytics.tests.mock_config']
+    sys.modules['intel_analytics.subproc'] = sys.modules['intel_analytics.tests.mock_subproc']
+    sys.modules['intel_analytics.progress'] = sys.modules['intel_analytics.tests.mock_progress']
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 
@@ -52,6 +75,18 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
         ml = TitanGiraphMachineLearning(self.graph)
         self.assertEqual(self.graph, ml._graph)
         self.assertEqual('test_table', ml._table_name)
+
+    @classmethod
+    def tearDownClass(cls):
+        '''This method will revert the mocked modules so that the test runner can continue executing tests that do not mock modules'''
+        if __name__ != '__main__':
+            for module in mocked_modules:
+                if old_modules[module] == None:
+                    del sys.modules[module]
+                else:
+                    sys.modules[module] = old_modules[module]
+        else:
+            pass
 
     @patch('__builtin__.open')
     def test_page_rank_required_inputs(self, mock_open):

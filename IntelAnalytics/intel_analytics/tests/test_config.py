@@ -79,13 +79,10 @@ class TestTemplate(unittest.TestCase):
 
 class TestDynamicImport(unittest.TestCase):
     def test_dynamic_import(self):
-        if __name__ == '__main__':
-            # This is to allow the tests to execute from both directly executing the script or through test discovery via nosetests
-            # nose is unable to find intel_analytics.config.Config but it can find config.Config
-            mock_prefix='intel_analytics.'
-        else:
-            mock_prefix=''
-        config_class = dynamic_import("%sconfig.Config" % mock_prefix)
+        if 'intel_analytics.config' in sys.modules:
+            # if executing through a test runner intel_analytics.config might already be in sys.modules that would break this test case so purge it from sys.modules
+            del sys.modules['intel_analytics.config']
+        config_class = dynamic_import("intel_analytics.config.Config")
         self.assertEqual("Config", config_class.__name__)
 
 
