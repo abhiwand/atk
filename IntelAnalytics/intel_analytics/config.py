@@ -247,7 +247,7 @@ class Config(object):
         try:
             return self.props[item]
         except:
-            raise Exception('\n'.join(self.props))
+            raise Exception('File:%s\nValues: %s' %(properties_file, '\n'.join(self.props)))
 
     def __setitem__(self, key, value):
         self.props[key] = value
