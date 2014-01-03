@@ -62,10 +62,6 @@ else:
     sys.modules['intel_analytics.subproc'] = sys.modules['intel_analytics.tests.mock_subproc']
     sys.modules['intel_analytics.progress'] = sys.modules['intel_analytics.tests.mock_progress']
 
-    if not os.getenv('DISPLAY'):
-        import matplotlib
-        matplotlib.use("Agg")
-
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 
 
