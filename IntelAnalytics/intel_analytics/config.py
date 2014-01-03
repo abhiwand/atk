@@ -244,7 +244,10 @@ class Config(object):
             self.load(srcfile)
 
     def __getitem__(self, item):
-        return self.props[item]
+        try:
+            return self.props[item]
+        except:
+            raise Exception('File:%s\nValues: %s' %(self.srcfile, '\n'.join(self.props)))
 
     def __setitem__(self, key, value):
         self.props[key] = value
