@@ -36,6 +36,7 @@ _here_folder = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
     os.path.join(os.path.join(_here_folder, os.pardir), os.pardir)))
 
+
 if __name__ == '__main__':
     sys.modules['bulbs.titan'] = __import__('mock_bulbs_titan')
     sys.modules['bulbs.config'] = __import__('mock_bulbs_config')
@@ -45,23 +46,24 @@ else:
     #to get coverage on all of our modules we need to execute the unit tests utilizing a test runner
     #this runner executes all of the test files in the same execution space making it so that import from previous
     #files are still in sys.modules we need to do the following to reset the required modules so that imports work as
-    #expected
+    #expected.
+
+    modules_to_remove = ['intel_analytics.graph.biggraph', 'intel_analytics.graph.titan.graph', 'intel_analytics.graph.titan.config',
+                         'bulbs.titan','bulbs.config','intel_analytics.config', 'intel_analytics.subproc']
+
+    for module in modules_to_remove:
+        if module in sys.modules:
+            del sys.modules[module]
+
+    #The __import__ function was not resolving due to conflicts between intel_analytics and its submodules. The following import provides the same functionality without the conflicts
+    #The .__name__ field is used instead of a hard coded string is used so that intelliJ auto formatting will not remove this import.
+
     import intel_analytics.tests.mock_bulbs_config, intel_analytics.tests.mock_bulbs_titan, intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc
 
-    print intel_analytics.tests.mock_bulbs_config, intel_analytics.tests.mock_bulbs_titan, intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc
-    mocked_modules = ['bulbs.titan','bulbs.config','intel_analytics.config', 'intel_analytics.subproc']
-
-    old_modules = {}
-    for module in mocked_modules:
-        if module in sys.modules:
-            old_modules[module] = sys.modules[module]
-        else:
-            old_modules[module] = None
-
-    sys.modules['bulbs.titan'] = sys.modules['intel_analytics.tests.mock_bulbs_titan']
-    sys.modules['bulbs.config'] = sys.modules['intel_analytics.tests.mock_bulbs_config']
-    sys.modules['intel_analytics.config'] = sys.modules['intel_analytics.tests.mock_config']
-    sys.modules['intel_analytics.subproc'] = sys.modules['intel_analytics.tests.mock_subproc']
+    sys.modules['bulbs.titan'] = sys.modules[intel_analytics.tests.mock_bulbs_titan.__name__]
+    sys.modules['bulbs.config'] = sys.modules[intel_analytics.tests.mock_bulbs_config.__name__]
+    sys.modules['intel_analytics.config'] = sys.modules[intel_analytics.tests.mock_config.__name__]
+    sys.modules['intel_analytics.subproc'] = sys.modules[intel_analytics.tests.mock_subproc.__name__]
 
 
 # mock config
@@ -99,11 +101,8 @@ class TestGraphBuilder(unittest.TestCase):
     def tearDownClass(cls):
         '''This method will revert the mocked modules so that the test runner can continue executing tests that do not mock modules'''
         if __name__ != '__main__':
-            for module in mocked_modules:
-                if old_modules[module] == None:
-                    del sys.modules[module]
-                else:
-                    sys.modules[module] = old_modules[module]
+            for module in modules_to_remove:
+                del sys.modules[module]
         else:
             pass
 

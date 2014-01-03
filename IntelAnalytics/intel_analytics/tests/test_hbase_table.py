@@ -27,6 +27,8 @@ import sys
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
 
+if 'intel_analytics.config' in sys.modules:
+    del sys.modules['intel_analytics.config']    #this  is done to verify that the global config is not patched by previous test scripts in the test runner.
 
 from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
@@ -214,6 +216,7 @@ class HbaseTableTest(unittest.TestCase):
         mock_etl_obj.save_schema.assert_called_once_with(table_name)
         self.assertEqual(result_holder["feature_names"], ["col3"])
         self.assertEqual(result_holder["feature_types"], ["long"])
+
 
         call_args = result_holder["call_args"]
         self.assertEqual("hadoop", call_args[0])

@@ -49,12 +49,14 @@ if [[ -e $(python -c "import coverage") ]]; then
 fi
 
 DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
-echo "set the following environment variables to a status needed to execute tests"
 
+PYTHON_HOME=`dirname $DIR`
 
-export INTEL_ANALYTICS_PYTHON=`dirname $DIR`
-export INTEL_ANALYTICS_HOME=`dirname $INTEL_ANALYTICS_PYTHON`
+export INTEL_ANALYTICS_PYTHON=`dirname $PYTHON_HOME`
+export INTEL_ANALYTICS_HOME=$INTEL_ANALYTICS_PYTHON
 export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
+
+pushd $INTEL_ANALYTICS_HOME
 
 if [[ ! -f $INTEL_ANALYTICS_HOME/conf/intel_analytics.properties ]]; then
     #configuration file does not exist link it to the actual default properties file
@@ -63,9 +65,13 @@ fi
 
 rm -rf $INTEL_ANALYTICS_HOME/cover
 
-nosetests $INTEL_ANALYTICS_PYTHON --with-coverage --cover-package=intel_analytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$INTEL_ANALYTICS_HOME/nosetests.xml
+nosetests $PYTHON_HOME --with-coverage --cover-package=intel_analytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$INTEL_ANALYTICS_HOME/nosetests.xml
 
 COVERAGE_ARCHIVE=$SOURCE_CODE/python-coverage.zip
+
+rm *.log
+
+popd
 
 rm  $COVERAGE_ARCHIVE
 
