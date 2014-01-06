@@ -38,11 +38,11 @@ def set_data(js, **kwargs):
 def set_name(js, name):
   """Sets the ['name'] property on the JSON object."""
   js['name'] = name
-    
+
 def get_name(js):
   """Gets the ['name'] property on the JSON object."""
   return js['name']
-    
+
 def get_data(js, name):
   """Gets the named value from the ['data'] dictionary on the JSON object."""
   return js['data'].get(name)
@@ -52,7 +52,7 @@ def set_format(js, **kwargs):
      in the data dictionary with '$' prepended."""
   for (k,v) in kwargs.items():
     js['data']['$' + k] = v
-        
+
 
 def _true(x):
     return True
@@ -83,7 +83,7 @@ def traverse(vertex, depth, vertex_filter = _true, edge_filter = _true):
 	if v.eid in found or not vertex_filter(v):
 	    continue
         found.add(v.eid)
-	edges = [e for e in v.outE() or [] 
+	edges = [e for e in v.outE() or []
 			if d > 0 and edge_filter(e) and vertex_filter(e.inV())]
 	next = [(e.inV(), d - 1) for e in edges]
 	todo.extend(next)
@@ -91,7 +91,7 @@ def traverse(vertex, depth, vertex_filter = _true, edge_filter = _true):
 
 def edge_to_json(edge):
     """Converts a bulbs.Edge into JSON that can be consumed by the JavaScript InfoVis Toolkit."""
-    return {'nodeTo':edge.inV().eid, 'data': {'label':edge.label()}} 
+    return {'nodeTo':edge.inV().eid, 'data': {'label':edge.label()}}
 
 
 
@@ -100,25 +100,25 @@ def vertex_to_json(vertex, edges, vertex_label = 'name', edge_formatter = edge_t
        
        Generates a node with adjacencies for the given vertex.
     """
-    node = {'id': vertex.eid, 
-		'name':vertex.data().get(vertex_label) or str(vertex.eid), 
-		'data': vertex.data(), 
+    node = {'id': vertex.eid,
+		'name':vertex.data().get(vertex_label) or str(vertex.eid),
+		'data': vertex.data(),
 		'adjacencies':map(edge_formatter, edges) }
     return node
 
 def _traversal_to_json(vertex_edge_list,
-			vertex_label = 'name', 
-			vertex_formatter = vertex_to_json, 
+			vertex_label = 'name',
+			vertex_formatter = vertex_to_json,
 			edge_formatter = edge_to_json):
-    json = [vertex_formatter(v, es, 
-			vertex_label = vertex_label, 
-			edge_formatter = edge_formatter) 
+    json = [vertex_formatter(v, es,
+			vertex_label = vertex_label,
+			edge_formatter = edge_formatter)
 		for (v,es) in vertex_edge_list]
     return json
- 
-def render_radial(vertex, depth = 1, 
-			vertex_label = 'name', 
-			vertex_filter = None, 
+
+def render_radial(vertex, depth = 1,
+			vertex_label = 'name',
+			vertex_filter = None,
 			edge_filter = None,
 			vertex_formatter = vertex_to_json,
 			edge_formatter = edge_to_json):
@@ -146,8 +146,8 @@ def render_radial(vertex, depth = 1,
        edge_formatter : 
            Generates the JSON for each edge. Defaults to edge_to_json.
     """
-    
-	height = min(1000, 200 + (depth * 100))
+
+    height = min(1000, 200 + (depth * 100))
     edge_filter = edge_filter or _true
     vertex_filter = vertex_filter or _true
     nodes = traverse(vertex, depth, edge_filter = edge_filter, vertex_filter = vertex_filter)
@@ -164,7 +164,7 @@ def _render_json(nodes,height):
 		</div>
 		""" % (id, height, id))
 	display(pb)
-	display(Javascript("""if ($('#jit').length == 0) { 
+	display(Javascript("""if ($('#jit').length == 0) {
 			$("head").append(
 				$("<script id = 'jit' src='static/Jit/jit.js'/>"));
 	}

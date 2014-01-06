@@ -32,7 +32,7 @@ import math
 import traceback
 
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_script_path, '..'))
+sys.path.append(os.path.join(base_script_path, '..//'))
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.config import global_config as CONFIG_PARAMS
 

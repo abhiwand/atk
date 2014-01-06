@@ -26,15 +26,16 @@ import subprocess
 import commands
 import math
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_script_path, '..'))
+sys.path.append(os.path.join(base_script_path, '..//'))
 os.environ['PYTHONPATH'] = ':'.join(sys.path)#python scripts that call our pig scripts need this
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.config import global_config as CONFIG_PARAMS
 
-worldbank_data_csv_path = os.path.join(base_script_path, '..', '..', 'feateng', 'test-data/worldbank.csv')
-test_standardization_dataset_csv_path = os.path.join(base_script_path, '..', '..', 'feateng', 'test-data/test_standardization_dataset.csv')
+worldbank_data_csv_path = os.path.join(base_script_path, '..//', '..', 'feateng', 'test-data/worldbank.csv')
+test_standardization_dataset_csv_path = os.path.join(base_script_path, '..//', '..', 'feateng', 'test-data/test_standardization_dataset.csv')
+os.environ['INTEL_ANALYTICS_ETL_RUN_LOCAL'] = 'true'
 
-py_scripts_path = os.path.join(base_script_path, '..', 'intel_analytics', 'table' , 'hbase', 'scripts')
+py_scripts_path = os.path.join(base_script_path, '..//', 'intel_analytics', 'table' , 'hbase', 'scripts')
 
 cols = ['etl-cf:country', 'etl-cf:year', 'etl-cf:co2_emission', 'etl-cf:co2_emission', 
         'etl-cf:electric_consumption','etl-cf:energy_use','etl-cf:fertility','etl-cf:gni',
@@ -64,7 +65,8 @@ schema_definition = 'country:chararray,year:chararray,'+\
                     'internet_users:double,life_expectancy:double,military_expenses:double,'+\
                     'population: double,hiv_prevelence:double'
                       
-return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/worldbank.csv',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path,
+                                                      'import_csv.py'), '-i', '/tmp/worldbank.csv',
                  '-o', TEST_TABLE, '-s', schema_definition, '-k'])
 
 if return_code:
@@ -75,7 +77,8 @@ DIFF_EPSILON = 0.01#diff used for floating point comparisons
 
 print "Testing the EXP transform"
  
-return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path,
+                                                      'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'EXP', '-n', 'exp_internet_users', '-k'])
  
 if return_code:
@@ -107,7 +110,8 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     hbase_client.connection.delete_table(TEST_TRANSFORM_TABLE, disable=True)
   
 print "Testing the ABS transform"
-return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path,
+                                                      'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'ABS', '-n', 'abs_internet_users', '-k'])
     
 if return_code:
@@ -131,7 +135,8 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     hbase_client.connection.delete_table(TEST_TRANSFORM_TABLE, disable=True)
   
 print "Testing the LOG10 transform"      
-return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path,
+                                                      'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'LOG10', '-n', 'log10_internet_users', '-k'])
   
 if return_code:
@@ -159,7 +164,8 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
     hbase_client.connection.delete_table(TEST_TRANSFORM_TABLE, disable=True)
   
 print "Testing the org.apache.pig.piggybank.evaluation.math.POW transform"          
-return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path,
+                                                      'transform.py'), '-i', TEST_TABLE, '-f', 'internet_users',
                  '-o', TEST_TRANSFORM_TABLE, '-t', 'org.apache.pig.piggybank.evaluation.math.POW', '-a', '[2]', '-n', 'internet_users_squared', '-k'])
   
 if return_code:
@@ -181,7 +187,8 @@ print "Importing %s for testing STND transform"%(test_standardization_dataset_cs
 commands.getoutput("cp %s /tmp/test_standardization_dataset.csv" % (test_standardization_dataset_csv_path))
 schema_definition = 'value:double'
                          
-return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/test_standardization_dataset.csv',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path,
+                                                      'import_csv.py'), '-i', '/tmp/test_standardization_dataset.csv',
                  '-o', TEST_STND_TABLE, '-s', schema_definition, '-k'])
   
 if return_code:
@@ -196,7 +203,8 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
         pass
  
 print "Testing the STND transform"  
-return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'transform.py'), '-i', TEST_STND_TABLE, '-f', 'value',
+return_code = subprocess.call(['python', os.path.join(py_scripts_path,
+                                                      'transform.py'), '-i', TEST_STND_TABLE, '-f', 'value',
                  '-o', TEST_STND_TRANSFORM_TABLE, '-t', 'STND', '-n', 'stnd_value', '-k'])
  
 if return_code:

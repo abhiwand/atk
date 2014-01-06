@@ -1,3 +1,28 @@
+#!/bin/sh
+
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2013 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
+
 # install_py.sh  (run as root)
 #
 # Installs necessary dependencies for Tribeca Python
@@ -22,6 +47,11 @@ hdr="[$me]>> "
 # verify superuser privileges
 if [[ $EUID -ne 0 ]]; then
    echo "$me must be run as root" 1>&2
+   exit 1
+fi
+
+if [[ -z $HTTP_PROXY &&  -z $http_proxy ]]; then
+   echo "$me requires that the Environment Variable HTTP_PROXY be set"  1>&2
    exit 1
 fi
 
@@ -102,7 +132,7 @@ function check {
 
 function test {
     # exit if the python module cannot be imported
-    if [ ! -e $(python -c "import $1")]; then
+    if [ ! -e $(python -c "import $1") ]; then
         echo $hdr **Failed to install $1
         exit 1
     fi
@@ -114,6 +144,21 @@ function ins {
        echo $hdr Install $1
        pip install $1
        test $1
+    fi
+}
+
+function ins_ignore_virt {
+    if check $1; then
+        echo $hdr Install $1
+        pip install $1
+        pkgs=${PYTHON_VIRTUALENV}/lib/python2.7/site-packages
+        pushd ${pkgs}
+        for f in /usr/lib/python2.7/site-packages/${1}*
+        do
+            echo $hdr Create symlink to ${f} at ${pkgs}
+            ln -sf ${f}
+        done
+        popd
     fi
 }
 
@@ -157,6 +202,9 @@ if check zmq; then
 fi
 ins pyjavaproperties
 ins mock
+#nose haas a pip error that ignores the virtenv
+ins_ignore_virt nose
+ins coverage
 
 
 # load MathJax into IPython's static folder to avoid CDN problems
@@ -185,38 +233,13 @@ if check pydoop; then
         for f in /usr/lib/python2.7/site-packages/pydoop*
         do
             echo $hdr Create symlink to ${f} at ${pkgs}
-            ln -s ${f}
+            ln -fs ${f}
         done
         popd
    fi
    test pydoop
 fi
 
+
 echo $hdr Python Virtual Environment Installation complete
 echo $hdr "To activate enter: 'source $PYTHON_VIRTUALENV/bin/activate'"
-
-# acceptance test:
-#
-# 0. activate the virtual py27 environ
-#    # source /usr/lib/tribeca/virtpy27/bin/activate
-#
-# 1. start IPython Notebook server
-#    # ipython notebook
-#
-# 2. open notebook in browser, verify Python version is 2.7.5
-#    >>> import sys; sys.version
-#
-# 3. verify the following imports at the py interpreter prompt:
-#    >>> import numpy
-#    >>> import scipy
-#    >>> import sympy
-#    >>> import nltk
-#    >>> import jinja2
-#    >>> import tornado
-#    >>> import mrjob
-#    >>> import matplotlib
-#    >>> import pandas
-#    >>> import bulbs
-#    >>> import happybase
-#    >>> import zmq
-

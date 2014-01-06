@@ -464,6 +464,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                 LOG.info("WARNING:  hbase table " + titanTableName +
                          " already exists. Titan will append new graph to existing data.");
             } else if (cmd.hasOption(BaseCLI.Options.titanOverwrite.getLongOpt())) {
+                HBaseUtils.getInstance().removeTable(titanTableName);
                 LOG.info("WARNING:  hbase table " + titanTableName +
                         " already exists. Titan will overwrite existing data with the new graph.");
             } else {

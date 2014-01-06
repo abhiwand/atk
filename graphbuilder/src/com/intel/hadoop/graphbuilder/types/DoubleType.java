@@ -40,7 +40,7 @@ public class DoubleType implements WritableComparable<DoubleType>, Mergeable<Dou
         val = 0;
     }
 
-    public DoubleType(float i) {
+    public DoubleType(double i) {
         val = i;
     }
 

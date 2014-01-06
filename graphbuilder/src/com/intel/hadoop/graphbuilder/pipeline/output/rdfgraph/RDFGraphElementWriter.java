@@ -25,11 +25,13 @@ import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
+import com.intel.hadoop.graphbuilder.util.RDFUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
+import org.openrdf.model.vocabulary.RDF;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -38,8 +40,7 @@ import java.util.Map;
 
 public class RDFGraphElementWriter extends GraphElementWriter {
 
-    private String     rdfNamespace;
-
+    private String rdfNamespace;
     private MultipleOutputs<NullWritable, Text> multipleOutputs;
 
     @Override
@@ -68,10 +69,14 @@ public class RDFGraphElementWriter extends GraphElementWriter {
 
         // Output vertex records
 
-        Iterator<Map.Entry<Object, Writable>> vertexIterator = vertexSet.entrySet().iterator();
+        Iterator<Map.Entry<Object, Writable>> vertexIterator =
+                vertexSet.entrySet().iterator();
 
         for (Map.Entry<Object, Writable> vertex: vertexSet.entrySet()) {
-            vertexToRdf(vertex.getKey().toString(), vertexLabelMap.get(vertex.getKey()).toString(), (PropertyMap) vertex.getValue(), outPath);
+            vertexToRdf(vertex.getKey().toString(),
+                        vertexLabelMap.get(vertex.getKey()).toString(),
+                        (PropertyMap) vertex.getValue(),
+                        outPath);
             vertexCount++;
         }
 
@@ -83,12 +88,31 @@ public class RDFGraphElementWriter extends GraphElementWriter {
      * @param propertyMap
      *
      */
-    void vertexToRdf(String key, String label, PropertyMap propertyMap, String outPath)
+    void vertexToRdf(String key, String label, PropertyMap propertyMap,
+                     String outPath)
             throws IOException, InterruptedException {
 
-        // Namespace can be DC, DB, RDF, OWL, or OWL2
+        // Namespace can be DB, DC, LOCMAP, ONTDOC, ONTEVENTS, OWL, OWL2,
+        // RDF, RDFS, RDFSYNTAX, RSS, VCARD or XSD
 
-        String namespace = RDFGraphReducer.RDFNamespaceMap.get(this.rdfNamespace);
+        String namespace  = null;
+        String vertexType = null;
+
+        // Each vertex and edge type should be associated with a namespace
+        // and the same namespace will be used for all its properties. If a
+        // namespace is not specified, then the global namespace specified
+        // with the '-n' command line parameter will be used.
+        // Extra logic needs to be written to reify vertex or edge properties
+        // separately
+
+        if (label.contains(".")) {
+            String [] tempArray = label.split("\\.");
+            namespace  = RDFUtils.RDFNamespaceMap.get(tempArray[0]);
+            vertexType = tempArray[1];
+        } else {
+            namespace  = RDFUtils.RDFNamespaceMap.get(this.rdfNamespace);
+            vertexType = label;
+        }
 
         // create an empty Model
 
@@ -98,20 +122,31 @@ public class RDFGraphElementWriter extends GraphElementWriter {
 
         Resource vertexRdf = model.createResource(namespace + key);
 
+        if (vertexType != null && !vertexType.isEmpty()) {
+            Property vertexTypeProperty =
+                    model.getProperty(RDF.TYPE.toString());
+            vertexRdf.addProperty(vertexTypeProperty, vertexType);
+        }
+
         for (Writable property : propertyMap.getPropertyKeys()) {
-            Property vertexRDFProperty = model.getProperty(namespace + property.toString());
-            vertexRdf.addProperty(vertexRDFProperty, propertyMap.getProperty(property.toString()).toString());
+            Property vertexRDFProperty =
+                    model.getProperty(namespace + property.toString());
+            Literal propertyValue = model.createLiteral(
+                    propertyMap.getProperty(property.toString()).toString());
+            vertexRdf.addLiteral(vertexRDFProperty, propertyValue);
         }
 
         // list the statements in the model
         StmtIterator iterator = model.listStatements();
         // print out the predicate, subject and object of each statement
         while (iterator.hasNext()) {
-            Statement stmt      = iterator.nextStatement();         // get next statement
+            Statement stmt      = iterator.nextStatement(); // get next stmt
             Resource  subject   = stmt.getSubject();   // get the subject
             Property  predicate = stmt.getPredicate(); // get the predicate
             RDFNode   object    = stmt.getObject();    // get the object
-            Text text = new Text(subject.toString() + " " + predicate.toString() + " " + object.toString() + " .");
+            Text text = new Text(subject.toString() + " " +
+                    predicate.toString() + " " +
+                    object.toString() + " .");
             this.multipleOutputs.write(NullWritable.get(), text, outPath);
         }   // End of while
     }
@@ -126,15 +161,16 @@ public class RDFGraphElementWriter extends GraphElementWriter {
 
         // Output edge records
 
-        Iterator<Map.Entry<EdgeID, Writable>> edgeIterator = edgeSet.entrySet().iterator();
+        Iterator<Map.Entry<EdgeID, Writable>> edgeIterator =
+                edgeSet.entrySet().iterator();
 
         for(Map.Entry<EdgeID, Writable> edge: edgeSet.entrySet()) {
 
             edgeToRdf(edge.getKey().getSrc().toString(),
-                    edge.getKey().getDst().toString(),
-                    edge.getKey().getLabel().toString(),
-                    (PropertyMap) edge.getValue(),
-                    outPath);
+                      edge.getKey().getDst().toString(),
+                      edge.getKey().getLabel().toString(),
+                      (PropertyMap) edge.getValue(),
+                      outPath);
 
             edgeCount++;
         }
@@ -149,39 +185,55 @@ public class RDFGraphElementWriter extends GraphElementWriter {
      * @param propertyMap
      *
      */
-    void edgeToRdf(String source, String target, String label, PropertyMap propertyMap, String outPath)
+    void edgeToRdf(String source, String target, String label,
+                   PropertyMap propertyMap, String outPath)
             throws IOException, InterruptedException {
 
-        // Namespace can be DC, DB, RDF, OWL, or OWL2
+        // Namespace can be DB, DC, LOCMAP, ONTDOC, ONTEVENTS, OWL, OWL2,
+        // RDF, RDFS, RDFSYNTAX, RSS, VCARD or XSD
 
-        String namespace = RDFGraphReducer.RDFNamespaceMap.get(this.rdfNamespace);
+        String namespace  = null;
+        String edgeType = null;
+
+        // Each edge type should be associated with a namespace
+        // and the same namespace will be used for all its properties. If a
+        // namespace is not specified, then the global namespace specified
+        // with the '-n' command line parameter will be used.
+        // Extra logic needs to be written to reify vertex or edge properties
+        // separately
+
+        if (label.contains(".")) {
+            String [] tempArray = label.split("\\.");
+            namespace  = RDFUtils.RDFNamespaceMap.get(tempArray[0]);
+            edgeType = tempArray[1];
+        } else {
+            namespace  = RDFUtils.RDFNamespaceMap.get(this.rdfNamespace);
+            edgeType = label;
+        }
 
         // create an empty Model
 
         Model model = ModelFactory.createDefaultModel();
 
-        // create the edge resource
+        // create the edge triple
+        // edge properties are ignored in this release
 
-        Resource edgeRdf = model.createResource(namespace + label);
+        Resource sourceVertexRdf = model.createResource(namespace + source);
+        Resource targetVertexRdf = model.createResource(namespace +  target);
+        Property edgeLabel = model.createProperty(namespace, edgeType);
 
-        Property sourceRDF = model.getProperty(namespace + "source");
-        Property targetRDF = model.getProperty(namespace + "target");
-        edgeRdf.addProperty(sourceRDF, source);
-        edgeRdf.addProperty(targetRDF, target);
-        for (Writable property : propertyMap.getPropertyKeys()) {
-            Property edgeRDFProperty = model.getProperty(namespace + property.toString());
-            edgeRdf.addProperty(edgeRDFProperty, propertyMap.getProperty(property.toString()).toString());
-        }
+        sourceVertexRdf.addProperty(edgeLabel, targetVertexRdf);
 
-        // list the statements in the model
         StmtIterator iter = model.listStatements();
         // print out the predicate, subject and object of each statement
         while (iter.hasNext()) {
-            Statement stmt      = iter.nextStatement();         // get next statement
+            Statement stmt      = iter.nextStatement(); // get next statement
             Resource  subject   = stmt.getSubject();   // get the subject
             Property  predicate = stmt.getPredicate(); // get the predicate
             RDFNode   object    = stmt.getObject();    // get the object
-            Text text = new Text(subject.toString() + " " + predicate.toString() + " " + object.toString() + " .");
+            Text text = new Text(subject.toString() + " " +
+                    predicate.toString() + " " +
+                    object.toString() + " .");
             this.multipleOutputs.write(NullWritable.get(), text, outPath);
         }   // End of while
     }
@@ -189,6 +241,8 @@ public class RDFGraphElementWriter extends GraphElementWriter {
     @Override
     protected void initArgs(ArgumentBuilder arguments){
         super.initArgs(arguments);
-        this.multipleOutputs = (MultipleOutputs<NullWritable, Text>)arguments.get("multipleOutputs");
+        this.multipleOutputs =
+                (MultipleOutputs<NullWritable,
+                        Text>)arguments.get("multipleOutputs");
     }
 }

@@ -26,13 +26,14 @@ import commands
 import math
 import os
 base_script_path = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.join(base_script_path, '..'))
+sys.path.append(os.path.join(base_script_path, '..//'))
 os.environ['PYTHONPATH'] = ':'.join(sys.path)#python scripts that call our pig scripts need this
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.config import global_config as CONFIG_PARAMS
 
-us_states_csv_path = os.path.join(base_script_path, '..', '..', 'feateng', 'test-data/us_states.csv')
-py_scripts_path = os.path.join(base_script_path, '..', 'intel_analytics', 'table' , 'hbase', 'scripts')
+us_states_csv_path = os.path.join(base_script_path, '..//', '..', 'feateng', 'test-data/us_states.csv')
+py_scripts_path = os.path.join(base_script_path, '..//', 'intel_analytics', 'table' , 'hbase', 'scripts')
+os.environ['INTEL_ANALYTICS_ETL_RUN_LOCAL'] = 'true'
 
 TEST_TABLE='us_states'
 SUBSTR_LENGTH=3
@@ -232,7 +233,7 @@ with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
 print "------------------------------------TESTING IMPORT SCRIPTS------------------------------------"
 commands.getoutput('cp %s /tmp/us_states.csv' % (us_states_csv_path))
 print "Copied %s to /tmp/us_states.csv" % (us_states_csv_path)
-  
+
 return_code = subprocess.call(['python', os.path.join(py_scripts_path, 'import_csv.py'), '-i', '/tmp/us_states.csv',
                  '-o', TEST_TABLE, '-s', 'state_name:chararray', '-k'])
 

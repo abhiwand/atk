@@ -29,8 +29,11 @@ import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import com.intel.hadoop.graphbuilder.util.*;
+import com.intel.hadoop.graphbuilder.util.RDFUtils;
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
+
+import static com.intel.hadoop.graphbuilder.util.StatusCode.*;
 
 /**
  * TableToRDFGraph
@@ -109,8 +112,8 @@ public class TableToRDFGraph {
 
         options.addOption(BaseCLI.Options.directedEdge.get());
 
-	options.addOption(OptionBuilder.withLongOpt(RDFConfiguration.config.getProperty("CMD_RDF_NAMESPACE"))
-                .withDescription("Specify the RDF namespace [OWL | RDFS | RDF | XMLSchema] for vertices")
+	    options.addOption(OptionBuilder.withLongOpt(RDFConfiguration.config.getProperty("CMD_RDF_NAMESPACE"))
+                .withDescription("Specify the RDF namespace")
                 .hasArgs()
                 .withArgName("RDF-Namespace")
                 .create("n"));
@@ -119,14 +122,26 @@ public class TableToRDFGraph {
     }
 
     /**
-     * This function checks whether the required tablename, vertices, vertex properties
-     * edges, and edge properties are specified as command line arguments.
+     * This function checks whether required tablename, vertices,
+     * vertex properties edges and edge properties are specified as command
+     * line arguments
      */
 
     private static void checkCli(CommandLine cmd) {
         if (!(cmd.hasOption(BaseCLI.Options.edge.getLongOpt())) &&
                 !(cmd.hasOption(BaseCLI.Options.directedEdge.getLongOpt()))) {
-            commandLineInterface.showError("Please add column family and names for (directed) edges and (directed) edge properties");
+            commandLineInterface.showError("Please add column family and " +
+                    "names for (directed) edges and (directed) edge " +
+                    "properties");
+        }
+
+        if (cmd.hasOption("n")) {
+            String namespace = cmd.getOptionValue("n");
+            if (!com.intel.hadoop.graphbuilder.util.RDFUtils.isValidNamespace(namespace)) {
+                GraphBuilderExit.graphbuilderFatalExitNoException(BAD_COMMAND_LINE,
+                        "GRAPHBUILDER_ERROR: Invalid RDF namspace" + namespace,
+                        LOG);
+            }
         }
     }
 

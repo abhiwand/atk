@@ -29,20 +29,46 @@ import sys
 from shutil import copyfile
 from mock import patch, Mock, MagicMock
 from testutils import RegistryCallableFactory, get_diff_str
+
 get_registry_callable = RegistryCallableFactory().get_registry_callable
 
 _here_folder = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
     os.path.join(os.path.join(_here_folder, os.pardir), os.pardir)))
 
-# mock imports
-sys.modules['bulbs.titan'] = __import__('mock_bulbs_titan')
-sys.modules['bulbs.config'] = __import__('mock_bulbs_config')
-sys.modules['intel_analytics.config'] = __import__('mock_config')
-sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
+
+if __name__ == '__main__':
+    sys.modules['bulbs.titan'] = __import__('mock_bulbs_titan')
+    sys.modules['bulbs.config'] = __import__('mock_bulbs_config')
+    sys.modules['intel_analytics.config'] = __import__('mock_config')
+    sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
+else:
+    #to get coverage on all of our modules we need to execute the unit tests utilizing a test runner
+    #this runner executes all of the test files in the same execution space making it so that import from previous
+    #files are still in sys.modules we need to do the following to reset the required modules so that imports work as
+    #expected.
+
+    modules_to_remove = ['intel_analytics.graph.biggraph', 'intel_analytics.graph.titan.graph', 'intel_analytics.graph.titan.config',
+                         'bulbs.titan','bulbs.config','intel_analytics.config', 'intel_analytics.subproc']
+
+    for module in modules_to_remove:
+        if module in sys.modules:
+            del sys.modules[module]
+
+    #The __import__ function was not resolving due to conflicts between intel_analytics and its submodules. The following import provides the same functionality without the conflicts
+    #The .__name__ field is used instead of a hard coded string is used so that intelliJ auto formatting will not remove this import.
+
+    import intel_analytics.tests.mock_bulbs_config, intel_analytics.tests.mock_bulbs_titan, intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc
+
+    sys.modules['bulbs.titan'] = sys.modules[intel_analytics.tests.mock_bulbs_titan.__name__]
+    sys.modules['bulbs.config'] = sys.modules[intel_analytics.tests.mock_bulbs_config.__name__]
+    sys.modules['intel_analytics.config'] = sys.modules[intel_analytics.tests.mock_config.__name__]
+    sys.modules['intel_analytics.subproc'] = sys.modules[intel_analytics.tests.mock_subproc.__name__]
+
 
 # mock config
 from intel_analytics.config import global_config as config
+
 config['conf_folder'] = os.path.join(_here_folder, "conf")
 _tmp_folder = os.path.join(_here_folder, "tmp")
 config['logs_folder'] = _tmp_folder
@@ -63,13 +89,23 @@ registry = {'f1': 'f1_time',
             'g2': 'g2_f2_time_titan',
             'f3': 'f3_time',
             # no g3 on purpose
-            }
+}
 
 
 class TestGraphBuilder(unittest.TestCase):
     def __init__(self, *args, **kw):
         self._hbase_registries = {}
         super(TestGraphBuilder, self).__init__(*args, **kw)
+
+    @classmethod
+    def tearDownClass(cls):
+        '''This method will revert the mocked modules so that the test runner can continue executing tests that do not mock modules'''
+        if __name__ != '__main__':
+            for module in modules_to_remove:
+                del sys.modules[module]
+        else:
+            pass
+
 
     def test_get_graph_builder(self):
         factory = TitanGraphBuilderFactory()
@@ -176,6 +212,7 @@ class TestGraphBuilder(unittest.TestCase):
 
     def test_generate_titan_table_name(self):
         from intel_analytics.graph.titan.graph import generate_titan_table_name
+
         source = Mock()
         source._table.table_name = "table_name"
         result = generate_titan_table_name("prefix", source)
@@ -198,7 +235,7 @@ class TestGraphBuilder(unittest.TestCase):
                  config['rexster_xml'])
         factory = TitanGraphBuilderFactory()
         frame = MagicMock()
-        frame.__str__.return_value =\
+        frame.__str__.return_value = \
             frame._table.table_name = 'bipartite_graph_frame'
         gb = factory.get_graph_builder(GraphTypes.Bipartite, frame)
         gb.register_vertex('colA', [])
@@ -230,9 +267,9 @@ colB=colP,colQ"""
         gb = factory.get_graph_builder(GraphTypes.Property, frame)
         gb.register_vertex('colA', [])
         gb.register_vertex('colB', ['colP', 'colQ'])
-        gb.register_vertices([('colC', ['colR', 'colS']), ('colD',[])])
+        gb.register_vertices([('colC', ['colR', 'colS']), ('colD', [])])
         gb.register_edge(('colA', 'colB', 'edgeAB'), ['colT'])
-        gb.register_edges([(('colC', 'colB','edgeCB'), []),
+        gb.register_edges([(('colC', 'colB', 'edgeCB'), []),
                            (('colD', 'colB', 'edgeDB'), ['colU'])])
         expected = """Source: property_graph_frame
 Vertices:
@@ -252,7 +289,6 @@ colD,colB,edgeDB,colU"""
 
 
 class TestGraphConfig(unittest.TestCase):
-
     def test_write_gb_config(self):
         titan_config.write_gb_cfg('g1_f1_timeA_titan')
         with open(config['graph_builder_titan_xml']) as f:
@@ -262,7 +298,7 @@ class TestGraphConfig(unittest.TestCase):
 <configuration>
   <property>
     <name>graphbuilder.conf_folder</name>
-    <value>conf</value>
+    <value>%s</value>
   </property>
   <property>
     <name>graphbuilder.titan_storage_backend</name>
@@ -285,7 +321,7 @@ class TestGraphConfig(unittest.TestCase):
     <value>g1_f1_timeA_titan</value>
   </property>
 </configuration>
-"""
+""" % config['conf_folder']
         if expected != result:
             msg = get_diff_str(expected, result)
             self.fail(msg)
@@ -310,6 +346,7 @@ class TestGraphConfig(unittest.TestCase):
     def test_rexster_xml_delete_graph(self):
         rexster_xml = config['rexster_xml']
         from shutil import copyfile
+
         copyfile(os.path.join(_here_folder, 'gold_rexster.xml'), rexster_xml)
         self.assertTrue(
             titan_config.rexster_xml_delete_graph('g2_f2_time_titan'))
@@ -320,6 +357,7 @@ class TestGraphConfig(unittest.TestCase):
 
     def _validate_rexster_xml(self, expected):
         from xml.etree.ElementTree import ElementTree
+
         tree = ElementTree()
         tree.parse(config['rexster_xml'])
         graph_elems = tree.findall("graphs/graph")
