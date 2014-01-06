@@ -202,7 +202,7 @@ class Registry(object):
 
     def replace_value(self, old_value, new_value):
         key = self.get_key(old_value)
-        self.register(key, new_value)
+        self.register(key, new_value, overwrite=True)
 
     def keys(self):
         return self._d.keys()

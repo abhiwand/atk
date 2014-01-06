@@ -378,7 +378,7 @@ class HBaseRegistry(Registry):
     def __init__(self, filename):
         super(HBaseRegistry, self).__init__(filename)
 
-    def register(self, key, table_name, overwrite=True, delete_table=False):
+    def register(self, key, table_name, overwrite=False, delete_table=False):
         """
         Registers an HBaseTable name with key and does table garbage collection
 
