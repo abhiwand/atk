@@ -321,7 +321,7 @@ class HBaseTable(object):
 
         logger.debug(args)
         
-        return_code = call(args, report_strategy=MapOnlyProgressReportStrategy())
+        return_code = call(args, report_strategy=etl_report_strategy())
 
         if return_code:
             raise HBaseTableException('Could not clean the dataset')
@@ -378,7 +378,7 @@ class HBaseRegistry(Registry):
     def __init__(self, filename):
         super(HBaseRegistry, self).__init__(filename)
 
-    def register(self, key, table_name, overwrite=False, delete_table=False):
+    def register(self, key, table_name, overwrite=True, delete_table=False):
         """
         Registers an HBaseTable name with key and does table garbage collection
 
