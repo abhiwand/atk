@@ -50,10 +50,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-if [[ -z $HTTP_PROXY &&  -z $http_proxy ]]; then
-   echo "$me requires that the Environment Variable HTTP_PROXY be set"  1>&2
-   exit 1
-fi
 
 #-----------------------------------------
 # PART I - install python 2.7 virtual env
