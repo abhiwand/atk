@@ -47,6 +47,7 @@ mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 mkdir -p $RPM_BUILD_ROOT/usr/bin
 mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/conf
 mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/ipython
+mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/target
 
 cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 
