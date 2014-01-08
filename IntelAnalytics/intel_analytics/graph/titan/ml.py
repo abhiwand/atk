@@ -301,7 +301,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                     smoothing=global_config['giraph_belief_propagation_smoothing'],
                     anchor_threshold=global_config['giraph_belief_propagation_anchor_threshold']):
         """
-        Loopy belief propagation on MRF.
+        Loopy belief propagation on Markov Random Fields(MRF).
 
 		This algorithm was originally designed for acyclic graphical models, 
 		then it was found that the Belief Propagation algorithm can be used 
@@ -321,24 +321,36 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			use more than one edge property. We expect a comma separated
 			string list.
         input_edge_label :
-            edge label
+            The edge property which contains the edge label.
         output_vertex_property_list :
             The vertex properties which contain the output vertex values if
 			you use more than one vertex property. We expect a comma
 			separated string list.
+
+		Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        num_worker :
+            The number of Giraph workers.
+            The default value is 15.
         max_supersteps :
 		    The number of super steps to run in Giraph.
+		    The default value is 10.
         smoothing :
 		    The Ising smoothing parameter.
+		    The default value is 2.
         convergence_threshold :
-		    The convergence threshold.
+		    The convergence threshold which controls how small the change in validation error must be
+		    in order to meet the convergence criteria.
+		    The default value is 0.001.
         anchor_threshold :
 		    The anchor threshold [0, 1].
             Those vertices whose normalized prior values are greater than this
 			threshold will not be updated.
+			The default value is 1.
 
         Returns
-        The algorithm's results in a Titan table.
+        The algorithm's results in database.
 
         -------
         """
@@ -443,25 +455,34 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			use more than one edge property. We expect a comma separated
 			string list.
         input_edge_label :
-		    The edge label.
+		    The edge property which contains the edge label.
         output_vertex_property_list :
 		     The vertex properties which contain the output vertex values
 			 if you use one vertex property. We expect a comma separated
 			 string list.
+
+		Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        num_worker :
+            The number of workers. The default value is 15.
         max_supersteps :
 		    The number of super steps to run in Giraph.
+		    The default value is 20.
         convergence_threshold :
-		    The convergence threshold.
+		    The convergence threshold which controls how small the change in belief value must be
+		    in order to meet the convergence criteria.
+		    The default value is 0.001.
         reset_probability :
-		    The reset probability.
+		    The probability that the random walk of a page is reset.
+		    The default value is 0.15.
         convergence_output_interval :
 		    The convergence progress output interval
-			(default: every superstep).
+			The default value is 1, which means output every super step.
 
         Returns
-        The algorithm's results in a Titan table.
-        You can access the convergence curve through the page_rank.stats
-		object.
+        The algorithm's results in database.
+        The progress curve is accessible through the report object.
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -568,7 +589,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Parameters
         ----------
         input_edge_label : 
-		    The edge label.
+		    The edge property which contains the edge label.
         output_vertex_property_list : 
 		    The vertex properties which contain the output vertex values if 
 			you use more than one vertex property. We expect a comma separated 
@@ -577,13 +598,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Optional Parameters
         (They come with default values. Overwrite it when the default value does not work for you.)
         ----------
-        convergence_output_interval: convergence progress output interval.
-                                     The default value is 1, which means output every super step.
-        num_worker: number of workers. The default value is 15.
+        convergence_output_interval:
+            The convergence progress output interval.
+            The default value is 1, which means output every super step.
+        num_worker :
+            The number of Giraph workers.
+            The default value is 15.
 
         Returns
-        The algorithm's results in a Titan table.
-
+        The algorithm's results in database.
+        The progress curve is accessible through the report object.
          -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -688,24 +712,36 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			use more than one edge property. We expect a comma separated
 			string list.
         input_edge_label :
-		    The edge label.
+		    The edge property which contains the edge label.
         output_vertex_property_list :
 		    The vertex properties which contain the output vertex values if
 			you use more than one vertex property. We expect a comma separated
 			string list.
+
+        Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        num_worker :
+            The number of Giraph workers.
+            The default value is 15.
         max_supersteps :
 		    The number of super steps to run in Giraph.
+		    The default value is 10.
         lambda :
 		    The tradeoff parameter: f = (1-lambda)Pf + lambda*h
+		    The default value is 0.
         convergence_threshold :
-		    The convergence threshold.
+		    The convergence threshold which controls how small the change in belief value must be
+		    in order to meet the convergence criteria.
+		    The default value is 0.001.
         anchor_threshold :
 		    The anchor threshold [0, 1].
             Those vertices whose normalized prior values are greater than this
 			threshold will not be updated.
+			The default value is 1.
 
         Returns
-        The algorithm's results in a Titan table.
+        The algorithm's results in database.
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -818,35 +854,52 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			more than one edge property. We expect a comma separated string 
 			list.
         input_edge_label : 
-		    The edge label.
+		    The edge property which contains the edge label.
         output_vertex_property_list : 
 		    The vertex properties which contain the output vertex values if 
 			you use more than one vertex property. We expect a comma separated 
 			string list.
         vertex_type : 
-		    The type of the vertex.
-        edge_type : 
-		    The type of the edge.
+		    The vertex property which contains vertex type.
+        edge_type :
+		    The edge property which contains edge type.
+
+		Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        num_worker :
+            The number of workers.
+            The default value is 15.
         max_supersteps : 
 		    The number of super steps to run in Giraph.
+            The default value is 20.
         alpha : 
 		    The document-topic smoothing parameter.
+            The default value is 0.1.
         beta : 
 		    The term-topic smoothing parameter.
+		    The default value is 0.1.
         convergence_threshold : 
-		    The convergence threshold.
+		    The convergence threshold which controls how small the change in edge value must be
+		    in order to meet the convergence criteria.
+		    The default value is false.
         evaluate_cost : 
-		    Use this to turn cost evaluation on and off.
+		    True means turn on cost evaluation and False means turn off
+		    cost evaluation.
+		    The default value is false.
         max_val : 
 		    The maximum edge weight value.
+		    The default value is Float.POSITIVE_INFINITY.
         min_val : 
 		    The minimum edge weight value.
+		    The default value is Float.NEGATIVE_INFINITY.
         num_topics : 
 		    The number of topics to identify.
+		    The default value is 10.
 
         Returns
-        The algorithm's results in a Titan table.
-        The convergence curve is accessible through the lda.stats object.
+        The algorithm's results in database.
+        The convergence curve is accessible through the report object.
 
         -------
         """
@@ -1006,37 +1059,55 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			more than one edge property. We expect a comma separated string 
 			list.
         input_edge_label : 
-		    The edge label.
+		    The edge property which contains the edge label.
         output_vertex_property_list : 
 		    The vertex properties which contain the output vertex values if 
 			you use more than one vertex property. We expect a comma 
 			separated string list.
         vertex_type : 
-		    The vertex type.
-        edge_type : 
-		    The edge type.
+		    The vertex property which contains vertex type.
+        edge_type :
+		    The edge property which contains edge type.
+
+		Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        num_worker :
+            The number of workers.
+            The default value is 15.
         max_supersteps : 
 		    The number of super steps to run in Giraph.
+		    The default value is 10.
         feature_dimension : 
 		    The feature dimension.
-        als_lambda : The regularization parameter: 
-		f = L2_error + lambda*Tikhonov_regularization
+		    The default value is 3.
+        als_lambda :
+            The regularization parameter:
+		        f = L2_error + lambda*Tikhonov_regularization
+            The default value is 0.065.
         convergence_threshold : 
-		    The convergence threshold.
+		    The convergence threshold which controls how small the change in validation error must be
+		    in order to meet the convergence criteria.
+		    The default value is 0.
         learning_output_interval : 
-		    The learning curve output interval (default: every iteration). 
-			Because each ALS iteration is composed of 2 super steps, each 
-			iteration means two super steps.
+		    The learning curve output interval.
+			The default value is 1.
+            Since each ALS iteration is composed by 2 super steps,
+            the default one iteration means two super steps.
         max_val : 
 		    The maximum edge weight value.
+		    The default value is Float.POSITIVE_INFINITY.
         min_val : 
 		    The minimum edge weight value.
+		    The default value is Float.NEGATIVE_INFINITY.
         bias_on : 
-		    The turn on or off bias.
+		    True means turn on bias calculation and False means turn off
+		    bias calculation.
+		    The default value is false.
 
         Returns
-        The algorithm's results in a Titan table.
-        The convergence curve is accessible through the als.stats object.
+        The algorithm's results in database.
+        The convergence curve is accessible through the report object.
 
         -------
         """
@@ -1193,40 +1264,58 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			use more than one edge property. We expect a comma separated 
 			string list.
         input_edge_label : 
-		    The edge label.
+		    The edge property which contains the edge label.
         output_vertex_property_list : 
 		    The vertex properties which contain the output vertex values if
 			you use more than one vertex property. We expect a comma separated
 			string list.
         vertex_type : 
-		    The vertex type.
-        edge_type : 
-		    The edge type.
+		    The vertex property which contains vertex type.
+        edge_type :
+		    The edge property which contains edge type.
+
+	    Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        num_worker :
+            The number of workers.
+            The default value is 15.
         max_supersteps : 
 		    The number of super steps to run in Giraph.
+		    The default value is 10.
         feature_dimension : 
 		    The feature dimension.
+		    The default value is 3.
         cgd_lambda : 
 		    The regularization parameter: 
-			f = L2_error + lambda*Tikhonov_regularization
+			    f = L2_error + lambda*Tikhonov_regularization
+			The default value is 0.065.
         convergence_threshold : 
-		    The convergence threshold.
+		    The convergence threshold which controls how small the change in validation error must be
+		    in order to meet the convergence criteria.
+		    The default value is 0.
         learning_output_interval : 
-		    The learning curve output interval (default: every iteration). 
-			Because each CGD iteration is composed of 2 super steps, each 
-			iteration means two super steps.
+		    The learning curve output interval.
+		    The default value is 1.
+            Since each CGD iteration is composed by 2 super steps,
+            the default one iteration means two super steps.
         max_val : 
 		    The maximum edge weight value.
+		    The default value is Float.POSITIVE_INFINITY.
         min_val : 
 		    The minimum edge weight value.
+		    The default value is Float.NEGATIVE_INFINITY.
         bias_on : 
-		    The turn on or off bias.
+		    True means turn on bias calculation and False means turn off
+		    bias calculation.
+		    The default value is false.
         num_iters : 
 		    The number of CGD iterations in each super step.
+		    The default value is 5.
 
         Returns
-        The algorithm's results in a Titan table.
-        The convergence curve is accessible through the cgd.stats object.
+        The algorithm's results in database.
+        The convergence curve is accessible through the report object.
 
         -------
         """
@@ -1388,44 +1477,64 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			use more than one edge property. We expect a comma separated 
 			string list.
         input_edge_label : 
-		    The edge label.
+		    The edge property which contains the edge label.
         output_vertex_property_list : 
 		    The vertex properties which contain the output vertex values if 
 			you use more than one vertex property. We expect a comma separated 
 			string list.
         vertex_type : 
-		    The vertex type.
+		    The vertex property which contains vertex type.
         edge_type : 
-		    The edge type.
+		    The edge property which contains edge type.
+
+        Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        num_worker :
+            The number of workers.
+            The default value is 15.
         max_supersteps : 
 		    The number of super steps to run in Giraph.
+		    The default value is 20.
         feature_dimension : 
 		    The feature dimension.
-        cgd_lambda : 
+            The default value is 20.
+        gd_lambda :
 		    The regularization parameter: 
-			f = L2_error + lambda*Tikhonov_regularization
+			    f = L2_error + lambda*Tikhonov_regularization
+			The default value is 0.05.
         convergence_threshold : 
-		    The convergence threshold.
+		    The convergence threshold which controls how small the change in validation error must be
+		    in order to meet the convergence criteria.
+		    The default value is 0.
         learning_output_interval : 
-		    The learning curve output interval (default: every iteration). 
-			Because each GD iteration is composed of 2 super steps, 
-			each iteration means two super steps.
+		    The learning curve output interval.
+			The default value is 1.
+            Since each GD iteration is composed by 2 super steps,
+            the default one iteration means two super steps.
         max_val : 
 		    The maximum edge weight value.
+		    The default value is Float.POSITIVE_INFINITY.
         min_val : 
 		    The minimum edge weight value.
+		    The default value is Float.NEGATIVE_INFINITY.
         bias_on : 
-		    The turn on or off bias.
+		    True means turn on bias calculation and False means turn off
+		    bias calculation..
+		    The default value is false.
         discount : 
 		    The discount ratio on the learning factor:
-                  learningRate(i+1) = discount * learningRate(i)
-                  where discount should be in the range of (0, 1].
+                learningRate(i+1) = discount * learningRate(i)
+                where discount should be in the range of (0, 1].
+            The default value is 1.
         learning_rate : 
-		    The learning rate.
+		    The learning rate:
+                learningRate(i+1) = discount * learningRate(i)
+		    The default value is 0.001.
 
         Returns
-        The algorithm's results in a Titan table.
-        The convergence curve is accessible through the gd.stats object.
+        The algorithm's results in database.
+        The convergence curve is accessible through the report object.
 
         -------
         """
@@ -1559,12 +1668,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
 class InitReport():
     """
-
-    The Descriptive class of the Belief Propagation algorithm.
-	
-	Should contain info about the cfg constants, the user supplied parameters
-    and what the results are -- can also define a specific
-    BeliefPropagationResults class if necessary.
+    To initialize result report object
+    Since different algorithms have different properties to report,
+    we initialize it as an empty class
     """
     pass
 

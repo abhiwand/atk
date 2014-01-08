@@ -52,7 +52,7 @@ def recommend(Vertex v,
               String trainStr,
               String leftTypeStr,
               String rightTypeStr) {
-    entities = [(leftTypeStr):leftName + '  ', (rightTypeStr):rightName+'  ']
+    entities = [(leftTypeStr):leftName + '  ', (rightTypeStr):rightName + '  ']
     commonStr = 'Top 10 recommendations to '
     comments = [(leftTypeStr):commonStr + leftName + ': ', (rightTypeStr):commonStr + rightName + ': ']
     vertexType = v.getProperty(key4VertexType)
@@ -60,7 +60,7 @@ def recommend(Vertex v,
     if (vertexType == rightTypeStr) {
         recommendType = leftTypeStr
     }
-    println "================" + comments[recommendType] + vertexID + "================"
+    println "================" + comments[vertexType] + vertexID + "================"
     list1 = getResults(v, propertyList)
 
     def list = []
