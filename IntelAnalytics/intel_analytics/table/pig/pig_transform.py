@@ -51,6 +51,18 @@ def generate_hbase_store_args(features, cmd_line_args):
     hbase_store_args += (cf+cmd_line_args.new_feature_name)
     return hbase_store_args
 
+def is_arithmetic_operation(operation):
+    if operation in ['DIV', 'MOD']:
+        return True
+    else:
+        return False
+
+def get_arithmetic_operator(operation):
+    operations = {'DIV' : '/',
+                  'MOD': '% (int)'}
+
+    return operations[operation]
+
 def generate_transform_statement(features, cmd_line_args):
     transform_statement = ''
     for i, f in enumerate(features):
@@ -67,22 +79,24 @@ def generate_transform_statement(features, cmd_line_args):
     else:#PIG functions
         #we have some args to pass to the transformation_function
         if cmd_line_args.transformation_function_args:
-            transform_statement += "%s(%s," % (cmd_line_args.transformation_function, cmd_line_args.feature_to_transform)
-            for i, arg in enumerate(cmd_line_args.transformation_function_args):
-                if type(arg) is str:#need to wrap it in quotes for pig
-                    transform_statement+="'"
-                    transform_statement+=arg#.replace('\\','\\\\') #need to escape backslashes as the concat method interprets backslashes in a regexp & removes one, we need to re-escape them
-                    transform_statement+="'"
-                else:
-                    transform_statement+=str(arg)
-                if i != len(cmd_line_args.transformation_function_args) - 1:
-                    transform_statement+=','
-            transform_statement+=") as %s" % (cmd_line_args.new_feature_name)
-            
+            if not is_arithmetic_operation(cmd_line_args.transformation_function):
+                transform_statement += "%s(%s," % (cmd_line_args.transformation_function, cmd_line_args.feature_to_transform)
+                for i, arg in enumerate(cmd_line_args.transformation_function_args):
+                    if type(arg) is str:#need to wrap it in quotes for pig
+                        transform_statement+="'"
+                        transform_statement+=arg#.replace('\\','\\\\') #need to escape backslashes as the concat method interprets backslashes in a regexp & removes one, we need to re-escape them
+                        transform_statement+="'"
+                    else:
+                        transform_statement+=str(arg)
+                    if i != len(cmd_line_args.transformation_function_args) - 1:
+                        transform_statement+=','
+                transform_statement+=") as %s" % (cmd_line_args.new_feature_name)
+            else:
+                transform_statement += "(%s %s %s) as %s" % (cmd_line_args.feature_to_transform, get_arithmetic_operator(cmd_line_args.transformation_function), cmd_line_args.transformation_function_args[-1], cmd_line_args.new_feature_name)
+
         else:#without args
             transform_statement += "%s(%s) as %s" % (cmd_line_args.transformation_function, cmd_line_args.feature_to_transform, cmd_line_args.new_feature_name)
     return transform_statement
-                      
     
 def main(argv):
     parser = ArgumentParser(description='applies feature transformations to features in a big dataset')
@@ -144,6 +158,8 @@ def main(argv):
     pig_statements.append("transformed_dataset = FOREACH hbase_data GENERATE %s;" % (transform_statement)) 
     pig_statements.append("store transformed_dataset into 'hbase://$OUTPUT' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (hbase_store_args))
     pig_script = "\n".join(pig_statements)
+    print 'test printing'
+    print pig_script
     compiled = Pig.compile(pig_script)
     status = compiled.bind({'OUTPUT':cmd_line_args.output}).runSingle()#without binding anything Pig raises error
     return 0 if status.isSuccessful() else 1
