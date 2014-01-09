@@ -35,7 +35,7 @@ except:
 from intel_analytics.config import global_config as config
 from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
 from intel_analytics.table.pig import pig_helpers
-from intel_analytics.table.builtin_functions import available_builtin_functions
+from intel_analytics.table.builtin_functions import available_builtin_functions, EvalFunctions
 
 
 def generate_hbase_store_args(features, cmd_line_args):
@@ -78,7 +78,12 @@ def generate_transform_statement(features, cmd_line_args):
         transform_statement += ("(%s - avg_var_relation.$0)/stddev_relation.stddev as %s"%(cmd_line_args.feature_to_transform, cmd_line_args.new_feature_name))
     else:#PIG functions
         #we have some args to pass to the transformation_function
-        if cmd_line_args.transformation_function_args:
+        if cmd_line_args.transformation_function == EvalFunctions.to_string(EvalFunctions.Math.RANDOM):
+            lower = cmd_line_args.transformation_function_args[-2]
+            upper = cmd_line_args.transformation_function_args[-1]
+            range = upper - lower
+            transform_statement += "(%s + RANDOM() * %s) as %s" % (str(lower), str(range), cmd_line_args.new_feature_name)
+        elif cmd_line_args.transformation_function_args:
             if not is_arithmetic_operation(cmd_line_args.transformation_function):
                 transform_statement += "%s(%s," % (cmd_line_args.transformation_function, cmd_line_args.feature_to_transform)
                 for i, arg in enumerate(cmd_line_args.transformation_function_args):
