@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.pig.Accumulator;
 import org.apache.pig.Algebraic;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -61,14 +62,10 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
  * @see PropertyGraphElementTuple
  * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement
  */
-@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
+// @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30,
+// timeUnit = TimeUnit.MINUTES)
 public class AlgMergeDuplicateGraphElements extends EvalFunc<Tuple> implements
 		Algebraic {
-
-	private SerializedGraphElement graphElementFromGroupedBagEntry(Tuple tuple)
-			throws ExecException {
-		return (SerializedGraphElement) tuple.get(1);
-	}
 
 	/**
 	 * Combine duplicate property graph elements into a single property graph
@@ -99,49 +96,64 @@ public class AlgMergeDuplicateGraphElements extends EvalFunc<Tuple> implements
 		return pgeTuple;
 	}
 
+	@Override
 	public String getInitial() {
 		return Initial.class.getName();
 	}
 
+	@Override
 	public String getIntermed() {
 		return Intermed.class.getName();
 	}
 
+	@Override
 	public String getFinal() {
 		return Final.class.getName();
 	}
 
 	static public class Initial extends EvalFunc<Tuple> {
 		public Tuple exec(Tuple input) throws IOException {
-			System.out.println("Initial ");
 			return merge(input);
 		}
 	}
 
 	static public class Intermed extends EvalFunc<Tuple> {
 		public Tuple exec(Tuple input) throws IOException {
-			System.out.println("Intermed ");
 			return merge(input);
 		}
 	}
 
 	static public class Final extends EvalFunc<Tuple> {
 		public Tuple exec(Tuple input) throws IOException {
-			System.out.println("Intermed ");
 			return merge(input);
 		}
 	}
 
 	static protected Tuple merge(Tuple input) throws ExecException {
-		DataBag valueBag = (DataBag) input.get(1);
+		int size = input.size();
+		DataBag valueBag = null;
+
+		boolean isInitial = false;
+		if (size == 2) {// initial call
+			isInitial = true;
+			valueBag = (DataBag) input.get(1);
+		} else if (size == 1) {// intermediate && final
+			valueBag = (DataBag) input.get(0);
+		}
+
 		PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) new GBTupleFactory()
 				.newTuple(1);
 		Iterator it = valueBag.iterator();
 
 		Tuple firstTuple = (Tuple) it.next();
 		// the bag contains at least one element
-		SerializedGraphElement serializedGraphElement = (SerializedGraphElement) (firstTuple
-				.get(1));
+		SerializedGraphElement serializedGraphElement = null;
+		if (isInitial)
+			serializedGraphElement = (SerializedGraphElement) (firstTuple
+					.get(1));
+		else
+			serializedGraphElement = (SerializedGraphElement) (firstTuple
+					.get(0));
 
 		GraphElement graphElement = serializedGraphElement.graphElement();
 
@@ -152,14 +164,20 @@ public class AlgMergeDuplicateGraphElements extends EvalFunc<Tuple> implements
 
 		while (it.hasNext()) {
 			Tuple t = (Tuple) it.next();
-			GraphElement dupGraphElement = ((SerializedGraphElement) t.get(1))
-					.graphElement();
+
+			GraphElement dupGraphElement = null;
+			if (isInitial)
+				dupGraphElement = ((SerializedGraphElement) t.get(1))
+						.graphElement();
+			else
+				dupGraphElement = ((SerializedGraphElement) t.get(0))
+						.graphElement();
+
 			graphElement.getProperties().mergeProperties(
 					dupGraphElement.getProperties());
 		}
 
 		outTuple.set(0, serializedGraphElement);
-		System.out.println("returning " + serializedGraphElement);
 		return outTuple;
 	}
 }
