@@ -129,6 +129,10 @@ class HBaseTable(object):
         if column_name and (column_name not in etl_schema.feature_names):
             raise HBaseTableException("Column %s does not exist" % column_name)
 
+        if not column_name:
+            column_name = '' #some operations does not requires a column name.
+
+
         script_path = os.path.join(etl_scripts_path, 'pig_transform.py')
 
         args = _get_pig_args()
@@ -146,6 +150,7 @@ class HBaseTable(object):
             args += ['-k']
 
         logger.debug(args)
+
 
         return_code = call(args, report_strategy=etl_report_strategy())
 
