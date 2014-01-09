@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.types;
 
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONValue;
+
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
@@ -30,7 +31,7 @@ import java.io.IOException;
 /**
  * The basic int type in the library.
  */
-public class IntType implements WritableComparable<IntType>, Mergeable<IntType>, JSONAware, EncapsulatedObject {
+public class IntType implements WritableComparable<IntType>, Mergeable<IntType>, JSONAware, EncapsulatedObject, GBDataType {
 
     public static final IntType ZERO = new IntType(0);
     public static final IntType ONE  = new IntType(1);
@@ -100,4 +101,9 @@ public class IntType implements WritableComparable<IntType>, Mergeable<IntType>,
     public String toJSONString() {
         return JSONValue.toJSONString(val);
     }
+
+	@Override
+	public int getType() {
+		return INT;
+	}
 }

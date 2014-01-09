@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.types;
 
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONValue;
+
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -31,7 +32,7 @@ import java.io.IOException;
 /**
  * The basic string type in the library.
  */
-public class StringType implements WritableComparable<StringType>, EncapsulatedObject, JSONAware {
+public class StringType implements WritableComparable<StringType>, EncapsulatedObject, JSONAware, GBDataType {
 
     private String str;
 
@@ -95,4 +96,9 @@ public class StringType implements WritableComparable<StringType>, EncapsulatedO
     public String toJSONString() {
         return JSONValue.toJSONString(str);
     }
+
+	@Override
+	public int getType() {
+		return STRING;
+	}
 }

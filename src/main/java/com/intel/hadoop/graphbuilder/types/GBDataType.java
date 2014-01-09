@@ -19,6 +19,15 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
-public interface EncapsulatedObject extends GBDataType {
-    public Object getBaseObject();
+public interface GBDataType {
+	public static final int DOUBLE = 0;
+	public static final int FLOAT = 1;
+	public static final int INT = 2;
+	public static final int ENCAPSULATED_OBJECT = 3;
+	public static final int LONG = 4;
+	public static final int STRING = 5;
+	public static final int EMPTY = 6;
+
+	public abstract int getType();
+
 }

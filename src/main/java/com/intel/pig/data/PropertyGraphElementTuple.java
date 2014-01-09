@@ -18,18 +18,30 @@
  */
 package com.intel.pig.data;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.util.HashUtil;
-import org.apache.pig.PigException;
-import org.apache.pig.backend.executionengine.ExecException;
-import org.apache.pig.data.*;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.hadoop.io.Writable;
+import org.apache.pig.PigException;
+import org.apache.pig.backend.executionengine.ExecException;
+import org.apache.pig.data.AbstractTuple;
+import org.apache.pig.data.DataReaderWriter;
+import org.apache.pig.data.DataType;
+import org.apache.pig.data.DefaultTuple;
+import org.apache.pig.data.SizeUtil;
+import org.apache.pig.data.TupleFactory;
+
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.types.GBDataType;
+import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 
 /**
  * \brief PropertyGraphElementTuple is the tuple type processed by the GB 2.0
@@ -66,20 +78,26 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 
 	/**
 	 * Constructs a PropertyGraphElementTuple from a given list of
-	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+	 * s
 	 * 
 	 * @param elements
-	 *            list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
+	 *            list of
+	 *            {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+	 *            s
 	 */
 	public PropertyGraphElementTuple(List elements) {
 		serializedGraphElements = elements;
 	}
 
 	/**
-	 * Returns the number of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s in this tuple.
+	 * Returns the number of
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+	 * s in this tuple.
 	 * 
-	 * @return the size of the list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s in this
-	 *         tuple.
+	 * @return the size of the list of
+	 *         {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+	 *         s in this tuple.
 	 */
 	@Override
 	public int size() {
@@ -87,7 +105,9 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	}
 
 	/**
-	 * Get the {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement} in the given <code>fieldNum</code>
+	 * Get the
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+	 * in the given <code>fieldNum</code>
 	 * 
 	 * @param fieldNum
 	 *            Index of the SerializedGraphElement to get.
@@ -155,9 +175,9 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	}
 
 	/**
-	 * Append a SerializedGraphElement to this tuple. This method is not efficient
-	 * as it may force copying of existing data in order to grow the data
-	 * structure. Whenever possible you should construct your Tuple with
+	 * Append a SerializedGraphElement to this tuple. This method is not
+	 * efficient as it may force copying of existing data in order to grow the
+	 * data structure. Whenever possible you should construct your Tuple with
 	 * {@link TupleFactory#newTuple(int)} and then fill in the values with
 	 * {@link #set(int, Object)}, rather than construct it with
 	 * {@link TupleFactory#newTuple()} and append values.
@@ -176,7 +196,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	}
 
 	/**
-	 * This implementation is copied from {@link DefaultTuple} implementation
+	 * This implementation is copied & modified from {@link DefaultTuple} implementation
 	 * 
 	 * <br/>
 	 * Determine the size of tuple in memory. This is used by data bags to
@@ -207,8 +227,64 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		mfields_var_size = Math.max(40, mfields_var_size);
 
 		long sum = empty_tuple_size + mfields_var_size;
+//		System.out.println("sum : " + sum);
+		
 		while (i.hasNext()) {
-			sum += SizeUtil.getPigObjMemSize(i.next());
+			SerializedGraphElement s = i.next();
+			sum += 64;// s hold references to lots of objects (label, id, and
+						// property maps, etc.), assume ~64 bytes for that
+
+			/* the bulk of the memory is consumed by the property maps */
+			PropertyMap map = s.graphElement().getProperties();
+			long mapSize = 0;
+			if (map != null) {
+				mapSize = 80;//empty concurrenthashmap is 76 bytes on 64-bit jvm (1.7)
+				
+				Set<Writable> keys = map.getPropertyKeys();
+				int propertyCount = keys.size();
+//				System.out.println("propertyCount " + propertyCount);
+				if (propertyCount > 0) {
+					GBDataType firstProperty = null;
+					long propertySize = 0;
+					// get the first property
+					for (Writable key : keys) {
+						Writable writable = map.getProperty(key.toString());
+//						System.out.println("writable " + writable.getClass());
+						firstProperty = (GBDataType) writable;
+//						System.out.println("type " + firstProperty.getType());
+						break;
+					}
+					
+					int type = firstProperty.getType();
+					switch (type) {
+					/*Two DoubleType references and one double value*/
+					case GBDataType.DOUBLE:
+						propertySize=24;
+						break;
+					case GBDataType.LONG:
+						propertySize=8;
+						break;
+					case GBDataType.STRING:
+						String str = ((StringType)firstProperty).get();
+						/*empty str takes 40 bytes, http://www.javaworld.com/article/2077496/testing-debugging/java-tip-130--do-you-know-your-data-size-.html*/
+						propertySize=40;
+						propertySize += str.length();
+						break;
+					/*Two IntType references and one integer value*/
+					case GBDataType.INT:
+						propertySize=20;
+						break;							
+					default:
+						//??
+						propertySize=32;
+					}
+//					System.out.println("property size " + propertySize);
+					mapSize += propertySize * propertyCount;
+//					System.out.println("mapSize size " + mapSize);
+				}
+			}
+			sum+=mapSize;
+//			System.out.println("total sum " + sum);
 		}
 		return sum;
 	}
@@ -280,7 +356,8 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 				return -1;
 			} else {
 				for (int i = 0; i < mySize; i++) {
-					SerializedGraphElement myPge = serializedGraphElements.get(i);
+					SerializedGraphElement myPge = serializedGraphElements
+							.get(i);
 					SerializedGraphElement otherPge;
 					try {
 						otherPge = (SerializedGraphElement) t.get(i);
@@ -307,16 +384,16 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		return DataType.compare(this, other);
 	}
 
-    /**
-     *
-     * @return hash code of the property graph element tuple
-     */
-    public int hashCode() {
-        int hash = 0;
-        for (int i = 0; i < serializedGraphElements.size(); i++) {
-            SerializedGraphElement pge = serializedGraphElements.get(i);
-            hash = HashUtil.combine(hash, pge);
-        }
-        return hash;
-    }
+	/**
+	 * 
+	 * @return hash code of the property graph element tuple
+	 */
+	public int hashCode() {
+		int hash = 0;
+		for (int i = 0; i < serializedGraphElements.size(); i++) {
+			SerializedGraphElement pge = serializedGraphElements.get(i);
+			hash = HashUtil.combine(hash, pge);
+		}
+		return hash;
+	}
 }
