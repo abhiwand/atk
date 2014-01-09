@@ -54,6 +54,13 @@ class EvalFunctions:
         POW=1003
         EXP=1004
         STND=1005 #STND: Standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization).
+        FLOOR=1006
+        CEIL=1007
+        ROUND=1008
+        SQRT=1009
+        DIV=1010
+        MOD=1011
+        RANDOM=1012
         
     class Json:
         EXTRACT_FIELD=2000
@@ -86,6 +93,13 @@ class EvalFunctions:
             EvalFunctions.Math.POW: 'org.apache.pig.piggybank.evaluation.math.POW',
             EvalFunctions.Math.EXP: 'EXP',
             EvalFunctions.Math.STND: 'STND',
+            EvalFunctions.Math.FLOOR: 'FLOOR',
+            EvalFunctions.Math.CEIL: 'CEIL',
+            EvalFunctions.Math.ROUND: 'ROUND',
+            EvalFunctions.Math.SQRT: 'SQRT',
+            EvalFunctions.Math.DIV: 'DIV',
+            EvalFunctions.Math.MOD: 'MOD',
+            EvalFunctions.Math.RANDOM: 'RANDOM',
 
             EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON'
         }
