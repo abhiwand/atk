@@ -14,7 +14,7 @@ if [ -d /home/hadoop/IntelAnalytics/hadoop ]
 fi
 if [ -d /home/hadoop/IntelAnalytics/hbase ] 
 	then
-		export HADOOP_HOME=/home/hadoop/IntelAnalytics/hbase
+		export HBASE_HOME=/home/hadoop/IntelAnalytics/hbase
 fi
 
 if [ -d /home/hadoop/IntelAnalytics ] && [ `whoami` != 'hadoop' ]
