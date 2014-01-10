@@ -48,5 +48,5 @@ if [ -z "${ES_HOME}" ]; then
     export PATH=${PATH}:${ES_HOME}/bin
 fi
 if [ -z "${CLUSTER_HOSTS}" ]; then
-   export CLUSTER_HOSTS=`paste -d ',' -s ${INTEL_ANALYTICS_HADOOP_HOME}/conf/slaves`
+   export CLUSTER_HOSTS=`paste -d ',' -s ${HADOOP_HOME}/conf/slaves`
 fi
