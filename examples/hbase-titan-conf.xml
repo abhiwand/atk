@@ -47,8 +47,7 @@
 		<name>graphbuilder.titan.storage_backend</name>
 		<value>hbase</value>
 		<description>
-			storage.backend parameter for Titan. Currently GB 2.0
-			(alpha) supports only HBase as the storage backend.
+			storage.backend parameter for Titan.
 		</description>
 	</property>
 
