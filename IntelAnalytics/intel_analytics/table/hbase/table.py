@@ -506,6 +506,9 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
+        if isinstance(file_name, list):
+            file_name = ','.join(file_name) #convert list of path to comma seperated string
+
         args += [script_path, '-i', file_name, '-o', table_name]
 
         logger.debug(args)
