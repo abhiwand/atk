@@ -215,14 +215,15 @@ Public Member Functions</h2></td></tr>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;            Property predicate = stmt.getPredicate();</div>
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;            RDFNode <span class="keywordtype">object</span> = stmt.getObject();</div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;            Tuple rdfTuple = TupleFactory.getInstance().newTuple(1);</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            String rdfTripleAsString = subject.toString() + <span class="stringliteral">&quot; &quot;</span></div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                    + predicate.toString() + <span class="stringliteral">&quot; &quot;</span> + object.toString() + <span class="stringliteral">&quot; .&quot;</span>;</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;            rdfTuple.set(0, rdfTripleAsString);</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            rdfBag.add(rdfTuple);</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        }</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        <span class="keywordflow">return</span> rdfBag;</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    }</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            <span class="comment">//Faunus n-triple format requires &lt;..&gt;</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;            String rdfTripleAsString = <span class="stringliteral">&quot;&lt;&quot;</span>+subject.toString() + <span class="stringliteral">&quot;&gt; &lt;&quot;</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                    + predicate.toString() + <span class="stringliteral">&quot;&gt; &lt;&quot;</span> + object.toString() + <span class="stringliteral">&quot;&gt; .&quot;</span>;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;            rdfTuple.set(0, rdfTripleAsString);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;            rdfBag.add(rdfTuple);</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        }</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        <span class="keywordflow">return</span> rdfBag;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -248,17 +249,17 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p><a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RDF.html" title="RDF UDF converts a given PropertyGraphElementTuple to a bag of RDF statements. If the com...">RDF</a> UDF returns a bag of <a class="el" href="classcom_1_1intel_1_1pig_1_1udf_1_1eval_1_1RDF.html" title="RDF UDF converts a given PropertyGraphElementTuple to a bag of RDF statements. If the com...">RDF</a> statements. </p>
-<div class="fragment"><div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;                                             {</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;            Schema rdfStatementTuple = <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;                    <span class="stringliteral">&quot;rdf_statement&quot;</span>, DataType.CHARARRAY));</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">new</span> Schema(<span class="keyword">new</span> FieldSchema(<span class="stringliteral">&quot;rdf_statements&quot;</span>,</div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;                    rdfStatementTuple, DataType.BAG));</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;        } <span class="keywordflow">catch</span> (FrontendException e) {</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(<span class="stringliteral">&quot;Exception while &quot;</span></div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;                    + <span class="stringliteral">&quot;creating output schema for RDF udf&quot;</span>, e);</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;        }</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    }</div>
+<div class="fragment"><div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;                                             {</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;            Schema rdfStatementTuple = <span class="keyword">new</span> Schema(<span class="keyword">new</span> Schema.FieldSchema(</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;                    <span class="stringliteral">&quot;rdf_statement&quot;</span>, DataType.CHARARRAY));</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">new</span> Schema(<span class="keyword">new</span> FieldSchema(<span class="stringliteral">&quot;rdf_statements&quot;</span>,</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;                    rdfStatementTuple, DataType.BAG));</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;        } <span class="keywordflow">catch</span> (FrontendException e) {</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;            <span class="keywordflow">throw</span> <span class="keyword">new</span> RuntimeException(<span class="stringliteral">&quot;Exception while &quot;</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;                    + <span class="stringliteral">&quot;creating output schema for RDF udf&quot;</span>, e);</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;        }</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    }</div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -268,7 +269,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Dec 20 2013 18:43:59 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jan 13 2014 08:58:21 for GraphBuilder 2.0 (alpha) by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

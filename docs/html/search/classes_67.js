@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['gbdatatype',['GBDataType',['../interfacecom_1_1intel_1_1hadoop_1_1graphbuilder_1_1types_1_1GBDataType.html',1,'com::intel::hadoop::graphbuilder::types']]],
   ['gbhtableconfiguration',['GBHTableConfiguration',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1input_1_1hbase_1_1GBHTableConfiguration.html',1,'com::intel::hadoop::graphbuilder::pipeline::input::hbase']]],
   ['gbtitankey',['GBTitanKey',['../classcom_1_1intel_1_1hadoop_1_1graphbuilder_1_1pipeline_1_1output_1_1titan_1_1GBTitanKey.html',1,'com::intel::hadoop::graphbuilder::pipeline::output::titan']]],
   ['gbtuplefactory',['GBTupleFactory',['../classcom_1_1intel_1_1pig_1_1data_1_1GBTupleFactory.html',1,'com::intel::pig::data']]],

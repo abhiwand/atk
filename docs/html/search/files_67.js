@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['gbdatatype_2ejava',['GBDataType.java',['../GBDataType_8java.html',1,'']]],
   ['gbhtableconfiguration_2ejava',['GBHTableConfiguration.java',['../GBHTableConfiguration_8java.html',1,'']]],
   ['gbtitankey_2ejava',['GBTitanKey.java',['../GBTitanKey_8java.html',1,'']]],
   ['gbtuplefactory_2ejava',['GBTupleFactory.java',['../GBTupleFactory_8java.html',1,'']]],
