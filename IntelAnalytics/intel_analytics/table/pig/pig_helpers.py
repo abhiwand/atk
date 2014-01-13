@@ -58,6 +58,22 @@ def get_hbase_storage_schema_string(feature_names_as_str, feature_types_as_str):
 
 
 def get_load_statement_list(files, raw_load_statement, out_relation):
+    """
+    Returns the list of load statements
+
+    Parameters
+        ----------
+        files : list
+            list of file path.
+        raw_load_statement : String
+            raw statement which needs to take a file path to finish.
+            The statement looks similar to:
+                LOAD '%s' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',') AS (state:chararray);
+        out_relation : String
+            The resulting relation name for the loading.
+            It will be the relation for subsequent operation such as storing into data store.
+
+    """
     relationship_names = []
     load_statements = []
     for i, file in enumerate(files):
