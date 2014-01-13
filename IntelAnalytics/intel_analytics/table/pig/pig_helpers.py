@@ -55,3 +55,19 @@ def get_hbase_storage_schema_string(feature_names_as_str, feature_types_as_str):
         if i != len(feature_names)-1:
             hbase_storage_schema+=' '
     return hbase_storage_schema
+
+
+def get_load_statement_list(files, raw_load_statement, out_relation):
+    relationship_names = []
+    load_statements = []
+    for i, file in enumerate(files):
+        relation = 'relations_' + str(i)
+        relationship_names.append(relation)
+        load_statement = raw_load_statement % (file)
+        load_statement = relation + ' = ' + load_statement
+        load_statements.append(load_statement)
+    if len(relationship_names) > 1:
+        load_statements.append("%s = UNION %s;" % (out_relation, ','.join(relationship_names)))
+    elif len(relationship_names) == 1:
+        load_statements.append("%s = %s;" % (out_relation, relationship_names[0]))
+    return load_statements

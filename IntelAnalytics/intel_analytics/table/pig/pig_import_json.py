@@ -26,6 +26,8 @@ import os
 #Coverage.py will attempt to import every python module to generate coverage statistics.
 #Since Pig is only available to Jython than this will cause the coverage tool to throw errors thus breaking the build.
 #This try/except block will allow us to run coverage on the Jython files.
+from intel_analytics.table.pig.pig_helpers import get_load_statement_list
+
 try:
     from org.apache.pig.scripting import Pig
 except:
@@ -43,9 +45,17 @@ def main(argv):
     parser.add_argument('-o', '--output', dest='output', help='the output able name', required=True)
 
     cmd_line_args = parser.parse_args()
-    
+
+    raw_load_statement = "LOAD '%s' USING TextLoader() as (json: chararray);"
+    input_path = cmd_line_args.input
+    files = input_path.split(',')
+    load_statements = get_load_statement_list(files, raw_load_statement, 'json_data')
+
     pig_statements = []
-    pig_statements.append("json_data = LOAD '%s' USING TextLoader() as (json: chararray);" % (cmd_line_args.input))
+
+    for statement in load_statements:
+        pig_statements.append(statement)
+
     pig_statements.append("with_unique_row_keys = RANK json_data;--generate row keys that HBaseStorage needs")
     pig_statements.append("STORE with_unique_row_keys INTO 'hbase://$OUTPUT' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (config['hbase_column_family']+'json'));
     pig_script = "\n".join(pig_statements)
