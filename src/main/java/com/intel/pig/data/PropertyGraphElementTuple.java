@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.io.Writable;
@@ -82,9 +81,8 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 * s
 	 * 
 	 * @param elements
-	 *            list of
-	 *            {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
-	 *            s
+	 *            list of {@link SerializedGraphElement}s
+	 *            
 	 */
 	public PropertyGraphElementTuple(List elements) {
 		serializedGraphElements = elements;
@@ -96,8 +94,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 * s in this tuple.
 	 * 
 	 * @return the size of the list of
-	 *         {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
-	 *         s in this tuple.
+	 *         {@link SerializedGraphElement}s in this tuple.
 	 */
 	@Override
 	public int size() {
@@ -110,8 +107,8 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 * in the given <code>fieldNum</code>
 	 * 
 	 * @param fieldNum
-	 *            Index of the SerializedGraphElement to get.
-	 * @return the SerializedGraphElement as an Object.
+	 *            Index of the {@link SerializedGraphElement} to get.
+	 * @return the {@link SerializedGraphElement} as an Object.
 	 * @throws ExecException
 	 *             if the field number is greater than or equal to the number of
 	 *             fields in the tuple.
@@ -227,31 +224,34 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		mfields_var_size = Math.max(40, mfields_var_size);
 
 		long sum = empty_tuple_size + mfields_var_size;
-//		System.out.println("sum : " + sum);
 		
 		while (i.hasNext()) {
 			SerializedGraphElement s = i.next();
 			sum += 64;// s hold references to lots of objects (label, id, and
 						// property maps, etc.), assume ~64 bytes for that
 
-			/* the bulk of the memory is consumed by the property maps */
+			/*
+			 * the bulk of the memory is consumed by the property maps, so take
+			 * them into account
+			 */
 			PropertyMap map = s.graphElement().getProperties();
 			long mapSize = 0;
 			if (map != null) {
-				mapSize = 80;//empty concurrenthashmap is 76 bytes on 64-bit jvm (1.7)
-				
+				//empty concurrenthashmap is 76 bytes (according to jvisualvm) on 64-bit jdk 1.7.40
+				mapSize = 76;
 				Set<Writable> keys = map.getPropertyKeys();
 				int propertyCount = keys.size();
-//				System.out.println("propertyCount " + propertyCount);
 				if (propertyCount > 0) {
 					GBDataType firstProperty = null;
 					long propertySize = 0;
-					// get the first property
+					
+					/*
+					 * get the first property & multiply it by the size of the
+					 * tuple
+					 */
 					for (Writable key : keys) {
 						Writable writable = map.getProperty(key.toString());
-//						System.out.println("writable " + writable.getClass());
 						firstProperty = (GBDataType) writable;
-//						System.out.println("type " + firstProperty.getType());
 						break;
 					}
 					
@@ -278,13 +278,10 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 						//??
 						propertySize=32;
 					}
-//					System.out.println("property size " + propertySize);
 					mapSize += propertySize * propertyCount;
-//					System.out.println("mapSize size " + mapSize);
 				}
 			}
 			sum+=mapSize;
-//			System.out.println("total sum " + sum);
 		}
 		return sum;
 	}
