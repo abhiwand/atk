@@ -101,6 +101,10 @@ public class EdgeList extends EvalFunc<String> {
         return null;
 	}
 
+	/**
+	 * EdgeList UDF returns a string representation of an edge property graph
+	 * element
+	 */
     @Override
     public Schema outputSchema(Schema input) {
         try {

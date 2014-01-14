@@ -104,6 +104,10 @@ public class VertexList extends EvalFunc<String> {
 		return null;
 	}
 
+	/**
+	 * VertexList UDF returns a string representation of a vertex property graph
+	 * element
+	 */
     @Override
     public Schema outputSchema(Schema input) {
         try {
