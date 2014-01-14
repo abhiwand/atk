@@ -521,7 +521,7 @@ class HBaseFrameBuilder(FrameBuilder):
         
         return new_frame
             
-    def build_from_xml(self, frame_name, file_name, tag_name, schema=None):
+    def build_from_xml(self, frame_name, file_name, tag_name, overwrite=False):
         #create some random table name
         #we currently don't bother the user to specify table names
         table_name = _create_table_name(frame_name, overwrite)
