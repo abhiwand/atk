@@ -146,7 +146,7 @@ public class MergeDuplicateGraphElements extends EvalFunc<Tuple> implements
 		GraphElement graphElement = serializedGraphElement.graphElement();
 
 		if (graphElement == null) {
-			return TupleFactory.getInstance().newTuple();
+			return null;
 		}
 
 		while (it.hasNext()) {
