@@ -22,24 +22,19 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Random;
 
-import org.apache.hadoop.io.Writable;
 import org.apache.pig.PigException;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.AbstractTuple;
 import org.apache.pig.data.DataReaderWriter;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.DefaultTuple;
-import org.apache.pig.data.SizeUtil;
 import org.apache.pig.data.TupleFactory;
 
+import com.carrotsearch.sizeof.RamUsageEstimator;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.types.GBDataType;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.HashUtil;
 
 /**
@@ -53,6 +48,13 @@ import com.intel.hadoop.graphbuilder.util.HashUtil;
 public class PropertyGraphElementTuple extends AbstractTuple {
 
 	List<SerializedGraphElement> serializedGraphElements;
+	private long emptyListSize = RamUsageEstimator.sizeOf(new ArrayList<>());
+	
+	/* number of samples to get from the serializedGraphElements list
+	 * while calculating the memory size of this tuple. Sample size 30 is
+	 * a rule of thumb used to get meaningful statistics out of a sample.
+	 */
+	private static final int N_SAMPLES=30;
 
 	/**
 	 * Constructs a PropertyGraphElementTuple with zero elements.
@@ -204,84 +206,30 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 */
 	@Override
 	public long getMemorySize() {
-		Iterator<SerializedGraphElement> i = serializedGraphElements.iterator();
-		// fixed overhead
-		long empty_tuple_size = 8 /* tuple object header */
-		+ 8 /*
-			 * isNull - but rounded to 8 bytes as total obj size needs to be
-			 * multiple of 8
-			 */
-		+ 8 /* mFields reference */
-		+ 32 /* mFields array list fixed size */;
+		long fixedOverhead = RamUsageEstimator.NUM_BYTES_OBJECT_HEADER /* tuple object header */
+							  + RamUsageEstimator.NUM_BYTES_OBJECT_REF /* serializedGraphElements reference */
+		                      + emptyListSize /* serializedGraphElements list fixed size */;
 
-		// rest of the fixed portion of mfields size is accounted within
-		// empty_tuple_size
-		long mfields_var_size = SizeUtil
-				.roundToEight(4 + 4 * serializedGraphElements.size());
-		// in java hotspot 32bit vm, there seems to be a minimum tuple size of
-		// 96
-		// which is probably from the minimum size of this array list
-		mfields_var_size = Math.max(40, mfields_var_size);
+		long sum = fixedOverhead;
+		int nElements = serializedGraphElements.size();
 
-		long sum = empty_tuple_size + mfields_var_size;
-		
-		while (i.hasNext()) {
-			SerializedGraphElement s = i.next();
-			sum += 64;// s hold references to lots of objects (label, id, and
-						// property maps, etc.), assume ~64 bytes for that
-
-			/*
-			 * the bulk of the memory is consumed by the property maps, so take
-			 * them into account
-			 */
-			PropertyMap map = s.graphElement().getProperties();
-			long mapSize = 0;
-			if (map != null) {
-				//empty concurrenthashmap is 76 bytes (according to jvisualvm) on 64-bit jdk 1.7.40
-				mapSize = 76;
-				Set<Writable> keys = map.getPropertyKeys();
-				int propertyCount = keys.size();
-				if (propertyCount > 0) {
-					GBDataType firstProperty = null;
-					long propertySize = 0;
-					
-					/*
-					 * get the first property & multiply it by the size of the
-					 * tuple
-					 */
-					for (Writable key : keys) {
-						Writable writable = map.getProperty(key.toString());
-						firstProperty = (GBDataType) writable;
-						break;
-					}
-					
-					int type = firstProperty.getType();
-					switch (type) {
-					/*Two DoubleType references and one double value*/
-					case GBDataType.DOUBLE:
-						propertySize=24;
-						break;
-					case GBDataType.LONG:
-						propertySize=8;
-						break;
-					case GBDataType.STRING:
-						String str = ((StringType)firstProperty).get();
-						/*empty str takes 40 bytes, http://www.javaworld.com/article/2077496/testing-debugging/java-tip-130--do-you-know-your-data-size-.html*/
-						propertySize=40;
-						propertySize += str.length();
-						break;
-					/*Two IntType references and one integer value*/
-					case GBDataType.INT:
-						propertySize=20;
-						break;							
-					default:
-						//??
-						propertySize=32;
-					}
-					mapSize += propertySize * propertyCount;
-				}
+		if (nElements <= N_SAMPLES) {
+			if (nElements > 0)
+				sum += RamUsageEstimator.sizeOf(serializedGraphElements);
+		} else {
+			Random random = new Random();
+			List<SerializedGraphElement> sample = new ArrayList<SerializedGraphElement>();
+			// get N_SAMPLES random samples from the list
+			for (int i = 0; i < N_SAMPLES; i++) {
+				int randIndex = random.nextInt(nElements);
+				SerializedGraphElement randElement = serializedGraphElements
+						.get(randIndex);
+				sample.add(randElement);
+				
 			}
-			sum+=mapSize;
+			long sampleMemorySize = RamUsageEstimator.sizeOf(sample);
+			float cardinality = (float)nElements/N_SAMPLES;
+			sum += (sampleMemorySize * cardinality);
 		}
 		return sum;
 	}

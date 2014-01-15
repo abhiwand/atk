@@ -32,7 +32,7 @@ import java.io.IOException;
  * The basic float type in the library.
  */
 public class FloatType implements WritableComparable<FloatType>,
-		Mergeable<FloatType>, JSONAware, EncapsulatedObject, GBDataType {
+		Mergeable<FloatType>, JSONAware, EncapsulatedObject {
 
 	public static final FloatType ZERO = new FloatType(0);
 	public static final FloatType ONE = new FloatType(1);
@@ -101,10 +101,5 @@ public class FloatType implements WritableComparable<FloatType>,
 	@Override
 	public String toJSONString() {
 		return JSONValue.toJSONString(val);
-	}
-
-	@Override
-	public int getType() {
-		return FLOAT;
 	}
 }

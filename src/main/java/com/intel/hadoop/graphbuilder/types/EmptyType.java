@@ -28,7 +28,7 @@ import java.io.IOException;
 /**
  * Basic type in the library. Represents a dummy type of empty.
  */
-public class EmptyType implements Writable, Mergeable<EmptyType>, EncapsulatedObject, GBDataType {
+public class EmptyType implements Writable, Mergeable<EmptyType>, EncapsulatedObject {
 
     public final static EmptyType INSTANCE = new EmptyType();
 
@@ -52,9 +52,4 @@ public class EmptyType implements Writable, Mergeable<EmptyType>, EncapsulatedOb
     public Object getBaseObject() {
         return INSTANCE;
     }
-
-	@Override
-	public int getType() {
-		return EMPTY;
-	}
 }
