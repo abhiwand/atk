@@ -30,7 +30,7 @@ if __name__ != '__main__':
     import os
     if not os.getenv('DISPLAY'):
         import matplotlib
-        matplotlib.use("Agg")
+        matplotlib.use("Agg",warn=False)
 
 
 import matplotlib.pyplot as plt

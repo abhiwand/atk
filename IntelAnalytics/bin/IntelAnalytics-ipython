@@ -1,6 +1,7 @@
 #! /bin/bash
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export INTEL_ANALYTICS_HOME="$DIR/.."
+export INTEL_IPYTHON_EXE_HOME="/home/hadoop/.intelanalytics"
 if [ -d intel_analytics ] 
 	then
 		export INTEL_ANALYTICS_PYTHON="$DIR/.."
@@ -15,6 +16,26 @@ fi
 if [ -d /home/hadoop/IntelAnalytics/hbase ] 
 	then
 		export HBASE_HOME=/home/hadoop/IntelAnalytics/hbase
+fi
+if [ ! -d $INTEL_IPYTHON_EXE_HOME ]
+   then
+       mkdir $INTEL_IPYTHON_EXE_HOME
+fi
+#prepare data for ipython notebooks
+
+ls $INTEL_ANALYTICS_HOME/notebooks/data/  | while read line;
+do
+   if hadoop fs -test -e $line ; then
+        echo $line "exists"
+   else
+       hadoop fs -copyFromLocal $line $line
+   fi
+done
+
+if [ `ls -lat $INTEL_ANALYTICS_HOME/notebooks/*.ipynb | wc -l` -gt 0 ]
+   then
+      sudo mv $INTEL_ANALYTICS_HOME/notebooks/*.ipynb  $INTEL_IPYTHON_EXE_HOME/
+      sudo chown hadoop:hadoop $INTEL_IPYTHON_EXE_HOME/*.ipynb
 fi
 
 if [ -d /home/hadoop/IntelAnalytics ] && [ `whoami` != 'hadoop' ]
