@@ -28,7 +28,7 @@ if __name__ != '__main__':
     #if this is executing through a test runner on the build server the DISPLAY environment variable will not be set.
     #This will require that we use the Agg  backend in matplotlib so that it can be done in a non-interactive manner.
     import os
-    if not os.getenv('DISPLAY'):
+    if os.getenv('IN_UNIT_TESTS') and not os.getenv("DISPLAY"):
         import matplotlib
         matplotlib.use("Agg",warn=False)
 
