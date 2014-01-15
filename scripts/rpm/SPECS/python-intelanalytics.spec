@@ -44,7 +44,7 @@ cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
 ln -sf /usr/lib/IntelAnalytics/intel_analytics /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages
 mkdir /home/hadoop/.intelanalytics
 mv /usr/lib/IntelAnalytics/notebooks/*.ipynb  /home/hadoop/.intelanalytics/
-chown hadoop:hadoop -R /home/hadoop/.intelanlaytics
+chown hadoop:hadoop -R /home/hadoop/.intelanalytics
 
 %postun
 
