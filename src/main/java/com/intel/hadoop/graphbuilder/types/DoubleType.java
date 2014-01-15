@@ -31,7 +31,7 @@ import java.io.IOException;
  * The basic double type in the library.
  */
 public class DoubleType implements WritableComparable<DoubleType>, Mergeable<DoubleType>, JSONAware,
-        EncapsulatedObject, GBDataType{
+        EncapsulatedObject{
     public static final DoubleType ZERO = new DoubleType(0);
     public static final DoubleType ONE  = new DoubleType(1);
 
@@ -100,9 +100,4 @@ public class DoubleType implements WritableComparable<DoubleType>, Mergeable<Dou
     public String toJSONString() {
         return JSONValue.toJSONString(val);
     }
-
-	@Override
-	public int getType() {
-		return DOUBLE;
-	}
 }

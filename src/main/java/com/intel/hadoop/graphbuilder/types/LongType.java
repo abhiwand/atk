@@ -31,7 +31,7 @@ import java.io.IOException;
 /**
  * The basic long type in the library.
  */
-public class LongType implements WritableComparable<LongType>, Mergeable<LongType>, JSONAware, EncapsulatedObject, GBDataType {
+public class LongType implements WritableComparable<LongType>, Mergeable<LongType>, JSONAware, EncapsulatedObject{
 
     public LongType() {
         this.val = 0;
@@ -99,9 +99,4 @@ public class LongType implements WritableComparable<LongType>, Mergeable<LongTyp
     public String toJSONString() {
         return JSONValue.toJSONString(val);
     }
-
-	@Override
-	public int getType() {
-		return LONG;
-	}
 }
