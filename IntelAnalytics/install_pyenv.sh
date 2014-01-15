@@ -184,7 +184,7 @@ if check matplotlib; then
 fi
 
 ins ipython
-ins pandas
+ins pandas==0.12.0
 ins bulbs
 ins happybase
 
