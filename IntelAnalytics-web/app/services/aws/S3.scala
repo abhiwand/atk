@@ -127,7 +127,7 @@ object S3 {
   }
   def formatSize(size: Long): String = {
     val sizes = Array("Bytes", "KB", "MB", "GB", "TB")
-    if (size == 0) "n/a"
+    if (size == 0) return "n/a"
     val sizeIndex = Math.floor(Math.log(size) / Math.log(BYTE)).toInt
     Math.round(size / Math.pow(BYTE, sizeIndex)).toString + " " + sizes(sizeIndex)
   }

@@ -12,7 +12,7 @@ libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.8",
   "org.mockito" % "mockito-core" % "1.9.5",
   "com.amazonaws" % "aws-java-sdk" % "1.6.4",
-  "com.github.seratch" % "awscala_2.10" % "0.1.0-SNAPSHOT",
+  "com.github.seratch" % "awscala_2.10" % "[0.1,)",
   "org.apache.hadoop" % "hadoop-client" % "1.2.1",
   "com.typesafe.play" %% "play-json" % "2.2.0",
   "com.github.scala-incubator.io" % "scala-io-file_2.10" % "0.4.2",
@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.0.4",
   "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
   "org.specs2" %% "specs2" % "2.3.3" % "test"
-)     
+        )
 
 
 

@@ -41,7 +41,7 @@ class ConfigSpec extends Specification {
 }
 
 class S3CopierSpec extends Specification {
-  "Queue monitor" should {
+/*  "Queue monitor" should {
     "receive messages" {
 
     }
@@ -73,5 +73,5 @@ class S3CopierSpec extends Specification {
     "copy files from S3 to HDFS" {
 
     }
-  }
+  }*/
 }

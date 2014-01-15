@@ -30,6 +30,7 @@ package com.intel.intelanalytics {
 
 import awscala.sqs.{Queue, Message, SQS}
 import scalax.io.StandardOpenOption
+import com.amazonaws.auth.BasicAWSCredentials
 
 //TODO: make this app work using distcp instead
 //import org.apache.hadoop.tools.{DistCpOptions, DistCp}
@@ -52,6 +53,8 @@ case class Config(bucket: String = "",
                   destination: String = "",
                   queue: String = "",
                   statusDestination: String = "",
+                  accessKey: String = "",
+                  secretKey: String = "",
                   loopDelay: Int = 1000)
 
 /**
@@ -64,9 +67,9 @@ object Config {
   def parse(args: Array[String]): Config = {
     val parser = new scopt.OptionParser[Config]("s3-copier") {
       head("s3-copier", "1.x")
-      arg[String]("bucket") action {
+      /*arg[String]("bucket") action {
         (x, c) => c.copy(bucket = x)
-      } text "S3 bucket to watch"
+      } text "S3 bucket to watch"*/
       arg[String]("prefix") action {
         (x, c) => c.copy(prefix = x)
       } text "prefix to limit which files can be copied"
@@ -200,7 +203,7 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
 
     val file = for {
       bucketName <- (json \ "create" \ "bucket").asOpt[String] orElse log("bucket not found in message")
-      validBucket <- (bucketName == config.bucket).option(bucketName) orElse log(s"bucket name $bucketName does not match ${config.bucket}")
+      //validBucket <- (bucketName == config.bucket).option(bucketName) orElse log(s"bucket name $bucketName does not match ${config.bucket}")
       fileName <- (json \ "create" \ "path").asOpt[String] orElse log("path not found in message")
       valid <- fileName.startsWith(config.prefix).option(fileName) orElse log(s"fileName $fileName does not match prefix ${config.prefix}")
       bucket <- s3.bucket(bucketName) orElse log(s"bucket $bucketName does not exist")

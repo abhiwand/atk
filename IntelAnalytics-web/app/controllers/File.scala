@@ -18,8 +18,8 @@ object File {
         //create the que
         val queueUrl = SQS.createQueue(request.user.userInfo.clusterId.getOrElse("waitingForClusterId"))
         //create the json object to send
-        val message = Json.obj("create" -> Json.obj("bucket" -> services.aws.S3.BUCKET, "path" ->
-          (S3.uploadDirectory(request.user.userInfo.uid.get.toString) + file.name), "size" -> file.size))
+        val message = Json.obj("create" -> Json.obj("bucket" -> services.aws.S3.getBucketName, "path" ->
+          (S3.uploadDirectory(request.user.userInfo.clusterId.get.toString) + file.name), "size" -> file.size))
         //stringify the json to send to queue
         SQS.setMessage(queueUrl, Json.stringify(message))
         Ok(Json.obj("ok" -> ""))
@@ -42,7 +42,7 @@ object File {
 
         //send message to s3
         val queueUrl = SQS.createQueue(request.user.userInfo.clusterId.getOrElse("waitingForClusterId"))
-        val message = Json.obj("delete" -> Json.obj("bucket" -> services.aws.S3.BUCKET, "path" -> (S3.uploadDirectory(request.user.userInfo.uid.get.toString) + file.name)))
+        val message = Json.obj("delete" -> Json.obj("bucket" -> services.aws.S3.getBucketName, "path" -> (S3.uploadDirectory(request.user.userInfo.uid.get.toString) + file.name)))
         SQS.setMessage(queueUrl, Json.stringify(message))
         Ok(Json.obj("file"->file.name))
     }.getOrElse {

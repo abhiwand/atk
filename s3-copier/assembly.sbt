@@ -6,6 +6,8 @@ assemblySettings
 
 jarName in assembly := "s3-copier.jar"
 
+test in assembly := {}
+
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
