@@ -19,9 +19,9 @@ GET         /documentation/javaapi/pigapi          controllers.Documentation.jav
 
 #error pages adding to do reverse routing
 GET         /error                                 controllers.Application.error500
-GET         /404                              controllers.Application.error404
-GET         /400                              controllers.Application.error400
-GET         /500                              controllers.Application.error500
+GET         /404                              	   controllers.Application.error404
+GET         /400                                   controllers.Application.error400
+GET         /500                                   controllers.Application.error500
 
 #file notifications
 POST        /files/create                          controllers.File.create
