@@ -54,7 +54,7 @@ case class Config(bucket: String = "",
                   statusDestination: String = "",
                   hadoopUser: String = "hadoop",
                   hadoopURI: String = "hdfs://master:9000",
-                  instanceId: String = Main.getInstanceId(),
+                  instanceId: String = instance.id(),
                   loopDelay: Int = 1000)
 
 /**
@@ -73,12 +73,12 @@ object Config {
       opt[String]("statusDestination") action {
         (x, c) => c.copy(statusDestination = x)
       } text "directory where status files should be placed"
-      opt[String]("prefix") optional() action {
-        (x, c) => c.copy(prefix = x)
-      } text "prefix to limit which files can be copied"
       opt[String]("queue") optional() action {
         (x, c) => c.copy(queue = x)
       } text "queue to watch for upload messages"
+      opt[String]("prefix") optional() action {
+        (x, c) => c.copy(prefix = x)
+      } text "prefix to limit which files can be copied"
       opt[String]("hadoopUser") optional() action{
         (x, c) => c.copy(hadoopUser = x)
       } text "the hadoop hdfs user"
@@ -91,14 +91,21 @@ object Config {
       System.exit(0)
       Config()
     }
-    val instanceId = Main.getInstanceId()
-    config.prefix = instanceId
 
-    config
+    var cConfig = config
+
+    if( config.queue.isEmpty ){
+      cConfig = cConfig.copy(queue = cConfig.instanceId)
+    }
+    if( config.prefix.equals("invalid")){
+      cConfig = cConfig.copy(prefix = cConfig.instanceId)
+    }
+
+    cConfig
   }
 }
 
-object Main {
+object main {
   /**
    * Reads command arguments, watches an SQS queue for messages, dispatches them for processing
    */
@@ -134,8 +141,10 @@ object Main {
     val copier = new S3Copier(queue, sqs, s3, config, fs)
     copier.run()
   }
+}
 
-  def getInstanceId(): String = {
+object instance{
+  def id(): String = {
     val request: Http.Request = Http("http://169.254.169.254/latest/meta-data/instance-id")
 
     var instanceId: String = "invalid"
@@ -150,7 +159,6 @@ object Main {
     instanceId.trim.toLowerCase
   }
 }
-
 /**
  * Status information
  * @param name the name that should appear for the user who is tracking this status

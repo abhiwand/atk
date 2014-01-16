@@ -147,7 +147,7 @@ object S3 {
   }
   def createPolicy(userIdentifier: String): String = {
 
-    val expire = new Date(System.currentTimeMillis() + POLICY_EXPIRATION)
+    val expire = new Date(System.currentTimeMillis() + POLICY_EXPIRATION * 2)
     val dateFormat = new SimpleDateFormat("yyyy-MM-d'T'hh:mm:ss'Z'")
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     val policyJson = Json.obj("expiration" -> dateFormat.format(expire),
