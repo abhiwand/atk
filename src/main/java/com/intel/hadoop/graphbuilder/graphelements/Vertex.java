@@ -61,8 +61,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     public Vertex(VidNameType name) {
         super();
 
-        VertexID<VidNameType> vertexId = new VertexID<VidNameType>(name, null);
-        this.vertexId = vertexId;
+        this.vertexId = new VertexID<VidNameType>(name, null);
         this.properties = new PropertyMap();
     }
 
@@ -75,8 +74,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     public Vertex(VidNameType name, StringType label, PropertyMap propertyMap) {
         super();
 
-        VertexID<VidNameType> vertexId = new VertexID<VidNameType>(name, label);
-        this.vertexId = vertexId;
+        this.vertexId = new VertexID<VidNameType>(name, label);
         this.properties = propertyMap;
     }
 
@@ -91,8 +89,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
     public Vertex(VidNameType name, String label, PropertyMap propertyMap) {
         super();
 
-        VertexID<VidNameType> vertexId = new VertexID<VidNameType>(name, new StringType(label));
-        this.vertexId = vertexId;
+        this.vertexId = new VertexID<VidNameType>(name, new StringType(label));
         this.properties = propertyMap;
     }
 
