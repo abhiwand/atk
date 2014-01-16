@@ -20,11 +20,13 @@ fi
 if [ -d /home/hadoop/IntelAnalytics ] && [ `whoami` != 'hadoop' ]
 	then
 		sudo -i -u hadoop bash -c "
-		ls $INTEL_ANALYTICS_HOME/notebooks/data/  | while read line;
+		cd $INTEL_ANALYTICS_HOME/notebooks/data/
+		ls | while read line;
         do
            if $HADOOP_HOME/bin/hadoop fs -test -e /user/hadoop/$line ; then
                 echo $line "exists"
            else
+               cd
                $HADOOP_HOME/bin/hadoop fs -copyFromLocal $line /user/hadoop/$line
            fi
         done
@@ -32,7 +34,8 @@ if [ -d /home/hadoop/IntelAnalytics ] && [ `whoami` != 'hadoop' ]
 	    ipython notebook --config=$INTEL_ANALYTICS_HOME/conf/ipython_notebook_config.py
 	"
 else
-    ls $INTEL_ANALYTICS_HOME/notebooks/data/  | while read line;
+    cd $INTEL_ANALYTICS_HOME/notebooks/data/
+    ls | while read line;
     do
        if $HADOOP_HOME/bin/hadoop fs -test -e /user/hadoop/$line ; then
             echo $line "exists"
