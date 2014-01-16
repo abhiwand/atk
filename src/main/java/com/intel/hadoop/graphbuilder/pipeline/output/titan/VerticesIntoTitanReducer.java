@@ -159,7 +159,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedGra
                     "Functional error configuring reducer function", LOG, e);
         }
 
-        initMergerWriter(context);
+        initMergerWriter();
     }
 
     /**
@@ -235,7 +235,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable, SerializedGra
                 .with("graph", graph).with("outValue", outValue).with("outKey", outKey).with("keyFunction", keyFunction));
     }
 
-    private void initMergerWriter(Context context){
+    private void initMergerWriter() {
         graphElementMerge = new GraphElementMerge();
         titanWriter = new TitanGraphElementWriter();
     }
