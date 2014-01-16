@@ -154,11 +154,7 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
      */
     @Override
     public boolean isNull(){
-        if(vertexId == null){
-            return true;
-        }else{
-            return false;
-        }
+        return vertexId == null;
     }
 
     /**
