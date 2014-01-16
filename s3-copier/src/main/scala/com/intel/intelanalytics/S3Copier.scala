@@ -30,7 +30,7 @@ package com.intel.intelanalytics {
 
 import awscala.sqs.{Queue, Message, SQS}
 import scalax.io.StandardOpenOption
-import com.amazonaws.auth.BasicAWSCredentials
+import java.net.URI
 
 //TODO: make this app work using distcp instead
 //import org.apache.hadoop.tools.{DistCpOptions, DistCp}
@@ -42,8 +42,7 @@ import scalax.file.Path
 import org.apache.hadoop.fs.{FileSystem, Path => HdPath}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-
-
+import scalaj.http.Http
 
 /**
  * Configuration for the S3Copier application
@@ -53,8 +52,9 @@ case class Config(bucket: String = "",
                   destination: String = "",
                   queue: String = "",
                   statusDestination: String = "",
-                  accessKey: String = "",
-                  secretKey: String = "",
+                  hadoopUser: String = "hadoop",
+                  hadoopURI: String = "hdfs://master:9000",
+                  instanceId: String = Main.getInstanceId(),
                   loopDelay: Int = 1000)
 
 /**
@@ -67,27 +67,34 @@ object Config {
   def parse(args: Array[String]): Config = {
     val parser = new scopt.OptionParser[Config]("s3-copier") {
       head("s3-copier", "1.x")
-      /*arg[String]("bucket") action {
-        (x, c) => c.copy(bucket = x)
-      } text "S3 bucket to watch"*/
-      arg[String]("prefix") action {
-        (x, c) => c.copy(prefix = x)
-      } text "prefix to limit which files can be copied"
-      arg[String]("destination") action {
+      opt[String]("destination") action {
         (x, c) => c.copy(destination = x)
       } text "hdfs location to which files should be copied"
-      arg[String]("queue") action {
-        (x, c) => c.copy(queue = x)
-      } text "queue to watch for upload messages"
-      arg[String]("statusDestination") action {
+      opt[String]("statusDestination") action {
         (x, c) => c.copy(statusDestination = x)
       } text "directory where status files should be placed"
+      opt[String]("prefix") optional() action {
+        (x, c) => c.copy(prefix = x)
+      } text "prefix to limit which files can be copied"
+      opt[String]("queue") optional() action {
+        (x, c) => c.copy(queue = x)
+      } text "queue to watch for upload messages"
+      opt[String]("hadoopUser") optional() action{
+        (x, c) => c.copy(hadoopUser = x)
+      } text "the hadoop hdfs user"
+      opt[String]("hadoopURI") optional() action {
+        (x, c) => c.copy(hadoopURI = x)
+      } text "the hadoop hdfs uri"
     }
     // parser.parse returns Option[C]
-    parser.parse(args, Config()) getOrElse {
+    val config = parser.parse(args, Config()) getOrElse {
       System.exit(0)
       Config()
     }
+    val instanceId = Main.getInstanceId()
+    config.prefix = instanceId
+
+    config
   }
 }
 
@@ -115,9 +122,32 @@ object Main {
     println("Getting/creating queue")
     val queue = sqs.queue(config.queue) getOrElse sqs.createQueue(config.queue)
     val configuration = new Configuration()
-    val fs = FileSystem.get(configuration)
+
+    var fs: FileSystem = null;
+    //if you have problems getting the copier to work pass the hdfs uri and user
+    if(config.hadoopURI.isEmpty || config.hadoopUser.isEmpty){
+      fs = FileSystem.get(configuration)
+    } else{
+      val uri = new URI(config.hadoopURI);
+      fs = FileSystem.get(uri, configuration, config.hadoopUser)
+    }
     val copier = new S3Copier(queue, sqs, s3, config, fs)
     copier.run()
+  }
+
+  def getInstanceId(): String = {
+    val request: Http.Request = Http("http://169.254.169.254/latest/meta-data/instance-id")
+
+    var instanceId: String = "invalid"
+    try{
+      instanceId = request.asString
+      print("instance id: " + instanceId)
+    } catch{
+      case e: Exception => {
+        print("error: coudln't get instance id " + e.getMessage)
+      }
+    }
+    instanceId.trim.toLowerCase
   }
 }
 
@@ -240,7 +270,14 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
       writeProgress(config.statusDestination, status)
       log(s"Local exists: ${localPath.exists}")
 
-      fs.copyFromLocalFile(new HdPath("file://" + localPath.path), new HdPath(config.destination + "/" + name))
+      try{
+        fs.copyFromLocalFile(new HdPath("file://" + localPath.path), new HdPath(config.destination + "/" + name))
+      }
+      catch{
+        case e: Exception => {
+          log("error: " + e.getMessage)
+        }
+      }
       localPath.delete(force = true)
       log(s"Wrote to HDFS: ${config.destination}")
       status = status.copy(progress = 100)

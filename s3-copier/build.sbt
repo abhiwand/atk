@@ -1,4 +1,4 @@
-name := "com.intel.intelanalytics-s3-copier"
+name := "s3-copier"
 
 version := "1.0-SNAPSHOT"
 
@@ -7,6 +7,8 @@ scalaVersion := "2.10.3"
 resolvers += "sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
+
+val scalaj_http = "org.scalaj" %% "scalaj-http" % "0.3.12"
 
 libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.8",
@@ -19,7 +21,8 @@ libraryDependencies ++= Seq(
   "com.github.scopt" %% "scopt" % "3.1.0",
   "org.scalaz" %% "scalaz-core" % "7.0.4",
   "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
-  "org.specs2" %% "specs2" % "2.3.3" % "test"
+  "org.specs2" %% "specs2" % "2.3.3" % "test",
+  "org.scalaj" %% "scalaj-http" % "0.3.12"
         )
 
 

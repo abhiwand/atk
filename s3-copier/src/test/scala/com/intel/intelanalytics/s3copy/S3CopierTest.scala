@@ -26,7 +26,7 @@ import org.specs2.mutable.Specification
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 class ConfigSpec extends Specification {
-
+/*
   "Config parser" should {
     "parse command line arguments" in {
       val config = Config.parse(Array("buck", "prefix", "dest", "queue", "status"))
@@ -36,12 +36,12 @@ class ConfigSpec extends Specification {
       config.queue must be("queue")
       config.statusDestination must be("status")
     }
-  }
+  }*/
 
 }
 
 class S3CopierSpec extends Specification {
-/*  "Queue monitor" should {
+  /*"Queue monitor" should {
     "receive messages" {
 
     }
