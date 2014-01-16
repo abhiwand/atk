@@ -174,7 +174,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
                     " reducer function", LOG, e);
         }
 
-        initMergerWriter(context);
+        initMergerWriter();
     }
 
     /**
@@ -262,7 +262,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
                 .with("keyFunction", keyFunction));
     }
 
-    private void initMergerWriter(Context context){
+    private void initMergerWriter() {
         graphElementMerge = new GraphElementMerge();
         titanWriter = new TitanGraphElementWriter();
     }
