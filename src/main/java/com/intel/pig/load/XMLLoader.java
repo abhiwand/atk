@@ -196,7 +196,7 @@ class XMLLoaderBufferedPositionedInputStream extends
 	 * @see XMLLoaderBufferedPositionedInputStream#setReadable
 	 */
 	public boolean isReadable() {
-		return _isReadable == true;
+		return _isReadable;
 	}
 
 	/**
