@@ -22,7 +22,7 @@ Buildroot: /tmp/intelanalyticsrpm
 
 %description
 
-The Intel Graph System Python libraries
+Install IPython and Intel Graph System Python dependencies
 
 %prep
 
