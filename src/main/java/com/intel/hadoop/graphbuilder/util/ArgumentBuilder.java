@@ -36,7 +36,7 @@ public class ArgumentBuilder {
     private HashMap<String, Object> arguments;
 
     ArgumentBuilder(){
-        this.arguments = new HashMap<>();
+        this.arguments = new HashMap<String, Object>();
     }
 
     /**

@@ -45,7 +45,7 @@ import java.util.Map;
  * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge
  */
 public class TitanGraphElementWriter extends GraphElementWriter {
-    private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<>();
+    private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<Object, Long>();
 
     /**
      * Write graph elements to a Titan graph instance.

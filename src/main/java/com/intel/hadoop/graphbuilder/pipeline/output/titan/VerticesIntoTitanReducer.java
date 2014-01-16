@@ -192,8 +192,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
     public void reduce(IntWritable key, Iterable<SerializedGraphElement>
             values, Context context) throws IOException, InterruptedException {
 
-        edgeSet       = new Hashtable<>();
-        vertexSet     = new Hashtable<>();
+        edgeSet       = new Hashtable<EdgeID, Writable>();
+        vertexSet     = new Hashtable<Object, Writable>();
 
         for(SerializedGraphElement serializedGraphElement : values){
             GraphElement graphElement = serializedGraphElement.graphElement();

@@ -28,7 +28,7 @@ public class TitanConfig {
 
     public static final String GB_ID_FOR_TITAN = "_gb_ID";
 
-    private static HashMap<String, String> defaultConfigMap  = new HashMap<>();
+    private static HashMap<String, String> defaultConfigMap  = new HashMap<String, String>();
     static {
         // Default Titan configuration for Graphbuilder
         defaultConfigMap.put("TITAN_STORAGE_BACKEND",           "hbase");
