@@ -221,26 +221,27 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         max_supersteps='10')
         self.assertEqual('test_graph', result.graph_name)
 
-    @patch('__builtin__.open')
-    def test_gd_required_inputs(self, mock_open):
-        ml = TitanGiraphMachineLearning(self.graph)
-        result = ml.gd('test_edge_property',
-                       'test_edge_label',
-                       'test_output_vertex_properties',
-                       'test_vertex_type',
-                       'test_edge_type')
-        self.assertEqual('test_graph', result.graph_name)
-
-    @patch('__builtin__.open')
-    def test_gd_optional_inputs(self, mock_open):
-        ml = TitanGiraphMachineLearning(self.graph)
-        result = ml.gd('test_edge_property',
-                       'test_edge_label',
-                       'test_output_vertex_properties',
-                       'vertex_type',
-                       'test_edge_type',
-                       max_supersteps='50')
-        self.assertEqual('test_graph', result.graph_name)
+    # The following Unit Tests break because the gd method was removed but its unit tests remain.
+    # @patch('__builtin__.open')
+    # def test_gd_required_inputs(self, mock_open):
+    #     ml = TitanGiraphMachineLearning(self.graph)
+    #     result = ml.gd('test_edge_property',
+    #                    'test_edge_label',
+    #                    'test_output_vertex_properties',
+    #                    'test_vertex_type',
+    #                    'test_edge_type')
+    #     self.assertEqual('test_graph', result.graph_name)
+    #
+    # @patch('__builtin__.open')
+    # def test_gd_optional_inputs(self, mock_open):
+    #     ml = TitanGiraphMachineLearning(self.graph)
+    #     result = ml.gd('test_edge_property',
+    #                    'test_edge_label',
+    #                    'test_output_vertex_properties',
+    #                    'vertex_type',
+    #                    'test_edge_type',
+    #                    max_supersteps='50')
+    #     self.assertEqual('test_graph', result.graph_name)
 
     def test_recommend_throw_exception(self):
         ml = TitanGiraphMachineLearning(self.graph)
