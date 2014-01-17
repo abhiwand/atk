@@ -301,6 +301,12 @@
 			<artifactId>titan-hbase</artifactId>
 			<version>${titan.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>titan-berkeleyje</artifactId>
+            <version>${titan.version}</version>
+            <scope>test</scope>
+        </dependency>
 
 		<dependency>
 			<groupId>com.thinkaurelius.faunus</groupId>

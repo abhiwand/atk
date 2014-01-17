@@ -244,4 +244,9 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
     public Enum getEdgePropertiesCounter(){
         return Counters.EDGE_PROPERTIES_WRITTEN;
     }
+
+    /** change flag for testing purposes */
+    protected void setAppendToExistingGraph(boolean appendToExistingGraph) {
+        this.appendToExistingGraph = appendToExistingGraph;
+    }
 }
