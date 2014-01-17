@@ -44,6 +44,7 @@ class EvalFunctions:
         UPPER=15
         TOKENIZE=16
         LENGTH=17
+        CONCAT=18   #CONCAT is part of Pig Eval functions
         
     """Math functions
     """        
@@ -82,6 +83,7 @@ class EvalFunctions:
             EvalFunctions.String.UPPER: 'UPPER',
             EvalFunctions.String.TOKENIZE: 'TOKENIZE',
             EvalFunctions.String.LENGTH: 'org.apache.pig.piggybank.evaluation.string.LENGTH',
+            EvalFunctions.String.CONCAT: 'CONCAT',
 
             EvalFunctions.Math.ABS: 'ABS',
             EvalFunctions.Math.LOG: 'LOG',
