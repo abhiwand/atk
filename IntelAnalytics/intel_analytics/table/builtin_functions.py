@@ -54,7 +54,10 @@ class EvalFunctions:
         POW=1003
         EXP=1004
         STND=1005 #STND: Standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization).
-        
+
+        # Arithmetic operations, e.g., +-*/%?, syntax checking is left to pig script engine:
+        ARITHMETIC=1100
+
     class Json:
         EXTRACT_FIELD=2000
 
@@ -86,6 +89,7 @@ class EvalFunctions:
             EvalFunctions.Math.POW: 'org.apache.pig.piggybank.evaluation.math.POW',
             EvalFunctions.Math.EXP: 'EXP',
             EvalFunctions.Math.STND: 'STND',
+            EvalFunctions.Math.ARITHMETIC: 'ARITHMETIC',
 
             EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON'
         }
