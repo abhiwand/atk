@@ -21,7 +21,26 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
+package com.intel.giraph.combiner;
+
+import org.apache.giraph.combiner.Combiner;
+import org.apache.hadoop.io.LongWritable;
+
 /**
- * Package of igiraph APL algorithms
+ * Combiner which finds the minimum of {@link LongWritable}.
  */
-package com.intel.giraph.algorithms.apl;
+public class MinimumLongCombiner extends Combiner<LongWritable, LongWritable> {
+    @Override
+    public void combine(LongWritable vertexIndex, LongWritable originalMessage,
+        LongWritable messageToCombine) {
+        if (originalMessage.get() > messageToCombine.get()) {
+            originalMessage.set(messageToCombine.get());
+        }
+    }
+
+    @Override
+    public LongWritable createInitialMessage() {
+        return new LongWritable(Long.MAX_VALUE);
+    }
+}
+

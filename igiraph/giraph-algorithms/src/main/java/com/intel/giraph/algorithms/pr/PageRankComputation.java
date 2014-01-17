@@ -309,7 +309,7 @@ public class PageRankComputation extends BasicComputation<LongWritable,
         /**
          * super step number
          */
-        int lastStep = 0;
+        private int lastStep = 0;
 
         public static String getFilename() {
             return FILENAME;

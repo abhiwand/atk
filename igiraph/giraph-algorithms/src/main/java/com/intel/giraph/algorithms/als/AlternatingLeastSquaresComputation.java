@@ -413,7 +413,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         /** Saved output stream to write to */
         private FSDataOutputStream output;
         /**super step number*/
-        int lastStep = 0;
+        private int lastStep = 0;
 
         public static String getFilename() {
             return FILENAME;
@@ -487,7 +487,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
                 output.writeBytes("========================Learning Progress====================\n");
-            } else if (realStep >0 && (realStep % (2 * learningCurveOutputInterval)) == 0) {
+            } else if (realStep > 0 && (realStep % (2 * learningCurveOutputInterval)) == 0) {
                 // output learning progress
                 double trainCost = Double.parseDouble(map.get(SUM_TRAIN_COST));
                 double validateRmse = Double.parseDouble(map.get(SUM_VALIDATE_ERROR));
@@ -498,7 +498,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                 output.writeBytes("rmse(test) = " + testRmse + "\n");
             }
             output.flush();
-            lastStep = (int)superstep;
+            lastStep = (int) superstep;
         }
 
         @Override

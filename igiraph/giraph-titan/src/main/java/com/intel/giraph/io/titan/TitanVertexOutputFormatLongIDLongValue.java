@@ -27,7 +27,6 @@ import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
-import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -48,21 +47,21 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPE
  * to Titan.
  * <p/>
  * Each Vertex is with <code>Long</code> id,
- * and <code>Double</code> values.
+ * and <code>Long</code> values.
  *
  * @param <I> Vertex index value
  * @param <V> Vertex value
  * @param <E> Edge value
  */
-public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
-    V extends DoubleWritable, E extends Writable>
+public class TitanVertexOutputFormatLongIDLongValue<I extends LongWritable,
+    V extends LongWritable, E extends Writable>
     extends TextVertexOutputFormat<I, V, E> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-        .getLogger(TitanVertexOutputFormatLongIDDoubleValue.class);
+        .getLogger(TitanVertexOutputFormatLongIDLongValue.class);
 
 
     /**
@@ -78,7 +77,7 @@ public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new TitanLongIDDoubleValueWriter();
+        return new TitanLongIDLongValueWriter();
     }
 
     /**
@@ -86,7 +85,7 @@ public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanLongIDDoubleValueWriter extends TextVertexWriterToEachLine {
+    protected class TitanLongIDLongValueWriter extends TextVertexWriterToEachLine {
 
         /**
          * TitanFactory to write back results

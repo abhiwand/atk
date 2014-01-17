@@ -39,6 +39,7 @@ import java.nio.ByteBuffer;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_FLOAT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_LONG_NULL;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_VECTOR;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VALID_PROPERTY;
@@ -206,6 +207,20 @@ public class TitanGraphReader extends StandardTitanGraph {
                     }
                 }
                 return loader7.getVertex();
+
+            case LONG_LONG_NULL:
+                final GiraphVertexLoaderLongLongNull loader8 = new GiraphVertexLoaderLongLongNull(conf,
+                    vertexId);
+                for (final Entry data : entries) {
+                    try {
+                        final GiraphVertexLoaderLongLongNull.RelationFactory factory = loader8.getFactory();
+                        super.edgeSerializer.readRelation(factory, data, tx);
+                        factory.build();
+                    } catch (NullPointerException e) {
+                        LOG.info(NO_VALID_PROPERTY);
+                    }
+                }
+                return loader8.getVertex();
 
             default:
                 break;
