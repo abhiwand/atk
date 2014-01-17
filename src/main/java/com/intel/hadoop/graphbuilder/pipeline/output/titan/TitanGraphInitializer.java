@@ -53,7 +53,7 @@ public class TitanGraphInitializer {
         initTitanGraphInstance(conf);
 
         HashMap<String, TitanKey> propertyNamesToTitanKeysMap =
-                declareAndCollectKeys(keyCommandLine);
+                declareAndCollectKeys();
 
         // now we declare the edge labels
         // one of these days we'll probably want to fully expose all the
@@ -88,14 +88,14 @@ public class TitanGraphInitializer {
     /*
      * Gets the set of Titan Key definitions from the command line...
      */
-    protected HashMap<String, TitanKey> declareAndCollectKeys(String keyCommandLine) {
+    protected HashMap<String, TitanKey> declareAndCollectKeys() {
 
         HashMap<String, TitanKey> keyMap = new HashMap<String, TitanKey>();
 
         TitanKey gbIdKey = getOrCreateTitanKey(createGbId());
         keyMap.put(TitanConfig.GB_ID_FOR_TITAN, gbIdKey);
 
-        List<GBTitanKey> declaredKeys = parseKeyCommandLine(keyCommandLine);
+        List<GBTitanKey> declaredKeys = parseKeyCommandLine();
         for (GBTitanKey gbTitanKey : declaredKeys) {
             TitanKey titanKey = getOrCreateTitanKey(gbTitanKey);
             keyMap.put(titanKey.getName(), titanKey);
@@ -196,7 +196,7 @@ public class TitanGraphInitializer {
      *    index taking string values, and a key for property cf:eventId that
      *    is an edge index taking Long values.
      */
-    private List<GBTitanKey> parseKeyCommandLine(String keyCommandLine) {
+    private List<GBTitanKey> parseKeyCommandLine() {
 
         ArrayList<GBTitanKey> gbKeyList = new ArrayList<GBTitanKey>();
 
