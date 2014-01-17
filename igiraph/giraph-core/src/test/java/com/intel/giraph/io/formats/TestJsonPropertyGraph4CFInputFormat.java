@@ -28,10 +28,10 @@ import java.io.IOException;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
-import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.EdgeDataWritable.EdgeType;
-import com.intel.giraph.io.VertexDataWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
+import com.intel.giraph.io.EdgeData4CFWritable;
+import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
+import com.intel.giraph.io.VertexData4CFWritable;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 import org.apache.giraph.utils.NoOpComputation;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.LongWritable;
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.when;
 public class TestJsonPropertyGraph4CFInputFormat extends JsonPropertyGraph4CFInputFormat {
 
     private RecordReader<LongWritable, Text> rr;
-    private ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable> conf;
+    private ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> conf;
     private TaskAttemptContext tac;
 
     @Before
@@ -58,7 +58,7 @@ public class TestJsonPropertyGraph4CFInputFormat extends JsonPropertyGraph4CFInp
         when(rr.nextKeyValue()).thenReturn(true);
         GiraphConfiguration giraphConf = new GiraphConfiguration();
         giraphConf.setComputationClass(DummyComputation.class);
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable>(giraphConf);
+        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CFWritable, EdgeData4CFWritable>(giraphConf);
         tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);
     }
@@ -83,7 +83,7 @@ public class TestJsonPropertyGraph4CFInputFormat extends JsonPropertyGraph4CFInp
         vr.initialize(null, tac);
 
         assertTrue("Should have been able to read vertex", vr.nextVertex());
-        Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex = vr.getCurrentVertex();
+        Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex = vr.getCurrentVertex();
         assertEquals(vertex.getNumEdges(), 3);
         assertEquals(1L, vertex.getId().get());
         assertTrue(vertex.getValue().getVector().size() == 0);
@@ -96,7 +96,7 @@ public class TestJsonPropertyGraph4CFInputFormat extends JsonPropertyGraph4CFInp
         assertTrue(vertex.getEdgeValue(new LongWritable(3L)).getType() == EdgeType.TEST);
     }
 
-    public static class DummyComputation extends NoOpComputation<LongWritable, VertexDataWritable,
-        EdgeDataWritable, Writable> { }
+    public static class DummyComputation extends NoOpComputation<LongWritable, VertexData4CFWritable,
+        EdgeData4CFWritable, Writable> { }
 
 }

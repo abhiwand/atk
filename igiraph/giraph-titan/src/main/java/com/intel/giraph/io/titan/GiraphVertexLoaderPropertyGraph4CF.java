@@ -23,10 +23,10 @@
 package com.intel.giraph.io.titan;
 
 import com.google.common.base.Preconditions;
-import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.EdgeDataWritable.EdgeType;
-import com.intel.giraph.io.VertexDataWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
+import com.intel.giraph.io.EdgeData4CFWritable;
+import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
+import com.intel.giraph.io.VertexData4CFWritable;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
@@ -88,7 +88,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
     /**
      * Giraph Vertex
      */
-    private Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex = null;
+    private Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex = null;
     /**
      * Property key for Vertex Type
      */
@@ -112,7 +112,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
     /**
      * vertex value
      */
-    private VertexDataWritable vertexValueVector = null;
+    private VertexData4CFWritable vertexValueVector = null;
     /**
      * the vertex type
      */
@@ -167,7 +167,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
         vertex = conf.createVertex();
         double[] data = new double[size];
         Vector vector = new DenseVector(data);
-        vertexValueVector = new VertexDataWritable(vertexType, vector.clone());
+        vertexValueVector = new VertexData4CFWritable(vertexType, vector.clone());
         vertex.initialize(new LongWritable(id), vertexValueVector);
         vertexId = id;
     }
@@ -317,7 +317,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                     vertexType = vertexValueVector.getType();
                     Vector vector = vertexValueVector.getVector();
                     vector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
-                    vertex.setValue(new VertexDataWritable(vertexType, vector));
+                    vertex.setValue(new VertexData4CFWritable(vertexType, vector));
                 } else if (propertyName.equals(vertexTypePropertyKey)) {
                     final Object vertexTypeObject = this.value;
                     Vector priorVector = vertexValueVector.getVector();
@@ -332,7 +332,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                         throw new IllegalArgumentException(String.format(
                             "Vertex type string: %s isn't supported.", vertexTypeString));
                     }
-                    vertex.setValue(new VertexDataWritable(vertexType, priorVector));
+                    vertex.setValue(new VertexData4CFWritable(vertexType, priorVector));
                 }
             } else {
                 Preconditions.checkArgument(this.type.isEdgeLabel());
@@ -363,8 +363,8 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                                     }
                                 }
                             }
-                            Edge<LongWritable, EdgeDataWritable> edge = EdgeFactory.create(
-                                new LongWritable(this.otherVertexID), new EdgeDataWritable(
+                            Edge<LongWritable, EdgeData4CFWritable> edge = EdgeFactory.create(
+                                new LongWritable(this.otherVertexID), new EdgeData4CFWritable(
                                     edgeType, edgeValue));
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {

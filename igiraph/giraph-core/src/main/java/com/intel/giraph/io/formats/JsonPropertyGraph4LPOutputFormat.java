@@ -20,9 +20,7 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
 package com.intel.giraph.io.formats;
-
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.LongWritable;
@@ -32,69 +30,50 @@ import org.apache.mahout.math.Vector;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import com.intel.giraph.io.VertexData4CFWritable;
-import com.intel.giraph.io.VertexData4CFWritable.VertexType;
-
+import com.intel.giraph.io.VertexData4LPWritable;
 import java.io.IOException;
 
 /**
  * VertexOutputFormat that supports JSON encoded vertices featuring
- * <code>Long</code> id and <code>VertexData</code> values.
+ * <code>Long</code> id and <code>VertexData4LP</code> values. Both prior
+ * and posterior are output.
  */
-public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<LongWritable,
-    VertexData4CFWritable, Writable> {
-
+public class JsonPropertyGraph4LPOutputFormat extends TextVertexOutputFormat<LongWritable,
+    VertexData4LPWritable, Writable> {
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new JsonPropertyGraph4CFWriter();
+        return new JsonPropertyGraph4LPWriter();
     }
-
     /**
      * VertexWriter that supports vertices with <code>Long</code> id
-     * and <code>VertexData</code> values.
+     * and <code>VertexData4LP</code> values.
      */
-    protected class JsonPropertyGraph4CFWriter extends TextVertexWriterToEachLine {
-
+    protected class JsonPropertyGraph4LPWriter extends TextVertexWriterToEachLine {
         @Override
-        public Text convertVertexToLine(Vertex<LongWritable, VertexData4CFWritable, Writable> vertex)
+        public Text convertVertexToLine(Vertex<LongWritable, VertexData4LPWritable, Writable> vertex)
             throws IOException {
             JSONArray jsonVertex = new JSONArray();
             try {
-                // add vertex id
+                // Add id
                 jsonVertex.put(vertex.getId().get());
-                // add bias
-                JSONArray jsonBiasArray = new JSONArray();
-                jsonBiasArray.put(vertex.getValue().getBias());
-                jsonVertex.put(jsonBiasArray);
-                // add vertex value
-                JSONArray jsonValueArray = new JSONArray();
-                Vector vector = vertex.getValue().getVector();
-                for (int i = 0; i < vector.size(); i++) {
-                    jsonValueArray.put(vector.getQuick(i));
+                // Add prior
+                JSONArray jsonPriorArray = new JSONArray();
+                Vector prior = vertex.getValue().getPriorVector();
+                for (int i = 0; i < prior.size(); i++) {
+                    jsonPriorArray.put(prior.getQuick(i));
                 }
-                jsonVertex.put(jsonValueArray);
-                // add vertex type
-                JSONArray jsonTypeArray = new JSONArray();
-                VertexType vt = vertex.getValue().getType();
-                String vs = null;
-                switch (vt) {
-                case LEFT:
-                    vs = "L";
-                    break;
-                case RIGHT:
-                    vs = "R";
-                    break;
-                default:
-                    throw new IllegalArgumentException(String.format("Unrecognized vertex type: %s", vt.toString()));
+                jsonVertex.put(jsonPriorArray);
+                // Add posterior
+                JSONArray jsonPosteriorArray = new JSONArray();
+                Vector posterior = vertex.getValue().getPosteriorVector();
+                for (int i = 0; i < posterior.size(); i++) {
+                    jsonPosteriorArray.put(posterior.getQuick(i));
                 }
-                jsonTypeArray.put(vs);
-                jsonVertex.put(jsonTypeArray);
+                jsonVertex.put(jsonPosteriorArray);
             } catch (JSONException e) {
                 throw new IllegalArgumentException("writeVertex: Couldn't write vertex " + vertex);
             }
-            return new Text(jsonVertex.toString().replaceAll("\"", ""));
+            return new Text(jsonVertex.toString());
         }
     }
-
 }

@@ -42,45 +42,40 @@ import java.util.regex.Pattern;
  *
  * Each line consists of: source_vertex, target_vertex
  */
-public class LongNullTextEdgeInputFormat extends
-    TextEdgeInputFormat<LongWritable, NullWritable> {
-  /** Splitter for endpoints */
-  private static final Pattern SEPARATOR = Pattern.compile("[\t ]");
-
-  @Override
-  public EdgeReader<LongWritable, NullWritable> createEdgeReader(
-      InputSplit split, TaskAttemptContext context) throws IOException {
-    return new LongNullTextEdgeReader();
-  }
-
-  /**
-   * {@link org.apache.giraph.io.EdgeReader} associated with
-   * {@link LongNullTextEdgeInputFormat}.
-   */
-  public class LongNullTextEdgeReader extends
-      TextEdgeReaderFromEachLineProcessed<LongPair> {
-    @Override
-    protected LongPair preprocessLine(Text line) throws IOException {
-      String[] tokens = SEPARATOR.split(line.toString());
-      return new LongPair(Long.valueOf(tokens[0]),
-          Long.valueOf(tokens[1]));
-    }
+public class LongNullTextEdgeInputFormat extends TextEdgeInputFormat<LongWritable, NullWritable> {
+    /** Splitter for endpoints */
+    private static final Pattern SEPARATOR = Pattern.compile("[\t ]");
 
     @Override
-    protected LongWritable getSourceVertexId(LongPair endpoints)
-      throws IOException {
-      return new LongWritable(endpoints.getFirst());
+    public EdgeReader<LongWritable, NullWritable> createEdgeReader(InputSplit split, TaskAttemptContext context)
+        throws IOException {
+        return new LongNullTextEdgeReader();
     }
 
-    @Override
-    protected LongWritable getTargetVertexId(LongPair endpoints)
-      throws IOException {
-      return new LongWritable(endpoints.getSecond());
-    }
+    /**
+     * {@link org.apache.giraph.io.EdgeReader} associated with
+     * {@link LongNullTextEdgeInputFormat}.
+     */
+    public class LongNullTextEdgeReader extends TextEdgeReaderFromEachLineProcessed<LongPair> {
+        @Override
+        protected LongPair preprocessLine(Text line) throws IOException {
+            String[] tokens = SEPARATOR.split(line.toString());
+            return new LongPair(Long.valueOf(tokens[0]), Long.valueOf(tokens[1]));
+        }
 
-    @Override
-    protected NullWritable getValue(LongPair endpoints) throws IOException {
-      return NullWritable.get();
+        @Override
+        protected LongWritable getSourceVertexId(LongPair endpoints) throws IOException {
+            return new LongWritable(endpoints.getFirst());
+        }
+
+        @Override
+        protected LongWritable getTargetVertexId(LongPair endpoints) throws IOException {
+            return new LongWritable(endpoints.getSecond());
+        }
+
+        @Override
+        protected NullWritable getValue(LongPair endpoints) throws IOException {
+            return NullWritable.get();
+        }
     }
-  }
 }

@@ -23,10 +23,10 @@
 package com.intel.giraph.io.titan;
 
 import com.google.common.base.Preconditions;
-import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.EdgeDataWritable.EdgeType;
+import com.intel.giraph.io.EdgeData4CFWritable;
+import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
 import com.intel.giraph.io.VertexData4CGDWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
@@ -87,7 +87,7 @@ public class GiraphVertexLoaderPropertyGraph4CFCGD {
     /**
      * Giraph Vertex
      */
-    private Vertex<LongWritable, VertexData4CGDWritable, EdgeDataWritable> vertex = null;
+    private Vertex<LongWritable, VertexData4CGDWritable, EdgeData4CFWritable> vertex = null;
     /**
      * Property key for Vertex Type
      */
@@ -363,8 +363,8 @@ public class GiraphVertexLoaderPropertyGraph4CFCGD {
                                     }
                                 }
                             }
-                            Edge<LongWritable, EdgeDataWritable> edge = EdgeFactory.create(
-                                new LongWritable(this.otherVertexID), new EdgeDataWritable(
+                            Edge<LongWritable, EdgeData4CFWritable> edge = EdgeFactory.create(
+                                new LongWritable(this.otherVertexID), new EdgeData4CFWritable(
                                     edgeType, edgeValue));
                             vertex.addEdge(edge);
                         } else if (this.direction.equals(Direction.BOTH)) {

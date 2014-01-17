@@ -22,7 +22,7 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import com.intel.giraph.io.VertexDataWritable;
+import com.intel.giraph.io.VertexData4CFWritable;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
@@ -68,7 +68,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPE
  * @param <E> Edge value
  */
 public class TitanVertexOutputFormatPropertyGraph4CF<I extends LongWritable,
-    V extends VertexDataWritable, E extends Writable>
+    V extends VertexData4CFWritable, E extends Writable>
     extends TextVertexOutputFormat<I, V, E> {
 
     /**

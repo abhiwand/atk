@@ -28,29 +28,30 @@ import java.io.IOException;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
-import com.intel.giraph.io.formats.JsonLongTwoVectorDoubleTwoVectorInputFormat;
+
+import com.intel.giraph.io.VertexData4LBPWritable;
+import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
+import com.intel.giraph.io.formats.JsonPropertyGraph4LBPInputFormat;
+
 import org.apache.giraph.utils.NoOpComputation;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithTwoVectorWritable;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Ignore
-public class TestJsonLongTwoVectorDoubleTwoVectorInputFormat extends JsonLongTwoVectorDoubleTwoVectorInputFormat {
+public class TestJsonPropertyGraph4LBPInputFormat extends JsonPropertyGraph4LBPInputFormat {
 
     private RecordReader<LongWritable, Text> rr;
-    private ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> conf;
+    private ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LBPWritable, DoubleWritable> conf;
     private TaskAttemptContext tac;
 
     @Before
@@ -59,14 +60,14 @@ public class TestJsonLongTwoVectorDoubleTwoVectorInputFormat extends JsonLongTwo
         when(rr.nextKeyValue()).thenReturn(true);
         GiraphConfiguration giraphConf = new GiraphConfiguration();
         giraphConf.setComputationClass(DummyComputation.class);
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable,
-            DoubleWithTwoVectorWritable>(giraphConf);
+        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LBPWritable,
+            DoubleWritable>(giraphConf);
         tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);
     }
 
     protected TextVertexReader createVertexReader(final RecordReader<LongWritable, Text> rr) {
-        return new JsonLongTwoVectorDoubleTwoVectorReader() {
+        return new JsonPropertyGraph4LBPReader() {
             @Override
             protected RecordReader<LongWritable, Text> createLineRecordReader(InputSplit inputSplit,
                 TaskAttemptContext context) throws IOException, InterruptedException {
@@ -77,7 +78,7 @@ public class TestJsonLongTwoVectorDoubleTwoVectorInputFormat extends JsonLongTwo
 
     @Test
     public void testReadVertex() throws Exception {
-        String input = "[1,[0.2,2,2],[[0,1],[2,2],[3,1]]]";
+        String input = "[1,[0.2,2,2],[\"TR\"],[[0,1,[]],[2,2,[]],[3,1,[]]]]";
 
         when(rr.getCurrentValue()).thenReturn(new Text(input));
         TextVertexReader vr = createVertexReader(rr);
@@ -85,16 +86,17 @@ public class TestJsonLongTwoVectorDoubleTwoVectorInputFormat extends JsonLongTwo
         vr.initialize(null, tac);
 
         assertTrue("Should have been able to read vertex", vr.nextVertex());
-        Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> vertex = vr.getCurrentVertex();
+        Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> vertex = vr.getCurrentVertex();
         assertEquals(vertex.getNumEdges(), 3);
         assertEquals(1L, vertex.getId().get());
         assertEquals(3, vertex.getValue().getPriorVector().size());
-        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).getData(), 0d);
-        assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).getData(), 0d);
-        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).getData(), 0d);
+        assertTrue(vertex.getValue().getType() == VertexType.TRAIN);
+        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).get(), 0d);
+        assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).get(), 0d);
+        assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).get(), 0d);
     }
 
-    public static class DummyComputation extends NoOpComputation<LongWritable, TwoVectorWritable,
-        DoubleWithTwoVectorWritable, Writable> { }
+    public static class DummyComputation extends NoOpComputation<LongWritable, VertexData4LBPWritable,
+        DoubleWritable, Writable> { }
 
 }

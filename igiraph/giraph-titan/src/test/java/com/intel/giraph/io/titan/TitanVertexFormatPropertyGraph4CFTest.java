@@ -25,8 +25,8 @@ package com.intel.giraph.io.titan;
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation;
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter;
 import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute;
-import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.VertexDataWritable;
+import com.intel.giraph.io.EdgeData4CFWritable;
+import com.intel.giraph.io.VertexData4CFWritable;
 import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CF;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanKey;
@@ -62,7 +62,7 @@ import static junit.framework.Assert.assertTrue;
  * finally write back results to Titan via TitanVertexOutputFormatPropertyGraph4CF
  */
 public class TitanVertexFormatPropertyGraph4CFTest
-    extends TitanTestBase<LongWritable, VertexDataWritable, EdgeDataWritable> {
+    extends TitanTestBase<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
 
     @Override
     protected void configure() throws Exception {

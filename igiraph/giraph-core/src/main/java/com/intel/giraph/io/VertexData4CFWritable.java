@@ -31,23 +31,29 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.hadoop.io.Writable;
+
 /**
  * Writable to handle serialization of the fields associated with vertex data
- * for CGD algorithm in Collaborative filtering
  */
-public class VertexData4CGDWritable extends VertexData4CFWritable {
+public class VertexData4CFWritable implements Writable {
 
-    /** the gradient value at this vertex */
-    private final VectorWritable gradientWritable = new VectorWritable();
+    /** the vertex type supported by this vertex */
+    public enum VertexType { LEFT, RIGHT, NONE };
 
-    /** the conjugate value at this vertex */
-    private final VectorWritable conjugateWritable = new VectorWritable();
+    /** the type of this vertex */
+    private VertexType type = VertexType.NONE;
+
+    /** the vector value at this vertex */
+    private final VectorWritable vectorWritable = new VectorWritable();
+
+    /** the bias value at this vertex */
+    private double bias = 0d;
 
     /**
      * Default constructor
      */
-    public VertexData4CGDWritable() {
-        super();
+    public VertexData4CFWritable() {
     }
 
     /**
@@ -55,13 +61,10 @@ public class VertexData4CGDWritable extends VertexData4CFWritable {
      *
      * @param type of type VertexType
      * @param vector of type Vector
-     * @param gradient of type Vector
-     * @param conjugate of type Vector
      */
-    public VertexData4CGDWritable(VertexType type, Vector vector, Vector gradient, Vector conjugate) {
-        super(type, vector);
-        gradientWritable.set(gradient);
-        conjugateWritable.set(conjugate);
+    public VertexData4CFWritable(VertexType type, Vector vector) {
+        this.type = type;
+        vectorWritable.set(vector);
     }
 
     /**
@@ -69,64 +72,83 @@ public class VertexData4CGDWritable extends VertexData4CFWritable {
      *
      * @param type of type VertexType
      * @param vector of type Vector
-     * @param gradient of type Vector
-     * @param conjugate of type Vector
      * @param bias of type double
      */
-    public VertexData4CGDWritable(VertexType type, Vector vector, Vector gradient, Vector conjugate, double bias) {
-        super(type, vector, bias);
-        gradientWritable.set(gradient);
-        conjugateWritable.set(conjugate);
-    }
-
-    /**
-     * Getter
-     *
-     * @return gradient of type Vector
-     */
-    public Vector getGradient() {
-        return gradientWritable.get();
+    public VertexData4CFWritable(VertexType type, Vector vector, double bias) {
+        this.type = type;
+        vectorWritable.set(vector);
+        this.bias = bias;
     }
 
     /**
      * Setter
      *
-     * @param gradient of type Vector
+     * @param type of type VertexType
      */
-    public void setGradient(Vector gradient) {
-        gradientWritable.set(gradient);
+    public void setType(VertexType type) {
+        this.type = type;
     }
 
     /**
      * Getter
      *
-     * @return conjugate of type Vector
+     * @return type of type VertexType
      */
-    public Vector getConjugate() {
-        return conjugateWritable.get();
+    public VertexType getType() {
+        return type;
+    }
+
+    /**
+     * Getter
+     *
+     * @return vector of type Vector
+     */
+    public Vector getVector() {
+        return vectorWritable.get();
     }
 
     /**
      * Setter
      *
-     * @param conjugate of type Vector
+     * @param vector of type Vector
      */
-    public void setConjugate(Vector conjugate) {
-        conjugateWritable.set(conjugate);
+    public void setVector(Vector vector) {
+        vectorWritable.set(vector);
+    }
+
+    /**
+     * Getter
+     *
+     * @return bias of type double
+     */
+    public double getBias() {
+        return bias;
+    }
+
+    /**
+     * Setter
+     *
+     * @param bias of type double
+     */
+    public void setBias(double bias) {
+        this.bias = bias;
     }
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        super.readFields(in);
-        gradientWritable.readFields(in);
-        conjugateWritable.readFields(in);
+        int idx = in.readInt();
+        VertexType vt = VertexType.values()[idx];
+        setType(vt);
+        vectorWritable.readFields(in);
+        bias = in.readDouble();
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        super.write(out);
-        gradientWritable.write(out);
-        conjugateWritable.write(out);
+        VertexType vt = getType();
+        out.writeInt(vt.ordinal());
+        vectorWritable.write(out);
+        out.writeDouble(bias);
     }
 
     /**
@@ -136,8 +158,8 @@ public class VertexData4CGDWritable extends VertexData4CFWritable {
      * @return VertexDataWritable
      * @throws IOException
      */
-    public static VertexData4CGDWritable read(DataInput in) throws IOException {
-        VertexData4CGDWritable writable = new VertexData4CGDWritable();
+    public static VertexData4CFWritable read(DataInput in) throws IOException {
+        VertexData4CFWritable writable = new VertexData4CFWritable();
         writable.readFields(in);
         return writable;
     }
@@ -148,13 +170,10 @@ public class VertexData4CGDWritable extends VertexData4CFWritable {
      * @param out of type DataOutput
      * @param type of type VertexType
      * @param ssv of type SequentailAccessSparseVector
-     * @param ssg of type SequentailAccessSparseVector
-     * @param ssc of type SequentailAccessSparseVector
      * @throws IOException
      */
-    public static void write(DataOutput out, VertexType type, SequentialAccessSparseVector ssv,
-        SequentialAccessSparseVector ssg, SequentialAccessSparseVector ssc) throws IOException {
-        new VertexData4CGDWritable(type, ssv, ssg, ssc).write(out);
+    public static void write(DataOutput out, VertexType type, SequentialAccessSparseVector ssv) throws IOException {
+        new VertexData4CFWritable(type, ssv).write(out);
     }
 
     /**
@@ -163,14 +182,12 @@ public class VertexData4CGDWritable extends VertexData4CFWritable {
      * @param out of type DataOutput
      * @param type of type VertexType
      * @param ssv of type SequentailAccessSparseVector
-     * @param ssg of type SequentailAccessSparseVector
-     * @param ssc of type SequentailAccessSparseVector
      * @param bias of type double
      * @throws IOException
      */
-    public static void write(DataOutput out, VertexType type, SequentialAccessSparseVector ssv,
-        SequentialAccessSparseVector ssg, SequentialAccessSparseVector ssc, double bias) throws IOException {
-        new VertexData4CGDWritable(type, ssv, ssg, ssc, bias).write(out);
+    public static void write(DataOutput out, VertexType type, SequentialAccessSparseVector ssv, double bias)
+        throws IOException {
+        new VertexData4CFWritable(type, ssv, bias).write(out);
     }
 
 }

@@ -40,13 +40,11 @@ import org.apache.giraph.Algorithm;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
-import org.apache.log4j.Logger;
 
 /**
  * Average path length calculation.
@@ -64,17 +62,13 @@ public class AveragePathLengthComputation extends BasicComputation
      */
     public static final String CONVERGENCE_CURVE_OUTPUT_INTERVAL = "apl.convergenceProgressOutputInterval";
     /**
-     * Logger handler
+     * Aggregator name on sum of delta values
      */
-    private static final Logger LOG = Logger.getLogger(AveragePathLengthComputation.class);
+    private static String SUM_UPDATES = "sumUpdates";
     /**
      * Iteration interval to output learning curve
      */
     private int convergenceProgressOutputInterval = 1;
-    /**
-     * Aggregator name on sum of delta values
-     */
-    private static String SUM_UPDATES = "sumUpdates";
 
     /**
      * Flood message to all its direct neighbors with a new distance value.
@@ -90,19 +84,13 @@ public class AveragePathLengthComputation extends BasicComputation
         }
     }
 
-    /**
-     * algorithm compute
-     *
-     * @param Vertex   Giraph Vertex
-     * @param Iterable Giraph messages
-     */
     @Override
     public void compute(Vertex<LongWritable, DistanceMapWritable, NullWritable> vertex,
                         Iterable<HopCountWritable> messages) {
 
         convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
         if (convergenceProgressOutputInterval < 1) {
-            throw new IllegalArgumentException("Learning curve output interval should be >= 1.");
+            throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
         }
 
         // initial condition - start with sending message to all its neighbors
@@ -128,7 +116,7 @@ public class AveragePathLengthComputation extends BasicComputation
             DistanceMapWritable vertexValue = vertex.getValue();
             if ((vertexValue.distanceMapContainsKey(source) &&
                  vertexValue.distanceMapGet(source) > distance) ||
-                (!vertexValue.distanceMapContainsKey(source))){
+                (!vertexValue.distanceMapContainsKey(source))) {
                 vertex.getValue().distanceMapPut(source, distance);
                 floodMessage(vertex, source, distance + 1);
                 aggregate(SUM_UPDATES, new DoubleWritable(1d));
@@ -173,7 +161,7 @@ public class AveragePathLengthComputation extends BasicComputation
         /**
          * super step number
          */
-        int lastStep = 0;
+        private int lastStep = 0;
 
         public static String getFilename() {
             return FILENAME;
@@ -216,14 +204,16 @@ public class AveragePathLengthComputation extends BasicComputation
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
             if (superstep == 0) {
                 output.writeBytes("==================Average Path Length Configuration====================\n");
-                output.writeBytes("convergenceProgressOutputInterval: " + convergenceProgressOutputInterval + "\n");
+                output.writeBytes(String.format("convergenceProgressOutputInterval: %d%n",
+                    convergenceProgressOutputInterval));
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
                 output.writeBytes("===================Convergence Progress======================\n");
-            }  else if (realStep > 0 && realStep % convergenceProgressOutputInterval == 0 ) {
-                    // output learning progress
-                    double sumUpdates = Double.parseDouble(map.get(SUM_UPDATES));
-                    output.writeBytes("superstep = " + realStep + "\tsumDelta = " + sumUpdates + "\n");
+            } else if (realStep > 0 && realStep % convergenceProgressOutputInterval == 0) {
+                // output learning progress
+                double sumUpdates = Double.parseDouble(map.get(SUM_UPDATES));
+                output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
+                output.writeBytes(String.format("sumDelta=%f%n", sumUpdates));
             }
             output.flush();
             lastStep = (int) superstep;

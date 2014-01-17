@@ -399,7 +399,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
             if (step > 0) {
                 // store number of edges for graph statistics
                 if (step == 1) {
-                    long numEdges = getTotalNumEdges() / 2;
+                    long numEdges = getTotalNumEdges();
                     getConf().setLong(NUM_EDGES, numEdges);
                 }
                 // evaluate convergence condition
@@ -436,8 +436,8 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         private static String FILENAME;
         /** Saved output stream to write to */
         private FSDataOutputStream output;
-        /**super step number*/
-        int lastStep = 0;
+        /** Super step number */
+        private int lastStep = 0;
 
         public static String getFilename() {
             return FILENAME;
@@ -485,9 +485,10 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
                 long numWordVertices = Long.parseLong(map.get(SUM_WORD_VERTEX_COUNT));
                 long numEdges = getConf().getLong(NUM_EDGES, 0L);
                 output.writeBytes("Graph Statistics:\n");
-                output.writeBytes("Number of vertices: " + (numDocVertices + numWordVertices) +
-                    " (doc: " + numDocVertices + ", word: " + numWordVertices + ")\n");
-                output.writeBytes("Number of edges: " + numEdges + "\n");
+                output.writeBytes(String.format("Number of vertices: %d (doc: %d, word: %d)%n",
+                    numDocVertices + numWordVertices, numDocVertices, numWordVertices));
+                output.writeBytes(String.format("Number of edges: %d%n", numEdges));
+                output.writeBytes("\n");
                 // output LDA configuration
                 int numTopics = getConf().getInt(NUM_TOPICS, 10);
                 float alpha = getConf().getFloat(ALPHA, 0.1f);
@@ -495,28 +496,27 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
                 float minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
-                output.writeBytes("======================LDA Configuration====================\n");
-                output.writeBytes("numTopics: " + numTopics + "\n");
-                output.writeBytes("alpha: " + alpha + "\n");
-                output.writeBytes("beta: " + beta + "\n");
-                output.writeBytes("convergenceThreshold: n" + convergenceThreshold + "\n");
-                output.writeBytes("maxSupersteps: " +  maxSupersteps + "\n");
-                output.writeBytes("maxVal: " +  maxVal + "\n");
-                output.writeBytes("minVal: " + minVal + "\n");
-                output.writeBytes("evaluateCost: " + costEval + "\n");
-                output.writeBytes("-------------------------------------------------------------\n");
+                output.writeBytes("=======================LDA Configuration=====================\n");
+                output.writeBytes(String.format("numTopics: %d%n", numTopics));
+                output.writeBytes(String.format("alpha: %f%n", alpha));
+                output.writeBytes(String.format("beta: %f%n", beta));
+                output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
+                output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
+                output.writeBytes(String.format("maxVal: %f%n", maxVal));
+                output.writeBytes(String.format("minVal: %f%n", minVal));
+                output.writeBytes(String.format("evaluateCost: %b%n", costEval));
                 output.writeBytes("\n");
                 output.writeBytes("========================Learning Progress====================\n");
             }
             if (realStep > 0) {
                 // output learning progress
-                output.writeBytes("superstep = " + realStep + "\t");
+                output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
                 if (costEval) {
                     double cost = Double.parseDouble(map.get(SUM_COST));
-                    output.writeBytes("cost = " + cost + "\t");
+                    output.writeBytes(String.format("cost=%f%c", cost, '\t'));
                 }
                 double maxDelta = Double.parseDouble(map.get(MAX_DELTA));
-                output.writeBytes("maxDelta = " + maxDelta + "\n");
+                output.writeBytes(String.format("maxDelta=%f%n", maxDelta));
             }
             output.flush();
             lastStep =  (int) superstep;

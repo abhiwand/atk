@@ -25,7 +25,7 @@ package com.intel.giraph.io.titan.hbase;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.cgd.ConjugateGradientDescentComputation;
-import com.intel.giraph.io.EdgeDataWritable;
+import com.intel.giraph.io.EdgeData4CFWritable;
 import com.intel.giraph.io.VertexData4CGDWritable;
 import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 import com.intel.giraph.io.titan.TitanTestBase;
@@ -73,7 +73,7 @@ import static junit.framework.Assert.assertNotNull;
  * [1,[4,3],[L],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest 
-    extends TitanTestBase<LongWritable, VertexData4CGDWritable, EdgeDataWritable> {
+    extends TitanTestBase<LongWritable, VertexData4CGDWritable, EdgeData4CFWritable> {
 
     @Override
     protected void configure() throws Exception {
