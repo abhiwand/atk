@@ -20,7 +20,6 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
@@ -108,11 +107,11 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
 
         com.tinkerpop.blueprints.Vertex srcBlueprintsVertex =
                     this.graph.getVertex(serializedGraphElement.graphElement
-                            ().getProperty(GraphElementWriter
+                            ().getProperty(TitanGraphElementWriter
                             .PROPERTY_KEY_SRC_TITAN_ID));
         com.tinkerpop.blueprints.Vertex tgtBlueprintsVertex =
                     this.graph.getVertex(serializedGraphElement.graphElement
-                            ().getProperty(GraphElementWriter
+                            ().getProperty(TitanGraphElementWriter
                             .PROPERTY_KEY_TGT_TITAN_ID));
         PropertyMap propertyMap = (PropertyMap) serializedGraphElement
                 .graphElement().getProperties();
@@ -143,9 +142,9 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
         // propagate the Titan ID of the edge's source vertex to this
         // reducer ... we can remove it now.
 
-        propertyMap.removeProperty(GraphElementWriter
+        propertyMap.removeProperty(TitanGraphElementWriter
                 .PROPERTY_KEY_SRC_TITAN_ID);
-        propertyMap.removeProperty(GraphElementWriter
+        propertyMap.removeProperty(TitanGraphElementWriter
                 .PROPERTY_KEY_TGT_TITAN_ID);
 
         for (Writable propertyKey : propertyMap.getPropertyKeys()) {
