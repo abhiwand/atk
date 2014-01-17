@@ -79,6 +79,9 @@ def generate_transform_statement(features, cmd_line_args):
                     transform_statement+=','
             transform_statement+=") as %s" % (cmd_line_args.new_feature_name)
             
+        elif (cmd_line_args.transformation_function == 'ARITHMETIC'):
+            # the input feature is an expression
+            transform_statement += "%s as %s" % (cmd_line_args.feature_to_transform, cmd_line_args.new_feature_name)
         else:#without args
             transform_statement += "%s(%s) as %s" % (cmd_line_args.transformation_function, cmd_line_args.feature_to_transform, cmd_line_args.new_feature_name)
     return transform_statement
