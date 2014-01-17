@@ -519,11 +519,13 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         String titanTableName = TitanConfig.config.getProperty
                 ("TITAN_STORAGE_TABLENAME");
 
+        boolean needsInit = true;
         if (hbaseUtils.tableExists(titanTableName)) {
             if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
                 LOG.info("WARNING:  hbase table " + titanTableName +
                          " already exists. Titan will append new graph to " +
                         "existing data.");
+                needsInit = false;
             } else if (cmd.hasOption(BaseCLI.Options.titanOverwrite
                     .getLongOpt())) {
                 HBaseUtils.getInstance().removeTable(titanTableName);
@@ -550,7 +552,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         Path   intermediateEdgeFilePath =
                 new Path("/tmp/graphbuilder/" + intermediateEdgeFileName);
 
-        String keyCommandLine = new String("");
+        String keyCommandLine = "";
 
         Timer time = new Timer();
         time.start();
@@ -559,7 +561,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                     .getLongOpt());
         }
 
-        initTitanGraph(keyCommandLine);
+        if (needsInit) {
+            initTitanGraph(keyCommandLine);
+        }
 
         runReadInputLoadVerticesMRJob(intermediateDataFilePath, cmd);
 
@@ -597,6 +601,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         if (edgeReducerFunction != null) {
             conf.set("edgeReducerFunction", edgeReducerFunction.getClass()
                     .getName());
+        }
+        if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
+            conf.setBoolean(TitanConfig.GRAPHBUILDER_TITAN_APPEND, Boolean.TRUE);
         }
 
         // set the configuration per the input
