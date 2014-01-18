@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.s3copy
 
-import com.intel.intelanalytics.Config
+//import com.intel.intelanalytics.Config
 import org.specs2.mutable.Specification
 
 //////////////////////////////////////////////////////////////////////////////
