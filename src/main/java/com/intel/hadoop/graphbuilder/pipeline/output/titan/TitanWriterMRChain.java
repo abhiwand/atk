@@ -22,22 +22,13 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.util.*;
 import com.intel.hadoop.graphbuilder.util.Timer;
-import com.thinkaurelius.titan.core.KeyMaker;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.thinkaurelius.titan.core.TitanType;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -352,7 +343,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                     .getLongOpt());
         }
 
-        TitanGraphInitializer initializer = new TitanGraphInitializer(conf,graphSchema,keyCommandLine);
+        List<GBTitanKey> declaredKeys = new KeyCommandLineParser().parse(keyCommandLine);
+        TitanGraphInitializer initializer = new TitanGraphInitializer(conf,graphSchema,declaredKeys);
         initializer.run();
 
         runReadInputLoadVerticesMRJob(intermediateDataFilePath, cmd);
