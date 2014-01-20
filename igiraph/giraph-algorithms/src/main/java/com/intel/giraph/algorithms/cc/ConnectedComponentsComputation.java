@@ -78,7 +78,11 @@ public class ConnectedComponentsComputation extends
     /**
      * Aggregator name on sum of delta values
      */
-    private static String SUM_DELTA_AGG = "sumDelta";
+    private static String SUM_DELTA = "sumDelta";
+    /**
+     * Aggregator name on num of vertex updates
+     */
+    private static String SUM_UPDATES = "sumUpdates";
     /**
      * Iteration interval to output learning curve
      */
@@ -126,7 +130,8 @@ public class ConnectedComponentsComputation extends
         // propagate new value to the neighbors only when needed
         if (changed) {
             double delta = (double) Math.abs(vertex.getValue().get() - componentId);
-            aggregate(SUM_DELTA_AGG, new DoubleWritable(delta));
+            aggregate(SUM_DELTA, new DoubleWritable(delta));
+            aggregate(SUM_UPDATES, new DoubleWritable(1d));
             vertex.setValue(new LongWritable(componentId));
             for (Edge<LongWritable, NullWritable> edge : vertex.getEdges()) {
                 LongWritable neighbor = edge.getTargetVertexId();
@@ -153,7 +158,8 @@ public class ConnectedComponentsComputation extends
         @Override
         public void initialize() throws InstantiationException,
             IllegalAccessException {
-            registerAggregator(SUM_DELTA_AGG, DoubleSumAggregator.class);
+            registerAggregator(SUM_DELTA, DoubleSumAggregator.class);
+            registerAggregator(SUM_UPDATES, DoubleSumAggregator.class);
         }
     }
 
@@ -223,11 +229,14 @@ public class ConnectedComponentsComputation extends
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
                 output.writeBytes("===================Convergence Progress======================\n");
-            } else if (realStep >= 1 && realStep % convergenceProgressOutputInterval == 0) {
+            } else if (realStep >= 0 && realStep % convergenceProgressOutputInterval == 0) {
                 // output learning progress
-                double sumDelta = Double.parseDouble(map.get(SUM_DELTA_AGG));
-
-                output.writeBytes("superstep = " + realStep + "\tsumDelta = " + sumDelta + "\n");
+                double sumDelta = Double.parseDouble(map.get(SUM_DELTA));
+                double numUpdates = Double.parseDouble(map.get(SUM_UPDATES));
+                if (numUpdates > 0) {
+                    double avgUpdates = sumDelta / numUpdates;
+                    output.writeBytes("superstep = " + realStep + "\tavgDelta = " + avgUpdates + "\n");
+                }
             }
             output.flush();
             lastStep = (int) superstep;

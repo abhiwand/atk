@@ -69,6 +69,10 @@ public class AveragePathLengthComputation extends BasicComputation
     /**
      * Aggregator name on sum of delta values
      */
+    private static String SUM_DELTA = "sumDelta";
+    /**
+     * Aggregator name on sum of delta values
+     */
     private static String SUM_UPDATES = "sumUpdates";
     /**
      * Iteration interval to output learning curve
@@ -129,8 +133,15 @@ public class AveragePathLengthComputation extends BasicComputation
             if ((vertexValue.distanceMapContainsKey(source) &&
                  vertexValue.distanceMapGet(source) > distance) ||
                 (!vertexValue.distanceMapContainsKey(source))) {
+                double delta;
+                if (vertexValue.distanceMapContainsKey(source)) {
+                    delta = (double) (vertexValue.distanceMapGet(source) - distance);
+                } else {
+                    delta = (double) distance;
+                }
                 vertex.getValue().distanceMapPut(source, distance);
                 floodMessage(vertex, source, distance + 1);
+                aggregate(SUM_DELTA, new DoubleWritable(delta));
                 aggregate(SUM_UPDATES, new DoubleWritable(1d));
             }
         }
@@ -152,6 +163,7 @@ public class AveragePathLengthComputation extends BasicComputation
         @Override
         public void initialize() throws InstantiationException,
             IllegalAccessException {
+            registerAggregator(SUM_DELTA, DoubleSumAggregator.class);
             registerAggregator(SUM_UPDATES, DoubleSumAggregator.class);
         }
     }
@@ -220,10 +232,14 @@ public class AveragePathLengthComputation extends BasicComputation
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
                 output.writeBytes("===================Convergence Progress======================\n");
-            } else if (realStep > 0 && realStep % convergenceProgressOutputInterval == 0) {
+            } else if (realStep >= 0 && realStep % convergenceProgressOutputInterval == 0) {
                 // output learning progress
-                double sumUpdates = Double.parseDouble(map.get(SUM_UPDATES));
-                output.writeBytes("superstep = " + realStep + "\tsumDelta = " + sumUpdates + "\n");
+                double sumDelta = Double.parseDouble(map.get(SUM_DELTA));
+                double numUpdates = Double.parseDouble(map.get(SUM_UPDATES));
+                if (numUpdates > 0) {
+                    double avgUpdates = sumDelta / numUpdates;
+                    output.writeBytes("superstep = " + realStep + "\tavgDelta = " + avgUpdates + "\n");
+                }
             }
             output.flush();
             lastStep = (int) superstep;
