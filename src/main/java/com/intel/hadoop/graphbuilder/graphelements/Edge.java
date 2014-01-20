@@ -190,12 +190,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      */
     @Override
     public boolean isNull(){
-        if(this.src == null || this.dst == null || this.label == null){
-            return true;
-        }else{
-            return false;
-        }
-
+        return this.src == null || this.dst == null || this.label == null;
     }
 
     /**

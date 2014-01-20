@@ -234,11 +234,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		// Read the number of fields
 		int sz = in.readInt();
 		for (int i = 0; i < sz; i++) {
-			try {
-				append(DataReaderWriter.readDatum(in));
-			} catch (ExecException ee) {
-				throw ee;
-			}
+			append(DataReaderWriter.readDatum(in));
 		}
 
 	}

@@ -196,7 +196,7 @@ class XMLLoaderBufferedPositionedInputStream extends
 	 * @see XMLLoaderBufferedPositionedInputStream#setReadable
 	 */
 	public boolean isReadable() {
-		return _isReadable == true;
+		return _isReadable;
 	}
 
 	/**
@@ -688,7 +688,7 @@ public class XMLLoader extends LoadFunc {
 		protected boolean isSplitable(JobContext context, Path filename) {
 			CompressionCodec codec = new CompressionCodecFactory(
 					context.getConfiguration()).getCodec(filename);
-			return (!(codec == null)) ? isSplitable : true;
+			return (codec == null) || isSplitable;
 		}
 	}
 
