@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 public class KeyCommandLineParserTest {
 
     @Test
-    public void testParseKeyCommandLine_Empty() throws Exception {
+    public void testParse_Empty() throws Exception {
 
         // invoke method under test
         List<GBTitanKey> gbTitanKeyList = new KeyCommandLineParser().parse("");
@@ -39,7 +39,7 @@ public class KeyCommandLineParserTest {
     }
 
     @Test
-    public void testParseKeyCommandLine_WithOne() throws Exception {
+    public void testParse_WithOne() throws Exception {
 
         // invoke method under test
         List<GBTitanKey> list = new KeyCommandLineParser().parse("cf:userId;String;U;V");
@@ -55,7 +55,7 @@ public class KeyCommandLineParserTest {
     }
 
     @Test
-    public void testParseKeyCommandLine_WithTwo() throws Exception {
+    public void testParse_WithTwo() throws Exception {
 
         // invoke method under test
         List<GBTitanKey> list = new KeyCommandLineParser().parse("cf:userId;String;U;V,cf:eventId;E;Long");
@@ -79,7 +79,7 @@ public class KeyCommandLineParserTest {
     }
 
     @Test
-    public void testParseKeyCommandLine_UniqueMustBeVertex() throws Exception {
+    public void testParse_UniqueMustBeVertex() throws Exception {
 
         // invoke method under test
         List<GBTitanKey> list = new KeyCommandLineParser().parse("name;U");
