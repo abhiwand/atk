@@ -1,3 +1,22 @@
+/**
+ * Copyright (C) 2013 Intel Corporation.
+ *     All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * For more about this software visit:
+ *     http://www.01.org/GraphBuilder
+ */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
@@ -114,7 +133,7 @@ public class TitanGraphInitializer {
         return keyMap;
     }
 
-    private GBTitanKey createGbId() {
+    protected GBTitanKey createGbId() {
         // Because Titan requires combination of vertex names and vertex
         // labels into single strings for unique IDs the unique
         // GB_ID_FOR_TITAN property must be of StringType
@@ -131,7 +150,7 @@ public class TitanGraphInitializer {
      * @param gbTitanKey a bean that describes the key
      * @return the actual key from Titan
      */
-    private TitanKey getOrCreateTitanKey(GBTitanKey gbTitanKey) {
+    protected TitanKey getOrCreateTitanKey(GBTitanKey gbTitanKey) {
         TitanKey titanKey = getTitanKey(gbTitanKey.getName());
         if (titanKey == null) {
             titanKey = createTitanKey(gbTitanKey);
@@ -145,7 +164,7 @@ public class TitanGraphInitializer {
      * @param name of the key
      * @return the key or null if it does not yet exist
      */
-    private TitanKey getTitanKey(String name) {
+    protected TitanKey getTitanKey(String name) {
         TitanKey titanKey = null;
         TitanType type = graph.getType(name);
         if (type != null) {
@@ -160,7 +179,7 @@ public class TitanGraphInitializer {
      * @param gbTitanKey a bean that describes the key
      * @return the newly created key from Titan
      */
-    private TitanKey createTitanKey(GBTitanKey gbTitanKey) {
+    protected TitanKey createTitanKey(GBTitanKey gbTitanKey) {
 
         KeyMaker keyMaker = graph.makeKey(gbTitanKey.getName());
         keyMaker.dataType(gbTitanKey.getDataType());
@@ -196,7 +215,7 @@ public class TitanGraphInitializer {
      *    index taking string values, and a key for property cf:eventId that
      *    is an edge index taking Long values.
      */
-    private List<GBTitanKey> parseKeyCommandLine() {
+    protected List<GBTitanKey> parseKeyCommandLine() {
 
         ArrayList<GBTitanKey> gbKeyList = new ArrayList<GBTitanKey>();
 
@@ -265,4 +284,10 @@ public class TitanGraphInitializer {
 
         return gbKeyList;
     }
+
+    /** added for testing purposes */
+    protected void setGraph(TitanGraph graph) {
+        this.graph = graph;
+    }
+
 }
