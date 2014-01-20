@@ -88,4 +88,27 @@ public class KeyCommandLineParserTest {
         assertTrue(userKey.isVertexIndex());
         assertTrue(userKey.isUnique());
     }
+
+    @Test
+    public void testParse_DataType() throws Exception {
+        assertTypeStringIsParsedToType("String", String.class);
+        assertTypeStringIsParsedToType("Integer", Integer.class);
+        assertTypeStringIsParsedToType("Long", Long.class);
+        assertTypeStringIsParsedToType("Float", Float.class);
+        assertTypeStringIsParsedToType("Double", Double.class);
+    }
+
+    /**
+     * Assert that the supplied typeString is parsed to the expectedDataType
+     * @param typeString a type string supported by the parser: String, Long, ...
+     * @param expectedDataType the expected dataType class for that string: String.class, Long.class, ...
+     */
+    private void assertTypeStringIsParsedToType(String typeString, Class expectedDataType) {
+
+        // invoke method under test
+        List<GBTitanKey> list = new KeyCommandLineParser().parse("name;" + typeString );
+
+        GBTitanKey key = list.get(0);
+        assertEquals(expectedDataType, key.getDataType());
+    }
 }
