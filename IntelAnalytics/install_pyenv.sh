@@ -59,6 +59,7 @@ python_version="2.7.5"
 py27="python2.7"
 pip27="pip-2.7"
 
+
 if ! hash $py27 2>/dev/null; then
     echo $hdr Cannot find $py27  
     echo $hdr Installing Python $python_version
@@ -95,6 +96,17 @@ if ! hash $pip27 2>/dev/null; then
     wget https://raw.github.com/pypa/pip/master/contrib/get-pip.py -O get-pip.py
     $py27 get-pip.py
 fi
+
+#pip can potentially install in different locations based off of the version
+#make sure that we have a valid pointer to it so that we can make sure the installation works
+declare -a pip27Paths=('pip-2.7' 'pip2.7')
+for i in ${pip27Paths[@]}; do
+  echo "CHECK $i"
+  if [[ -e /usr/bin/$i ]]; then
+    echo $i
+    pip27=$i
+  fi
+done
 
 # get virtual env for 2.7
 echo $hdr Install virtualenv
