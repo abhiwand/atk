@@ -31,6 +31,8 @@ package com.intel.intelanalytics {
 import awscala.sqs.{Queue, Message, SQS}
 import scalax.io.StandardOpenOption
 import java.net.URI
+import java.io.File._
+import awscala.File
 
 //TODO: make this app work using distcp instead
 //import org.apache.hadoop.tools.{DistCpOptions, DistCp}
@@ -46,6 +48,9 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scalaj.http.Http
 
+import scala.collection.JavaConversions._
+import java.nio.file._
+
 /**
  * Configuration for the S3Copier application
  */
@@ -57,6 +62,7 @@ case class Config(bucket: String = "",
                   hadoopUser: String = "hadoop",
                   hadoopURI: String = "hdfs://master:9000",
                   instanceId: String = instance.id(),
+                  region: String = "us-west-2",
                   loopDelay: Int = 1000)
 
 /**
@@ -69,24 +75,27 @@ object Config {
   def parse(args: Array[String]): Config = {
     val parser = new scopt.OptionParser[Config]("s3-copier") {
       head("s3-copier", "1.x")
-      opt[String]("destination") action {
+      opt[String]("destination") required() action {
         (x, c) => c.copy(destination = x)
       } text "hdfs location to which files should be copied"
-      opt[String]("statusDestination") action {
+      opt[String]("statusDestination") required() action {
         (x, c) => c.copy(statusDestination = x)
       } text "directory where status files should be placed"
       opt[String]("queue") optional() action {
         (x, c) => c.copy(queue = x)
-      } text "queue to watch for upload messages"
+      } text "queue to watch for upload messages. Defaults to instance id"
       opt[String]("prefix") optional() action {
         (x, c) => c.copy(prefix = x)
-      } text "prefix to limit which files can be copied"
+      } text "prefix to limit which files can be copied from s3. Defaults to the instance id"
       opt[String]("hadoopUser") optional() action{
         (x, c) => c.copy(hadoopUser = x)
-      } text "the hadoop hdfs user"
+      } text "the hadoop hdfs user. Defaults to hadoop"
       opt[String]("hadoopURI") optional() action {
         (x, c) => c.copy(hadoopURI = x)
-      } text "the hadoop hdfs uri"
+      } text "the hadoop hdfs uri. defaults hdfs://master:9000"
+      opt[String]("region") optional() action {
+        (x, c) => c.copy(region = x)
+      } text "the aws region for the s3 and sqs client. default to us-west-2"
     }
     // parser.parse returns Option[C]
     val config = parser.parse(args, Config()) getOrElse {
@@ -113,21 +122,12 @@ object main {
    */
   def main(args: Array[String]) {
 
-    // It appears to be impossible to get through Intel's proxywall with this.
-    // I've also tried -D arguments as well as environment variables, even all three
-    // together, nothing worked. So you'll have to do testing in AWS.
-
-    //    val config = new ClientConfiguration()
-    //                      .withProxyHost("proxy.jf.intel.com")
-    //                      .withProxyPort(912)
-    //                      .withProtocol(Protocol.HTTPS)
-
     val config = Config.parse(args)
 
     println("Creating S3 object")
-    implicit val s3 = S3().at(Region.US_WEST_2)
+    implicit val s3 = S3().at(Region.apply(config.region))
 
-    implicit val sqs = SQS().at(Region.US_WEST_2)
+    implicit val sqs = SQS().at(Region.apply(config.region))
     println("Getting/creating queue")
     val queue = sqs.queue(config.queue) getOrElse sqs.createQueue(config.queue)
     val configuration = new Configuration()
@@ -161,10 +161,11 @@ object instance{
     instanceId.trim.toLowerCase
   }
 }
+
 /**
  * Status information
  * @param name the name that should appear for the user who is tracking this status
- * @param progress the progress toward completion. This should be a number between 0 and 100.
+ * @param progress the progress toward completion. This should be a number between 0 and 100.             import Perm._
  */
 case class Status(name: String, progress: Float)
 
@@ -201,8 +202,6 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
     }
     (path /(s"${status.name}.status", '/')).write(Json.stringify(json))
   }
-
-
 
   /**
    * The processing loop. Watches an SQS queue for messages, dispatches them for processing
@@ -243,7 +242,6 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
 
     val file = for {
       bucketName <- (json \ "create" \ "bucket").asOpt[String] orElse log("bucket not found in message")
-      //validBucket <- (bucketName == config.bucket).option(bucketName) orElse log(s"bucket name $bucketName does not match ${config.bucket}")
       fileName <- (json \ "create" \ "path").asOpt[String] orElse log("path not found in message")
       valid <- fileName.startsWith(config.prefix).option(fileName) orElse log(s"fileName $fileName does not match prefix ${config.prefix}")
       bucket <- s3.bucket(bucketName) orElse log(s"bucket $bucketName does not exist")
@@ -290,11 +288,14 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
     /*future {
       val resource = scalax.io.Resource.fromInputStream(s3Object.content)
       localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
-      log(s"Wrote to ${localPath.path}")
-      status = status.copy(progress = 50)
-      writeProgress(config.statusDestination, status)
-      log(s"Local exists: ${localPath.exists}")
 
+      log(s"Wrote to ${localPath.path}")
+
+      status = status.copy(progress = 50)
+
+      writeProgress(config.statusDestination, status)
+
+      log(s"Local exists: ${localPath.exists}")
       try{
         fs.copyFromLocalFile(new HdPath("file://" + localPath.path), new HdPath(config.destination + "/" + name))
       }
