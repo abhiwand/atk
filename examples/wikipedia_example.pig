@@ -52,6 +52,8 @@ STORE final_relation INTO 'hbase://wiki_table' USING org.apache.pig.backend.hado
 --build a directed graph with the --directedEdges argument		
 -- -O flag specifies overwriting the input Titan table
 -- -F flag specifies to unflatten the links (see links_flattened relation above) during tokenization 
+-- to bulk load the graph to Cassandra, use examples/cassandra-titan-conf.xml configuration file below
+-- TODO: -O has to be implemented for Cassandra
 LOAD_TITAN('wiki_table', '"features:title=features:id" "features:flattened_links"', 
                              '--directedEdges "features:title,features:flattened_links,LINKS"',
                            'examples/hbase-titan-conf.xml', '-O -F'); 

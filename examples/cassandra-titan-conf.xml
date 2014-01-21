@@ -36,7 +36,7 @@
 	</property>
 
 	<property>
-		<name>graphbuilder.titan.storage_tablename</name>
+		<name>graphbuilder.titan.storage_keyspace</name>
 		<value>test_graph</value>
 		<description>
 			storage.tablename parameter for Titan.
