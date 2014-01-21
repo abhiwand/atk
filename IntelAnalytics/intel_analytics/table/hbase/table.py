@@ -127,8 +127,8 @@ class HBaseTable(object):
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
         # treat arithmetic as expression and just pass on
-        if column_name and transformation_to_apply != 'ARITHMETIC' and
-            (column_name not in etl_schema.feature_names):
+        if (column_name and transformation != EvalFunctions.Math.ARITHMETIC and
+            (column_name not in etl_schema.feature_names)):
             raise HBaseTableException("Column %s does not exist" % column_name)
 
         script_path = os.path.join(etl_scripts_path, 'pig_transform.py')
