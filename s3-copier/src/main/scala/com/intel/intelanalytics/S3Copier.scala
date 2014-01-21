@@ -35,6 +35,8 @@ import java.net.URI
 //TODO: make this app work using distcp instead
 //import org.apache.hadoop.tools.{DistCpOptions, DistCp}
 
+import scalax.io.Resource
+import scala.util.{Success, Failure}
 import play.api.libs.json.Json
 import org.apache.hadoop.conf.Configuration
 import scala.collection._
@@ -270,7 +272,22 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
     var status = Status(name, 0)
     writeProgress(config.statusDestination, status)
     val localPath = Path.fromString(config.statusDestination) / (name, '/')
-    future {
+    val out = Resource.fromFile(config.statusDestination + "/" + name)
+    val in = scalax.io.Resource.fromInputStream(s3Object.content)
+    val processor = for{
+      in <- in.bytes.processor
+      data <- in.take(in.length)
+      log("log: " + data.length)
+    } yield out.write(data)
+
+    implicit val context = scalax.io.executionContext
+
+    processor.future.onComplete {
+      case Success(_) => println("Yay done :)")
+      case Failure(_) => println("Uh oh failure :(")
+    }
+
+    /*future {
       val resource = scalax.io.Resource.fromInputStream(s3Object.content)
       localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
       log(s"Wrote to ${localPath.path}")
@@ -291,7 +308,7 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
       status = status.copy(progress = 100)
       writeProgress(config.statusDestination, status)
       status
-    }
+    }*/
 
     //TODO: Use DistCp instead. Currently doesn't work, always get 403 errors
     //from S3, no matter how lax we make the S3 permissions.
