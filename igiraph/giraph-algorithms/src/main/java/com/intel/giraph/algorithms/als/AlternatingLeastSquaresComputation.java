@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Iterator;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
@@ -51,11 +52,11 @@ import org.apache.mahout.math.QRDecomposition;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
 
-import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.MessageDataWritable;
-import com.intel.giraph.io.EdgeDataWritable.EdgeType;
-import com.intel.giraph.io.VertexDataWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
+import com.intel.giraph.io.EdgeData4CFWritable;
+import com.intel.giraph.io.MessageData4CFWritable;
+import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
+import com.intel.giraph.io.VertexData4CFWritable;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 
 /**
  * Alternating Least Squares with Bias for collaborative filtering
@@ -68,8 +69,8 @@ import com.intel.giraph.io.VertexDataWritable.VertexType;
 @Algorithm(
     name = "Alternating Least Squares with Bias"
 )
-public class AlternatingLeastSquaresComputation extends BasicComputation<LongWritable, VertexDataWritable,
-    EdgeDataWritable, MessageDataWritable> {
+public class AlternatingLeastSquaresComputation extends BasicComputation<LongWritable, VertexData4CFWritable,
+    EdgeData4CFWritable, MessageData4CFWritable> {
     /** Custom argument for number of super steps */
     public static final String MAX_SUPERSTEPS = "als.maxSupersteps";
     /** Custom argument for feature dimension */
@@ -83,6 +84,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     public static final String BIAS_ON = "als.biasOn";
     /** Custom argument for the convergence threshold */
     public static final String CONVERGENCE_THRESHOLD = "als.convergenceThreshold";
+    /** Custom argument for checking bi-directional edge or not (default: false) */
+    public static final String BIDIRECTIONAL_CHECK = "als.bidirectionalCheck";
     /** Custom argument for maximum edge weight value */
     public static final String MAX_VAL = "als.maxVal";
     /** Custom argument for minimum edge weight value */
@@ -91,7 +94,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
      * Custom argument for learning curve output interval (default: every iteration)
      * Since each ALS iteration is composed by 2 super steps, one iteration
      * means two super steps.
-     * */
+     */
     public static final String LEARNING_CURVE_OUTPUT_INTERVAL = "als.learningCurveOutputInterval";
 
     /** Aggregator name for sum of cost on training data */
@@ -121,6 +124,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     private float lambda = 0f;
     /** Bias on/off switch */
     private boolean biasOn = false;
+    /** Turning on/off bi-directional edge check */
+    private boolean bidirectionalCheck = false;
     /** Maximum edge weight value */
     private float maxVal = Float.POSITIVE_INFINITY;
     /** Minimum edge weight value */
@@ -141,6 +146,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             throw new IllegalArgumentException("Regularization parameter lambda should be >= 0.");
         }
         biasOn = getConf().getBoolean(BIAS_ON, false);
+        bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
         maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
         minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
         learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
@@ -150,17 +156,17 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     }
 
     /**
-     * initialize vertex, collect graph statistics and send out messages
+     * Initialize vertex, collect graph statistics and send out messages
      *
      * @param vertex of the graph
      */
-    private void initialize(Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex) {
-        // initialize vertex data: bias, vector, gradient, conjugate
+    private void initialize(Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex) {
+        // initialize vertex data: vertex type, bias, and vector
         vertex.getValue().setBias(0d);
 
         double sum = 0d;
         int numTrain = 0;
-        for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
+        for (Edge<LongWritable, EdgeData4CFWritable> edge : vertex.getEdges()) {
             EdgeType et = edge.getValue().getType();
             if (et == EdgeType.TRAIN) {
                 double weight = edge.getValue().getWeight();
@@ -195,7 +201,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             long numTrainEdges = 0L;
             long numValidateEdges = 0L;
             long numTestEdges = 0L;
-            for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
+            for (Edge<LongWritable, EdgeData4CFWritable> edge : vertex.getEdges()) {
                 EdgeType et = edge.getValue().getType();
                 switch (et) {
                 case TRAIN:
@@ -211,7 +217,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
                     throw new IllegalArgumentException("Unknow recognized edge type: " + et.toString());
                 }
                 // send out messages
-                MessageDataWritable newMessage = new MessageDataWritable(vertex.getValue(), edge.getValue());
+                MessageData4CFWritable newMessage = new MessageData4CFWritable(vertex.getValue(), edge.getValue());
                 sendMessage(edge.getTargetVertexId(), newMessage);
             }
             if (numTrainEdges > 0) {
@@ -230,16 +236,16 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     }
 
     /**
-     * compute bias
+     * Compute bias
      *
      * @param value of type Vector
      * @param messages of type Iterable
      * @return bias of type double
      */
-    private double computeBias(Vector value, Iterable<MessageDataWritable> messages) {
+    private double computeBias(Vector value, Iterable<MessageData4CFWritable> messages) {
         double errorOnTrain = 0d;
         int numTrain = 0;
-        for (MessageDataWritable message : messages) {
+        for (MessageData4CFWritable message : messages) {
             EdgeType et = message.getType();
             if (et == EdgeType.TRAIN) {
                 double weight = message.getWeight();
@@ -259,13 +265,27 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     }
 
     @Override
-    public void compute(Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex,
-        Iterable<MessageDataWritable> messages) throws IOException {
+    public void compute(Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex,
+        Iterable<MessageData4CFWritable> messages) throws IOException {
         long step = getSuperstep();
         if (step == 0) {
             initialize(vertex);
             vertex.voteToHalt();
             return;
+        }
+
+        // verify bi-directional edges
+        int numMessages = 0;
+        Iterator<MessageData4CFWritable> it = messages.iterator();
+        while (it.hasNext()) {
+            numMessages++;
+            it.next();
+        }
+        if (bidirectionalCheck) {
+            if (numMessages != vertex.getNumEdges()) {
+                throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d)" +
+                    " isn't equal to number of edges (%d).", vertex.getId().get(), numMessages, vertex.getNumEdges()));
+            }
         }
 
         Vector currentValue = vertex.getValue().getVector();
@@ -276,7 +296,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             double errorOnValidate = 0d;
             double errorOnTest = 0d;
             int numTrain = 0;
-            for (MessageDataWritable message : messages) {
+            for (MessageData4CFWritable message : messages) {
                 EdgeType et = message.getType();
                 double weight = message.getWeight();
                 Vector vector = message.getVector();
@@ -316,7 +336,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             // xr records the result of x times rating
             Vector xr = currentValue.clone().assign(0d);
             int numTrain = 0;
-            for (MessageDataWritable message : messages) {
+            for (MessageData4CFWritable message : messages) {
                 EdgeType et = message.getType();
                 if (et == EdgeType.TRAIN) {
                     double weight = message.getWeight();
@@ -339,8 +359,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
             }
 
             // send out messages
-            for (Edge<LongWritable, EdgeDataWritable> edge : vertex.getEdges()) {
-                MessageDataWritable newMessage = new MessageDataWritable(vertex.getValue(), edge.getValue());
+            for (Edge<LongWritable, EdgeData4CFWritable> edge : vertex.getEdges()) {
+                MessageData4CFWritable newMessage = new MessageData4CFWritable(vertex.getValue(), edge.getValue());
                 sendMessage(edge.getTargetVertexId(), newMessage);
             }
         }
@@ -349,7 +369,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
     }
 
     /**
-     * Master compute associated with {@link SimplePageRankComputation}. It registers required aggregators.
+     * Master compute associated with {@link AlternatingLeastSquaresComputation}. It registers required aggregators.
      */
     public static class AlternatingLeastSquaresMasterCompute extends DefaultMasterCompute {
         @Override
@@ -412,8 +432,8 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         private static String FILENAME;
         /** Saved output stream to write to */
         private FSDataOutputStream output;
-        /**super step number*/
-        private int lastStep = 0;
+        /** Last superstep number*/
+        private long lastStep = -1L;
 
         public static String getFilename() {
             return FILENAME;
@@ -435,8 +455,7 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         /**
          * Set filename written to
          *
-         * @param applicationAttempt
-         *            app attempt
+         * @param applicationAttempt of type long
          */
         private static void setFilename(long applicationAttempt) {
             FILENAME = "als-learning-report_" + applicationAttempt;
@@ -445,60 +464,61 @@ public class AlternatingLeastSquaresComputation extends BasicComputation<LongWri
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
             throws IOException {
+            long realStep = lastStep;
+            int learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
+
             // collect aggregator data
             HashMap<String, String> map = new HashMap<String, String>();
             for (Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
             }
 
-            int learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
-            int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
-            int realStep = lastStep;
-
-            if (superstep == 0) {
+            if (realStep == 0) {
                 // output graph statistics
                 long leftVertices = Long.parseLong(map.get(SUM_LEFT_VERTICES));
                 long rightVertices = Long.parseLong(map.get(SUM_RIGHT_VERTICES));
-                long trainEdges = Long.parseLong(map.get(SUM_TRAIN_EDGES));
-                long validateEdges = Long.parseLong(map.get(SUM_VALIDATE_EDGES));
-                long testEdges = Long.parseLong(map.get(SUM_TEST_EDGES));
-                output.writeBytes("Graph Statistics:\n");
-                output.writeBytes("Number of vertices: " + (leftVertices + rightVertices) +
-                    ", (left: " + rightVertices + ", right: " +  rightVertices + ")\n");
-                output.writeBytes("Number of edges: " + (trainEdges + validateEdges + testEdges) +
-                    " (train: " + trainEdges + ", validate: " + validateEdges +
-                    ", test: )" + testEdges + ")\n");
+                long trainEdges = Long.parseLong(map.get(SUM_TRAIN_EDGES)) * 2;
+                long validateEdges = Long.parseLong(map.get(SUM_VALIDATE_EDGES)) * 2;
+                long testEdges = Long.parseLong(map.get(SUM_TEST_EDGES)) * 2;
+                output.writeBytes("======Graph Statistics======\n");
+                output.writeBytes(String.format("Number of vertices: %d (left: %d, right: %d)%n",
+                    leftVertices + rightVertices, leftVertices, rightVertices));
+                output.writeBytes(String.format("Number of edges: %d (train: %d, validate: %d, test: %d)%n",
+                    trainEdges + validateEdges + testEdges, trainEdges, validateEdges, testEdges));
+                output.writeBytes("\n");
                 // output ALS configuration
+                int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
                 int featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
                 float lambda = getConf().getFloat(LAMBDA, 0f);
                 boolean biasOn = getConf().getBoolean(BIAS_ON, false);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
+                boolean bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
                 float minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
-                output.writeBytes("=====================ALS Configuration====================\n");
-                output.writeBytes("featureDimension: " + featureDimension + "\n");
-                output.writeBytes("lambda: " + lambda + "\n");
-                output.writeBytes("biasOn: " + biasOn + "\n");
-                output.writeBytes("convergenceThreshold: n" + convergenceThreshold + "\n");
-                output.writeBytes("maxSupersteps: " +  maxSupersteps + "\n");
-                output.writeBytes("maxVal: " +  maxVal + "\n");
-                output.writeBytes("minVal: " + minVal + "\n");
-                output.writeBytes("learningCurveOutputInterval: " + learningCurveOutputInterval + "\n");
-                output.writeBytes("-------------------------------------------------------------\n");
+                output.writeBytes("======ALS Configuration======\n");
+                output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
+                output.writeBytes(String.format("featureDimension: %d%n", featureDimension));
+                output.writeBytes(String.format("lambda: %f%n", lambda));
+                output.writeBytes(String.format("biasOn: %b%n", biasOn));
+                output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
+                output.writeBytes(String.format("bidirectionalCheck: %b%n", bidirectionalCheck));
+                output.writeBytes(String.format("maxVal: %f%n", maxVal));
+                output.writeBytes(String.format("minVal: %f%n", minVal));
+                output.writeBytes(String.format("learningCurveOutputInterval: %d%n", learningCurveOutputInterval));
                 output.writeBytes("\n");
-                output.writeBytes("========================Learning Progress====================\n");
-            } else if (realStep > 0 && (realStep % (2 * learningCurveOutputInterval)) == 0) {
+                output.writeBytes("======Learning Progress======\n");
+            } else if (realStep > 0 && realStep % (2 * learningCurveOutputInterval) == 0) {
                 // output learning progress
                 double trainCost = Double.parseDouble(map.get(SUM_TRAIN_COST));
                 double validateRmse = Double.parseDouble(map.get(SUM_VALIDATE_ERROR));
                 double testRmse = Double.parseDouble(map.get(SUM_TEST_ERROR));
-                output.writeBytes("superstep = " + realStep + "\t");
-                output.writeBytes("cost(train) = " + trainCost + "\t");
-                output.writeBytes("rmse(validate) = " + validateRmse + "\t");
-                output.writeBytes("rmse(test) = " + testRmse + "\n");
+                output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                output.writeBytes(String.format("cost(train) = %f%c", trainCost, '\t'));
+                output.writeBytes(String.format("rmse(validate) = %f%c", validateRmse, '\t'));
+                output.writeBytes(String.format("rmse(test) = %f%n", testRmse));
             }
             output.flush();
-            lastStep = (int) superstep;
+            lastStep = superstep;
         }
 
         @Override

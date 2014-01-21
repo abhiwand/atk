@@ -45,7 +45,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
-import org.apache.log4j.Logger;
 
 /**
  * Average path length calculation.
@@ -62,10 +61,6 @@ public class AveragePathLengthComputation extends BasicComputation
      * Custom argument for convergence progress output interval (default: every superstep)
      */
     public static final String CONVERGENCE_CURVE_OUTPUT_INTERVAL = "apl.convergenceProgressOutputInterval";
-    /**
-     * Logger handler
-     */
-    private static final Logger LOG = Logger.getLogger(AveragePathLengthComputation.class);
     /**
      * Aggregator name on sum of delta values
      */
@@ -106,7 +101,7 @@ public class AveragePathLengthComputation extends BasicComputation
 
         convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
         if (convergenceProgressOutputInterval < 1) {
-            throw new IllegalArgumentException("Learning curve output interval should be >= 1.");
+            throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
         }
 
         // initial condition - start with sending message to all its neighbors
@@ -228,17 +223,20 @@ public class AveragePathLengthComputation extends BasicComputation
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
             if (superstep == 0) {
                 output.writeBytes("==================Average Path Length Configuration====================\n");
-                output.writeBytes("convergenceProgressOutputInterval: " + convergenceProgressOutputInterval + "\n");
+                output.writeBytes(String.format("convergenceProgressOutputInterval: %d%n",
+                    convergenceProgressOutputInterval));
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
                 output.writeBytes("===================Convergence Progress======================\n");
-            } else if (realStep >= 0 && realStep % convergenceProgressOutputInterval == 0) {
+            } else if (realStep > 0 && realStep % convergenceProgressOutputInterval == 0) {
                 // output learning progress
                 double sumDelta = Double.parseDouble(map.get(SUM_DELTA));
                 double numUpdates = Double.parseDouble(map.get(SUM_UPDATES));
                 if (numUpdates > 0) {
                     double avgUpdates = sumDelta / numUpdates;
-                    output.writeBytes("superstep = " + realStep + "\tavgDelta = " + avgUpdates + "\n");
+                    output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
+                    output.writeBytes(String.format("avgUpdates=%f%c", avgUpdates, '\t'));
+                    output.writeBytes(String.format("sumDelta=%f%n", sumUpdates));
                 }
             }
             output.flush();

@@ -26,36 +26,35 @@ package com.intel.giraph.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import org.apache.hadoop.io.Writable;
 
 /**
- * Writable to handle serialization of the fields associated with edge data
+ * Writable to handle serialization of the fields associated with EdgeData4CF
  */
-public class EdgeDataWritable implements Writable {
+public class EdgeData4CFWritable implements Writable {
 
-    /** the edge type supported by this vertex */
-    public enum EdgeType { TRAIN, VALIDATE, TEST, NONE };
+    /** The edge type supported by this vertex */
+    public enum EdgeType { TRAIN, VALIDATE, TEST };
 
-    /** the weight value at this edge */
+    /** The weight value at this edge */
     private double weight = 0d;
 
-    /** the type of this vertex */
-    private EdgeType type = EdgeType.NONE;
+    /** The type of this vertex */
+    private EdgeType type = null;
 
     /**
      * Default constructor
      */
-    public EdgeDataWritable() {
+    public EdgeData4CFWritable() {
     }
 
     /**
      * Constructor
      *
-     * @param type from EdgeType
+     * @param type of type EdgeType
      * @param weight of type double
      */
-    public EdgeDataWritable(EdgeType type, double weight) {
+    public EdgeData4CFWritable(EdgeType type, double weight) {
         this.type = type;
         this.weight = weight;
     }
@@ -72,19 +71,10 @@ public class EdgeDataWritable implements Writable {
     /**
      * Getter
      *
-     * @return type of type EdgeType
+     * @return EdgeType
      */
     public EdgeType getType() {
         return type;
-    }
-
-    /**
-     * Getter
-     *
-     * @return weight of type double
-     */
-    public double getWeight() {
-        return weight;
     }
 
     /**
@@ -94,6 +84,15 @@ public class EdgeDataWritable implements Writable {
      */
     public void setWeight(double weight) {
         this.weight = weight;
+    }
+
+    /**
+     * Getter
+     *
+     * @return weight of type double
+     */
+    public double getWeight() {
+        return weight;
     }
 
     @Override
@@ -118,8 +117,8 @@ public class EdgeDataWritable implements Writable {
      * @return EdgeDataWritable
      * @throws IOException
      */
-    public static EdgeDataWritable read(DataInput in) throws IOException {
-        EdgeDataWritable writable = new EdgeDataWritable();
+    public static EdgeData4CFWritable read(DataInput in) throws IOException {
+        EdgeData4CFWritable writable = new EdgeData4CFWritable();
         writable.readFields(in);
         return writable;
     }
@@ -133,7 +132,7 @@ public class EdgeDataWritable implements Writable {
      * @throws IOException
      */
     public static void write(DataOutput out, EdgeType type, double weight) throws IOException {
-        new EdgeDataWritable(type, weight).write(out);
+        new EdgeData4CFWritable(type, weight).write(out);
     }
 
 }

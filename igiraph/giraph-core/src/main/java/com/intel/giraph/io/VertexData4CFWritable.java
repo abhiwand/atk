@@ -34,26 +34,26 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 /**
- * Writable to handle serialization of the fields associated with vertex data
+ * Writable to handle serialization of the fields associated with VertexData4CF
  */
-public class VertexDataWritable implements Writable {
+public class VertexData4CFWritable implements Writable {
 
-    /** the vertex type supported by this vertex */
-    public enum VertexType { LEFT, RIGHT, NONE };
+    /** The vertex type supported by this vertex */
+    public enum VertexType { LEFT, RIGHT };
 
-    /** the type of this vertex */
-    private VertexType type = VertexType.NONE;
+    /** The type of this vertex */
+    private VertexType type = null;
 
-    /** the vector value at this vertex */
+    /** The vector value at this vertex */
     private final VectorWritable vectorWritable = new VectorWritable();
 
-    /** the bias value at this vertex */
+    /** The bias value at this vertex */
     private double bias = 0d;
 
     /**
      * Default constructor
      */
-    public VertexDataWritable() {
+    public VertexData4CFWritable() {
     }
 
     /**
@@ -62,7 +62,7 @@ public class VertexDataWritable implements Writable {
      * @param type of type VertexType
      * @param vector of type Vector
      */
-    public VertexDataWritable(VertexType type, Vector vector) {
+    public VertexData4CFWritable(VertexType type, Vector vector) {
         this.type = type;
         vectorWritable.set(vector);
     }
@@ -74,7 +74,7 @@ public class VertexDataWritable implements Writable {
      * @param vector of type Vector
      * @param bias of type double
      */
-    public VertexDataWritable(VertexType type, Vector vector, double bias) {
+    public VertexData4CFWritable(VertexType type, Vector vector, double bias) {
         this.type = type;
         vectorWritable.set(vector);
         this.bias = bias;
@@ -92,7 +92,7 @@ public class VertexDataWritable implements Writable {
     /**
      * Getter
      *
-     * @return type of type VertexType
+     * @return VertexType
      */
     public VertexType getType() {
         return type;
@@ -101,7 +101,7 @@ public class VertexDataWritable implements Writable {
     /**
      * Getter
      *
-     * @return vector of type Vector
+     * @return Vector
      */
     public Vector getVector() {
         return vectorWritable.get();
@@ -158,8 +158,8 @@ public class VertexDataWritable implements Writable {
      * @return VertexDataWritable
      * @throws IOException
      */
-    public static VertexDataWritable read(DataInput in) throws IOException {
-        VertexDataWritable writable = new VertexDataWritable();
+    public static VertexData4CFWritable read(DataInput in) throws IOException {
+        VertexData4CFWritable writable = new VertexData4CFWritable();
         writable.readFields(in);
         return writable;
     }
@@ -173,7 +173,7 @@ public class VertexDataWritable implements Writable {
      * @throws IOException
      */
     public static void write(DataOutput out, VertexType type, SequentialAccessSparseVector ssv) throws IOException {
-        new VertexDataWritable(type, ssv).write(out);
+        new VertexData4CFWritable(type, ssv).write(out);
     }
 
     /**
@@ -187,7 +187,7 @@ public class VertexDataWritable implements Writable {
      */
     public static void write(DataOutput out, VertexType type, SequentialAccessSparseVector ssv, double bias)
         throws IOException {
-        new VertexDataWritable(type, ssv, bias).write(out);
+        new VertexData4CFWritable(type, ssv, bias).write(out);
     }
 
 }

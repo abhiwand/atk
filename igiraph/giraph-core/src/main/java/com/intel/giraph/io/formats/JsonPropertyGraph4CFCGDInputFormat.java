@@ -24,10 +24,10 @@
 package com.intel.giraph.io.formats;
 
 import com.google.common.collect.Lists;
-import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.EdgeDataWritable.EdgeType;
+import com.intel.giraph.io.EdgeData4CFWritable;
+import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
 import com.intel.giraph.io.VertexData4CGDWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
@@ -51,7 +51,7 @@ import java.util.List;
   * values, specified in JSON format.
   */
 public class JsonPropertyGraph4CFCGDInputFormat extends TextVertexInputFormat<LongWritable,
-    VertexData4CGDWritable, EdgeDataWritable> {
+    VertexData4CGDWritable, EdgeData4CFWritable> {
 
     @Override
     public TextVertexReader createVertexReader(InputSplit split, TaskAttemptContext context) {
@@ -99,22 +99,22 @@ public class JsonPropertyGraph4CFCGDInputFormat extends TextVertexInputFormat<Lo
         }
 
         @Override
-        protected Iterable<Edge<LongWritable, EdgeDataWritable>> getEdges(JSONArray jsonVertex)
+        protected Iterable<Edge<LongWritable, EdgeData4CFWritable>> getEdges(JSONArray jsonVertex)
             throws JSONException, IOException {
             JSONArray jsonEdgeArray = jsonVertex.getJSONArray(3);
-            List<Edge<LongWritable, EdgeDataWritable>> edges =
+            List<Edge<LongWritable, EdgeData4CFWritable>> edges =
                 Lists.newArrayListWithCapacity(jsonEdgeArray.length());
             for (int i = 0; i < jsonEdgeArray.length(); ++i) {
                 JSONArray jsonEdge = jsonEdgeArray.getJSONArray(i);
                 EdgeType et = getEdgeType(jsonEdge.getJSONArray(2));
                 edges.add(EdgeFactory.create(new LongWritable(jsonEdge.getLong(0)),
-                    new EdgeDataWritable(et, jsonEdge.getDouble(1))));
+                    new EdgeData4CFWritable(et, jsonEdge.getDouble(1))));
             }
             return edges;
         }
 
         @Override
-        protected Vertex<LongWritable, VertexData4CGDWritable, EdgeDataWritable> handleException(Text line,
+        protected Vertex<LongWritable, VertexData4CGDWritable, EdgeData4CFWritable> handleException(Text line,
             JSONArray jsonVertex, JSONException e) {
             throw new IllegalArgumentException("Couldn't get vertex from line " + line, e);
         }
