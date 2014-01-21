@@ -23,6 +23,7 @@
 
 package com.intel.giraph.io;
 
+import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
 
@@ -30,19 +31,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.hadoop.io.Writable;
-
 import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 
 /**
- * Writable to handle serialization of the fields associated with message data
+ * Writable to handle serialization of the fields associated with MessageData4CF
  */
 public class MessageData4CFWritable implements Writable {
 
-    /** the vertex data for this message */
+    /** The vertex data for this message */
     private final VertexData4CFWritable vertexDataWritable = new VertexData4CFWritable();
 
-    /** the edge data for this message */
+    /** The edge data for this message */
     private final EdgeData4CFWritable edgeDataWritable = new EdgeData4CFWritable();
 
     /**
@@ -60,6 +60,8 @@ public class MessageData4CFWritable implements Writable {
      * @param weight of type double
      */
     public MessageData4CFWritable(Vector vector, double bias, EdgeType type, double weight) {
+        // vertex type isn't used in message; here uses LEFT as default
+        vertexDataWritable.setType(VertexType.LEFT);
         vertexDataWritable.setVector(vector);
         vertexDataWritable.setBias(bias);
         edgeDataWritable.setType(type);
@@ -69,10 +71,11 @@ public class MessageData4CFWritable implements Writable {
     /**
      * Constructor
      *
-     * @param vertex of type VertexDataWritable
-     * @param edge of type EdgeDataWritable
+     * @param vertex of type VertexData4CFWritable
+     * @param edge of type EdgeData4CFWritable
      */
     public MessageData4CFWritable(VertexData4CFWritable vertex, EdgeData4CFWritable edge) {
+        vertexDataWritable.setType(vertex.getType());
         vertexDataWritable.setVector(vertex.getVector());
         vertexDataWritable.setBias(vertex.getBias());
         edgeDataWritable.setType(edge.getType());
@@ -118,7 +121,7 @@ public class MessageData4CFWritable implements Writable {
     /**
      * Getter
      *
-     * @return vector of type Vector
+     * @return Vector
      */
     public Vector getVector() {
         return vertexDataWritable.getVector();

@@ -59,6 +59,7 @@ public class VertexData4LBPWritable implements Writable {
         priorWritable.set(prior);
         posteriorWritable.set(posterior);
     }
+
     /**
      * Setter
      *
@@ -67,6 +68,7 @@ public class VertexData4LBPWritable implements Writable {
     public void setType(VertexType type) {
         this.type = type;
     }
+
     /**
      * Getter
      *
@@ -75,6 +77,7 @@ public class VertexData4LBPWritable implements Writable {
     public VertexType getType() {
         return type;
     }
+
     /**
      * Getter
      *
@@ -83,6 +86,7 @@ public class VertexData4LBPWritable implements Writable {
     public Vector getPriorVector() {
         return priorWritable.get();
     }
+
     /**
      * Setter
      *
@@ -91,6 +95,7 @@ public class VertexData4LBPWritable implements Writable {
     public void setPriorVector(Vector vector) {
         priorWritable.set(vector);
     }
+
     /**
      * Getter
      *
@@ -99,6 +104,7 @@ public class VertexData4LBPWritable implements Writable {
     public Vector getPosteriorVector() {
         return posteriorWritable.get();
     }
+
     /**
      * Setter
      *
@@ -107,6 +113,7 @@ public class VertexData4LBPWritable implements Writable {
     public void setPosteriorVector(Vector vector) {
         posteriorWritable.set(vector);
     }
+
     @Override
     public void readFields(DataInput in) throws IOException {
         int idx = in.readInt();
@@ -115,6 +122,7 @@ public class VertexData4LBPWritable implements Writable {
         priorWritable.readFields(in);
         posteriorWritable.readFields(in);
     }
+
     @Override
     public void write(DataOutput out) throws IOException {
         VertexType vt = getType();
@@ -122,6 +130,7 @@ public class VertexData4LBPWritable implements Writable {
         priorWritable.write(out);
         posteriorWritable.write(out);
     }
+
     /**
      * Read vertex data from DataInput
      *
@@ -134,6 +143,7 @@ public class VertexData4LBPWritable implements Writable {
         writable.readFields(in);
         return writable;
     }
+
     /**
      * Write vertex data to DataOutput
      *

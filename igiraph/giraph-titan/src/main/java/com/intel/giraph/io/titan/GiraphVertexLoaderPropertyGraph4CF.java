@@ -116,11 +116,11 @@ public class GiraphVertexLoaderPropertyGraph4CF {
     /**
      * the vertex type
      */
-    private VertexType vertexType = VertexType.NONE;
+    private VertexType vertexType = null;
     /**
      * the edge type
      */
-    private EdgeType edgeType = EdgeType.NONE;
+    private EdgeType edgeType = null;
 
 
     /**

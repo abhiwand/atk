@@ -20,7 +20,9 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.giraph.algorithms.lbp;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -45,11 +47,12 @@ import org.apache.mahout.math.function.Functions;
 import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
 import com.intel.mahout.math.IdWithVectorWritable;
+
 /**
  * Loopy belief propagation on MRF
  */
 @Algorithm(
-    name = "Loopy belief propagation"
+    name = "Loopy belief propagation on MRF"
 )
 public class LoopyBeliefPropagationComputation extends BasicComputation<LongWritable, VertexData4LBPWritable,
     DoubleWritable, IdWithVectorWritable> {
@@ -85,6 +88,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
     private static final String NUM_EDGES = "num_edges";
     /** Average delta value on validation data of previous super step for convergence monitoring */
     private static final String PREV_AVG_DELTA = "prev_avg_delta";
+
     /** Number of super steps */
     private int maxSupersteps = 10;
     /** The Ising smoothing parameter */
@@ -101,15 +105,16 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
 
     @Override
     public void preSuperstep() {
-        // Set custom parameters
+        // set custom parameters
         maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);
         smoothing = getConf().getFloat(SMOOTHING, 2f);
         anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, 1f);
         anchorThreshold = (float) Math.log(anchorThreshold);
         bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
     }
+
     /**
-     * initialize vertex
+     * Initialize vertex
      *
      * @param vertex of the graph
      */
@@ -152,7 +157,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             posterior.assign(1.0 / prior.size());
             return;
         }
-        // send out message
+        // calculate messages
         IdWithVectorWritable newMessage = new IdWithVectorWritable();
         newMessage.setData(vertex.getId().get());
         // calculate initial belief
@@ -161,7 +166,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             double weight = edge.getValue().get();
             if (weight <= 0d) {
                 throw new IllegalArgumentException("Vertex ID: " + vertex.getId() +
-                    " has an edge with negative weight value.");
+                    " has an edge with negative or zero weight value.");
             }
             for (int i = 0; i < prior.size(); i++) {
                 sum = 0d;
@@ -175,7 +180,6 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             newMessage.setVector(belief);
             sendMessage(edge.getTargetVertexId(), newMessage);
         }
-        //vertex.voteToHalt();
     }
 
     @Override
@@ -186,6 +190,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             initializeVertex(vertex);
             return;
         }
+
         // collect messages sent to this vertex
         HashMap<Long, Vector> map = new HashMap<Long, Vector>();
         for (IdWithVectorWritable message : messages) {
@@ -193,10 +198,12 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
         }
         if (bidirectionalCheck) {
             if (map.size() != vertex.getNumEdges()) {
-                throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d) " +
+                throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d)" +
                     " isn't equal to number of edges (%d).", vertex.getId().get(), map.size(), vertex.getNumEdges()));
             }
         }
+
+        // update posterior according to prior and messages
         VertexData4LBPWritable vertexValue = vertex.getValue();
         VertexType vt = vertexValue.getType();
         Vector prior = vertexValue.getPriorVector();
@@ -234,6 +241,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             // update posterior
             vertexValue.setPosteriorVector(posterior);
         }
+
         if (step < maxSupersteps) {
             // if it's not a training vertex, don't send out messages
             if (vt != VertexType.TRAIN) {
@@ -272,8 +280,8 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             vertexValue.setPriorVector(prior);
             vertex.voteToHalt();
         }
-        //vertex.voteToHalt();
     }
+
     /**
      * Master compute associated with {@link LoopyBeliefPropagationComputation}. It registers required aggregators.
      */
@@ -287,48 +295,40 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             registerAggregator(SUM_VALIDATE_DELTA, DoubleSumAggregator.class);
             registerAggregator(SUM_TEST_DELTA, DoubleSumAggregator.class);
         }
+
         @Override
         public void compute() {
             long step = getSuperstep();
-            if (step > 0) {
+            if (step <= 0) {
+                return;
+            }
+
+            if (step == 1) {
                 // store number of edges for graph statistics
-                if (step == 1) {
-                    getConf().setLong(NUM_EDGES, getTotalNumEdges());
-                }
+                getConf().setLong(NUM_EDGES, getTotalNumEdges());
+            } else {
                 // calculate average delta on training data
                 DoubleWritable sumTrainDelta = getAggregatedValue(SUM_TRAIN_DELTA);
                 long numTrainVertices = this.<LongWritable>getAggregatedValue(SUM_TRAIN_VERTICES).get();
-                double avgTrainDelta = 1d;
-                if (step > 1) {
-                    if (numTrainVertices > 0) {
-                        avgTrainDelta = sumTrainDelta.get() / numTrainVertices;
-                    } else {
-                        avgTrainDelta = 0d;
-                    }
+                double avgTrainDelta = 0d;
+                if (numTrainVertices > 0) {
+                    avgTrainDelta = sumTrainDelta.get() / numTrainVertices;
                 }
                 sumTrainDelta.set(avgTrainDelta);
                 // calculate average delta on test data
                 DoubleWritable sumTestDelta = getAggregatedValue(SUM_TEST_DELTA);
                 long numTestVertices = this.<LongWritable>getAggregatedValue(SUM_TEST_VERTICES).get();
-                double avgTestDelta = 1d;
-                if (step > 1) {
-                    if (numTestVertices > 0) {
-                        avgTestDelta = sumTestDelta.get() / numTestVertices;
-                    } else {
-                        avgTestDelta = 0d;
-                    }
+                double avgTestDelta = 0d;
+                if (numTestVertices > 0) {
+                    avgTestDelta = sumTestDelta.get() / numTestVertices;
                 }
                 sumTestDelta.set(avgTestDelta);
                 // calculate average delta on validation data
                 DoubleWritable sumValidateDelta = getAggregatedValue(SUM_VALIDATE_DELTA);
                 long numValidateVertices = this.<LongWritable>getAggregatedValue(SUM_VALIDATE_VERTICES).get();
-                double avgValidateDelta = 1d;
-                if (step > 1) {
-                    if (numValidateVertices > 0) {
-                        avgValidateDelta = sumValidateDelta.get() / numValidateVertices;
-                    } else {
-                        avgValidateDelta = 0d;
-                    }
+                double avgValidateDelta = 0d;
+                if (numValidateVertices > 0) {
+                    avgValidateDelta = sumValidateDelta.get() / numValidateVertices;
                 }
                 sumValidateDelta.set(avgValidateDelta);
                 // evaluate convergence condition
@@ -341,6 +341,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             }
         }
     }
+
     /**
      * This is an aggregator writer for lbp, which after each super step will persist the
      * aggregator values to disk, by use of the Writable interface.
@@ -351,9 +352,13 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
         private static String FILENAME;
         /** Saved output stream to write to */
         private FSDataOutputStream output;
+        /** Last superstep number */
+        private long lastStep = -1L;
+
         public static String getFilename() {
             return FILENAME;
         }
+
         @SuppressWarnings("rawtypes")
         @Override
         public void initialize(Context context, long applicationAttempt) throws IOException {
@@ -366,30 +371,34 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             }
             output = fs.create(p, true);
         }
+
         /**
          * Set filename written to
          *
-         * @param applicationAttempt
-         *            app attempt
+         * @param applicationAttempt of type long
          */
         private static void setFilename(long applicationAttempt) {
             FILENAME = "lbp-learning-report_" + applicationAttempt;
         }
+
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
             throws IOException {
+            long realStep = lastStep;
+
             // collect aggregator data
             HashMap<String, String> map = new HashMap<String, String>();
             for (Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
             }
-            if (superstep == 1) {
+
+            if (realStep == 0) {
                 // output graph statistics
                 long numTrainVertices = Long.parseLong(map.get(SUM_TRAIN_VERTICES));
                 long numValidateVertices = Long.parseLong(map.get(SUM_VALIDATE_VERTICES));
                 long numTestVertices = Long.parseLong(map.get(SUM_TEST_VERTICES));
                 long numEdges = getConf().getLong(NUM_EDGES, 0L);
-                output.writeBytes("Graph Statistics:\n");
+                output.writeBytes("======Graph Statistics======\n");
                 output.writeBytes(String.format("Number of vertices: %d (train: %d, validate: %d, test: %d)%n",
                     numTrainVertices + numValidateVertices + numTestVertices,
                     numTrainVertices, numValidateVertices, numTestVertices));
@@ -401,28 +410,28 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
                 float anchorThreshold = getConf().getFloat(ANCHOR_THRESHOLD, 1f);
                 float smoothing = getConf().getFloat(SMOOTHING, 2f);
                 boolean bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
-                output.writeBytes("LBP Configuration:\n");
+                output.writeBytes("======LBP Configuration======\n");
                 output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
                 output.writeBytes(String.format("anchorThreshold: %f%n", anchorThreshold));
                 output.writeBytes(String.format("smoothing: %f%n", smoothing));
                 output.writeBytes(String.format("bidirectionalCheck: %b%n", bidirectionalCheck));
                 output.writeBytes("\n");
-                output.writeBytes("Learning Progress:\n");
-            }
-            if (superstep == -1 || superstep > 0) {
+                output.writeBytes("======Learning Progress======\n");
+            } else if (realStep > 0) {
                 // output learning progress
                 double avgTrainDelta = Double.parseDouble(map.get(SUM_TRAIN_DELTA));
                 double avgValidateDelta = Double.parseDouble(map.get(SUM_VALIDATE_DELTA));
                 double avgTestDelta = Double.parseDouble(map.get(SUM_TEST_DELTA));
-                output.writeBytes(String.format("superstep=%d%c", superstep, '\t'));
-                output.writeBytes(String.format("avgTrainDelta=%f%c", avgTrainDelta, '\t'));
-                output.writeBytes(String.format("avgValidateDelta=%f%c", avgValidateDelta, '\t'));
-                output.writeBytes(String.format("avgTestDelta=%f", avgTestDelta));
-                output.writeBytes("\n");
+                output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                output.writeBytes(String.format("avgTrainDelta = %f%c", avgTrainDelta, '\t'));
+                output.writeBytes(String.format("avgValidateDelta = %f%c", avgValidateDelta, '\t'));
+                output.writeBytes(String.format("avgTestDelta = %f%n", avgTestDelta));
             }
             output.flush();
+            lastStep =  superstep;
         }
+
         @Override
         public void close() throws IOException {
             output.close();

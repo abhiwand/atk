@@ -20,7 +20,9 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.giraph.io.formats;
+
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.LongWritable;
@@ -33,20 +35,23 @@ import org.json.JSONException;
 import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
 import java.io.IOException;
+
 /**
  * VertexOutputFormat that supports JSON encoded vertices featuring
- * <code>Long</code> id and <code>TwoVector</code> values. Both prior
+ * <code>Long</code> id and <code>VertexData4LBP</code> values. Both prior
  * and posterior are output.
  */
 public class JsonPropertyGraph4LBPOutputFormat extends TextVertexOutputFormat<LongWritable,
     VertexData4LBPWritable, Writable> {
+
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
         return new JsonPropertyGraph4LBPWriter();
     }
+
     /**
      * VertexWriter that supports vertices with <code>Long</code> id
-     * and <code>TwoVector</code> values.
+     * and <code>VertexData4LBP</code> values.
      */
     protected class JsonPropertyGraph4LBPWriter extends TextVertexWriterToEachLine {
         @Override

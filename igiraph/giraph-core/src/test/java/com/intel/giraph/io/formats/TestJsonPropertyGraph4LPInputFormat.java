@@ -35,8 +35,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import com.intel.mahout.math.TwoVectorWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
 import com.intel.giraph.io.VertexData4LPWritable;
 
 import org.junit.Before;
@@ -92,7 +90,7 @@ public class TestJsonPropertyGraph4LPInputFormat extends JsonPropertyGraph4LPInp
         assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).get(), 0d);
     }
 
-    public static class DummyComputation extends NoOpComputation<LongWritable, TwoVectorWritable,
-        DoubleWithVectorWritable, Writable> { }
+    public static class DummyComputation extends NoOpComputation<LongWritable, VertexData4LPWritable,
+        DoubleWritable, Writable> { }
 
 }

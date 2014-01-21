@@ -38,12 +38,12 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.DenseVector;
 import com.intel.mahout.math.TwoVectorWritable;
 import com.intel.giraph.io.formats.JsonLongIDVectorValueOutputFormat;
-
 import org.junit.Before;
 import org.junit.Test;
-
+import org.junit.Ignore;
 import static org.mockito.Mockito.*;
 
+@Ignore
 public class TestJsonLongIDVectorValueOutputFormat extends JsonLongIDVectorValueOutputFormat {
     /** Test configuration */
     private ImmutableClassesGiraphConfiguration<LongWritable,

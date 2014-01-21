@@ -36,7 +36,6 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.DenseVector;
-
 import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
 
@@ -48,6 +47,7 @@ import static org.mockito.Mockito.*;
 public class TestJsonPropertyGraph4LBPOutputFormat extends JsonPropertyGraph4LBPOutputFormat {
     /** Test configuration */
     private ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LBPWritable, Writable> conf;
+
     /**
      * Dummy class to allow ImmutableClassesGiraphConfiguration to be created.
      */

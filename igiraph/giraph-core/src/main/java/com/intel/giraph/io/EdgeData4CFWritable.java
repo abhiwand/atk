@@ -26,22 +26,21 @@ package com.intel.giraph.io;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import org.apache.hadoop.io.Writable;
 
 /**
- * Writable to handle serialization of the fields associated with edge data
+ * Writable to handle serialization of the fields associated with EdgeData4CF
  */
 public class EdgeData4CFWritable implements Writable {
 
-    /** the edge type supported by this vertex */
-    public enum EdgeType { TRAIN, VALIDATE, TEST, NONE };
+    /** The edge type supported by this vertex */
+    public enum EdgeType { TRAIN, VALIDATE, TEST };
 
-    /** the weight value at this edge */
+    /** The weight value at this edge */
     private double weight = 0d;
 
-    /** the type of this vertex */
-    private EdgeType type = EdgeType.NONE;
+    /** The type of this vertex */
+    private EdgeType type = null;
 
     /**
      * Default constructor
@@ -52,7 +51,7 @@ public class EdgeData4CFWritable implements Writable {
     /**
      * Constructor
      *
-     * @param type from EdgeType
+     * @param type of type EdgeType
      * @param weight of type double
      */
     public EdgeData4CFWritable(EdgeType type, double weight) {
@@ -72,19 +71,10 @@ public class EdgeData4CFWritable implements Writable {
     /**
      * Getter
      *
-     * @return type of type EdgeType
+     * @return EdgeType
      */
     public EdgeType getType() {
         return type;
-    }
-
-    /**
-     * Getter
-     *
-     * @return weight of type double
-     */
-    public double getWeight() {
-        return weight;
     }
 
     /**
@@ -94,6 +84,15 @@ public class EdgeData4CFWritable implements Writable {
      */
     public void setWeight(double weight) {
         this.weight = weight;
+    }
+
+    /**
+     * Getter
+     *
+     * @return weight of type double
+     */
+    public double getWeight() {
+        return weight;
     }
 
     @Override

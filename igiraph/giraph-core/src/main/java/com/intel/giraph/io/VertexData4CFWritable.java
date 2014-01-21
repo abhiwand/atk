@@ -34,20 +34,20 @@ import java.io.IOException;
 import org.apache.hadoop.io.Writable;
 
 /**
- * Writable to handle serialization of the fields associated with vertex data
+ * Writable to handle serialization of the fields associated with VertexData4CF
  */
 public class VertexData4CFWritable implements Writable {
 
-    /** the vertex type supported by this vertex */
-    public enum VertexType { LEFT, RIGHT, NONE };
+    /** The vertex type supported by this vertex */
+    public enum VertexType { LEFT, RIGHT };
 
-    /** the type of this vertex */
-    private VertexType type = VertexType.NONE;
+    /** The type of this vertex */
+    private VertexType type = null;
 
-    /** the vector value at this vertex */
+    /** The vector value at this vertex */
     private final VectorWritable vectorWritable = new VectorWritable();
 
-    /** the bias value at this vertex */
+    /** The bias value at this vertex */
     private double bias = 0d;
 
     /**
@@ -92,7 +92,7 @@ public class VertexData4CFWritable implements Writable {
     /**
      * Getter
      *
-     * @return type of type VertexType
+     * @return VertexType
      */
     public VertexType getType() {
         return type;
@@ -101,7 +101,7 @@ public class VertexData4CFWritable implements Writable {
     /**
      * Getter
      *
-     * @return vector of type Vector
+     * @return Vector
      */
     public Vector getVector() {
         return vectorWritable.get();

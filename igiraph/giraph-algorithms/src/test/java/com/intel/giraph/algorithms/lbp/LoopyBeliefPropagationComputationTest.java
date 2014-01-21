@@ -25,16 +25,14 @@ package com.intel.giraph.algorithms.lbp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.Test;
 
+import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.utils.InternalVertexRunner;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute;
@@ -49,7 +47,7 @@ public class LoopyBeliefPropagationComputationTest {
      */
     @Test
     public void testToyData() throws Exception {
-        // a small four vertex graph
+        // a small five-vertex graph
         String[] graph = new String[] {
             "[0,[1,0.1,0.1],[],[[1,1,[]],[3,3,[]]]]",
             "[1,[0.2,2,2],[\"TR\"],[[0,1,[]],[2,2,[]],[3,1,[]]]]",
@@ -66,7 +64,6 @@ public class LoopyBeliefPropagationComputationTest {
         expectedValues.put(4L, new Double[]{0.476,0.476,0.048,0.039,0.088,0.874});
 
         GiraphConfiguration conf = new GiraphConfiguration();
-
         conf.setComputationClass(LoopyBeliefPropagationComputation.class);
         conf.setMasterComputeClass(LoopyBeliefPropagationMasterCompute.class);
         conf.setAggregatorWriterClass(LoopyBeliefPropagationAggregatorWriter.class);

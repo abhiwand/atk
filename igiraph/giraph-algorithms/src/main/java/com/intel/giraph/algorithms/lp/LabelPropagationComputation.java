@@ -162,8 +162,9 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
             }
             if (bidirectionalCheck) {
                 if (map.size() != vertex.getNumEdges()) {
-                    throw new IllegalArgumentException(String.format("Vertex %d: Number of received messages (%d) " +
-                        " isn't equal to number of edges (%d).", vertex.getId(), map.size(), vertex.getNumEdges()));
+                    throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d)" +
+                        " isn't equal to number of edges (%d).", vertex.getId().get(), map.size(),
+                        vertex.getNumEdges()));
                 }
             }
 
@@ -251,7 +252,7 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
         /** Saved output stream to write to */
         private FSDataOutputStream output;
         /** Last superstep number */
-        private long lastStep = 0L;
+        private long lastStep = -1L;
 
         public static String getFilename() {
             return FILENAME;
@@ -284,7 +285,7 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
             throws IOException {
             long realStep = lastStep;
 
-            if (realStep == 1) {
+            if (realStep == 0) {
                 // output graph statistics
                 long numVertices = getConf().getLong(NUM_VERTICES, 0L);
                 long numEdges = getConf().getLong(NUM_EDGES, 0L);
@@ -306,17 +307,16 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
                 output.writeBytes(String.format("bidirectionalCheck: %b%n", bidirectionalCheck));
                 output.writeBytes("\n");
                 output.writeBytes("======Learning Progress======\n");
-            }
-            if (realStep > 0) {
+            } else if (realStep > 0) {
                 // collect aggregator data
                 HashMap<String, String> map = new HashMap<String, String>();
                 for (Entry<String, Writable> entry : aggregatorMap) {
                     map.put(entry.getKey(), entry.getValue().toString());
                 }
                 // output learning progress
-                output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
+                output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
                 double cost = Double.parseDouble(map.get(SUM_COST));
-                output.writeBytes(String.format("cost=%f%n", cost));
+                output.writeBytes(String.format("cost = %f%n", cost));
             }
             output.flush();
             lastStep =  superstep;
