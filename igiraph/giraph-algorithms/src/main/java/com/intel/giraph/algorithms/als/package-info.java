@@ -22,6 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /**
- * Package of igiraph algorithms.
+ * Package of igiraph ALS algorithms.
  */
 package com.intel.giraph.algorithms.als;

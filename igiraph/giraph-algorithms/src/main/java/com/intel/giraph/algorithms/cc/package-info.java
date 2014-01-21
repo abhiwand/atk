@@ -22,6 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /**
- * Package of igiraph APL algorithms
+ * Package of igiraph CC algorithms.
  */
-package com.intel.giraph.algorithms.apl;
+package com.intel.giraph.algorithms.cc;

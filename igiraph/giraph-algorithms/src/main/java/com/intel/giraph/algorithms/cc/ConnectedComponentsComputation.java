@@ -20,58 +20,67 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.giraph.algorithms.cc;
 
-package com.intel.giraph.algorithms.apl;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.io.IOException;
-
-import org.apache.giraph.graph.BasicComputation;
+import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
+import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.edge.Edge;
+import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.master.DefaultMasterCompute;
-import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
-import com.intel.giraph.io.DistanceMapWritable;
-import com.intel.giraph.io.HopCountWritable;
-import org.apache.giraph.Algorithm;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.log4j.Logger;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Average path length calculation.
+ * The Connected Components algorithm which finds connected components
+ * in large graphs.
+ * <p/>
+ * It is the HCC algorithm proposed by U Kang, Charalampos Tsourakakis
+ * and Christos Faloutsos in "PEGASUS: Mining Peta-Scale Graphs", 2010
+ * http://www.cs.cmu.edu/~ukang/papers/PegasusKAIS.pdf
+ * <p/>
+ * <p/>
+ * This implementation is based on ConnectedComponentsComputation in giraph-examples
+ * Updated data type
+ * Added convergence progress curve
+ * Added convergence threshold as one of stopping criteria
+ * Added configurable parameters for use to control algorithm from
+ * command line.
+ * <p/>
  */
 @Algorithm(
-        name = "Average path length",
-        description = "Finds average of shortest path lengths between all pairs of nodes."
+    name = "Connected components"
 )
-
-public class AveragePathLengthComputation extends BasicComputation
-        <LongWritable, DistanceMapWritable, NullWritable, HopCountWritable> {
-
+public class ConnectedComponentsComputation extends
+    BasicComputation<LongWritable, LongWritable, NullWritable, LongWritable> {
     /**
      * Custom argument for convergence progress output interval (default: every superstep)
      */
-    public static final String CONVERGENCE_CURVE_OUTPUT_INTERVAL = "apl.convergenceProgressOutputInterval";
+    public static final String CONVERGENCE_CURVE_OUTPUT_INTERVAL = "cc.convergenceProgressOutputInterval";
     /**
-     * Logger handler
+     * Logger
      */
-    private static final Logger LOG = Logger.getLogger(AveragePathLengthComputation.class);
+    private static final Logger LOG =
+        Logger.getLogger(ConnectedComponentsComputation.class);
     /**
      * Aggregator name on sum of delta values
      */
     private static String SUM_DELTA = "sumDelta";
     /**
-     * Aggregator name on sum of delta values
+     * Aggregator name on num of vertex updates
      */
     private static String SUM_UPDATES = "sumUpdates";
     /**
@@ -79,83 +88,69 @@ public class AveragePathLengthComputation extends BasicComputation
      */
     private int convergenceProgressOutputInterval = 1;
 
-
     /**
-     * Flood message to all its direct neighbors with a new distance value.
+     * For each iteration, each node sends its current componentId
+     * to its neighbors who are with higher componentId
      *
-     * @param vertex      Vertex
-     * @param source      Source vertex ID.
-     * @param newDistance Distance from source to the next destination.
-     */
-    private void floodMessage(Vertex<LongWritable, DistanceMapWritable, NullWritable> vertex,
-                              long source, int newDistance) {
-        for (Edge<LongWritable, NullWritable> edge : vertex.getEdges()) {
-            sendMessage(edge.getTargetVertexId(), new HopCountWritable(source, newDistance));
-        }
-    }
-
-    /**
-     * algorithm compute
-     *
-     * @param vertex   Giraph Vertex
-     * @param messages Giraph messages
+     * @param vertex   Vertex
+     * @param messages Iterator of messages from the previous superstep.
+     * @throws IOException
      */
     @Override
-    public void compute(Vertex<LongWritable, DistanceMapWritable, NullWritable> vertex,
-                        Iterable<HopCountWritable> messages) {
+    public void compute(
+        Vertex<LongWritable, LongWritable, NullWritable> vertex,
+        Iterable<LongWritable> messages) throws IOException {
+        long componentId;
 
-        convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
-        if (convergenceProgressOutputInterval < 1) {
-            throw new IllegalArgumentException("Learning curve output interval should be >= 1.");
-        }
-
-        // initial condition - start with sending message to all its neighbors
+        boolean changed = false;
+        // for the first step, new value is from proactively inspecting neighbors
         if (getSuperstep() == 0) {
-            floodMessage(vertex, vertex.getId().get(), 1);
-            vertex.voteToHalt();
-            return;
+            //the initial componentId is the vertex id
+            componentId = vertex.getId().get();
+            vertex.setValue(new LongWritable(componentId));
+            for (Edge<LongWritable, NullWritable> edge : vertex.getEdges()) {
+                long neighbor = edge.getTargetVertexId().get();
+                if (neighbor < componentId) {
+                    componentId = neighbor;
+                    changed = true;
+                }
+            }
+        } else {
+        //for the reset steps, new value is from messages
+            componentId = vertex.getValue().get();
+            for (LongWritable message : messages) {
+                long inputComponentId = message.get();
+                if (inputComponentId < componentId) {
+                    componentId = inputComponentId;
+                    changed = true;
+                }
+            }
         }
 
-        // Process every message received from its direct neighbors
-        for (HopCountWritable message : messages) {
-            // source vertex id
-            long source = message.getSource();
-
-            if (source == vertex.getId().get()) {
-                // packet returned to the original sender
-                continue;
-            }
-
-            // distance between source and current vertex
-            int distance = message.getDistance();
-
-            DistanceMapWritable vertexValue = vertex.getValue();
-            if ((vertexValue.distanceMapContainsKey(source) &&
-                 vertexValue.distanceMapGet(source) > distance) ||
-                (!vertexValue.distanceMapContainsKey(source))) {
-                double delta;
-                if (vertexValue.distanceMapContainsKey(source)) {
-                    delta = (double) (vertexValue.distanceMapGet(source) - distance);
-                } else {
-                    delta = (double) distance;
+        // propagate new value to the neighbors only when needed
+        if (changed) {
+            double delta = (double) Math.abs(vertex.getValue().get() - componentId);
+            aggregate(SUM_DELTA, new DoubleWritable(delta));
+            aggregate(SUM_UPDATES, new DoubleWritable(1d));
+            vertex.setValue(new LongWritable(componentId));
+            for (Edge<LongWritable, NullWritable> edge : vertex.getEdges()) {
+                LongWritable neighbor = edge.getTargetVertexId();
+                if (neighbor.get() > componentId) {
+                    sendMessage(neighbor, vertex.getValue());
                 }
-                vertex.getValue().distanceMapPut(source, distance);
-                floodMessage(vertex, source, distance + 1);
-                aggregate(SUM_DELTA, new DoubleWritable(delta));
-                aggregate(SUM_UPDATES, new DoubleWritable(1d));
             }
         }
         vertex.voteToHalt();
     }
 
     /**
-     * Master compute associated with {@link AveragePathLengthComputation}.
+     * Master compute associated with {@link ConnectedComponentsComputation}.
      * It registers required aggregators.
      */
-    public static class AveragePathLengthMasterCompute extends
+    public static class ConnectedComponentsMasterCompute extends
         DefaultMasterCompute {
         /**
-         * It registers aggregators for page rank
+         * It registers aggregators for Connected Components
          *
          * @throws InstantiationException
          * @throws IllegalAccessException
@@ -169,10 +164,10 @@ public class AveragePathLengthComputation extends BasicComputation
     }
 
     /**
-     * This is an aggregator writer for Page Rank.
+     * This is an aggregator writer for Connected Components.
      * It updates the convergence progress at the end of each super step
      */
-    public static class AveragePathLengthAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
+    public static class ConnectedComponentsAggregatorWriter extends DefaultImmutableClassesGiraphConfigurable
         implements AggregatorWriter {
         /**
          * Name of the file we wrote to
@@ -213,7 +208,7 @@ public class AveragePathLengthComputation extends BasicComputation
          * @param applicationAttempt app attempt
          */
         private static void setFilename(long applicationAttempt) {
-            FILENAME = "apl-convergence-report_" + applicationAttempt;
+            FILENAME = "cc-convergence-report_" + applicationAttempt;
         }
 
         @Override
@@ -224,10 +219,12 @@ public class AveragePathLengthComputation extends BasicComputation
             for (Map.Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
             }
-            int realStep = lastStep;
+
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
+            int realStep = lastStep;
+
             if (superstep == 0) {
-                output.writeBytes("==================Average Path Length Configuration====================\n");
+                output.writeBytes("==================Connected Components Configuration====================\n");
                 output.writeBytes("convergenceProgressOutputInterval: " + convergenceProgressOutputInterval + "\n");
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");

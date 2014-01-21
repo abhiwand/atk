@@ -118,33 +118,24 @@ public class TitanVertexFormatPropertyGraph4LDATest
         TitanKey frequency = tx.makeKey("frequency").dataType(String.class).make();
         TitanLabel edge = tx.makeLabel("edge").make();
 
-        TitanVertex[] nodes;
-        nodes = new TitanVertex[11];
-        nodes[0] = tx.addVertex();
+        int numVertices = 11;
+        TitanVertex[] nodes = new TitanVertex[numVertices];
+        for (int i = 0; i < numVertices; i++) {
+            nodes[i] = tx.addVertex();
+        }
         nodes[0].addProperty(vertexType, DOC_VERTEX);
-        nodes[1] = tx.addVertex();
         nodes[1].addProperty(vertexType, DOC_VERTEX);
-        nodes[2] = tx.addVertex();
         nodes[2].addProperty(vertexType, DOC_VERTEX);
-        nodes[3] = tx.addVertex();
         nodes[3].addProperty(vertexType, DOC_VERTEX);
-        nodes[4] = tx.addVertex();
         nodes[4].addProperty(vertexType, DOC_VERTEX);
-        nodes[5] = tx.addVertex();
         nodes[5].addProperty(vertexType, DOC_VERTEX);
-        nodes[6] = tx.addVertex();
         nodes[6].addProperty(vertexType, WORD_VERTEX);
-        nodes[7] = tx.addVertex();
         nodes[7].addProperty(vertexType, WORD_VERTEX);
-        nodes[8] = tx.addVertex();
         nodes[8].addProperty(vertexType, WORD_VERTEX);
-        nodes[9] = tx.addVertex();
         nodes[9].addProperty(vertexType, WORD_VERTEX);
-        nodes[10] = tx.addVertex();
         nodes[10].addProperty(vertexType, WORD_VERTEX);
 
-        TitanEdge[] edges;
-        edges = new TitanEdge[20];
+        TitanEdge[] edges = new TitanEdge[20];
         edges[0] = nodes[0].addEdge(edge, nodes[6]);
         edges[0].setProperty(frequency, "2");
         edges[1] = nodes[0].addEdge(edge, nodes[8]);

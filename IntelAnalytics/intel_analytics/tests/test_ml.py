@@ -138,6 +138,22 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                                  num_worker='3')
         self.assertEqual('test_graph', result.graph_name)
 
+
+    @patch('__builtin__.open')
+    def test_cc_required_inputs(self, mock_open):
+        ml = TitanGiraphMachineLearning(self.graph)
+        result = ml.connected_components('test_edge_label',
+                                 'test_output_vertex_properties')
+        self.assertEqual('test_graph', result.graph_name)
+
+    @patch('__builtin__.open')
+    def test_cc_optional_inputs(self, mock_open):
+        ml = TitanGiraphMachineLearning(self.graph)
+        result = ml.connected_components('test_edge_label',
+                                 'test_output_vertex_properties',
+                                 num_worker='3')
+        self.assertEqual('test_graph', result.graph_name)
+
     @patch('__builtin__.open')
     def test_label_prop_required_inputs(self, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)

@@ -111,19 +111,16 @@ public class TitanVertexFormatPropertyGraph4CFTest
 
         TitanVertex[] nodes;
         nodes = new TitanVertex[5];
-        nodes[0] = tx.addVertex();
+        for (int i = 0; i < 5; i++) {
+            nodes[i] = tx.addVertex();
+        }
         nodes[0].addProperty(vertexType, LEFT_VERTEX_TYPE);
-        nodes[1] = tx.addVertex();
         nodes[1].addProperty(vertexType, LEFT_VERTEX_TYPE);
-        nodes[2] = tx.addVertex();
         nodes[2].addProperty(vertexType, RIGHT_VERTEX_TYPE);
-        nodes[3] = tx.addVertex();
         nodes[3].addProperty(vertexType, RIGHT_VERTEX_TYPE);
-        nodes[4] = tx.addVertex();
         nodes[4].addProperty(vertexType, RIGHT_VERTEX_TYPE);
 
-        TitanEdge[] edges;
-        edges = new TitanEdge[8];
+        TitanEdge[] edges = new TitanEdge[8];
         edges[0] = nodes[0].addEdge(edge, nodes[2]);
         edges[0].setProperty(weight, "1.0");
         edges[0].setProperty(edgeType, EDGE_TYPE_TRAIN);

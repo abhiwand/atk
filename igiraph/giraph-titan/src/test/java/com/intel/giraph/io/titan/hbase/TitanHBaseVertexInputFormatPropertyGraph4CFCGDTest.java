@@ -124,41 +124,42 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CFCGDTest
         TitanKey weight = tx.makeKey("weight").dataType(String.class).make();
         TitanLabel edge = tx.makeLabel("edge").make();
 
-        TitanVertex n0 = tx.addVertex();
-        n0.addProperty(vertexType, LEFT_VERTEX_TYPE);
-        TitanVertex n1 = tx.addVertex();
-        n1.addProperty(vertexType, LEFT_VERTEX_TYPE);
-        TitanVertex n2 = tx.addVertex();
-        n2.addProperty(vertexType, RIGHT_VERTEX_TYPE);
-        TitanVertex n3 = tx.addVertex();
-        n3.addProperty(vertexType, RIGHT_VERTEX_TYPE);
-        TitanVertex n4 = tx.addVertex();
-        n4.addProperty(vertexType, RIGHT_VERTEX_TYPE);
+        int numVertices = 5;
+        TitanVertex[] nodes = new TitanVertex[numVertices];
+        for (int i = 0; i < numVertices; i++) {
+            nodes[i] = tx.addVertex();
+        }
+        nodes[0].addProperty(vertexType, LEFT_VERTEX_TYPE);
+        nodes[1].addProperty(vertexType, LEFT_VERTEX_TYPE);
+        nodes[2].addProperty(vertexType, RIGHT_VERTEX_TYPE);
+        nodes[3].addProperty(vertexType, RIGHT_VERTEX_TYPE);
+        nodes[4].addProperty(vertexType, RIGHT_VERTEX_TYPE);
 
-        TitanEdge e0 = n0.addEdge(edge, n2);
-        e0.setProperty(weight, "1.0");
-        e0.setProperty(edgeType, EDGE_TYPE_TRAIN);
-        TitanEdge e1 = n0.addEdge(edge, n3);
-        e1.setProperty(weight, "2.0");
-        e1.setProperty(edgeType, EDGE_TYPE_TEST);
-        TitanEdge e2 = n1.addEdge(edge, n2);
-        e2.setProperty(weight, "5.0");
-        e2.setProperty(edgeType, EDGE_TYPE_TRAIN);
-        TitanEdge e3 = n1.addEdge(edge, n4);
-        e3.setProperty(weight, "3.0");
-        e3.setProperty(edgeType, EDGE_TYPE_VALIDATION);
-        TitanEdge e4 = n2.addEdge(edge, n0);
-        e4.setProperty(weight, "1.0");
-        e4.setProperty(edgeType, EDGE_TYPE_TRAIN);
-        TitanEdge e5 = n2.addEdge(edge, n1);
-        e5.setProperty(weight, "5.0");
-        e5.setProperty(edgeType, EDGE_TYPE_TRAIN);
-        TitanEdge e6 = n3.addEdge(edge, n0);
+        TitanEdge[] edges = new TitanEdge[8];
+        edges[0] = nodes[0].addEdge(edge, nodes[2]);
+        edges[0].setProperty(weight, "1.0");
+        edges[0].setProperty(edgeType, EDGE_TYPE_TRAIN);
+        edges[1] = nodes[0].addEdge(edge, nodes[3]);
+        edges[1].setProperty(weight, "2.0");
+        edges[1].setProperty(edgeType, EDGE_TYPE_TEST);
+        edges[2] = nodes[1].addEdge(edge, nodes[2]);
+        edges[2].setProperty(weight, "5.0");
+        edges[2].setProperty(edgeType, EDGE_TYPE_TRAIN);
+        edges[3] = nodes[1].addEdge(edge, nodes[4]);
+        edges[3].setProperty(weight, "3.0");
+        edges[3].setProperty(edgeType, EDGE_TYPE_VALIDATION);
+        edges[4] = nodes[2].addEdge(edge, nodes[0]);
+        edges[4].setProperty(weight, "1.0");
+        edges[4].setProperty(edgeType, EDGE_TYPE_TRAIN);
+        edges[5] = nodes[2].addEdge(edge, nodes[1]);
+        edges[5].setProperty(weight, "5.0");
+        edges[5].setProperty(edgeType, EDGE_TYPE_TRAIN);
+        TitanEdge e6 = nodes[3].addEdge(edge, nodes[0]);
         e6.setProperty(weight, "2.0");
         e6.setProperty(edgeType, EDGE_TYPE_TEST);
-        TitanEdge e7 = n4.addEdge(edge, n1);
-        e7.setProperty(weight, "3.0");
-        e7.setProperty(edgeType, EDGE_TYPE_VALIDATION);
+        edges[7] = nodes[4].addEdge(edge, nodes[1]);
+        edges[7].setProperty(weight, "3.0");
+        edges[7].setProperty(edgeType, EDGE_TYPE_VALIDATION);
 
         tx.commit();
 

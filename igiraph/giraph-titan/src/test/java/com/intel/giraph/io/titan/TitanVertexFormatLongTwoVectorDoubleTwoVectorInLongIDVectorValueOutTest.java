@@ -59,51 +59,53 @@ public class TitanVertexFormatLongTwoVectorDoubleTwoVectorInLongIDVectorValueOut
         TitanKey weight = tx.makeKey("weight").dataType(String.class).make();
         TitanLabel friend = tx.makeLabel("friend").make();
 
-        TitanVertex n0 = tx.addVertex();
-        n0.addProperty(red, "1");
-        n0.addProperty(blue, "0.1");
-        n0.addProperty(yellow, "0.1");
-        TitanVertex n1 = tx.addVertex();
-        n1.addProperty(red, "0.2");
-        n1.addProperty(blue, "2");
-        n1.addProperty(yellow, "2");
-        TitanVertex n2 = tx.addVertex();
-        n2.addProperty(red, "0.3");
-        n2.addProperty(blue, "0.3");
-        n2.addProperty(yellow, "3");
-        TitanVertex n3 = tx.addVertex();
-        n3.addProperty(red, "0.4");
-        n3.addProperty(blue, "4");
-        n3.addProperty(yellow, "0.4");
-        TitanVertex n4 = tx.addVertex();
-        n4.addProperty(red, "5");
-        n4.addProperty(blue, "5");
-        n4.addProperty(yellow, "0.5");
+        int numVertices = 5;
+        TitanVertex[] nodes = new TitanVertex[numVertices];
+        for (int i = 0; i < numVertices; i++) {
+            nodes[i] = tx.addVertex();
+        }
 
-        TitanEdge e0 = n0.addEdge(friend, n1);
-        e0.setProperty(weight, "1.0");
-        TitanEdge e1 = n0.addEdge(friend, n3);
-        e1.setProperty(weight, "3.0");
-        TitanEdge e2 = n1.addEdge(friend, n0);
-        e2.setProperty(weight, "1.0");
-        TitanEdge e3 = n1.addEdge(friend, n2);
-        e3.setProperty(weight, "2.0");
-        TitanEdge e4 = n1.addEdge(friend, n3);
-        e4.setProperty(weight, "1.0");
-        TitanEdge e5 = n2.addEdge(friend, n1);
-        e5.setProperty(weight, "2.0");
-        TitanEdge e6 = n2.addEdge(friend, n4);
-        e6.setProperty(weight, "4.0");
-        TitanEdge e7 = n3.addEdge(friend, n0);
-        e7.setProperty(weight, "3.0");
-        TitanEdge e8 = n3.addEdge(friend, n1);
-        e8.setProperty(weight, "1.0");
-        TitanEdge e9 = n3.addEdge(friend, n4);
-        e9.setProperty(weight, "4.0");
-        TitanEdge e10 = n4.addEdge(friend, n3);
-        e10.setProperty(weight, "4.0");
-        TitanEdge e11 = n4.addEdge(friend, n2);
-        e11.setProperty(weight, "4.0");
+        nodes[0].addProperty(red, "1");
+        nodes[0].addProperty(blue, "0.1");
+        nodes[0].addProperty(yellow, "0.1");
+        nodes[1].addProperty(red, "0.2");
+        nodes[1].addProperty(blue, "2");
+        nodes[1].addProperty(yellow, "2");
+        nodes[2].addProperty(red, "0.3");
+        nodes[2].addProperty(blue, "0.3");
+        nodes[2].addProperty(yellow, "3");
+        nodes[3].addProperty(red, "0.4");
+        nodes[3].addProperty(blue, "4");
+        nodes[3].addProperty(yellow, "0.4");
+        nodes[4].addProperty(red, "5");
+        nodes[4].addProperty(blue, "5");
+        nodes[4].addProperty(yellow, "0.5");
+
+        TitanEdge[] edges = new TitanEdge[12];
+        edges[0] = nodes[0].addEdge(friend, nodes[1]);
+        edges[0].setProperty(weight, "1.0");
+        edges[1] = nodes[0].addEdge(friend, nodes[3]);
+        edges[1].setProperty(weight, "3.0");
+        edges[2] = nodes[1].addEdge(friend, nodes[0]);
+        edges[2].setProperty(weight, "1.0");
+        edges[3] = nodes[1].addEdge(friend, nodes[2]);
+        edges[3].setProperty(weight, "2.0");
+        edges[4] = nodes[1].addEdge(friend, nodes[3]);
+        edges[4].setProperty(weight, "1.0");
+        edges[5] = nodes[2].addEdge(friend, nodes[1]);
+        edges[5].setProperty(weight, "2.0");
+        edges[6] = nodes[2].addEdge(friend, nodes[4]);
+        edges[6].setProperty(weight, "4.0");
+        edges[7] = nodes[3].addEdge(friend, nodes[0]);
+        edges[7].setProperty(weight, "3.0");
+        edges[8] = nodes[3].addEdge(friend, nodes[1]);
+        edges[8].setProperty(weight, "1.0");
+        edges[9] = nodes[3].addEdge(friend, nodes[4]);
+        edges[9].setProperty(weight, "4.0");
+        edges[10] = nodes[4].addEdge(friend, nodes[3]);
+        edges[10].setProperty(weight, "4.0");
+        edges[11] = nodes[4].addEdge(friend, nodes[2]);
+        edges[11].setProperty(weight, "4.0");
 
         tx.commit();
 
@@ -112,14 +114,14 @@ public class TitanVertexFormatLongTwoVectorDoubleTwoVectorInLongIDVectorValueOut
 
         //verify data is written to Titan
         startNewTransaction();
-        long nid = n0.getID();
+        long nid = nodes[0].getID();
         assertTrue(tx.containsVertex(nid));
         assertTrue(tx.containsType("result_blue"));
         TitanKey result_blue = tx.getPropertyKey("result_blue");
         assertEquals(result_blue.getDataType(), String.class);
         assertEquals(result_blue.getName(), "result_blue");
-        n0 = tx.getVertex(nid);
-        assertEquals(1.0, Double.parseDouble(n0.getProperty(result_blue).toString()), 0.05d);
+        nodes[0] = tx.getVertex(nid);
+        assertEquals(1.0, Double.parseDouble(nodes[0].getProperty(result_blue).toString()), 0.05d);
 
         for (String resultLine : results) {
             LOG.info(" got: " + resultLine);
