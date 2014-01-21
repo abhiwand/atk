@@ -118,6 +118,50 @@ source $PYTHON_VIRTUALENV/bin/activate
 # PART II - install the py modules
 #--------------------------------------
 
+function python_module_version_lookup() {
+	case "$1" in
+	"numpy")		echo "numpy==1.8.0"
+		;;
+	"scipy")		echo "scipy==0.13.2"
+		;;
+	"sympy")		echo "sympy==0.7.4.1"
+		;;
+	"nltk")			echo "nltk==2.0.4"
+		;;
+	"jinja2")		echo "jinja2==2.7.2"
+		;;
+	"tornado")		echo "tornado==3.2"
+		;;
+	"mrjob")		echo "mrjob==0.4.2"
+		;;
+	"matplotlib")		echo "matplotlib==1.3.1"
+		;;
+	"ipython")		echo "ipython==1.1.0"
+		;;
+	"pandas")		echo "pandas==0.12.0"
+		;;
+	"bulbs")		echo "bulbs==0.3.26-20131203"
+		;;
+	"happybase")		echo "happybase==0.7"
+		;;
+	"pyzmq")		echo "pyzmq==14.0.1"
+		;;
+	"pyjavaproperties")	echo "pyjavaproperties==0.6"
+		;;
+	"mock")			echo "mock==1.0.1"
+		;;
+	"nose")			echo "nose==1.3.0"
+		;;
+	"coverage")		echo "coverage==3.7.1"
+		;;
+	"pydoop")		echo "pydoop==0.11.1"
+		;;
+	*)			echo "$1"
+		;;
+	esac
+}
+
+
 function check {
     # check if the python module can be imported in the venv
     if [ -e $(python -c "import $1") ]; then
@@ -139,7 +183,8 @@ function ins {
     # check if module is installed, if not, install and test
     if check $1; then
        echo $hdr Install $1
-       pip install $1
+       python_module=$(python_module_version_lookup $1)
+       pip install $python_module
        test $1
     fi
 }
@@ -147,7 +192,8 @@ function ins {
 function ins_ignore_virt {
     if check $1; then
         echo $hdr Install $1
-        pip install $1
+	python_module=$(python_module_version_lookup $1)
+        pip install $python_module
         pkgs=${PYTHON_VIRTUALENV}/lib/python2.7/site-packages
         pushd ${pkgs}
         for f in /usr/lib/python2.7/site-packages/${1}*
@@ -159,42 +205,24 @@ function ins_ignore_virt {
     fi
 }
 
+
 ins numpy
-
-# scipy has extra dependencies
-if check scipy; then
-   echo $hdr Install scipy
-#   yum -y install blas-devel lapack-devel
-   pip install scipy
-   test scipy
-fi
-
+ins scipy
 ins sympy
 ins nltk
 ins jinja2
 ins tornado
 ins mrjob
-
-# matplotlib has extra dependencies
-if check matplotlib; then
-  echo $hdr Install matplotlib
-#  yum -y install yum-utils #required for yum-builddep
- # yum-builddep -y python-matplotlib
-  ins matplotlib
-  test matplotlib
-fi
-
+ins matplotlib
 ins ipython
-ins pandas==0.12.0
+ins pandas
 ins bulbs
 ins happybase
 
 # zmq has extra dependencies
 if check zmq; then
-   echo $hdr Install zmq
-#   yum -y install libffi-devel
-   pip install cffi
-   pip install pyzmq
+   ins cffi
+   ins pyzmq
    test zmq
 fi
 ins pyjavaproperties
@@ -221,7 +249,7 @@ if check pydoop; then
    if [ -z "${JAVA_HOME}" ]; then
         JAVA_HOME=/usr/lib/jvm/java
    fi
-   HADOOP_HOME=${HADOOP_HOME} JAVA_HOME=${JAVA_HOME} pip install pydoop
+   HADOOP_HOME=${HADOOP_HOME} JAVA_HOME=${JAVA_HOME} ins pydoop
    # ZY: work-around, pydoop installer somehow ignores the virtenv
    pkgs=${PYTHON_VIRTUALENV}/lib/python2.7/site-packages
    ls ${pkgs}/pydoop* &> /dev/null
@@ -236,7 +264,6 @@ if check pydoop; then
    fi
    test pydoop
 fi
-
 
 echo $hdr Python Virtual Environment Installation complete
 echo $hdr "To activate enter: 'source $PYTHON_VIRTUALENV/bin/activate'"
