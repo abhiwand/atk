@@ -22,7 +22,9 @@ package com.intel.pig.udf.eval;
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.serializers.VertexListFormat;
 import com.intel.pig.udf.GBUdfExceptionHandler;
+import com.intel.pig.udf.util.BooleanUtils;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
@@ -31,7 +33,6 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * VertexList UDF intakes property graph elements and spits out
@@ -46,9 +47,10 @@ import java.util.Arrays;
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class VertexList extends EvalFunc<String> {
-	private boolean printProperties;
-    private static final String[] booleanValues =
-            new String [] {"0", "1", "TRUE", "true", "FALSE", "false"};
+
+    private boolean printProperties;
+
+    private VertexListFormat vertexListFormat = new VertexListFormat();
 
     /**
      * Constructor of VertexList
@@ -58,20 +60,7 @@ public class VertexList extends EvalFunc<String> {
      *                        if set to "0", "FALSE", "false"
      */
     public VertexList(String printProperties) {
-        if (!Arrays.asList(booleanValues).contains(printProperties)) {
-            throw new IllegalArgumentException(
-                    printProperties + " is not a valid argument." +
-                    "Use '0', '1', 'TRUE', 'true', 'FALSE' or 'false')");
-        }
-		if (printProperties.equals("1") ||
-                    printProperties.equals("TRUE") ||
-                    printProperties.equals("true")) {
-            this.printProperties = true;
-        } else if (printProperties.equals("0") ||
-                   printProperties.equals("FALSE") ||
-                   printProperties.equals("false")) {
-            this.printProperties = false;
-        }
+        this.printProperties = BooleanUtils.toBoolean(printProperties);
 	}
 
 	@Override
@@ -87,18 +76,7 @@ public class VertexList extends EvalFunc<String> {
 
         // Only print vertices, skip edges
 		if (graphElement.isVertex()) {
-
-            Vertex vertex = (Vertex) graphElement;
-            String vertexString = "";
-            if (this.printProperties) {
-			    vertexString = vertex.toString();
-            } else {
-                vertexString = vertex.getId().getName().toString();
-                if (graphElement.getLabel() != null) {
-                    vertexString += "\t" + graphElement.getLabel().toString();
-                }
-            }
-			return vertexString;
+            return vertexListFormat.toString((Vertex) graphElement, printProperties);
 		}
 
 		return null;

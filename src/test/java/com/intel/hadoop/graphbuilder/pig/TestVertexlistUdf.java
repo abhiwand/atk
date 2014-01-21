@@ -77,13 +77,12 @@ public class TestVertexlistUdf {
                     "Employee001\tHAWK.People");
 
         String statement1 = (String) toEdgelistUdf1.exec(t);
+
         System.out.println(statement1);
-        boolean flag = statement1.contains("HAWK.People.Employee001");
-        assertTrue("Vertex tuple mismatch", flag);
-        flag = statement1.contains("name:Alice");
-        assertTrue("Vertex tuple mismatch", flag);
-        flag = statement1.contains("age:30");
-        assertTrue("Vertex tuple mismatch", flag);
+
+        assertTrue("Vertex tuple mismatch: " + statement1, statement1.contains("Employee001\tHAWK.People"));
+        assertTrue("Vertex tuple mismatch: " + statement1, statement1.contains("name\tAlice"));
+        assertTrue("Vertex tuple mismatch: " + statement1, statement1.contains("age\t30"));
     }
 
     @After

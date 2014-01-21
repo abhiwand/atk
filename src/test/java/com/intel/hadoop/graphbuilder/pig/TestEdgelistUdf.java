@@ -82,13 +82,10 @@ public class TestEdgelistUdf {
         // Expected :Employee001	Employee002	worksWith	age:30	name:Alice
         // Actual   :Employee001	Employee002	worksWith	name:Alice	age:30
         // Hence, we search for the appropriate edge properties
-        boolean flag
-                = statement1.contains("Employee001\tEmployee002\tworksWith");
-        assertTrue("Edge tuple mismatch", flag);
-        flag = statement1.contains("name:Alice");
-        assertTrue("Edge tuple mismatch", flag);
-        flag = statement1.contains("age:30");
-        assertTrue("Edge tuple mismatch", flag);
+
+        assertTrue("Edge tuple mismatch: " + statement1, statement1.contains("Employee001\tEmployee002\tworksWith"));
+        assertTrue("Edge tuple mismatch: " + statement1, statement1.contains("name\tAlice"));
+        assertTrue("Edge tuple mismatch: " + statement1, statement1.contains("age\t30"));
     }
 
     @After
