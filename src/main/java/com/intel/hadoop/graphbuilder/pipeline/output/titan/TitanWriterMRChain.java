@@ -559,7 +559,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         initTitanGraph(keyCommandLine);
 
-        runReadInputLoadVerticesMRJob(intermediateDataFilePath, cmd);
+        runReadInputLoadVerticesMRJob(intermediateDataFilePath);
 
         runIntermediateEdgeWriteMRJob(intermediateDataFilePath,
                 intermediateEdgeFilePath);
@@ -574,8 +574,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         fs.delete(intermediateEdgeFilePath, true);
     }
 
-    private void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath,
-                                               CommandLine cmd)
+    private void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath)
             throws IOException, ClassNotFoundException, InterruptedException {
 
         // Set required parameters in configuration
