@@ -71,10 +71,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
     private Functional vertexReducerFunction;
     private TitanGraph graph;
 
-    private Hashtable<Object, Long> vertexNameToTitanID;
     private IntWritable            outKey;
     private SerializedGraphElement outValue;
-    private Class                  outClass;
 
     private final KeyFunction keyFunction = new DestinationVertexKeyFunction();
 
@@ -82,9 +80,6 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
         NUM_VERTICES,
         NUM_EDGES
     }
-
-    private Hashtable<EdgeID, Writable> edgeSet;
-    private Hashtable<Object, Writable>   vertexSet;
 
     private GraphElementWriter titanWriter;
     private GraphElementTypeCallback graphElementMerge;
@@ -115,7 +110,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
 
         Configuration conf = context.getConfiguration();
 
-        outClass = context.getMapOutputValueClass();
+        Class outClass = context.getMapOutputValueClass();
         outKey   = new IntWritable();
 
         try {
@@ -131,9 +126,6 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
                     "access exception when instantiating reducer output value" +
                     " ( " + outClass.getName() + ")", LOG, e);
         }
-
-
-        this.vertexNameToTitanID = new Hashtable<Object, Long>();
 
         this.graph = getTitanGraphInstance(context);
         assert (null != this.graph);
@@ -192,8 +184,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
     public void reduce(IntWritable key, Iterable<SerializedGraphElement>
             values, Context context) throws IOException, InterruptedException {
 
-        edgeSet       = new Hashtable<>();
-        vertexSet     = new Hashtable<>();
+        Hashtable<EdgeID, Writable> edgeSet = new Hashtable<>();
+        Hashtable<Object, Writable> vertexSet = new Hashtable<>();
 
         for(SerializedGraphElement serializedGraphElement : values){
             GraphElement graphElement = serializedGraphElement.graphElement();
