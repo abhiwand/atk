@@ -101,7 +101,7 @@ fi
 echo $hdr Install virtualenv
 $pip27 install virtualenv
 
-if [ ! -d "$PYTHON_VIRTUALENV"]; then
+if [ ! -d "$PYTHON_VIRTUALENV" ]; then
     mkdir -p $PYTHON_VIRTUALENV
 fi
 
@@ -134,7 +134,7 @@ function python_module_version_lookup() {
 		;;
 	"mrjob")		echo "mrjob==0.4.2"
 		;;
-	"matplotlib")		echo "matplotlib==1.3.1"
+	"matplotlib")		echo "matplotlib==1.3.1 --allow-external matplotlib --allow-unverified matplotlib"
 		;;
 	"ipython")		echo "ipython==1.1.0"
 		;;
