@@ -42,9 +42,8 @@ public class GBTupleFactory extends TupleFactory {
 
 	/**
 	 * Creates a new {@link PropertyGraphElementTuple} of size <code>size</code>
-	 * 
-	 * @param the
 	 *            size of the tuple
+     *
 	 * @return a {@link PropertyGraphElementTuple} of the given size
 	 */
 	@Override
@@ -55,8 +54,7 @@ public class GBTupleFactory extends TupleFactory {
 	/**
 	 * Creates a new {@link PropertyGraphElementTuple} with the given list of
 	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
-	 * 
-	 * @param the
+	 *
 	 *            list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 * @return a {@link PropertyGraphElementTuple} containing the list of given
 	 *         {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
@@ -69,8 +67,7 @@ public class GBTupleFactory extends TupleFactory {
 	/**
 	 * Creates a new {@link PropertyGraphElementTuple} with the given list of
 	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
-	 * 
-	 * @param the
+	 *
 	 *            list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
 	 * @return a {@link PropertyGraphElementTuple} containing the list of given
 	 *         {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
