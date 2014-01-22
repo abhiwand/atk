@@ -19,9 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNotSame;
-import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 
 import java.util.HashMap;
 

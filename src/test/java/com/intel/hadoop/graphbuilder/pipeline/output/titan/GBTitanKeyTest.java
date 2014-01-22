@@ -19,7 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.assertSame;
 
 import org.junit.Test;
 

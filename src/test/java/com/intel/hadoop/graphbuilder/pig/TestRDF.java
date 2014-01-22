@@ -18,7 +18,7 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;

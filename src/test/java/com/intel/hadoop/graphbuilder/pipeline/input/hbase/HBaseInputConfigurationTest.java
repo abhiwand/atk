@@ -19,7 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
