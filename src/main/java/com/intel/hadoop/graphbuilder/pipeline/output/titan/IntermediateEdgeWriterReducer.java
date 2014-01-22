@@ -64,7 +64,6 @@ public class IntermediateEdgeWriterReducer extends Reducer<IntWritable,
     private final KeyFunction keyFunction = new SourceVertexKeyFunction();
     private IntWritable            outKey;
     private SerializedGraphElement outValue;
-    private Class                  outClass;
 
     private static enum Counters {
         EDGE_PROPERTIES_WRITTEN,
@@ -101,7 +100,7 @@ public class IntermediateEdgeWriterReducer extends Reducer<IntWritable,
 
         intermediateEdgeWriterReducerCallback = new IntermediateEdgeWriterReducerCallback();
 
-        outClass = context.getMapOutputValueClass();
+        Class outClass = context.getMapOutputValueClass();
         outKey   = new IntWritable();
 
         try {
