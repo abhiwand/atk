@@ -37,7 +37,7 @@ import org.apache.pig.data.TupleFactory;
 import java.io.IOException;
 
 /**
- * UDF for loading Edges written in format of class EdgeList
+ * UDF for loading Edges written in EdgeListFormat
  */
 public class EdgeLoader extends LoadFunc {
 

@@ -114,31 +114,23 @@ public class VertexListFormat {
 
         Vertex vertex = null;
         String[] parts = s.split(delimiter);
-        if (parts.length > 1) {
+        if (parts.length > 0) {
             vertex = new Vertex<StringType>(new StringType(parts[0]));
-            String label = fixNull(parts[1]);
-            if (StringUtils.isNotBlank(label)) {
-                vertex.setLabel(new StringType(parts[1]));
-            }
-            if (withProperties) {
-                PropertyMap propertyMap = new PropertyMap();
-                for (int i = 2; i < parts.length; i = i + 2) {
-                    propertyMap.setProperty(parts[i], new StringType(parts[i+1]));
+            if (parts.length > 1){
+                String label = parts[1];
+                if (StringUtils.isNotBlank(label)) {
+                    vertex.setLabel(new StringType(parts[1]));
                 }
-                vertex.setProperties(propertyMap);
+                if (withProperties) {
+                    PropertyMap propertyMap = new PropertyMap();
+                    for (int i = 2; i < parts.length; i = i + 2) {
+                        propertyMap.setProperty(parts[i], new StringType(parts[i+1]));
+                    }
+                    vertex.setProperties(propertyMap);
+                }
             }
         }
         return vertex;
-    }
-
-    /**
-     * Convert the string "null" to actual null value, otherwise return the String unchanged.
-     */
-    protected String fixNull(String s) {
-        if (StringUtils.equals(s, "null")) {
-            return null;
-        }
-        return s;
     }
 
 }

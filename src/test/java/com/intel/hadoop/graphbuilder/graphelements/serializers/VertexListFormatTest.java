@@ -140,11 +140,6 @@ public class VertexListFormatTest {
     }
 
     @Test
-    public void testToVertexWithProperties() throws Exception {
-        // TODO: can't implement
-    }
-
-    @Test
     public void testToStringWithoutProperties_OtherDelimiter() throws Exception {
 
         // setup test data
@@ -210,7 +205,7 @@ public class VertexListFormatTest {
         // invoke method under test
         String s = vertexListFormat.toStringWithoutProperties(vertex);
 
-        assertEquals("someName\tnull", s);
+        assertEquals("someName", s);
     }
 
     @Test
@@ -229,6 +224,24 @@ public class VertexListFormatTest {
         String s = vertexListFormat.toStringWithoutProperties(vertex);
 
         assertEquals("1\tsomeLabel", s);
+    }
+
+
+    @Test
+    public void testToVertexWithProperties() throws Exception {
+        // setup test data
+        String s = "someName\tsomeLabel\tkey\tvalue";
+
+        // initialize class under test
+        VertexListFormat vertexListFormat = new VertexListFormat();
+
+        // invoke method under test
+        Vertex vertex = vertexListFormat.toVertex(s, true);
+
+        assertEquals("someName", vertex.getId().getName().toString());
+        assertEquals("someLabel", vertex.getLabel().toString());
+        assertEquals(1, vertex.getProperties().getPropertyKeys().size());
+        assertEquals("value", vertex.getProperty("key").toString());
     }
 
     @Test
@@ -251,7 +264,7 @@ public class VertexListFormatTest {
     public void testToVertex_WithoutPropertiesNullLabel() throws Exception {
 
         // setup test data
-        String s = "someName\tnull";
+        String s = "someName";
 
         // initialize class under test
         VertexListFormat vertexListFormat = new VertexListFormat();
@@ -263,21 +276,11 @@ public class VertexListFormatTest {
         assertNull(vertex.getLabel());
     }
 
-    @Test
-    public void testFixNull() {
-        // initialize class under test
-        VertexListFormat vertexListFormat = new VertexListFormat();
-
-        assertEquals(null, vertexListFormat.fixNull("null"));
-        assertEquals(null, vertexListFormat.fixNull(null));
-        assertEquals("", vertexListFormat.fixNull(""));
-        assertEquals("anystring", vertexListFormat.fixNull("anystring"));
-        assertEquals("nullanystring", vertexListFormat.fixNull("nullanystring"));
-    }
-
     private Vertex createVertex(String name, String label, PropertyMap propertyMap) {
         Vertex vertex = new Vertex<StringType>(new StringType(name));
-        vertex.setLabel(new StringType(label));
+        if (label != null) {
+            vertex.setLabel(new StringType(label));
+        }
         vertex.setProperties(propertyMap);
         return vertex;
     }

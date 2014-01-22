@@ -32,6 +32,9 @@ import org.apache.hadoop.io.Writable;
  */
 public class EdgeListFormat {
 
+    /** format includes Label.Name */
+    private static final String DOT_SEPARATOR = ".";
+
     private final String delimiter;
 
     /**
@@ -73,7 +76,7 @@ public class EdgeListFormat {
      * @param edge to convert
      * @return the edge in EdgeListFormat
      */
-    public String toStringWithProperties(Edge edge) {
+    protected String toStringWithProperties(Edge edge) {
         String edgeString = toStringWithoutProperties(edge);
         if (edge.getProperties() != null) {
             PropertyMap propertyMap = edge.getProperties();
@@ -92,7 +95,7 @@ public class EdgeListFormat {
      * @param edge to convert
      * @return the edge in EdgeListFormat
      */
-    public String toStringWithoutProperties(Edge edge) {
+    protected String toStringWithoutProperties(Edge edge) {
         // TODO: probably shouldn't use toString() here
         return edge.getSrc().toString() + delimiter +
                 edge.getDst().toString() + delimiter +
@@ -128,12 +131,14 @@ public class EdgeListFormat {
 
     /**
      * Expected format is either "label.name" or "name".
+     *
+     * Also, allowed is "label.with.dots.name".
      */
     protected VertexID<StringType> parseVertexID(String labelDotName) {
 
         if (StringUtils.contains(labelDotName, ".")) {
-            String name = StringUtils.substringBeforeLast(labelDotName, ".");
-            String label = StringUtils.substringAfterLast(labelDotName, ".");
+            String name = StringUtils.substringBeforeLast(labelDotName, DOT_SEPARATOR);
+            String label = StringUtils.substringAfterLast(labelDotName, DOT_SEPARATOR);
             return new VertexID<>(new StringType(label), new StringType(name));
         }
         else {

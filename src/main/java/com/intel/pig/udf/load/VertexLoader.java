@@ -37,7 +37,7 @@ import org.apache.pig.data.TupleFactory;
 import java.io.IOException;
 
 /**
- * UDF for loading Vertices written in format of class VertexList
+ * UDF for loading Vertices written in VertexListFormat
  */
 public class VertexLoader extends LoadFunc {
 
