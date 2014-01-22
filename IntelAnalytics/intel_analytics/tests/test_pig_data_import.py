@@ -1,5 +1,6 @@
 import unittest
 from intel_analytics.report import PigJobReportStrategy
+from intel_analytics.table.pig.pig_helpers import get_generate_key_statements
 
 
 class TestPigDataImport(unittest.TestCase):
@@ -38,6 +39,19 @@ class TestPigDataImport(unittest.TestCase):
         self.assertEqual(2, len(strategy.content))
         self.assertEqual('5000', strategy.content['input'])
         self.assertEqual('6000', strategy.content['output'])
+
+    def test_get_key_assignment_statements_original_import(self):
+        statements = get_generate_key_statements('in', 'out', 'f1, f2, f3')
+        self.assertEqual(1, len(statements))
+        self.assertEqual('out = rank in;', statements[-1])
+
+
+    def test_get_key_assignment_statements_append(self):
+        statements = get_generate_key_statements('in', 'out', 'f1, f2, f3', 1000)
+        self.assertEqual(2, len(statements))
+        self.assertEqual('temp = rank in;', statements[0])
+        self.assertEqual('out = foreach temp generate $0 + 1000 as key, f1, f2, f3;', statements[1])
+
 
 
 

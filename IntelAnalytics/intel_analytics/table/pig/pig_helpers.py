@@ -22,6 +22,7 @@
 ##############################################################################
 from intel_analytics.config import global_config as config
 
+
 def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
     """
     Returns a schema string in Pig's format given a comma separated feature
@@ -88,6 +89,31 @@ def get_load_statement_list(files, raw_load_statement, out_relation):
         load_statements.append("%s = %s;" % (out_relation, relationship_names[0]))
     return load_statements
 
+def get_generate_key_statements(in_relation, out_relation, features, offset = 0):
+    """
+    Return the list of load statements that generate row key
+
+    Parameters
+        ----------
+        in_relation : String
+            The input relation which does not contain row key
+        out_relation : String
+            The output relation which has row key assigned
+        features : String
+            Comma separated features names such as f1, f2, f3
+        offset : long
+            The previous maximum row key
+
+    """
+    statements = []
+    if offset == 0:
+        statements.append('%s = rank %s;' %(out_relation, in_relation))
+    else:
+        statements.append('temp = rank %s;' %(in_relation))
+        statements.append('%s = foreach temp generate $0 + %s as key, %s;' %(out_relation, str(offset), features))
+
+    return statements
+
 
 def report_job_status(status):
     print 'Pig job status report-Start:'
@@ -96,3 +122,5 @@ def report_job_status(status):
     input_count = import_status.getNumberRecords()
     print 'input_count:' + str(input_count)
     print 'Pig job status report-End:'
+
+

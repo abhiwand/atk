@@ -26,7 +26,7 @@ import sys
 #Coverage.py will attempt to import every python module to generate coverage statistics.
 #Since Pig is only available to Jython than this will cause the coverage tool to throw errors thus breaking the build.
 #This try/except block will allow us to run coverage on the Jython files.
-from intel_analytics.table.pig.pig_helpers import get_load_statement_list, report_job_status
+from intel_analytics.table.pig.pig_helpers import get_load_statement_list, report_job_status, get_generate_key_statements
 
 try:
     from org.apache.pig.scripting import Pig
@@ -44,7 +44,7 @@ def main(argv):
     parser.add_argument('-f', '--features', dest='feature_names', help='name of the features as a comma separated string')
     parser.add_argument('-t', '--feature_types', dest='feature_types', help='type of the features as a comma separated string')
     parser.add_argument('-k', '--skip_header', dest='skip_header', help='skip the header line (first line) of the CSV file while loading', action='store_true', default=False)
-
+    parser.add_argument('-m', '--offset', dest='offset', help='current maximum row key. Will be the offset value for assigning new row keys')
     cmd_line_args = parser.parse_args()
     
     delimeter_char = ','#by default this script parses comma separated files
@@ -70,13 +70,15 @@ def main(argv):
     input_path = cmd_line_args.input
     files = input_path.split(',')
     load_statements = get_load_statement_list(files, raw_load_statement, 'logs')
+    final_relation = 'with_unique_keys'
 
-    for statement in load_statements:
-        pig_statements.append(statement)
+    key_assignment_statements = get_generate_key_statements('logs', final_relation, cmd_line_args.feature_names, long(cmd_line_args.offset))
+    pig_statements.extend(load_statements)
+    pig_statements.extend(key_assignment_statements)
 
-    pig_statements.append("with_unique_keys = rank logs;" )#prepends row IDs to each row
-    pig_statements.append("STORE with_unique_keys INTO 'hbase://$OUTPUT' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (hbase_constructor_args))
+    pig_statements.append("STORE %s INTO 'hbase://$OUTPUT' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (final_relation, hbase_constructor_args))
     pig_script = "\n".join(pig_statements)
+
     compiled = Pig.compile(pig_script)
     status = compiled.bind({'OUTPUT':cmd_line_args.output}).runSingle()#without binding anything Pig raises error
 

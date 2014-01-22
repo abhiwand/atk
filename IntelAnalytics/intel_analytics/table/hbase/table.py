@@ -22,7 +22,6 @@
 ##############################################################################
 import os
 import re
-import sys
 import collections
 
 from intel_analytics.config import Registry, \
@@ -80,12 +79,7 @@ for key, val in Imputation.__dict__.items():
         continue
     available_imputations.append(val)
 
-def _get_pig_args():
-    args=['pig']
-    if local_run:
-        args += ['-x', 'local']
-    args += ['-4', pig_log4j_path]
-    return args
+
 
 class HBaseTableException(Exception):
     pass
@@ -473,6 +467,8 @@ class HBaseFrameBuilder(FrameBuilder):
         if skip_header:
             args += ['-k']
 
+        args += ['-m', '0']
+
         logger.debug(' '.join(args))
         # need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
@@ -491,6 +487,42 @@ class HBaseFrameBuilder(FrameBuilder):
         hbase_table = HBaseTable(table_name, file_name)
         hbase_registry.register(frame_name, table_name, overwrite)
         return BigDataFrame(frame_name, hbase_table)
+
+    def append_from_csv(self, data_frame, file_name, skip_header=False):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(data_frame._table.table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        script_path = os.path.join(etl_scripts_path,'pig_import_csv.py')
+
+        args = _get_pig_args()
+
+        if isinstance(file_name, list):
+            file_name = ','.join(file_name) #convert list of path to comma seperated string
+
+        args += [script_path, '-i', file_name, '-o', data_frame._table.table_name,
+                 '-f', feature_names_as_str, '-t', feature_types_as_str]
+
+        if skip_header:
+            args += ['-k']
+
+        logger.debug(' '.join(args))
+        # need to delete/create output table to write the transformed features
+        properties = etl_schema.get_table_properties(data_frame._table.table_name)
+
+        original_max_row_key = properties['max_row_key']
+
+        args += ['-m', original_max_row_key]
+
+        pig_report = PigJobReportStrategy();
+        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+
+        properties['max_row_key'] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
+        etl_schema.save_table_properties(data_frame._table.table_name, properties)
+
+        if return_code:
+            raise Exception('Could not import CSV file')
 
     def build_from_json(self, frame_name, file_name, overwrite=False):
         #create some random table name
@@ -578,3 +610,11 @@ def _create_table_name(name, overwrite):
         if not overwrite:
             raise Exception("Big item '" + name  + "' already exists.")
     return name + get_time_str()
+
+
+def _get_pig_args():
+    args=['pig']
+    if local_run:
+        args += ['-x', 'local']
+    args += ['-4', pig_log4j_path]
+    return args
