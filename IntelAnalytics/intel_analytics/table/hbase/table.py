@@ -33,7 +33,7 @@ from schema import ETLSchema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
-from intel_analytics.report import MapOnlyProgressReportStrategy
+from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
 
 
 try:
@@ -172,7 +172,7 @@ class HBaseTable(object):
                  '-n', feature_names,
                  '-t', feature_types]
 
-        return_code = call(args, report_strategy = etl_report_strategy())
+        return_code = call(args, report_strategy= etl_report_strategy())
         if return_code:
             raise HBaseTableException('Could not copy table')
 
@@ -479,8 +479,12 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
 
-        return_code = call(args, report_strategy=etl_report_strategy())
-        
+        pig_report = PigJobReportStrategy();
+        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+        properties = {};
+        properties['max_row_key'] = pig_report.content['input_count']
+        etl_schema.save_table_properties(table_name, properties)
+
         if return_code:
             raise Exception('Could not import CSV file')
 

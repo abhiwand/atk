@@ -26,7 +26,7 @@ import sys
 #Coverage.py will attempt to import every python module to generate coverage statistics.
 #Since Pig is only available to Jython than this will cause the coverage tool to throw errors thus breaking the build.
 #This try/except block will allow us to run coverage on the Jython files.
-from intel_analytics.table.pig.pig_helpers import get_load_statement_list
+from intel_analytics.table.pig.pig_helpers import get_load_statement_list, report_job_status
 
 try:
     from org.apache.pig.scripting import Pig
@@ -34,9 +34,6 @@ except:
     print("Pig is either not installed or not executing through Jython. Pig is required for this module.")
 from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
 from intel_analytics.table.pig import pig_helpers
-
-
-
 
 
 def main(argv):
@@ -82,7 +79,10 @@ def main(argv):
     pig_script = "\n".join(pig_statements)
     compiled = Pig.compile(pig_script)
     status = compiled.bind({'OUTPUT':cmd_line_args.output}).runSingle()#without binding anything Pig raises error
+
+    report_job_status(status)
     return 0 if status.isSuccessful() else 1
+
 
 if __name__ == "__main__":
   try:

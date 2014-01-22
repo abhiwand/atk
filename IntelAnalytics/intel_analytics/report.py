@@ -119,6 +119,29 @@ class MapOnlyProgressReportStrategy(ProgressReportStrategy):
             self.job_progress_bar_list[-1].update(progress.mapper_progress)
             self.progress_list[-1] = progress
 
+class PigJobReportStrategy(ProgressReportStrategy):
+
+    def __init__(self):
+        self.content = {}
+        self.is_during_recording = False
+
+    def report(self, line):
+        line = line.strip()
+        if line == 'Pig job status report-Start:':
+            self.is_during_recording = True
+            return
+        elif line == 'Pig job status report-End:':
+            self.is_during_recording = False
+            return
+
+        if not self.is_during_recording:
+            return
+
+        splits = line.split(':')
+        self.content[splits[0]] = splits[1]
+
+
+
 mr_progress_output_pattern = re.compile(r".*?mapred.JobClient:.*?map.*?([0-9]*?%).*?reduce.*?([0-9]*?%)")
 def find_progress(line_value):
     """

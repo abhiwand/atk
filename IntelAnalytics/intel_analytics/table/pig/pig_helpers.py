@@ -87,3 +87,12 @@ def get_load_statement_list(files, raw_load_statement, out_relation):
     elif len(relationship_names) == 1:
         load_statements.append("%s = %s;" % (out_relation, relationship_names[0]))
     return load_statements
+
+
+def report_job_status(status):
+    print 'Pig job status report-Start:'
+    input_status = status.getInputStats()
+    import_status = input_status.get(0);
+    input_count = import_status.getNumberRecords()
+    print 'input_count:' + str(input_count)
+    print 'Pig job status report-End:'
