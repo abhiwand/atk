@@ -81,7 +81,7 @@ public class VertexLoader extends LoadFunc {
 
             Text text = (Text) reader.getCurrentValue();
 
-            Vertex vertex = vertexListFormat.toVertex(text.toString(), false);
+            Vertex vertex = vertexListFormat.toVertex(text.toString(), withProperties);
             SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
             serializedGraphElement.init(vertex);
 

@@ -52,6 +52,7 @@ public class EdgeLoader extends LoadFunc {
 
     /**
      * UDF for loading Edges written in format of class EdgeList
+     *
      * @param withProperties include properties while loading
      *                       Boolean value (String because that is what Pig expects)
      */
@@ -80,7 +81,7 @@ public class EdgeLoader extends LoadFunc {
             }
 
             Text text = (Text) reader.getCurrentValue();
-            Edge edge = edgeListFormat.toEdge(text.toString(), false);
+            Edge edge = edgeListFormat.toEdge(text.toString(), withProperties);
             SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
             serializedGraphElement.init(edge);
 
