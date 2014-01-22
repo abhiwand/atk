@@ -119,7 +119,7 @@ class MapOnlyProgressReportStrategy(ProgressReportStrategy):
             self.job_progress_bar_list[-1].update(progress.mapper_progress)
             self.progress_list[-1] = progress
 
-class PigJobReportStrategy(ProgressReportStrategy):
+class PigJobReportStrategy(ReportStrategy):
 
     def __init__(self):
         self.content = {}
