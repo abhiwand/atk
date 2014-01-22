@@ -29,20 +29,36 @@ import scala.concurrent.duration._
 package com.intel.intelanalytics {
 
 import awscala.sqs.{Queue, Message, SQS}
-import scalax.io.StandardOpenOption
+import scalax.io._
 import java.net.URI
 import java.io.File._
 import awscala.File
+import com.amazonaws.auth.{EnvironmentVariableCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.services.s3.AmazonS3Client
+import com.amazonaws.event._
+import com.amazonaws.services.s3.model.{GetObjectRequest}
+import com.amazonaws.services.s3.transfer.internal.ProgressListenerChain
+import com.amazonaws.event.ProgressListenerChain.ProgressEventFilter
+import java.io._
+import org.apache.commons.codec.Charsets
+import scalax.io.StandardOpenOption
+import com.intel.intelanalytics.Status
+import awscala.sqs.Queue
+import play.api.libs.iteratee.Enumerator
+import org.apache.hadoop.util.Progressable
+import com.intel.intelanalytics.Status
+import awscala.sqs.Queue
 
 //TODO: make this app work using distcp instead
 //import org.apache.hadoop.tools.{DistCpOptions, DistCp}
 
-import scalax.io.Resource
 import scala.util.{Success, Failure}
 import play.api.libs.json.Json
+import scala.io.Source
 import org.apache.hadoop.conf.Configuration
 import scala.collection._
 import scalax.file.Path
+import com.amazonaws._
 import org.apache.hadoop.fs.{FileSystem, Path => HdPath}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
@@ -125,7 +141,38 @@ object main {
     val config = Config.parse(args)
 
     println("Creating S3 object")
+
     implicit val s3 = S3().at(Region.apply(config.region))
+
+    //val baseCredentials = new EnvironmentVariableCredentialsProvider().getCredentials
+    val baseCredentials = new BasicAWSCredentials("AKIAJ65RQRJONMKNT2NQ", "h57vzrHg18IRdGUGnRvfSph381VtuEOfK+r3oNBQ")
+
+    implicit val s3Client = new AmazonS3Client(baseCredentials);
+
+    /*val getObj = new GetObjectRequest("gao-dev-public", "dev-12/50.csv");
+    getObj.setGeneralProgressListener(new ProgressListener() {
+      var bytesTransferred: Long = 0l;
+      Override
+      def progressChanged(progressEvent: ProgressEvent) {
+        bytesTransferred += progressEvent.getBytesTransferred();
+        if (progressEvent.getEventCode()==ProgressEvent.COMPLETED_EVENT_CODE)
+          System.out.print(" " + bytesTransferred + " bytes; ");
+        else
+          System.out.print(".");
+      }
+    })
+
+    val test = s3Client.getObject(getObj)
+    //val test.getObjectContent
+    val name = "test";
+
+
+    val localPath = Path.fromString(config.statusDestination) / (name, '/')
+    future {
+      val resource = scalax.io.Resource.fromInputStream(test.getObjectContent)
+      localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
+    }*/
+
 
     implicit val sqs = SQS().at(Region.apply(config.region))
     println("Getting/creating queue")
@@ -140,8 +187,9 @@ object main {
       val uri = new URI(config.hadoopURI);
       fs = FileSystem.get(uri, configuration, config.hadoopUser)
     }
-    val copier = new S3Copier(queue, sqs, s3, config, fs)
+    val copier = new S3Copier(queue, sqs, s3Client, config, fs)
     copier.run()
+
   }
 }
 
@@ -155,7 +203,7 @@ object instance{
       print("instance id: " + instanceId)
     } catch{
       case e: Exception => {
-        print("error: coudln't get instance id " + e.getMessage)
+        print("error: coudln't get instance id " + e.getMessage + "\n")
       }
     }
     instanceId.trim.toLowerCase
@@ -169,12 +217,13 @@ object instance{
  */
 case class Status(name: String, progress: Float)
 
+case class File(Name: String, Bucket: String)
 /**
  * Watches SQS for 'create' messages, copies the file named therein to HDFS.
  * Generates .status files containing status information about the transfers that are
  * in progress, so that other applications can report status information to the user
  */
-class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config: Config, fs: FileSystem) {
+class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: AmazonS3Client, config: Config, fs: FileSystem) {
 
   val inProgress = mutable.Map[String,Future[Status]]()
   /**
@@ -240,23 +289,59 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
     log(msg.body)
     val json = Json.parse(msg.body)
 
-    val file = for {
-      bucketName <- (json \ "create" \ "bucket").asOpt[String] orElse log("bucket not found in message")
-      fileName <- (json \ "create" \ "path").asOpt[String] orElse log("path not found in message")
-      valid <- fileName.startsWith(config.prefix).option(fileName) orElse log(s"fileName $fileName does not match prefix ${config.prefix}")
-      bucket <- s3.bucket(bucketName) orElse log(s"bucket $bucketName does not exist")
-      file <- bucket.get(fileName) orElse log(s"uploaded file $fileName does not exist")
-    } yield file
+    //val getObj = new GetObjectRequest("gao-dev-public", "dev-12/50.csv");
+    //val file = for {
+      val bucketName = (json \ "create" \ "bucket").asOpt[String] orElse log("bucket not found in message")
+      val fileName = (json \ "create" \ "path").asOpt[String] orElse log("path not found in message")
+      val fileSize = (json \ "create" \ "size").asOpt[Long] orElse log("Size not found")
+      val valid = fileName.get.startsWith(config.prefix).option(fileName) orElse log(s"fileName $fileName does not match prefix ${config.prefix}")
+      if(!valid.get.isEmpty){
+        val file = new GetObjectRequest(bucketName.get, fileName.get );
+        file.setGeneralProgressListener(new ProgressListener() {
+          var bytesTransferred: Long = 0l
+          var bytesTransferredLast: Long = 0l
+          var total = fileSize.get
+          val name = fileName.get.substring(config.prefix.length)
+          val localPath =  scalax.io.Resource.fromFile(config.statusDestination + "/" + name + "/")
 
-    log(file.toString)
+          @Override
+          def progressChanged(progressEvent: ProgressEvent) {
+            bytesTransferredLast = bytesTransferred
+            bytesTransferred += progressEvent.getBytesTransferred();
+            if (progressEvent.getEventCode()==ProgressEvent.COMPLETED_EVENT_CODE){
+              System.out.print(" " + bytesTransferred + " bytes; ");
 
-    file.foreach {
-      f =>
-        val result: Future[Status] = copyFile(f, config, fs)
-        inProgress.put(f.key, result)
+            }
+            else if(progressEvent.getEventCode == 0 ){
+              /*val lastN = bytesTransferred - bytesTransferredLast
+              val queue = new scala.collection.mutable.Queue[String]
+              val testFile = new java.io.File(config.statusDestination + "/" + name + "/")
+              val test = Source.fromFile(testFile). foreach { line =>
+                queue.enqueue(line)
+                if (queue.size > lastN) queue.dequeue
+              }
+              /*for (line <- queue)
+                if (line.contains("percent")){
+                  print(line)
+                }*/*/
+
+
+              val status = (bytesTransferred.toDouble / total.toDouble) * 100
+              System.out.print(status + " "+ localPath.size.get +" \n");
+
+
+
+              //val FSDataOutputStream = fs.append(new HdPath(config.destination + "/" + name))
+            }
+          }
+        })
+
+        val future = copyFile(file, config, fs)
+        //inProgress.put(f.key, result)
         msg.destroy()
-    }
+      }
   }
+
 
   /**
    * Copies the given file from S3 to HDFS, and generates a status file
@@ -265,34 +350,79 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
    * @param config the copier configuration
    * @param fs the hdfs filesystem to use for copying
    */
-  def copyFile(s3Object: S3Object, config: Config, fs: FileSystem): Future[Status] = {
-    val name = s3Object.key.substring(config.prefix.length)
-    var status = Status(name, 0)
-    writeProgress(config.statusDestination, status)
+  def copyFile(s3ObjectRequest: GetObjectRequest, config: Config, fs: FileSystem)(implicit s3Client: AmazonS3Client): Future[Status] = {
+    val name = s3ObjectRequest.getKey.substring(config.prefix.length)
     val localPath = Path.fromString(config.statusDestination) / (name, '/')
-    val out = Resource.fromFile(config.statusDestination + "/" + name)
-    val in = scalax.io.Resource.fromInputStream(s3Object.content)
-    val processor = for{
-      in <- in.bytes.processor
-      data <- in.take(in.length)
-      log("log: " + data.length)
-    } yield out.write(data)
 
-    implicit val context = scalax.io.executionContext
+    val s3Object = s3Client.getObject(s3ObjectRequest)
+    s3Object.getObjectMetadata.getContentLength
 
-    processor.future.onComplete {
-      case Success(_) => println("Yay done :)")
-      case Failure(_) => println("Uh oh failure :(")
-    }
+    future {
+      //val resource = scalax.io.Resource.fromInputStream(s3Object.getObjectContent)
+      val bufferedInput = new BufferedInputStream(s3Object.getObjectContent)
 
-    /*future {
-      val resource = scalax.io.Resource.fromInputStream(s3Object.content)
-      localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
+
+
+//      localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
+      //localPath.inputStream.byteArray
+
+      val FSDataOutputStream = fs.create(new HdPath(config.destination + "/" + name), true, 10485760, new Progressable(){
+        @Override def progress() {
+          //System.out.print(".hadoop.");
+        } })
+
+      val buff = new Array[Byte](10485760)
+
+      while(bufferedInput.read(buff ) >= 0 ){
+        FSDataOutputStream.write(buff)
+      }
+      FSDataOutputStream.close
+/*
+      val bytes = resource.bytes
+      val rowTransformer = for {
+        processor <- bytes.processor
+        // repeat the following process until all bytes are consumed
+        _ <- processor.repeatUntilEmpty()
+        // this block is called as long as the data remains
+        // get one byte.  This is the row header (and indicates the amount of row data)
+        rowLength <- processor.next
+        // read the row data
+        rowData <- processor.take(rowLength.toInt)
+
+      } yield rowData
+
+      // rowTranformer is designed to be used to define the structure of a file or other data
+      // it does not actually process the file.
+      // At this point the file has not been opened yet
+      val rowTraversable:LongTraversable[Vector[Byte]] = rowTransformer.traversable[Vector[Byte]]
+
+      // Since LongTraversable's are lazy, the file still has not been opened
+      // only the actual calling of foreach (next line) will trigger the file read.
+      rowTraversable.foreach(x => FSDataOutputStream.write(x.toArray))
+      FSDataOutputStream.close()*/
+
+
+/*      val blocks = resource.bytes.sliding(10485760)
+
+      blocks foreach {
+        case block =>
+         FSDataOutputStream.write(block.toArray)
+
+      }
+      FSDataOutputStream.close()*/
+
+      //val test = localPath.outputStream(StandardOpenOption.Create).doCopyFrom(resource.inputStream)
+      //var test = new BufferedReader(new InputStream(s3Object.getObjectContent))
 
       log(s"Wrote to ${localPath.path}")
 
-      status = status.copy(progress = 50)
+      val status = Status("sdfaf", 60)
 
+
+
+      //FSDataOutputStream.write(s3Object.getObjectContent)
+      //br.close*/
+          /*
       writeProgress(config.statusDestination, status)
 
       log(s"Local exists: ${localPath.exists}")
@@ -307,9 +437,9 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val s3: S3, config:
       localPath.delete(force = true)
       log(s"Wrote to HDFS: ${config.destination}")
       status = status.copy(progress = 100)
-      writeProgress(config.statusDestination, status)
+      writeProgress(config.statusDestination, status)*/
       status
-    }*/
+    }
 
     //TODO: Use DistCp instead. Currently doesn't work, always get 403 errors
     //from S3, no matter how lax we make the S3 permissions.
