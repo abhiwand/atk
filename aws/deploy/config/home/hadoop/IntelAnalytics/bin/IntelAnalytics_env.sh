@@ -2,7 +2,7 @@ if [ -z "${JAVA_HOME}" ]; then
 	export JAVA_HOME=/usr/lib/jvm/java
 fi
 if [ -z "${INTEL_ANALYTICS_HOME}" ]; then
-	export INTEL_ANALYTICS_HOME=`rpm -q --queryformat '%{DIRNAMES}' intelanalytics`/IntelAnalytics
+	export INTEL_ANALYTICS_HOME=`rpm -q --queryformat '%{DIRNAMES}' intelanalytics`IntelAnalytics
 	if [ ! -d "${INTEL_ANALYTICS_HOME}" ]; then
 		export INTEL_ANALYTICS_HOME=/usr/lib/IntelAnalytics
 	fi
