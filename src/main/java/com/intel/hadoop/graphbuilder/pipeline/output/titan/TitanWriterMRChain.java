@@ -114,7 +114,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private Configuration    conf;
 
     private HBaseUtils hbaseUtils = null;
-    private boolean    usingHBase = false;
 
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
@@ -147,7 +146,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         this.graphBuildingRule  = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
         this.graphSchema        = graphBuildingRule.getGraphSchema();
-        this.usingHBase         = true;
 
         try {
             this.hbaseUtils = HBaseUtils.getInstance();
