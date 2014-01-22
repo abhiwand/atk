@@ -134,7 +134,7 @@ function python_module_version_lookup() {
 		;;
 	"mrjob")		echo "mrjob==0.4.2"
 		;;
-	"matplotlib")		echo "matplotlib==1.3.1 --allow-external matplotlib --allow-unverified matplotlib"
+	"matplotlib")		echo "matplotlib==1.3.1 --allow-external matplotlib --allow-insecure matplotlib"
 		;;
 	"ipython")		echo "ipython==1.1.0"
 		;;
