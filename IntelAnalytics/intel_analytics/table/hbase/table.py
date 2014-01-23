@@ -28,7 +28,7 @@ from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
-from schema import ETLSchema
+from schema import ETLSchema, merge_schema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
@@ -491,11 +491,11 @@ class HBaseFrameBuilder(FrameBuilder):
         hbase_registry.register(frame_name, table_name, overwrite)
         return BigDataFrame(frame_name, hbase_table)
 
-    def append_from_csv(self, data_frame, file_name, skip_header=False):
-        etl_schema = ETLSchema()
-        etl_schema.load_schema(data_frame._table.table_name)
-        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
-        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+    def append_from_csv(self, data_frame, file_name, schema, skip_header=False):
+        new_data_etl_schema = ETLSchema()
+        new_data_etl_schema.populate_schema(schema)
+        new_data_feature_names_as_str = new_data_etl_schema.get_feature_names_as_CSV()
+        new_data_feature_types_as_str = new_data_etl_schema.get_feature_types_as_CSV()
 
         script_path = os.path.join(etl_scripts_path,'pig_import_csv.py')
 
@@ -505,14 +505,14 @@ class HBaseFrameBuilder(FrameBuilder):
             file_name = ','.join(file_name) #convert list of path to comma seperated string
 
         args += [script_path, '-i', file_name, '-o', data_frame._table.table_name,
-                 '-f', feature_names_as_str, '-t', feature_types_as_str]
+                 '-f', new_data_feature_names_as_str, '-t', new_data_feature_types_as_str]
 
         if skip_header:
             args += ['-k']
 
         logger.debug(' '.join(args))
         # need to delete/create output table to write the transformed features
-        properties = etl_schema.get_table_properties(data_frame._table.table_name)
+        properties = new_data_etl_schema.get_table_properties(data_frame._table.table_name)
 
         original_max_row_key = properties[MAX_ROW_KEY]
 
@@ -522,7 +522,13 @@ class HBaseFrameBuilder(FrameBuilder):
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
-        etl_schema.save_table_properties(data_frame._table.table_name, properties)
+        new_data_etl_schema.save_table_properties(data_frame._table.table_name, properties)
+
+        existing_etl_schema = ETLSchema()
+        existing_etl_schema.load_schema(data_frame._table.table_name)
+
+        merged_schema = merge_schema([existing_etl_schema, new_data_etl_schema])
+        merged_schema.save_schema(data_frame._table.table_name)
 
         if return_code:
             raise Exception('Could not import CSV file')
