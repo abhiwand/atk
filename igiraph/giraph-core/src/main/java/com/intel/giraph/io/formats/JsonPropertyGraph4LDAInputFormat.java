@@ -23,11 +23,6 @@
 
 package com.intel.giraph.io.formats;
 
-import com.google.common.collect.Lists;
-import com.intel.giraph.io.VertexData4LDAWritable;
-import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
-import com.intel.mahout.math.DoubleWithVectorWritable;
-
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
@@ -35,20 +30,25 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
 import org.apache.giraph.io.formats.TextVertexInputFormat;
+import com.google.common.collect.Lists;
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import com.intel.giraph.io.VertexData4LDAWritable;
+import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
+import com.intel.mahout.math.DoubleWithVectorWritable;
 
 import java.io.IOException;
 import java.util.List;
 
 /**
-  * VertexInputFormat that features <code>long</code> vertex ID's,
-  * <code>VertexData4LDA</code> vertex values, and <code>DoubleWithVector</code> edge
-  * values, specified in JSON format.
-  */
+ * VertexInputFormat that features <code>long</code> vertex ID's,
+ * <code>VertexData4LDA</code> vertex values, and <code>DoubleWithVector</code> edge
+ * values, specified in JSON format.
+ */
 public class JsonPropertyGraph4LDAInputFormat extends TextVertexInputFormat<LongWritable,
     VertexData4LDAWritable, DoubleWithVectorWritable> {
 
@@ -63,10 +63,10 @@ public class JsonPropertyGraph4LDAInputFormat extends TextVertexInputFormat<Long
      * JSON format:
      * JSONArray(<vertex id>, <vertex valueVector>, <vertex property>
      * JSONArray(JSONArray(<dest vertex id>, <edge value>, <edge property>), ...))
-     * Here is an example with vertex id 1, vertex value 4,3 marked as "d",
+     * Here is an example with vertex id 1, vertex value 4,3 marked as "L",
      * and two edges. First edge has a destination vertex 2, edge value 2.1 with empty
      * edge property. Second edge has a destination vertex 3, edge value 0.7 with empty
-     * edge property. [1,[4,3],[d],[[2,2.1,[]],[3,0.7,[]]]]
+     * edge property. [1,[4,3],["L"],[[2,2.1,[]],[3,0.7,[]]]]
      */
     class JsonPropertyGraph4LDAReader extends
         TextVertexReaderFromEachLineProcessedHandlingExceptions<JSONArray, JSONException> {
@@ -118,10 +118,10 @@ public class JsonPropertyGraph4LDAInputFormat extends TextVertexInputFormat<Long
         }
 
         /**
-         * get DenseVector from JSONArray
+         * Get DenseVector from JSONArray
          *
-         * @param valueVector the JSONArray to use
-         * @return denseVector the generated DenseVector
+         * @param valueVector of type JSONArray
+         * @return DenseVector
          * @throws JSONException
          */
         protected DenseVector getDenseVector(JSONArray valueVector) throws JSONException {
@@ -133,9 +133,9 @@ public class JsonPropertyGraph4LDAInputFormat extends TextVertexInputFormat<Long
         }
 
         /**
-         * get vertex type from JSONArray
+         * Get vertex type from JSONArray
          *
-         * @param valueVector the JSONArray to use
+         * @param valueVector of type JSONArray
          * @return VertexType
          * @throws JSONException
          */
@@ -143,12 +143,12 @@ public class JsonPropertyGraph4LDAInputFormat extends TextVertexInputFormat<Long
             if (valueVector.length() != 1) {
                 throw new IllegalArgumentException("This vertex can only have one type.");
             }
-            String vs = valueVector.getString(0);
+            String vs = valueVector.getString(0).toLowerCase();
             VertexType vt = null;
-            if (vs.equals("d")) {
-                vt = VertexType.DOC;
-            } else if (vs.equals("w")) {
-                vt = VertexType.WORD;
+            if (vs.equals("l")) {
+                vt = VertexType.LEFT;
+            } else if (vs.equals("r")) {
+                vt = VertexType.RIGHT;
             } else {
                 throw new IllegalArgumentException(String.format("Vertex type string: %s isn't supported.", vs));
             }

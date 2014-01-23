@@ -93,7 +93,7 @@ public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<Lon
             } catch (JSONException e) {
                 throw new IllegalArgumentException("writeVertex: Couldn't write vertex " + vertex);
             }
-            return new Text(jsonVertex.toString().replaceAll("\"", ""));
+            return new Text(jsonVertex.toString());
         }
     }
 

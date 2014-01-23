@@ -75,7 +75,7 @@ public class TestJsonPropertyGraph4CFInputFormat extends JsonPropertyGraph4CFInp
 
     @Test
     public void testReadVertex() throws Exception {
-        String input = "[1,[],[L],[[0,1,[tr]],[2,2,[va]],[3,1,[te]]]]";
+        String input = "[1,[],[\"L\"],[[0,1,[\"TR\"]],[2,2,[\"VA\"]],[3,1,[\"TE\"]]]]";
 
         when(rr.getCurrentValue()).thenReturn(new Text(input));
         TextVertexReader vr = createVertexReader(rr);

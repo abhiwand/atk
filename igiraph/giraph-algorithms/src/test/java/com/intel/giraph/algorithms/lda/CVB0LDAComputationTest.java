@@ -23,24 +23,22 @@
 
 package com.intel.giraph.algorithms.lda;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Map;
 import java.util.HashMap;
-
-import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.utils.InternalVertexRunner;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.junit.Test;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAMasterCompute;
 import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAAggregatorWriter;
 import com.intel.giraph.io.formats.JsonPropertyGraph4LDAInputFormat;
 import com.intel.giraph.io.formats.JsonPropertyGraph4LDAOutputFormat;
+
+import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.utils.InternalVertexRunner;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class CVB0LDAComputationTest {
 
@@ -49,19 +47,19 @@ public class CVB0LDAComputationTest {
      */
     @Test
     public void testToyData() throws Exception {
-        // a small five-vertex graph
+        // a small 11-vertex graph
         String[] graph = new String[] {
-            "[1,[],[d],[[-1,2,[]],[-3,1,[]]]]",
-            "[2,[],[d],[[-1,4,[]],[-3,4,[]]]]",
-            "[3,[],[d],[[-2,3,[]]]]",
-            "[4,[],[d],[[-2,6,[]]]]",
-            "[5,[],[d],[[-4,1,[]],[-5,3,[]]]]",
-            "[6,[],[d],[[-4,4,[]],[-5,2,[]]]]",
-            "[-1,[],[w],[[1,2,[]],[2,4,[]]]]",
-            "[-2,[],[w],[[3,3,[]],[4,6,[]]]]",
-            "[-3,[],[w],[[1,1,[]],[2,4,[]]]]",
-            "[-4,[],[w],[[5,1,[]],[6,4,[]]]]",
-            "[-5,[],[w],[[5,3,[]],[6,2,[]]]]"
+            "[1,[],[\"L\"],[[-1,2,[]],[-3,1,[]]]]",
+            "[2,[],[\"L\"],[[-1,4,[]],[-3,4,[]]]]",
+            "[3,[],[\"L\"],[[-2,3,[]]]]",
+            "[4,[],[\"L\"],[[-2,6,[]]]]",
+            "[5,[],[\"L\"],[[-4,1,[]],[-5,3,[]]]]",
+            "[6,[],[\"L\"],[[-4,4,[]],[-5,2,[]]]]",
+            "[-1,[],[\"R\"],[[1,2,[]],[2,4,[]]]]",
+            "[-2,[],[\"R\"],[[3,3,[]],[4,6,[]]]]",
+            "[-3,[],[\"R\"],[[1,1,[]],[2,4,[]]]]",
+            "[-4,[],[\"R\"],[[5,1,[]],[6,4,[]]]]",
+            "[-5,[],[\"R\"],[[5,3,[]],[6,2,[]]]]"
         };
 
         HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
@@ -76,7 +74,7 @@ public class CVB0LDAComputationTest {
         expectedValues.put(-3L, new Double[]{0.23041662400214913,0.17213628914790263,0.057403553630716905});
         expectedValues.put(-4L, new Double[]{0.26559424214339156,0.09496870724564004,0.07813036764847642});
         expectedValues.put(-5L, new Double[]{0.30812603030574376,0.046083571327991596,0.05648526851858576});
-        
+
         GiraphConfiguration conf = new GiraphConfiguration();
 
         conf.setComputationClass(CVB0LDAComputation.class);

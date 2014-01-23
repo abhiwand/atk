@@ -49,12 +49,12 @@ import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.function.Functions;
+import com.intel.mahout.math.IdWithVectorWritable;
+import com.intel.mahout.math.DoubleWithVectorWritable;
 
 import com.intel.giraph.io.VertexData4LDAWritable;
 import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
 import com.intel.giraph.aggregators.VectorSumAggregator;
-import com.intel.mahout.math.IdWithVectorWritable;
-import com.intel.mahout.math.DoubleWithVectorWritable;
 
 /**
  * CVB0 Latent Dirichlet Allocation for Topic Modelling
@@ -77,6 +77,8 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     public static final String BETA = "lda.beta";
     /** Custom argument for convergence threshold */
     public static final String CONVERGENCE_THRESHOLD = "lda.convergenceThreshold";
+    /** Custom argument for checking bi-directional edge or not (default: false) */
+    public static final String BIDIRECTIONAL_CHECK = "lda.bidirectionalCheck";
     /** Custom argument for maximum edge weight value */
     public static final String MAX_VAL = "lda.maxVal";
     /** Custom argument for minimum edge weight value */
@@ -109,6 +111,8 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     private float alpha = 0.1f;
     /** Term-topic smoothing parameter: beta */
     private float beta = 0.1f;
+    /** Turning on/off bi-directional edge check */
+    private boolean bidirectionalCheck = false;
     /** Maximum edge weight value */
     private float maxVal = Float.POSITIVE_INFINITY;
     /** Minimum edge weight value */
@@ -133,6 +137,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         if (alpha <= 0 || beta <= 0) {
             throw new IllegalArgumentException("alpha and beta should be > 0.");
         }
+        bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
         maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
         minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
         costEval = getConf().getBoolean(COST_EVAL, false);
@@ -141,7 +146,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     }
 
     /**
-     * initialize vertex/edges, collect graph statistics and send out messages
+     * Initialize vertex/edges, collect graph statistics and send out messages
      *
      * @param vertex of the graph
      */
@@ -189,16 +194,16 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         // aggregate max delta value
         aggregate(MAX_DELTA, new DoubleWritable(maxDelta));
         // aggregate sum of occurrences
-        if (vt == VertexType.WORD) {
+        if (vt == VertexType.RIGHT) {
             aggregate(SUM_OCCURRENCE_COUNT, new DoubleWritable(sumWeights));
         }
 
         // collect graph statistics
         switch (vt) {
-        case DOC:
+        case LEFT:
             aggregate(SUM_DOC_VERTEX_COUNT, new LongWritable(1));
             break;
-        case WORD:
+        case RIGHT:
             aggregate(SUM_WORD_VERTEX_COUNT, new LongWritable(1));
             break;
         default:
@@ -211,7 +216,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     }
 
     /**
-     * update vertex value according to edge value
+     * Update vertex value according to edge value
      *
      * @param vertex of the graph
      */
@@ -224,30 +229,23 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
             vector = vector.plus(gamma.times(weight));
         }
         vertex.getValue().setVector(vector);
-        if (vt == VertexType.WORD) {
+        if (vt == VertexType.RIGHT) {
             aggregate(SUM_WORD_VERTEX_VALUE, new VectorWritable(vector));
         }
     }
 
     /**
-     * update edge value according to vertex and messages
+     * Update edge value according to vertex and messages
      *
      * @param vertex of the graph
      * @param messages of type iterable
+     * @param map of type HashMap
      */
     private void updateEdge(Vertex<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> vertex,
-        Iterable<IdWithVectorWritable> messages) {
+        Iterable<IdWithVectorWritable> messages, HashMap<Long, Vector> map) {
         VertexType vt = vertex.getValue().getType();
         Vector vector = vertex.getValue().getVector();
-        // collect messages
-        HashMap<Long, Vector> map = new HashMap<Long, Vector>();
-        for (IdWithVectorWritable message : messages) {
-            map.put(message.getData(), message.getVector());
-        }
-        if (map.size() != vertex.getNumEdges()) {
-            throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages isn't equal" +
-                "to number of edges.", vertex.getId().get()));
-        }
+
         double maxDelta = 0d;
         for (Edge<LongWritable, DoubleWithVectorWritable> edge : vertex.getMutableEdges()) {
             Vector gamma = edge.getValue().getVector();
@@ -256,11 +254,11 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
                 Vector otherVector = map.get(id);
                 Vector newGamma = null;
                 switch (vt) {
-                case DOC:
+                case LEFT:
                     newGamma = vector.minus(gamma).plus(alpha).times(otherVector.minus(gamma).plus(beta))
                         .times(nk.minus(gamma).plus(numWords * beta).assign(Functions.INV));
                     break;
-                case WORD:
+                case RIGHT:
                     newGamma = vector.minus(gamma).plus(beta).times(otherVector.minus(gamma).plus(alpha))
                         .times(nk.minus(gamma).plus(numWords * beta).assign(Functions.INV));
                     break;
@@ -283,7 +281,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     }
 
     /**
-     * normalize vertex value
+     * Normalize vertex value
      *
      * @param vertex of the graph
      */
@@ -291,10 +289,10 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         VertexType vt = vertex.getValue().getType();
         Vector vector = vertex.getValue().getVector();
         switch (vt) {
-        case DOC:
+        case LEFT:
             vector = vector.plus(alpha).normalize(1d);
             break;
-        case WORD:
+        case RIGHT:
             vector = vector.plus(beta).times(nk.plus(numWords * beta).assign(Functions.INV));
             break;
         default:
@@ -305,29 +303,22 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     }
 
     /**
-     * evaluate cost according to vertex and messages
+     * Evaluate cost according to vertex and messages
      *
      * @param vertex of the graph
      * @param messages of type iterable
+     * @param map of type HashMap
      */
     private void evaluateCost(Vertex<LongWritable, VertexData4LDAWritable, DoubleWithVectorWritable> vertex,
-        Iterable<IdWithVectorWritable> messages) {
+        Iterable<IdWithVectorWritable> messages, HashMap<Long, Vector> map) {
         VertexType vt = vertex.getValue().getType();
         Vector vector = vertex.getValue().getVector();
 
-        if (vt == VertexType.DOC) {
+        if (vt == VertexType.LEFT) {
             return;
         }
         vector = vector.plus(beta).times(nk.plus(numWords * beta).assign(Functions.INV));
-        // collect messages
-        HashMap<Long, Vector> map = new HashMap<Long, Vector>();
-        for (IdWithVectorWritable message : messages) {
-            map.put(message.getData(), message.getVector());
-        }
-        if (map.size() != vertex.getNumEdges()) {
-            throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages isn't equal" +
-                "to number of edges.", vertex.getId().get()));
-        }
+
         double cost = 0d;
         for (Edge<LongWritable, DoubleWithVectorWritable> edge : vertex.getEdges()) {
             double weight = edge.getValue().getData();
@@ -354,13 +345,27 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
             return;
         }
 
-        if (step < maxSupersteps) {
-            if (costEval) {
-                evaluateCost(vertex, messages);
+        // collect messages
+        HashMap<Long, Vector> map = new HashMap<Long, Vector>();
+        for (IdWithVectorWritable message : messages) {
+            map.put(message.getData(), message.getVector());
+        }
+        if (bidirectionalCheck) {
+            // verify bi-directional edges
+            if (map.size() != vertex.getNumEdges()) {
+                throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d)" +
+                    " isn't equal to number of edges (%d).", vertex.getId().get(), map.size(), vertex.getNumEdges()));
             }
-            updateEdge(vertex, messages);
-            updateVertex(vertex);
+        }
 
+        // evaluate cost
+        if (costEval) {
+            evaluateCost(vertex, messages, map);
+        }
+        updateEdge(vertex, messages, map);
+        updateVertex(vertex);
+
+        if (step < maxSupersteps) {
             // send out messages
             IdWithVectorWritable newMessage = new IdWithVectorWritable(vertex.getId().get(),
                 vertex.getValue().getVector());
@@ -377,7 +382,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
      * Master compute associated with {@link CVB0LDAComputation}. It registers required aggregators.
      */
     public static class CVB0LDAMasterCompute extends DefaultMasterCompute {
-        /** whether evaluate cost or not */
+        /** Whether evaluate cost or not */
         private boolean costEval = false;
 
         @Override
@@ -396,25 +401,22 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         @Override
         public void compute() {
             long step = getSuperstep();
-            if (step > 0) {
-                // store number of edges for graph statistics
-                if (step == 1) {
-                    long numEdges = getTotalNumEdges();
-                    getConf().setLong(NUM_EDGES, numEdges);
-                }
+            if (step <= 0) {
+                return;
+            }
+
+            // store number of edges for graph statistics
+            if (step == 1) {
+                long numEdges = getTotalNumEdges();
+                getConf().setLong(NUM_EDGES, numEdges);
+            } else {
                 // evaluate convergence condition
                 float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 float prevMaxDelta = getConf().getFloat(PREV_MAX_DELTA, 0f);
                 if (costEval) {
                     DoubleWritable sumCost = getAggregatedValue(SUM_COST);
-                    double cost = 0d;
-                    if (step == 1) {
-                        double numWords = this.<LongWritable>getAggregatedValue(SUM_WORD_VERTEX_COUNT).get();
-                        cost = Math.log(numWords);
-                    } else {
-                        double numOccurrances = this.<DoubleWritable>getAggregatedValue(SUM_OCCURRENCE_COUNT).get();
-                        cost = sumCost.get() / numOccurrances;
-                    }
+                    double numOccurrances = this.<DoubleWritable>getAggregatedValue(SUM_OCCURRENCE_COUNT).get();
+                    double cost = sumCost.get() / numOccurrances;
                     sumCost.set(cost);
                 }
                 double maxDelta = this.<DoubleWritable>getAggregatedValue(MAX_DELTA).get();
@@ -436,8 +438,8 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         private static String FILENAME;
         /** Saved output stream to write to */
         private FSDataOutputStream output;
-        /** Super step number */
-        private int lastStep = 0;
+        /** Last superstep number */
+        private long lastStep = -1L;
 
         public static String getFilename() {
             return FILENAME;
@@ -459,8 +461,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         /**
          * Set filename written to
          *
-         * @param applicationAttempt
-         *            app attempt
+         * @param applicationAttempt of type long
          */
         private static void setFilename(long applicationAttempt) {
             FILENAME = "lda-learning-report_" + applicationAttempt;
@@ -469,57 +470,58 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
             throws IOException {
+            long realStep = lastStep;
+            boolean costEval = getConf().getBoolean(COST_EVAL, false);
+
             // collect aggregator data
             HashMap<String, String> map = new HashMap<String, String>();
             for (Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
             }
 
-            boolean costEval = getConf().getBoolean(COST_EVAL, false);
-            int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
-            int realStep = lastStep;
-
-            if (superstep == 0) {
+            if (realStep == 0) {
                 // output graph statistics
                 long numDocVertices = Long.parseLong(map.get(SUM_DOC_VERTEX_COUNT));
                 long numWordVertices = Long.parseLong(map.get(SUM_WORD_VERTEX_COUNT));
                 long numEdges = getConf().getLong(NUM_EDGES, 0L);
-                output.writeBytes("Graph Statistics:\n");
+                output.writeBytes("======Graph Statistics======\n");
                 output.writeBytes(String.format("Number of vertices: %d (doc: %d, word: %d)%n",
                     numDocVertices + numWordVertices, numDocVertices, numWordVertices));
                 output.writeBytes(String.format("Number of edges: %d%n", numEdges));
                 output.writeBytes("\n");
                 // output LDA configuration
+                int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
                 int numTopics = getConf().getInt(NUM_TOPICS, 10);
                 float alpha = getConf().getFloat(ALPHA, 0.1f);
                 float beta = getConf().getFloat(BETA, 0.1f);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
+                boolean bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
                 float minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
-                output.writeBytes("=======================LDA Configuration=====================\n");
+                output.writeBytes("======LDA Configuration======\n");
                 output.writeBytes(String.format("numTopics: %d%n", numTopics));
                 output.writeBytes(String.format("alpha: %f%n", alpha));
                 output.writeBytes(String.format("beta: %f%n", beta));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
+                output.writeBytes(String.format("bidirectionalCheck: %b%n", bidirectionalCheck));
                 output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeBytes(String.format("maxVal: %f%n", maxVal));
                 output.writeBytes(String.format("minVal: %f%n", minVal));
                 output.writeBytes(String.format("evaluateCost: %b%n", costEval));
                 output.writeBytes("\n");
-                output.writeBytes("========================Learning Progress====================\n");
-            }
-            if (realStep > 0) {
+                output.writeBytes("======Learning Progress======\n");
+            } else if (realStep > 0) {
                 // output learning progress
-                output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
+                output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
                 if (costEval) {
                     double cost = Double.parseDouble(map.get(SUM_COST));
-                    output.writeBytes(String.format("cost=%f%c", cost, '\t'));
+                    output.writeBytes(String.format("cost = %f%c", cost, '\t'));
                 }
                 double maxDelta = Double.parseDouble(map.get(MAX_DELTA));
-                output.writeBytes(String.format("maxDelta=%f%n", maxDelta));
+                output.writeBytes(String.format("maxDelta = %f%n", maxDelta));
             }
             output.flush();
-            lastStep =  (int) superstep;
+            lastStep = superstep;
         }
 
         @Override
