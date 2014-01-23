@@ -72,6 +72,9 @@ def main(argv):
     load_statements = get_load_statement_list(files, raw_load_statement, 'logs')
     final_relation = 'with_unique_keys'
 
+    if not cmd_line_args.offset:
+        cmd_line_args.offset = 0
+
     key_assignment_statements = get_generate_key_statements('logs', final_relation, cmd_line_args.feature_names, long(cmd_line_args.offset))
     pig_statements.extend(load_statements)
     pig_statements.extend(key_assignment_statements)

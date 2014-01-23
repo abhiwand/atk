@@ -23,6 +23,7 @@
 from intel_analytics.config import global_config as config
 
 
+
 def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
     """
     Returns a schema string in Pig's format given a comma separated feature
@@ -120,7 +121,7 @@ def report_job_status(status):
     input_status = status.getInputStats()
     import_status = input_status.get(0);
     input_count = import_status.getNumberRecords()
-    print 'input_count:' + str(input_count)
+    print '%s:%s' %('input_count', str(input_count))
     print 'Pig job status report-End:'
 
 

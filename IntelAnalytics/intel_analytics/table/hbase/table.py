@@ -34,11 +34,14 @@ from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
 
+MAX_ROW_KEY = 'max_row_key'
 
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
 except ImportError, e:
     from intel_analytics.report import PrintReportStrategy as etl_report_strategy
+
+
 
 #for quick testing
 try:
@@ -478,7 +481,7 @@ class HBaseFrameBuilder(FrameBuilder):
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
         properties = {};
-        properties['max_row_key'] = pig_report.content['input_count']
+        properties[MAX_ROW_KEY] = pig_report.content['input_count']
         etl_schema.save_table_properties(table_name, properties)
 
         if return_code:
@@ -511,14 +514,14 @@ class HBaseFrameBuilder(FrameBuilder):
         # need to delete/create output table to write the transformed features
         properties = etl_schema.get_table_properties(data_frame._table.table_name)
 
-        original_max_row_key = properties['max_row_key']
+        original_max_row_key = properties[MAX_ROW_KEY]
 
         args += ['-m', original_max_row_key]
 
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
-        properties['max_row_key'] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
+        properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         etl_schema.save_table_properties(data_frame._table.table_name, properties)
 
         if return_code:
@@ -553,8 +556,13 @@ class HBaseFrameBuilder(FrameBuilder):
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-            
-        return_code = call(args, report_strategy=etl_report_strategy())
+
+        pig_report = PigJobReportStrategy();
+        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+
+        properties = {};
+        properties[MAX_ROW_KEY] = pig_report.content['input_count']
+        etl_schema.save_table_properties(table_name, properties)
         
         if return_code:
             raise Exception('Could not import JSON file')
@@ -562,7 +570,39 @@ class HBaseFrameBuilder(FrameBuilder):
         hbase_registry.register(frame_name, table_name, overwrite)
         
         return new_frame
-            
+
+    def append_from_json(self, data_frame, file_name):
+        #create some random table name
+        #we currently don't bother the user to specify table names
+
+        #save the schema of the dataset to import
+        etl_schema = ETLSchema()
+        script_path = os.path.join(etl_scripts_path,'pig_import_json.py')
+
+        args = _get_pig_args()
+
+        if isinstance(file_name, list):
+            file_name = ','.join(file_name) #convert list of path to comma seperated string
+
+        args += [script_path, '-i', file_name, '-o', data_frame._table.table_name]
+        properties = etl_schema.get_table_properties(data_frame._table.table_name)
+
+        original_max_row_key = properties[MAX_ROW_KEY]
+
+        args += ['-m', original_max_row_key]
+
+        logger.debug(args)
+
+        pig_report = PigJobReportStrategy();
+        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+
+        properties = {};
+        properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
+        etl_schema.save_table_properties(data_frame._table.table_name, properties)
+
+        if return_code:
+            raise Exception('Could not import JSON file')
+
     def build_from_xml(self, frame_name, file_name, schema=None):
         raise Exception("Not implemented")
 
