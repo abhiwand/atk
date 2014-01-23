@@ -85,6 +85,20 @@ class FrameBuilder(object):
         pass
 
     @abc.abstractmethod
+    def append_from_csv(self, data_frame, file_name, skip_header=False):
+        """
+        Reads a CSV (comma-separated-value) file and append it into an existing data frame.
+
+        Parameters
+        ----------
+        C{data_frame} : BigDataFrame
+            An existing big data frame.
+        C{file_name} : String
+            File/Files to be imported:
+        """
+        pass
+
+    @abc.abstractmethod
     def build_from_json(self, frame_name, file_name):
         """
         Reads a JSON (www.json.org) file and loads it into a table.
@@ -99,6 +113,20 @@ class FrameBuilder(object):
         Returns
         -------
         C{frame} : C{BigDataFrame}
+        """
+        pass
+
+    @abc.abstractmethod
+    def append_from_json(self, data_frame, file_name):
+        """
+        Reads an JSON file and append it into an existing data frame
+
+        Parameters
+        ----------
+        C{data_frame} : BigDataFrame
+            An existing big data frame.
+        C{file_name} : String
+            File/Files to be imported:
         """
         pass
 
@@ -121,6 +149,8 @@ class FrameBuilder(object):
         frame : C{BigDataFrame}
         """
         pass
+
+
 
 
 def get_frame_builder():
