@@ -169,6 +169,9 @@ public class GiraphTitanConstants {
      */
     public static final String LONG_DOUBLE_FLOAT = "LongDoubleFloat";
     /**
+     * the vertex format type for Long Id, Long vertex value, Null edge value
+     */
+    public static final String LONG_LONG_NULL = "LongLongNull";    /**
      * the vertex format type for Long Id, Two Vector vertex value, Tow Vector edge value
      */
     public static final String LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR = "LongTwoVectorDoubleTwoVector";

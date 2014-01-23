@@ -83,16 +83,13 @@ public class TitanVertexFormatLongIDDistanceMapTest
 
         TitanLabel edge = tx.makeLabel("edge").make();
 
-        TitanVertex[] nodes;
-        nodes = new TitanVertex[5];
-        nodes[0] = tx.addVertex();
-        nodes[1] = tx.addVertex();
-        nodes[2] = tx.addVertex();
-        nodes[3] = tx.addVertex();
-        nodes[4] = tx.addVertex();
+        int numVertices = 5;
+        TitanVertex[] nodes = new TitanVertex[5];
+        for (int i = 0; i < 5; i++) {
+            nodes[i] = tx.addVertex();
+        }
 
-        TitanEdge[] edges;
-        edges = new TitanEdge[10];
+        TitanEdge[] edges = new TitanEdge[10];
         edges[0] = nodes[0].addEdge(edge, nodes[1]);
         edges[1] = nodes[0].addEdge(edge, nodes[3]);
         edges[2] = nodes[1].addEdge(edge, nodes[2]);

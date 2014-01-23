@@ -682,6 +682,115 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-w',
                 num_worker]
 
+
+
+    def connected_components(
+            self,
+            input_edge_label,
+            output_vertex_property_list,
+            convergence_output_interval=global_config['giraph_convergence_output_interval'],
+            num_worker=global_config['giraph_workers']
+    ):
+        """
+        The connected components computation.
+
+        Parameters
+        ----------
+        input_edge_label :
+		    The edge property which contains the edge label.
+        output_vertex_property_list :
+		    The vertex properties which contain the output vertex values if
+			you use more than one vertex property. We expect a comma separated
+			string list.
+
+        Optional Parameters
+        (They come with default values. Overwrite it when the default value does not work for you.)
+        ----------
+        convergence_output_interval:
+            The convergence progress output interval.
+            The default value is 1, which means output every super step.
+        num_worker :
+            The number of Giraph workers.
+            The default value is 15.
+
+        Returns
+        The algorithm's results in database.
+        The progress curve is accessible through the report object.
+         -------
+        """
+        self._output_vertex_property_list = output_vertex_property_list
+        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/cc'
+        cc_command = self._get_cc_command(
+            self._table_name,
+            input_edge_label,
+            output_vertex_property_list,
+            output_path,
+            num_worker
+        )
+        cc_cmd = ' '.join(cc_command)
+        #print cc_cmd
+        #delete old output directory if already there
+        self._del_old_output(output_path)
+        time_str = get_time_str()
+        start_time = time.time()
+        call(cc_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
+        exec_time = time.time() - start_time
+        cc_results = self._update_progress_curve(output_path,
+                                                  'cc-convergence-report_0',
+                                                  time_str,
+                                                  'Connected Components Progress Curve',
+                                                  'Num of Vertex Updates')
+
+        output = InitReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.convergence_output_interval = convergence_output_interval
+        output.super_steps = list(cc_results[0])
+        output.convergence_progress = list(cc_results[1])
+        output.graph = self._graph
+        self.report.append(output)
+        return output
+
+    def _get_cc_command(
+            self,
+            table_name,
+            input_edge_label,
+            output_vertex_property_list,
+            output_path,
+            num_worker,
+            ):
+        """
+        generate connected component command line
+        """
+
+        return ['hadoop',
+                'jar',
+                global_config['giraph_jar'],
+                global_config['giraph_runner'],
+                global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
+                global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
+                global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],
+                global_config['giraph_param_storage_connection_timeout'] +
+                global_config['titan_storage_connection_timeout'],
+                global_config['giraph_param_storage_tablename'] + table_name,
+                global_config['giraph_param_input_edge_label'] + input_edge_label,
+                global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
+                global_config['giraph_connected_components_class'],
+                '-mc',
+                global_config['giraph_connected_components_class'] + '\$' + global_config['giraph_connected_components_master_compute'],
+                '-aw',
+                global_config['giraph_connected_components_class'] + '\$' + global_config['giraph_connected_components_aggregator'],
+                '-vif',
+                global_config['giraph_connected_components_input_format'],
+                '-vof',
+                global_config['giraph_connected_components_output_format'],
+                '-op',
+                output_path,
+                '-w',
+                num_worker]
+
+
     def label_prop(
             self,
             input_vertex_property_list,

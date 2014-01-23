@@ -20,7 +20,7 @@ fi
 if [ -d /home/hadoop/IntelAnalytics ] && [ `whoami` != 'hadoop' ]
 	then
 		sudo -i -u hadoop bash -c "
-		cd $INTEL_ANALYTICS_HOME/notebooks/data/
+		pushd $INTEL_ANALYTICS_HOME/notebooks/data/
 		ls | while read line;
         do
            if $HADOOP_HOME/bin/hadoop fs -test -e /user/hadoop/$line ; then
@@ -30,11 +30,12 @@ if [ -d /home/hadoop/IntelAnalytics ] && [ `whoami` != 'hadoop' ]
                $HADOOP_HOME/bin/hadoop fs -copyFromLocal $line /user/hadoop/$line
            fi
         done
+        popd
 	    . $INTEL_ANALYTICS_HOME/virtpy/bin/activate
 	    ipython notebook --config=$INTEL_ANALYTICS_HOME/conf/ipython_notebook_config.py
 	"
 else
-    cd $INTEL_ANALYTICS_HOME/notebooks/data/
+    pushd $INTEL_ANALYTICS_HOME/notebooks/data/
     ls | while read line;
     do
        if $HADOOP_HOME/bin/hadoop fs -test -e /user/hadoop/$line ; then
@@ -43,6 +44,7 @@ else
            $HADOOP_HOME/bin/hadoop fs -copyFromLocal $line /user/hadoop/$line
        fi
     done
+    popd
 	if [ -d $INTEL_ANALYTICS_HOME/virtpy ]
 		then
 			. $INTEL_ANALYTICS_HOME/virtpy/bin/activate
