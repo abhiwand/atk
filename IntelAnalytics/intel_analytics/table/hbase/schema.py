@@ -26,6 +26,24 @@ from intel_analytics.config import global_config as config
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 
+def merge_schema(list_of_schemas):
+    if not list_of_schemas or len(list_of_schemas) == 0:
+        raise Exception('Schema list is empty.')
+
+    merged = ETLSchema()
+    merged.feature_names.extend(list_of_schemas[0].feature_names)
+    merged.feature_types.extend(list_of_schemas[0].feature_types)
+
+    for i in range(1, len(list_of_schemas)):
+        schema = list_of_schemas[i]
+        for j,feature_name in enumerate(schema.feature_names):
+            if feature_name not in merged.feature_names:
+                feature_type = schema.feature_types[j]
+                merged.feature_names.append(feature_name)
+                merged.feature_types.append(feature_type)
+
+    return merged
+
 class ETLSchema:
     def __init__(self):
         self.feature_names=[]
