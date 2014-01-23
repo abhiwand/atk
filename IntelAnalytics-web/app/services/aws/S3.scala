@@ -127,7 +127,7 @@ object S3 {
   }
   def formatSize(size: Long): String = {
     val sizes = Array("Bytes", "KB", "MB", "GB", "TB")
-    if (size == 0) "n/a"
+    if (size == 0) return "n/a"
     val sizeIndex = Math.floor(Math.log(size) / Math.log(BYTE)).toInt
     Math.round(size / Math.pow(BYTE, sizeIndex)).toString + " " + sizes(sizeIndex)
   }
@@ -147,7 +147,7 @@ object S3 {
   }
   def createPolicy(userIdentifier: String): String = {
 
-    val expire = new Date(System.currentTimeMillis() + POLICY_EXPIRATION)
+    val expire = new Date(System.currentTimeMillis() + POLICY_EXPIRATION * 2)
     val dateFormat = new SimpleDateFormat("yyyy-MM-d'T'hh:mm:ss'Z'")
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     val policyJson = Json.obj("expiration" -> dateFormat.format(expire),

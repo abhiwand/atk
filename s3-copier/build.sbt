@@ -1,4 +1,4 @@
-name := "com.intel.intelanalytics-s3-copier"
+name := "s3-copier"
 
 version := "1.0-SNAPSHOT"
 
@@ -8,19 +8,23 @@ resolvers += "sonatype snapshots" at "http://oss.sonatype.org/content/repositori
 
 resolvers += "Typesafe Repo" at "http://repo.typesafe.com/typesafe/releases/"
 
+val scalaj_http = "org.scalaj" %% "scalaj-http" % "0.3.12"
+
 libraryDependencies ++= Seq(
   "commons-codec" % "commons-codec" % "1.8",
   "org.mockito" % "mockito-core" % "1.9.5",
   "com.amazonaws" % "aws-java-sdk" % "1.6.4",
-  "com.github.seratch" % "awscala_2.10" % "0.1.0-SNAPSHOT",
+  "com.github.seratch" % "awscala_2.10" % "[0.1,)",
   "org.apache.hadoop" % "hadoop-client" % "1.2.1",
   "com.typesafe.play" %% "play-json" % "2.2.0",
   "com.github.scala-incubator.io" % "scala-io-file_2.10" % "0.4.2",
   "com.github.scopt" %% "scopt" % "3.1.0",
   "org.scalaz" %% "scalaz-core" % "7.0.4",
   "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
-  "org.specs2" %% "specs2" % "2.3.3" % "test"
-)     
+  "org.specs2" %% "specs2" % "2.3.3" % "test",
+  "org.scalaj" %% "scalaj-http" % "0.3.12",
+  "org.scala-lang.modules" %% "scala-async" % "0.9.0-M4"
+        )
 
 
 
