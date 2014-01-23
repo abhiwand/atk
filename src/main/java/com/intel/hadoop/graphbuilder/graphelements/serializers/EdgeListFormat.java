@@ -77,14 +77,14 @@ public class EdgeListFormat {
      * @return the edge in EdgeListFormat
      */
     protected String toStringWithProperties(Edge edge) {
-        String edgeString = toStringWithoutProperties(edge);
+        StringBuilder edgeString = new StringBuilder(toStringWithoutProperties(edge));
         if (edge.getProperties() != null) {
             PropertyMap propertyMap = edge.getProperties();
             for (Writable key : propertyMap.getPropertyKeys()) {
-                edgeString += delimiter + key + delimiter + propertyMap.getProperty(key.toString());
+                edgeString.append(delimiter).append(key).append(delimiter).append(propertyMap.getProperty(key.toString()));
             }
         }
-        return edgeString;
+        return edgeString.toString();
     }
 
     /**
@@ -97,9 +97,9 @@ public class EdgeListFormat {
      */
     protected String toStringWithoutProperties(Edge edge) {
         // TODO: probably shouldn't use toString() here
-        return edge.getSrc().toString() + delimiter +
-                edge.getDst().toString() + delimiter +
-                edge.getLabel().toString();
+        return edge.getSrc().toString() + delimiter
+                + edge.getDst().toString() + delimiter
+                + edge.getLabel().toString();
     }
 
     /**

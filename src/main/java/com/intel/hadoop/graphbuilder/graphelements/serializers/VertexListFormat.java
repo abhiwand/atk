@@ -73,14 +73,14 @@ public class VertexListFormat {
      * @return the vertex in VertexListFormat
      */
     protected String toStringWithProperties(Vertex vertex) {
-        String vertexString = toStringWithoutProperties(vertex);
+        StringBuilder vertexString = new StringBuilder(toStringWithoutProperties(vertex));
         if (vertex.getProperties() != null) {
             PropertyMap propertyMap = vertex.getProperties();
             for (Writable key : propertyMap.getPropertyKeys()) {
-                vertexString += delimiter + key + delimiter + propertyMap.getProperty(key.toString());
+                vertexString.append(delimiter).append(key).append(delimiter).append(propertyMap.getProperty(key.toString()));
             }
         }
-        return vertexString;
+        return vertexString.toString();
 
     }
 
@@ -93,11 +93,11 @@ public class VertexListFormat {
      * @return the vertex in VertexListFormat
      */
     protected String toStringWithoutProperties(Vertex vertex) {
-        String vertexString = vertex.getId().getName().toString();
+        StringBuilder vertexString = new StringBuilder(vertex.getId().getName().toString());
         if (vertex.getLabel() != null) {
-            vertexString += delimiter + vertex.getLabel().toString();
+            vertexString.append(delimiter).append(vertex.getLabel().toString());
         }
-        return vertexString;
+        return vertexString.toString();
     }
 
     /**
