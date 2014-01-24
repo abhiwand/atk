@@ -46,8 +46,10 @@ tar xvf $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/template_overrides.tar.gz -C /usr
 ln -sf /usr/lib/IntelAnalytics/virtpy/bin/activate %{_bindir}/virtpy
 
 %postun
-rm -rf /usr/lib/IntelAnalytics/virtpy #remove vitual python 
-rm %{_bindir}/virtpy
+if [ "$1" = "0" ]; then # $1 is set to 0 for rpm uninstall and 1 for update
+  rm -rf /usr/lib/IntelAnalytics/virtpy #remove vitual python 
+  rm %{_bindir}/virtpy
+fi
 
 %files
 %{_exec_prefix}/lib/IntelAnalytics
