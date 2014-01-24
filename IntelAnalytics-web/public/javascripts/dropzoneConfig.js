@@ -115,7 +115,7 @@ $(window).ready(function(){
             init:function(){
                 $("#uploadForm").addClass("dropzone")
             },
-            addRemoveLinks:true,
+            addRemoveLinks:false,
             createImageThumbnails:false,
             acceptedFiles:".csv",
             success:function(file){
