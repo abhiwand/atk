@@ -617,34 +617,36 @@ class HBaseFrameBuilder(FrameBuilder):
 
     def append_from_data_frame(self, target_data_frame, source_data_frame):
 
-        etl_schema = ETLSchema()
         source_names = []
+        schemas = []
         for source_frame in source_data_frame:
+            source_schema = ETLSchema()
+            source_schema.load_schema(source_frame._table.table_name)
+            schemas.append(source_schema)
             source_names.append(source_frame._table.table_name)
 
+        merged_schema = merge_schema(schemas)
+
         pig_builder = PigScriptBuilder()
-        script = pig_builder.get_append_tables_statement(etl_schema, target_data_frame._table.table_name, source_names)
+        target_table_name = target_data_frame._table.table_name
+        script = pig_builder.get_append_tables_statement(ETLSchema(), target_table_name, source_names)
         script_path = os.path.join(etl_scripts_path,'pig_execute.py')
 
         args = _get_pig_args()
-
-
         args += [script_path, '-s', script]
 
         pig_report = PigJobReportStrategy();
         print args
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
-        properties = etl_schema.get_table_properties(target_data_frame._table.table_name)
+        properties = merged_schema.get_table_properties(target_table_name)
         original_max_row_key = properties[MAX_ROW_KEY]
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
-        etl_schema.save_table_properties(target_data_frame._table.table_name, properties)
+        merged_schema.save_table_properties(target_table_name, properties)
+        merged_schema.save_schema(target_table_name)
 
         if return_code:
             raise Exception('Could not append to data frame')
-
-
-
 
 class HBaseFrameBuilderFactory(object):
     def __init__(self):
