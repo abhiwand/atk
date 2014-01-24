@@ -28,6 +28,8 @@ from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
+from intel_analytics.table.pig import pig_helpers
+from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
 from schema import ETLSchema, merge_schema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
@@ -367,6 +369,7 @@ class HBaseTable(object):
                 hbase_client.delete(schema_table, victim_table_name)
 
 
+
 class HBaseRegistry(Registry):
     """
     Registry to map HBase table names and also handle garbage collection
@@ -611,6 +614,35 @@ class HBaseFrameBuilder(FrameBuilder):
 
     def build_from_xml(self, frame_name, file_name, schema=None):
         raise Exception("Not implemented")
+
+    def append_from_data_frame(self, target_data_frame, source_data_frame):
+
+        etl_schema = ETLSchema()
+        source_names = []
+        for source_frame in source_data_frame:
+            source_names.append(source_frame._table.table_name)
+
+        pig_builder = PigScriptBuilder()
+        script = pig_builder.get_append_tables_statement(etl_schema, target_data_frame._table.table_name, source_names)
+        script_path = os.path.join(etl_scripts_path,'pig_execute.py')
+
+        args = _get_pig_args()
+
+
+        args += [script_path, '-s', script]
+
+        pig_report = PigJobReportStrategy();
+        print args
+        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+
+        properties = etl_schema.get_table_properties(target_data_frame._table.table_name)
+        original_max_row_key = properties[MAX_ROW_KEY]
+        properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
+        etl_schema.save_table_properties(target_data_frame._table.table_name, properties)
+
+        if return_code:
+            raise Exception('Could not append to data frame')
+
 
 
 
