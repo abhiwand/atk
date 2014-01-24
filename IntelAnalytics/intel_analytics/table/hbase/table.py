@@ -669,7 +669,6 @@ class HBaseFrameBuilder(FrameBuilder):
         args += [script_path, '-s', script]
 
         pig_report = PigJobReportStrategy();
-        print args
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
         properties = merged_schema.get_table_properties(target_table_name)
