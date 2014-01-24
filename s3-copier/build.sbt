@@ -22,7 +22,8 @@ libraryDependencies ++= Seq(
   "org.scalaz" %% "scalaz-core" % "7.0.4",
   "org.scalatest" % "scalatest_2.10" % "2.0" % "test",
   "org.specs2" %% "specs2" % "2.3.3" % "test",
-  "org.scalaj" %% "scalaj-http" % "0.3.12"
+  "org.scalaj" %% "scalaj-http" % "0.3.12",
+  "org.scala-lang.modules" %% "scala-async" % "0.9.0-M4"
         )
 
 
