@@ -612,8 +612,41 @@ class HBaseFrameBuilder(FrameBuilder):
         if return_code:
             raise Exception('Could not import JSON file')
 
-    def build_from_xml(self, frame_name, file_name, schema=None):
-        raise Exception("Not implemented")
+    def build_from_xml(self, frame_name, file_name, tag_name, overwrite=False):
+        #create some random table name
+        #we currently don't bother the user to specify table names
+        table_name = _create_table_name(frame_name, overwrite)
+        hbase_table = HBaseTable(table_name, file_name)
+        new_frame = BigDataFrame(frame_name, hbase_table)
+
+        schema='xml:chararray'#dump all records as chararray
+
+        #save the schema of the dataset to import
+        etl_schema = ETLSchema()
+        etl_schema.populate_schema(schema)
+        etl_schema.save_schema(table_name)
+
+        script_path = os.path.join(etl_scripts_path,'pig_import_xml.py')
+
+        args = _get_pig_args()
+
+        args += [script_path, '-i', file_name, '-o', table_name, '-tag', tag_name]
+
+        logger.debug(args)
+
+        #         need to delete/create output table to write the transformed features
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(table_name,
+                                           [config['hbase_column_family']])
+
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise Exception('Could not import XML file')
+
+        hbase_registry.register(frame_name, table_name, overwrite)
+
+        return new_frame
 
     def append_from_data_frame(self, target_data_frame, source_data_frame):
 
