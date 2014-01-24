@@ -150,6 +150,20 @@ class FrameBuilder(object):
         """
         pass
 
+    @abc.abstractmethod
+    def append_from_data_frame(self, target_data_frame, source_data_frame):
+        """
+        Apped list of source data frames to target data frame.
+
+        Parameters
+        ----------
+        C{target_data_frame} : BigDataFrame
+            The data frame to append data to.
+        C{source_data_frame} : List
+            List of data frame which data will be appended to the target data frame.
+        """
+        pass
+
 
 
 
