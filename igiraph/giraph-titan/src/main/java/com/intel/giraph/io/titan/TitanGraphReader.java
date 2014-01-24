@@ -40,8 +40,6 @@ import java.nio.ByteBuffer;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_FLOAT;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_LONG_NULL;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_VECTOR;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VALID_PROPERTY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_TITAN_TX;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
@@ -124,38 +122,6 @@ public class TitanGraphReader extends StandardTitanGraph {
                     }
                 }
                 return loader2.getVertex();
-
-            case LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR:
-                final GiraphVertexLoaderLongTwoVectorDoubleTwoVector
-                        loader3 = new GiraphVertexLoaderLongTwoVectorDoubleTwoVector(
-                            conf, vertexId);
-                for (final Entry data : entries) {
-                    try {
-                        final GiraphVertexLoaderLongTwoVectorDoubleTwoVector.RelationFactory factory = loader3
-                                .getFactory();
-                        super.edgeSerializer.readRelation(factory, data, tx);
-                        factory.build();
-                    } catch (NullPointerException e) {
-                        LOG.info(NO_VALID_PROPERTY);
-                    }
-                }
-                return loader3.getVertex();
-
-            case LONG_TWO_VECTOR_DOUBLE_VECTOR:
-                final GiraphVertexLoaderLongTwoVectorDoubleVector
-                        loader4 = new GiraphVertexLoaderLongTwoVectorDoubleVector(
-                            conf, vertexId);
-                for (final Entry data : entries) {
-                    try {
-                        final GiraphVertexLoaderLongTwoVectorDoubleVector.RelationFactory factory = loader4
-                                .getFactory();
-                        super.edgeSerializer.readRelation(factory, data, tx);
-                        factory.build();
-                    } catch (NullPointerException e) {
-                        LOG.info(NO_VALID_PROPERTY);
-                    }
-                }
-                return loader4.getVertex();
 
             case PROPERTY_GRAPH_4_CF:
                 final GiraphVertexLoaderPropertyGraph4CF

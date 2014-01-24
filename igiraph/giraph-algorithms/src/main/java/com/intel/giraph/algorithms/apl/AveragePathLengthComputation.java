@@ -178,9 +178,9 @@ public class AveragePathLengthComputation extends BasicComputation
          */
         private FSDataOutputStream output;
         /**
-         * super step number
+         * Last superstep number
          */
-        private int lastStep = 0;
+        private long lastStep = 0L;
 
         public static String getFilename() {
             return FILENAME;
@@ -219,28 +219,27 @@ public class AveragePathLengthComputation extends BasicComputation
             for (Map.Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
             }
-            int realStep = lastStep;
+            long realStep = lastStep;
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
             if (superstep == 0) {
-                output.writeBytes("==================Average Path Length Configuration====================\n");
+                output.writeBytes("======Average Path Length Configuration======\n");
                 output.writeBytes(String.format("convergenceProgressOutputInterval: %d%n",
                     convergenceProgressOutputInterval));
-                output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
-                output.writeBytes("===================Convergence Progress======================\n");
+                output.writeBytes("======Convergence Progress======\n");
             } else if (realStep > 0 && realStep % convergenceProgressOutputInterval == 0) {
                 // output learning progress
                 double sumDelta = Double.parseDouble(map.get(SUM_DELTA));
                 double numUpdates = Double.parseDouble(map.get(SUM_UPDATES));
                 if (numUpdates > 0) {
                     double avgUpdates = sumDelta / numUpdates;
-                    output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
-                    output.writeBytes(String.format("avgUpdates=%f%c", avgUpdates, '\t'));
-                    output.writeBytes(String.format("sumDelta=%f%n", sumDelta));
+                    output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                    output.writeBytes(String.format("avgUpdates = %f%c", avgUpdates, '\t'));
+                    output.writeBytes(String.format("sumDelta = %f%n", sumDelta));
                 }
             }
             output.flush();
-            lastStep = (int) superstep;
+            lastStep = superstep;
         }
 
         @Override
