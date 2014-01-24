@@ -48,11 +48,8 @@ def get_hbase_storage_schema_string(feature_names_as_str, feature_types_as_str):
     feature names and types string
     """
     feature_names = feature_names_as_str.split(',')
-    feature_types = feature_types_as_str.split(',')
-            
     hbase_storage_schema = ''
     for i,feature_name in enumerate(feature_names):
-        feature_type = feature_types[i] 
         hbase_storage_schema += (config['hbase_column_family'] + feature_name)
         if i != len(feature_names)-1:
             hbase_storage_schema+=' '
