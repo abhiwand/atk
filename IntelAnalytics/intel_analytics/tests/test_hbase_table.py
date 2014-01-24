@@ -23,7 +23,6 @@
 import os
 import unittest
 import sys
-from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
 
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
@@ -34,7 +33,7 @@ if 'intel_analytics.config' in sys.modules:
 from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
-from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException, MAX_ROW_KEY
+from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
 from mock import patch, Mock, MagicMock
 
 config['hbase_column_family'] = "etl-cf:"
@@ -646,29 +645,6 @@ class HbaseTableTest(unittest.TestCase):
         self.assertEqual('long', schema['col1'])
         self.assertEqual('chararray', schema['col2'])
         self.assertEqual('long', schema['col3'])
-
-    def test_get_append_table_statement(self):
-
-        table_name = "test_table"
-        file_name = "test_file"
-        table = HBaseTable(table_name, file_name)
-        etl_schema = ETLSchema()
-        etl_schema.load_schema = MagicMock()
-        etl_schema.feature_names = ['f1','f2','f3']
-        etl_schema.feature_types = ['long','float','chararray']
-
-        property = {}
-        property[MAX_ROW_KEY] = '1000'
-        etl_schema.get_table_properties = MagicMock(return_value = property)
-        table.table_name = 'target_table'
-        pig_builder = PigScriptBuilder()
-        script = pig_builder.get_append_tables_statement(etl_schema, 'target_table', ['source_table'])
-
-        statements = script.split("\n")
-        self.assertEqual(statements[0], "relation_0_in = LOAD 'hbase://source_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3') as (f1:long,f2:float,f3:chararray);")
-        self.assertEqual(statements[1], "temp = rank relation_0_in;")
-        self.assertEqual(statements[2], "relation_0_out = foreach temp generate $0 + 1000 as key, f1,f2,f3;")
-        self.assertEqual(statements[3], "STORE relation_0_out INTO 'target_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3');")
 
 if __name__ == '__main__':
     unittest.main()
