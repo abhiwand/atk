@@ -72,16 +72,15 @@ public class TestRDF {
             if (rdfStatement.contains("rdf-syntax-ns#type")) {
     			assertEquals(
 	    				"RDF statement mismatch",
-		    			rdfStatement,
-			    		"http://www.w3.org/2002/07/owl#test_vertex " +
-                        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-                        "vertex_label .");
+			    		"<http://www.w3.org/2002/07/owl#test_vertex> " +
+                        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
+                        "<vertex_label> .", rdfStatement);
             } else {
                 assertEquals(
 	    				"RDF statement mismatch",
-		    			rdfStatement,
-			    		"http://www.w3.org/2002/07/owl#test_vertex " +
-                        "http://www.w3.org/2002/07/owl#p-1 \"v-1\" .");
+			    		"<http://www.w3.org/2002/07/owl#test_vertex> " +
+                        "<http://www.w3.org/2002/07/owl#p-1> <\"v-1\"> .",
+                        rdfStatement);
             }
 		}
 
@@ -104,10 +103,10 @@ public class TestRDF {
 			String rdfStatement = (String) resultTuple.get(0);
             assertEquals(
                     "RDF statement mismatch",
-                    rdfStatement,
-                    "http://www.w3.org/2002/07/owl#src " +
-                    "http://www.w3.org/2002/07/owl#edge_label " +
-                    "http://www.w3.org/2002/07/owl#target .");
+                    "<http://www.w3.org/2002/07/owl#src> " +
+                    "<http://www.w3.org/2002/07/owl#edge_label> " +
+                    "<http://www.w3.org/2002/07/owl#target> .",
+                    rdfStatement);
 		}
 
 		/* test with a null graph element */
