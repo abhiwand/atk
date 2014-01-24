@@ -4,7 +4,6 @@ from intel_analytics.table.bigdataframe import get_frame_builder, BigDataFrame
 from intel_analytics.table.hbase.schema import ETLSchema, merge_schema
 from intel_analytics.table.hbase.table import MAX_ROW_KEY
 
-
 class TestFrameBuilder(unittest.TestCase):
 
     def create_mock_etl_object(self, result_holder):
@@ -35,6 +34,8 @@ class TestFrameBuilder(unittest.TestCase):
         save_properties_action.side_effect = save_properties_effect
         object.save_table_properties = save_properties_action
         return object
+
+
 
     @patch('intel_analytics.table.hbase.table.PigJobReportStrategy')
     @patch('intel_analytics.table.hbase.table.call')
@@ -75,6 +76,70 @@ class TestFrameBuilder(unittest.TestCase):
         self.assertEqual("col1,col2,col3", result_holder["call_args"][result_holder["call_args"].index('-f') + 1])
         self.assertEqual("long,chararray,long", result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
         self.assertEqual('1000', result_holder["call_args"][result_holder["call_args"].index('-m') + 1])
+
+    @patch('intel_analytics.table.hbase.table.PigJobReportStrategy')
+    @patch('intel_analytics.table.hbase.schema.ETLSchema')
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_append_from_data_frame(self, etl_schema_class, call_method, etl_schema_for_merge, pig_report_strategy_class):
+
+        pig_report_strategy = MagicMock()
+        report_content = {}
+        report_content['input_count'] = '1500'
+        pig_report_strategy.content = report_content
+        pig_report_strategy_class.return_value = pig_report_strategy
+
+        call_method.return_value = None
+        result_holder = {}
+        etl_object1 = self.create_mock_etl_object(result_holder)
+        etl_object1.feature_names = []
+        etl_object1.feature_types = []
+        etl_object2 = self.create_mock_etl_object(result_holder)
+        etl_object2.feature_names = []
+        etl_object2.feature_types = []
+        etl_object3 = self.create_mock_etl_object(result_holder)
+        etl_object3.feature_names = []
+        etl_object3.feature_types = []
+
+        def load_schema_side_effect_1(source):
+            etl_object1.feature_names = ['f1','f2','f3']
+            etl_object1.feature_types = ['long','float','chararray']
+
+        def load_schema_side_effect_2(source):
+            etl_object2.feature_names = ['f2','f3','f4']
+            etl_object2.feature_types = ['long','float','chararray']
+
+        etl_object1.load_schema = MagicMock(side_effect = load_schema_side_effect_1)
+        etl_object2.load_schema = MagicMock(side_effect = load_schema_side_effect_2)
+        etl_schema_class.side_effect = [etl_object1, etl_object2, etl_object3]
+
+        merge_etl = self.create_mock_etl_object(result_holder)
+        merge_etl.feature_names = []
+        merge_etl.feature_types = []
+
+        def save_schema_side_effect(table):
+            result_holder['feature_names_merged'] = merge_etl.feature_names
+            result_holder['feature_types_merged'] = merge_etl.feature_types
+
+        merge_etl.save_schema = MagicMock(side_effect = save_schema_side_effect)
+        etl_schema_for_merge.return_value = merge_etl
+
+        table = MagicMock()
+        table.table_name = 'test_table'
+        table1 = MagicMock()
+        table1.table_name = 'input_1'
+        table2 = MagicMock()
+        table2.table_name = 'input_2'
+
+        frame = BigDataFrame('dummy_frame', table)
+        frame1 = BigDataFrame('dummy_frame', table1)
+        frame2 = BigDataFrame('dummy_frame', table2)
+
+        fb = get_frame_builder()
+        fb.append_from_data_frame(frame, [frame1, frame2])
+        self.assertEqual(result_holder['feature_names_merged'], ['f1','f2','f3','f4'])
+        properties = result_holder['properties']
+        self.assertEqual('2500', properties[MAX_ROW_KEY])
 
     def test_merge_schema_only_one_schema(self):
         schema1 = ETLSchema()
