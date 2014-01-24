@@ -13,7 +13,8 @@ class PigScriptBuilder(object):
         for source in source_tables:
             etl_schema.load_schema(source)
             pig_schema_info = pig_helpers.get_pig_schema_string(etl_schema.get_feature_names_as_CSV(), etl_schema.get_feature_types_as_CSV())
-            loading_hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(etl_schema.get_feature_names_as_CSV(), etl_schema.get_feature_types_as_CSV())
+            loading_hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(
+                etl_schema.get_feature_names_as_CSV())
             in_relations.append('relation_%s_in' %(str(i)))
             i = i + 1
             statements.append("%s = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s') as (%s);" %(in_relations[-1], source, loading_hbase_constructor_args, pig_schema_info))
@@ -33,7 +34,7 @@ class PigScriptBuilder(object):
 
         statements.append('temp = rank combined_relation;')
         statements.append('combined_relation_out = foreach temp generate $0 + %s as key, %s;' %(properties[MAX_ROW_KEY], ','.join(final_cols)))
-        storing_hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(','.join(final_cols), '')
+        storing_hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(','.join(final_cols))
         statements.append("STORE combined_relation_out INTO '%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" %(target_table, storing_hbase_constructor_args))
 
 

@@ -42,7 +42,7 @@ def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
             pig_schema+=','
     return pig_schema
 
-def get_hbase_storage_schema_string(feature_names_as_str, feature_types_as_str):
+def get_hbase_storage_schema_string(feature_names_as_str):
     """
     Returns the schema string in HBaseStorage's format given a comma-separated
     feature names and types string
