@@ -28,50 +28,28 @@ import scala.concurrent.duration._
 
 package com.intel.intelanalytics {
 
-import util.control.Breaks._
+
 import awscala.sqs.{Queue, Message, SQS}
-import scalax.io._
+
 import java.net.URI
-import java.io.File._
-import awscala.File
 import com.amazonaws.auth.{EnvironmentVariableCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.services.s3.AmazonS3Client
 import com.amazonaws.event._
 import com.amazonaws.services.s3.model.{GetObjectRequest}
-import com.amazonaws.services.s3.transfer.internal.ProgressListenerChain
-import com.amazonaws.event.ProgressListenerChain.ProgressEventFilter
 import java.io._
-import org.apache.commons.codec.Charsets
-import scalax.io.StandardOpenOption
-import com.intel.intelanalytics.Status
 import awscala.sqs.Queue
-import play.api.libs.iteratee.Enumerator
-import org.apache.hadoop.util.Progressable
-import com.intel.intelanalytics.Status
-import awscala.sqs.Queue
-
-import scalax.io.Codec
-import scalax.io.JavaConverters._
 import com.amazonaws.services.s3.transfer.TransferManager
-
-//TODO: make this app work using distcp instead
-//import org.apache.hadoop.tools.{DistCpOptions, DistCp}
-
 import scala.util.{Success, Failure}
 import play.api.libs.json.Json
-import scala.io.Source
 import org.apache.hadoop.conf.Configuration
 import scala.collection._
 import scalax.file.Path
-import com.amazonaws._
 import org.apache.hadoop.fs.{Path => HdPath, FSDataOutputStream, FileSystem}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import scalaj.http.Http
 import scala.async.Async.{async, await}
-import scala.collection.JavaConversions._
-import java.nio.file._
-
+import scala.util.control.Breaks._
 /**
  * Configuration for the S3Copier application
  */
@@ -201,7 +179,7 @@ case class File(Name: String, Bucket: String)
  * in progress, so that other applications can report status information to the user
  */
 class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS3Client, implicit val transferManager: TransferManager, config: Config, fs: FileSystem) {
-  var downloading = collection.mutable.Map[String, String]()
+  var downloading = collection.mutable.Map[String, Boolean]()
   val inProgress = mutable.Map[String,Future[Status]]()
   /**
    * Stub for later connecting with a proper logging system
@@ -227,17 +205,8 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS
       path.createDirectory(createParents = true)
     }
 
-
     (path /(s"${status.name}.status", '/')).write(Json.stringify(json))
     path.path + s"${status.name}.status"
-
-    /* await(writeStatus) */
-
-    /* val fileName =  s"${status.name}.status"
-     val test = async{transferManager.upload(bucketName, config.prefix + fileName, new java.io.File(path.path + fileName))}
-
-
-    ""*/
   }
 
   /**
@@ -247,31 +216,31 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS
 
     while (true) {
       try {
-        queue.messages().foreach {
-          msg => {
+        queue.messages().foreach { msg =>
+
             if(!downloading.contains(msg.id)){
-            downloading(msg.id) = msg.body
-            async{
-              val processed = await(processMessage(msg))
-              if(processed){
-                downloading remove msg.id
+              downloading(msg.id) = false
+              async{
+                val processed = await(processMessage(msg))
+                //need to kill the msg many times in hopes that one will stick
+                if(processed){
+                  log("destroy: " + msg.id + " " + msg.body)
+                  downloading(msg.id) = true
+                  msg.destroy
+                  queue.remove(msg)
+                }
               }
             }
-          }
-          }
+            else if(downloading.contains(msg.id) && downloading.get(msg.id).get){
+              //this one usually kicks off on larger uploads after the queue has timed out
+              log("destroy: " + msg.id + " " + msg.body)
+              queue.remove(msg)
+              downloading remove msg.id
+            }
+
         }
 
         Thread.sleep(config.loopDelay)
-        if (!inProgress.isEmpty) {
-          log("Final results:")
-          inProgress.foreach(kv =>
-            try {
-              log(Await.result(kv._2, Duration.Inf).toString)
-            } catch {
-              case e: Exception => log(e.toString)
-            })
-        }
-        inProgress.clear()
       }
       catch {
         case e: Exception => log(e.toString)
@@ -288,24 +257,39 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS
   def processMessage(msg: Message): Future[Boolean] = async{
 
     log(msg.body)
+    //parse json body
     val json = Json.parse(msg.body)
     val bucketName = (json \ "create" \ "bucket").asOpt[String] orElse log("bucket not found in message")
     val fileName = (json \ "create" \ "path").asOpt[String] orElse log("path not found in message")
     val fileSize = (json \ "create" \ "size").asOpt[Long] orElse log("Size not found")
     val valid = fileName.get.startsWith(config.prefix).option(fileName) orElse log(s"fileName $fileName does not match prefix ${config.prefix}")
 
+    //create the new listener class to track progress
     val progress = new ProgressListener() {
       var bytesTransferred: Long = 0l
       var total = fileSize.get
+      //the file name minus the file prefix
       val name = fileName.get.substring(config.prefix.length)
+      //the name of the status file prefix/FILENAME.status
       val statusName = config.prefix + name + ".status"
-      val reportN = Math.pow(fileSize.get * .00000005, 2)
+      //the counter for recording the status file
+      val reportN = (fileSize.get * .000004) + 95
       System.out.println(reportN)
       var reported = 0
+      val queue = msg
 
-      def status(): Double = {
+      /**
+       * get the progress of the upload
+       * @return percent done
+       */
+      def progress(): Double = {
         (bytesTransferred.toDouble / total.toDouble) * 100
       }
+
+      /**
+       * check if the upload is 100% complete
+       * @return true if the bytes transferred match total bytes
+       */
       def complete(): Boolean = {
         if(bytesTransferred >= total)
           true
@@ -313,25 +297,30 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS
           false
       }
 
+      /**
+       * gets called by the AWS GetObjectRequest when progress
+       * @param progressEvent
+       */
       @Override
       def progressChanged(progressEvent: ProgressEvent) {
         bytesTransferred += progressEvent.getBytesTransferred();
         reported += 1
         if (progressEvent.getEventCode() == ProgressEvent.COMPLETED_EVENT_CODE){
-          System.out.print(" " + bytesTransferred + " bytes; ");
+          log(" " + bytesTransferred + " bytes; ");
+
           val path = writeProgress(config.statusDestination, Status(name, 100), bucketName.get)
-          val test = javaS3.putObject(bucketName.get, statusName, new java.io.File(path))
-          msg.destroy
-          System.out.print(test.getContentMd5)
+          val put = javaS3.putObject(bucketName.get, statusName, new java.io.File(path))
+          log(put.getContentMd5)
+          queue.destroy
         }
         else if(progressEvent.getEventCode == 0 ){
-          val status = (bytesTransferred.toDouble / total.toDouble) * 100
+          val status = progress
 
           if( reported >= reportN){
             reported = 0
-            System.out.println("status : " + status)
+            //need to change this so it does it concurrently. previous attempts didn't work
             val path = writeProgress(config.statusDestination, Status(name, status.toFloat), bucketName.get)
-            val put = javaS3.putObject(bucketName.get, statusName, new java.io.File(path))
+            javaS3.putObject(bucketName.get, statusName, new java.io.File(path))
           }
         }
       }
@@ -345,20 +334,25 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS
       file.setGeneralProgressListener(progress)
 
       val read = await(copyFile(file, config, fs))
-      System.out.println("read : " + read)
+      log("read : " + read)
       var i = 0
-      while(!progress.complete()){
-        if(i >= 4000000){
-        System.out.println( "wait :" + progress.status())
+      //wait till the request is complete
+      var last = 0d
+      breakable{while(!progress.complete()){
+        if(i >= 400000){
           i = 0
+          //kill the loop if we have no progress for some iterations
+          if(last == progress.progress){
+            log("break no file progress")
+            break
+          }
+          last = progress.progress
         }
         i += 1
-      }
+      }}
     }
 
     if(progress.complete){
-      System.out.println("destroy")
-
       true
     }
     else{
@@ -370,7 +364,7 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS
   /**
    * Copies the given file from S3 to HDFS, and generates a status file
    * that it updates during the process.
-   * @param s3Object the file to copy
+   * @param s3ObjectRequest the s3 get object request this lets us track progress
    * @param config the copier configuration
    * @param fs the hdfs filesystem to use for copying
    */
@@ -395,13 +389,12 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS
       var bufferRead = bufferedInput.read(arrayBuffer,0, arrayBuffer.length)
 
       while( bufferRead > -1 ){
-	
-	        //System.out.print("read: " + bufferRead + " " + " avail: " + bufferedInput.available + "\n")
+        //write what we read from the buffer
 	      FSDataOutputStream.write(arrayBuffer.slice(0, bufferRead))
         read = read + bufferRead
 	      bufferRead = bufferedInput.read(arrayBuffer, 0, arrayBuffer.length)
       }
-	
+
       FSDataOutputStream.close
       log(s"Wrote to ${localPath.path}")
       read
