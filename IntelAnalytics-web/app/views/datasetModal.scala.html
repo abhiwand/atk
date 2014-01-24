@@ -27,11 +27,13 @@
                             <tbody >
                             @if(!user.clusterId.isEmpty && user.clusterId.get != ""){
                                 @for(file <- S3.getObjectList(user.clusterId.get.toString)){
-                                    <tr class=''>
+                                    @if(!file.getKey.endsWith("status")){
+                                    <tr>
                                         <td>@S3.formatName(file.getKey)</td>
                                         <td>@S3.formatSize(file.getSize)</td>
                                         <!--<td><i style="cursor:pointer;" class="fa-icon-remove file-remove" title='Remove File' id="file-remove" ></i></td>-->
                                     </tr>
+                                    }
                                 }
                             }
                           </tbody>

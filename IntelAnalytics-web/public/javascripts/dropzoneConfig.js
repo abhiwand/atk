@@ -19,24 +19,63 @@ $(window).ready(function(){
             createImageThumbnails:false,
             acceptedFiles:".csv",
             success:function(file){
-                //file.previewElement.remove();
-                myDropZone.removeFile(file);
-                $(".file-remove").unbind()
-                $("#uploadedFiles tbody").append("<tr><td>" + file.name + "</td><td>" + Dropzone.formatSize(file.size) + "</td></tr>")
-                bindDelete()
                 $.ajax({
+                    type: "POST",
+                    url: "files/create",
+                    dataType: 'json',
+                    contentType: "application/json",
+                    data: JSON.stringify({"name": file.name, "size": file.size}),
+                    success: function (data) {
+                        console.log(data)
+                    }
+                })
+
+                var interval = setInterval(function(){
+                    $.ajax({
                         type: "POST",
-                        url: "files/create",
-                        dataType: 'json',
+                        url: "files/progress",
+                        dataType: "json",
                         contentType: "application/json",
                         data: JSON.stringify({"name": file.name, "size": file.size}),
-                        success: function (data) {
+                        success: function(data){
+                            if(data && data != undefined && data.progress != undefined){
+                                var progress = data.progress/2;
+                                if(data.progress >= 100){
+                                    file.previewElement.querySelector("[data-dz-uploadprogress]").style.width = "100%";
+                                    myDropZone.removeFile(file);
+                                    $(".file-remove").unbind()
+                                    $("#uploadedFiles tbody").append("<tr><td>" + file.name + "</td><td>" + Dropzone.formatSize(file.size) + "</td></tr>")
+                                    bindDelete()
+                                    clearInterval(interval)
+                                }else{
+                                    file.previewElement.querySelector("[data-dz-uploadprogress]").style.width = "" + (progress +50) + "%";
+                                    console.log(progress)
+                                }
+
+                            }
+                        }, timeout: 1400 });
+                }, 1500);
+
+                /*(function poll(){
+                    $.ajax({
+                        type: "POST",
+                        url: "files/progress",
+                        dataType: "json",
+                        contentType: "application/json",
+                        data: JSON.stringify({"name": file.name, "size": file.size}),
+                        success: function(data){
+                            //Update your dashboard gauge
                             console.log(data)
-                        },
-                        error: function(){
-                            console.log("error")
-                        }
-                    })
+
+                        }, complete: poll, timeout: 30000 });
+                })();*/
+
+                //file.previewElement.remove();
+                //myDropZone.removeFile(file);
+                //$(".file-remove").unbind()
+                /*$("#uploadedFiles tbody").append("<tr><td>" + file.name + "</td><td>" + Dropzone.formatSize(file.size) + "</td></tr>")
+                bindDelete()
+                */
 
             }
         });

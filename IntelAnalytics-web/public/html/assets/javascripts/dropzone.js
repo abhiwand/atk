@@ -588,6 +588,7 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
       },
       processingmultiple: noop,
       uploadprogress: function(file, progress, bytesSent) {
+        console.log(progress)
         return file.previewElement.querySelector("[data-dz-uploadprogress]").style.width = "" + progress + "%";
       },
       totaluploadprogress: noop,
