@@ -116,8 +116,10 @@ def get_generate_key_statements(in_relation, out_relation, features, offset = 0)
 def report_job_status(status):
     print 'Pig job status report-Start:'
     input_status = status.getInputStats()
-    import_status = input_status.get(0);
-    input_count = import_status.getNumberRecords()
+    input_count = 0
+    for status in input_status:
+        input_count = input_count + status.getNumberRecords()
+
     print '%s:%s' %('input_count', str(input_count))
     print 'Pig job status report-End:'
 
