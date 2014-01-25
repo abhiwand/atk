@@ -25,6 +25,7 @@ package com.intel.giraph.algorithms.pr;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.intel.giraph.io.formats.LongNullTextEdgeInputFormat;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.io.formats.IdWithValueTextOutputFormat;
 import org.apache.giraph.io.formats.JsonLongDoubleFloatDoubleVertexInputFormat;
@@ -57,11 +58,25 @@ public class PageRankComputationTest {
     @Before
     public void setUp() throws Exception {
         inputGraph = new String[] {
+            /*
                 "[0,0,[[1,1],[3,3]]]",
                 "[1,0,[[0,1],[2,2],[3,1]]]",
                 "[2,0,[[1,2],[4,4]]]",
                 "[3,0,[[0,3],[1,1],[4,4]]]",
                 "[4,0,[[3,4],[2,4]]]"
+                */
+            "0 1",
+            "0 3",
+            "1 0",
+            "1 2",
+            "1 3",
+            "2 1",
+            "2 4",
+            "3 0",
+            "3 1",
+            "3 4",
+            "4 3",
+            "4 2"
         };
 
         expectedValues = new double[]{
@@ -76,7 +91,7 @@ public class PageRankComputationTest {
         giraphConf.setComputationClass(PageRankComputation.class);
         giraphConf.setMasterComputeClass(PageRankComputation.PageRankMasterCompute.class);
         giraphConf.setAggregatorWriterClass(PageRankComputation.PageRankAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(JsonLongDoubleFloatDoubleVertexInputFormat.class);
+        giraphConf.setEdgeInputFormatClass(LongNullTextEdgeInputFormat.class);
         giraphConf.setVertexOutputFormatClass(IdWithValueTextOutputFormat.class);
         giraphConf.set("pr.maxSupersteps", "30");
         giraphConf.set("pr.resetProbability", "0.15");
@@ -87,7 +102,7 @@ public class PageRankComputationTest {
     @Test
     public void PageRankTest() throws Exception {
         // run internally
-        Iterable<String> results = InternalVertexRunner.run(giraphConf, inputGraph);
+        Iterable<String> results = InternalVertexRunner.run(giraphConf, null, inputGraph);
         Assert.assertNotNull(results);
         for (String resultLine : results) {
             LOG.info(" got: " + resultLine);

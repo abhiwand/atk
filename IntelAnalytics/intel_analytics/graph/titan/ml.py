@@ -299,6 +299,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                     max_supersteps=global_config['giraph_belief_propagation_max_supersteps'],
                     convergence_threshold=global_config['giraph_belief_propagation_convergence_threshold'],
                     smoothing=global_config['giraph_belief_propagation_smoothing'],
+                    bidirectional_check=global_config['giraph_belief_propagation_bidirectional_check'],
                     anchor_threshold=global_config['giraph_belief_propagation_anchor_threshold']):
         """
         Loopy belief propagation on Markov Random Fields(MRF).
@@ -343,7 +344,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 		    The convergence threshold which controls how small the change in validation error must be
 		    in order to meet the convergence criteria.
 		    The default value is 0.001.
-        anchor_threshold :
+        bidirectional_check :
+		    If it is true, Giraph will firstly check whether each edge is bidirectional.
+		    The default value is false.
+		anchor_threshold :
 		    The anchor threshold [0, 1].
             Those vertices whose normalized prior values are greater than this
 			threshold will not be updated.
@@ -367,6 +371,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             convergence_threshold,
             smoothing,
             anchor_threshold,
+            bidirectional_check,
             output_path)
         lbp_cmd = ' '.join(lbp_command)
         #delete old output directory if already there
@@ -375,14 +380,24 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(lbp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
+        lbp_results = self._update_learning_curve(output_path,
+                                                  'lbp-learning-report_0',
+                                                  time_str,
+                                                  'LBP Learning Curve')
+
         output = InitReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
         output.max_superstep = max_supersteps
+        output.bidirectional_check = bidirectional_check
         output.convergence_threshold = convergence_threshold
         output.smoothing = smoothing
         output.anchor_threshold = anchor_threshold
+        output.super_steps = list(lbp_results[0])
+        output.cost_train = list(lbp_results[1])
+        output.rmse_validate = list(lbp_results[2])
+        output.rmse_test = list(lbp_results[3])
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -399,6 +414,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             convergence_threshold,
             smoothing,
             anchor_threshold,
+            bidirectional_check,
             output):
         """
         generate loopy belief propagation command line
@@ -432,11 +448,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_belief_propagation_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_belief_propagation_convergence_threshold'] + convergence_threshold,
                 global_config['giraph_param_belief_propagation_smoothing'] + smoothing,
+                global_config['giraph_param_belief_propagation_bidirectional_check'] + bidirectional_check,
                 global_config['giraph_param_belief_propagation_anchor_threshold'] + anchor_threshold]
 
 
     def page_rank(self,
-                  input_edge_property_list,
                   input_edge_label,
                   output_vertex_property_list,
                   num_worker=global_config['giraph_workers'],
@@ -450,10 +466,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
-        input_edge_property_list :
-            The edge properties which contain the input edge values if you
-			use more than one edge property. We expect a comma separated
-			string list.
         input_edge_label :
 		    The edge property which contains the edge label.
         output_vertex_property_list :
@@ -489,7 +501,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/pr'
         pr_command = self._get_pr_command(
             self._table_name,
-            input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
             num_worker,
@@ -529,7 +540,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     def _get_pr_command(
             self,
             table_name,
-            input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
             num_worker,
@@ -553,8 +563,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_storage_connection_timeout'] +
                 global_config['titan_storage_connection_timeout'],
                 global_config['giraph_param_storage_tablename'] + table_name,
-                global_config['giraph_param_input_edge_property_list'] + global_config['hbase_column_family'] +
-                input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_page_rank_class'],
@@ -801,6 +809,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             max_supersteps=global_config['giraph_label_propagation_max_supersteps'],
             convergence_threshold=global_config['giraph_label_propagation_convergence_threshold'],
             lp_lambda=global_config['giraph_label_propagation_lambda'],
+            bidirectional_check=global_config['giraph_label_propagation_bidirectional_check'],
             anchor_threshold=global_config['giraph_label_propagation_anchor_threshold']
     ):
         """
@@ -843,6 +852,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 		    The convergence threshold which controls how small the change in belief value must be
 		    in order to meet the convergence criteria.
 		    The default value is 0.001.
+        bidirectional_check :
+		    If it is true, Giraph will firstly check whether each edge is bidirectional.
+		    The default value is false.
         anchor_threshold :
 		    The anchor threshold [0, 1].
             Those vertices whose normalized prior values are greater than this
@@ -866,6 +878,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             convergence_threshold,
             lp_lambda,
             anchor_threshold,
+            bidirectional_check,
             output_path
         )
         lp_cmd = ' '.join(lp_command)
@@ -875,6 +888,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(lp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
+        lp_results = self._update_progress_curve(output_path,
+                                                 'lp-learning-report_0',
+                                                 time_str,
+                                                 'LP Learning Curve',
+                                                 'Cost')
+
         output = InitReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
@@ -882,7 +901,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.max_superstep = max_supersteps
         output.convergence_threshold = convergence_threshold
         output.param_lambda = lp_lambda
+        output.bidirectional_check = bidirectional_check
         output.anchor_threshold = anchor_threshold
+        output.super_steps = list(lp_results[0])
+        output.convergence_progress = list(lp_results[1])
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -899,6 +921,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             convergence_threshold,
             lp_lambda,
             anchor_threshold,
+            bidirectional_check,
             output_path
     ):
         """
@@ -933,6 +956,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_label_propagation_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_label_propagation_convergence_threshold'] + convergence_threshold,
                 global_config['giraph_param_label_propagation_lambda'] + lp_lambda,
+                global_config['giraph_param_label_bidirectional_check'] + bidirectional_check,
                 global_config['giraph_param_label_propagation_anchor_threshold'] + anchor_threshold]
 
     def lda(
@@ -1143,14 +1167,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             vertex_type,
             edge_type,
             num_worker=global_config['giraph_workers'],
-            max_supersteps=global_config['giraph_alternative_least_square_max_supersteps'],
-            feature_dimension=global_config['giraph_alternative_least_square_feature_dimension'],
-            als_lambda=global_config['giraph_alternative_least_square_lambda'],
-            convergence_threshold=global_config['giraph_alternative_least_square_convergence_threshold'],
+            max_supersteps=global_config['giraph_alternating_least_square_max_supersteps'],
+            feature_dimension=global_config['giraph_alternating_least_square_feature_dimension'],
+            als_lambda=global_config['giraph_alternating_least_square_lambda'],
+            convergence_threshold=global_config['giraph_alternating_least_square_convergence_threshold'],
             learning_output_interval=global_config['giraph_learning_output_interval'],
-            max_val=global_config['giraph_alternative_least_square_maxVal'],
-            min_val=global_config['giraph_alternative_least_square_minVal'],
-            bias_on=global_config['giraph_alternative_least_square_bias_on']
+            max_val=global_config['giraph_alternating_least_square_maxVal'],
+            min_val=global_config['giraph_alternating_least_square_minVal'],
+            bidirectional_check=global_config['giraph_alternating_least_square_bidirectional_check'],
+            bias_on=global_config['giraph_alternating_least_square_bias_on']
     ):
         """
         The Alternating Least Squares with Bias for collaborative filtering algorithms.
@@ -1209,7 +1234,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         min_val : 
 		    The minimum edge weight value.
 		    The default value is Float.NEGATIVE_INFINITY.
-        bias_on : 
+        bidirectional_check :
+		    If it is true, Giraph will firstly check whether each edge is bidirectional.
+		    The default value is false.
+        bias_on :
 		    True means turn on bias calculation and False means turn off
 		    bias calculation.
 		    The default value is false.
@@ -1240,6 +1268,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             max_val,
             min_val,
             bias_on,
+            bidirectional_check,
             output_path
         )
         als_cmd = ' '.join(als_command)
@@ -1292,6 +1321,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             max_val,
             min_val,
             bias_on,
+            bidirectional_check,
             output_path
     ):
         """
@@ -1315,30 +1345,31 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_output_bias'] + bias_on,
                 global_config['giraph_param_vertex_type'] + vertex_type,
                 global_config['giraph_param_edge_type'] + edge_type,
-                global_config['giraph_alternative_least_square_class'],
+                global_config['giraph_alternating_least_square_class'],
                 '-mc',
-                global_config['giraph_alternative_least_square_class'] + '\$' + global_config[
-                    'giraph_alternative_least_square_master_compute'],
+                global_config['giraph_alternating_least_square_class'] + '\$' + global_config[
+                    'giraph_alternating_least_square_master_compute'],
                 '-aw',
-                global_config['giraph_alternative_least_square_class'] + '\$' + global_config[
-                    'giraph_alternative_least_square_aggregator'],
+                global_config['giraph_alternating_least_square_class'] + '\$' + global_config[
+                    'giraph_alternating_least_square_aggregator'],
                 '-vif',
-                global_config['giraph_alternative_least_square_input_format'],
+                global_config['giraph_alternating_least_square_input_format'],
                 '-vof',
-                global_config['giraph_alternative_least_square_output_format'],
+                global_config['giraph_alternating_least_square_output_format'],
                 '-op',
                 output_path,
                 '-w',
                 num_worker,
-                global_config['giraph_param_alternative_least_square_max_supersteps'] + max_supersteps,
-                global_config['giraph_param_alternative_least_square_feature_dimension'] + feature_dimension,
-                global_config['giraph_param_alternative_least_square_lambda'] + als_lambda,
-                global_config['giraph_param_alternative_least_square_convergence_threshold'] + convergence_threshold,
+                global_config['giraph_param_alternating_least_square_max_supersteps'] + max_supersteps,
+                global_config['giraph_param_alternating_least_square_feature_dimension'] + feature_dimension,
+                global_config['giraph_param_alternating_least_square_lambda'] + als_lambda,
+                global_config['giraph_param_alternating_least_square_convergence_threshold'] + convergence_threshold,
                 global_config[
-                    'giraph_param_alternative_least_square_learning_output_interval'] + learning_output_interval,
-                global_config['giraph_param_alternative_least_square_maxVal'] + max_val,
-                global_config['giraph_param_alternative_least_square_minVal'] + min_val,
-                global_config['giraph_param_alternative_least_square_bias_on'] + bias_on]
+                    'giraph_param_alternating_least_square_learning_output_interval'] + learning_output_interval,
+                global_config['giraph_param_alternating_least_square_maxVal'] + max_val,
+                global_config['giraph_param_alternating_least_square_minVal'] + min_val,
+                global_config['giraph_param_alternating_least_square_bidirectional_check'] + bidirectional_check,
+                global_config['giraph_param_alternating_least_square_bias_on'] + bias_on]
 
 
     def cgd(

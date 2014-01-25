@@ -23,6 +23,7 @@
 package com.intel.giraph.io.titan;
 
 import com.google.common.base.Preconditions;
+import com.intel.giraph.io.VertexData4LPWritable;
 import com.thinkaurelius.titan.core.TitanType;
 import com.thinkaurelius.titan.graphdb.types.system.SystemKey;
 import com.thinkaurelius.titan.graphdb.types.system.SystemType;
@@ -33,35 +34,34 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.Vector;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
 
 
 /**
- * GiraphVertexLoaderLongDoubleFloat loads vertex
- * with <code>Long</code> vertex ID's,
- * <code>Double</code> vertex values,
- * and <code>Float</code> edge weights.
+ * Load vertex from Titan
+ * Each vertex is with <code>long</code> vertex ID's,
+ * <code>TwoVector</code> vertex values: one for prior and
+ * one for posterior, and <code>DoubleVector</code> edge
+ * weights.
  */
-public class GiraphVertexLoaderLongDoubleFloat {
-
+public class GiraphVertexLoaderPropertyGraph4LP {
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleFloat.class);
+    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderPropertyGraph4LP.class);
     /**
      * whether it is Titan system type
      */
@@ -73,43 +73,80 @@ public class GiraphVertexLoaderLongDoubleFloat {
     /**
      * Giraph Vertex
      */
-    private Vertex<LongWritable, DoubleWritable, FloatWritable> vertex = null;
+    private Vertex<LongWritable, VertexData4LPWritable, DoubleWritable> vertex = null;
     /**
-     * HashSet of configured vertex properties
+     * HashMap of configured vertex properties
      */
-    private Set<String> vertexPropertyKeyValues = null;
+    private final Map<String, Integer> vertexValuePropertyKeys = new HashMap<String, Integer>();
     /**
-     * HashSet of configured edge properties
+     * HashMap of configured edge properties
      */
-    private Set<String> edgePropertyKeyValues = null;
+    private final Map<String, Integer> edgeValuePropertyKeys = new HashMap<String, Integer>();
     /**
      * HashSet of configured edge labels
      */
-    private Set<String> edgeLabelValues = null;
+    private final Map<String, Integer> edgeLabelKeys = new HashMap<String, Integer>();
+    /**
+     * vertex value vector
+     */
+    private VertexData4LPWritable vertexValueVector = null;
+    /**
+     * Data vector
+     */
+    private Vector vector = null;
+    /**
+     * Enable vector value
+     */
+    private String enableVectorValue = "true";
+
 
     /**
-     * GiraphVertexLoaderLongDoubleFloat constructor
+     * GiraphVertexLoaderPropertyGraph4LP Constructor with ID
      *
-     * @param conf : Giraph configuration
+     * @param conf Giraph configuration
      * @param id   vertex id
      */
-    public GiraphVertexLoaderLongDoubleFloat(final ImmutableClassesGiraphConfiguration conf, final long id) {
-        /** Vertex properties to filter */
-        final String[] vertexPropertyKeyList;
-        /** Edge properties to filter */
-        final String[] edgePropertyKeyList;
-        /** Edge labels to filter */
+    public GiraphVertexLoaderPropertyGraph4LP(final ImmutableClassesGiraphConfiguration conf,
+                                              final long id) {
+        /**
+         * Vertex value properties to filter
+         */
+        final String[] vertexValuePropertyKeyList;
+        /**
+         * Edge value properties to filter
+         */
+        final String[] edgeValuePropertyKeyList;
+        /**
+         * Edge labels to filter
+         */
         final String[] edgeLabelList;
 
-        vertex = conf.createVertex();
-        vertex.initialize(new LongWritable(id), new DoubleWritable(0));
-        vertexId = id;
-        vertexPropertyKeyList = INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
+        enableVectorValue = VECTOR_VALUE.get(conf);
+        vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
+        edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
         edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
-        vertexPropertyKeyValues = new HashSet<String>(Arrays.asList(vertexPropertyKeyList));
-        edgePropertyKeyValues = new HashSet<String>(Arrays.asList(edgePropertyKeyList));
-        edgeLabelValues = new HashSet<String>(Arrays.asList(edgeLabelList));
+        int size = vertexValuePropertyKeyList.length;
+        for (int i = 0; i < size; i++) {
+            vertexValuePropertyKeys.put(vertexValuePropertyKeyList[i], i);
+        }
+
+        for (int i = 0; i < edgeValuePropertyKeyList.length; i++) {
+            edgeValuePropertyKeys.put(edgeValuePropertyKeyList[i], i);
+        }
+
+        for (int i = 0; i < edgeLabelList.length; i++) {
+            edgeLabelKeys.put(edgeLabelList[i], i);
+        }
+
+
+        // set up vertex Value
+        vertex = conf.createVertex();
+        double[] data = new double[size];
+        vector = new DenseVector(data);
+        vertexValueVector = new VertexData4LPWritable(vector.clone(), vector.clone(), 0d);
+        vertex.initialize(new LongWritable(id), vertexValueVector);
+        vertexId = id;
+
     }
 
     /**
@@ -249,30 +286,50 @@ public class GiraphVertexLoaderLongDoubleFloat {
             if (this.type.isPropertyKey()) {
                 Preconditions.checkNotNull(value);
                 // filter vertex property key name
-                if (vertexPropertyKeyValues.contains(this.type.getName())) {
+                String propertyName = this.type.getName();
+                if (vertexValuePropertyKeys.containsKey(propertyName)) {
                     final Object vertexValueObject = this.value;
-                    final double vertexValue = Double.parseDouble(vertexValueObject.toString());
-                    vertex.setValue(new DoubleWritable(vertexValue));
+                    Vector priorVector = vertex.getValue().getPriorVector();
+                    if (enableVectorValue.equals("true")) {
+                        //one property key has a vector as value
+                        //split by either space or comma or tab
+                        String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
+                        String[] valueString = vertexValueObject.toString().split(regexp);
+                        int size = valueString.length;
+                        double[] data = new double[size];
+                        priorVector = new DenseVector(data);
+                        for (int i = 0; i < size; i++) {
+                            priorVector.set(i, Double.parseDouble(valueString[i]));
+                        }
+                        //update vector with right size
+                        if (vector.size() < size) {
+                            double[] data1 = new double[size];
+                            vector = new DenseVector(data1);
+                        }
+                    } else {
+                        final double vertexValue = Double.parseDouble(vertexValueObject.toString());
+                        priorVector.set(vertexValuePropertyKeys.get(propertyName), vertexValue);
+                    }
+                    vertex.setValue(new VertexData4LPWritable(priorVector, vector.clone(), 0d));
                 }
             } else {
                 Preconditions.checkArgument(this.type.isEdgeLabel());
                 // filter Edge Label
                 if (this.relationID > 0) {
-                    if (edgeLabelValues.contains(this.type.getName())) {
+                    if (edgeLabelKeys.containsKey(this.type.getName())) {
+                        double edgeValue = 0.0d;
                         if (this.direction.equals(Direction.OUT)) {
-                            float edgeValue = 0;
                             for (final Map.Entry<String, Object> entry : this.properties.entrySet()) {
-                                // filter Edge Property
-                                if ((entry.getValue() != null) &&
-                                    edgePropertyKeyValues.contains(entry.getKey())) {
+                                if (entry.getValue() != null &&
+                                    edgeValuePropertyKeys.containsKey(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
-                                    edgeValue = Float.parseFloat(edgeValueObject.toString());
+                                    edgeValue = Double.parseDouble(edgeValueObject.toString());
                                 }
                             }
-                            Edge<LongWritable, FloatWritable> edge = EdgeFactory.create(new LongWritable(
-                                this.otherVertexID), new FloatWritable(edgeValue));
+                            Edge<LongWritable, DoubleWritable> edge = EdgeFactory.create(
+                                new LongWritable(this.otherVertexID), new DoubleWritable(
+                                    edgeValue));
                             vertex.addEdge(edge);
-
                         } else if (this.direction.equals(Direction.BOTH)) {
                             throw ExceptionFactory.bothIsNotSupported();
                         }
@@ -285,4 +342,5 @@ public class GiraphVertexLoaderLongDoubleFloat {
             }
         }
     }
+
 }

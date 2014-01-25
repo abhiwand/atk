@@ -31,7 +31,7 @@ import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -40,21 +40,21 @@ import org.apache.log4j.Logger;
 import java.io.IOException;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_FLOAT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_NULL;
 
 /**
- * TitanHBaseVertexInputFormatLongDoubleFloat loads vertex
+ * TitanHBaseVertexInputFormatLongDoubleNull loads vertex
  * with <code>Long</code> vertex ID's,
  * <code>Double</code> vertex values,
  * and <code>Float</code> edge weights.
  */
-public class TitanHBaseVertexInputFormatLongDoubleFloat extends
-    TitanHBaseVertexInputFormat<LongWritable, DoubleWritable, FloatWritable> {
+public class TitanHBaseVertexInputFormatLongDoubleNull extends
+    TitanHBaseVertexInputFormat<LongWritable, DoubleWritable, NullWritable> {
 
     /**
      * LOG class
      */
-    private static final Logger LOG = Logger.getLogger(TitanHBaseVertexInputFormatLongDoubleFloat.class);
+    private static final Logger LOG = Logger.getLogger(TitanHBaseVertexInputFormatLongDoubleNull.class);
 
     /**
      * checkInputSpecs
@@ -71,7 +71,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
      * @param conf :Giraph configuration
      */
     @Override
-    public void setConf(ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, FloatWritable> conf) {
+    public void setConf(ImmutableClassesGiraphConfiguration<LongWritable, DoubleWritable, NullWritable> conf) {
         GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
@@ -86,7 +86,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
      * @throws IOException
      * @throws RuntimeException
      */
-    public VertexReader<LongWritable, DoubleWritable, FloatWritable>
+    public VertexReader<LongWritable, DoubleWritable, NullWritable>
     createVertexReader(InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
@@ -97,7 +97,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
      * Uses the RecordReader to return HBase data
      */
     public static class TitanHBaseVertexReader extends
-        HBaseVertexReader<LongWritable, DoubleWritable, FloatWritable> {
+        HBaseVertexReader<LongWritable, DoubleWritable, NullWritable> {
         /**
          * Graph Reader to parse data in Titan Graph semantics
          */
@@ -148,7 +148,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
             final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
 
             while (getRecordReader().nextKeyValue()) {
-                final Vertex temp = graphReader.readGiraphVertex(LONG_DOUBLE_FLOAT, getConf(),
+                final Vertex temp = graphReader.readGiraphVertex(LONG_DOUBLE_NULL, getConf(),
                     getRecordReader().getCurrentKey().copyBytes(),
                     getRecordReader().getCurrentValue().getMap().get(edgeStoreFamily));
                 if (null != temp) {
@@ -168,7 +168,7 @@ public class TitanHBaseVertexInputFormatLongDoubleFloat extends
          * @throws InterruptedException
          */
         @Override
-        public Vertex<LongWritable, DoubleWritable, FloatWritable> getCurrentVertex() throws IOException,
+        public Vertex<LongWritable, DoubleWritable, NullWritable> getCurrentVertex() throws IOException,
             InterruptedException {
             return vertex;
         }

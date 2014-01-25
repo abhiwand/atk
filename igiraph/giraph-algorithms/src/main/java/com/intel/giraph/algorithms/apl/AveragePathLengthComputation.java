@@ -234,9 +234,8 @@ public class AveragePathLengthComputation extends BasicComputation
                 double numUpdates = Double.parseDouble(map.get(SUM_UPDATES));
                 if (numUpdates > 0) {
                     double avgUpdates = sumDelta / numUpdates;
-                    output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
-                    output.writeBytes(String.format("avgUpdates=%f%c", avgUpdates, '\t'));
-                    output.writeBytes(String.format("sumDelta=%f%n", sumUpdates));
+                    output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                    output.writeBytes(String.format("avgUpdates = %f%n", avgUpdates));
                 }
             }
             output.flush();

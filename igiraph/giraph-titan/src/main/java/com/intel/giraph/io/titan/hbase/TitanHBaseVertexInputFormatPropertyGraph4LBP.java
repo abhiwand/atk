@@ -24,8 +24,7 @@ package com.intel.giraph.io.titan.hbase;
 
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.intel.mahout.math.DoubleWithTwoVectorWritable;
-import com.intel.mahout.math.TwoVectorWritable;
+import com.intel.giraph.io.VertexData4LBPWritable;
 import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
@@ -34,6 +33,7 @@ import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;
@@ -43,24 +43,32 @@ import java.io.IOException;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_ERROR;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LBP;
 
 
 /**
- * TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector loads vertex
- * with <code>long</code> vertex ID's,
- * <code>TwoVector</code> vertex values: one for prior and
- * one for posterior,
- * and <code>DoubleTwoVector</code> edge weights.
+ * TitanHBaseVertexInputFormatPropertyGraph4LBP loads vertex
+ * with <code>VertexData4LBP</code> vertex value
+ * and <code>double</code> out-edge weights.
+ * <p/>
+ * Each vertex follows this format:
+ * (<vertex id>, <vertex valueVector>, <vertex type>,
+ * ((<dest vertex id>, <edge value>, <edge type>), ...))
+ * <p/>
+ * Here is an example with vertex id 1, vertex value 4,3, and two edges.
+ * First edge has a destination vertex 2, edge value 2.1.
+ * Second edge has a destination vertex 3, edge value 0.7.
+ * [1,[4,3],["TR"],[[2,2.1,[]],[3,0.7,[]]]], where the empty edge-type
+ * '[]' is reserved for future usage.
  */
-public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
-    TitanHBaseVertexInputFormat<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> {
+public class TitanHBaseVertexInputFormatPropertyGraph4LBP extends
+    TitanHBaseVertexInputFormat<LongWritable, VertexData4LBPWritable, DoubleWritable> {
 
     /**
      * LOG class
      */
     private static final Logger LOG = Logger
-        .getLogger(TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector.class);
+        .getLogger(TitanHBaseVertexInputFormatPropertyGraph4LBP.class);
 
     /**
      * checkInputSpecs
@@ -78,7 +86,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
      */
     @Override
     public void setConf(
-        ImmutableClassesGiraphConfiguration<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> conf) {
+        ImmutableClassesGiraphConfiguration<LongWritable, VertexData4LBPWritable, DoubleWritable> conf) {
         GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
@@ -92,7 +100,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
      * @throws IOException
      * @throws RuntimeException
      */
-    public VertexReader<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> createVertexReader(
+    public VertexReader<LongWritable, VertexData4LBPWritable, DoubleWritable> createVertexReader(
         InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
@@ -103,7 +111,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
      * Uses the RecordReader to get HBase data
      */
     public static class TitanHBaseVertexReader extends
-        HBaseVertexReader<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> {
+        HBaseVertexReader<LongWritable, VertexData4LBPWritable, DoubleWritable> {
         /**
          * reader to parse Titan graph
          */
@@ -111,7 +119,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
         /**
          * Giraph vertex
          */
-        private Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> vertex = null;
+        private Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> vertex = null;
         /**
          * task context
          */
@@ -160,8 +168,8 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
             final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
 
             while (getRecordReader().nextKeyValue()) {
-                final Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> temp = graphReader
-                    .readGiraphVertex(LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR, getConf(), getRecordReader()
+                final Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> temp = graphReader
+                    .readGiraphVertex(PROPERTY_GRAPH_4_LBP, getConf(), getRecordReader()
                         .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
                         .get(edgeStoreFamily));
                 if (null != temp) {
@@ -182,7 +190,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          * @throws InterruptedException
          */
         @Override
-        public Vertex<LongWritable, TwoVectorWritable, DoubleWithTwoVectorWritable> getCurrentVertex()
+        public Vertex<LongWritable, VertexData4LBPWritable, DoubleWritable> getCurrentVertex()
             throws IOException, InterruptedException {
             return vertex;
         }
@@ -193,8 +201,8 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          * @return TwoVectorWritable vertex value in two vectors
          * @throws IOException
          */
-        protected TwoVectorWritable getValue() throws IOException {
-            TwoVectorWritable vertexValue = vertex.getValue();
+        protected VertexData4LBPWritable getValue() throws IOException {
+            VertexData4LBPWritable vertexValue = vertex.getValue();
             Vector priorVector = vertexValue.getPriorVector();
             if (cardinality != priorVector.size()) {
                 if (cardinality == 0) {
@@ -212,7 +220,7 @@ public class TitanHBaseVertexInputFormatLongTwoVectorDoubleTwoVector extends
          * @return Iterable of Giraph edges
          * @throws IOException
          */
-        protected Iterable<Edge<LongWritable, DoubleWithTwoVectorWritable>> getEdges() throws IOException {
+        protected Iterable<Edge<LongWritable, DoubleWritable>> getEdges() throws IOException {
             return vertex.getEdges();
         }
 

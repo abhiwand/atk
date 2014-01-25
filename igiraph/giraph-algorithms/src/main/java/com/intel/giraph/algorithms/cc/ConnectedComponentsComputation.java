@@ -100,6 +100,11 @@ public class ConnectedComponentsComputation extends
     public void compute(
         Vertex<LongWritable, LongWritable, NullWritable> vertex,
         Iterable<LongWritable> messages) throws IOException {
+        convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
+        if (convergenceProgressOutputInterval < 1) {
+            throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
+        }
+
         long componentId;
 
         boolean changed = false;

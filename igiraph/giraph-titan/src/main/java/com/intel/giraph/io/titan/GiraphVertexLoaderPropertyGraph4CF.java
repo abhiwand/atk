@@ -47,14 +47,15 @@ import java.util.Map;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TEST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_VALIDATION;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_VALIDATE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LEFT_VERTEX_TYPE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.RIGHT_VERTEX_TYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_LEFT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_RIGHT;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 
 /**
@@ -100,15 +101,15 @@ public class GiraphVertexLoaderPropertyGraph4CF {
     /**
      * HashMap of configured vertex properties
      */
-    private final Map<String, Integer> vertexPropertyKeyValues = new HashMap<String, Integer>();
+    private final Map<String, Integer> vertexValuePropertyKeys = new HashMap<String, Integer>();
     /**
      * HashMap of configured edge properties
      */
-    private final Map<String, Integer> edgePropertyKeyValues = new HashMap<String, Integer>();
+    private final Map<String, Integer> edgeValuePropertyKeys = new HashMap<String, Integer>();
     /**
      * HashSet of configured edge labels
      */
-    private final Map<String, Integer> edgeLabelValues = new HashMap<String, Integer>();
+    private final Map<String, Integer> edgeLabelKeys = new HashMap<String, Integer>();
     /**
      * vertex value
      */
@@ -121,7 +122,10 @@ public class GiraphVertexLoaderPropertyGraph4CF {
      * the edge type
      */
     private EdgeType edgeType = null;
-
+    /**
+     * Enable vector value
+     */
+    private String enableVectorValue = "true";
 
     /**
      * GiraphVertexLoaderPropertyGraph4CF Constructor with ID
@@ -132,34 +136,34 @@ public class GiraphVertexLoaderPropertyGraph4CF {
     public GiraphVertexLoaderPropertyGraph4CF(final ImmutableClassesGiraphConfiguration conf,
                                               final long id) {
         /**
-         * Vertex properties to filter
+         * Vertex value properties to filter
          */
-        final String[] vertexPropertyKeyList;
+        final String[] vertexValuePropertyKeyList;
         /**
-         * Edge properties to filter
+         * Edge value properties to filter
          */
-        final String[] edgePropertyKeyList;
+        final String[] edgeValuePropertyKeyList;
         /**
          * Edge labels to filter
          */
         final String[] edgeLabelList;
 
-        vertexPropertyKeyList = INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgePropertyKeyList = INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).split(",");
+        enableVectorValue = VECTOR_VALUE.get(conf);
+        vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
+        edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
         edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
         vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
         edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
-        int size = vertexPropertyKeyList.length;
+        int size = vertexValuePropertyKeyList.length;
         for (int i = 0; i < size; i++) {
-            vertexPropertyKeyValues.put(vertexPropertyKeyList[i], i);
+            vertexValuePropertyKeys.put(vertexValuePropertyKeyList[i], i);
         }
-
-        for (int i = 0; i < edgePropertyKeyList.length; i++) {
-            edgePropertyKeyValues.put(edgePropertyKeyList[i], i);
+        for (int i = 0; i < edgeValuePropertyKeyList.length; i++) {
+            edgeValuePropertyKeys.put(edgeValuePropertyKeyList[i], i);
         }
 
         for (int i = 0; i < edgeLabelList.length; i++) {
-            edgeLabelValues.put(edgeLabelList[i], i);
+            edgeLabelKeys.put(edgeLabelList[i], i);
         }
 
 
@@ -311,21 +315,30 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                 Preconditions.checkNotNull(value);
                 // filter vertex property key name
                 String propertyName = this.type.getName();
-                if (vertexPropertyKeyValues.containsKey(propertyName)) {
+                if (vertexValuePropertyKeys.containsKey(propertyName)) {
                     final Object vertexValueObject = this.value;
-                    final double vertexValue = Double.parseDouble(vertexValueObject.toString());
-                    vertexType = vertexValueVector.getType();
-                    Vector vector = vertexValueVector.getVector();
-                    vector.set(vertexPropertyKeyValues.get(propertyName), vertexValue);
+                    vertexType = vertex.getValue().getType();
+                    Vector vector = vertex.getValue().getVector();
+                    if (enableVectorValue.equals("true")) {
+                        //one property key has a vector as value
+                        //split by either space or comma or tab
+                        String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
+                        String[] valueString = vertexValueObject.toString().split(regexp);
+                        for (int i = 0; i < valueString.length; i++) {
+                            vector.set(i, Double.parseDouble(valueString[i]));
+                        }
+                    } else {
+                        final double vertexValue = Double.parseDouble(vertexValueObject.toString());
+                        vector.set(vertexValuePropertyKeys.get(propertyName), vertexValue);
+                    }
                     vertex.setValue(new VertexData4CFWritable(vertexType, vector));
                 } else if (propertyName.equals(vertexTypePropertyKey)) {
                     final Object vertexTypeObject = this.value;
-                    Vector priorVector = vertexValueVector.getVector();
-
+                    Vector priorVector = vertex.getValue().getVector();
                     String vertexTypeString = vertexTypeObject.toString();
-                    if (vertexTypeString.equals(LEFT_VERTEX_TYPE)) {
+                    if (vertexTypeString.equals(VERTEX_TYPE_LEFT)) {
                         vertexType = VertexType.LEFT;
-                    } else if (vertexTypeString.equals(RIGHT_VERTEX_TYPE)) {
+                    } else if (vertexTypeString.equals(VERTEX_TYPE_RIGHT)) {
                         vertexType = VertexType.RIGHT;
                     } else {
                         LOG.error("Vertex type string: %s isn't supported." + vertexTypeString);
@@ -338,13 +351,13 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                 Preconditions.checkArgument(this.type.isEdgeLabel());
                 // filter Edge Label
                 if (this.relationID > 0) {
-                    if (edgeLabelValues.containsKey(this.type.getName())) {
+                    if (edgeLabelKeys.containsKey(this.type.getName())) {
                         double edgeValue = 0.0d;
                         if (this.direction.equals(Direction.OUT)) {
                             String edgeTypeString = null;
                             for (final Map.Entry<String, Object> entry : this.properties.entrySet()) {
                                 Preconditions.checkNotNull(entry.getValue());
-                                if (edgePropertyKeyValues.containsKey(entry.getKey())) {
+                                if (edgeValuePropertyKeys.containsKey(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
                                     edgeValue = Double.parseDouble(edgeValueObject.toString());
                                 } else if (edgeTypePropertyKey.equals(entry.getKey())) {
@@ -352,7 +365,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                                     edgeTypeString = edgeTypeObject.toString();
                                     if (edgeTypeString.equals(EDGE_TYPE_TRAIN)) {
                                         edgeType = EdgeType.TRAIN;
-                                    } else if (edgeTypeString.equals(EDGE_TYPE_VALIDATION)) {
+                                    } else if (edgeTypeString.equals(EDGE_TYPE_VALIDATE)) {
                                         edgeType = EdgeType.VALIDATE;
                                     } else if (edgeTypeString.equals(EDGE_TYPE_TEST)) {
                                         edgeType = EdgeType.TEST;

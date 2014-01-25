@@ -37,7 +37,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
@@ -63,7 +63,7 @@ import java.util.Map;
     name = "Page rank"
 )
 public class PageRankComputation extends BasicComputation<LongWritable,
-    DoubleWritable, FloatWritable, DoubleWritable> {
+    DoubleWritable, NullWritable, DoubleWritable> {
     /**
      * Custom argument for number of super steps
      */
@@ -128,7 +128,7 @@ public class PageRankComputation extends BasicComputation<LongWritable,
 
     @Override
     public void compute(
-        Vertex<LongWritable, DoubleWritable, FloatWritable> vertex,
+        Vertex<LongWritable, DoubleWritable, NullWritable> vertex,
         Iterable<DoubleWritable> messages) throws IOException {
 
         maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 30);
