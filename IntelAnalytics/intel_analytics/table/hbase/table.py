@@ -639,7 +639,13 @@ class HBaseFrameBuilder(FrameBuilder):
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
 
-        return_code = call(args, report_strategy=etl_report_strategy())
+        pig_report = PigJobReportStrategy();
+        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+
+        properties = {};
+        properties[MAX_ROW_KEY] = pig_report.content['input_count']
+        etl_schema.save_table_properties(table_name, properties)
+
 
         if return_code:
             raise Exception('Could not import XML file')
@@ -647,6 +653,28 @@ class HBaseFrameBuilder(FrameBuilder):
         hbase_registry.register(frame_name, table_name, overwrite)
 
         return new_frame
+
+    def append_from_xml(self, data_frame, file_name, tag_name):
+
+        script_path = os.path.join(etl_scripts_path,'pig_import_xml.py')
+        args = _get_pig_args()
+        args += [script_path, '-i', file_name, '-o', data_frame._table.table_name, '-tag', tag_name]
+
+        logger.debug(args)
+        etl_schema = ETLSchema()
+        properties = etl_schema.get_table_properties(data_frame._table.table_name)
+        original_max_row_key = properties[MAX_ROW_KEY]
+        args += ['-m', original_max_row_key]
+
+        pig_report = PigJobReportStrategy();
+        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+
+        properties = {};
+        properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
+        etl_schema.save_table_properties(data_frame._table.table_name, properties)
+
+        if return_code:
+            raise Exception('Could not import XML file')
 
     def append_from_data_frame(self, target_data_frame, source_data_frame):
 
