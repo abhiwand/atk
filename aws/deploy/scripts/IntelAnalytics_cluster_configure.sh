@@ -128,7 +128,7 @@ for n in `cat ${nodesfile}`; do
         ${dryrun} scp -i ${pemfile} _gmond.${nn} ${n}:/tmp/_gmond.conf
         ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
         echo ${n}:Updating ganglia config file;
-        mv -f /tmp/_gmond.conf /etc/ganglia/gmond.conf;
+        mv -f /tmp/_gmond.conf /etc/ganglia/gmond.conf;                                                            <<<
         echo ${n}:Disabling webserver;
         service nginx stop 2>&1 > /dev/null;
         chkconfig nginx off 2>&1 > /dev/null;
@@ -204,3 +204,9 @@ titan/bin/start-rexstitan.sh;
 sleep 2;
 popd
 '"
+
+if [ -f s3copier.jar ];
+then
+    echo "copy s3copier and start service"
+    ${dryrun} sh IntelAnalytics_cluster_configure_s3copier.sh -p ${pemfile} -j s3copier.jar -c s3copier.conf -h ${m} -u ${IA_USR}
+fi
