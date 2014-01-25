@@ -51,6 +51,12 @@ def generate_hbase_store_args(features, cmd_line_args):
     hbase_store_args += (cf+cmd_line_args.new_feature_name)
     return hbase_store_args
 
+def concatenate_features(cols):
+    if len(cols) == 2:
+        return "CONCAT(%s, %s)" % (cols[0], cols[1])
+    else:
+        return "CONCAT(%s, %s)" % (cols[0], concatenate_features(cols[1:]))
+
 def generate_transform_statement(features, cmd_line_args):
     transform_statement = ''
     for i, f in enumerate(features):
@@ -79,6 +85,12 @@ def generate_transform_statement(features, cmd_line_args):
                     transform_statement+=','
             transform_statement+=") as %s" % (cmd_line_args.new_feature_name)
             
+        elif (cmd_line_args.transformation_function == 'ARITHMETIC'):
+            # the input feature is an expression
+            transform_statement += "%s as %s" % (cmd_line_args.feature_to_transform, cmd_line_args.new_feature_name)
+        elif (cmd_line_args.transformation_function == 'CONCAT'):
+            cc = concatenate_features(cmd_line_args.feature_to_transform.split(','))
+            transform_statement += "%s as %s:chararray" % (cc, cmd_line_args.new_feature_name)
         else:#without args
             transform_statement += "%s(%s) as %s" % (cmd_line_args.transformation_function, cmd_line_args.feature_to_transform, cmd_line_args.new_feature_name)
     return transform_statement

@@ -102,7 +102,7 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 		} else if (queryResult instanceof List) {
 
 			List result = (List) queryResult;
-			System.out.println("got a list result " + result.size());
+//			System.out.println("got a list result " + result.size());
 			/*
 			 * we only let the query expression to return a single primitive
 			 * value

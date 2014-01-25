@@ -22,6 +22,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 /**
- * Package of igiraph algorithms.
+ * Package of igiraph aggregators.
  */
 package com.intel.giraph.aggregators;

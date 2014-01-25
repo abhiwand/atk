@@ -40,7 +40,6 @@ import org.apache.giraph.Algorithm;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.DoubleWritable;
@@ -68,13 +67,18 @@ public class AveragePathLengthComputation extends BasicComputation
      */
     private static final Logger LOG = Logger.getLogger(AveragePathLengthComputation.class);
     /**
-     * Iteration interval to output learning curve
+     * Aggregator name on sum of delta values
      */
-    private int convergenceProgressOutputInterval = 1;
+    private static String SUM_DELTA = "sumDelta";
     /**
      * Aggregator name on sum of delta values
      */
     private static String SUM_UPDATES = "sumUpdates";
+    /**
+     * Iteration interval to output learning curve
+     */
+    private int convergenceProgressOutputInterval = 1;
+
 
     /**
      * Flood message to all its direct neighbors with a new distance value.
@@ -93,8 +97,8 @@ public class AveragePathLengthComputation extends BasicComputation
     /**
      * algorithm compute
      *
-     * @param Vertex   Giraph Vertex
-     * @param Iterable Giraph messages
+     * @param vertex   Giraph Vertex
+     * @param messages Giraph messages
      */
     @Override
     public void compute(Vertex<LongWritable, DistanceMapWritable, NullWritable> vertex,
@@ -128,9 +132,16 @@ public class AveragePathLengthComputation extends BasicComputation
             DistanceMapWritable vertexValue = vertex.getValue();
             if ((vertexValue.distanceMapContainsKey(source) &&
                  vertexValue.distanceMapGet(source) > distance) ||
-                (!vertexValue.distanceMapContainsKey(source))){
+                (!vertexValue.distanceMapContainsKey(source))) {
+                double delta;
+                if (vertexValue.distanceMapContainsKey(source)) {
+                    delta = (double) (vertexValue.distanceMapGet(source) - distance);
+                } else {
+                    delta = (double) distance;
+                }
                 vertex.getValue().distanceMapPut(source, distance);
                 floodMessage(vertex, source, distance + 1);
+                aggregate(SUM_DELTA, new DoubleWritable(delta));
                 aggregate(SUM_UPDATES, new DoubleWritable(1d));
             }
         }
@@ -152,6 +163,7 @@ public class AveragePathLengthComputation extends BasicComputation
         @Override
         public void initialize() throws InstantiationException,
             IllegalAccessException {
+            registerAggregator(SUM_DELTA, DoubleSumAggregator.class);
             registerAggregator(SUM_UPDATES, DoubleSumAggregator.class);
         }
     }
@@ -173,7 +185,7 @@ public class AveragePathLengthComputation extends BasicComputation
         /**
          * super step number
          */
-        int lastStep = 0;
+        private int lastStep = 0;
 
         public static String getFilename() {
             return FILENAME;
@@ -220,10 +232,14 @@ public class AveragePathLengthComputation extends BasicComputation
                 output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
                 output.writeBytes("===================Convergence Progress======================\n");
-            }  else if (realStep > 0 && realStep % convergenceProgressOutputInterval == 0 ) {
-                    // output learning progress
-                    double sumUpdates = Double.parseDouble(map.get(SUM_UPDATES));
-                    output.writeBytes("superstep = " + realStep + "\tsumDelta = " + sumUpdates + "\n");
+            } else if (realStep >= 0 && realStep % convergenceProgressOutputInterval == 0) {
+                // output learning progress
+                double sumDelta = Double.parseDouble(map.get(SUM_DELTA));
+                double numUpdates = Double.parseDouble(map.get(SUM_UPDATES));
+                if (numUpdates > 0) {
+                    double avgUpdates = sumDelta / numUpdates;
+                    output.writeBytes("superstep = " + realStep + "\tavgDelta = " + avgUpdates + "\n");
+                }
             }
             output.flush();
             lastStep = (int) superstep;

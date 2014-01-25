@@ -78,7 +78,7 @@ public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new TitanLongIDTwoDoubleValueWriter();
+        return new TitanLongIDDoubleValueWriter();
     }
 
     /**
@@ -86,7 +86,7 @@ public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanLongIDTwoDoubleValueWriter extends TextVertexWriterToEachLine {
+    protected class TitanLongIDDoubleValueWriter extends TextVertexWriterToEachLine {
 
         /**
          * TitanFactory to write back results

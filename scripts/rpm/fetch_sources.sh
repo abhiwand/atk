@@ -18,6 +18,7 @@ mkdir $source_folder/target
 shopt -s extglob
 cp -R $src/!(exclude|dist|target|build|src|tests|*.ipynb|ipython|install_pyenv.sh) $source_folder
 cp $src/target/*.jar $source_folder/target/
+cp $src/notebooks $source_folder/
 rm $source_folder/original-*.jar
 rm -rf $source_folder/intel_analytics
 rm -rf $source_folder/bin/*python*

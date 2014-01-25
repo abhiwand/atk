@@ -494,7 +494,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
         /** Saved output stream to write to */
         private FSDataOutputStream output;
         /**super step number*/
-        int lastStep = 0;
+        private int lastStep = 0;
 
         public static String getFilename() {
             return FILENAME;

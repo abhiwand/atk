@@ -89,9 +89,7 @@ public class PageRankComputationTest {
         // run internally
         Iterable<String> results = InternalVertexRunner.run(giraphConf, inputGraph);
         Assert.assertNotNull(results);
-        Iterator<String> result = results.iterator();
-        while (result.hasNext()) {
-            String resultLine = result.next();
+        for (String resultLine : results) {
             LOG.info(" got: " + resultLine);
         }
 

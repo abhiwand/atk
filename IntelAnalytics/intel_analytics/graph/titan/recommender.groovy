@@ -86,7 +86,7 @@ def getResults(Vertex v, String[] propertyList) {
     def list = []
     length = propertyList.length
     if(length == 0){
-      println "ERROR: no result property provide!"
+      println "ERROR: no property provided for ML result!"
     }
 
     //firstly add bias

@@ -57,7 +57,8 @@ fi
 
 python_version="2.7.5"
 py27="python2.7"
-pip27="pip-2.7"
+pip27="pip" #pip by itself is capable of installing virtualenv without having to use a specified version. when using virtualenv we can specify our python executable
+
 
 if ! hash $py27 2>/dev/null; then
     echo $hdr Cannot find $py27  
@@ -184,7 +185,7 @@ if check matplotlib; then
 fi
 
 ins ipython
-ins pandas
+ins pandas==0.12.0
 ins bulbs
 ins happybase
 

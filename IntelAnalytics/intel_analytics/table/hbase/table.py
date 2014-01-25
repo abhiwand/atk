@@ -126,7 +126,34 @@ class HBaseTable(object):
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
-        if column_name and (column_name not in etl_schema.feature_names):
+        # input can't be null
+        if not column_name:
+            raise HBaseTableException("Input column is empty")
+
+        # check input: can be a single column or an expression of multiple columns
+        # accepted format exampe: transform('(a+b*(5+c))-d', ...
+        if transformation == EvalFunctions.Math.ARITHMETIC:
+            cols = re.split('\+|-|\*|\/|\%', re.sub('[()]', '', column_name))
+            if len(cols) < 2:
+                raise HBaseTableException("Arithmetic operations need more than 1 input")
+            for col in cols:
+                try:
+                    float(col)
+                except:
+                    if col not in etl_schema.feature_names:
+                        raise HBaseTableException("Column %s in expression %s does not exist" % (col, column_name))
+        # check input: comma separated columns or single-quoted string literals
+        # accepted format exampe: transform('(a,b,\'MyString\'', ...
+        elif transformation == EvalFunctions.String.CONCAT:
+            cols = column_name.split(',')
+            if len(cols) < 2:
+                raise HBaseTableException("Concatenation needs more than 1 input")
+            for col in cols:
+                if ((not ('\'' == col[0] and '\'' == col[len(col)-1])) and
+                    col not in etl_schema.feature_names):
+                    raise HBaseTableException("Column %s in expression %s does not exist" % (col, column_name))
+        # single column
+        elif column_name not in etl_schema.feature_names:
             raise HBaseTableException("Column %s does not exist" % column_name)
 
         script_path = os.path.join(etl_scripts_path, 'pig_transform.py')
