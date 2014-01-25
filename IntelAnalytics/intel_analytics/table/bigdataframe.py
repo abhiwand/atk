@@ -137,10 +137,34 @@ class FrameBuilder(object):
 
         Parameters
         ----------
+        C{frame_name} : String
+            The name for the data frame.
         C{filename} : String
             The path to the XML file.
-        C{schema} : String
-            TODO:
+        C{tag_name} : String
+            XML tag for record:
+
+        TODO: Other parameters for the parser.
+
+        Returns
+        -------
+        frame : C{BigDataFrame}
+        """
+        pass
+
+    @abc.abstractmethod
+    def append_from_xml(self, data_frame, file_name, tag_name):
+        """
+        Reads an XML file and append it into a existing data frame.
+
+        Parameters
+        ----------
+        C{data_frame} : BigDataFrame
+            An existing big data frame.
+        C{filename} : String
+            The path to the XML file.
+        C{tag_name} : String
+            XML tag for record:
 
         TODO: Other parameters for the parser.
 
