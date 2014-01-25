@@ -128,7 +128,7 @@ for n in `cat ${nodesfile}`; do
         ${dryrun} scp -i ${pemfile} _gmond.${nn} ${n}:/tmp/_gmond.conf
         ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
         echo ${n}:Updating ganglia config file;
-        mv -f /tmp/_gmond.conf /etc/ganglia/gmond.conf;                                                            <<<
+        mv -f /tmp/_gmond.conf /etc/ganglia/gmond.conf;
         echo ${n}:Disabling webserver;
         service nginx stop 2>&1 > /dev/null;
         chkconfig nginx off 2>&1 > /dev/null;
