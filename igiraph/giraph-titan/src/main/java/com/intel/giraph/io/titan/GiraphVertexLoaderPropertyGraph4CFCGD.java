@@ -54,9 +54,9 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_LEFT;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_RIGHT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_VALIDATE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TEST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
 /**
  * Vertex Loader to read vertex from Titan.
  * Features <code>VertexData</code> vertex values and
@@ -336,7 +336,7 @@ public class GiraphVertexLoaderPropertyGraph4CFCGD {
                     final Object vertexTypeObject = this.value;
                     Vector priorVector = vertex.getValue().getVector();
 
-                    String vertexTypeString = vertexTypeObject.toString();
+                    String vertexTypeString = vertexTypeObject.toString().toLowerCase();
                     if (vertexTypeString.equals(VERTEX_TYPE_LEFT)) {
                         vertexType = VertexType.LEFT;
                     } else if (vertexTypeString.equals(VERTEX_TYPE_RIGHT)) {
@@ -361,15 +361,15 @@ public class GiraphVertexLoaderPropertyGraph4CFCGD {
                                 Preconditions.checkNotNull(entry.getValue());
                                 if (edgeValuePropertyKeys.containsKey(entry.getKey())) {
                                     final Object edgeValueObject = entry.getValue();
-                                    edgeValue = Double.parseDouble(edgeValueObject.toString());
+                                    edgeValue = Double.parseDouble(edgeValueObject.toString().toLowerCase());
                                 } else if (edgeTypePropertyKey.equals(entry.getKey())) {
                                     final Object edgeTypeObject = entry.getValue();
                                     edgeTypeString = edgeTypeObject.toString();
-                                    if (edgeTypeString.equals(EDGE_TYPE_TRAIN)) {
+                                    if (edgeTypeString.equals(TYPE_TRAIN)) {
                                         edgeType = EdgeType.TRAIN;
-                                    } else if (edgeTypeString.equals(EDGE_TYPE_VALIDATE)) {
+                                    } else if (edgeTypeString.equals(TYPE_VALIDATE)) {
                                         edgeType = EdgeType.VALIDATE;
-                                    } else if (edgeTypeString.equals(EDGE_TYPE_TEST)) {
+                                    } else if (edgeTypeString.equals(TYPE_TEST)) {
                                         edgeType = EdgeType.TEST;
                                     } else {
                                         LOG.error("Edge type string: %s isn't supported." + edgeTypeString);

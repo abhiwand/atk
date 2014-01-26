@@ -58,6 +58,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._output_vertex_property_list = ''
         self._vertex_type = ''
         self._edge_type = ''
+        self._bias_on = ''
         self.report = []
         self._label_font_size = 12
         self._title_font_size = 14
@@ -188,9 +189,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
     def recommend(self,
                   vertex_id,
+                  vertex_type=global_config['giraph_left_vertex_type_str'],
                   output_vertex_property_list='',
+                  vector_value=global_config['giraph_vector_value'],
                   key_4_vertex_type='',
                   key_4_edge_type='',
+                  bias_on='',
                   left_vertex_name=global_config['giraph_recommend_left_name'],
                   right_vertex_name=global_config['giraph_recommend_right_name']):
         """
@@ -198,22 +202,33 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Required Parameters
         ----------
-        vertex_id : vertex id to get commendation for
+        vertex_id : vertex id to get recommendation for
 
         Optional Parameters
         (They come with default values. Overwrite it when default does not work for you.)
         ----------
+        vertex_type : vertex type to get recommendation for.
+                      Valid value is either "L" or "R".
+                      "L" stands for left-side vertices of a bipartite graph
+                      "R" stands for right-side vertices of a bipartite graph.
+                      The default value is "L"
         output_vertex_property_list: vertex properties which contains output vertex value.
                                      if more than one vertex property is used,
                                      expect it is a comma separated string list.
                                      The default value is the latest vertex_type set by
                                      algorithm execution.
+        vector_value: Boolean value.
+                      "true" means supporting a vector as vertex property's value.
+                      "false" means only support a single value as vertex property's value.
+                      The default value is "false".
         key_4_vertex_type: the property name for vertex type. The default value is the
                            latest vertex_type set by algorithm execution.
         key_4_edge_type: the property name for vertex type. The default value is the
                            latest vertex_type set by algorithm execution.
         left_vertex_name: left-side vertex name. The default value is "user".
         right_vertex_name : right-side vertex name. The default value is "movie".
+        bias_on: whether to enable bias. The default value is the latest bias_on set by
+                 algorithm execution
 
         Returns
         Top 10 recommendations for the input vertex id
@@ -237,6 +252,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             else:
                 key_4_edge_type = self._edge_type
 
+        if bias_on == '':
+            if self._bias_on == '':
+                raise ValueError("bias_on is empty!")
+            else:
+                bias_on = self._bias_on
+
+
         rec_cmd1 = 'gremlin.sh -e ' + global_config['giraph_recommend_script']
         rec_command = [self._table_name,
                        vertex_id,
@@ -251,7 +273,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                        global_config['giraph_train_str'],
                        global_config['giraph_vertex_true_name'],
                        key_4_vertex_type,
-                       key_4_edge_type]
+                       key_4_edge_type,
+                       vertex_type,
+                       vector_value,
+                       bias_on]
         rec_cmd2 = '::'.join(rec_command)
         rec_cmd = rec_cmd1 + ' ' + rec_cmd2
         #print rec_cmd
@@ -1251,6 +1276,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
         self._edge_type = global_config['hbase_column_family'] + edge_type
+        self._bias_on = bias_on
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/als'
         als_command = self._get_als_command(
             self._table_name,
@@ -1462,6 +1488,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
         self._edge_type = global_config['hbase_column_family'] + edge_type
+        self._bias_on = bias_on
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/cgd'
         cgd_command = self._get_cgd_command(
             self._table_name,

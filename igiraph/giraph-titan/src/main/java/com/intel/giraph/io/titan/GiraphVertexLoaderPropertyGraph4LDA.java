@@ -322,7 +322,7 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                     final Object vertexTypeObject = this.value;
                     Vector priorVector = vertex.getValue().getVector();
 
-                    String vertexTypeString = vertexTypeObject.toString();
+                    String vertexTypeString = vertexTypeObject.toString().toLowerCase();
                     if (vertexTypeString.equals(DOC_VERTEX)) {
                         vertexType = VertexType.DOC;
                     } else if (vertexTypeString.equals(WORD_VERTEX)) {

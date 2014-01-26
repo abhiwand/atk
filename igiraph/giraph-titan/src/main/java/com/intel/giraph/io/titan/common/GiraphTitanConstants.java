@@ -321,43 +321,31 @@ public class GiraphTitanConstants {
     /**
      * vertex type on the left side
      */
-    public static final String VERTEX_TYPE_LEFT = "L";
+    public static final String VERTEX_TYPE_LEFT = "l";
     /**
      * vertex type on the right side
      */
-    public static final String VERTEX_TYPE_RIGHT = "R";
+    public static final String VERTEX_TYPE_RIGHT = "r";
     /**
      * edge type for training data
      */
-    public static final String VERTEX_TYPE_TRAIN = "TR";
+    public static final String TYPE_TRAIN = "tr";
     /**
      * edge type for validation data
      */
-    public static final String VERTEX_TYPE_VALIDATE = "VA";
+    public static final String TYPE_VALIDATE = "va";
     /**
      * edge type for test data
      */
-    public static final String VERTEX_TYPE_TEST = "TE";
-    /**
-     * edge type for training data
-     */
-    public static final String EDGE_TYPE_TRAIN = "TR";
-    /**
-     * edge type for validation data
-     */
-    public static final String EDGE_TYPE_VALIDATE = "VA";
-    /**
-     * edge type for test data
-     */
-    public static final String EDGE_TYPE_TEST = "TE";
+    public static final String TYPE_TEST = "te";
     /**
      * vertex type for document
      */
-    public static final String DOC_VERTEX = "D";
+    public static final String DOC_VERTEX = "d";
     /**
      * vertex type for word
      */
-    public static final String WORD_VERTEX = "W";
+    public static final String WORD_VERTEX = "w";
     /**
      * prevent instantiation of utility class
      */

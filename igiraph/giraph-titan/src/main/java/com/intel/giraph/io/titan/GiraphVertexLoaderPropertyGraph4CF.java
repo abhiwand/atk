@@ -45,9 +45,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TEST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_VALIDATE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
@@ -335,7 +335,7 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                 } else if (propertyName.equals(vertexTypePropertyKey)) {
                     final Object vertexTypeObject = this.value;
                     Vector priorVector = vertex.getValue().getVector();
-                    String vertexTypeString = vertexTypeObject.toString();
+                    String vertexTypeString = vertexTypeObject.toString().toLowerCase();
                     if (vertexTypeString.equals(VERTEX_TYPE_LEFT)) {
                         vertexType = VertexType.LEFT;
                     } else if (vertexTypeString.equals(VERTEX_TYPE_RIGHT)) {
@@ -362,12 +362,12 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                                     edgeValue = Double.parseDouble(edgeValueObject.toString());
                                 } else if (edgeTypePropertyKey.equals(entry.getKey())) {
                                     final Object edgeTypeObject = entry.getValue();
-                                    edgeTypeString = edgeTypeObject.toString();
-                                    if (edgeTypeString.equals(EDGE_TYPE_TRAIN)) {
+                                    edgeTypeString = edgeTypeObject.toString().toLowerCase();
+                                    if (edgeTypeString.equals(TYPE_TRAIN)) {
                                         edgeType = EdgeType.TRAIN;
-                                    } else if (edgeTypeString.equals(EDGE_TYPE_VALIDATE)) {
+                                    } else if (edgeTypeString.equals(TYPE_VALIDATE)) {
                                         edgeType = EdgeType.VALIDATE;
-                                    } else if (edgeTypeString.equals(EDGE_TYPE_TEST)) {
+                                    } else if (edgeTypeString.equals(TYPE_TEST)) {
                                         edgeType = EdgeType.TEST;
                                     } else {
                                         LOG.error("Edge type string: %s isn't supported." + edgeTypeString);

@@ -50,9 +50,9 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_VALIDATE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_TEST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.WRONG_VERTEX_TYPE;
 /**
  * Vertex Loader to read vertex from Titan.
@@ -336,12 +336,12 @@ public class GiraphVertexLoaderPropertyGraph4LBP {
                 } else if (propertyName.equals(vertexTypePropertyKey)) {
                     final Object vertexTypeObject = this.value;
                     Vector priorVector = vertex.getValue().getPriorVector();
-                    String vertexTypeString = vertexTypeObject.toString();
-                    if (vertexTypeString.equals(VERTEX_TYPE_TRAIN)) {
+                    String vertexTypeString = vertexTypeObject.toString().toLowerCase();
+                    if (vertexTypeString.equals(TYPE_TRAIN)) {
                         vertexType = VertexType.TRAIN;
-                    } else if (vertexTypeString.equals(VERTEX_TYPE_VALIDATE)) {
+                    } else if (vertexTypeString.equals(TYPE_VALIDATE)) {
                         vertexType = VertexType.VALIDATE;
-                    } else if (vertexTypeString.equals(VERTEX_TYPE_TEST)) {
+                    } else if (vertexTypeString.equals(TYPE_TEST)) {
                         vertexType = VertexType.TEST;
                     } else {
                         LOG.error(WRONG_VERTEX_TYPE + vertexTypeString);
