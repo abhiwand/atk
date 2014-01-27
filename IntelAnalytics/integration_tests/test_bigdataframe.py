@@ -380,6 +380,73 @@ class BigDataFrameTest(unittest.TestCase):
         self.assertRaises(BigDataFrameException, big_frame.fillna, 'col_doesnt_exist', '{}\"sss')
         temp_tables.extend(big_frame.lineage)
 
+
+        #Validate XML Import/Extract
+        test_xml = """
+		   <?xml version="1.0"?>
+		   <XmlDocument>
+		   <store>
+			<book>
+				<category>reference</category>
+				<empty_field/>
+				<boolean_field>true</boolean_field>
+				<null_field>null</null_field>
+				<integer_field>2</integer_field>
+				<author>Nigel Rees</author>
+				<title>Sayings of the Century</title>
+				<price>8.95</price>
+			</book>
+			<book>
+				<category>fiction</category>
+				<author>Evelyn Waugh</author>
+				<title>Sword of Honour</title>
+				<price>12.99</price>
+				<isbn>0-553-21311-3</isbn>
+			</book>
+			<bicycle>
+				<color>red</color>
+				<price>19.95</price>
+			</bicycle>
+		   </store> 
+		   </XmlDocument> """
+
+        fp = open('/tmp/test.xml', 'w')
+        fp.write(test_xml)
+        fp.close()
+
+        big_frame = HBaseFrameBuilder().build_from_xml('test_xml', '/tmp/test.xml')
+        big_frame.inspect()
+
+        big_frame.transform('xml', 'first_book_author', EvalFunctions.Xml.EXTRACT_FIELD,
+                            transformation_args=["store/book[1]/author"])
+        big_frame.inspect()
+
+        big_frame.transform('xml', 'first_book_empty_field', EvalFunctions.Xml.EXTRACT_FIELD,
+                            transformation_args=["store/book[1]/empty_field"])
+
+        big_frame.transform('xml', 'first_books_price', EvalFunctions.Xml.EXTRACT_FIELD,
+                            transformation_args=["store/book[1]/price"])
+        big_frame.inspect()
+
+        big_frame.transform('xml', 'first_books_integer_field', EvalFunctions.Xml.EXTRACT_FIELD,
+                            transformation_args=["store/book[1]/integer_field"])
+        big_frame.inspect()
+
+        big_frame.transform('xml', 'first_books_boolean_field', EvalFunctions.Xml.EXTRACT_FIELD,
+                            transformation_args=["store/book[1]/boolean_field"])
+        big_frame.inspect()
+
+        big_frame.transform('xml', 'first_price_data_greater_than_10', EvalFunctions.Xml.EXTRACT_FIELD,
+                            transformation_args=["store/book[price>10][1]/price"])
+        big_frame.inspect()
+
+        big_frame.transform('xml', 'category', EvalFunctions.Xml.EXTRACT_FIELD,
+                            transformation_args=["store/book[1]/category"])
+
+        self.validate_json_extract(big_frame._table.table_name)
+
+        temp_tables.extend(big_frame.lineage)
+
         print 'Cleaning up the temp tables %s & their schema definitions' % (big_frame.lineage)
         with ETLHBaseClient(CONFIG_PARAMS['hbase_host']) as hbase_client:
             for temp in temp_tables:
