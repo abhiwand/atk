@@ -387,8 +387,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			The default value is 1.
 
         Returns
-            The algorithm's results in database.
-            The convergence curve is accessible through the report object.
+        The algorithm's results in database.
+        The learning curve is accessible through the report object.
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -913,8 +913,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			The default value is 1.
 
         Returns
-        The algorithm's results in database.
-        The convergence curve is accessible through the report object.
+            The algorithm's results in database.
+            The convergence curve is accessible through the report object.
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
