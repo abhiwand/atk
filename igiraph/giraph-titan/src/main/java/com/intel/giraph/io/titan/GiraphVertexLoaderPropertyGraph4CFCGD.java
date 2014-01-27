@@ -354,7 +354,7 @@ public class GiraphVertexLoaderPropertyGraph4CFCGD {
                 // filter Edge Label
                 if (this.relationID > 0) {
                     if (edgeLabelKeys.containsKey(this.type.getName())) {
-                        double edgeValue = 0.0d;
+                        double edgeValue = 1.0d;
                         if (this.direction.equals(Direction.OUT)) {
                             String edgeTypeString = null;
                             for (final Map.Entry<String, Object> entry : this.properties.entrySet()) {

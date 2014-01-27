@@ -320,6 +320,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                     input_edge_property_list,
                     input_edge_label,
                     output_vertex_property_list,
+                    vertex_type,
+                    vector_value=global_config['giraph_vector_value'],
                     num_worker=global_config['giraph_workers'],
                     max_supersteps=global_config['giraph_belief_propagation_max_supersteps'],
                     convergence_threshold=global_config['giraph_belief_propagation_convergence_threshold'],
@@ -352,10 +354,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex properties which contain the output vertex values if
 			you use more than one vertex property. We expect a comma
 			separated string list.
+		vertex_type :
+		    The vertex property which contains vertex type.
 
 		Optional Parameters
         (They come with default values. Overwrite it when the default value does not work for you.)
         ----------
+        vector_value:
+            Boolean variable.
+            "true" means a vector as vertex value is supported
+            "false" means a vector as vertex value is not supported
         num_worker :
             The number of Giraph workers.
             The default value is 15.
@@ -379,11 +387,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			The default value is 1.
 
         Returns
-        The algorithm's results in database.
-
+            The algorithm's results in database.
+            The convergence curve is accessible through the report object.
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
+        self._vertex_type = global_config['hbase_column_family'] + vertex_type
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lbp'
         lbp_command = self._get_lbp_command(
             self._table_name,
@@ -391,6 +400,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            self._vertex_type,
+            vector_value,
             num_worker,
             max_supersteps,
             convergence_threshold,
@@ -399,6 +410,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             bidirectional_check,
             output_path)
         lbp_cmd = ' '.join(lbp_command)
+        #print lbp_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
         time_str = get_time_str()
@@ -434,6 +446,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            vertex_type,
+            vector_value,
             num_worker,
             max_supersteps,
             convergence_threshold,
@@ -461,7 +475,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
+                global_config['giraph_param_vertex_type'] + vertex_type,
+                global_config['giraph_param_vector_value'] + vector_value,
                 global_config['giraph_belief_propagation_class'],
+                '-mc',
+                global_config['giraph_belief_propagation_class'] + '\$' + global_config['giraph_belief_propagation_master_compute'],
+                '-aw',
+                global_config['giraph_belief_propagation_class'] + '\$' + global_config['giraph_belief_propagation_aggregator'],
                 '-vif',
                 global_config['giraph_belief_propagation_input_format'],
                 '-vof',
@@ -502,7 +522,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         (They come with default values. Overwrite it when the default value does not work for you.)
         ----------
         num_worker :
-            The number of workers. The default value is 15.
+            The number of Giraph workers.
+            The default value is 15.
         max_supersteps :
 		    The number of super steps to run in Giraph.
 		    The default value is 20.
@@ -830,6 +851,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_label_propagation_max_supersteps'],
             convergence_threshold=global_config['giraph_label_propagation_convergence_threshold'],
@@ -864,6 +886,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Optional Parameters
         (They come with default values. Overwrite it when the default value does not work for you.)
         ----------
+        vector_value:
+            Boolean variable.
+            "true" means a vector as vertex value is supported
+            "false" means a vector as vertex value is not supported
         num_worker :
             The number of Giraph workers.
             The default value is 15.
@@ -888,6 +914,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Returns
         The algorithm's results in database.
+        The convergence curve is accessible through the report object.
         -------
         """
         self._output_vertex_property_list = output_vertex_property_list
@@ -898,6 +925,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            vector_value,
             num_worker,
             max_supersteps,
             convergence_threshold,
@@ -907,6 +935,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path
         )
         lp_cmd = ' '.join(lp_command)
+        #print lp_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
         time_str = get_time_str()
@@ -929,7 +958,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.bidirectional_check = bidirectional_check
         output.anchor_threshold = anchor_threshold
         output.super_steps = list(lp_results[0])
-        output.convergence_progress = list(lp_results[1])
+        output.cost = list(lp_results[1])
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -941,6 +970,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            vector_value,
             num_worker,
             max_supersteps,
             convergence_threshold,
@@ -969,7 +999,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
+                global_config['giraph_param_vector_value'] + vector_value,
                 global_config['giraph_label_propagation_class'],
+                '-mc',
+                global_config['giraph_label_propagation_class'] + '\$' + global_config['giraph_label_propagation_master_compute'],
+                '-aw',
+                global_config['giraph_label_propagation_class'] + '\$' + global_config['giraph_label_propagation_aggregator'],
                 '-vif',
                 global_config['giraph_label_propagation_input_format'],
                 '-vof',
@@ -981,7 +1016,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_label_propagation_max_supersteps'] + max_supersteps,
                 global_config['giraph_param_label_propagation_convergence_threshold'] + convergence_threshold,
                 global_config['giraph_param_label_propagation_lambda'] + lp_lambda,
-                global_config['giraph_param_label_bidirectional_check'] + bidirectional_check,
+                global_config['giraph_param_label_propagation_bidirectional_check'] + bidirectional_check,
                 global_config['giraph_param_label_propagation_anchor_threshold'] + anchor_threshold]
 
     def lda(
@@ -991,6 +1026,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_latent_dirichlet_allocation_max_supersteps'],
             alpha=global_config['giraph_latent_dirichlet_allocation_alpha'],
@@ -1025,8 +1061,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 		Optional Parameters
         (They come with default values. Overwrite it when the default value does not work for you.)
         ----------
+        vector_value:
+            Boolean variable.
+            "true" means a vector as vertex value is supported
+            "false" means a vector as vertex value is not supported
         num_worker :
-            The number of workers.
+            The number of Giraph workers.
             The default value is 15.
         max_supersteps : 
 		    The number of super steps to run in Giraph.
@@ -1072,6 +1112,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             self._vertex_type,
             self._edge_type,
+            vector_value,
             num_worker,
             max_supersteps,
             alpha,
@@ -1126,9 +1167,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            num_worker,
             vertex_type,
             edge_type,
+            vector_value,
+            num_worker,
             max_supersteps,
             alpha,
             beta,
@@ -1157,6 +1199,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
+                global_config['giraph_param_vector_value'] + vector_value,
                 global_config['giraph_param_vertex_type'] + vertex_type,
                 global_config['giraph_param_edge_type'] + edge_type,
                 global_config['giraph_latent_dirichlet_allocation_class'],
@@ -1191,6 +1234,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_alternating_least_square_max_supersteps'],
             feature_dimension=global_config['giraph_alternating_least_square_feature_dimension'],
@@ -1231,8 +1275,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 		Optional Parameters
         (They come with default values. Overwrite it when the default value does not work for you.)
         ----------
+        vector_value:
+            Boolean variable.
+            "true" means a vector as vertex value is supported
+            "false" means a vector as vertex value is not supported
         num_worker :
-            The number of workers.
+            The number of Giraph workers.
             The default value is 15.
         max_supersteps : 
 		    The number of super steps to run in Giraph.
@@ -1285,6 +1333,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             self._vertex_type,
             self._edge_type,
+            vector_value,
             num_worker,
             max_supersteps,
             feature_dimension,
@@ -1338,6 +1387,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            vector_value,
             num_worker,
             max_supersteps,
             feature_dimension,
@@ -1368,6 +1418,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
+                global_config['giraph_param_vector_value'] + vector_value,
                 global_config['giraph_param_output_bias'] + bias_on,
                 global_config['giraph_param_vertex_type'] + vertex_type,
                 global_config['giraph_param_edge_type'] + edge_type,
@@ -1405,6 +1456,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_conjugate_gradient_descent_max_supersteps'],
             feature_dimension=global_config['giraph_conjugate_gradient_descent_feature_dimension'],
@@ -1443,8 +1495,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 	    Optional Parameters
         (They come with default values. Overwrite it when the default value does not work for you.)
         ----------
+        vector_value:
+            Boolean variable.
+            "true" means a vector as vertex value is supported
+            "false" means a vector as vertex value is not supported
         num_worker :
-            The number of workers.
+            The number of Giraph workers.
             The default value is 15.
         max_supersteps : 
 		    The number of super steps to run in Giraph.
@@ -1497,6 +1553,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             self._vertex_type,
             self._edge_type,
+            vector_value,
             num_worker,
             max_supersteps,
             feature_dimension,
@@ -1552,6 +1609,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            vector_value,
             num_worker,
             max_supersteps,
             feature_dimension,
@@ -1582,6 +1640,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 input_edge_property_list,
                 global_config['giraph_param_input_edge_label'] + input_edge_label,
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
+                global_config['giraph_param_vector_value'] + vector_value,
                 global_config['giraph_param_output_bias'] + bias_on,
                 global_config['giraph_param_vertex_type'] + vertex_type,
                 global_config['giraph_param_edge_type'] + edge_type,

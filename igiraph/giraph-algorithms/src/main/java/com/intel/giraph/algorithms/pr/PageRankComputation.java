@@ -127,10 +127,7 @@ public class PageRankComputation extends BasicComputation<LongWritable,
     private boolean enableDetailedReport = false;
 
     @Override
-    public void compute(
-        Vertex<LongWritable, DoubleWritable, NullWritable> vertex,
-        Iterable<DoubleWritable> messages) throws IOException {
-
+    public void preSuperstep() {
         maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 30);
         if (maxSupersteps < 0) {
             throw new IllegalArgumentException("Number of super steps shoudl be > 0!");
@@ -150,6 +147,12 @@ public class PageRankComputation extends BasicComputation<LongWritable,
         if (convergenceProgressOutputInterval < 1) {
             throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
         }
+    }
+
+    @Override
+    public void compute(
+        Vertex<LongWritable, DoubleWritable, NullWritable> vertex,
+        Iterable<DoubleWritable> messages) throws IOException {
 
         double delta = 0;
 

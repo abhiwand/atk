@@ -166,7 +166,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
             double weight = edge.getValue().get();
             if (weight <= 0d) {
                 throw new IllegalArgumentException("Vertex ID: " + vertex.getId() +
-                    " has an edge with negative or zero weight value.");
+                    " has an edge with negative or zero weight value " + weight);
             }
             for (int i = 0; i < prior.size(); i++) {
                 sum = 0d;

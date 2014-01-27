@@ -20,9 +20,9 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_TEST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_VALIDATE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
@@ -86,27 +86,27 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
         nodes[0].addProperty(red, "1");
         nodes[0].addProperty(blue, "0.1");
         nodes[0].addProperty(yellow, "0.1");
-        nodes[0].addProperty(vertexType, VERTEX_TYPE_TRAIN);
+        nodes[0].addProperty(vertexType, TYPE_TRAIN);
         nodes[0].addProperty(prior, "1 0.1 0.1");
         nodes[1].addProperty(red, "0.2");
         nodes[1].addProperty(blue, "2");
         nodes[1].addProperty(yellow, "2");
-        nodes[1].addProperty(vertexType, VERTEX_TYPE_TRAIN);
+        nodes[1].addProperty(vertexType, TYPE_TRAIN);
         nodes[1].addProperty(prior, "0.2, 2, 2");
         nodes[2].addProperty(red, "0.3");
         nodes[2].addProperty(blue, "0.3");
         nodes[2].addProperty(yellow, "3");
-        nodes[2].addProperty(vertexType, VERTEX_TYPE_TRAIN);
+        nodes[2].addProperty(vertexType, TYPE_TRAIN);
         nodes[2].addProperty(prior, "0.3, 0.3, 3");
         nodes[3].addProperty(red, "0.4");
         nodes[3].addProperty(blue, "4");
         nodes[3].addProperty(yellow, "0.4");
-        nodes[3].addProperty(vertexType, VERTEX_TYPE_TEST);
+        nodes[3].addProperty(vertexType, TYPE_TEST);
         nodes[3].addProperty(prior, "0.4, 4, 0.4");
         nodes[4].addProperty(red, "5");
         nodes[4].addProperty(blue, "5");
         nodes[4].addProperty(yellow, "0.5");
-        nodes[4].addProperty(vertexType, VERTEX_TYPE_VALIDATE);
+        nodes[4].addProperty(vertexType, TYPE_VALIDATE);
         nodes[4].addProperty(prior, "5, 5, 0.5");
 
         TitanEdge[] edges = new TitanEdge[12];

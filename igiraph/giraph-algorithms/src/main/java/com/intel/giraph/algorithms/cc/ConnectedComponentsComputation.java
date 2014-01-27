@@ -96,17 +96,20 @@ public class ConnectedComponentsComputation extends
      * @param messages Iterator of messages from the previous superstep.
      * @throws IOException
      */
+
     @Override
-    public void compute(
-        Vertex<LongWritable, LongWritable, NullWritable> vertex,
-        Iterable<LongWritable> messages) throws IOException {
+    public void preSuperstep() {
         convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
         if (convergenceProgressOutputInterval < 1) {
             throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
         }
+    }
 
+    @Override
+    public void compute(
+        Vertex<LongWritable, LongWritable, NullWritable> vertex,
+        Iterable<LongWritable> messages) throws IOException {
         long componentId;
-
         boolean changed = false;
         // for the first step, new value is from proactively inspecting neighbors
         if (getSuperstep() == 0) {
