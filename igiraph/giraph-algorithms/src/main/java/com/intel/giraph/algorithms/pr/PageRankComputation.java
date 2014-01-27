@@ -149,6 +149,11 @@ public class PageRankComputation extends BasicComputation<LongWritable,
         }
     }
 
+    /**
+     * @param vertex   Vertex
+     * @param messages Iterator of messages from the previous superstep.
+     * @throws IOException
+     */
     @Override
     public void compute(
         Vertex<LongWritable, DoubleWritable, NullWritable> vertex,
@@ -310,9 +315,9 @@ public class PageRankComputation extends BasicComputation<LongWritable,
          */
         private FSDataOutputStream output;
         /**
-         * super step number
+         * Last superstep number
          */
-        private int lastStep = 0;
+        private long lastStep = 0L;
 
         public static String getFilename() {
             return FILENAME;
@@ -354,28 +359,27 @@ public class PageRankComputation extends BasicComputation<LongWritable,
 
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
             int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
-            int realStep = lastStep;
+            long realStep = lastStep;
 
             if (superstep == 0) {
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.0001f);
                 float resetProbability = getConf().getFloat(RESET_PROBABILITY, 0.15f);
-                output.writeBytes("==================PageRank Configuration====================\n");
+                output.writeBytes("======PageRank Configuration======\n");
                 output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
                 output.writeBytes(String.format("resetProbability: %f%n", resetProbability));
                 output.writeBytes(String.format("convergenceProgressOutputInterval: %d%n",
                     convergenceProgressOutputInterval));
-                output.writeBytes("-------------------------------------------------------------\n");
                 output.writeBytes("\n");
-                output.writeBytes("====================Learning Progress=======================\n");
+                output.writeBytes("======Learning Progress======\n");
             } else if (realStep >= 1 && realStep % convergenceProgressOutputInterval == 0) {
                 // output learning progress
                 double sumDelta = Double.parseDouble(map.get(SUM_DELTA_AGG));
-                output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
-                output.writeBytes(String.format("sumDelta=%f%n", sumDelta));
+                output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                output.writeBytes(String.format("sumDelta = %f%n", sumDelta));
             }
             output.flush();
-            lastStep = (int) superstep;
+            lastStep = superstep;
         }
 
         @Override

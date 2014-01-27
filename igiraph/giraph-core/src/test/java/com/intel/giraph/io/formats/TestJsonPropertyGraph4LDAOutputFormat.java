@@ -61,7 +61,7 @@ public class TestJsonPropertyGraph4LDAOutputFormat extends JsonPropertyGraph4LDA
 
     @Test
     public void testOuputFormat() throws IOException, InterruptedException {
-        Text expected = new Text("[1,[4,5],[w]]");
+        Text expected = new Text("[1,[4,5],[\"R\"]]");
 
         TaskAttemptContext tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);
@@ -69,7 +69,7 @@ public class TestJsonPropertyGraph4LDAOutputFormat extends JsonPropertyGraph4LDA
         Vertex vertex = mock(Vertex.class);
         when(vertex.getId()).thenReturn(new LongWritable(1L));
         
-        when(vertex.getValue()).thenReturn(new VertexData4LDAWritable(VertexType.WORD,
+        when(vertex.getValue()).thenReturn(new VertexData4LDAWritable(VertexType.RIGHT,
             new DenseVector(new double[]{4.0, 5.0})));
 
         // Create empty iterator == no edges

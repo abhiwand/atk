@@ -49,7 +49,7 @@ public class LoopyBeliefPropagationComputationTest {
     public void testToyData() throws Exception {
         // a small five-vertex graph
         String[] graph = new String[] {
-            "[0,[1,0.1,0.1],[],[[1,1,[]],[3,3,[]]]]",
+            "[0,[1,0.1,0.1],[\"TR\"],[[1,1,[]],[3,3,[]]]]",
             "[1,[0.2,2,2],[\"TR\"],[[0,1,[]],[2,2,[]],[3,1,[]]]]",
             "[2,[0.3,0.3,3],[\"tr\"],[[1,2,[]],[4,4,[]]]]",
             "[3,[0.4,4,0.4],[\"te\"],[[0,3,[]],[1,1,[]],[4,4,[]]]]",

@@ -213,7 +213,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                       "R" stands for right-side vertices of a bipartite graph.
                       The default value is "L"
         output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
+                                     If more than one vertex property is used,
                                      expect it is a comma separated string list.
                                      The default value is the latest vertex_type set by
                                      algorithm execution.
@@ -1035,6 +1035,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             evaluate_cost=global_config['giraph_latent_dirichlet_allocation_evaluate_cost'],
             max_val=global_config['giraph_latent_dirichlet_allocation_maxVal'],
             min_val=global_config['giraph_latent_dirichlet_allocation_minVal'],
+            bidirectional_check=global_config['giraph_latent_dirichlet_allocation_bidirectional_check'],
             num_topics=global_config['giraph_latent_dirichlet_allocation_num_topics']
     ):
         """
@@ -1122,6 +1123,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             max_val,
             min_val,
             num_topics,
+            bidirectional_check,
             output_path
         )
         lda_cmd = ' '.join(lda_command)
@@ -1179,6 +1181,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             max_val,
             min_val,
             num_topics,
+            bidirectional_check,
             output_path
     ):
         """
@@ -1224,6 +1227,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_latent_dirichlet_allocation_evaluate_cost'] + evaluate_cost,
                 global_config['giraph_param_latent_dirichlet_allocation_maxVal'] + max_val,
                 global_config['giraph_param_latent_dirichlet_allocation_minVal'] + min_val,
+                global_config['giraph_param_latent_dirichlet_allocation_bidirectional_check'] + bidirectional_check,
                 global_config['giraph_param_latent_dirichlet_allocation_num_topics'] + num_topics]
 
 
@@ -1466,6 +1470,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             max_val=global_config['giraph_conjugate_gradient_descent_maxVal'],
             min_val=global_config['giraph_conjugate_gradient_descent_minVal'],
             bias_on=global_config['giraph_conjugate_gradient_descent_bias_on'],
+            bidirectional_check=global_config['giraph_conjugate_gradient_descent_bidirectional_check'],
             num_iters=global_config['giraph_conjugate_gradient_descent_num_iters']
     ):
         """
@@ -1531,6 +1536,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 		    True means turn on bias calculation and False means turn off
 		    bias calculation.
 		    The default value is false.
+		bidirectional_check :
+		    If it is true, Giraph will firstly check whether each edge is bidirectional.
+		    The default value is false.
         num_iters : 
 		    The number of CGD iterations in each super step.
 		    The default value is 5.
@@ -1564,6 +1572,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             min_val,
             bias_on,
             num_iters,
+            bidirectional_check,
             output_path
         )
         cgd_cmd = ' '.join(cgd_command)
@@ -1620,6 +1629,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             min_val,
             bias_on,
             num_iters,
+            bidirectional_check,
             output_path
     ):
         """
@@ -1668,6 +1678,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_conjugate_gradient_descent_maxVal'] + max_val,
                 global_config['giraph_param_conjugate_gradient_descent_minVal'] + min_val,
                 global_config['giraph_param_conjugate_gradient_descent_bias_on'] + bias_on,
+                global_config['giraph_param_conjugate_gradient_descent_bidirectional_check'] + bidirectional_check,
                 global_config['giraph_param_conjugate_gradient_descent_num_iters'] + num_iters
         ]
 

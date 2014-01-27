@@ -24,15 +24,9 @@
 package com.intel.giraph.io.formats;
 
 import java.io.IOException;
-
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
-
-import com.intel.giraph.io.VertexData4LDAWritable;
-import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
-import com.intel.mahout.math.DoubleWithVectorWritable;
-
 import org.apache.giraph.utils.NoOpComputation;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.LongWritable;
@@ -40,9 +34,12 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import com.intel.giraph.io.VertexData4LDAWritable;
+import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
+import com.intel.mahout.math.DoubleWithVectorWritable;
+
 import org.junit.Before;
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -77,7 +74,7 @@ public class TestJsonPropertyGraph4LDAInputFormat extends JsonPropertyGraph4LDAI
 
     @Test
     public void testReadVertex() throws Exception {
-        String input = "[1,[],[d],[[0,1,[]],[2,2,[]],[3,1,[]]]]";
+        String input = "[1,[],[\"L\"],[[0,1,[]],[2,2,[]],[3,1,[]]]]";
 
         when(rr.getCurrentValue()).thenReturn(new Text(input));
         TextVertexReader vr = createVertexReader(rr);
@@ -89,7 +86,7 @@ public class TestJsonPropertyGraph4LDAInputFormat extends JsonPropertyGraph4LDAI
         assertEquals(vertex.getNumEdges(), 3);
         assertEquals(1L, vertex.getId().get());
         assertTrue(vertex.getValue().getVector().size() == 0);
-        assertTrue(vertex.getValue().getType() == VertexType.DOC);
+        assertTrue(vertex.getValue().getType() == VertexType.LEFT);
         assertEquals(1.0, vertex.getEdgeValue(new LongWritable(0L)).getData(), 0d);
         assertEquals(2.0, vertex.getEdgeValue(new LongWritable(2L)).getData(), 0d);
         assertEquals(1.0, vertex.getEdgeValue(new LongWritable(3L)).getData(), 0d);

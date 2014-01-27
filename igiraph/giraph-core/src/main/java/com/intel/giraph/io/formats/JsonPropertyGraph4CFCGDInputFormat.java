@@ -145,11 +145,11 @@ public class JsonPropertyGraph4CFCGDInputFormat extends TextVertexInputFormat<Lo
             if (valueVector.length() != 1) {
                 throw new IllegalArgumentException("This vertex can only have one type.");
             }
-            String vs = valueVector.getString(0);
+            String vs = valueVector.getString(0).toLowerCase();
             VertexType vt = null;
-            if (vs.equals("L")) {
+            if (vs.equals("l")) {
                 vt = VertexType.LEFT;
-            } else if (vs.equals("R")) {
+            } else if (vs.equals("r")) {
                 vt = VertexType.RIGHT;
             } else {
                 throw new IllegalArgumentException(String.format("Vertex type string: %s isn't supported.", vs));
@@ -168,7 +168,7 @@ public class JsonPropertyGraph4CFCGDInputFormat extends TextVertexInputFormat<Lo
             if (valueVector.length() != 1) {
                 throw new IllegalArgumentException("This edge can only have one type.");
             }
-            String vs = valueVector.getString(0);
+            String vs = valueVector.getString(0).toLowerCase();
             EdgeType et = null;
             if (vs.equals("tr")) {
                 et = EdgeType.TRAIN;

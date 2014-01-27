@@ -88,15 +88,6 @@ public class ConnectedComponentsComputation extends
      */
     private int convergenceProgressOutputInterval = 1;
 
-    /**
-     * For each iteration, each node sends its current componentId
-     * to its neighbors who are with higher componentId
-     *
-     * @param vertex   Vertex
-     * @param messages Iterator of messages from the previous superstep.
-     * @throws IOException
-     */
-
     @Override
     public void preSuperstep() {
         convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
@@ -105,6 +96,14 @@ public class ConnectedComponentsComputation extends
         }
     }
 
+    /**
+     * For each iteration, each node sends its current componentId
+     * to its neighbors who are with higher componentId
+     *
+     * @param vertex   Vertex
+     * @param messages Iterator of messages from the previous superstep.
+     * @throws IOException
+     */
     @Override
     public void compute(
         Vertex<LongWritable, LongWritable, NullWritable> vertex,
@@ -186,9 +185,9 @@ public class ConnectedComponentsComputation extends
          */
         private FSDataOutputStream output;
         /**
-         * super step number
+         * Last superstep number
          */
-        private int lastStep = 0;
+        private long lastStep = 0L;
 
         public static String getFilename() {
             return FILENAME;
@@ -229,25 +228,26 @@ public class ConnectedComponentsComputation extends
             }
 
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
-            int realStep = lastStep;
+            long realStep = lastStep;
 
             if (superstep == 0) {
-                output.writeBytes("==================Connected Components Configuration====================\n");
-                output.writeBytes("convergenceProgressOutputInterval: " + convergenceProgressOutputInterval + "\n");
-                output.writeBytes("-------------------------------------------------------------\n");
+                output.writeBytes("======Connected Components Configuration======\n");
+                output.writeBytes(String.format("convergenceProgressOutputInterval: %d%n",
+                    convergenceProgressOutputInterval));
                 output.writeBytes("\n");
-                output.writeBytes("===================Convergence Progress======================\n");
+                output.writeBytes("======Convergence Progress======\n");
             } else if (realStep >= 0 && realStep % convergenceProgressOutputInterval == 0) {
                 // output learning progress
                 double sumDelta = Double.parseDouble(map.get(SUM_DELTA));
                 double numUpdates = Double.parseDouble(map.get(SUM_UPDATES));
                 if (numUpdates > 0) {
                     double avgUpdates = sumDelta / numUpdates;
-                    output.writeBytes("superstep = " + realStep + "\tavgDelta = " + avgUpdates + "\n");
+                    output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                    output.writeBytes(String.format("avgDelta = %f%n", avgUpdates));
                 }
             }
             output.flush();
-            lastStep = (int) superstep;
+            lastStep = superstep;
         }
 
         @Override

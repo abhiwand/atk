@@ -324,9 +324,9 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
 
                     String vertexTypeString = vertexTypeObject.toString().toLowerCase();
                     if (vertexTypeString.equals(DOC_VERTEX)) {
-                        vertexType = VertexType.DOC;
+                        vertexType = VertexType.LEFT;
                     } else if (vertexTypeString.equals(WORD_VERTEX)) {
-                        vertexType = VertexType.WORD;
+                        vertexType = VertexType.RIGHT;
                     } else {
                         LOG.error("Vertex type string: %s isn't supported." + vertexTypeString);
                         throw new IllegalArgumentException(String.format(

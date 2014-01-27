@@ -96,7 +96,7 @@ class recommendation {
    def rec
 }
 
-def getResults(Vertex v, String[] propertyList, Sting vectorValue, Sting biasOn) {
+def getResults(Vertex v, String[] propertyList, String vectorValue, String biasOn) {
     def list = []
     length = propertyList.length
     if(length == 0){

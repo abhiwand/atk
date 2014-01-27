@@ -25,6 +25,7 @@ package com.intel.giraph.algorithms.cgd;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Map.Entry;
 
@@ -79,6 +80,8 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     public static final String BIAS_ON = "cgd.biasOn";
     /** Custom argument for the convergence threshold */
     public static final String CONVERGENCE_THRESHOLD = "cgd.convergenceThreshold";
+    /** Custom argument for checking bi-directional edge or not (default: false) */
+    public static final String BIDIRECTIONAL_CHECK = "cgd.bidirectionalCheck";
     /** Custom argument for maximum edge weight value */
     public static final String MAX_VAL = "cgd.maxVal";
     /** Custom argument for minimum edge weight value */
@@ -119,6 +122,8 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     private float lambda = 0f;
     /** Bias on/off switch */
     private boolean biasOn = false;
+    /** Turning on/off bi-directional edge check */
+    private boolean bidirectionalCheck = false;
     /** Maximum edge weight value */
     private float maxVal = Float.POSITIVE_INFINITY;
     /** Minimum edge weight value */
@@ -143,6 +148,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
             throw new IllegalArgumentException("Regularization parameter lambda should be >= 0.");
         }
         biasOn = getConf().getBoolean(BIAS_ON, false);
+        bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
         maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
         minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
         learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
@@ -152,7 +158,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
     /**
-     * initialize vertex, collect graph statistics and send out messages
+     * Initialize vertex, collect graph statistics and send out messages
      *
      * @param vertex of the graph
      */
@@ -234,7 +240,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
     /**
-     * compute gradient
+     * Compute gradient
      *
      * @param bias of type double
      * @param value of type Vector
@@ -264,7 +270,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
     /**
-     * compute alpha
+     * Compute alpha
      *
      * @param gradient of type Vector
      * @param conjugate of type Vector
@@ -277,7 +283,6 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
         if (conjugate.norm(1d) == 0d) {
             return alpha;
         }
-
         double predictSquared = 0d;
         int numTrain = 0;
         for (MessageData4CFWritable message : messages) {
@@ -296,7 +301,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
     /**
-     * compute beta
+     * Compute beta
      *
      * @param gradient of type Vector
      * @param conjugate of type Vector
@@ -314,7 +319,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
     /**
-     * compute bias
+     * Compute bias
      *
      * @param value of type Vector
      * @param messages of type Iterable
@@ -350,6 +355,20 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
             initialize(vertex);
             vertex.voteToHalt();
             return;
+        }
+
+        // verify bi-directional edges
+        int numMessages = 0;
+        Iterator<MessageData4CFWritable> it = messages.iterator();
+        while (it.hasNext()) {
+            numMessages++;
+            it.next();
+        }
+        if (bidirectionalCheck) {
+            if (numMessages != vertex.getNumEdges()) {
+                throw new IllegalArgumentException(String.format("Vertex ID %d: Number of received messages (%d)" +
+                    " isn't equal to number of edges (%d).", vertex.getId().get(), numMessages, vertex.getNumEdges()));
+            }
         }
 
         Vector currentValue = vertex.getValue().getVector();
@@ -430,7 +449,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
     }
 
     /**
-     * Master compute associated with {@link SimplePageRankComputation}. It registers required aggregators.
+     * Master compute associated with {@link ConjugateGradientDescentComputation}. It registers required aggregators.
      */
     public static class ConjugateGradientDescentMasterCompute extends DefaultMasterCompute {
         @Override
@@ -494,7 +513,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
         /** Saved output stream to write to */
         private FSDataOutputStream output;
         /**super step number*/
-        private int lastStep = 0;
+        private long lastStep = -1L;
 
         public static String getFilename() {
             return FILENAME;
@@ -516,8 +535,7 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
         /**
          * Set filename written to
          *
-         * @param applicationAttempt
-         *            app attempt
+         * @param applicationAttempt of type long
          */
         private static void setFilename(long applicationAttempt) {
             FILENAME = "cgd-learning-report_" + applicationAttempt;
@@ -526,57 +544,60 @@ public class ConjugateGradientDescentComputation extends BasicComputation<LongWr
         @Override
         public void writeAggregator(Iterable<Entry<String, Writable>> aggregatorMap, long superstep)
             throws IOException {
+            long realStep = lastStep;
+            int learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
+
             // collect aggregated data
             HashMap<String, String> map = new HashMap<String, String>();
             for (Entry<String, Writable> entry : aggregatorMap) {
                 map.put(entry.getKey(), entry.getValue().toString());
             }
 
-            int learningCurveOutputInterval = getConf().getInt(LEARNING_CURVE_OUTPUT_INTERVAL, 1);
-            int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
-            int realStep = lastStep;
-
-            if (superstep == 0) {
+            if (realStep == 0) {
                 // output graph statistics
                 long leftVertices = Long.parseLong(map.get(SUM_LEFT_VERTICES));
                 long rightVertices = Long.parseLong(map.get(SUM_RIGHT_VERTICES));
-                long trainEdges = Long.parseLong(map.get(SUM_TRAIN_EDGES));
-                long validateEdges = Long.parseLong(map.get(SUM_VALIDATE_EDGES));
-                long testEdges = Long.parseLong(map.get(SUM_TEST_EDGES));
-                output.writeBytes("Graph Statistics:\n");
+                long trainEdges = Long.parseLong(map.get(SUM_TRAIN_EDGES)) * 2;
+                long validateEdges = Long.parseLong(map.get(SUM_VALIDATE_EDGES)) * 2;
+                long testEdges = Long.parseLong(map.get(SUM_TEST_EDGES)) * 2;
+                output.writeBytes("======Graph Statistics======\n");
                 output.writeBytes(String.format("Number of vertices: %d (left: %d, right: %d)%n",
                     leftVertices + rightVertices, leftVertices, rightVertices));
-                output.writeBytes(String.format("Number of edges: %d (train: %d, validate: %d, test: %d%n)",
+                output.writeBytes(String.format("Number of edges: %d (train: %d, validate: %d, test: %d)%n",
                     trainEdges + validateEdges + testEdges, trainEdges, validateEdges, testEdges));
+                output.writeBytes("\n");
                 // output cgd configuration
+                int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
                 int featureDimension = getConf().getInt(FEATURE_DIMENSION, 20);
                 float lambda = getConf().getFloat(LAMBDA, 0f);
                 boolean biasOn = getConf().getBoolean(BIAS_ON, false);
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
+                boolean bidirectionalCheck = getConf().getBoolean(BIDIRECTIONAL_CHECK, false);
                 int numCGDIters = getConf().getInt(NUM_CGD_ITERS, 5);
                 float maxVal = getConf().getFloat(MAX_VAL, Float.POSITIVE_INFINITY);
                 float minVal = getConf().getFloat(MIN_VAL, Float.NEGATIVE_INFINITY);
-                output.writeBytes("=====================CGD Configuration====================\n");
+                output.writeBytes("======CGD Configuration======\n");
+                output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeBytes(String.format("featureDimension: %d%n", featureDimension));
                 output.writeBytes(String.format("lambda: %f%n", lambda));
                 output.writeBytes(String.format("biasOn: %b%n", biasOn));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));
-                output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
+                output.writeBytes(String.format("bidirectionalCheck: %b%n", bidirectionalCheck));
                 output.writeBytes(String.format("numCGDIters: %d%n", numCGDIters));
                 output.writeBytes(String.format("maxVal: %f%n", maxVal));
                 output.writeBytes(String.format("minVal: %f%n", minVal));
                 output.writeBytes(String.format("learningCurveOutputInterval: %d%n", learningCurveOutputInterval));
                 output.writeBytes("\n");
-                output.writeBytes("========================Learning Progress====================\n");
+                output.writeBytes("======Learning Progress======\n");
             } else if (realStep > 0 && (realStep % (2 * learningCurveOutputInterval)) == 0) {
                 // output learning progress
                 double trainCost = Double.parseDouble(map.get(SUM_TRAIN_COST));
                 double validateRmse = Double.parseDouble(map.get(SUM_VALIDATE_ERROR));
                 double testRmse = Double.parseDouble(map.get(SUM_TEST_ERROR));
-                output.writeBytes(String.format("superstep=%d%c", realStep, '\t'));
-                output.writeBytes(String.format("cost(train)=%f%c", trainCost, '\t'));
-                output.writeBytes(String.format("rmse(validate)=%f%c", validateRmse, '\t'));
-                output.writeBytes(String.format("rmse(test)=%f%n", testRmse));
+                output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                output.writeBytes(String.format("cost(train) = %f%c", trainCost, '\t'));
+                output.writeBytes(String.format("rmse(validate) = %f%c", validateRmse, '\t'));
+                output.writeBytes(String.format("rmse(test) = %f%n", testRmse));
             }
             output.flush();
             lastStep = (int) superstep;

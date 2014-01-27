@@ -142,16 +142,12 @@ public class JsonPropertyGraph4LBPInputFormat extends TextVertexInputFormat<Long
          * @throws JSONException
          */
         protected VertexType getVertexType(JSONArray valueVector) throws JSONException {
-            if (valueVector.length() > 1) {
-                throw new IllegalArgumentException("The vertex can only have at most one type.");
-            } else {
-                if (valueVector.length() == 0) {
-                    return VertexType.TRAIN;
-                }
+            if (valueVector.length() != 1) {
+                throw new IllegalArgumentException("The vertex can only have one type.");
             }
             String vs = valueVector.getString(0).toLowerCase();
             VertexType vt = null;
-            if (vs.equals("tr") || vs.equals("")) {
+            if (vs.equals("tr")) {
                 vt = VertexType.TRAIN;
             } else if (vs.equals("va")) {
                 vt = VertexType.VALIDATE;

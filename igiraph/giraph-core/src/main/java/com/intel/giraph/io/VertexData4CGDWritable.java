@@ -33,14 +33,14 @@ import java.io.IOException;
 
 /**
  * Writable to handle serialization of the fields associated with vertex data
- * for CGD algorithm in Collaborative filtering
+ * of CGD
  */
 public class VertexData4CGDWritable extends VertexData4CFWritable {
 
-    /** the gradient value at this vertex */
+    /** The gradient value at this vertex */
     private final VectorWritable gradientWritable = new VectorWritable();
 
-    /** the conjugate value at this vertex */
+    /** The conjugate value at this vertex */
     private final VectorWritable conjugateWritable = new VectorWritable();
 
     /**
