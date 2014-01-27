@@ -22,8 +22,8 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
-import com.intel.giraph.io.EdgeDataWritable;
-import com.intel.giraph.io.VertexDataWritable;
+import com.intel.giraph.io.EdgeData4CFWritable;
+import com.intel.giraph.io.VertexData4CFWritable;
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.thinkaurelius.titan.diskstorage.Backend;
@@ -62,7 +62,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRA
  * [1,[4,3],[L],[[2,2.1,[tr]],[3,0.7,[va]]]]
  */
 public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
-    TitanHBaseVertexInputFormat<LongWritable, VertexDataWritable, EdgeDataWritable> {
+    TitanHBaseVertexInputFormat<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
 
     /**
      * LOG class
@@ -86,7 +86,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      */
     @Override
     public void setConf(
-        ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, EdgeDataWritable> conf) {
+        ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> conf) {
         GiraphTitanUtils.setupHBase(conf);
         super.setConf(conf);
     }
@@ -100,7 +100,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      * @throws IOException
      * @throws RuntimeException
      */
-    public VertexReader<LongWritable, VertexDataWritable, EdgeDataWritable> createVertexReader(
+    public VertexReader<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> createVertexReader(
         InputSplit split, TaskAttemptContext context) throws IOException {
 
         return new TitanHBaseVertexReader(split, context);
@@ -111,7 +111,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
      * Uses the RecordReader to get HBase data
      */
     public static class TitanHBaseVertexReader extends
-        HBaseVertexReader<LongWritable, VertexDataWritable, EdgeDataWritable> {
+        HBaseVertexReader<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> {
         /**
          * reader to parse Titan graph
          */
@@ -119,7 +119,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
         /**
          * Giraph vertex
          */
-        private Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> vertex;
+        private Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> vertex;
         /**
          * task context
          */
@@ -168,7 +168,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
             final byte[] edgeStoreFamily = Bytes.toBytes(Backend.EDGESTORE_NAME);
 
             while (getRecordReader().nextKeyValue()) {
-                final Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> temp = graphReader
+                final Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> temp = graphReader
                     .readGiraphVertex(PROPERTY_GRAPH_4_CF, getConf(), getRecordReader()
                         .getCurrentKey().copyBytes(), getRecordReader().getCurrentValue().getMap()
                         .get(edgeStoreFamily));
@@ -190,7 +190,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          * @throws InterruptedException
          */
         @Override
-        public Vertex<LongWritable, VertexDataWritable, EdgeDataWritable> getCurrentVertex()
+        public Vertex<LongWritable, VertexData4CFWritable, EdgeData4CFWritable> getCurrentVertex()
             throws IOException, InterruptedException {
             return vertex;
         }
@@ -201,8 +201,8 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          * @return VertexDataWritable vertex value in vector
          * @throws IOException
          */
-        protected VertexDataWritable getValue() throws IOException {
-            VertexDataWritable vertexValue = vertex.getValue();
+        protected VertexData4CFWritable getValue() throws IOException {
+            VertexData4CFWritable vertexValue = vertex.getValue();
             Vector vector = vertexValue.getVector();
             if (cardinality != vector.size()) {
                 if (cardinality == -1) {
@@ -220,7 +220,7 @@ public class TitanHBaseVertexInputFormatPropertyGraph4CF extends
          * @return Iterable of Giraph edges
          * @throws IOException
          */
-        protected Iterable<Edge<LongWritable, EdgeDataWritable>> getEdges() throws IOException {
+        protected Iterable<Edge<LongWritable, EdgeData4CFWritable>> getEdges() throws IOException {
             return vertex.getEdges();
         }
 

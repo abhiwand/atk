@@ -33,8 +33,8 @@ import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import com.intel.giraph.io.VertexDataWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
+import com.intel.giraph.io.VertexData4CFWritable;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 
 import java.io.IOException;
 
@@ -43,21 +43,22 @@ import java.io.IOException;
  * <code>Long</code> id and <code>VertexData</code> values.
  */
 public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<LongWritable,
-    VertexDataWritable, Writable> {
+    VertexData4CFWritable, Writable> {
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new JsonLongIDVertexDataWriter();
+        return new JsonPropertyGraph4CFWriter();
     }
 
     /**
      * VertexWriter that supports vertices with <code>Long</code> id
      * and <code>VertexData</code> values.
      */
-    protected class JsonLongIDVertexDataWriter extends TextVertexWriterToEachLine {
+    protected class JsonPropertyGraph4CFWriter extends TextVertexWriterToEachLine {
 
         @Override
-        public Text convertVertexToLine(Vertex<LongWritable, VertexDataWritable, Writable> vertex) throws IOException {
+        public Text convertVertexToLine(Vertex<LongWritable, VertexData4CFWritable, Writable> vertex)
+            throws IOException {
             JSONArray jsonVertex = new JSONArray();
             try {
                 // add vertex id
@@ -92,7 +93,7 @@ public class JsonPropertyGraph4CFOutputFormat extends TextVertexOutputFormat<Lon
             } catch (JSONException e) {
                 throw new IllegalArgumentException("writeVertex: Couldn't write vertex " + vertex);
             }
-            return new Text(jsonVertex.toString().replaceAll("\"", ""));
+            return new Text(jsonVertex.toString());
         }
     }
 

@@ -58,8 +58,8 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_LABEL;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_PROPERTY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_TYPE;
@@ -129,11 +129,11 @@ public class GiraphTitanUtils {
 
         }
 
-        if (INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).equals("")) {
+        if (INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).equals("")) {
             LOG.info(NO_VERTEX_PROPERTY + ENSURE_INPUT_FORMAT);
         }
 
-        if (INPUT_EDGE_PROPERTY_KEY_LIST.get(conf).equals("")) {
+        if (INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).equals("")) {
             LOG.info(NO_EDGE_PROPERTY + ENSURE_INPUT_FORMAT);
         }
 
@@ -156,8 +156,8 @@ public class GiraphTitanUtils {
      * @param conf : Giraph configuration
      */
     public static void sanityCheckOutputParameters(ImmutableClassesGiraphConfiguration conf) {
-        String[] vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
-        if (vertexPropertyKeyList.length == 0) {
+        String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
+        if (vertexValuePropertyKeyList.length == 0) {
             throw new IllegalArgumentException(CONFIG_VERTEX_PROPERTY + CONFIG_PREFIX +
                 OUTPUT_VERTEX_PROPERTY_KEY_LIST.getKey() + NO_VERTEX_READ);
         }
@@ -262,17 +262,17 @@ public class GiraphTitanUtils {
             throw new RuntimeException(TITAN_TX_NOT_OPEN);
         }
         LOG.info(OPENED_GRAPH);
-        String[] vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
+        String[] vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
         Lock dbLock = FakeLock.INSTANCE;
         dbLock.lock();
-        for (int i = 0; i < vertexPropertyKeyList.length; i++) {
-            if (!tx.containsType(vertexPropertyKeyList[i])) {
-                LOG.info(CREATE_VERTEX_PROPERTY + vertexPropertyKeyList[i]);
+        for (int i = 0; i < vertexValuePropertyKeyList.length; i++) {
+            if (!tx.containsType(vertexValuePropertyKeyList[i])) {
+                LOG.info(CREATE_VERTEX_PROPERTY + vertexValuePropertyKeyList[i]);
                 // for titan 0.3.2
                 //     this.graph.makeType().name().unique(Direction.OUT).dataType(String.class)
                 //             .makePropertyKey();
                 //for titan 0.4.0
-                graph.makeKey(vertexPropertyKeyList[i]).dataType(String.class).make();
+                graph.makeKey(vertexValuePropertyKeyList[i]).dataType(String.class).make();
             }
         }
         dbLock.unlock();

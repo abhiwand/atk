@@ -64,8 +64,8 @@ public abstract class TitanTestBase<I extends org.apache.hadoop.io.WritableCompa
         LOG.info("*** Starting setUp ***");
         try {
             setHbaseProperties();
-            configure();
             open();
+            configure();
         } catch (Exception e) {
             LOG.error("*** Error in SETUP ***", e);
             throw e;

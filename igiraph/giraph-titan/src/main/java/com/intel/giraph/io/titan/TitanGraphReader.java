@@ -38,10 +38,10 @@ import org.apache.log4j.Logger;
 import java.nio.ByteBuffer;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_FLOAT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_NULL;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_LONG_NULL;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_TWO_VECTOR_DOUBLE_VECTOR;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LBP;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LP;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VALID_PROPERTY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_TITAN_TX;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
@@ -96,12 +96,12 @@ public class TitanGraphReader extends StandardTitanGraph {
 
         if (vertexId > 0 && vertexId % TITAN_ID_OFFSET == 0) {
             switch(type) {
-            case LONG_DOUBLE_FLOAT:
-                final GiraphVertexLoaderLongDoubleFloat loader1 = new GiraphVertexLoaderLongDoubleFloat(conf,
+            case LONG_DOUBLE_NULL:
+                final GiraphVertexLoaderLongDoubleNull loader1 = new GiraphVertexLoaderLongDoubleNull(conf,
                         vertexId);
                 for (final Entry data : entries) {
                     try {
-                        final GiraphVertexLoaderLongDoubleFloat.RelationFactory factory = loader1.getFactory();
+                        final GiraphVertexLoaderLongDoubleNull.RelationFactory factory = loader1.getFactory();
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();
                     } catch (NullPointerException e) {
@@ -125,13 +125,13 @@ public class TitanGraphReader extends StandardTitanGraph {
                 }
                 return loader2.getVertex();
 
-            case LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR:
-                final GiraphVertexLoaderLongTwoVectorDoubleTwoVector
-                        loader3 = new GiraphVertexLoaderLongTwoVectorDoubleTwoVector(
+            case PROPERTY_GRAPH_4_LBP:
+                final GiraphVertexLoaderPropertyGraph4LBP
+                        loader3 = new GiraphVertexLoaderPropertyGraph4LBP(
                             conf, vertexId);
                 for (final Entry data : entries) {
                     try {
-                        final GiraphVertexLoaderLongTwoVectorDoubleTwoVector.RelationFactory factory = loader3
+                        final GiraphVertexLoaderPropertyGraph4LBP.RelationFactory factory = loader3
                                 .getFactory();
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();
@@ -141,13 +141,13 @@ public class TitanGraphReader extends StandardTitanGraph {
                 }
                 return loader3.getVertex();
 
-            case LONG_TWO_VECTOR_DOUBLE_VECTOR:
-                final GiraphVertexLoaderLongTwoVectorDoubleVector
-                        loader4 = new GiraphVertexLoaderLongTwoVectorDoubleVector(
+            case PROPERTY_GRAPH_4_LP:
+                final GiraphVertexLoaderPropertyGraph4LP
+                        loader4 = new GiraphVertexLoaderPropertyGraph4LP(
                             conf, vertexId);
                 for (final Entry data : entries) {
                     try {
-                        final GiraphVertexLoaderLongTwoVectorDoubleVector.RelationFactory factory = loader4
+                        final GiraphVertexLoaderPropertyGraph4LP.RelationFactory factory = loader4
                                 .getFactory();
                         super.edgeSerializer.readRelation(factory, data, tx);
                         factory.build();

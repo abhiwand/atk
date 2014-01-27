@@ -90,16 +90,16 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
          */
         private TitanGraph graph = null;
         /**
-         * Vertex properties to filter
+         * Vertex value properties to filter
          */
-        private String[] vertexPropertyKeyList = null;
+        private String[] vertexValuePropertyKeyList = null;
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
             InterruptedException {
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
-            vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
+            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
         }
 
         @Override
@@ -116,8 +116,8 @@ public class TitanVertexOutputFormatLongIDDistanceMap<I extends LongWritable,
                 sumHopCounts += entry.getValue();
             }
 
-            bluePrintVertex.setProperty(vertexPropertyKeyList[0], Long.toString(numSources));
-            bluePrintVertex.setProperty(vertexPropertyKeyList[1], Long.toString(sumHopCounts));
+            bluePrintVertex.setProperty(vertexValuePropertyKeyList[0], Long.toString(numSources));
+            bluePrintVertex.setProperty(vertexValuePropertyKeyList[1], Long.toString(sumHopCounts));
             return null;
         }
 

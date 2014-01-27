@@ -32,11 +32,10 @@ import org.apache.mahout.math.Vector;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.json.JSONArray;
 import org.json.JSONException;
+import java.io.IOException;
 
 import com.intel.giraph.io.VertexData4LDAWritable;
 import com.intel.giraph.io.VertexData4LDAWritable.VertexType;
-
-import java.io.IOException;
 
 /**
  * VertexOutputFormat that supports JSON encoded vertices featuring
@@ -75,11 +74,11 @@ public class JsonPropertyGraph4LDAOutputFormat extends TextVertexOutputFormat<Lo
                 VertexType vt = vertex.getValue().getType();
                 String vs = null;
                 switch (vt) {
-                case DOC:
-                    vs = "d";
+                case LEFT:
+                    vs = "L";
                     break;
-                case WORD:
-                    vs = "w";
+                case RIGHT:
+                    vs = "R";
                     break;
                 default:
                     throw new IllegalArgumentException(String.format("Unrecognized vertex type: %s", vt.toString()));
@@ -89,7 +88,7 @@ public class JsonPropertyGraph4LDAOutputFormat extends TextVertexOutputFormat<Lo
             } catch (JSONException e) {
                 throw new IllegalArgumentException("writeVertex: Couldn't write vertex " + vertex);
             }
-            return new Text(jsonVertex.toString().replaceAll("\"", ""));
+            return new Text(jsonVertex.toString());
         }
     }
 
