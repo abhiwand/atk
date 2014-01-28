@@ -464,7 +464,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if isinstance(file_name, list):
+        if not isinstance(file_name, basestring):
             file_name = ','.join(file_name) #convert list of path to comma seperated string
 
         args += [script_path, '-i', file_name, '-o', table_name,
@@ -505,7 +505,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if isinstance(file_name, list):
+        if not isinstance(file_name, basestring):
             file_name = ','.join(file_name) #convert list of path to comma seperated string
 
         args += [script_path, '-i', file_name, '-o', data_frame._table.table_name,
@@ -556,7 +556,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if isinstance(file_name, list):
+        if not isinstance(file_name, basestring):
             file_name = ','.join(file_name) #convert list of path to comma seperated string
 
         args += [script_path, '-i', file_name, '-o', table_name]
@@ -594,7 +594,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if isinstance(file_name, list):
+        if not isinstance(file_name, basestring):
             file_name = ','.join(file_name) #convert list of path to comma seperated string
 
         args += [script_path, '-i', file_name, '-o', data_frame._table.table_name]
@@ -636,7 +636,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if isinstance(file_name, list):
+        if not isinstance(file_name, basestring):
             file_name = ','.join(file_name) #convert list of path to comma seperated string
 
         args += [script_path, '-i', file_name, '-o', table_name, '-tag', tag_name]
@@ -667,7 +667,7 @@ class HBaseFrameBuilder(FrameBuilder):
         script_path = os.path.join(etl_scripts_path,'pig_import_xml.py')
         args = _get_pig_args()
 
-        if isinstance(file_name, list):
+        if not isinstance(file_name, basestring):
             file_name = ','.join(file_name) #convert list of path to comma seperated string
 
         args += [script_path, '-i', file_name, '-o', data_frame._table.table_name, '-tag', tag_name]
