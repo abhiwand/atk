@@ -62,6 +62,9 @@ class EvalFunctions:
     class Json:
         EXTRACT_FIELD=2000
 
+    class Xml:
+	EXTRACT_FIELD=3000
+
     @staticmethod
     def to_string(x):
         #these strings will be passed to the pig jython scripts
@@ -93,7 +96,8 @@ class EvalFunctions:
             EvalFunctions.Math.STND: 'STND',
             EvalFunctions.Math.ARITHMETIC: 'ARITHMETIC',
 
-            EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON'
+            EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON',
+            EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPath'
         }
 
         if x in mapping:
@@ -104,6 +108,7 @@ class EvalFunctions:
 string_functions = []
 math_functions = []  
 json_functions = []
+xml_functions = []
 available_builtin_functions = []#used for validation, does the user try to call a valid function? 
 for key,val in EvalFunctions.String.__dict__.items():
     if key == '__module__' or key == '__doc__':
@@ -119,7 +124,12 @@ for key,val in EvalFunctions.Json.__dict__.items():
     if key == '__module__' or key == '__doc__':
         continue
     json_functions.append(EvalFunctions.to_string(val)) 
+for key,val in EvalFunctions.Xml.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    xml_functions.append(EvalFunctions.to_string(val))
 
 available_builtin_functions.extend(string_functions)
 available_builtin_functions.extend(math_functions)
 available_builtin_functions.extend(json_functions)
+available_builtin_functions.extend(xml_functions)
