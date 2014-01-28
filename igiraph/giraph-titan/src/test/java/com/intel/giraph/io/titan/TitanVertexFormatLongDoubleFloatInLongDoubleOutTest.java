@@ -30,8 +30,8 @@ import com.thinkaurelius.titan.core.TitanLabel;
 import com.thinkaurelius.titan.core.TitanVertex;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -133,9 +133,6 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
 
         startNewTransaction();        
         long[] nid;

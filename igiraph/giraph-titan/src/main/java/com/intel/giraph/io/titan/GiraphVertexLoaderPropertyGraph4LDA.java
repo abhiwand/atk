@@ -49,9 +49,9 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_LEFT;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.DOC_VERTEX;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.WORD_VERTEX;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_RIGHT;
 
 /**
  * GiraphVertexLoaderPropertyGraph4LDA loads vertex from Titan.
@@ -323,9 +323,9 @@ public class GiraphVertexLoaderPropertyGraph4LDA {
                     Vector priorVector = vertex.getValue().getVector();
 
                     String vertexTypeString = vertexTypeObject.toString().toLowerCase();
-                    if (vertexTypeString.equals(DOC_VERTEX)) {
+                    if (vertexTypeString.equals(VERTEX_TYPE_LEFT)) {
                         vertexType = VertexType.LEFT;
-                    } else if (vertexTypeString.equals(WORD_VERTEX)) {
+                    } else if (vertexTypeString.equals(VERTEX_TYPE_RIGHT)) {
                         vertexType = VertexType.RIGHT;
                     } else {
                         LOG.error("Vertex type string: %s isn't supported." + vertexTypeString);

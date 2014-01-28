@@ -339,14 +339,6 @@ public class GiraphTitanConstants {
      */
     public static final String TYPE_TEST = "te";
     /**
-     * vertex type for document
-     */
-    public static final String DOC_VERTEX = "d";
-    /**
-     * vertex type for word
-     */
-    public static final String WORD_VERTEX = "w";
-    /**
      * prevent instantiation of utility class
      */
     private GiraphTitanConstants() {

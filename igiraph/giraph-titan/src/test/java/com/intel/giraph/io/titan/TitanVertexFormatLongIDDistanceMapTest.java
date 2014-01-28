@@ -108,10 +108,6 @@ public class TitanVertexFormatLongIDDistanceMapTest
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0], new String[0]);
         Assert.assertNotNull(results);
 
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
-
         //verify data is written to Titan
         startNewTransaction();
         long[] nid;

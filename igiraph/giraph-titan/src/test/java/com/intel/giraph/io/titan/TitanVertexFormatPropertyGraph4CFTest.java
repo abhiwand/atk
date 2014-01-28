@@ -44,14 +44,14 @@ import org.junit.Test;
 import java.util.Map;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_LEFT;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
@@ -170,9 +170,6 @@ public class TitanVertexFormatPropertyGraph4CFTest
         OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "als_p0,als_p1,als_p2");
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
 
         //verify data is written to Titan
         startNewTransaction();
@@ -226,9 +223,6 @@ public class TitanVertexFormatPropertyGraph4CFTest
         OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "als_result");
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
 
         //verify data is written to Titan
         startNewTransaction();

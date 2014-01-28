@@ -11,18 +11,18 @@ import com.thinkaurelius.titan.core.TitanVertex;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.Ignore;
+
 import java.util.HashMap;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
@@ -159,9 +159,6 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
 
         //verify data is written to Titan
         startNewTransaction();
@@ -202,9 +199,6 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
 
         startNewTransaction();
         //check keys are generated for Titan
@@ -252,9 +246,6 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
 
         //verify data is written to Titan
         startNewTransaction();
@@ -296,9 +287,6 @@ public class TitanVertexFormatPropertyGraph4LBPLPTest
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
 
         //verify data is written to Titan
         startNewTransaction();
