@@ -17,6 +17,8 @@ class PigScriptBuilder(object):
                 etl_schema.get_feature_names_as_CSV())
             in_relations.append('relation_%s_in' %(str(i)))
             i = i + 1
+            # forming the load statements which load data to a relation.
+            # The relation is the latest appended to in_relations.
             statements.append("%s = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s') as (%s);" %(in_relations[-1], source, loading_hbase_constructor_args, pig_schema_info))
 
             in_final_list = set(final_cols)
