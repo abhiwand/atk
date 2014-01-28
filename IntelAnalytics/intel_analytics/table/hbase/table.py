@@ -483,12 +483,13 @@ class HBaseFrameBuilder(FrameBuilder):
 
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-        properties = {};
-        properties[MAX_ROW_KEY] = pig_report.content['input_count']
-        etl_schema.save_table_properties(table_name, properties)
 
         if return_code:
             raise Exception('Could not import CSV file')
+
+        properties = {};
+        properties[MAX_ROW_KEY] = pig_report.content['input_count']
+        etl_schema.save_table_properties(table_name, properties)
 
         hbase_table = HBaseTable(table_name, file_name)
         hbase_registry.register(frame_name, table_name, overwrite)
@@ -524,6 +525,9 @@ class HBaseFrameBuilder(FrameBuilder):
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
+        if return_code:
+            raise Exception('Could not import CSV file')
+
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         new_data_etl_schema.save_table_properties(data_frame._table.table_name, properties)
 
@@ -533,8 +537,6 @@ class HBaseFrameBuilder(FrameBuilder):
         merged_schema = merge_schema([existing_etl_schema, new_data_etl_schema])
         merged_schema.save_schema(data_frame._table.table_name)
 
-        if return_code:
-            raise Exception('Could not import CSV file')
 
     def build_from_json(self, frame_name, file_name, overwrite=False):
         #create some random table name
@@ -569,12 +571,14 @@ class HBaseFrameBuilder(FrameBuilder):
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
+        if return_code:
+            raise Exception('Could not import JSON file')
+
         properties = {};
         properties[MAX_ROW_KEY] = pig_report.content['input_count']
         etl_schema.save_table_properties(table_name, properties)
         
-        if return_code:
-            raise Exception('Could not import JSON file')
+
 
         hbase_registry.register(frame_name, table_name, overwrite)
         
@@ -605,12 +609,14 @@ class HBaseFrameBuilder(FrameBuilder):
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
+        if return_code:
+            raise Exception('Could not import JSON file')
+
         properties = {};
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         etl_schema.save_table_properties(data_frame._table.table_name, properties)
 
-        if return_code:
-            raise Exception('Could not import JSON file')
+
 
     def build_from_xml(self, frame_name, file_name, tag_name, overwrite=False):
         #create some random table name
@@ -645,13 +651,12 @@ class HBaseFrameBuilder(FrameBuilder):
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
+        if return_code:
+            raise Exception('Could not import XML file')
+
         properties = {};
         properties[MAX_ROW_KEY] = pig_report.content['input_count']
         etl_schema.save_table_properties(table_name, properties)
-
-
-        if return_code:
-            raise Exception('Could not import XML file')
 
         hbase_registry.register(frame_name, table_name, overwrite)
 
@@ -676,12 +681,12 @@ class HBaseFrameBuilder(FrameBuilder):
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
+        if return_code:
+            raise Exception('Could not import XML file')
+
         properties = {};
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         etl_schema.save_table_properties(data_frame._table.table_name, properties)
-
-        if return_code:
-            raise Exception('Could not import XML file')
 
     def append_from_data_frame(self, target_data_frame, source_data_frame):
 
@@ -706,14 +711,14 @@ class HBaseFrameBuilder(FrameBuilder):
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
 
+        if return_code:
+            raise Exception('Could not append to data frame')
+
         properties = merged_schema.get_table_properties(target_table_name)
         original_max_row_key = properties[MAX_ROW_KEY]
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         merged_schema.save_table_properties(target_table_name, properties)
         merged_schema.save_schema(target_table_name)
-
-        if return_code:
-            raise Exception('Could not append to data frame')
 
 class HBaseFrameBuilderFactory(object):
     def __init__(self):
