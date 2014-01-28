@@ -90,7 +90,7 @@ $(window).ready(function(){
         if(Dropzone.file.valid(file)){
            var list =  $("#uploadedFiles tbody tr");
             for(var i in list){
-                if( i - 0 != NaN){
+                if(!isNaN(i-0)){
                     var fileName = $(list[i]).find("td").eq(0).text()
                     if( file.name.trim() ===  fileName ){
                         return true;
@@ -135,6 +135,6 @@ $(window).ready(function(){
         });
     }
 
-    Dropzone.bindDelete();
+    //Dropzone.bindDelete();
 })
 

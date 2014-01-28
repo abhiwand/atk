@@ -771,7 +771,7 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
               _this.handleFiles(files);
             }
             return setupHiddenFileInput();
-          });
+          }, null);
         };
         setupHiddenFileInput();
       }
