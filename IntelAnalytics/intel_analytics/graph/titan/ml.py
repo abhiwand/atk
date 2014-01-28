@@ -504,8 +504,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                   max_supersteps=global_config['giraph_page_rank_max_supersteps'],
                   convergence_threshold=global_config['giraph_page_rank_convergence_threshold'],
                   reset_probability=global_config['giraph_page_rank_reset_probability'],
-                  convergence_output_interval=global_config['giraph_convergence_output_interval']
-    ):
+                  convergence_output_interval=global_config['giraph_convergence_output_interval']):
         """
         The PageRank algorithm: http://en.wikipedia.org/wiki/PageRank
 
