@@ -37,7 +37,7 @@ from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports 
 
 
 def main(argv):
-    parser = ArgumentParser(description='imports a big CSV dataset from HDFS to HBase')
+    parser = ArgumentParser(description='Excute pig script')
     parser.add_argument('-s', '--script', dest='script', help='the script for pig execution', required=True)
     cmd_line_args = parser.parse_args()
     input_script = cmd_line_args.script
@@ -47,7 +47,7 @@ def main(argv):
     statements.append(input_script)
     pig_script = "\n".join(statements)
     compiled = Pig.compile(pig_script)
-    status = compiled.bind().runSingle()#without binding anything Pig raises error
+    status = compiled.bind().runSingle()
 
     report_job_status(status)
     return 0 if status.isSuccessful() else 1
