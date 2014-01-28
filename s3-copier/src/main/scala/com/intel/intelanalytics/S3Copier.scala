@@ -342,8 +342,8 @@ class S3Copier(queue: Queue, implicit val sqs: SQS, implicit val javaS3: AmazonS
         if(i >= 400000){
           i = 0
           //kill the loop if we have no progress for some iterations
-          if(last == progress.progress){
-            log("break no file progress")
+          if(progress.progress != 100 && last == progress.progress){
+            log("break no file progress " + progress.progress)
             break
           }
           last = progress.progress
