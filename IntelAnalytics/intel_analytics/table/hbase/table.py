@@ -677,22 +677,18 @@ class HBaseFrameBuilder(FrameBuilder):
         args = _get_pig_args()
         args += [script_path, '-s', script]
 
-        pig_report = PigJobReportStrategy();
-        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-
-        if return_code:
+        try:
+            self._append_data(args, merged_schema, target_table_name, is_args_final = True)
+        except DataAppendException:
             raise Exception('Could not append to data frame')
-
-        properties = merged_schema.get_table_properties(target_table_name)
-        original_max_row_key = properties[MAX_ROW_KEY]
-        properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
-        merged_schema.save_table_properties(target_table_name, properties)
         merged_schema.save_schema(target_table_name)
 
-    def _append_data(self, args, etl_schema, table_name):
+    def _append_data(self, args, etl_schema, table_name, is_args_final = False):
         properties = etl_schema.get_table_properties(table_name)
         original_max_row_key = properties[MAX_ROW_KEY]
-        args += ['-m', original_max_row_key]
+        if not is_args_final:
+            args += ['-m', original_max_row_key]
+
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
         if return_code:
