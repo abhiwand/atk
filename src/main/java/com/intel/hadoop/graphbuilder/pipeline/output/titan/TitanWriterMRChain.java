@@ -765,9 +765,11 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         addEdgesJob.setOutputFormatClass(org.apache.hadoop.mapreduce.lib
                 .output.NullOutputFormat.class);
         
-        
-        //ship hbase jars & its dependencies
-        TableMapReduceUtil.addDependencyJars(addEdgesJob);
+		if ("hbase".equals(TitanConfig.config
+				.getProperty("TITAN_STORAGE_BACKEND"))) {
+			// ship hbase jars & its dependencies
+			TableMapReduceUtil.addDependencyJars(addEdgesJob);
+		}
         
         LOG.info("=========== Job 3: Add edges to Titan " +
                 "  ===========");
