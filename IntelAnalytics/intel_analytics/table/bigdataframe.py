@@ -71,10 +71,12 @@ class FrameBuilder(object):
 
         Parameters
         ----------
-        C{filename} : String
-            The path to the CSV file.
+        C{frame_name} : String
+            The name for the data frame
+        C{filename} : String or list of strings
+            The path to the CSV file/files
         C{schema} : String
-            TODO:
+            Schema information for the data
 
         TODO: Other parameters for the csv parser.
 
@@ -92,9 +94,9 @@ class FrameBuilder(object):
         Parameters
         ----------
         C{data_frame} : BigDataFrame
-            An existing big data frame.
-        C{file_name} : String
-            File/Files to be imported:
+            An existing big data frame
+        C{file_name} : String or list of strings
+            File/Files to be imported
         """
         pass
 
@@ -105,10 +107,12 @@ class FrameBuilder(object):
 
         Parameters
         ----------
-        C{filename} : String
-            The path to the JSON file.
+        C{frame_name} : String
+            The name for the data frame
+        C{filename} : String or list of strings
+            The path to the JSON file/files
 
-        TODO: Other parameters for the parser.
+        TODO: Other parameters for the parser
 
         Returns
         -------
@@ -124,27 +128,27 @@ class FrameBuilder(object):
         Parameters
         ----------
         C{data_frame} : BigDataFrame
-            An existing big data frame.
-        C{file_name} : String
+            An existing big data frame
+        C{file_name} : String or list of strings
             File/Files to be imported:
         """
         pass
 
     @abc.abstractmethod
-    def build_from_xml(self, frame_name, file_name, schema=None):
+    def build_from_xml(self, frame_name, file_name, tag_name=None):
         """
         Reads an XML file and loads it into a table.
 
         Parameters
         ----------
         C{frame_name} : String
-            The name for the data frame.
-        C{filename} : String
-            The path to the XML file.
+            The name for the data frame
+        C{filename} : String or list of strings
+            The path to the XML file/files
         C{tag_name} : String
             XML tag for record:
 
-        TODO: Other parameters for the parser.
+        TODO: Other parameters for the parser
 
         Returns
         -------
@@ -161,12 +165,12 @@ class FrameBuilder(object):
         ----------
         C{data_frame} : BigDataFrame
             An existing big data frame.
-        C{filename} : String
-            The path to the XML file.
+        C{filename} : String or list of strings
+            The path to the XML file/files
         C{tag_name} : String
-            XML tag for record:
+            XML tag for record.
 
-        TODO: Other parameters for the parser.
+        TODO: Other parameters for the parser
 
         Returns
         -------
@@ -182,9 +186,9 @@ class FrameBuilder(object):
         Parameters
         ----------
         C{target_data_frame} : BigDataFrame
-            The data frame to append data to.
+            The data frame to append data to
         C{source_data_frame} : List
-            List of data frame which data will be appended to the target data frame.
+            List of data frame which data will be appended to the target data frame
         """
         pass
 
