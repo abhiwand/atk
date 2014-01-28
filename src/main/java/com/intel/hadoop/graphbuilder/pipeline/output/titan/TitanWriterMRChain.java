@@ -40,6 +40,7 @@ import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
@@ -763,7 +764,11 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         addEdgesJob.setOutputFormatClass(org.apache.hadoop.mapreduce.lib
                 .output.NullOutputFormat.class);
-
+        
+        
+        //ship hbase jars & its dependencies
+        TableMapReduceUtil.addDependencyJars(addEdgesJob);
+        
         LOG.info("=========== Job 3: Add edges to Titan " +
                 "  ===========");
 

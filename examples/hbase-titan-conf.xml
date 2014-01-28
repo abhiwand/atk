@@ -43,6 +43,12 @@
 		</description>
 	</property>
 
+    <!-- We need a secure RPC client For IDH, so uncomment the property below on IDH-->
+	<!-- property>
+		<name>graphbuilder.titan.storage.hbase-config.hbase.rpc.engine</name>
+		<value>org.apache.hadoop.hbase.ipc.SecureRpcEngine</value>
+	</property-->
+        
 	<property>
 		<name>graphbuilder.titan.storage_backend</name>
 		<value>hbase</value>
