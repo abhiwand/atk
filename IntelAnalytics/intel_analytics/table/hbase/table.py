@@ -452,6 +452,11 @@ class HBaseFrameBuilder(FrameBuilder):
     #-------------------------------------------------------------------------
     # Create BigDataFrames
     #-------------------------------------------------------------------------
+    def _get_file_name_string_for_import(self, file_name):
+        if not isinstance(file_name, basestring):
+            file_name = ','.join(file_name)
+        return file_name
+
     def build_from_csv(self, frame_name, file_name, schema,
                        skip_header=False, overwrite=False):
         table_name = _create_table_name(frame_name, overwrite)
@@ -467,8 +472,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if not isinstance(file_name, basestring):
-            file_name = ','.join(file_name) #convert list of path to comma seperated string
+        file_name = self._get_file_name_string_for_import(file_name)
 
         args += [script_path, '-i', file_name, '-o', table_name,
                  '-f', feature_names_as_str, '-t', feature_types_as_str]
@@ -498,18 +502,6 @@ class HBaseFrameBuilder(FrameBuilder):
         hbase_registry.register(frame_name, table_name, overwrite)
         return BigDataFrame(frame_name, hbase_table)
 
-    def _append_data(self, args, etl_schema, table_name):
-        properties = etl_schema.get_table_properties(table_name)
-        original_max_row_key = properties[MAX_ROW_KEY]
-        args += ['-m', original_max_row_key]
-        pig_report = PigJobReportStrategy();
-        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-        if return_code:
-            raise DataAppendException('Failed to append data.')
-
-        properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
-        etl_schema.save_table_properties(table_name, properties)
-
     def append_from_csv(self, data_frame, file_name, schema, skip_header=False):
         new_data_etl_schema = ETLSchema()
         new_data_etl_schema.populate_schema(schema)
@@ -520,8 +512,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if not isinstance(file_name, basestring):
-            file_name = ','.join(file_name) #convert list of path to comma seperated string
+        file_name = self._get_file_name_string_for_import(file_name)
 
         table_name = data_frame._table.table_name
         args += [script_path, '-i', file_name, '-o', table_name,
@@ -562,8 +553,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if not isinstance(file_name, basestring):
-            file_name = ','.join(file_name) #convert list of path to comma seperated string
+        file_name = self._get_file_name_string_for_import(file_name)
 
         args += [script_path, '-i', file_name, '-o', table_name]
 
@@ -585,7 +575,6 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.save_table_properties(table_name, properties)
 
         hbase_registry.register(frame_name, table_name, overwrite)
-
         return new_frame
 
     def append_from_json(self, data_frame, file_name):
@@ -598,8 +587,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if not isinstance(file_name, basestring):
-            file_name = ','.join(file_name) #convert list of path to comma seperated string
+        file_name = self._get_file_name_string_for_import(file_name)
 
         table_name = data_frame._table.table_name
         args += [script_path, '-i', file_name, '-o', table_name]
@@ -607,23 +595,6 @@ class HBaseFrameBuilder(FrameBuilder):
             self._append_data(args, etl_schema, table_name)
         except DataAppendException:
             raise Exception('Could not import JSON file')
-        # properties = etl_schema.get_table_properties(data_frame._table.table_name)
-        #
-        # original_max_row_key = properties[MAX_ROW_KEY]
-        #
-        # args += ['-m', original_max_row_key]
-        #
-        # logger.debug(args)
-        #
-        # pig_report = PigJobReportStrategy();
-        # return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-        #
-        # if return_code:
-        #     raise Exception('Could not import JSON file')
-        #
-        # properties = {};
-        # properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
-        # etl_schema.save_table_properties(data_frame._table.table_name, properties)
 
 
     def build_from_xml(self, frame_name, file_name, tag_name, overwrite=False):
@@ -644,8 +615,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = _get_pig_args()
 
-        if not isinstance(file_name, basestring):
-            file_name = ','.join(file_name) #convert list of path to comma seperated string
+        file_name = self._get_file_name_string_for_import(file_name)
 
         args += [script_path, '-i', file_name, '-o', table_name, '-tag', tag_name]
 
@@ -675,8 +645,7 @@ class HBaseFrameBuilder(FrameBuilder):
         script_path = os.path.join(etl_scripts_path, 'pig_import_xml.py')
         args = _get_pig_args()
 
-        if not isinstance(file_name, basestring):
-            file_name = ','.join(file_name) #convert list of path to comma seperated string
+        file_name = self._get_file_name_string_for_import(file_name)
 
         table_name = data_frame._table.table_name
         args += [script_path, '-i', file_name, '-o', table_name, '-tag', tag_name]
@@ -687,20 +656,6 @@ class HBaseFrameBuilder(FrameBuilder):
             self._append_data(args, etl_schema, table_name)
         except DataAppendException:
             raise Exception('Could not import XML file')
-
-        # properties = etl_schema.get_table_properties(data_frame._table.table_name)
-        # original_max_row_key = properties[MAX_ROW_KEY]
-        # args += ['-m', original_max_row_key]
-        #
-        # pig_report = PigJobReportStrategy();
-        # return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-        #
-        # if return_code:
-        #     raise Exception('Could not import XML file')
-        #
-        # properties = {};
-        # properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
-        # etl_schema.save_table_properties(data_frame._table.table_name, properties)
 
     def append_from_data_frame(self, target_data_frame, source_data_frame):
 
@@ -733,6 +688,18 @@ class HBaseFrameBuilder(FrameBuilder):
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         merged_schema.save_table_properties(target_table_name, properties)
         merged_schema.save_schema(target_table_name)
+
+    def _append_data(self, args, etl_schema, table_name):
+        properties = etl_schema.get_table_properties(table_name)
+        original_max_row_key = properties[MAX_ROW_KEY]
+        args += ['-m', original_max_row_key]
+        pig_report = PigJobReportStrategy();
+        return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+        if return_code:
+            raise DataAppendException('Failed to append data.')
+
+        properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
+        etl_schema.save_table_properties(table_name, properties)
 
 
 class HBaseFrameBuilderFactory(object):
