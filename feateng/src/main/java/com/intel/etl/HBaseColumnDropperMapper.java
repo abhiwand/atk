@@ -63,6 +63,10 @@ public class HBaseColumnDropperMapper extends TableMapper<IntWritable, IntWritab
     }
 
     private void SendBatchDeleteCommand() {
+
+        if(deleteList.isEmpty())
+            return;
+
         try {
             table.batch(deleteList);
         } catch(Exception e) {
