@@ -66,6 +66,7 @@
                 <titan.core.artifact>titan-core-jre6</titan.core.artifact>
                 <titan.hbase.artifact>titan-hbase-jre6</titan.hbase.artifact>
                 <mrunit.classifier>hadoop2</mrunit.classifier>
+                <titan.berkeleyje.artifact>titan.berkeleyje-jre6</titan.berkeleyje.artifact>
             </properties>
 			<build>
 			    <plugins>
@@ -101,6 +102,20 @@
 					                <version>${titan.version}</version>	
 								</configuration>
 			                </execution>
+			                <execution>
+			                    <id>install-titan-berkeleyje-jre6</id>
+			                    <phase>initialize</phase>
+			                    <goals>
+			                        <goal>install-file</goal>
+			                    </goals>
+								<configuration>
+					                <file>${basedir}\lib\titan-berkeleyje-jre6-0.4.2.jar</file>
+					                <groupId>com.thinkaurelius.titan</groupId>
+					                <artifactId>${titan.berkeleyje.artifact}</artifactId>
+					                <version>${titan.version}</version>	
+					                <pomFile>${basedir}\lib\titan-berkeleyje-0.4.1.pom</pomFile>		
+								</configuration>
+			                </execution>			                
 			            </executions>
 			        </plugin>            
 			    </plugins>
@@ -131,7 +146,8 @@
                 <hbase.version>0.94.12</hbase.version>
                 <java.version>1.7</java.version>
                 <titan.core.artifact>titan-core</titan.core.artifact>
-                <titan.hbase.artifact>titan-hbase</titan.hbase.artifact>      
+                <titan.hbase.artifact>titan-hbase</titan.hbase.artifact>  
+                <titan.berkeleyje.artifact>titan.berkeleyje</titan.berkeleyje.artifact>    
                 <mrunit.classifier>hadoop1</mrunit.classifier>          
             </properties>
 			<dependencies>
@@ -300,6 +316,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+        <dependency>
+            <groupId>com.thinkaurelius.titan</groupId>
+            <artifactId>${titan.berkeleyje.artifact}</artifactId>
+            <version>${titan.version}</version>
+            <scope>test</scope>
+        </dependency>		
 		
         <dependency>
             <groupId>org.apache.hbase</groupId>
