@@ -63,7 +63,48 @@
                 <pigunit.version>0.11.1</pigunit.version>
                 <hbase.version>0.94.7</hbase.version>
                 <java.version>1.6</java.version>
+                <titan.core.artifact>titan-core-jre6</titan.core.artifact>
+                <titan.hbase.artifact>titan-hbase-jre6</titan.hbase.artifact>
+                <mrunit.classifier>hadoop2</mrunit.classifier>
             </properties>
+			<build>
+			    <plugins>
+			        <plugin>
+			            <groupId>org.apache.maven.plugins</groupId>
+			            <artifactId>maven-install-plugin</artifactId>
+			            <version>2.5.1</version>
+			            <executions>
+			                <execution>
+			                    <id>install-titan-core-jre6</id>
+			                    <phase>initialize</phase>
+			                    <goals>
+			                        <goal>install-file</goal>
+			                    </goals>
+								<configuration>
+					                <file>${basedir}\lib\titan-core-jre6-0.4.2.jar</file>
+					                <groupId>com.thinkaurelius.titan</groupId>
+					                <artifactId>${titan.core.artifact}</artifactId>
+					                <version>${titan.version}</version>	
+					                <pomFile>${basedir}\lib\titan-core-0.4.2.pom</pomFile>		
+								</configuration>
+			                </execution>
+			                <execution>
+			                    <id>install-titan-hbase-jre6</id>
+			                    <phase>initialize</phase>
+			                    <goals>
+			                        <goal>install-file</goal>
+			                    </goals>
+								<configuration>
+					                <file>${basedir}\lib\titan-hbase-jre6-0.4.2.jar</file>
+					                <groupId>com.thinkaurelius.titan</groupId>
+					                <artifactId>${titan.hbase.artifact}</artifactId>
+					                <version>${titan.version}</version>	
+								</configuration>
+			                </execution>
+			            </executions>
+			        </plugin>            
+			    </plugins>
+			</build>            
             <dependencies>
                 <dependency>
                     <groupId>org.apache.hadoop</groupId>
@@ -76,32 +117,6 @@
                     <version>${hadoop.version}</version>
                     <scope>provided</scope>
                 </dependency>
-                <dependency>
-                    <groupId>org.apache.mrunit</groupId>
-                    <artifactId>mrunit</artifactId>
-                    <version>${mrunit.version}</version>
-                    <classifier>hadoop2</classifier>
-                </dependency>
-                
-                <!-- FIXME: find a way to package titan jre 6 version -->
-                <dependency>
-                    <groupId>com.thinkaurelius.titan</groupId>
-                    <artifactId>titan-core-jre6</artifactId>
-                    <version>${titan.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>com.thinkaurelius.titan</groupId>
-                    <artifactId>titan-hbase-jre6</artifactId>
-                    <version>${titan.version}</version>
-                    <scope>runtime</scope>
-                    <exclusions>
-                        <exclusion>
-                            <artifactId>hadoop-core</artifactId>
-                            <groupId>org.apache.hadoop</groupId>
-                        </exclusion>
-                    </exclusions>
-                </dependency>
-                        
             </dependencies>
         </profile>
         <profile>
@@ -115,6 +130,9 @@
                 <pigunit.version>0.12.0</pigunit.version>
                 <hbase.version>0.94.12</hbase.version>
                 <java.version>1.7</java.version>
+                <titan.core.artifact>titan-core</titan.core.artifact>
+                <titan.hbase.artifact>titan-hbase</titan.hbase.artifact>      
+                <mrunit.classifier>hadoop1</mrunit.classifier>          
             </properties>
 			<dependencies>
                 <dependency>
@@ -123,28 +141,6 @@
                     <version>${hadoop.version}</version>
                     <scope>provided</scope>
                 </dependency>
-                <dependency>
-                    <groupId>org.apache.mrunit</groupId>
-                    <artifactId>mrunit</artifactId>
-                    <version>${mrunit.version}</version>
-                    <classifier>hadoop1</classifier>
-                </dependency>
-				<dependency>
-					<groupId>com.thinkaurelius.titan</groupId>
-					<artifactId>titan-core</artifactId>
-					<version>${titan.version}</version>
-				</dependency>
-				<dependency>
-					<groupId>com.thinkaurelius.titan</groupId>
-					<artifactId>titan-hbase</artifactId>
-					<version>${titan.version}</version>
-					<exclusions>
-						<exclusion>
-							<artifactId>hadoop-core</artifactId>
-							<groupId>org.apache.hadoop</groupId>
-						</exclusion>
-					</exclusions>
-				</dependency>                
             </dependencies>
         </profile>
     </profiles>
@@ -288,6 +284,23 @@
     </build>
 
     <dependencies>
+		<dependency>
+			<groupId>com.thinkaurelius.titan</groupId>
+			<artifactId>${titan.core.artifact}</artifactId>
+			<version>${titan.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.thinkaurelius.titan</groupId>
+			<artifactId>${titan.hbase.artifact}</artifactId>
+			<version>${titan.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>hadoop-core</artifactId>
+					<groupId>org.apache.hadoop</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase</artifactId>
@@ -295,6 +308,13 @@
             <scope>provided</scope>
         </dependency>
 
+             <dependency>
+                 <groupId>org.apache.mrunit</groupId>
+                 <artifactId>mrunit</artifactId>
+                 <version>${mrunit.version}</version>
+                 <classifier>hadoop2</classifier>
+             </dependency>
+                
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -350,12 +370,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- dependency>
-            <groupId>com.tinkerpop.blueprints</groupId>
-            <artifactId>blueprints-core</artifactId>
-            <version>${tinkerpop.version}</version>
-        </dependency-->
-        
         <dependency>
             <groupId>com.thinkaurelius.faunus</groupId>
             <artifactId>faunus</artifactId>
