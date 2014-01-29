@@ -32,7 +32,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.*;
 
-public class EdgesIntoTitanMapperITest {
+public class EdgesIntoTitanMapperTest {
 
     TestingGraphProvider provider = new TestingGraphProvider();
     TitanGraph graph;
