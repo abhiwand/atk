@@ -26,6 +26,9 @@ import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.thinkaurelius.titan.core.TitanGraph;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -56,6 +59,12 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
 
     TitanGraph graph;
 
+    /**
+     * If appendToExistingGraph then try to find existing graph elements before
+     * creating new ones. Enabled with -a command line option.
+     */
+    private boolean appendToExistingGraph = false;
+
     private TitanGraph getTitanGraphInstance (Context context) throws
             IOException {
         BaseConfiguration titanConfig = new BaseConfiguration();
@@ -76,6 +85,8 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
             InterruptedException {
 
         this.graph = getTitanGraphInstance(context);
+
+        appendToExistingGraph = context.getConfiguration().getBoolean(TitanConfig.GRAPHBUILDER_TITAN_APPEND, Boolean.FALSE);
     }
 
     /**
@@ -87,15 +98,13 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
      *            per line is a serialized edge. Input of this
      *            map comes from the output directory written by
      *            IntermediateEdgeWriterReducer.java
-     * @param value A serialized edge
+     * @param serializedGraphElement A serialized edge
      * @param context Hadoop Job context
      */
 
     @Override
-    public void map(IntWritable key, SerializedGraphElement value,
+    public void map(IntWritable key, SerializedGraphElement serializedGraphElement,
                     Context context) throws IOException, InterruptedException {
-
-        SerializedGraphElement serializedGraphElement = value;
 
         if (serializedGraphElement.graphElement().isVertex()) {
             // This is a strange case, throw an exception
@@ -105,11 +114,11 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
                     "edges.");
         }
 
-        com.tinkerpop.blueprints.Vertex srcBlueprintsVertex =
+        Vertex srcBlueprintsVertex =
                     this.graph.getVertex(serializedGraphElement.graphElement
                             ().getProperty(TitanGraphElementWriter
                             .PROPERTY_KEY_SRC_TITAN_ID));
-        com.tinkerpop.blueprints.Vertex tgtBlueprintsVertex =
+        Vertex tgtBlueprintsVertex =
                     this.graph.getVertex(serializedGraphElement.graphElement
                             ().getProperty(TitanGraphElementWriter
                             .PROPERTY_KEY_TGT_TITAN_ID));
@@ -117,24 +126,10 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
                 .graphElement().getProperties();
 
         // Add the edge to Titan graph
-
-        com.tinkerpop.blueprints.Edge bluePrintsEdge = null;
         String edgeLabel = serializedGraphElement.graphElement().getLabel()
                 .toString();
-        try {
 
-            bluePrintsEdge = this.graph.addEdge(null,
-                        srcBlueprintsVertex,
-                        tgtBlueprintsVertex,
-                        edgeLabel);
-
-        } catch (IllegalArgumentException e) {
-
-            GraphBuilderExit.graphbuilderFatalExitException(
-                        StatusCode.TITAN_ERROR,
-                        "Could not add edge to Titan; likely a schema error. " +
-                        "The label on the edge is  " + edgeLabel, LOG, e);
-        }
+        com.tinkerpop.blueprints.Edge bluePrintsEdge = findOrCreateEdge(srcBlueprintsVertex, tgtBlueprintsVertex, edgeLabel);
 
         // The edge is added to the graph; now add the edge properties.
 
@@ -169,6 +164,65 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
         context.getCounter(Counters.NUM_EDGES).increment(1L);
     }   // End of map function
 
+
+    /**
+     * Find an existing edge in Titan or create a new one
+     * @param srcVertex the src for the edge
+     * @param tgtVertex the destination for the edge
+     * @param label for the edge
+     * @return the existing or newly created edge
+     */
+    protected Edge findOrCreateEdge(Vertex srcVertex, Vertex tgtVertex, String label) {
+        Edge bluePrintsEdge = null;
+        if (appendToExistingGraph) {
+            bluePrintsEdge = findEdge(srcVertex, tgtVertex, label);
+        }
+        if (bluePrintsEdge == null) {
+            bluePrintsEdge = addEdge(srcVertex, tgtVertex, label);
+        }
+        return bluePrintsEdge;
+    }
+
+    /**
+     * Find an existing edge in Titan, if it exists, by the supplied parameters
+     * @param srcVertex the src for the edge
+     * @param dstVertex the destination for the edge
+     * @param label of the edge
+     * @return the edge if it exists, otherwise null
+     */
+    protected Edge findEdge(Vertex srcVertex, Vertex dstVertex, String label) {
+        Edge bluePrintsEdge = null;
+        Iterable<Edge> edges = srcVertex.query().direction(Direction.OUT).labels(label).edges();
+        for (Edge edge : edges) {
+            if (edge.getVertex(Direction.IN).equals(dstVertex)) {
+                bluePrintsEdge = edge;
+            }
+        }
+        return bluePrintsEdge;
+    }
+
+    /**
+     * Add the edge to Titan
+     * @param srcVertex src vertex
+     * @param dstVertex destination vertex
+     * @param label for the edge
+     * @return the newly created edge
+     */
+    private Edge addEdge(Vertex srcVertex, Vertex dstVertex, String label) {
+        try {
+            // Major operation - add the edge to Titan graph
+            return this.graph.addEdge(null, srcVertex, dstVertex, label);
+
+        } catch (IllegalArgumentException e) {
+            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.TITAN_ERROR,
+                    "Could not add edge to Titan; likely a schema error. The label on the edge is  " + label,
+                    LOG, e);
+
+            // never happens because of graphBuilderFatalExitException()
+            return null;
+        }
+    }
+
     /**
      * Performs cleanup tasks after the reducer finishes.
      *
@@ -189,5 +243,10 @@ public class EdgesIntoTitanMapper extends Mapper<IntWritable,
 
     public Enum getEdgePropertiesCounter(){
         return Counters.EDGE_PROPERTIES_WRITTEN;
+    }
+
+    /** change flag for testing purposes */
+    protected void setAppendToExistingGraph(boolean appendToExistingGraph) {
+        this.appendToExistingGraph = appendToExistingGraph;
     }
 }
