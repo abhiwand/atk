@@ -160,6 +160,7 @@ then
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase-es.properties;
     sed -i \"s/<storage.hostname.*storage.hostname>/<storage.hostname>"${nodes}"</storage.hostname>/g\" titan/conf/rexstitan-hbase-es.xml;
     sed -i \"s/<server-host>.*/<server-host>0.0.0.0<\/server-host>/g\" titan/conf/rexstitan-hbase-es.xml;
+    sed -i \"s/<shutdown-host>.*/<shutdown-host>127.0.0.1<\/shutdown-host>/g\" titan/conf/rexstitan-hbase-es.xml;
     sed -i \"s/<base-uri>.*/<base-uri>http:\/\/localhost<\/base-uri>/g\" titan/conf/rexstitan-hbase-es.xml;
     '"
 fi
