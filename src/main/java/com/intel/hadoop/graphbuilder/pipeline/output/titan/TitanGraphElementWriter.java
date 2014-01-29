@@ -19,23 +19,21 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import com.intel.hadoop.graphbuilder.graphelements.*;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.EdgeID;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
 import com.thinkaurelius.titan.core.TitanElement;
-import com.thinkaurelius.titan.core.TitanGraph;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -46,50 +44,8 @@ import java.util.Map;
  *
  * @see com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge
  */
-public class TitanGraphElementWriter {
-
-    public static final String PROPERTY_KEY_SRC_TITAN_ID = "srcTitanID";
-    public static final String PROPERTY_KEY_TGT_TITAN_ID = "tgtTitanID";
-
-    private static final Logger LOG = Logger.getLogger(TitanGraphElementWriter.class);
-
-    protected Hashtable<EdgeID, Writable> edgeSet;
-    protected Hashtable<Object, Writable> vertexSet;
-    protected Hashtable<Object, StringType> vertexLabelMap;
-    protected Enum vertexCounter;
-    protected Enum edgeCounter;
-    protected Reducer.Context context;
-    protected TitanGraph graph;
-    protected SerializedGraphElement outValue;
-    protected IntWritable outKey;
-    protected KeyFunction keyFunction;
-
-    /**
-     * If appendToExistingGraph then try to find existing graph elements before
-     * creating new ones. Enabled with -a command line option.
-     */
-    protected boolean appendToExistingGraph = false;
-
-    private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<>();
-
-    protected  void initArgs(ArgumentBuilder args){
-        edgeSet = (Hashtable<EdgeID, Writable>)args.get("edgeSet");
-        vertexSet = (Hashtable<Object, Writable>)args.get("vertexSet");
-        vertexLabelMap = (Hashtable<Object, StringType>)args.get("vertexLabelMap", new Hashtable<Object, StringType>());
-
-        vertexCounter = (Enum)args.get("vertexCounter");
-        edgeCounter = (Enum)args.get("edgeCounter");
-
-        context = (Reducer.Context)args.get("context");
-
-        graph = (TitanGraph)args.get("graph");
-
-        outValue = (SerializedGraphElement)args.get("outValue");
-        outKey = (IntWritable)args.get("outKey");
-        keyFunction = (KeyFunction)args.get("keyFunction");
-
-        appendToExistingGraph = context.getConfiguration().getBoolean(TitanConfig.GRAPHBUILDER_TITAN_APPEND, Boolean.FALSE);
-    }
+public class TitanGraphElementWriter extends GraphElementWriter {
+    private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<Object, Long>();
 
     /**
      * Write graph elements to a Titan graph instance.
@@ -97,6 +53,7 @@ public class TitanGraphElementWriter {
      * @throws IOException
      * @throws InterruptedException
      */
+    @Override
     public void write(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
@@ -122,15 +79,17 @@ public class TitanGraphElementWriter {
      * @throws IOException
      * @throws InterruptedException
      */
+    @Override
     public void writeVertices(ArgumentBuilder args) throws IOException, InterruptedException {
         initArgs(args);
 
         int vertexCount = 0;
 
         for(Map.Entry<Object, Writable> vertex: vertexSet.entrySet()) {
+            // Major operation - vertex is added to Titan and a new ID is assigned to it
+            com.tinkerpop.blueprints.Vertex  bpVertex = graph.addVertex(null);
 
-            String graphBuilderId = vertex.getKey().toString();
-            com.tinkerpop.blueprints.Vertex bpVertex = findOrCreateVertex(graphBuilderId);
+            bpVertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, vertex.getKey().toString());
 
             long vertexId = getVertexId(bpVertex);
 
@@ -152,49 +111,12 @@ public class TitanGraphElementWriter {
     }
 
     /**
-     * Get an existing Blueprints Vertex or create a new one
-     * @param graphBuilderId of the vertex to find or create
-     * @return the existing or newly created Vertex
-     */
-    protected com.tinkerpop.blueprints.Vertex findOrCreateVertex(String graphBuilderId) {
-
-        com.tinkerpop.blueprints.Vertex bpVertex = null;
-        if (appendToExistingGraph) {
-            // try to find existing vertex in graph before creating a new one
-            bpVertex = findVertexById(graphBuilderId);
-        }
-        if (bpVertex == null) {
-            // Major operation - vertex is added to Titan and a new ID is assigned to it
-            bpVertex = graph.addVertex(null);
-            bpVertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, graphBuilderId);
-        }
-        return bpVertex;
-    }
-
-    /**
-     * Get an existing Blueprints Vertex, if it exists
-     * @param graphBuilderId the value of TitanConfig.GB_ID_FOR_TITAN
-     * @return the Vertex or null if not found
-     */
-    protected com.tinkerpop.blueprints.Vertex findVertexById(String graphBuilderId) {
-        com.tinkerpop.blueprints.Vertex bpVertex = null;
-        Iterator<com.tinkerpop.blueprints.Vertex> iterator = graph.getVertices(TitanConfig.GB_ID_FOR_TITAN, graphBuilderId).iterator();
-        if (iterator.hasNext()) {
-            bpVertex = iterator.next();
-            if (iterator.hasNext()) {
-                // TODO: log error or is it better to throw an Exception?
-                LOG.error(TitanConfig.GB_ID_FOR_TITAN + " is not unique, more than one vertex has the value: " + graphBuilderId);
-            }
-        }
-        return bpVertex;
-    }
-
-    /**
      * Append the Titan ID of an edge's source to the edge as a property, and write the edge to an HDFS file.
      * @param args
      * @throws IOException
      * @throws InterruptedException
      */
+    @Override
     public void writeEdges(ArgumentBuilder args)
             throws IOException, InterruptedException {
         initArgs(args);
@@ -226,13 +148,6 @@ public class TitanGraphElementWriter {
 
     }
 
-    /**
-     * Copy properties from vertex to bpVertex
-     * @param vertexId TitanID to write as a property to bpVertex
-     * @param vertex to get properties from
-     * @param bpVertex to write properties to
-     * @return the propertyMap written, including the newly added TitanID property
-     */
     private PropertyMap writeVertexProperties(long vertexId, Map.Entry<Object, Writable> vertex, com.tinkerpop.blueprints.Vertex bpVertex){
 
         PropertyMap propertyMap = (PropertyMap) vertex.getValue();
@@ -252,17 +167,21 @@ public class TitanGraphElementWriter {
         return propertyMap;
     }
 
-    private PropertyMap addTitanIdVertex(long vertexId, PropertyMap propertyMap){
+    private PropertyMap addTitanIdVertex(long vertexId,
+                                         PropertyMap propertyMap) {
         propertyMap.setProperty("TitanID", new LongType(vertexId));
         return propertyMap;
     }
 
-    private PropertyMap addTitanIdEdge(long srcTitanId, PropertyMap propertyMap){
-        propertyMap.setProperty("srcTitanID", new LongType(srcTitanId));
+    private PropertyMap addTitanIdEdge(long srcTitanId,
+                                       PropertyMap propertyMap) {
+        propertyMap.setProperty(GraphElementWriter.PROPERTY_KEY_SRC_TITAN_ID,
+                new LongType(srcTitanId));
         return propertyMap;
     }
 
-    private PropertyMap writeEdgeProperties(long srcTitanId, Map.Entry<EdgeID, Writable> edge){
+    private PropertyMap writeEdgeProperties(long srcTitanId,
+                                            Map.Entry<EdgeID, Writable> edge) {
 
         PropertyMap propertyMap = (PropertyMap) edge.getValue();
 

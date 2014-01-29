@@ -359,19 +359,19 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         switch(typeByte) {
             case DataType.BYTE:
-                object = new IntType((int) value);
+                object = new IntType((Integer) value);
                 break;
             case DataType.INTEGER:
-                object = new IntType((int) value);
+                object = new IntType((Integer) value);
                 break;
             case DataType.LONG:
-                object = new LongType((long) value);
+                object = new LongType((Long) value);
                 break;
             case DataType.FLOAT:
-                object = new FloatType((float) value);
+                object = new FloatType((Float) value);
                 break;
             case DataType.DOUBLE:
-                object = new DoubleType((double) value);
+                object = new DoubleType((Double) value);
                 break;
             case DataType.CHARARRAY:
                 object = new StringType((String) value);

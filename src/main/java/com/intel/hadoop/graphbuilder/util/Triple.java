@@ -19,7 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.util;
 
-import java.util.Objects;
+import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * Represents a triple of objects.
@@ -97,9 +97,9 @@ public class Triple<A, B, C> {
     public boolean equals(Object obj) {
         if (obj instanceof Triple) {
             Triple t = (Triple) obj;
-            return Objects.equals(t.a,a)
-                   && Objects.equals(t.b,b)
-                   && Objects.equals(t.c,c);
+            return ObjectUtils.equals(t.a, a)
+                   && ObjectUtils.equals(t.b,b)
+                   && ObjectUtils.equals(t.c,c);
         }
         return false;
     }

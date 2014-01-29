@@ -162,7 +162,7 @@ public class RuntimeConfig {
     }
 
     public HashMap<String, String> getAllConfigUnderNamespace(String prefix) {
-        HashMap<String, String> filteredConfigMap = new HashMap<>();
+        HashMap<String, String> filteredConfigMap = new HashMap<String, String>();
         Iterator it = config.entrySet().iterator();
 
         while (it.hasNext()) {

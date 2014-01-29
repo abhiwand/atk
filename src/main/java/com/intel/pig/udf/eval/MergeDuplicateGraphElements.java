@@ -35,6 +35,7 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
@@ -59,8 +60,31 @@ import java.util.concurrent.TimeUnit;
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {
 
+    boolean removeDanglingEdges;
+    private static final String[] booleanValues =
+            new String [] {"0", "1", "TRUE", "true", "FALSE", "false"};
+
     private SerializedGraphElement graphElementFromGroupedBagEntry(Tuple tuple) throws ExecException {
         return (SerializedGraphElement) tuple.get(1);
+    }
+
+    public MergeDuplicateGraphElements(String removeDanglingEdges) {
+        if (!Arrays.asList(booleanValues).contains(removeDanglingEdges)) {
+            throw new IllegalArgumentException(
+                    removeDanglingEdges + " is not a valid argument." +
+                            "Use '0', '1', 'TRUE', 'true', 'FALSE' or 'false')");
+        }
+        if (removeDanglingEdges.equals("1") ||
+                removeDanglingEdges.equals("TRUE") ||
+                removeDanglingEdges.equals("true")) {
+            this.removeDanglingEdges = true;
+        } else if (removeDanglingEdges.equals("0") ||
+                removeDanglingEdges.equals("FALSE") ||
+                removeDanglingEdges.equals("false")) {
+            this.removeDanglingEdges = false;
+        }
+
+        System.out.println("Merge initialized with " + this.removeDanglingEdges);
     }
 
     /**
@@ -92,9 +116,17 @@ public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {
         while (it.hasNext()){
             Tuple t = (Tuple)it.next();
             GraphElement dupGraphElement = graphElementFromGroupedBagEntry(t).graphElement();
+
+            if (this.removeDanglingEdges) {
+                if (graphElement.isEdge() && graphElement.getDst() == null) {
+                    System.out.println("Edge deleted" + graphElement.toString());
+                    return null;
+                }
+            }
             graphElement.getProperties().mergeProperties(dupGraphElement.getProperties());
         }
 
+        System.out.println("Normal merge " + graphElement.toString());
         outTuple.set(0, serializedGraphElement);
         return outTuple;
     }

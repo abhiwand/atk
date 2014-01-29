@@ -147,9 +147,9 @@ public class EdgeTest {
         VertexID<StringType> dstId2 = new VertexID<StringType>(dst2, null);
         StringType label2 = new StringType("label2");
 
-        Edge<StringType> edge1 = new Edge<>(srcId1, dstId1, label1);
-        Edge<StringType> edge2 = new Edge<>(srcId2, dstId2, label2);
-        Edge<StringType> edge3 = new Edge<>(srcId1, dstId1, label1);
+        Edge<StringType> edge1 = new Edge<StringType>(srcId1, dstId1, label1);
+        Edge<StringType> edge2 = new Edge<StringType>(srcId2, dstId2, label2);
+        Edge<StringType> edge3 = new Edge<StringType>(srcId1, dstId1, label1);
 
         assertNotNull(edge1.getId());
         assertNotNull(edge2.getId());
@@ -180,9 +180,9 @@ public class EdgeTest {
         VertexID<StringType> dstId2 = new VertexID<StringType>(dst2, null);
         StringType label2 = new StringType("label2");
 
-        Edge<StringType> edge1 = new Edge<>(srcId1, dstId1, label1);
-        Edge<StringType> edge2 = new Edge<>(srcId2, dstId2, label2);
-        Edge<StringType> edge3 = new Edge<>(srcId1, dstId1, label1);
+        Edge<StringType> edge1 = new Edge<StringType>(srcId1, dstId1, label1);
+        Edge<StringType> edge2 = new Edge<StringType>(srcId2, dstId2, label2);
+        Edge<StringType> edge3 = new Edge<StringType>(srcId1, dstId1, label1);
 
         assertNotNull(edge1.toString());
         assertNotNull(edge2.toString());
