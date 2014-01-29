@@ -26,7 +26,16 @@ import java.util.HashMap;
 
 public class TitanConfig {
 
+    /**
+     * Unique ID property used by graph builder
+     */
     public static final String GB_ID_FOR_TITAN = "_gb_ID";
+
+    /**
+     * If appendToExistingGraph then try to find existing graph elements before
+     * creating new ones. Enabled with -a command line option.
+     */
+    public static final String GRAPHBUILDER_TITAN_APPEND = "graphbuilder.titan.append";
 
     private static HashMap<String, String> defaultConfigMap  = new HashMap<String, String>();
     static {

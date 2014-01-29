@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -129,7 +128,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
                 new com.intel.hadoop.graphbuilder.graphelements.Edge<StringType>(new
                         StringType("Alice"), new StringType("GAO123"),
                         new StringType("worksAt"));
-        edge.setProperty(GraphElementWriter.PROPERTY_KEY_SRC_TITAN_ID,
+        edge.setProperty(TitanGraphElementWriter.PROPERTY_KEY_SRC_TITAN_ID,
                 new LongType(900L));
 
         graphElement.init(edge);
@@ -215,7 +214,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
                         .Edge<StringType>(new StringType("Bob"),
                 new StringType("INTELLABS"),
                 new StringType("worksAt"));
-        edge.setProperty(GraphElementWriter.PROPERTY_KEY_SRC_TITAN_ID,
+        edge.setProperty(TitanGraphElementWriter.PROPERTY_KEY_SRC_TITAN_ID,
                 new LongType(901L));
 
         graphElement.init(edge);
@@ -236,7 +235,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
                 .Edge<StringType>(new StringType("Alice"),
                 new StringType("GAO123"),
                 new StringType("worksAt"));
-        edge.setProperty(GraphElementWriter.PROPERTY_KEY_SRC_TITAN_ID,
+        edge.setProperty(TitanGraphElementWriter.PROPERTY_KEY_SRC_TITAN_ID,
                 new LongType(902L));
 
         graphElement.init(edge);
