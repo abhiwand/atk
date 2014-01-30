@@ -78,7 +78,8 @@ import org.apache.log4j.Logger;
  * <p>
  *     EXAMPLES:
  *     <p>
- *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age"  -d "cf:name,cf:dept,worksAt,cf:seniority"</code>
+ *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age"  -d "cf:name,cf:dept,worksAt,
+ * cf:seniority"</code>
  *     </p>
  *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
  *     one employee, and a directed edge labeled "worksAt" between each employee and their department, annotated by their
@@ -105,6 +106,14 @@ import org.apache.log4j.Logger;
  * <p>
  *  EXAMPLE:
  *  <code>-keys cf:name;V;U,cf:tenure:E;V;Integer</code>
+ * </p>
+ *
+ * <p>
+ *     EXAMPLE: Optional arguments
+ *     <code>-a</code> : -a means the new graph data will be appended to an existing graph in Titan. The graph
+ *                       specified by the storage.tablename in the input configuration file will be appended
+ *     <code>-O</code> : -O means the graph specified as storage.tablename in configuration file will be
+ *                       overwritten
  * </p>
  *
  */
