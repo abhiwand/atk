@@ -159,7 +159,7 @@ public class TableToGraphDB {
         Timer timer = new Timer();
         configFilePresent = (args[0].equals("-conf"));
         if (!configFilePresent) {
-            commandLineInterface.showError("When writing to Titan, the Titan config file must be specified by -conf <config> ");
+            commandLineInterface.showError("Missing configuration file for Titan. Please provide -conf <config>");
         }
 
         CommandLine cmd = commandLineInterface.checkCli(args);
