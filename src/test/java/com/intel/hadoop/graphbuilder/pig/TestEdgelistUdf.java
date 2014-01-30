@@ -42,7 +42,6 @@ public class TestEdgelistUdf {
 
     @Before
     public void setup() throws Exception {
-        System.out.println("*** Starting EdgeList test cases ***");
         toEdgelistUdf0 = (EvalFunc<?>) PigContext
                 .instantiateFuncFromSpec(
                         "com.intel.pig.udf.eval.EdgeList('false')");
@@ -89,11 +88,6 @@ public class TestEdgelistUdf {
         assertTrue("Edge tuple mismatch", flag);
         flag = statement1.contains("age:30");
         assertTrue("Edge tuple mismatch", flag);
-    }
-
-    @After
-    public void done() {
-        System.out.println("*** Done with the EdgeList tests ***");
     }
 
 }

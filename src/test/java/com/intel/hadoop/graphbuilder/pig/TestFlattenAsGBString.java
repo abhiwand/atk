@@ -41,7 +41,6 @@ public class TestFlattenAsGBString {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting FlattenAsGBString tests. ***");
 		flattenUdf = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec(
                         "com.intel.pig.udf.eval.FlattenAsGBString()");
@@ -95,10 +94,4 @@ public class TestFlattenAsGBString {
 			assertEquals("Flatten test failed", split, testInput);
 		}
 	}
-
-	@After
-	public void done() {
-		System.out.println("*** Done with the FlattenAsGBString tests ***");
-	}
-
 }

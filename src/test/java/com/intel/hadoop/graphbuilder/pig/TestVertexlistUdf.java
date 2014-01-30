@@ -42,7 +42,6 @@ public class TestVertexlistUdf {
 
     @Before
     public void setup() throws Exception {
-        System.out.println("*** Starting VertexList test cases ***");
         toEdgelistUdf0 = (EvalFunc<?>) PigContext
                 .instantiateFuncFromSpec(
                         "com.intel.pig.udf.eval.VertexList('false')");
@@ -85,10 +84,4 @@ public class TestVertexlistUdf {
         flag = statement1.contains("age:30");
         assertTrue("Vertex tuple mismatch", flag);
     }
-
-    @After
-    public void done() {
-        System.out.println("*** Done with the VertexList tests ***");
-    }
-
 }

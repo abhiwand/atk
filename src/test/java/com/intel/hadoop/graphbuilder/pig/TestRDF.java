@@ -44,7 +44,6 @@ public class TestRDF {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting RDF tests. ***");
 		toRdfUdf = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec("com.intel.pig.udf.eval.RDF('OWL')");
 	}
@@ -118,10 +117,4 @@ public class TestRDF {
 
         assertNull(result);
 	}
-
-	@After
-	public void done() {
-		System.out.println("*** Done with the RDF tests ***");
-	}
-
 }
