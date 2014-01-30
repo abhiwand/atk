@@ -1024,7 +1024,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
-            edge_type,
             vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_latent_dirichlet_allocation_max_supersteps'],
@@ -1055,8 +1054,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 			string list.
         vertex_type : 
 		    The vertex property which contains vertex type.
-        edge_type :
-		    The edge property which contains edge type.
 
 		Optional Parameters
         (They come with default values. Overwrite it when the default value does not work for you.)
@@ -1103,7 +1100,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
-        self._edge_type = global_config['hbase_column_family'] + edge_type
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lda'
         lda_command = self._get_lda_command(
             self._table_name,
@@ -1111,7 +1107,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             self._vertex_type,
-            self._edge_type,
             vector_value,
             num_worker,
             max_supersteps,
@@ -1169,7 +1164,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
-            edge_type,
             vector_value,
             num_worker,
             max_supersteps,
@@ -1203,7 +1197,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 global_config['giraph_param_output_vertex_property_list'] + output_vertex_property_list,
                 global_config['giraph_param_vector_value'] + vector_value,
                 global_config['giraph_param_vertex_type'] + vertex_type,
-                global_config['giraph_param_edge_type'] + edge_type,
                 global_config['giraph_latent_dirichlet_allocation_class'],
                 '-mc',
                 global_config['giraph_latent_dirichlet_allocation_class'] + '\$' + global_config[

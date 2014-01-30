@@ -179,8 +179,7 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
         result = ml.lda('test_edge_property',
                         'test_edge_label',
                         'test_output_vertex_properties',
-                        'test_vertex_type',
-                        'test_edge_type')
+                        'test_vertex_type')
         self.assertEqual('test_graph', result.graph_name)
 
     @patch('__builtin__.open')
@@ -190,7 +189,6 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         'test_edge_label',
                         'test_output_vertex_properties',
                         'test_vertex_type',
-                        'test_edge_type',
                         max_supersteps='30')
         self.assertEqual('test_graph', result.graph_name)
 
