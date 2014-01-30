@@ -23,9 +23,6 @@ import static junit.framework.Assert.assertEquals;
 
 import org.junit.Test;
 
-import java.io.DataInput;
-import java.io.DataInputStream;
-
 public class EmptyTypeTest {
 
     @Test
