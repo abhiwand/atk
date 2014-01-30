@@ -48,7 +48,7 @@ import com.intel.hadoop.graphbuilder.util.HashUtil;
 public class PropertyGraphElementTuple extends AbstractTuple {
 
 	List<SerializedGraphElement> serializedGraphElements;
-	private long emptyListSize = RamUsageEstimator.sizeOf(new ArrayList<>());
+	private long emptyListSize = RamUsageEstimator.sizeOf(new ArrayList<SerializedGraphElement>());
 	
 	/* number of samples to get from the serializedGraphElements list
 	 * while calculating the memory size of this tuple. Sample size 30 is
