@@ -70,12 +70,14 @@
  * To use the \link graphbuilder.pig LOAD_TITAN \endlink macro for bulk loading graphs to Titan, 
  * <a href="http://hbase.apache.org/">HBase</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a> are also required. 
  * GB 2.0 (alpha) has been tested against:
- * Java 1.6+
- * Apache Hadoop 1.2.1
- * IDH 3.0.2 (Hadoop-2.0.4-alpha, Pig 0.11.1, HBase-0.94.7-security)
- * Apache Pig 0.12.0
- * Apache Hbase 0.0.94.12-security
- * Titan 0.4.2
+ * <UL>
+ * <LI> Java 1.6+
+ * <LI> Apache Hadoop 1.2.1
+ * <LI> IDH 3.0.2 (Hadoop-2.0.4-alpha, Pig 0.11.1, HBase-0.94.7-security)
+ * <LI> Apache Pig 0.12.0
+ * <LI> Apache HBase 0.0.94.12-security
+ * <LI> Titan 0.4.2
+ * </UL>
   
  * <H2>Building The Source Code</H2>
  * GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. You can build GB with
