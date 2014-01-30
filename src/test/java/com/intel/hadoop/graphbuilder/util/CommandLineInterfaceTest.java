@@ -110,7 +110,7 @@ public class CommandLineInterfaceTest {
     public void test_TableToGraphDB_cli_options() throws Exception {
 
         //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <>();
+        HashMap<String, String> cliArgs = new HashMap <String, String>();
         cliArgs.put("t", "employeeData");
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
@@ -195,7 +195,7 @@ public class CommandLineInterfaceTest {
      * @return a string array that mimics the main input args array
      */
     public String[] getRandomizedCommandLine(HashMap<String, String> hadoopArgs, HashMap<String, String> gbArgs){
-        ArrayList<String> args = new ArrayList<>();
+        ArrayList<String> args = new ArrayList<String>();
         int maxCount = hadoopArgs.size()*2;
 
         //randomize the hadoop options first since they always have to be first

@@ -533,8 +533,10 @@ public abstract class TestMapReduceDriverUtils {
         if(object == null){
             try {
                 object = klass.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException e) {
                 //if we get any of the thrown exceptions fail the test because nothing is going to work
+                fail("couldn't spy: " + klass.getName());
+            } catch (IllegalAccessException e) {
                 fail("couldn't spy: " + klass.getName());
             }
             object = spy(object);

@@ -303,8 +303,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 				return -1;
 			} else {
 				for (int i = 0; i < mySize; i++) {
-					SerializedGraphElement myPge = serializedGraphElements
-							.get(i);
+					SerializedGraphElement myPge = serializedGraphElements.get(i);
 					SerializedGraphElement otherPge;
 					try {
 						otherPge = (SerializedGraphElement) t.get(i);

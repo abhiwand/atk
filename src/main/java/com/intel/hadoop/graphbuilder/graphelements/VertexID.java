@@ -21,12 +21,12 @@ package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.HashUtil;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * The identifying information of a vertex: Its name, and its  its label.
@@ -109,8 +109,8 @@ public class VertexID<VidType extends WritableComparable> implements WritableCom
     public boolean equals(Object obj) {
         if (obj instanceof VertexID) {
             VertexID k = (VertexID) obj;
-            return (Objects.equals(this.label, k.label)
-                    && Objects.equals(this.name, k.name));
+            return (ObjectUtils.equals(this.label, k.label)
+                    && ObjectUtils.equals(this.name, k.name));
         }
         return false;
     }

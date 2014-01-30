@@ -24,7 +24,6 @@ import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.pipeline.mergeduplicates.GraphElementMerge;
-import com.intel.hadoop.graphbuilder.pipeline.output.GraphElementWriter;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.DestinationVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.util.*;
@@ -86,7 +85,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
     private Hashtable<EdgeID, Writable> edgeSet;
     private Hashtable<Object, Writable>   vertexSet;
 
-    private GraphElementWriter titanWriter;
+    private TitanGraphElementWriter titanWriter;
     private GraphElementTypeCallback graphElementMerge;
 
     /**
@@ -174,7 +173,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
                     " reducer function", LOG, e);
         }
 
-        initMergerWriter(context);
+        initMergerWriter();
     }
 
     /**
@@ -192,8 +191,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
     public void reduce(IntWritable key, Iterable<SerializedGraphElement>
             values, Context context) throws IOException, InterruptedException {
 
-        edgeSet       = new Hashtable<>();
-        vertexSet     = new Hashtable<>();
+        edgeSet       = new Hashtable<EdgeID, Writable>();
+        vertexSet     = new Hashtable<Object, Writable>();
 
         for(SerializedGraphElement serializedGraphElement : values){
             GraphElement graphElement = serializedGraphElement.graphElement();
@@ -240,7 +239,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
     }
 
     /**
-     * Calls the {@code GraphElementWriter} function the class was initiated
+     * Calls the {@code TitanGraphElementWriter} function the class was initiated
      * with  * to write the edges and vertices.
      *
      * @throws IOException
@@ -262,7 +261,7 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
                 .with("keyFunction", keyFunction));
     }
 
-    private void initMergerWriter(Context context){
+    private void initMergerWriter() {
         graphElementMerge = new GraphElementMerge();
         titanWriter = new TitanGraphElementWriter();
     }

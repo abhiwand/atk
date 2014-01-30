@@ -180,6 +180,6 @@ public class GraphElementMerge implements GraphElementTypeCallback {
         edgeReducerFunction   = (Functional)args.get("edgeReducerFunction", null);
         vertexReducerFunction = (Functional)args.get("vertexReducerFunction", null);
         vertexLabelMap        = (Hashtable<Object, StringType>)args.get("vertexLabelMap", null);
-        noBiDir               = (boolean)args.get("noBiDir");
+        noBiDir               = (Boolean)args.get("noBiDir");
     }
 }

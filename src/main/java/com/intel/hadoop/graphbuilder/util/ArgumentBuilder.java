@@ -36,7 +36,7 @@ public class ArgumentBuilder {
     private HashMap<String, Object> arguments;
 
     ArgumentBuilder(){
-        this.arguments = new HashMap<>();
+        this.arguments = new HashMap<String, Object>();
     }
 
     /**
@@ -120,13 +120,7 @@ public class ArgumentBuilder {
      * @return The status of the type check.
      */
     public boolean isType(String argumentName, Class klass){
-        if(this.exists(argumentName) && this.get(argumentName).getClass().equals(klass)){
-
-            return true;
-        }else{
-
-            return false;
-        }
+        return this.exists(argumentName) && this.get(argumentName).getClass().equals(klass);
     }
 
     /**
