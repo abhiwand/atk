@@ -80,15 +80,21 @@
  * </UL>
   
  * <H2>Building The Source Code</H2>
- * GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. You can build GB with
- \code
- mvn clean package 
- \endcode
- * and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build
+ * GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. GB 2.0 (alpha) currently supports 
+ * Apache Hadoop 1.2.1 and Intel&reg; Distribution for Apache Hadoop (IDH) 3.0.2. To build GB for Apache Hadoop 1.2.1 run
+	 \code
+	 mvn clean package 
+	 \endcode
+ * and to build GB for IDH 3.0.2 you need to run
+	 \code
+	 mvn -P idh_3 initialize
+	 mvn -P idh_3 clean package 
+	 \endcode 
+ * and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build you can use
  \code
  mvn clean package -DskipTests 
  \endcode
-
+ 
  * <H2>Running the Examples</H2>
  * Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, you can run the provided example scripts with
     \code
@@ -110,6 +116,6 @@
  * <H2>Known Issues:</H2>
  *  <B>ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
  *  Could not find class com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids, while attempting to de-serialize it</B><BR/>
- *  Make sure you do not overwrite HADOOP_CLASSPATH variable in $HADOOP_HOME/conf/hadoop-env.sh and in other places.
- * 
+ *  Please export HADOOP_CLASSPATH=/usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar and also make sure that
+ *  you do not overwrite HADOOP_CLASSPATH variable in $HADOOP_HOME/conf/hadoop-env.sh and in other scripts.
  */
