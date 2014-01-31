@@ -72,16 +72,21 @@
  * In particular, GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.1. 
   
  * <H2>Building The Source Code</H2>
- * GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. You can build GB with
- \code
- mvn clean package 
- \endcode
- * and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build
+ * GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. GB 2.0 (alpha) currently supports 
+ * Apache Hadoop 1.2.1 and Intel &reg; Distribution for Apache Hadoop (IDH) 3.0.2. To build GB for Apache Hadoop 1.2.1 run
+	 \code
+	 mvn clean package 
+	 \endcode
+ * and to build GB for IDH 3.0.2 you need to run
+	 \code
+	 mvn -P idh_3 initialize
+	 mvn -P idh_3 clean package 
+	 \endcode 
+ * and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build you can use
  \code
  mvn clean package -DskipTests 
  \endcode
-
- * <H2>Running the Examples</H2>
+* <H2>Running the Examples</H2>
  * Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, you can run the provided example scripts with
     \code
      export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar
