@@ -70,7 +70,7 @@ public class TitanGraphElementWriter {
      */
     protected boolean appendToExistingGraph = false;
 
-    private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<>();
+    private Hashtable<Object, Long>  vertexNameToTitanID = new Hashtable<Object, Long>();
 
     protected  void initArgs(ArgumentBuilder args){
         edgeSet = (Hashtable<EdgeID, Writable>)args.get("edgeSet");

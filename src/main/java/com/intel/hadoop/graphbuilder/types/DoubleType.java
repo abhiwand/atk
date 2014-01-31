@@ -51,7 +51,7 @@ public class DoubleType implements WritableComparable<DoubleType>, Mergeable<Dou
         return val;
     }
 
-    public void set(float i) {
+    public void set(double i) {
         val = i;
     }
 

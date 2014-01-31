@@ -25,6 +25,7 @@ import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.blueprints.Graph;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.log4j.Logger;
+
 import java.util.Iterator;
 import java.util.Map;
 

@@ -135,8 +135,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
 
         verifyPairSecond(run.get(1), graphElement);
 
-        vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<>(new
-                StringType("GAO123"));
+        vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(new StringType("GAO123"));
         vertex.setProperty("TitanID", new LongType(901L));
 
         graphElement.init(vertex);
@@ -243,8 +242,7 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
 
         verifyPairSecond(run.get(4), graphElement);
 
-        vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<>(new
-                StringType("GAO123"));
+        vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(new StringType("GAO123"));
         vertex.setProperty("TitanID", new LongType(903L));
 
         graphElement.init(vertex);

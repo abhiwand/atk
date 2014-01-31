@@ -37,7 +37,7 @@ public class TitanConfig {
      */
     public static final String GRAPHBUILDER_TITAN_APPEND = "graphbuilder.titan.append";
 
-    private static HashMap<String, String> defaultConfigMap  = new HashMap<>();
+    private static HashMap<String, String> defaultConfigMap  = new HashMap<String, String>();
     static {
         // Default Titan configuration for Graphbuilder
         defaultConfigMap.put("TITAN_STORAGE_BACKEND",           "hbase");

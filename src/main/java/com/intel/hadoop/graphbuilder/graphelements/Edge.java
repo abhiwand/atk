@@ -22,13 +22,13 @@ package com.intel.hadoop.graphbuilder.graphelements;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.HashUtil;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Represents an Edge object with a source, destination, label, and a 
@@ -256,7 +256,7 @@ public class Edge<VidType extends WritableComparable<VidType>>  extends GraphEle
      * @return True, if the edge's source and destination are equal.
      */
     public boolean isSelfEdge() {
-        return Objects.equals(src, dst);
+        return ObjectUtils.equals(src, dst);
     }
 
     /**
