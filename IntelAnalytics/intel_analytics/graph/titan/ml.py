@@ -84,7 +84,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                             data_y,
                             data_v,
                             data_t,
-                            curve_title):
+                            curve_title,
+                            curve_ylabel1,
+                            curve_ylabel2,
+                            curve_ylabel3
+                            ):
         """
         Plots learning curves for algorithms.
         """
@@ -92,7 +96,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         axes1 = fig.add_axes([0.1, 0.1, 0.8, 0.8])  # left,bottom,width,height
         axes1.plot(data_x, data_y, 'b')
         axes1.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
-        axes1.set_ylabel("Cost (Train)", fontsize=self._label_font_size)
+        axes1.set_ylabel(curve_ylabel1, fontsize=self._label_font_size)
         title_str = [curve_title, " (Train)"]
         axes1.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
         axes1.grid(True, linestyle='-', color='0.75')
@@ -100,7 +104,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         axes2 = fig.add_axes([1.1, 0.1, 0.8, 0.8])
         axes2.plot(data_x, data_v, 'g')
         axes2.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
-        axes2.set_ylabel("RMSE (Validate)", fontsize=self._label_font_size)
+        axes2.set_ylabel(curve_ylabel2, fontsize=self._label_font_size)
         title_str = [curve_title, " (Validate)"]
         axes2.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
         axes2.grid(True, linestyle='-', color='0.75')
@@ -108,7 +112,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         axes3 = fig.add_axes([2.1, 0.1, 0.8, 0.8])
         axes3.plot(data_x, data_t, 'y')
         axes3.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
-        axes3.set_ylabel("RMSE (Test)", fontsize=self._label_font_size)
+        axes3.set_ylabel(curve_ylabel3, fontsize=self._label_font_size)
         title_str = [curve_title, " (Test)"]
         axes3.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
         axes3.grid(True, linestyle='-', color='0.75')
@@ -143,7 +147,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                output_path,
                                file_name,
                                time_str,
-                               curve_title):
+                               curve_title,
+                               curve_ylabel1="Cost (Train)",
+                               curve_ylabel2="RMSE (Validate)",
+                               curve_ylabel3="RMSE (Test)"
+                               ):
         report_file = self._get_report(output_path, file_name, time_str)
         #find progress info
         with open(report_file) as result:
@@ -165,7 +173,14 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         learning_results.append(data_y)
         learning_results.append(data_v)
         learning_results.append(data_t)
-        self._plot_learning_curve(data_x, data_y, data_v, data_t, curve_title)
+        self._plot_learning_curve(data_x,
+                                  data_y,
+                                  data_v,
+                                  data_t,
+                                  curve_title,
+                                  curve_ylabel1,
+                                  curve_ylabel2,
+                                  curve_ylabel3)
         return learning_results
 
     def _del_old_output(self, output_path):
@@ -420,7 +435,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         lbp_results = self._update_learning_curve(output_path,
                                                   'lbp-learning-report_0',
                                                   time_str,
-                                                  'LBP Learning Curve')
+                                                  'LBP Learning Curve',
+                                                  'Average Train Delta',
+                                                  'Average Validation Delta',
+                                                  'Average Test Delta')
 
         output = InitReport()
         output.graph_name = self._graph.user_graph_name
