@@ -134,5 +134,10 @@ For the HBase configuration, we recommend tuning the following parameters:
 
 Dependencies
 ------------
-
-Please use Titan-0.4.1, HBase-0.94.12 and Hadoop-1.2.1 to use the Graph Builder 2.0 (alpha) library.
+GB 2.0 (alpha) has been tested against:
+- Java 1.6+
+- Apache Hadoop 1.2.1
+- IDH 3.0.2 (Hadoop-2.0.4-alpha, Pig 0.11.1, HBase-0.94.7-security)
+- Apache Pig 0.12.0
+- Apache HBase 0.0.94.12-security
+- Titan 0.4.2
