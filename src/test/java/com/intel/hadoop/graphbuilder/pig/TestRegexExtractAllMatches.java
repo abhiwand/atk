@@ -40,8 +40,7 @@ public class TestRegexExtractAllMatches {
 	@Before
 	public void setup() throws Exception {
 		regexpUdf = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec(
-                        "com.intel.pig.udf.eval.RegexExtractAllMatches()");
+				.instantiateFuncFromSpec("com.intel.pig.udf.eval.RegexExtractAllMatches()");
 	}
 
 	@Test
@@ -84,9 +83,8 @@ public class TestRegexExtractAllMatches {
 		inTuple.set(0, testInput.toString());
 		inTuple.set(1, "<test>(.*?)</test>");
 		result = (DataBag) regexpUdf.exec(inTuple);
-		assertEquals("RegexExtractAllMatches test failed",
-                result.size(),
-                nElements);
+		assertEquals("RegexExtractAllMatches test failed", result.size(),
+				nElements);
 
 		iter = result.iterator();
 		while (iter.hasNext()) {
