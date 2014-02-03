@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.types;
 
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONValue;
+
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 

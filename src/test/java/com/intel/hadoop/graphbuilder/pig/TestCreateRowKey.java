@@ -35,7 +35,6 @@ public class TestCreateRowKey {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting CreateRowKey tests. ***");
 		rowKeyAssignerUDF = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec("com.intel.pig.udf.eval.CreateRowKey");
 	}
@@ -62,10 +61,4 @@ public class TestCreateRowKey {
 		assertEquals("1st field must be null", result.get(1), null);
 		System.out.println("row key " + result.get(0));
 	}
-
-	@After
-	public void done() {
-		System.out.println("*** Done with the CreateRowKey tests ***");
-	}
-
 }

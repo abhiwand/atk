@@ -119,6 +119,11 @@ public class CreateRowKey extends EvalFunc<Tuple> {
 		return bigInt.toString(16);
 	}
 
+    /**
+     * Provide schema information to Pig.
+     * @param input
+     * @return Schema for a tuple with the row key prepended.
+     */
 	@Override
 	public Schema outputSchema(Schema input) {
 		try {

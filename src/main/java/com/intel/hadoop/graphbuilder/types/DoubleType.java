@@ -31,7 +31,7 @@ import java.io.IOException;
  * The basic double type in the library.
  */
 public class DoubleType implements WritableComparable<DoubleType>, Mergeable<DoubleType>, JSONAware,
-        EncapsulatedObject {
+        EncapsulatedObject{
     public static final DoubleType ZERO = new DoubleType(0);
     public static final DoubleType ONE  = new DoubleType(1);
 
