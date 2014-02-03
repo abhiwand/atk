@@ -37,6 +37,7 @@ import com.intel.pig.data.PropertyGraphElementTuple;
 public class TestPropertyGraphElementTuple {
 
 	private static final double DELTA = 0.0001;
+
 	@Test
 	public void runTests() throws IOException {
 		PropertyGraphElementTuple t = new PropertyGraphElementTuple();
@@ -62,13 +63,16 @@ public class TestPropertyGraphElementTuple {
 		for (Object o : allElements) {
 			SerializedGraphElementStringTypeVids s = (SerializedGraphElementStringTypeVids) o;
 			Vertex v = (Vertex) s.graphElement().get();
-			assertEquals("Should have been v-" + i, "v-" + i, v.getId().getName().toString());
-			assertEquals("Should have been label-" + i, "label-" + i, v.getLabel().get());
-			assertEquals("Should have been " + new DoubleType(i), i, ((DoubleType)(v.getProperty("p-" + i))).get(), DELTA);
+			assertEquals("Should have been v-" + i, "v-" + i, v.getId()
+					.getName().toString());
+			assertEquals("Should have been label-" + i, "label-" + i, v
+					.getLabel().get());
+			assertEquals("Should have been " + new DoubleType(i), i,
+					((DoubleType) (v.getProperty("p-" + i))).get(), DELTA);
 			i++;
 		}
-		
-		//test append
+
+		// test append
 		SerializedGraphElementStringTypeVids newElement = new SerializedGraphElementStringTypeVids();
 		String name = "new_vertex";
 		StringType vid = new StringType(name);
@@ -77,13 +81,16 @@ public class TestPropertyGraphElementTuple {
 		vertex.setProperty("new_property", new StringType("new_value"));
 		newElement.init(vertex);
 		t.append(newElement);
-		Vertex readVertex = (Vertex) ((SerializedGraphElementStringTypeVids)t.get(t.size()-1)).graphElement().get();
-		assertEquals("Should have been new_vertex", "new_vertex", vertex.getId().getName().toString());
-		assertEquals("Should have been new_label", "new_label", vertex.getLabel().get());
-		assertEquals("Should have been new_value" , "new_value", ((StringType)vertex.getProperty("new_property")).get());
-		
-		
-		//test set
+		Vertex readVertex = (Vertex) ((SerializedGraphElementStringTypeVids) t
+				.get(t.size() - 1)).graphElement().get();
+		assertEquals("Should have been new_vertex", "new_vertex", vertex
+				.getId().getName().toString());
+		assertEquals("Should have been new_label", "new_label", vertex
+				.getLabel().get());
+		assertEquals("Should have been new_value", "new_value",
+				((StringType) vertex.getProperty("new_property")).get());
+
+		// test set
 		newElement = new SerializedGraphElementStringTypeVids();
 		name = "new_0th_vertex";
 		vid = new StringType(name);
@@ -92,36 +99,45 @@ public class TestPropertyGraphElementTuple {
 		vertex.setProperty("new_0th_property", new StringType("new_0th_value"));
 		newElement.init(vertex);
 		t.set(0, newElement);
-		readVertex = (Vertex) ((SerializedGraphElementStringTypeVids)t.get(0)).graphElement().get();
-		assertEquals("Should have been new_0th_vertex", "new_0th_vertex", vertex.getId().getName().toString());
-		assertEquals("Should have been new_0th_label", "new_0th_label", vertex.getLabel().get());
-		assertEquals("Should have been new_0th_value" , "new_0th_value", ((StringType)vertex.getProperty("new_0th_property")).get());
-		
-		assertEquals("Should be 1", 1, t.compareTo(new PropertyGraphElementTuple()));
-		assertEquals("Should be -1", -1, t.compareTo(new PropertyGraphElementTuple(50)));
+		readVertex = (Vertex) ((SerializedGraphElementStringTypeVids) t.get(0))
+				.graphElement().get();
+		assertEquals("Should have been new_0th_vertex", "new_0th_vertex",
+				vertex.getId().getName().toString());
+		assertEquals("Should have been new_0th_label", "new_0th_label", vertex
+				.getLabel().get());
+		assertEquals("Should have been new_0th_value", "new_0th_value",
+				((StringType) vertex.getProperty("new_0th_property")).get());
+
+		assertEquals("Should be 1", 1,
+				t.compareTo(new PropertyGraphElementTuple()));
+		assertEquals("Should be -1", -1,
+				t.compareTo(new PropertyGraphElementTuple(50)));
 		assertEquals("Should be 0", 0, t.compareTo(t));
-		assertNotEquals("Shouldn't be the same", t.hashCode(), new PropertyGraphElementTuple());
-		
+		assertNotEquals("Shouldn't be the same", t.hashCode(),
+				new PropertyGraphElementTuple());
+
 	}
-	
+
 	@Test(expected = ExecException.class)
 	public void testGetFailureCases1() throws IOException {
 		PropertyGraphElementTuple t = new PropertyGraphElementTuple(10);
 		t.get(11);
 	}
-	
+
 	@Test(expected = ExecException.class)
 	public void testSetFailureCases1() throws IOException {
 		PropertyGraphElementTuple t = new PropertyGraphElementTuple(10);
-		t.set(11, null);;
+		t.set(11, null);
+		;
 	}
-	
+
 	@Test(expected = NullPointerException.class)
 	public void testSetFailureCases2() throws IOException {
 		PropertyGraphElementTuple t = new PropertyGraphElementTuple(10);
-		t.set(5, null);;
+		t.set(5, null);
+		;
 	}
-	
+
 	@Test(expected = NullPointerException.class)
 	public void testFailureCases2() throws IOException {
 		PropertyGraphElementTuple t = new PropertyGraphElementTuple(10);

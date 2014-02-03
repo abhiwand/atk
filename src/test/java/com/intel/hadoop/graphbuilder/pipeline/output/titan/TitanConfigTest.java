@@ -28,18 +28,19 @@ import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
 
 public class TitanConfigTest {
 
-    @Test
-    public void testSingletonConfig() throws Exception {
-        assertSame(TitanConfig.config, RuntimeConfig.getInstance(TitanConfig.class));
+	@Test
+	public void testSingletonConfig() throws Exception {
+		assertSame(TitanConfig.config,
+				RuntimeConfig.getInstance(TitanConfig.class));
 
-    }
+	}
 
-    @Test
-    public void testConstructor() throws Exception {
+	@Test
+	public void testConstructor() throws Exception {
 
-        // just a placeholder
-        TitanConfig tc = new TitanConfig();
+		// just a placeholder
+		TitanConfig tc = new TitanConfig();
 
-        assertNotNull(tc);
-    }
+		assertNotNull(tc);
+	}
 }

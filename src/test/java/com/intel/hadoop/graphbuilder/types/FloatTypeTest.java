@@ -51,7 +51,8 @@ public class FloatTypeTest {
 
 		f.add(new FloatType(1.0f));
 		assertEquals(124.0f, f.get(), EPSILON);
-		assertEquals("compareTo mismatch", f.compareTo(new FloatType(124.0f)), 0);
+		assertEquals("compareTo mismatch", f.compareTo(new FloatType(124.0f)),
+				0);
 
 		val = 500.0f;
 		DataInput dInput = mock(DataInput.class);

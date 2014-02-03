@@ -23,12 +23,11 @@ import static junit.framework.Assert.assertNotNull;
 
 import org.junit.Test;
 
-
 public class VertexSchemaTest {
 
-    @Test
-    public void testGetPropertySchemata() {
-        VertexSchema vertexSchema = new VertexSchema();
-        assertNotNull(vertexSchema.getPropertySchemata());
-    }
+	@Test
+	public void testGetPropertySchemata() {
+		VertexSchema vertexSchema = new VertexSchema();
+		assertNotNull(vertexSchema.getPropertySchemata());
+	}
 }

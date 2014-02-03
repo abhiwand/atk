@@ -19,34 +19,37 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.types.LongType;
-import com.intel.hadoop.graphbuilder.types.StringType;
-import org.junit.Test;
-
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
+import org.junit.Test;
+
+import com.intel.hadoop.graphbuilder.types.LongType;
+import com.intel.hadoop.graphbuilder.types.StringType;
+
 public class ValueClassFactoryTest {
-    @Test
-    public void testGetValueClassByVidClassName() throws Exception {
+	@Test
+	public void testGetValueClassByVidClassName() throws Exception {
 
-        assertSame(ValueClassFactory.getValueClassByVidClassName(StringType.class.getName()),
-                SerializedGraphElementStringTypeVids.class);
+		assertSame(
+				ValueClassFactory.getValueClassByVidClassName(StringType.class
+						.getName()), SerializedGraphElementStringTypeVids.class);
 
-        assertSame(ValueClassFactory.getValueClassByVidClassName(LongType.class.getName()),
-                SerializedGraphElementLongTypeVids.class);
-    }
+		assertSame(ValueClassFactory.getValueClassByVidClassName(LongType.class
+				.getName()), SerializedGraphElementLongTypeVids.class);
+	}
 
-    @Test(expected=IllegalArgumentException.class)
-    public void testIllegalArgumentException() {
-        // String is not an allowed class because it's not a Writable...
-        ValueClassFactory.getValueClassByVidClassName(String.class.getName());
-    }
+	@Test(expected = IllegalArgumentException.class)
+	public void testIllegalArgumentException() {
+		// String is not an allowed class because it's not a Writable...
+		ValueClassFactory.getValueClassByVidClassName(String.class.getName());
+	}
 
-    @Test public void testConstructor() {
+	@Test
+	public void testConstructor() {
 
-        // nothing to do here yet, really a placeholder
-        ValueClassFactory vcf = new ValueClassFactory();
-        assertNotNull(vcf);
-    }
+		// nothing to do here yet, really a placeholder
+		ValueClassFactory vcf = new ValueClassFactory();
+		assertNotNull(vcf);
+	}
 }

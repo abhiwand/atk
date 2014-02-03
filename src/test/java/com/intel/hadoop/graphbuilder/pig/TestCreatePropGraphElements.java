@@ -19,20 +19,11 @@
 package com.intel.hadoop.graphbuilder.pig;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
-import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.pig.data.PropertyGraphElementTuple;
-import com.intel.hadoop.graphbuilder.types.*;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.FuncSpec;
 import org.apache.pig.data.DataBag;
@@ -41,74 +32,60 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class TestCreatePropGraphElements
-{
-    EvalFunc<?> createPropGraphElementsUDF;
+public class TestCreatePropGraphElements {
+	EvalFunc<?> createPropGraphElementsUDF;
 
-    @Before
-    public void setup() throws Exception {
-        System.out.println("*** Starting CreatePropGraphElements tests. ***");
-        createPropGraphElementsUDF = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec(
-                new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
-                "-v name=age,managerId -e name,department,worksAt,tenure"));
-    }
+	@Before
+	public void setup() throws Exception {
+		createPropGraphElementsUDF = (EvalFunc<?>) PigContext
+				.instantiateFuncFromSpec(new FuncSpec(
+						"com.intel.pig.udf.eval.CreatePropGraphElements",
+						"-v name=age,managerId -e name,department,worksAt,tenure"));
+	}
 
-    @Test
-    public void runTests() throws IOException {
+	@Test
+	public void runTests() throws IOException {
+		Schema.FieldSchema idField = new Schema.FieldSchema("id",
+				DataType.INTEGER);
+		Schema.FieldSchema nameField = new Schema.FieldSchema("name",
+				DataType.CHARARRAY);
+		Schema.FieldSchema ageField = new Schema.FieldSchema("age",
+				DataType.INTEGER);
+		Schema.FieldSchema managerIdField = new Schema.FieldSchema("managerId",
+				DataType.CHARARRAY);
+		Schema.FieldSchema tenureField = new Schema.FieldSchema("tenure",
+				DataType.CHARARRAY);
+		Schema.FieldSchema departmentField = new Schema.FieldSchema(
+				"department", DataType.CHARARRAY);
 
-        Schema.FieldSchema idField
-                = new Schema.FieldSchema("id", DataType.INTEGER);
-        Schema.FieldSchema nameField
-                = new Schema.FieldSchema("name", DataType.CHARARRAY);
-        Schema.FieldSchema ageField
-                = new Schema.FieldSchema("age", DataType.INTEGER);
-        Schema.FieldSchema managerIdField
-                = new Schema.FieldSchema("managerId", DataType.CHARARRAY);
-        Schema.FieldSchema tenureField
-                = new Schema.FieldSchema("tenure", DataType.CHARARRAY);
-        Schema.FieldSchema departmentField
-                = new Schema.FieldSchema("department", DataType.CHARARRAY);
+		List fsList = asList(idField, nameField, ageField, managerIdField,
+				tenureField, departmentField);
 
-        List fsList = asList(idField,
-                             nameField,
-                             ageField,
-                             managerIdField,
-                             tenureField,
-                             departmentField);
+		Schema schema = new Schema(fsList);
 
-        Schema schema = new Schema(fsList);
+		createPropGraphElementsUDF.setInputSchema(schema);
 
-        createPropGraphElementsUDF.setInputSchema(schema);
+		Tuple t = TupleFactory.getInstance().newTuple(6);
 
-        Tuple t = TupleFactory.getInstance().newTuple(6);
+		Integer id = 1;
+		String name = "Haywood Y. Buzzov";
+		int age = 33;
+		String managerId = "Ivanna B. Onatop";
+		String tenure = "Four score and seven years";
+		String department = "Overoptimized Commodities";
 
-        Integer id = 1;
-        String name = "Haywood Y. Buzzov";
-        int age = 33;
-        String managerId = "Ivanna B. Onatop";
-        String tenure =  "Four score and seven years";
-        String department = "Overoptimized Commodities";
+		t.set(0, id);
+		t.set(1, name);
+		t.set(2, age);
+		t.set(3, managerId);
+		t.set(4, tenure);
+		t.set(5, department);
 
-        t.set(0, id);
-        t.set(1, name);
-        t.set(2, age);
-        t.set(3, managerId);
-        t.set(4, tenure);
-        t.set(5, department);
+		DataBag result = (DataBag) createPropGraphElementsUDF.exec(t);
 
-        DataBag result = (DataBag) createPropGraphElementsUDF.exec(t);
-
-        assert(result.size() == 5);
-    }
-
-    @After
-    public void done() {
-        System.out.println("*** Done with the CreatePropGraphElements tests ***");
-    }
-
+		assertTrue(result.size() == 5);
+	}
 }
