@@ -22,18 +22,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataBag;
-import org.apache.pig.data.DefaultBagFactory;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,7 +39,6 @@ public class TestRegexExtractAllMatches {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting RegexExtractAllMatches tests. ***");
 		regexpUdf = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec(
                         "com.intel.pig.udf.eval.RegexExtractAllMatches()");
@@ -108,14 +103,12 @@ public class TestRegexExtractAllMatches {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase1() throws IOException {
-		System.out.println("Testing failure cases");
 		/* RegexExtractAllMatches accepts only 2 parameters */
 		Tuple inTuple = TupleFactory.getInstance().newTuple(3);
 		regexpUdf.exec(inTuple);
 	}
 
 	public void testFailureCase2() throws IOException {
-		System.out.println("Testing failure cases");
 		Tuple inTuple = TupleFactory.getInstance().newTuple(2);
 		inTuple.set(0, null);
 		Object result = regexpUdf.exec(inTuple);
@@ -124,7 +117,6 @@ public class TestRegexExtractAllMatches {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase3() throws IOException {
-		System.out.println("Testing failure cases");
 		Tuple inTuple = TupleFactory.getInstance().newTuple(2);
 		inTuple.set(0, "source_string");
 		inTuple.set(1, "***");
@@ -133,17 +125,9 @@ public class TestRegexExtractAllMatches {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase4() throws IOException {
-		System.out.println("Testing failure cases");
 		Tuple inTuple = TupleFactory.getInstance().newTuple(2);
 		inTuple.set(0, "source_string");
 		inTuple.set(1, null);
 		regexpUdf.exec(inTuple);
 	}
-
-	@After
-	public void done() {
-		System.out
-				.println("*** Done with the RegexExtractAllMatches tests ***");
-	}
-
 }

@@ -36,61 +36,57 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
 
 public class TestGetPropGraphElementID {
-    EvalFunc<?> graphElmentIDUDF;
+	EvalFunc<?> graphElmentIDUDF;
 
-    @Before
-    public void setup() throws Exception {
-        System.out.println("*** Starting GetPropGraphElementID tests. ***");
-        graphElmentIDUDF = (EvalFunc<?>) PigContext
-                .instantiateFuncFromSpec(
-                        "com.intel.pig.udf.eval.GetPropGraphElementID");
-    }
+	@Before
+	public void setup() throws Exception {
+		System.out.println("*** Starting GetPropGraphElementID tests. ***");
+		graphElmentIDUDF = (EvalFunc<?>) PigContext
+				.instantiateFuncFromSpec("com.intel.pig.udf.eval.GetPropGraphElementID");
+	}
 
-    @Test
-    public void runTests() throws IOException {
+	@Test
+	public void runTests() throws IOException {
 
-        SerializedGraphElementStringTypeVids serializedGraphElement
-                = new SerializedGraphElementStringTypeVids();
+		SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
 
-        Vertex<StringType> vertex = new Vertex<StringType>(new StringType(
-                "test_vertex"));
-        serializedGraphElement.init(vertex);
-        vertex.setProperty("p-1", new StringType("v-1"));
-        vertex.setLabel(new StringType("vertex_label"));
+		Vertex<StringType> vertex = new Vertex<StringType>(new StringType(
+				"test_vertex"));
+		serializedGraphElement.init(vertex);
+		vertex.setProperty("p-1", new StringType("v-1"));
+		vertex.setLabel(new StringType("vertex_label"));
 
-        PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
-        t.set(0, serializedGraphElement);
+		PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
+		t.set(0, serializedGraphElement);
 
-        String result = (String) graphElmentIDUDF.exec(t);
+		String result = (String) graphElmentIDUDF.exec(t);
 
-        assertNotNull("Returned ID is null", result);
+		assertNotNull("Returned ID is null", result);
 
-        assertEquals("Returned ID should have been ==VERTEX " +
-                vertex.getId().getName().toString(), result,
-                "VERTEX "+vertex.getId().getName().toString());
+		assertEquals("Returned ID should have been ==VERTEX "
+				+ vertex.getId().getName().toString(), result, "VERTEX "
+				+ vertex.getId().getName().toString());
 
+		serializedGraphElement = new SerializedGraphElementStringTypeVids();
+		Edge<StringType> edge = new Edge<StringType>(new StringType("src"),
+				new StringType("target"), new StringType("edge_label"));
 
+		serializedGraphElement.init(edge);
+		edge.setProperty("p-1", new StringType("v-1"));
+		t.set(0, serializedGraphElement);
 
-        serializedGraphElement = new SerializedGraphElementStringTypeVids();
-        Edge<StringType> edge = new Edge<StringType>(new StringType("src"),
-                new StringType("target"), new StringType("edge_label"));
+		result = (String) graphElmentIDUDF.exec(t);
 
-        serializedGraphElement.init(edge);
-        edge.setProperty("p-1", new StringType("v-1"));
-        t.set(0, serializedGraphElement);
+		assertNotNull("Returned ID is null", result);
 
-        result = (String) graphElmentIDUDF.exec(t);
+		assertEquals("Returned ID should have been ==EDGE "
+				+ edge.getId().toString(), result, "EDGE "
+				+ edge.getId().toString());
+	}
 
-        assertNotNull("Returned ID is null", result);
-
-        assertEquals("Returned ID should have been ==EDGE " +
-                edge.getId().toString(), result,
-                "EDGE " + edge.getId().toString());
-    }
-
-    @After
-    public void done() {
-        System.out.println("*** Done with the GetPropGraphElementID tests ***");
-    }
+	@After
+	public void done() {
+		System.out.println("*** Done with the GetPropGraphElementID tests ***");
+	}
 
 }

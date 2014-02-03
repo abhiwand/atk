@@ -28,13 +28,11 @@ import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements
-        .SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
@@ -44,7 +42,6 @@ public class TestRDF {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting RDF tests. ***");
 		toRdfUdf = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec("com.intel.pig.udf.eval.RDF('OWL')");
 	}
@@ -72,16 +69,15 @@ public class TestRDF {
             if (rdfStatement.contains("rdf-syntax-ns#type")) {
     			assertEquals(
 	    				"RDF statement mismatch",
-		    			rdfStatement,
-			    		"http://www.w3.org/2002/07/owl#test_vertex " +
-                        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-                        "vertex_label .");
+			    		"<http://www.w3.org/2002/07/owl#test_vertex> " +
+                        "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
+                        "<vertex_label> .", rdfStatement);
             } else {
                 assertEquals(
 	    				"RDF statement mismatch",
-		    			rdfStatement,
-			    		"http://www.w3.org/2002/07/owl#test_vertex " +
-                        "http://www.w3.org/2002/07/owl#p-1 \"v-1\" .");
+			    		"<http://www.w3.org/2002/07/owl#test_vertex> " +
+                        "<http://www.w3.org/2002/07/owl#p-1> <\"v-1\"> .",
+                        rdfStatement);
             }
 		}
 
@@ -104,10 +100,10 @@ public class TestRDF {
 			String rdfStatement = (String) resultTuple.get(0);
             assertEquals(
                     "RDF statement mismatch",
-                    rdfStatement,
-                    "http://www.w3.org/2002/07/owl#src " +
-                    "http://www.w3.org/2002/07/owl#edge_label " +
-                    "http://www.w3.org/2002/07/owl#target .");
+                    "<http://www.w3.org/2002/07/owl#src> " +
+                    "<http://www.w3.org/2002/07/owl#edge_label> " +
+                    "<http://www.w3.org/2002/07/owl#target> .",
+                    rdfStatement);
 		}
 
 		/* test with a null graph element */
@@ -116,13 +112,6 @@ public class TestRDF {
 		t = new PropertyGraphElementTuple(1);
 		t.set(0, serializedGraphElement);
 		result = (DataBag) toRdfUdf.exec(t);
-
         assertNull(result);
 	}
-
-	@After
-	public void done() {
-		System.out.println("*** Done with the RDF tests ***");
-	}
-
 }

@@ -19,104 +19,106 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
+import java.io.IOException;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 import com.intel.hadoop.graphbuilder.test.TestingGraphProvider;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.junit.Assert.*;
 
 public class EdgesIntoTitanMapperTest {
 
-    TestingGraphProvider provider = new TestingGraphProvider();
-    TitanGraph graph;
+	TestingGraphProvider provider = new TestingGraphProvider();
+	TitanGraph graph;
 
-    @Before
-    public void setup() throws IOException {
-        graph = provider.getTitanGraph();
-    }
+	@Before
+	public void setup() throws IOException {
+		graph = provider.getTitanGraph();
+	}
 
-    @After
-    public void tearDown()
-    {
-        provider.cleanUp();
-    }
+	@After
+	public void tearDown() {
+		provider.cleanUp();
+	}
 
-    @Test
-    public void testFindOrCreateEdge_Found() throws Exception {
-        // setup test data
-        Vertex src = graph.addVertex(null);
-        Vertex dst = graph.addVertex(null);
-        String label = "label1243";
-        Edge edge = graph.addEdge(null, src, dst, label);
+	@Test
+	public void testFindOrCreateEdge_Found() throws Exception {
+		// setup test data
+		Vertex src = graph.addVertex(null);
+		Vertex dst = graph.addVertex(null);
+		String label = "label1243";
+		Edge edge = graph.addEdge(null, src, dst, label);
 
-        // initialize class under test
-        EdgesIntoTitanMapper reducer = new EdgesIntoTitanMapper();
-        reducer.setAppendToExistingGraph(true);
+		// initialize class under test
+		EdgesIntoTitanMapper reducer = new EdgesIntoTitanMapper();
+		reducer.setAppendToExistingGraph(true);
 
-        // call method under test
-        Edge actualEdge = reducer.findOrCreateEdge(src, dst, label);
+		// call method under test
+		Edge actualEdge = reducer.findOrCreateEdge(src, dst, label);
 
-        assertEquals(edge, actualEdge);
-    }
+		assertEquals(edge, actualEdge);
+	}
 
-    @Test
-    public void testFindOrCreateEdge_Create() throws Exception {
-        // setup test data
-        Vertex src = graph.addVertex(null);
-        Vertex dst = graph.addVertex(null);
-        String label = "label1243";
+	@Test
+	public void testFindOrCreateEdge_Create() throws Exception {
+		// setup test data
+		Vertex src = graph.addVertex(null);
+		Vertex dst = graph.addVertex(null);
+		String label = "label1243";
 
-        // initialize class under test
-        EdgesIntoTitanMapper reducer = new EdgesIntoTitanMapper();
-        reducer.setAppendToExistingGraph(true);
-        reducer.graph = graph;
+		// initialize class under test
+		EdgesIntoTitanMapper reducer = new EdgesIntoTitanMapper();
+		reducer.setAppendToExistingGraph(true);
+		reducer.graph = graph;
 
-        // call method under test
-        Edge actualEdge = reducer.findOrCreateEdge(src, dst, label);
+		// call method under test
+		Edge actualEdge = reducer.findOrCreateEdge(src, dst, label);
 
-        assertNotNull(actualEdge);
-        assertEquals(actualEdge.getVertex(Direction.IN), dst);
-        assertEquals(actualEdge.getVertex(Direction.OUT), src);
-    }
+		assertNotNull(actualEdge);
+		assertEquals(actualEdge.getVertex(Direction.IN), dst);
+		assertEquals(actualEdge.getVertex(Direction.OUT), src);
+	}
 
-    @Test
-    public void testFindEdge_Found() throws Exception {
-        // setup test data
-        Vertex src = graph.addVertex(null);
-        Vertex dst = graph.addVertex(null);
-        String label = "label1243";
-        Edge expectedEdge = graph.addEdge(null, src, dst, label);
+	@Test
+	public void testFindEdge_Found() throws Exception {
+		// setup test data
+		Vertex src = graph.addVertex(null);
+		Vertex dst = graph.addVertex(null);
+		String label = "label1243";
+		Edge expectedEdge = graph.addEdge(null, src, dst, label);
 
-        // initialize class under test
-        EdgesIntoTitanMapper reducer = new EdgesIntoTitanMapper();
+		// initialize class under test
+		EdgesIntoTitanMapper reducer = new EdgesIntoTitanMapper();
 
-        // call method under test
-        Edge actualEdge = reducer.findEdge(src, dst, label);
+		// call method under test
+		Edge actualEdge = reducer.findEdge(src, dst, label);
 
-        assertEquals(expectedEdge, actualEdge);
-    }
+		assertEquals(expectedEdge, actualEdge);
+	}
 
-    @Test
-    public void testFindEdge_NotFound() throws Exception {
-        // setup test data
-        Vertex src = graph.addVertex(null);
-        Vertex dst = graph.addVertex(null);
-        String label = "label1567";
-        Edge edge = graph.addEdge(null, src, dst, label);
+	@Test
+	public void testFindEdge_NotFound() throws Exception {
+		// setup test data
+		Vertex src = graph.addVertex(null);
+		Vertex dst = graph.addVertex(null);
+		String label = "label1567";
+		Edge edge = graph.addEdge(null, src, dst, label);
 
-        // initialize class under test
-        EdgesIntoTitanMapper reducer = new EdgesIntoTitanMapper();
+		// initialize class under test
+		EdgesIntoTitanMapper reducer = new EdgesIntoTitanMapper();
 
-        // call method under test
-        Edge nullEdge = reducer.findEdge(src, dst, "non-matching-label");
+		// call method under test
+		Edge nullEdge = reducer.findEdge(src, dst, "non-matching-label");
 
-        assertNull(nullEdge);
-    }
+		assertNull(nullEdge);
+	}
 }

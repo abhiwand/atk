@@ -23,15 +23,14 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
-import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
@@ -42,7 +41,6 @@ public class TestVertexlistUdf {
 
     @Before
     public void setup() throws Exception {
-        System.out.println("*** Starting VertexList test cases ***");
         toEdgelistUdf0 = (EvalFunc<?>) PigContext
                 .instantiateFuncFromSpec(
                         "com.intel.pig.udf.eval.VertexList('false')");
@@ -77,7 +75,6 @@ public class TestVertexlistUdf {
                     "Employee001\tHAWK.People");
 
         String statement1 = (String) toEdgelistUdf1.exec(t);
-        System.out.println(statement1);
         boolean flag = statement1.contains("HAWK.People.Employee001");
         assertTrue("Vertex tuple mismatch", flag);
         flag = statement1.contains("name:Alice");
@@ -85,10 +82,4 @@ public class TestVertexlistUdf {
         flag = statement1.contains("age:30");
         assertTrue("Vertex tuple mismatch", flag);
     }
-
-    @After
-    public void done() {
-        System.out.println("*** Done with the VertexList tests ***");
-    }
-
 }

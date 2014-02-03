@@ -19,197 +19,208 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import org.junit.Test;
+
 import com.intel.hadoop.graphbuilder.types.IntType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import org.junit.Test;
-
-import java.io.*;
-
-import static junit.framework.Assert.*;
 
 public class VertexTest {
 
-    @Test
-    public final void testNoArgConstructor() {
-        Vertex<StringType> vertex = new Vertex<StringType>();
+	@Test
+	public final void testNoArgConstructor() {
+		Vertex<StringType> vertex = new Vertex<StringType>();
 
-        VertexID<StringType> nullId = new VertexID<StringType>(null,null);
-        assertNotNull(vertex);
-        assertEquals(vertex.getId(), nullId);
-        assertNotNull(vertex.getProperties());
-    }
+		VertexID<StringType> nullId = new VertexID<StringType>(null, null);
+		assertNotNull(vertex);
+		assertEquals(vertex.getId(), nullId);
+		assertNotNull(vertex.getProperties());
+	}
 
-    @Test
-    public final void testConstructorWithArgs() {
-        StringType vertexName = new StringType("The Greatest Vertex EVER");
-        VertexID<StringType>  vertexId = new VertexID<StringType>(vertexName);
+	@Test
+	public final void testConstructorWithArgs() {
+		StringType vertexName = new StringType("The Greatest Vertex EVER");
+		VertexID<StringType> vertexId = new VertexID<StringType>(vertexName);
 
-        Vertex<StringType> vertex = new Vertex<StringType>(vertexName);
+		Vertex<StringType> vertex = new Vertex<StringType>(vertexName);
 
-        assertNotNull(vertex);
-        assert (vertex.getId().equals(vertexId));
-        assertNotNull(vertex.getProperties());
-    }
+		assertNotNull(vertex);
+		assertTrue(vertex.getId().equals(vertexId));
+		assertNotNull(vertex.getProperties());
+	}
 
-    @Test
-    public final void testConfigureWithGetters() {
+	@Test
+	public final void testConfigureWithGetters() {
 
-        StringType vertexName = new StringType("The Greatest Vertex EVER");
-        StringType vertexLabel = new StringType("label");
+		StringType vertexName = new StringType("The Greatest Vertex EVER");
+		StringType vertexLabel = new StringType("label");
 
-        VertexID<StringType>  vertexId = new VertexID<StringType>(vertexName, vertexLabel);
+		VertexID<StringType> vertexId = new VertexID<StringType>(vertexName,
+				vertexLabel);
 
-        Vertex<StringType> vertex = new Vertex<StringType>(vertexName, vertexLabel);
+		Vertex<StringType> vertex = new Vertex<StringType>(vertexName,
+				vertexLabel);
 
-        assertNotNull(vertex);
-        assert (vertex.getId().equals(vertexId));
-        assertNotNull(vertex.getProperties());
+		assertNotNull(vertex);
+		assertTrue(vertex.getId().equals(vertexId));
+		assertNotNull(vertex.getProperties());
 
-        PropertyMap pm = vertex.getProperties();
-        PropertyMap pm2 = new PropertyMap();
+		PropertyMap pm = vertex.getProperties();
+		PropertyMap pm2 = new PropertyMap();
 
-        StringType anotherOpinion = new StringType("No that vertex sucks");
+		StringType anotherOpinion = new StringType("No that vertex sucks");
 
-        VertexID<StringType>  diffNameSameLabel = new VertexID<StringType>(anotherOpinion, vertexLabel);
+		VertexID<StringType> diffNameSameLabel = new VertexID<StringType>(
+				anotherOpinion, vertexLabel);
 
-        vertex.configure(diffNameSameLabel, pm2);
-        assert(vertex.getId().equals(diffNameSameLabel));
-        assertSame(vertex.getProperties(), pm2);
+		vertex.configure(diffNameSameLabel, pm2);
+		assertTrue(vertex.getId().equals(diffNameSameLabel));
+		assertSame(vertex.getProperties(), pm2);
 
-        vertex.configure(vertexId, pm);
-        assert (vertex.getId().equals(vertexId));
-        assertSame(vertex.getProperties(), pm);
-    }
+		vertex.configure(vertexId, pm);
+		assertTrue(vertex.getId().equals(vertexId));
+		assertSame(vertex.getProperties(), pm);
+	}
 
-    @Test
-    public final void testGetSetProperty() {
-        StringType vertexId = new StringType("The Greatest Vertex EVER");
-        Vertex<StringType> vertex = new Vertex<StringType>(vertexId);
+	@Test
+	public final void testGetSetProperty() {
+		StringType vertexId = new StringType("The Greatest Vertex EVER");
+		Vertex<StringType> vertex = new Vertex<StringType>(vertexId);
 
-        String key1 = new String("key");
-        String key2 = new String("Ce n'est pas une clé");
+		String key1 = new String("key");
+		String key2 = new String("Ce n'est pas une clé");
 
-        StringType value1 = new StringType("Outstanding Value");
-        StringType value2 = new StringType("Little Value");
+		StringType value1 = new StringType("Outstanding Value");
+		StringType value2 = new StringType("Little Value");
 
-        assert (vertex.getProperties().getPropertyKeys().isEmpty());
+		assertTrue(vertex.getProperties().getPropertyKeys().isEmpty());
 
-        vertex.setProperty(key1, value1);
-        assertSame(vertex.getProperty(key1), value1);
-        assertNull(vertex.getProperty(key2));
+		vertex.setProperty(key1, value1);
+		assertSame(vertex.getProperty(key1), value1);
+		assertNull(vertex.getProperty(key2));
 
-        vertex.setProperty(key2, value2);
-        assertSame(vertex.getProperty(key1), value1);
-        assertSame(vertex.getProperty(key2), value2);
+		vertex.setProperty(key2, value2);
+		assertSame(vertex.getProperty(key1), value1);
+		assertSame(vertex.getProperty(key2), value2);
 
-        vertex.setProperty(key1, value2);
-        assertSame(vertex.getProperty(key1), value2);
-        assertSame(vertex.getProperty(key2), value2);
+		vertex.setProperty(key1, value2);
+		assertSame(vertex.getProperty(key1), value2);
+		assertSame(vertex.getProperty(key2), value2);
 
-        vertex.setProperty(key2, value1);
-        assertSame(vertex.getProperty(key1), value2);
-        assertSame(vertex.getProperty(key2), value1);
+		vertex.setProperty(key2, value1);
+		assertSame(vertex.getProperty(key1), value2);
+		assertSame(vertex.getProperty(key2), value1);
 
-        assert (vertex.getProperties().getPropertyKeys().size() == 2);
-    }
+		assertTrue(vertex.getProperties().getPropertyKeys().size() == 2);
+	}
 
-    @Test
-    public final void testToString() {
-        StringType id1 = new StringType("the greatest vertex ID ever");
-        StringType id2 = new StringType("worst vertex ID ever");
+	@Test
+	public final void testToString() {
+		StringType id1 = new StringType("the greatest vertex ID ever");
+		StringType id2 = new StringType("worst vertex ID ever");
 
-        Vertex<StringType> vertex1 = new Vertex<StringType>(id1);
-        Vertex<StringType> vertex2 = new Vertex<StringType>(id2);
+		Vertex<StringType> vertex1 = new Vertex<StringType>(id1);
+		Vertex<StringType> vertex2 = new Vertex<StringType>(id2);
 
-        Vertex<StringType> vertex3 = new Vertex<StringType>(id1);
+		Vertex<StringType> vertex3 = new Vertex<StringType>(id1);
 
-        assertNotNull(vertex1.toString());
-        assertNotNull(vertex2.toString());
-        assertNotNull(vertex3.toString());
+		assertNotNull(vertex1.toString());
+		assertNotNull(vertex2.toString());
+		assertNotNull(vertex3.toString());
 
-        assert (vertex1.toString().compareTo(vertex2.toString()) != 0);
-        assert (vertex1.toString().compareTo(vertex3.toString()) == 0);
+		assertTrue(vertex1.toString().compareTo(vertex2.toString()) != 0);
+		assertTrue(vertex1.toString().compareTo(vertex3.toString()) == 0);
 
-        String key = new String("key");
-        StringType value = new StringType("bank");
+		String key = new String("key");
+		StringType value = new StringType("bank");
 
-        vertex1.setProperty(key, value);
+		vertex1.setProperty(key, value);
 
-        assert (vertex1.toString().compareTo(vertex2.toString()) != 0);
-        assert (vertex1.toString().compareTo(vertex3.toString()) != 0);
-    }
+		assertTrue(vertex1.toString().compareTo(vertex2.toString()) != 0);
+		assertTrue(vertex1.toString().compareTo(vertex3.toString()) != 0);
+	}
 
-    @Test
-    public final void testWriteRead() throws IOException {
-        StringType id = new StringType("the greatest vertex of ALLL TIIIME!!!");
-        Vertex<StringType> vertex = new Vertex<StringType>(id);
+	@Test
+	public final void testWriteRead() throws IOException {
+		StringType id = new StringType("the greatest vertex of ALLL TIIIME!!!");
+		Vertex<StringType> vertex = new Vertex<StringType>(id);
 
-        Vertex<StringType> vertexOnTheOtherEnd = new Vertex<StringType>(new StringType("maybe not so much"));
+		Vertex<StringType> vertexOnTheOtherEnd = new Vertex<StringType>(
+				new StringType("maybe not so much"));
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
-        DataOutputStream dataOutputStream = new DataOutputStream(baos);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+		DataOutputStream dataOutputStream = new DataOutputStream(baos);
 
-        vertex.write(dataOutputStream);
-        dataOutputStream.flush();
+		vertex.write(dataOutputStream);
+		dataOutputStream.flush();
 
-        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-        DataInputStream dataInputStream = new DataInputStream(bais);
+		ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+		DataInputStream dataInputStream = new DataInputStream(bais);
 
-        vertexOnTheOtherEnd.readFields(dataInputStream);
+		vertexOnTheOtherEnd.readFields(dataInputStream);
 
-        assert (vertex.getId().equals(vertexOnTheOtherEnd.getId()));
-        assert (vertex.getProperties().toString().equals(vertexOnTheOtherEnd.getProperties().toString()));
+		assertTrue(vertex.getId().equals(vertexOnTheOtherEnd.getId()));
+		assertTrue(vertex.getProperties().toString()
+				.equals(vertexOnTheOtherEnd.getProperties().toString()));
 
-        // one more time, with a nonempty property list
+		// one more time, with a nonempty property list
 
-        String key = new String("key");
-        IntType value = new IntType(666);
+		String key = new String("key");
+		IntType value = new IntType(666);
 
-        vertex.setProperty(key, value);
+		vertex.setProperty(key, value);
 
-        ByteArrayOutputStream baos2 = new ByteArrayOutputStream(1024);
-        DataOutputStream dataOutputStream2 = new DataOutputStream(baos2);
+		ByteArrayOutputStream baos2 = new ByteArrayOutputStream(1024);
+		DataOutputStream dataOutputStream2 = new DataOutputStream(baos2);
 
-        vertex.write(dataOutputStream2);
-        dataOutputStream.flush();
+		vertex.write(dataOutputStream2);
+		dataOutputStream.flush();
 
-        ByteArrayInputStream bais2 = new ByteArrayInputStream(baos2.toByteArray());
-        DataInputStream dataInputStream2 = new DataInputStream(bais2);
+		ByteArrayInputStream bais2 = new ByteArrayInputStream(
+				baos2.toByteArray());
+		DataInputStream dataInputStream2 = new DataInputStream(bais2);
 
-        vertexOnTheOtherEnd.readFields(dataInputStream2);
+		vertexOnTheOtherEnd.readFields(dataInputStream2);
 
-        assert (vertex.getId().equals(vertexOnTheOtherEnd.getId()));
-        assert (vertex.getProperties().toString().equals(vertexOnTheOtherEnd.getProperties().toString()));
-    }
+		assertTrue(vertex.getId().equals(vertexOnTheOtherEnd.getId()));
+		assertTrue(vertex.getProperties().toString()
+				.equals(vertexOnTheOtherEnd.getProperties().toString()));
+	}
 
-    @Test
-    public void testEquals() {
+	@Test
+	public void testEquals() {
 
-        PropertyMap map0 = new PropertyMap();
-        map0.setProperty("name", new StringType("Alice"));
-        map0.setProperty("age", new StringType("30"));
-        map0.setProperty("dept", new StringType("IntelCorp"));
+		PropertyMap map0 = new PropertyMap();
+		map0.setProperty("name", new StringType("Alice"));
+		map0.setProperty("age", new StringType("30"));
+		map0.setProperty("dept", new StringType("IntelCorp"));
 
-        PropertyMap map1 = new PropertyMap();
-        map1.setProperty("name", new StringType("Bob"));
-        map1.setProperty("age", new StringType("32"));
-        map1.setProperty("dept", new StringType("IntelLabs"));
+		PropertyMap map1 = new PropertyMap();
+		map1.setProperty("name", new StringType("Bob"));
+		map1.setProperty("age", new StringType("32"));
+		map1.setProperty("dept", new StringType("IntelLabs"));
 
-        Vertex<StringType> vertex0 = new Vertex<StringType>(
-                new StringType("Employee001"),
-                new StringType("Rockstar"),
-                map0);
-        Vertex<StringType> vertex1 = new Vertex<StringType>(
-                new StringType("Employee002"),
-                new StringType("Failure"),
-                map1);
-        Vertex<StringType> vertex2 = new Vertex<StringType>(
-                new StringType("Employee001"),
-                new StringType("Rockstar"),
-                map0);
+		Vertex<StringType> vertex0 = new Vertex<StringType>(new StringType(
+				"Employee001"), new StringType("Rockstar"), map0);
+		Vertex<StringType> vertex1 = new Vertex<StringType>(new StringType(
+				"Employee002"), new StringType("Failure"), map1);
+		Vertex<StringType> vertex2 = new Vertex<StringType>(new StringType(
+				"Employee001"), new StringType("Rockstar"), map0);
 
-        assertFalse("Vertex equality check failed", vertex0.equals(vertex1));
-        assertTrue("Vertex equality check failed", vertex0.equals(vertex2));
-    }
+		assertFalse("Vertex equality check failed", vertex0.equals(vertex1));
+		assertTrue("Vertex equality check failed", vertex0.equals(vertex2));
+	}
 }

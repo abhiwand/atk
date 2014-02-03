@@ -19,96 +19,104 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import org.junit.Test;
-
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+
+import org.junit.Test;
+
 public class KeyCommandLineParserTest {
 
-    @Test
-    public void testParse_Empty() throws Exception {
+	@Test
+	public void testParse_Empty() throws Exception {
 
-        // invoke method under test
-        List<GBTitanKey> gbTitanKeyList = new KeyCommandLineParser().parse("");
+		// invoke method under test
+		List<GBTitanKey> gbTitanKeyList = new KeyCommandLineParser().parse("");
 
-        assertEquals(0, gbTitanKeyList.size());
-    }
+		assertEquals(0, gbTitanKeyList.size());
+	}
 
-    @Test
-    public void testParse_WithOne() throws Exception {
+	@Test
+	public void testParse_WithOne() throws Exception {
 
-        // invoke method under test
-        List<GBTitanKey> list = new KeyCommandLineParser().parse("cf:userId;String;U;V");
+		// invoke method under test
+		List<GBTitanKey> list = new KeyCommandLineParser()
+				.parse("cf:userId;String;U;V");
 
-        assertEquals(1, list.size());
+		assertEquals(1, list.size());
 
-        GBTitanKey userKey = list.get(0);
-        assertEquals("cf:userId", userKey.getName());
-        assertEquals(String.class, userKey.getDataType());
-        assertTrue(userKey.isVertexIndex());
-        assertFalse(userKey.isEdgeIndex());
-        assertTrue(userKey.isUnique());
-    }
+		GBTitanKey userKey = list.get(0);
+		assertEquals("cf:userId", userKey.getName());
+		assertEquals(String.class, userKey.getDataType());
+		assertTrue(userKey.isVertexIndex());
+		assertFalse(userKey.isEdgeIndex());
+		assertTrue(userKey.isUnique());
+	}
 
-    @Test
-    public void testParse_WithTwo() throws Exception {
+	@Test
+	public void testParse_WithTwo() throws Exception {
 
-        // invoke method under test
-        List<GBTitanKey> list = new KeyCommandLineParser().parse("cf:userId;String;U;V,cf:eventId;E;Long");
+		// invoke method under test
+		List<GBTitanKey> list = new KeyCommandLineParser()
+				.parse("cf:userId;String;U;V,cf:eventId;E;Long");
 
-        assertEquals(2, list.size());
+		assertEquals(2, list.size());
 
-        GBTitanKey userKey = list.get(0);
-        assertEquals("cf:userId", userKey.getName());
-        assertEquals(String.class, userKey.getDataType());
-        assertTrue(userKey.isVertexIndex());
-        assertFalse(userKey.isEdgeIndex());
-        assertTrue(userKey.isUnique());
+		GBTitanKey userKey = list.get(0);
+		assertEquals("cf:userId", userKey.getName());
+		assertEquals(String.class, userKey.getDataType());
+		assertTrue(userKey.isVertexIndex());
+		assertFalse(userKey.isEdgeIndex());
+		assertTrue(userKey.isUnique());
 
-        GBTitanKey eventKey = list.get(1);
-        assertEquals("cf:eventId", eventKey.getName());
-        assertEquals(Long.class, eventKey.getDataType());
-        assertFalse(eventKey.isVertexIndex());
-        assertTrue(eventKey.isEdgeIndex());
-        assertFalse(eventKey.isUnique());
+		GBTitanKey eventKey = list.get(1);
+		assertEquals("cf:eventId", eventKey.getName());
+		assertEquals(Long.class, eventKey.getDataType());
+		assertFalse(eventKey.isVertexIndex());
+		assertTrue(eventKey.isEdgeIndex());
+		assertFalse(eventKey.isUnique());
 
-    }
+	}
 
-    @Test
-    public void testParse_UniqueMustBeVertex() throws Exception {
+	@Test
+	public void testParse_UniqueMustBeVertex() throws Exception {
 
-        // invoke method under test
-        List<GBTitanKey> list = new KeyCommandLineParser().parse("name;U");
+		// invoke method under test
+		List<GBTitanKey> list = new KeyCommandLineParser().parse("name;U");
 
-        GBTitanKey userKey = list.get(0);
-        assertTrue(userKey.isVertexIndex());
-        assertTrue(userKey.isUnique());
-    }
+		GBTitanKey userKey = list.get(0);
+		assertTrue(userKey.isVertexIndex());
+		assertTrue(userKey.isUnique());
+	}
 
-    @Test
-    public void testParse_DataType() throws Exception {
-        assertTypeStringIsParsedToType("String", String.class);
-        assertTypeStringIsParsedToType("Integer", Integer.class);
-        assertTypeStringIsParsedToType("Long", Long.class);
-        assertTypeStringIsParsedToType("Float", Float.class);
-        assertTypeStringIsParsedToType("Double", Double.class);
-    }
+	@Test
+	public void testParse_DataType() throws Exception {
+		assertTypeStringIsParsedToType("String", String.class);
+		assertTypeStringIsParsedToType("Integer", Integer.class);
+		assertTypeStringIsParsedToType("Long", Long.class);
+		assertTypeStringIsParsedToType("Float", Float.class);
+		assertTypeStringIsParsedToType("Double", Double.class);
+	}
 
-    /**
-     * Assert that the supplied typeString is parsed to the expectedDataType
-     * @param typeString a type string supported by the parser: String, Long, ...
-     * @param expectedDataType the expected dataType class for that string: String.class, Long.class, ...
-     */
-    private void assertTypeStringIsParsedToType(String typeString, Class expectedDataType) {
+	/**
+	 * Assert that the supplied typeString is parsed to the expectedDataType
+	 * 
+	 * @param typeString
+	 *            a type string supported by the parser: String, Long, ...
+	 * @param expectedDataType
+	 *            the expected dataType class for that string: String.class,
+	 *            Long.class, ...
+	 */
+	private void assertTypeStringIsParsedToType(String typeString,
+			Class expectedDataType) {
 
-        // invoke method under test
-        List<GBTitanKey> list = new KeyCommandLineParser().parse("name;" + typeString );
+		// invoke method under test
+		List<GBTitanKey> list = new KeyCommandLineParser().parse("name;"
+				+ typeString);
 
-        GBTitanKey key = list.get(0);
-        assertEquals(expectedDataType, key.getDataType());
-    }
+		GBTitanKey key = list.get(0);
+		assertEquals(expectedDataType, key.getDataType());
+	}
 }

@@ -19,40 +19,40 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-
 public class EdgeSchemaTest {
 
-    @Test
-    public void edgeSchemaConstructorTest() throws Exception {
+	@Test
+	public void edgeSchemaConstructorTest() throws Exception {
+		final String THE_EDGE = "The Edge";
+		EdgeSchema edgeSchema = new EdgeSchema(THE_EDGE);
+		assertNotNull(edgeSchema.getPropertySchemata());
+		assertEquals("Should have been 0", 0,
+				edgeSchema.getLabel().compareTo(THE_EDGE));
+	}
 
-        final String THE_EDGE = "The Edge";
-        final String BONO     = "Bono";
+	@Test
+	public void edgeSchemaSetGetLabelTest() {
 
-        EdgeSchema edgeSchema = new EdgeSchema(THE_EDGE);
+		final String THE_EDGE = "The Edge";
+		final String BONO = "Bono";
 
-        assertNotNull(edgeSchema.getPropertySchemata());
-        assert(edgeSchema.getLabel().compareTo(THE_EDGE) == 0);
-    }
+		EdgeSchema edgeSchema = new EdgeSchema(THE_EDGE);
 
-    @Test
-    public void edgeSchemaSetGetLabelTest() {
+		assertEquals("Should have been 0", 0,
+				edgeSchema.getLabel().compareTo(THE_EDGE));
 
-        final String THE_EDGE = "The Edge";
-        final String BONO     = "Bono";
+		edgeSchema.setLabel(BONO);
+		assertEquals("Should have been 0", 0,
+				edgeSchema.getLabel().compareTo(BONO));
 
-        EdgeSchema edgeSchema = new EdgeSchema(THE_EDGE);
-
-        assert(edgeSchema.getLabel().compareTo(THE_EDGE) == 0);
-
-        edgeSchema.setLabel(BONO);
-        assert(edgeSchema.getLabel().compareTo(BONO) == 0);
-
-        edgeSchema.setLabel(THE_EDGE);
-        assert(edgeSchema.getLabel().compareTo(THE_EDGE) == 0);
-    }
+		edgeSchema.setLabel(THE_EDGE);
+		assertEquals("Should have been 0", 0,
+				edgeSchema.getLabel().compareTo(THE_EDGE));
+	}
 
 }

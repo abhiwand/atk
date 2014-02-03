@@ -30,8 +30,8 @@ import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseReaderMapper;
 @PrepareForTest(HBaseReaderMapper.class)
 public class TextParsingMapperTests {
 
-    @Test
-    public void test(){
+	@Test
+	public void test() {
 
-    }
+	}
 }
