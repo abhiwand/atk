@@ -72,9 +72,8 @@ public class TestRDF {
                         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
                         "<vertex_label> .", rdfStatement);
 			} else {
-				assertEquals("RDF statement mismatch", rdfStatement,
-						"http://www.w3.org/2002/07/owl#test_vertex "
-			    		"<http://www.w3.org/2002/07/owl#test_vertex> " +
+				assertEquals("RDF statement mismatch", 
+						"<http://www.w3.org/2002/07/owl#test_vertex> " +
                         "<http://www.w3.org/2002/07/owl#p-1> <\"v-1\"> .",
                         rdfStatement);
 			}
@@ -97,8 +96,7 @@ public class TestRDF {
 		while (iter.hasNext()) {
 			Tuple resultTuple = iter.next();
 			String rdfStatement = (String) resultTuple.get(0);
-			assertEquals("RDF statement mismatch", rdfStatement,
-					"http://www.w3.org/2002/07/owl#src "
+			assertEquals("RDF statement mismatch", 
                     "<http://www.w3.org/2002/07/owl#src> " +
                     "<http://www.w3.org/2002/07/owl#edge_label> " +
                     "<http://www.w3.org/2002/07/owl#target> .",

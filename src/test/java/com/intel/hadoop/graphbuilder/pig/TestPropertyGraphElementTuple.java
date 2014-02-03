@@ -18,16 +18,12 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-
+import static org.junit.Assert.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.pig.backend.executionengine.ExecException;
 import org.junit.Test;
-
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.DoubleType;
@@ -113,7 +109,7 @@ public class TestPropertyGraphElementTuple {
 		assertEquals("Should be -1", -1,
 				t.compareTo(new PropertyGraphElementTuple(50)));
 		assertEquals("Should be 0", 0, t.compareTo(t));
-		assertNotEquals("Shouldn't be the same", t.hashCode(),
+		assertNotSame("Shouldn't be the same", t.hashCode(),
 				new PropertyGraphElementTuple());
 
 	}

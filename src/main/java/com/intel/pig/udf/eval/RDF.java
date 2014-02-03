@@ -106,8 +106,9 @@ public class RDF extends EvalFunc<DataBag> {
 			Property predicate = stmt.getPredicate();
 			RDFNode object = stmt.getObject();
 			Tuple rdfTuple = TupleFactory.getInstance().newTuple(1);
-			String rdfTripleAsString = subject.toString() + " "
-					+ predicate.toString() + " " + object.toString() + " .";
+			//Faunus n-triple format requires <..>
+			String rdfTripleAsString = "<"+subject.toString() + "> <"
+					+ predicate.toString() + "> <" + object.toString() + "> .";
 
 			rdfTuple.set(0, rdfTripleAsString);
 			rdfBag.add(rdfTuple);

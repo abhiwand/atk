@@ -34,7 +34,6 @@ public class TestGBUdfExceptionHandler {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting GBUdfExceptionHandler tests. ***");
 		toRdfUdf = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec("com.intel.pig.udf.eval.RDF('OWL')");
 
@@ -56,10 +55,4 @@ public class TestGBUdfExceptionHandler {
 		GBUdfExceptionHandler.handleError(toRdfUdf, new IOException(
 				new GBUdfException("test_exception")));
 	}
-
-	@After
-	public void done() {
-		System.out.println("*** Done with the GBUdfExceptionHandler tests ***");
-	}
-
 }

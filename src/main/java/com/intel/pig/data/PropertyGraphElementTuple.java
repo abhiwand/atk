@@ -18,18 +18,24 @@
  */
 package com.intel.pig.data;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.util.HashUtil;
-import org.apache.pig.PigException;
-import org.apache.pig.backend.executionengine.ExecException;
-import org.apache.pig.data.*;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
+
+import org.apache.pig.PigException;
+import org.apache.pig.backend.executionengine.ExecException;
+import org.apache.pig.data.AbstractTuple;
+import org.apache.pig.data.DataReaderWriter;
+import org.apache.pig.data.DataType;
+import org.apache.pig.data.DefaultTuple;
+import org.apache.pig.data.TupleFactory;
+
+import com.carrotsearch.sizeof.RamUsageEstimator;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 
 /**
  * \brief PropertyGraphElementTuple is the tuple type processed by the GB 2.0
@@ -42,6 +48,15 @@ import java.util.List;
 public class PropertyGraphElementTuple extends AbstractTuple {
 
 	List<SerializedGraphElement> serializedGraphElements;
+	private long emptyListSize = RamUsageEstimator.sizeOf(new ArrayList<SerializedGraphElement>());
+	
+	/* number of samples to get from the serializedGraphElements list
+	 * while calculating the memory size of this tuple. Sample size 30 is
+	 * a rule of thumb used to get meaningful statistics out of a sample.
+	 * Note that if there is a very large SerializedGraphElement (like a super node), our memory estimation
+	 * may be way off as we are doing random sampling.
+	 */
+	private static final int N_SAMPLES=30;
 
 	/**
 	 * Constructs a PropertyGraphElementTuple with zero elements.
@@ -66,20 +81,24 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 
 	/**
 	 * Constructs a PropertyGraphElementTuple from a given list of
-	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+	 * s
 	 * 
 	 * @param elements
-	 *            list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s
+	 *            list of {@link SerializedGraphElement}s
+	 *            
 	 */
 	public PropertyGraphElementTuple(List elements) {
 		serializedGraphElements = elements;
 	}
 
 	/**
-	 * Returns the number of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s in this tuple.
+	 * Returns the number of
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+	 * s in this tuple.
 	 * 
-	 * @return the size of the list of {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}s in this
-	 *         tuple.
+	 * @return the size of the list of
+	 *         {@link SerializedGraphElement}s in this tuple.
 	 */
 	@Override
 	public int size() {
@@ -87,11 +106,13 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	}
 
 	/**
-	 * Get the {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement} in the given <code>fieldNum</code>
+	 * Get the
+	 * {@link com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement}
+	 * in the given <code>fieldNum</code>
 	 * 
 	 * @param fieldNum
-	 *            Index of the SerializedGraphElement to get.
-	 * @return the SerializedGraphElement as an Object.
+	 *            Index of the {@link SerializedGraphElement} to get.
+	 * @return the {@link SerializedGraphElement} as an Object.
 	 * @throws ExecException
 	 *             if the field number is greater than or equal to the number of
 	 *             fields in the tuple.
@@ -155,9 +176,9 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	}
 
 	/**
-	 * Append a SerializedGraphElement to this tuple. This method is not efficient
-	 * as it may force copying of existing data in order to grow the data
-	 * structure. Whenever possible you should construct your Tuple with
+	 * Append a SerializedGraphElement to this tuple. This method is not
+	 * efficient as it may force copying of existing data in order to grow the
+	 * data structure. Whenever possible you should construct your Tuple with
 	 * {@link TupleFactory#newTuple(int)} and then fill in the values with
 	 * {@link #set(int, Object)}, rather than construct it with
 	 * {@link TupleFactory#newTuple()} and append values.
@@ -176,7 +197,7 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	}
 
 	/**
-	 * This implementation is copied from {@link DefaultTuple} implementation
+	 * This implementation is copied & modified from {@link DefaultTuple} implementation
 	 * 
 	 * <br/>
 	 * Determine the size of tuple in memory. This is used by data bags to
@@ -187,28 +208,30 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 	 */
 	@Override
 	public long getMemorySize() {
-		Iterator<SerializedGraphElement> i = serializedGraphElements.iterator();
-		// fixed overhead
-		long empty_tuple_size = 8 /* tuple object header */
-		+ 8 /*
-			 * isNull - but rounded to 8 bytes as total obj size needs to be
-			 * multiple of 8
-			 */
-		+ 8 /* mFields reference */
-		+ 32 /* mFields array list fixed size */;
+		long fixedOverhead = RamUsageEstimator.NUM_BYTES_OBJECT_HEADER /* tuple object header */
+							  + RamUsageEstimator.NUM_BYTES_OBJECT_REF /* serializedGraphElements reference */
+		                      + emptyListSize /* serializedGraphElements list fixed size */;
 
-		// rest of the fixed portion of mfields size is accounted within
-		// empty_tuple_size
-		long mfields_var_size = SizeUtil
-				.roundToEight(4 + 4 * serializedGraphElements.size());
-		// in java hotspot 32bit vm, there seems to be a minimum tuple size of
-		// 96
-		// which is probably from the minimum size of this array list
-		mfields_var_size = Math.max(40, mfields_var_size);
+		long sum = fixedOverhead;
+		int nElements = serializedGraphElements.size();
 
-		long sum = empty_tuple_size + mfields_var_size;
-		while (i.hasNext()) {
-			sum += SizeUtil.getPigObjMemSize(i.next());
+		if (nElements <= N_SAMPLES) {
+			if (nElements > 0)
+				sum += RamUsageEstimator.sizeOf(serializedGraphElements);
+		} else {
+			Random random = new Random();
+			List<SerializedGraphElement> sample = new ArrayList<SerializedGraphElement>();
+			// get N_SAMPLES random samples from the list
+			for (int i = 0; i < N_SAMPLES; i++) {
+				int randIndex = random.nextInt(nElements);
+				SerializedGraphElement randElement = serializedGraphElements
+						.get(randIndex);
+				sample.add(randElement);
+				
+			}
+			long sampleMemorySize = RamUsageEstimator.sizeOf(sample);
+			float cardinality = (float)nElements/N_SAMPLES;
+			sum += (sampleMemorySize * cardinality);
 		}
 		return sum;
 	}
@@ -234,7 +257,11 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		// Read the number of fields
 		int sz = in.readInt();
 		for (int i = 0; i < sz; i++) {
-			append(DataReaderWriter.readDatum(in));
+			try {
+				append(DataReaderWriter.readDatum(in));
+			} catch (ExecException ee) {
+				throw ee;
+			}
 		}
 
 	}
@@ -303,16 +330,16 @@ public class PropertyGraphElementTuple extends AbstractTuple {
 		return DataType.compare(this, other);
 	}
 
-    /**
-     *
-     * @return hash code of the property graph element tuple
-     */
-    public int hashCode() {
-        int hash = 0;
-        for (int i = 0; i < serializedGraphElements.size(); i++) {
-            SerializedGraphElement pge = serializedGraphElements.get(i);
-            hash = HashUtil.combine(hash, pge);
-        }
-        return hash;
-    }
+	/**
+	 * 
+	 * @return hash code of the property graph element tuple
+	 */
+	public int hashCode() {
+		int hash = 0;
+		for (int i = 0; i < serializedGraphElements.size(); i++) {
+			SerializedGraphElement pge = serializedGraphElements.get(i);
+			hash = HashUtil.combine(hash, pge);
+		}
+		return hash;
+	}
 }

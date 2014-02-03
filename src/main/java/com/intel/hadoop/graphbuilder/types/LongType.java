@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.types;
 
 import net.minidev.json.JSONAware;
 import net.minidev.json.JSONValue;
+
 import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
@@ -30,7 +31,7 @@ import java.io.IOException;
 /**
  * The basic long type in the library.
  */
-public class LongType implements WritableComparable<LongType>, Mergeable<LongType>, JSONAware, EncapsulatedObject {
+public class LongType implements WritableComparable<LongType>, Mergeable<LongType>, JSONAware, EncapsulatedObject{
 
     public LongType() {
         this.val = 0;
