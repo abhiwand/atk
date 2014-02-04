@@ -8,6 +8,9 @@ public class EdgeElement implements IGraphElement {
     Map<String, Object> attributes = new HashMap<String, Object>();
     long id = 0;
 
+    long inVertexId = 0;
+    long outVertexId = 0;
+
     public EdgeElement(long id) {
         this.id = id;
     }
@@ -30,5 +33,21 @@ public class EdgeElement implements IGraphElement {
     @Override
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;
+    }
+
+    public long getInVertexId() {
+        return inVertexId;
+    }
+
+    public void setInVertexId(long inVertexId) {
+        this.inVertexId = inVertexId;
+    }
+
+    public long getOutVertexId() {
+        return outVertexId;
+    }
+
+    public void setOutVertexId(long outVertexId) {
+        this.outVertexId = outVertexId;
     }
 }
