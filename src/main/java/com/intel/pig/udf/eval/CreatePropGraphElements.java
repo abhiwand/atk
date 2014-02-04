@@ -99,7 +99,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     private BagFactory mBagFactory = BagFactory.getInstance();
 
-    private String   tokenizationRule;
     private String[] rawEdgeRules;
     private String[] vertexRules;
     private String[] rawDirectedEdgeRules;
@@ -207,23 +206,14 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         CommandLine cmd = commandLineInterface.checkCli(tokenizationRule.split(" "));
 
-        this.tokenizationRule = tokenizationRule;
-
-
-        vertexLabelMap = new Hashtable<String, String>();
+        vertexLabelMap            = new Hashtable<String, String>();
         vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
-        vertexIdFieldList = new ArrayList<String>();
+        vertexIdFieldList         = new ArrayList<String>();
+        edgeLabelToEdgeRules      = new Hashtable<String, EdgeRule>();
 
-        edgeLabelToEdgeRules  = new Hashtable<String, EdgeRule>();
-
-        vertexRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
-
-        rawEdgeRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
-
-        rawDirectedEdgeRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
+        vertexRules          = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
+        rawEdgeRules         = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
+        rawDirectedEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
         
         flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
         
