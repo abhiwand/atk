@@ -32,15 +32,25 @@ public class TitanFaunusGraphElementFactory implements IGraphElementFactory {
             attributes.put(pair[0], pair[1]);
         }
 
-        IGraphElement element;
+
         if(text.contains("_gb_ID"))  {
-            element = new VertexElement(id);
+            VertexElement vertex = new VertexElement(id);
+            vertex.setAttributes(attributes);
+            return vertex;
         }
         else {
-            element = new EdgeElement(id);
-        }
+            EdgeElement edge = new EdgeElement(id);
+            edge.setAttributes(attributes);
+            Matcher m_linking = Pattern.compile("([0-9]+-edge->[0-9]+)").matcher(text);
+            if(!m_linking.find()) {
+                throw new RuntimeException("Failed to edge linking information");
+            }
 
-        element.setAttributes(attributes);
-        return element;
+            String edgeLinking = m_linking.group(1);
+            String[] verticesIds = edgeLinking.split("-edge->");
+            edge.setOutVertexId(Long.parseLong(verticesIds[0]));
+            edge.setInVertexId(Long.parseLong(verticesIds[1]));
+            return edge;
+        }
     }
 }
