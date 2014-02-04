@@ -251,7 +251,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
             String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
             String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
-            String   label                = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
+            String   label                  = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawEdgeRule);
 
@@ -267,11 +267,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
             String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawDirectedEdgeRule);
             String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawDirectedEdgeRule);
-            String   label                = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
+            String   label                  = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
 
-            EdgeRule edgeRule         = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED);
+            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED);
 
             for (String edgePropertyFieldName : edgePropertyFieldNames) {
                 edgeRule.addPropertyColumnName(edgePropertyFieldName);
@@ -279,7 +279,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
             edgeLabelToEdgeRules.put(label, edgeRule);
         }
-    }
+    }   // End of constructor
 
     private String[] expandString(String string) {
 
