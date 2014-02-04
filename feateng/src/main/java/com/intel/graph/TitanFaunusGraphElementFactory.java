@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 public class TitanFaunusGraphElementFactory implements IGraphElementFactory {
     @Override
     public IGraphElement makeElement(String text) {
-        Matcher m_id = Pattern.compile("([0-9]*)").matcher(text);
+        Matcher m_id = Pattern.compile("([0-9]+)").matcher(text);
         if(!m_id.find()) {
             throw new RuntimeException("Failed to get graph element identifier");
         }
