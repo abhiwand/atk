@@ -37,7 +37,7 @@
   	<groupId>com.intel.hadoop</groupId>
   	<artifactId>IntelAnalytics</artifactId>
   	<relativePath>../pom.xml</relativePath>  
-  	<version>0.5-SNAPSHOT</version>
+  	<version>0.8-SNAPSHOT</version>
   </parent>
   <dependencies>
     <!-- compile dependencies. sorted lexicographically. -->

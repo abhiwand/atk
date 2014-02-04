@@ -1,6 +1,6 @@
 Summary: Intel Graph Analytics System development libraries
 
-Version: 0.5.0
+Version: 0.8.0
 
 License: Apache
 

@@ -35,7 +35,7 @@
 	<groupId>com.intel.hadoop</groupId>
 	<artifactId>IntelAnalytics</artifactId>
 	<relativePath>../pom.xml</relativePath>  
-	<version>0.5-SNAPSHOT</version>
+	<version>0.8-SNAPSHOT</version>
   </parent>
   
   
@@ -62,12 +62,12 @@
 </build>
   <profiles>
       <profile>
-        <id>rpm-builder</id>
-        <activation>
+	<id>python-tester</id>
+	<activation>
 	  <property>
-            <name>env.BUILD_NUMBER</name>
-          </property>
-        </activation>
+	    <name>!skipTests</name>
+	  </property>
+	</activation>
         <build>
           <plugins>
               <plugin>
@@ -85,6 +85,25 @@
                       <executable>intel_analytics/tests/exec_all.sh</executable>
                     </configuration>
                   </execution>
+		</executions>
+            </plugin>
+          </plugins>
+        </build>
+       </profile>
+      <profile>
+        <id>rpm-builder</id>
+        <activation>
+	  <property>
+            <name>env.BUILD_NUMBER</name>
+          </property>
+        </activation>
+        <build>
+          <plugins>
+              <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>1.2.1</version>
+                <executions>
                   <execution>
                     <id>chmod-shellscripts</id>
                     <phase>package</phase>
