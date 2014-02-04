@@ -81,8 +81,8 @@
             <properties>
                 <rates-time-unit>SECONDS</rates-time-unit>
                 <duration-time-unit>SECONDS</duration-time-unit>
-                <report-period>10</report-period>
-                <report-time-unit>MINUTES</report-time-unit>
+                <report-period>1</report-period>
+                <report-time-unit>HOURS</report-time-unit>
                 <includes>http.rest.*</includes>
                 <excludes>http.rest.*.delete</excludes>
             </properties>
