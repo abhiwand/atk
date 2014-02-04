@@ -17,7 +17,13 @@ public class TitanFaunusGraphElementFactory implements IGraphElementFactory {
         }
 
         long id = Long.parseLong(m_id.group(1));
-        String attributesString = StringUtils.substringBetween(text, "{", "}");
+
+        Matcher m_body = Pattern.compile("(\\{.*\\})").matcher(text);
+        if(!m_body.find()) {
+            throw new RuntimeException("Failed to get graph element attributes");
+        }
+
+        String attributesString = m_body.group(1).replace("{","").replace("}","");
         String[] attributeSetString = attributesString.split(",");
         Map<String, Object> attributes = new HashMap<String, Object>();
         for(String attributePairString : attributeSetString) {
