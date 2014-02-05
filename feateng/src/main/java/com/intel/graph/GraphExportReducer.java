@@ -21,11 +21,19 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
 
     private FSDataOutputStream output;
     XMLStreamWriter writer = null;
+
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
 
         Configuration conf = context.getConfiguration();
-        String fileName = conf.get("file");
+        String fileName = conf.get(GraphExporter.FILE);
+        String vertexSchema = conf.get(GraphExporter.VERTEX_SCHEMA);
+        String edgeSchema = conf.get(GraphExporter.EDGE_SCHEMA);
+
+
+        Map<String, String> edgeKeyTypes = getKeyTypesMapping(edgeSchema);
+        Map<String, String> vertexKeyTypes = getKeyTypesMapping(vertexSchema);
+
 
         Path path = new Path(fileName);
         FileSystem fs = FileSystem.get(context.getConfiguration());
@@ -33,16 +41,6 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
             fs.delete(path, true);
         }
         output = fs.create(path, true);
-
-        Map<String, String> vertexKeyTypes = new HashMap<String, String>();
-        Map<String, String> edgeKeyTypes = new HashMap<String, String>();
-
-        vertexKeyTypes.put("_id","long");
-        vertexKeyTypes.put("_gb_ID","long");
-        vertexKeyTypes.put("etl-cf:vertex_type","chararray");
-
-        edgeKeyTypes.put("etl-cf:edge_type","chararray");
-        edgeKeyTypes.put("etl-cf:weight","long");
 
         final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
         inputFactory.setProperty("escapeCharacters", false);
@@ -84,6 +82,16 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to write header");
         }
+    }
+
+    public static Map<String, String> getKeyTypesMapping(String schema) {
+        Map<String, String> mapping = new HashMap<String, String>();
+        String[] features = schema.split(",");
+        for(String featureTypeString : features) {
+            String[] split = featureTypeString.split("#");
+            mapping.put(split[0], split[1]);
+        }
+        return mapping;
     }
 
     @Override

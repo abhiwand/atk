@@ -17,11 +17,17 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 
 public class GraphExporter {
+
+    public static final String FILE = "file";
+    public static final String VERTEX_SCHEMA = "Vertex Schema";
+    public static final String EDGE_SCHEMA = "Edge Schema";
+
     public static void main(String[] args) throws ParseException {
 
         Parser parser = new PosixParser();
         Options options = new Options();
-        options.addOption("s", true,  "Schema");
+        options.addOption("v", true,  "vertex schema");
+        options.addOption("e", true,  "edge schema");
         options.addOption("f", true,  "File Name");
         CommandLine cmd = parser.parse(options, args);
         Path outputDir = new Path("xml_out");
@@ -47,7 +53,11 @@ public class GraphExporter {
 
 
             Configuration conf = new Configuration();
-            conf.set("file", fileName);
+            conf.set(FILE, fileName);
+            String vertexSchema = cmd.getOptionValue("v");
+            conf.set(VERTEX_SCHEMA, vertexSchema);
+            String edgeSchema = cmd.getOptionValue("e");
+            conf.set(EDGE_SCHEMA, edgeSchema);
             Job job = new Job(conf, "Export graph");
             job.setJarByClass(GraphExporter.class);
             job.setMapperClass(GraphExportMapper.class);

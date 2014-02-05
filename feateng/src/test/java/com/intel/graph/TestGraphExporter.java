@@ -5,8 +5,10 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 public class TestGraphExporter {
@@ -84,5 +86,28 @@ public class TestGraphExporter {
         f.write(",test3".getBytes());
 
         assertEquals("test1,test2,test3", f.toString());
+    }
+
+    @Test
+    public void testGetKeyTypesMapping_edge() {
+        String schema = "etl-cf:edge_type#chararray,etl-cf:weight#long";
+        Map<String, String> mapping = GraphExportReducer.getKeyTypesMapping(schema);
+        assertTrue(mapping.containsKey("etl-cf:edge_type"));
+        assertTrue(mapping.containsKey("etl-cf:weight"));
+        assertEquals("chararray", mapping.get("etl-cf:edge_type"));
+        assertEquals("long", mapping.get("etl-cf:weight"));
+    }
+
+
+    @Test
+    public void testGetKeyTypesMapping_vertex() {
+        String schema = "_id#long,_gb_ID#long,etl-cf:vertex_type#chararray";
+        Map<String, String> mapping = GraphExportReducer.getKeyTypesMapping(schema);
+        assertTrue(mapping.containsKey("_id"));
+        assertTrue(mapping.containsKey("_gb_ID"));
+        assertTrue(mapping.containsKey("etl-cf:vertex_type"));
+        assertEquals("long", mapping.get("_id"));
+        assertEquals("long", mapping.get("_gb_ID"));
+        assertEquals("chararray", mapping.get("etl-cf:vertex_type"));
     }
 }
