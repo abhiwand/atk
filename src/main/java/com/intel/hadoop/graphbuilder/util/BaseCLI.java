@@ -154,7 +154,7 @@ public class BaseCLI {
 
     private static final Option CLI_RETAIN_DANGLING_EDGE_OPTION = OptionBuilder.withLongOpt (CMD_RETAIN_DANGLING_EDGES)
             .withDescription("The default behavior is to discard dangling edges. Set this option to retain " +
-                    "edges with null source or target vertex")
+                    "edges with null source or target vertices")
             .hasArgs()
             .withArgName("Retain-Dangling-Edges")
             .create("x");
