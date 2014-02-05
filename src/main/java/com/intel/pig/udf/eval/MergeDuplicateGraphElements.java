@@ -39,10 +39,12 @@ import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
 
 /**
- * \brief MergeDuplicateGraphElements ... combine duplicate property graph elements into a single property graph element.
+ * \brief MergeDuplicateGraphElements ... combine duplicate property graph elements into a single property graph
+ * element.
  *
  * The intended input for this function is a tuple from the output of GROUP operation performed on pairs of the
- *     form (ID, property graph element) where ID is the output of {@code GetPropGraphElementID} called on the property graph element.
+ *     form (ID, property graph element) where ID is the output of {@code GetPropGraphElementID} called on the
+ *     property graph element.
  *
  * Example:
  * DEFINE getPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
@@ -74,14 +76,12 @@ public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {
     public Tuple exec(Tuple input) throws IOException {
         DataBag valueBag = (DataBag) input.get(1);
 
-        PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) new GBTupleFactory()
-                .newTuple(1);
+        PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) new GBTupleFactory().newTuple(1);
 
         Iterator it = valueBag.iterator();
 
         // the bag contains at least one element
-        SerializedGraphElement serializedGraphElement =
-                graphElementFromGroupedBagEntry((Tuple) it.next());
+        SerializedGraphElement serializedGraphElement = graphElementFromGroupedBagEntry((Tuple) it.next());
         GraphElement graphElement = serializedGraphElement.graphElement();
 
         if (graphElement == null) {
