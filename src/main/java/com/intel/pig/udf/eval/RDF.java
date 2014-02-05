@@ -64,6 +64,10 @@ public class RDF extends EvalFunc<DataBag> {
 
 	public RDF(String rdfNamespace) {
 		this.rdfNamespace = rdfNamespace;
+
+        if (!RDFUtils.RDFNamespaceMap.containsKey(this.rdfNamespace)) {
+            throw new IllegalArgumentException("Invalid RDF namespace: " + this.rdfNamespace);
+        }
 	}
 
 	@Override
