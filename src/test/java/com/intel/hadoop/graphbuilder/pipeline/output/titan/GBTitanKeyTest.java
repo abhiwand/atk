@@ -19,9 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import static junit.framework.Assert.assertSame;
-
 import org.junit.Test;
+
+import static junit.framework.Assert.assertSame;
 
 public class GBTitanKeyTest {
 

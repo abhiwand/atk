@@ -19,12 +19,12 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertSame;
-
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.junit.Test;
+
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertSame;
 
 public class RecordTypeHBaseRowTest {
 

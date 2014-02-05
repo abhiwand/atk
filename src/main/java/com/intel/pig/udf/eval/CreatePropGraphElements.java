@@ -19,7 +19,9 @@
 
 package com.intel.pig.udf.eval;
 
-import com.intel.hadoop.graphbuilder.graphelements.*;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.types.*;
 import com.intel.hadoop.graphbuilder.util.BaseCLI;
@@ -28,7 +30,6 @@ import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.io.WritableComparable;
@@ -111,7 +112,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      * Implements the dangling edge counters.
      * Use getter methods to call these counters
      */
-    private enum Counters {
+    public enum Counters {
         NUM_DANGLING_EDGES,
         NUM_EDGES,
         NUM_VERTICES
@@ -323,6 +324,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         try {
             graphElementTuple.set(0, serializedgraphElement);
             outputBag.add(graphElementTuple);
+            incrementCounter(Counters.NUM_VERTICES, 1L);
         } catch (ExecException e) {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
@@ -440,7 +442,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                         vertex.setLabel(new StringType(label));
                     }
                     addVertexToPropElementBag(outputBag, vertex);
-                    incrementCounter(Counters.NUM_VERTICES, 1L);
                 }
             }  else {
                 warn("Null data, skipping tuple.", PigWarning.UDF_WARNING_1);
@@ -515,7 +516,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         PigStatusReporter reporter = PigStatusReporter.getInstance();
         if (reporter != null) {
-            reporter.getCounter(key).increment(1L);
+            reporter.getCounter(key).increment(value);
         }
     }
 

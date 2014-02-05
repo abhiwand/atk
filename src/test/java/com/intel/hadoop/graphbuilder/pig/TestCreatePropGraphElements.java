@@ -18,21 +18,6 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.pig.data.PropertyGraphElementTuple;
-import com.intel.hadoop.graphbuilder.types.*;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.FuncSpec;
 import org.apache.pig.data.DataBag;
@@ -45,6 +30,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.List;
+
+import static java.util.Arrays.asList;
+
 public class TestCreatePropGraphElements
 {
     EvalFunc<?> createPropGraphElementsUDF;
@@ -55,7 +45,7 @@ public class TestCreatePropGraphElements
         createPropGraphElementsUDF = (EvalFunc<?>) PigContext
                 .instantiateFuncFromSpec(
                 new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
-                "-v name=age,managerId -e name,department,worksAt,tenure"));
+                "-v name=age,managerId department -e name,department,worksAt,tenure"));
     }
 
     @Test

@@ -19,11 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.util;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-
 import org.junit.Test;
+
+import static junit.framework.Assert.*;
 
 public class TripleTest {
     @Test
