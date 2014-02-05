@@ -112,7 +112,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      * Implements the dangling edge counters.
      * Use getter methods to call these counters
      */
-    public enum Counters {
+    private enum Counters {
         NUM_DANGLING_EDGES,
         NUM_EDGES,
         NUM_VERTICES
@@ -514,10 +514,10 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      */
     public void incrementCounter(Enum key, Long value) {
 
-        PigStatusReporter reporter = PigStatusReporter.getInstance();
-        if (reporter != null) {
-            reporter.getCounter(key).increment(value);
-        }
+        //PigStatusReporter reporter = PigStatusReporter.getInstance();
+        //if (reporter != null) {
+        //    reporter.getCounter(key).increment(value);
+        //}
     }
 
     /**
@@ -553,6 +553,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         for (String srcVertexName: expandString(srcVertexCellString)) {
 
             isDangling = false;
+
             // If tgtVertexCellString == null calling expandString() with it will cause a NullPointerException
             // Handle this case before the for loop
             // Also, ignore the edge if both srcVertexName and tgtVertexCellString are null
@@ -563,8 +564,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                     continue;
                 }
 
-                currentSrcVertexName.equals(srcVertexName);
-                currentTgtVertexName.equals("null");
+                currentSrcVertexName.set(srcVertexName);
+                currentTgtVertexName.set("null");
                 isDangling = true;
                 processEdge(input, inputSchema, currentSrcVertexName, currentTgtVertexName, srcLabel, tgtLabel,
                         eLabel,  edgeAttributes,  edgeRule, fieldNameToDataType, isDangling, outputBag);
@@ -583,17 +584,17 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                 } else {
 
                     if (srcVertexName == null && this.retainDanglingEdges) {
-                        currentSrcVertexName.equals("null");
+                        currentSrcVertexName.set("null");
                         isDangling = true;
                     } else {
-                        currentSrcVertexName.equals(srcVertexName);
+                        currentSrcVertexName.set(srcVertexName);
                     }
 
                     if (tgtVertexName == null && this.retainDanglingEdges) {
-                        currentTgtVertexName.equals("null");
+                        currentTgtVertexName.set("null");
                         isDangling = true;
                     } else {
-                        currentTgtVertexName.equals(tgtVertexName);
+                        currentTgtVertexName.set(tgtVertexName);
                     }
 
                     processEdge(input, inputSchema, currentSrcVertexName, currentTgtVertexName, srcLabel, tgtLabel,
