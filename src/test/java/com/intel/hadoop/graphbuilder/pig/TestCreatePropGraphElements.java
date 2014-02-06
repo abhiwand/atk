@@ -49,7 +49,7 @@ public class TestCreatePropGraphElements
     }
 
     @Test
-    public void runTests() throws IOException {
+    public void runTests() throws IOException, IllegalAccessException {
 
         Schema.FieldSchema idField
                 = new Schema.FieldSchema("id", DataType.INTEGER);
@@ -93,7 +93,7 @@ public class TestCreatePropGraphElements
 
         DataBag result = (DataBag) createPropGraphElementsUDF.exec(t);
 
-        assert(result.size() == 5);
+        assert(result.size() == 7);
     }
 
     @After

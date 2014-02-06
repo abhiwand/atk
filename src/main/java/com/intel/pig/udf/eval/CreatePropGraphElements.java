@@ -33,6 +33,7 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -46,6 +47,8 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.tools.pigstats.PigStatusReporter;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -112,7 +115,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      * Implements the dangling edge counters.
      * Use getter methods to call these counters
      */
-    private enum Counters {
+    public enum Counters {
         NUM_DANGLING_EDGES,
         NUM_EDGES,
         NUM_VERTICES
@@ -514,10 +517,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      */
     public void incrementCounter(Enum key, Long value) {
 
-        //PigStatusReporter reporter = PigStatusReporter.getInstance();
-        //if (reporter != null) {
-        //    reporter.getCounter(key).increment(value);
-        //}
+        PigStatusReporter reporter = PigStatusReporter.getInstance();
+        Counter reporterCounter = reporter.getCounter(key);
+        if (reporter != null && reporterCounter != null) {
+            reporterCounter.increment(value);
+        }
     }
 
     /**
@@ -656,10 +660,22 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         // need to make sure both ends of the edge are proper
         // vertices!
 
-        Vertex<StringType> srcVertex = new Vertex<StringType>(currentSrcVertexName, srcLabel);
-        Vertex<StringType> tgtVertex = new Vertex<StringType>(currentTgtVertexName, tgtLabel);
-        addVertexToPropElementBag(outputBag, srcVertex);
-        addVertexToPropElementBag(outputBag, tgtVertex);
+        if (this.retainDanglingEdges) {
+            if (!(currentSrcVertexName.isEmpty() || currentSrcVertexName.equals("null"))) {
+                Vertex<StringType> srcVertex = new Vertex<StringType>(currentSrcVertexName, srcLabel);
+                addVertexToPropElementBag(outputBag, srcVertex);
+            }
+
+            if (!(currentTgtVertexName.isEmpty() || currentTgtVertexName.equals("null"))) {
+                Vertex<StringType> tgtVertex = new Vertex<StringType>(currentTgtVertexName, tgtLabel);
+                addVertexToPropElementBag(outputBag, tgtVertex);
+            }
+        } else {
+            Vertex<StringType> srcVertex = new Vertex<StringType>(currentSrcVertexName, srcLabel);
+            Vertex<StringType> tgtVertex = new Vertex<StringType>(currentTgtVertexName, tgtLabel);
+            addVertexToPropElementBag(outputBag, srcVertex);
+            addVertexToPropElementBag(outputBag, tgtVertex);
+        }
 
         if (edgeRule.isBiDirectional()) {
             Edge<StringType> opposingEdge = new Edge<StringType>(currentTgtVertexName, tgtLabel,
