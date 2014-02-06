@@ -33,6 +33,8 @@ function usage()
 
 # Check inputs
 dryrun=""
+# By default, disable ganglia
+ganglia="disabled"
 while [ $# -gt 0 ]
 do
     case "$1" in
@@ -52,6 +54,11 @@ do
         dryrun="echo "
         shift 1
         ;;
+    --enable-ganglia)
+        ganglia="enabled"
+        shift 1
+        ;;
+
 
     *)
         usage $(basename $0)
@@ -154,6 +161,7 @@ then
         nodes="${nodes},`printf "%02d" ${i}`"
     done
     ${dryrun} ssh -i ${pemfile} ${IA_USR}@${m} bash -c "'
+    pushd ~/IntelAnalytics;
     echo $nodes | sed 's/,/\n/g' > hadoop/conf/slaves;
     echo $nodes | sed 's/,/\n/g' > hbase/conf/regionservers;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase.properties;
@@ -162,7 +170,38 @@ then
     sed -i \"s/<server-host>.*/<server-host>0.0.0.0<\/server-host>/g\" titan/conf/rexstitan-hbase-es.xml;
     sed -i \"s/<shutdown-host>.*/<shutdown-host>127.0.0.1<\/shutdown-host>/g\" titan/conf/rexstitan-hbase-es.xml;
     sed -i \"s/<base-uri>.*/<base-uri>http:\/\/localhost<\/base-uri>/g\" titan/conf/rexstitan-hbase-es.xml;
+    popd
     '"
+fi
+
+# ZY: TRIB-1711 fix:
+# - disable ganglia services on all nodes
+# - disable feeding metrics stats to ganglia from hadoop
+# - disable feeding metrics stats to ganglia from hbase
+#
+# Specify --enable-ganglia to enable ganglia if needed
+if [ "${ganglia}" == "disabled" ]; then
+    echo "TRIB-1711 fix: disabling ganglia..."
+    for n in `cat ${nodesfile}`; do
+        ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
+        service gmetad stop 2>&1 > /dev/null;
+        service gmond stop 2>&1 > /dev/null;
+        service httpd stop 2>&1 > /dev/null;
+        chkconfig gmetad off 2>&1 > /dev/null;
+        chkconfig gmond off 2>&1 > /dev/null;
+        chkconfig httpd off 2>&1 > /dev/null;
+        '"
+        ${dryrun} ssh -i ${pemfile} ${IA_USR}@${n} bash -c "'
+        pushd ~/IntelAnalytics/hadoop/conf;
+        mv hadoop-metrics.properties hadoop-metrics.properties.template 2>&1 > /dev/null;
+        mv hadoop-metrics2.properties hadoop-metrics2.properties.template 2>&1 > /dev/null;
+        popd;
+        pushd ~/IntelAnalytics/hbase/conf;
+        mv hadoop-metrics.properties hadoop-metrics.properties.template 2>&1 > /dev/null;
+        mv hadoop-metrics2.properties hadoop-metrics2.properties.template 2>&1 > /dev/null;
+        popd;
+        '"
+    done
 fi
 
 # start hadoop/hbase, mount is handled by cloud.cfg now in cloud-init
