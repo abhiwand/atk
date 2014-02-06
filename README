@@ -2,7 +2,7 @@ Intel(R) Graph Builder 2.0 (alpha)
 ----------------------------------
 
 Intel Graph Builder 2.0 (alpha) is a library of user defined functions (UDFs) and
-macros in Pig Latin used to construct graphs in Hadoop&trade;. The 2.0 (alpha) version
+macros in Pig Latin used to construct graphs in Hadoop™;. The 2.0 (alpha) version
 supports multi-relational graphs, or property graphs, in which both objects
 and relationships may be labeled with multiple properties and property values.
 Graphs can be constructed from structured, semi-structured,
