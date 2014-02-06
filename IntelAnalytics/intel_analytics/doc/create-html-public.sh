@@ -13,6 +13,7 @@ if [ -z "$TITAN_HOME" ]; then
     export TITAN_HOME=th
 fi
 
+python efuncgen.py > source/efunc.rst
 make -B html
 
 # undo if we made any changes above

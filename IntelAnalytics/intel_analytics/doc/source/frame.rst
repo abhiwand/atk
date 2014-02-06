@@ -22,4 +22,5 @@ Frames
 .. automodule:: intel_analytics.table.bigdataframe
     :members:
 
+.. include:: efunc.rst
 

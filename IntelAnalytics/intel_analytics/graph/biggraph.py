@@ -33,8 +33,8 @@ __all__ = ['get_graph_builder',
            'get_graph_names',
            'BipartiteGraphBuilder',
            'PropertyGraphBuilder',
-#           'BigGraph',
 #           'GraphTypes',
+#           'BigGraph',
            ]
 
 my_frame = None
@@ -83,8 +83,8 @@ class GraphBuilderFactory(object):
 
         Parameters
         ----------
-        graph_type : (GraphTypes.Property | GraphTypes.Bipartite | GraphTypes.*)
-            the type of graph to create.  See GraphTypes class
+        graph_type : (GraphTypes.Property | GraphTypes.Bipartite )
+            the type of graph to create.
         source : BigDataFrame
             the source of the data for the graph to build
 
@@ -413,8 +413,8 @@ def get_graph_builder(graph_type, source=None):
 
     Parameters
     ----------
-    graph_type : (GraphTypes.Property | GraphTypes.Bipartite | GraphTypes.*)
-        the type of graph to create.  See GraphTypes class
+    graph_type : (GraphTypes.Property | GraphTypes.Bipartite)
+        the type of graph to create.
     source : BigDataFrame
         the source of the data for the graph being built
 

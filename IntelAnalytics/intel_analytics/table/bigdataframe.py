@@ -77,7 +77,10 @@ class FrameBuilder(object):
         file_name : String
             The path to the source CSV file.
         schema : String
-            The schema of the source file
+            The schema of the source file.  A comma-separated list of ``key:value``
+            pairs, where *key* is the name of the column and *value* is the data
+            type of the column (`valid data types <http://pig.apache.org/docs/r0.7.0/piglatin_ref2.html#Data+Types>`_)
+            ``'user:long,vertex_type:chararray,movie:long,rating:long,splits:chararray'``
         skip_header : Bool
             if True, skip the first line of the file
 
@@ -255,10 +258,15 @@ class BigDataFrame(object):
             source column for the function
         new_column_name : String
             name for the new column that will be created as a result of applying the transformation
-        transformation : EvalFunction enumeration
+        transformation : :ref:`EvalFunctions <evalfunctions>` enumeration
             function to apply
         transformation_args: List
             arguments for the function
+
+        Examples
+        --------
+        >>> frame.transform('rating', 'log_rating', EvalFunctions.Math.LOG)
+
         """
         try:
             self._table.transform(column_name, new_column_name, transformation, transformation_args)

@@ -50,11 +50,10 @@ Usage
 
 Then look in the build folder for the generated html.
 
-Note: the many warnings:
+It is expected to see many toctree warnings, don't panic for now:
 
    WARNING: toctree contains reference to nonexisting document
 
-are to be expected.
 
 
 Configuration
@@ -62,3 +61,5 @@ Configuration
 
 source/conf.py
 
+Also, the efuncgen.py generates the source/efunc.rst file, included in the
+frame.rst (see create-html-public.sh)
