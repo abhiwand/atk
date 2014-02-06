@@ -360,3 +360,39 @@ def _get_graph_builder_factory_class():
             global_config['py_graph_builder_factory_class'])
         _graph_builder_factory = graph_builder_factory_class.get_instance()
     return _graph_builder_factory
+
+
+
+class GraphWrapper:
+    def __init__(self, graph):
+        self.__dict__ = graph.__dict__.copy()
+        self._graph = graph
+        self.vertices.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
+        self.edges.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
+
+
+    def load_graphml(self,uri):
+        self._graph.load_graphml(uri)
+
+    def get_graphml(self):
+        self._graph.get_graphml()
+
+
+    def warm_cache(self):
+        self._graph.warm_cache()
+
+
+    def clear(self):
+        self._graph.clear()
+
+    def add_proxy(self, proxy_name, element_class, index_class=None):
+        self._graph.add_proxy(proxy_name, element_class, index_class)
+
+    def build_proxy(self, element_class, index_class=None):
+        self._graph.build_proxy(self, element_class, index_class)
+
+    def __raise_(self, ex):
+        raise ex
+
+
+

@@ -28,7 +28,7 @@ __all__ = []
 
 from intel_analytics.graph.biggraph import \
     PropertyGraphBuilder, BipartiteGraphBuilder,\
-    GraphBuilderEdge, GraphBuilderFactory, GraphTypes
+    GraphBuilderEdge, GraphBuilderFactory, GraphTypes, GraphWrapper
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 from intel_analytics.graph.titan.config import titan_config
@@ -201,7 +201,9 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
 
     titan_config.rexster_xml_add_graph(dst_hbase_table_name)
 
-    return titan_graph_builder_factory.get_graph(graph_name)
+    graph = titan_graph_builder_factory.get_graph(graph_name)
+    return GraphWrapper(graph)
+
 
 
 def generate_titan_table_name(prefix, source):
