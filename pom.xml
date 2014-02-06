@@ -126,6 +126,7 @@
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-api</artifactId>
 					<version>${slf4j.version}</version>
+					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.slf4j</groupId>
@@ -247,8 +248,11 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
+							<includeScope>runtime</includeScope>
+							<excludeScope>provided</excludeScope>
 							<outputDirectory>${project.build.directory}/lib</outputDirectory>
 							<overWriteIfNewer>true</overWriteIfNewer>
+							<excludeArtifactIds>slf4j-api,slf4j-log4j12,jcl-over-slf4j</excludeArtifactIds>
 						</configuration>
 					</execution>
 				</executions>
@@ -319,6 +323,12 @@
 			<groupId>com.thinkaurelius.titan</groupId>
 			<artifactId>${titan.core.artifact}</artifactId>
 			<version>${titan.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-api</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>			
 		</dependency>
 		<dependency>
 			<groupId>com.thinkaurelius.titan</groupId>
