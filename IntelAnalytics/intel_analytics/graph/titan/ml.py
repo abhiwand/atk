@@ -21,8 +21,14 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Titan-based Giraph Machine Learning.
+Methods and classes for Graph Machine Learning.
 """
+# (Titan, Giraph)-based
+
+__all__ = [
+    'TitanGiraphMachineLearning',
+    'AlgorithmReport'
+]
 
 if __name__ != '__main__':
     #if this is executing through a test runner on the build server the DISPLAY environment variable will not be set.
@@ -194,30 +200,34 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                   left_vertex_name=global_config['giraph_recommend_left_name'],
                   right_vertex_name=global_config['giraph_recommend_right_name']):
         """
-        do recommendation based on trained model
+        Make recommendation based on trained model.
 
-        Required Parameters
+        Parameters
         ----------
-        vertex_id : vertex id to get commendation for
+        vertex_id : String
+            vertex id to get recommendation for
 
-        Optional Parameters
-        (They come with default values. Overwrite it when default does not work for you.)
-        ----------
-        output_vertex_property_list: vertex properties which contains output vertex value.
-                                     if more than one vertex property is used,
-                                     expect it is a comma separated string list.
-                                     The default value is the latest vertex_type set by
-                                     algorithm execution.
-        key_4_vertex_type: the property name for vertex type. The default value is the
-                           latest vertex_type set by algorithm execution.
-        key_4_edge_type: the property name for vertex type. The default value is the
-                           latest vertex_type set by algorithm execution.
-        left_vertex_name: left-side vertex name. The default value is "user".
-        right_vertex_name : right-side vertex name. The default value is "movie".
+        output_vertex_property_list : String, optional
+            vertex properties which contains output vertex value.
+            if more than one vertex property is used,
+            expect it is a comma separated string list.
+            The default value is the latest vertex_type set by
+            algorithm execution.
+        key_4_vertex_type : String, optional
+            the property name for vertex type. The default value is the
+            latest vertex_type set by algorithm execution.
+        key_4_edge_type : String, optional
+            The property name for vertex type. The default value is the
+            latest vertex_type set by algorithm execution.
+        left_vertex_name : String, optional
+            The left-side vertex name. The default value is "user".
+        right_vertex_name : String
+            The right-side vertex name. The default value is "movie".
 
         Returns
-        Top 10 recommendations for the input vertex id
         -------
+        output : AlgorithmReport
+            Top 10 recommendations for the input vertex id
         """
         if output_vertex_property_list == '':
             if self._output_vertex_property_list == '':
@@ -279,7 +289,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 print '{0:{width}}'.format(results[3], width=width),
                 print
 
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -303,56 +313,45 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         Loopy belief propagation on Markov Random Fields(MRF).
 
-		This algorithm was originally designed for acyclic graphical models, 
-		then it was found that the Belief Propagation algorithm can be used 
-		in general graphs. The algorithm is then sometimes called "loopy" 
-		belief propagation, because graphs typically contain cycles, or loops. 
+        This algorithm was originally designed for acyclic graphical models,
+        then it was found that the Belief Propagation algorithm can be used
+        in general graphs. The algorithm is then sometimes called "loopy"
+        belief propagation, because graphs typically contain cycles, or loops.
 
         In Giraph, we run the algorithm in iterations until it converges.
-		
+
         Parameters
         ----------
-        input_vertex_property_list :
-		    The vertex properties which contain prior vertex values if you
-			use more than one vertex property. We expect a comma separated
-			string list.
-        input_edge_property_list :
+        input_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain prior vertex values if you
+            use more than one vertex property.
+        input_edge_property_list : List (comma-separated list of strings)
             The edge properties which contain the input edge values if you
-			use more than one edge property. We expect a comma separated
-			string list.
-        input_edge_label :
+            use more than one edge property.
+        input_edge_label : String
             The edge property which contains the edge label.
-        output_vertex_property_list :
+        output_vertex_property_list : List (comma-separated list of strings)
             The vertex properties which contain the output vertex values if
-			you use more than one vertex property. We expect a comma
-			separated string list.
+            you use more than one vertex property.
 
-		Optional Parameters
-        (They come with default values. Overwrite it when the default value does not work for you.)
-        ----------
-        num_worker :
+        num_worker : String, optional
             The number of Giraph workers.
-            The default value is 15.
-        max_supersteps :
-		    The number of super steps to run in Giraph.
-		    The default value is 10.
-        smoothing :
-		    The Ising smoothing parameter.
-		    The default value is 2.
-        convergence_threshold :
-		    The convergence threshold which controls how small the change in validation error must be
-		    in order to meet the convergence criteria.
-		    The default value is 0.001.
-        anchor_threshold :
-		    The anchor threshold [0, 1].
+        max_supersteps : String, optional
+            The number of super steps to run in Giraph.
+        smoothing : String, optional
+            The Ising smoothing parameter.
+        convergence_threshold : String, optional
+            The convergence threshold which controls how small the change in
+            validation error must be in order to meet the convergence criteria.
+        anchor_threshold : String, optional
+            The anchor threshold [0, 1].
             Those vertices whose normalized prior values are greater than this
-			threshold will not be updated.
-			The default value is 1.
+            threshold will not be updated.
 
         Returns
-        The algorithm's results in database.
-
         -------
+        output : AlgorithmReport
+            The algorithm's results in database.
         """
         self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lbp'
@@ -375,7 +374,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(lbp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -446,44 +445,37 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                   convergence_output_interval=global_config['giraph_convergence_output_interval']
     ):
         """
-        The PageRank algorithm: http://en.wikipedia.org/wiki/PageRank
+        The `PageRank algorithm <http://en.wikipedia.org/wiki/PageRank>`_.
 
         Parameters
         ----------
-        input_edge_property_list :
+        input_edge_property_list : List (comma-separated list of strings)
             The edge properties which contain the input edge values if you
-			use more than one edge property. We expect a comma separated
-			string list.
-        input_edge_label :
-		    The edge property which contains the edge label.
-        output_vertex_property_list :
-		     The vertex properties which contain the output vertex values
-			 if you use one vertex property. We expect a comma separated
-			 string list.
+            use more than one edge property.
+        input_edge_label : String
+            The edge property which contains the edge label.
+        output_vertex_property_list : List (comma-separated list of strings)
+             The vertex properties which contain the output vertex values
+             if you use one vertex property.
 
-		Optional Parameters
-        (They come with default values. Overwrite it when the default value does not work for you.)
-        ----------
-        num_worker :
-            The number of workers. The default value is 15.
-        max_supersteps :
-		    The number of super steps to run in Giraph.
-		    The default value is 20.
-        convergence_threshold :
-		    The convergence threshold which controls how small the change in belief value must be
-		    in order to meet the convergence criteria.
-		    The default value is 0.001.
-        reset_probability :
-		    The probability that the random walk of a page is reset.
-		    The default value is 0.15.
-        convergence_output_interval :
-		    The convergence progress output interval
-			The default value is 1, which means output every super step.
+        num_worker : String, optional
+            The number of workers.
+        max_supersteps : String, optional
+            The number of super steps to run in Giraph.
+        convergence_threshold : String, optional
+            The convergence threshold which controls how small the change in
+            belief value must be in order to meet the convergence criteria.
+        reset_probability : String, optional
+            The probability that the random walk of a page is reset.
+        convergence_output_interval : String, optional
+            The convergence progress output interval
+            The default value is 1, which means output every super step.
 
         Returns
-        The algorithm's results in database.
-        The progress curve is accessible through the report object.
         -------
+        output : AlgorithmReport
+            The algorithm's results in database.  The progress curve is
+            accessible through the report object.
         """
         self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/pr'
@@ -512,7 +504,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                                  time_str,
                                                  'Page Rank Convergence Curve',
                                                  'Vertex Value Change')
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -588,27 +580,23 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
-        input_edge_label : 
-		    The edge property which contains the edge label.
-        output_vertex_property_list : 
-		    The vertex properties which contain the output vertex values if 
-			you use more than one vertex property. We expect a comma separated 
-			string list.
+        input_edge_label : String
+            The edge property which contains the edge label.
+        output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values if
+            you use more than one vertex property.
 
-        Optional Parameters
-        (They come with default values. Overwrite it when the default value does not work for you.)
-        ----------
-        convergence_output_interval:
+        convergence_output_interval : String, optional
             The convergence progress output interval.
             The default value is 1, which means output every super step.
-        num_worker :
+        num_worker : String, optional
             The number of Giraph workers.
-            The default value is 15.
 
         Returns
-        The algorithm's results in database.
-        The progress curve is accessible through the report object.
-         -------
+        -------
+        output : AlgorithmReport
+            The algorithm's results in database.  The progress curve is
+            accessible through the report object.
         """
         self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/apl'
@@ -633,7 +621,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                                   'Avg. Path Length Progress Curve',
                                                   'Num of Vertex Updates')
 
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -696,27 +684,23 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
-        input_edge_label :
-		    The edge property which contains the edge label.
-        output_vertex_property_list :
-		    The vertex properties which contain the output vertex values if
-			you use more than one vertex property. We expect a comma separated
-			string list.
+        input_edge_label : String
+            The edge property which contains the edge label.
+        output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values if
+            you use more than one vertex property.
 
-        Optional Parameters
-        (They come with default values. Overwrite it when the default value does not work for you.)
-        ----------
-        convergence_output_interval:
+        convergence_output_interval : String, optional
             The convergence progress output interval.
             The default value is 1, which means output every super step.
-        num_worker :
+        num_worker : String, optional
             The number of Giraph workers.
-            The default value is 15.
 
         Returns
-        The algorithm's results in database.
-        The progress curve is accessible through the report object.
-         -------
+        -------
+        output : AlgorithmReport
+            The algorithm's results in database.  The progress curve is
+            accessible through the report object.
         """
         self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/cc'
@@ -741,7 +725,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                                   'Connected Components Progress Curve',
                                                   'Num of Vertex Updates')
 
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -805,53 +789,43 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     ):
         """
         Label Propagation on Gaussian Random Fields.
-        This algorithm is presented in:
-          X. Zhu and Z. Ghahramani. Learning from labeled and unlabeled data with
-          label propagation. Technical Report CMU-CALD-02-107, CMU, 2002.
+
+        This algorithm is presented in
+        X. Zhu and Z. Ghahramani. Learning from labeled and unlabeled data with
+        label propagation. Technical Report CMU-CALD-02-107, CMU, 2002.
 
         Parameters
         ----------
+        input_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the prior vertex values if
+            you use more than one vertex property.
+        input_edge_property_list : List (comma-separated list of strings)
+            The edge properties which contain the input edge values if you
+            use more than one edge property.
+        input_edge_label : String
+            The edge property which contains the edge label.
+        output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values if
+            you use more than one vertex property.
 
-        input_vertex_property_list :
-		    The vertex properties which contain the prior vertex values if
-			you use more than one vertex property. We expect a comma separated
-			string list.
-        input_edge_property_list :
-		    The edge properties which contain the input edge values if you
-			use more than one edge property. We expect a comma separated
-			string list.
-        input_edge_label :
-		    The edge property which contains the edge label.
-        output_vertex_property_list :
-		    The vertex properties which contain the output vertex values if
-			you use more than one vertex property. We expect a comma separated
-			string list.
-
-        Optional Parameters
-        (They come with default values. Overwrite it when the default value does not work for you.)
-        ----------
-        num_worker :
+        num_worker : String, optional
             The number of Giraph workers.
-            The default value is 15.
-        max_supersteps :
-		    The number of super steps to run in Giraph.
-		    The default value is 10.
-        lambda :
-		    The tradeoff parameter: f = (1-lambda)Pf + lambda*h
-		    The default value is 0.
-        convergence_threshold :
-		    The convergence threshold which controls how small the change in belief value must be
-		    in order to meet the convergence criteria.
-		    The default value is 0.001.
-        anchor_threshold :
-		    The anchor threshold [0, 1].
+        max_supersteps : String, optional
+            The number of super steps to run in Giraph.
+        lambda : String, optional
+            The tradeoff parameter: f = (1-lambda)Pf + lambda*h
+        convergence_threshold : String, optional
+            The convergence threshold which controls how small the change in belief value must be
+            in order to meet the convergence criteria.
+        anchor_threshold : String, optional
+            The anchor threshold [0, 1].
             Those vertices whose normalized prior values are greater than this
-			threshold will not be updated.
-			The default value is 1.
+            threshold will not be updated.
 
         Returns
-        The algorithm's results in database.
         -------
+        output : AlgorithmReport
+            The algorithm's results in database.
         """
         self._output_vertex_property_list = output_vertex_property_list
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lp'
@@ -875,7 +849,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(lp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -953,64 +927,51 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_topics=global_config['giraph_latent_dirichlet_allocation_num_topics']
     ):
         """
-        The Latent Dirichlet Allocation, see: http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation
+        The `Latent Dirichlet Allocation <http://en.wikipedia.org/wiki/Latent_Dirichlet_allocation>`_.
 
         Parameters
         ----------
+        input_edge_property_list : List (comma-separated list of strings)
+            The edge properties which contain the input edge values if you use
+            more than one edge property.
+        input_edge_label : String
+            The edge property which contains the edge label.
+        output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values if
+            you use more than one vertex property.
+        vertex_type : String
+            The vertex property which contains vertex type.
+        edge_type : String
+            The edge property which contains edge type.
 
-        input_edge_property_list :
-		    The edge properties which contain the input edge values if you use
-			more than one edge property. We expect a comma separated string 
-			list.
-        input_edge_label : 
-		    The edge property which contains the edge label.
-        output_vertex_property_list : 
-		    The vertex properties which contain the output vertex values if 
-			you use more than one vertex property. We expect a comma separated 
-			string list.
-        vertex_type : 
-		    The vertex property which contains vertex type.
-        edge_type :
-		    The edge property which contains edge type.
-
-		Optional Parameters
-        (They come with default values. Overwrite it when the default value does not work for you.)
-        ----------
-        num_worker :
+        num_worker : String, optional
             The number of workers.
-            The default value is 15.
-        max_supersteps : 
-		    The number of super steps to run in Giraph.
-            The default value is 20.
-        alpha : 
-		    The document-topic smoothing parameter.
-            The default value is 0.1.
-        beta : 
-		    The term-topic smoothing parameter.
-		    The default value is 0.1.
-        convergence_threshold : 
-		    The convergence threshold which controls how small the change in edge value must be
-		    in order to meet the convergence criteria.
-		    The default value is false.
-        evaluate_cost : 
-		    True means turn on cost evaluation and False means turn off
-		    cost evaluation.
-		    The default value is false.
-        max_val : 
-		    The maximum edge weight value.
-		    The default value is Float.POSITIVE_INFINITY.
-        min_val : 
-		    The minimum edge weight value.
-		    The default value is Float.NEGATIVE_INFINITY.
-        num_topics : 
-		    The number of topics to identify.
-		    The default value is 10.
+        max_supersteps : String, optional
+            The number of super steps to run in Giraph.
+        alpha : String, optional
+            The document-topic smoothing parameter.
+        beta : String, optional
+            The term-topic smoothing parameter.
+        convergence_threshold : String, optional
+            The convergence threshold which controls how small the change in edge value must be
+            in order to meet the convergence criteria.
+        evaluate_cost : String, optional
+            True means turn on cost evaluation and False means turn off
+            cost evaluation.
+        max_val : String, optional
+            The maximum edge weight value.
+            The default value is Float.POSITIVE_INFINITY.
+        min_val : String, optional
+            The minimum edge weight value.
+            The default value is Float.NEGATIVE_INFINITY.
+        num_topics : String, optional
+            The number of topics to identify.
 
         Returns
-        The algorithm's results in database.
-        The convergence curve is accessible through the report object.
-
         -------
+        output : AlgorithmReport
+            The algorithm's results in database.  The convergence curve is
+            accessible through the report object.
         """
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
@@ -1053,7 +1014,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                                   'LDA Learning Curve',
                                                   curve_ylabel)
 
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -1154,71 +1115,59 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     ):
         """
         The Alternating Least Squares with Bias for collaborative filtering algorithms.
+
         The algorithms presented in
-        (1) Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. Large-Scale
-            Parallel Collaborative Filtering for the Netflix Prize. 2008.
-        (2) Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative
-            Filtering Model. In ACM KDD 2008. (Equation 5)
+
+        1. Y. Zhou, D. Wilkinson, R. Schreiber and R. Pan. Large-Scale
+           Parallel Collaborative Filtering for the Netflix Prize. 2008.
+        2. Y. Koren. Factorization Meets the Neighborhood: a Multifaceted Collaborative
+           Filtering Model. In ACM KDD 2008. (Equation 5)
 
         Parameters
         ----------
+        input_edge_property_list : List (comma-separated list of strings)
+            The edge properties which contain the input edge values if you use
+            more than one edge property.
+        input_edge_label : String
+            The edge property which contains the edge label.
+        output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values if
+            you use more than one vertex property.
+        vertex_type : String
+            The vertex property which contains vertex type.
+        edge_type : String
+            The edge property which contains edge type.
 
-        input_edge_property_list : 
-		    The edge properties which contain the input edge values if you use
-			more than one edge property. We expect a comma separated string 
-			list.
-        input_edge_label : 
-		    The edge property which contains the edge label.
-        output_vertex_property_list : 
-		    The vertex properties which contain the output vertex values if 
-			you use more than one vertex property. We expect a comma 
-			separated string list.
-        vertex_type : 
-		    The vertex property which contains vertex type.
-        edge_type :
-		    The edge property which contains edge type.
-
-		Optional Parameters
-        (They come with default values. Overwrite it when the default value does not work for you.)
-        ----------
-        num_worker :
+        num_worker : String, optional
             The number of workers.
-            The default value is 15.
-        max_supersteps : 
-		    The number of super steps to run in Giraph.
-		    The default value is 10.
-        feature_dimension : 
-		    The feature dimension.
-		    The default value is 3.
-        als_lambda :
-            The regularization parameter:
-		        f = L2_error + lambda*Tikhonov_regularization
-            The default value is 0.065.
-        convergence_threshold : 
-		    The convergence threshold which controls how small the change in validation error must be
-		    in order to meet the convergence criteria.
-		    The default value is 0.
-        learning_output_interval : 
-		    The learning curve output interval.
-			The default value is 1.
+        max_supersteps : String, optional
+            The number of super steps to run in Giraph.
+        feature_dimension : String, optional
+            The feature dimension.
+        als_lambda : String, optional
+            The regularization parameter: f = L2_error + lambda*Tikhonov_regularization
+        convergence_threshold : String, optional
+            The convergence threshold which controls how small the change in validation error must be
+            in order to meet the convergence criteria.
+        learning_output_interval : String, optional
+            The learning curve output interval.
             Since each ALS iteration is composed by 2 super steps,
             the default one iteration means two super steps.
-        max_val : 
-		    The maximum edge weight value.
-		    The default value is Float.POSITIVE_INFINITY.
-        min_val : 
-		    The minimum edge weight value.
-		    The default value is Float.NEGATIVE_INFINITY.
-        bias_on : 
-		    True means turn on bias calculation and False means turn off
-		    bias calculation.
-		    The default value is false.
+        max_val : String, optional
+            The maximum edge weight value.
+            The default value is Float.POSITIVE_INFINITY.
+        min_val : String, optional
+            The minimum edge weight value.
+            The default value is Float.NEGATIVE_INFINITY.
+        bias_on : String, optional
+            True means turn on bias calculation and False means turn off
+            bias calculation.
 
         Returns
-        The algorithm's results in database.
-        The convergence curve is accessible through the report object.
-
         -------
+        output : AlgorithmReport
+            The algorithm's results in database.  The convergence curve is
+            accessible through the report object.
         """
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
@@ -1255,7 +1204,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                                   time_str,
                                                   'ALS Learning Curve')
 
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -1360,73 +1309,59 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_iters=global_config['giraph_conjugate_gradient_descent_num_iters']
     ):
         """
-        The Conjugate Gradient Descent (CGD) with Bias for collaborative 
-		filtering algorithm.
+        The Conjugate Gradient Descent (CGD) with Bias for collaborative filtering algorithm.
+
         CGD implementation of the algorithm presented in
         Y. Koren. Factorization Meets the Neighborhood: a Multifaceted 
-		Collaborative Filtering Model. In ACM KDD 2008. (Equation 5)
+        Collaborative Filtering Model. In ACM KDD 2008. (Equation 5)
 
         Parameters
         ----------
-        input_edge_property_list :
-		    The edge properties which contain the input edge values if you 
-			use more than one edge property. We expect a comma separated 
-			string list.
-        input_edge_label : 
-		    The edge property which contains the edge label.
-        output_vertex_property_list : 
-		    The vertex properties which contain the output vertex values if
-			you use more than one vertex property. We expect a comma separated
-			string list.
-        vertex_type : 
-		    The vertex property which contains vertex type.
-        edge_type :
-		    The edge property which contains edge type.
+        input_edge_property_list : List (comma-separated list of strings)
+            The edge properties which contain the input edge values if you
+            use more than one edge property.
+        input_edge_label : String
+            The edge property which contains the edge label.
+        output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values if
+            you use more than one vertex property.
+        vertex_type : String
+            The vertex property which contains vertex type.
+        edge_type : String
+            The edge property which contains edge type.
 
-	    Optional Parameters
-        (They come with default values. Overwrite it when the default value does not work for you.)
-        ----------
-        num_worker :
+        num_worker : String, optional
             The number of workers.
-            The default value is 15.
-        max_supersteps : 
-		    The number of super steps to run in Giraph.
-		    The default value is 10.
-        feature_dimension : 
-		    The feature dimension.
-		    The default value is 3.
-        cgd_lambda : 
-		    The regularization parameter: 
-			    f = L2_error + lambda*Tikhonov_regularization
-			The default value is 0.065.
-        convergence_threshold : 
-		    The convergence threshold which controls how small the change in validation error must be
-		    in order to meet the convergence criteria.
-		    The default value is 0.
-        learning_output_interval : 
-		    The learning curve output interval.
-		    The default value is 1.
+        max_supersteps : String, optional
+            The number of super steps to run in Giraph.
+        feature_dimension :  String, optional
+            The feature dimension.
+        cgd_lambda : String, optional
+            The regularization parameter: f = L2_error + lambda*Tikhonov_regularization
+        convergence_threshold : String, optional
+            The convergence threshold which controls how small the change in validation error must be
+            in order to meet the convergence criteria.
+        learning_output_interval : String, optional
+            The learning curve output interval.
+            The default value is 1.
             Since each CGD iteration is composed by 2 super steps,
             the default one iteration means two super steps.
-        max_val : 
-		    The maximum edge weight value.
-		    The default value is Float.POSITIVE_INFINITY.
-        min_val : 
-		    The minimum edge weight value.
-		    The default value is Float.NEGATIVE_INFINITY.
-        bias_on : 
-		    True means turn on bias calculation and False means turn off
-		    bias calculation.
-		    The default value is false.
-        num_iters : 
-		    The number of CGD iterations in each super step.
-		    The default value is 5.
+        max_val : String, optional
+            The maximum edge weight value.
+        min_val : String, optional
+            The minimum edge weight value.
+        bias_on : String, optional
+            True means turn on bias calculation and False means turn off
+            bias calculation.
+        num_iters : String, optional
+            The number of CGD iterations in each super step.
 
         Returns
-        The algorithm's results in database.
-        The convergence curve is accessible through the report object.
-
         -------
+        output : AlgorithmReport
+            The algorithm's results in database.  The convergence curve is
+            accessible through the report object.
+
         """
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
@@ -1465,7 +1400,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                                   time_str,
                                                   'CGD Learning Curve')
 
-        output = InitReport()
+        output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -1555,12 +1490,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         ]
 
 
-class InitReport():
+class AlgorithmReport():
     """
-    To initialize result report object
-    Since different algorithms have different properties to report,
-    we initialize it as an empty class
+    Algorithm execution report object, tailored to each algorithm
     """
+    #  Since different algorithms have different properties to report,
+    #  we initialize it as an empty class
     pass
 
 

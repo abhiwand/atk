@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-BigDataFrame
+The common methods and class for buiding and operating with big data frames
 """
 import sys
 import abc
@@ -61,14 +61,14 @@ class FrameBuilderFactory(object):
 
 class FrameBuilder(object):
     """
-    An abstract class for the various frame builders to inherit.
+    Builds BigDataFrame objects
     """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def build_from_csv(self, frame_name, file_name, schema, skip_header=False):
         """
-        Reads a CSV (comma-separated-value) file and loads it into a table.
+        Reads a CSV (comma-separated-value) file and loads it into a frame.
 
         Parameters
         ----------
@@ -77,15 +77,14 @@ class FrameBuilder(object):
         file_name : String
             The path to the source CSV file.
         schema : String
-            The source file scheama
-            TODO: describe schema format
+            The schema of the source file
         skip_header : Bool
             if True, skip the first line of the file
 
         Returns
         -------
-        frame: BigDataFrame
-            new frame
+        frame : BigDataFrame
+            The new frame
 
         Examples
         --------
@@ -98,37 +97,43 @@ class FrameBuilder(object):
     @abc.abstractmethod
     def build_from_json(self, frame_name, file_name):
         """
-        Reads a JSON (www.json.org) file and loads it into a table.
+        Reads a JSON (www.json.org) file and loads it into a frame.
 
         Parameters
         ----------
-
-        filename : String
-            The path to the JSON file.
+        frame_name : String
+            The name of the new frame
+        file_name : String
+            The path to the source CSV file.
 
         Returns
         -------
-        BigDataFrame
+        frame : BigDataFrame
+            The new frame
         """
         pass
 
     @abc.abstractmethod
     def build_from_xml(self, frame_name, file_name, tag_name, schema=None):
+
         """
-        Reads an XML file and loads it into a table.
+        Reads an XML file and loads it into a frame.
 
         Parameters
         ----------
-        filename : String
-            The path to the XML file.
-        schema : String
-            TODO:
-
-        TODO: Other parameters for the parser.
+        frame_name : String
+            The name of the new frame
+        file_name : String
+            The path to the source CSV file.
+        tag_name : String
+            The XML tag name
+        schema : String, optional
+            The schema of the source file
 
         Returns
         -------
         frame : BigDataFrame
+            The new frame
         """
         pass
 
@@ -241,7 +246,6 @@ class BigDataFrame(object):
 
 
     def transform(self, column_name, new_column_name, transformation, transformation_args=None):
-
         """
         Applies a built-in transformation function to the given column
 
@@ -251,10 +255,10 @@ class BigDataFrame(object):
             source column for the function
         new_column_name : String
             name for the new column that will be created as a result of applying the transformation
-        transformation : enumeration
-            transformation to apply
-        transformation_args: list
-            the arguments for the transformation to apply
+        transformation : EvalFunction enumeration
+            function to apply
+        transformation_args: List
+            arguments for the function
         """
         try:
             self._table.transform(column_name, new_column_name, transformation, transformation_args)
@@ -275,7 +279,7 @@ class BigDataFrame(object):
 
         Returns
         -------
-        : String
+        output : String
         """
         # For IPython, consider dumping 2D array (NDarray) for pretty-print.
 
