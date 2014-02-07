@@ -245,6 +245,8 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
         ml._output_vertex_property_list = 'test_vertex_properties'
         ml._vertex_type = 'test_vertex_type'
         ml._edge_type = 'test_edge_type'
+        ml._vector_value = 'test_vector_value'
+        ml._feature_dimension = 'test_dimension'
         ml._bias_on =  'test_bias_on'
         result = ml.recommend('101010')
         self.assertEqual('test_graph', result.graph_name)

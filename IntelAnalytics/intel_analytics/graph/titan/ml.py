@@ -58,7 +58,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._output_vertex_property_list = ''
         self._vertex_type = ''
         self._edge_type = ''
+        self._vector_value=''
         self._bias_on = ''
+        self._feature_dimension = ''
         self.report = []
         self._label_font_size = 12
         self._title_font_size = 14
@@ -206,10 +208,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                   vertex_id,
                   vertex_type=global_config['giraph_left_vertex_type_str'],
                   output_vertex_property_list='',
-                  vector_value=global_config['giraph_vector_value'],
+                  vector_value='',
                   key_4_vertex_type='',
                   key_4_edge_type='',
                   bias_on='',
+                  feature_dimension='',
                   left_vertex_name=global_config['giraph_recommend_left_name'],
                   right_vertex_name=global_config['giraph_recommend_right_name']):
         """
@@ -244,6 +247,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         right_vertex_name : right-side vertex name. The default value is "movie".
         bias_on: whether to enable bias. The default value is the latest bias_on set by
                  algorithm execution
+        feature_dimension: the number of dimensions in feature
 
         Returns
         Top 10 recommendations for the input vertex id
@@ -267,12 +271,23 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             else:
                 key_4_edge_type = self._edge_type
 
+        if vector_value == '':
+            if self._vector_value == '':
+                raise ValueError("vector_value is empty!")
+            else:
+                vector_value = self._vector_value
+
         if bias_on == '':
             if self._bias_on == '':
                 raise ValueError("bias_on is empty!")
             else:
                 bias_on = self._bias_on
 
+        if feature_dimension == '':
+            if self._feature_dimension == '':
+                raise ValueError("feature_dimension is empty!")
+            else:
+                feature_dimension = self._feature_dimension
 
         rec_cmd1 = 'gremlin.sh -e ' + global_config['giraph_recommend_script']
         rec_command = [self._table_name,
@@ -291,8 +306,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                        key_4_edge_type,
                        vertex_type,
                        vector_value,
-                       bias_on]
-        rec_cmd2 = '::'.join(rec_command)
+                       bias_on,
+                       feature_dimension]
+        rec_cmd2 = '::'.join(map(str, rec_command))
         rec_cmd = rec_cmd1 + ' ' + rec_cmd2
         #print rec_cmd
         #if want to directly use subprocess without progress bar, it is like this:
@@ -424,7 +440,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             anchor_threshold,
             bidirectional_check,
             output_path)
-        lbp_cmd = ' '.join(lbp_command)
+        lbp_cmd = ' '.join(map(str, lbp_command))
         #print lbp_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
@@ -573,7 +589,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             convergence_output_interval,
             output_path
         )
-        pr_cmd = ' '.join(pr_command)
+        pr_cmd = ' '.join(map(str, pr_command))
         #print pr_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
@@ -690,7 +706,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path,
             num_worker
         )
-        apl_cmd = ' '.join(apl_command)
+        apl_cmd = ' '.join(map(str, apl_command))
         #print apl_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
@@ -798,7 +814,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_path,
             num_worker
         )
-        cc_cmd = ' '.join(cc_command)
+        cc_cmd = ' '.join(map(str, cc_command))
         #print cc_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
@@ -951,7 +967,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             bidirectional_check,
             output_path
         )
-        lp_cmd = ' '.join(lp_command)
+        lp_cmd = ' '.join(map(str,lp_command))
         #print lp_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
@@ -1138,7 +1154,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             bidirectional_check,
             output_path
         )
-        lda_cmd = ' '.join(lda_command)
+        lda_cmd = ' '.join(map(str, lda_command))
         #print lda_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
@@ -1338,7 +1354,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
         self._edge_type = global_config['hbase_column_family'] + edge_type
+        self._vector_value = vector_value
         self._bias_on = bias_on
+        self._feature_dimension = feature_dimension
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/als'
         als_command = self._get_als_command(
             self._table_name,
@@ -1360,7 +1378,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             bidirectional_check,
             output_path
         )
-        als_cmd = ' '.join(als_command)
+        als_cmd = ' '.join(map(str,als_command))
         #print als_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
@@ -1562,7 +1580,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
         self._edge_type = global_config['hbase_column_family'] + edge_type
+        self._vector_value = vector_value
         self._bias_on = bias_on
+        self._feature_dimension = feature_dimension
         output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/cgd'
         cgd_command = self._get_cgd_command(
             self._table_name,
@@ -1585,7 +1605,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             bidirectional_check,
             output_path
         )
-        cgd_cmd = ' '.join(cgd_command)
+        cgd_cmd = ' '.join(map(str,cgd_command))
         #print cgd_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
