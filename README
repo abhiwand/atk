@@ -105,9 +105,12 @@ please set the $HADOOP_CLASSPATH as follows:
 ##### Tuning
 
 Hadoop, HBase, and Titan must be tuned carefully to successfully create large
-graphs (in the order of hundreds of million vertices/edges such as the Wikipedia dataset). Please refer to
-[https://github.com/thinkaurelius/titan/wiki/Bulk-Loading] (https://github.com/thinkaurelius/titan/wiki/Bulk-Loading) for tuning Titan. In particular,
-we recommend tuning the following parameters:
+graphs (in the order of hundreds of million vertices/edges such as the Wikipedia dataset). For the list of HBase parameters
+please refer to [http://hbase.apache.org/book/config.files.html] (http://hbase.apache.org/book/config.files.html), and for guidance
+on how to tune them please refer to [http://hbase.apache.org/book/performance.html] (http://hbase.apache.org/book/performance.html). For 
+Hadoop parameters and tuning please refer to the documentation of your Hadoop version at [http://hadoop.apache.org/] (http://hadoop.apache.org/).
+Finally, for tuning Titan  please refer to [https://github.com/thinkaurelius/titan/wiki/Bulk-Loading] (https://github.com/thinkaurelius/titan/wiki/Bulk-Loading).
+In particular, we recommend tuning the following parameters:
 
 - graphbuilder.titan.ids.block-size
 - graphbuilder.titan.ids.partition
