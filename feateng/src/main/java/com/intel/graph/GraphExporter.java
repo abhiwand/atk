@@ -29,28 +29,20 @@ public class GraphExporter {
         options.addOption("v", true,  "vertex schema");
         options.addOption("e", true,  "edge schema");
         options.addOption("f", true,  "File Name");
+        options.addOption("o", true, "Faunus query output directory");
+        options.addOption("q", true, "Faunus query");
         CommandLine cmd = parser.parse(options, args);
         Path outputDir = new Path("xml_out");
         String fileName = cmd.getOptionValue("f");
         String faunusBinDir = new File(System.getenv("FAUNUS_HOME"), "bin").toString();
         String faunusGremlinFile = new File(faunusBinDir, "gremlin.sh").toString();
         String faunusPropertiesFile = new File(faunusBinDir, "titan-hbase-input.properties").toString();
-        //String[] commandArray = new String[]{faunusGremlinFile, "-i", faunusPropertiesFile, "g.V('_gb_ID','11').out.keep", "-Dfaunus.output.location=query_1"};
-        String queryOutput = "query_1";
+        String queryOutput = cmd.getOptionValue("o");
+        String queryString = cmd.getOptionValue("q");
+
         try {
-
-            /*Runtime r = Runtime.getRuntime();
-            Process p = r.exec(commandArray);
-            System.out.println("command issued");
-
-            p.waitFor();
-            System.out.println("command done");*/
             FileSystem fs = FileSystem.get(new Configuration());
-
-            FileStatus[] fileStatuses = fs.listStatus(new Path(queryOutput));
-            Path resultFolder = getResultFolder(fileStatuses);
-            Path resultFile = new Path(resultFolder, "sideeffect*");
-
+            String[] statements = queryString.split(";");
 
             Configuration conf = new Configuration();
             conf.set(FILE, fileName);
@@ -62,8 +54,29 @@ public class GraphExporter {
             job.setJarByClass(GraphExporter.class);
             job.setMapperClass(GraphExportMapper.class);
             job.setReducerClass(GraphExportReducer.class);
-            TextInputFormat.addInputPath(job, resultFile);
 
+
+            for(int i = 0; i < statements.length; i++) {
+                String statement = statements[i];
+                Runtime r = Runtime.getRuntime();
+
+                String subStepOutputDir = new File(queryOutput, "step-" + i).toString();
+                String[] commandArray = new String[]{faunusGremlinFile, "-i", faunusPropertiesFile, statement, "-Dfaunus.output.location=" + subStepOutputDir};
+                Process p = r.exec(commandArray);
+                System.out.println("command issued");
+
+                p.waitFor();
+                System.out.println("command done");
+
+                FileStatus[] fileStatuses = fs.listStatus(new Path(subStepOutputDir));
+                Path resultFolder = getResultFolder(fileStatuses);
+                Path resultFile = new Path(resultFolder, "sideeffect*");
+                TextInputFormat.addInputPath(job, resultFile);
+            }
+
+            if (fs.exists(outputDir)) {
+                fs.delete(outputDir, true);
+            }
 
             TextOutputFormat.setOutputPath(job, outputDir);
             job.setInputFormatClass(TextInputFormat.class);
