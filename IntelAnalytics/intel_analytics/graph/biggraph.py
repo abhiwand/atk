@@ -369,7 +369,8 @@ class GraphWrapper:
         self._graph = graph
         self.vertices.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
         self.edges.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
-
+        self.client_class = graph.client_class
+        self.default_index = graph.default_index
 
     def load_graphml(self,uri):
         self._graph.load_graphml(uri)
