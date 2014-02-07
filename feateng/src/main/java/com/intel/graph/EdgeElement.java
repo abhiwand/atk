@@ -1,5 +1,8 @@
 package com.intel.graph;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,6 +36,27 @@ public class EdgeElement implements IGraphElement {
     @Override
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;
+    }
+
+    @Override
+    public void writeToXML(XMLStreamWriter writer) throws XMLStreamException {
+        writer.writeStartElement(GraphMLTokens.EDGE);
+        writer.writeAttribute(GraphMLTokens.ID, String.valueOf(getId()));
+        writer.writeAttribute(GraphMLTokens.SOURCE, String.valueOf(getOutVertexId()));
+        writer.writeAttribute(GraphMLTokens.TARGET, String.valueOf(getInVertexId()));
+
+        writer.writeAttribute(GraphMLTokens.LABEL, "label");
+        Collection<String> keys = getAttributes().keySet();
+        for (String attributeKey : keys) {
+            writer.writeStartElement(GraphMLTokens.DATA);
+            writer.writeAttribute(GraphMLTokens.KEY, attributeKey);
+            Object attributeValue = getAttributes().get(attributeKey);
+            if (null != attributeValue) {
+                writer.writeCharacters(attributeValue.toString());
+            }
+            writer.writeEndElement();
+        }
+        writer.writeEndElement();
     }
 
     public long getInVertexId() {
