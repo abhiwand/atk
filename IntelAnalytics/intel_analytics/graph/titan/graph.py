@@ -93,7 +93,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def _get_graph(self, graph_name, titan_table_name):
         rexster_uri = titan_config.get_rexster_server_uri(titan_table_name)
         bulbs_config = bulbsConfig(rexster_uri)
-        titan_graph = bulbsGraph(bulbs_config)
+        titan_graph = GraphWrapper(bulbsGraph(bulbs_config))
         titan_graph.user_graph_name = graph_name
         titan_graph.titan_table_name = titan_table_name
         titan_graph.ml = TitanGiraphMachineLearning(titan_graph)
@@ -201,9 +201,7 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
 
     titan_config.rexster_xml_add_graph(dst_hbase_table_name)
 
-    graph = titan_graph_builder_factory.get_graph(graph_name)
-    return GraphWrapper(graph)
-
+    return titan_graph_builder_factory.get_graph(graph_name)
 
 
 def generate_titan_table_name(prefix, source):
