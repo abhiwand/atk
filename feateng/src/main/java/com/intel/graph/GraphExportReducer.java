@@ -7,15 +7,23 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.io.StringReader;
+import java.util.*;
 
 public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable, Text> {
 
@@ -31,9 +39,19 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         String edgeSchema = conf.get(GraphExporter.EDGE_SCHEMA);
 
 
-        Map<String, String> edgeKeyTypes = getKeyTypesMapping(edgeSchema);
-        Map<String, String> vertexKeyTypes = getKeyTypesMapping(vertexSchema);
+        Map<String, String> edgeKeyTypes = null;
+        try {
+            edgeKeyTypes = getKeyTypesMapping(edgeSchema);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read schema info for edges");
+        }
 
+        Map<String, String> vertexKeyTypes = null;
+        try {
+            vertexKeyTypes = getKeyTypesMapping(vertexSchema);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to read schema info for vertices");
+        }
 
         Path path = new Path(fileName);
         FileSystem fs = FileSystem.get(context.getConfiguration());
@@ -84,12 +102,22 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         }
     }
 
-    public static Map<String, String> getKeyTypesMapping(String schema) {
+    public static Map<String, String> getKeyTypesMapping(String schemaXML) throws IOException, SAXException, ParserConfigurationException {
         Map<String, String> mapping = new HashMap<String, String>();
-        String[] features = schema.split(",");
-        for(String featureTypeString : features) {
-            String[] split = featureTypeString.split("#");
-            mapping.put(split[0], split[1]);
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = null;
+        dBuilder = dbFactory.newDocumentBuilder();
+        InputSource is = new InputSource(new StringReader(schemaXML));
+        Document doc = null;
+        doc = dBuilder.parse(is);
+
+        NodeList nList = doc.getElementsByTagName("feature");
+        for (int temp = 0; temp < nList.getLength(); temp++) {
+            Element nNode = (Element)nList.item(temp);
+
+            String name = nNode.getAttribute("name");
+            String type = nNode.getAttribute("type");
+            mapping.put(name, type);
         }
         return mapping;
     }

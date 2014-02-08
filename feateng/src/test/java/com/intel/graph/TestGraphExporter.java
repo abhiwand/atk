@@ -92,26 +92,13 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testGetKeyTypesMapping_edge() {
-        String schema = "etl-cf:edge_type#chararray,etl-cf:weight#long";
-        Map<String, String> mapping = GraphExportReducer.getKeyTypesMapping(schema);
+    public void testGetKeyTypesMapping() throws ParserConfigurationException, SAXException, IOException {
+        String schemaXML = "<xml><feature name=\"etl-cf:edge_type\" type=\"chararray\"/><feature name=\"etl-cf:weight\" type=\"long\"/></xml>";
+        Map<String, String> mapping = GraphExportReducer.getKeyTypesMapping(schemaXML);
         assertTrue(mapping.containsKey("etl-cf:edge_type"));
         assertTrue(mapping.containsKey("etl-cf:weight"));
         assertEquals("chararray", mapping.get("etl-cf:edge_type"));
         assertEquals("long", mapping.get("etl-cf:weight"));
-    }
-
-
-    @Test
-    public void testGetKeyTypesMapping_vertex() {
-        String schema = "_id#long,_gb_ID#long,etl-cf:vertex_type#chararray";
-        Map<String, String> mapping = GraphExportReducer.getKeyTypesMapping(schema);
-        assertTrue(mapping.containsKey("_id"));
-        assertTrue(mapping.containsKey("_gb_ID"));
-        assertTrue(mapping.containsKey("etl-cf:vertex_type"));
-        assertEquals("long", mapping.get("_id"));
-        assertEquals("long", mapping.get("_gb_ID"));
-        assertEquals("chararray", mapping.get("etl-cf:vertex_type"));
     }
 
     @Test
