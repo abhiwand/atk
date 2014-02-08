@@ -2,9 +2,12 @@ package com.intel.graph;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
@@ -109,5 +112,21 @@ public class TestGraphExporter {
         assertEquals("long", mapping.get("_id"));
         assertEquals("long", mapping.get("_gb_ID"));
         assertEquals("chararray", mapping.get("etl-cf:vertex_type"));
+    }
+
+    @Test
+    public void testGetStatementListFromXMLString_0_statments() throws IOException, SAXException, ParserConfigurationException {
+        String xml = "<query></query>";
+        List<String> statements = GraphExporter.getStatementListFromXMLString(xml);
+        assertEquals(0, statements.size());
+    }
+
+    @Test
+    public void testGetStatementListFromXMLString_2_statments() throws IOException, SAXException, ParserConfigurationException {
+        String xml = "<query><statement>g.V('_gb_ID','11').out.map</statement><statement>g.V('_gb_ID','11').outE.transform('{[it,it.map()]}')</statement></query>";
+        List<String> statements = GraphExporter.getStatementListFromXMLString(xml);
+        assertEquals(2, statements.size());
+        assertEquals("g.V('_gb_ID','11').out.map", statements.get(0));
+        assertEquals("g.V('_gb_ID','11').outE.transform('{[it,it.map()]}')", statements.get(1));
     }
 }

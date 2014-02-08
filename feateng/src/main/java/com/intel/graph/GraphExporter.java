@@ -96,7 +96,7 @@ public class GraphExporter {
         job.waitForCompletion(true);
     }
 
-    private static List<String> getStatementListFromXMLString(String queryXML) throws ParserConfigurationException, IOException, SAXException {
+    public static List<String> getStatementListFromXMLString(String queryXML) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         InputSource is = new InputSource(new StringReader(queryXML));
