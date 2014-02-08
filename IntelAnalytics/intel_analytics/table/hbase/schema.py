@@ -85,3 +85,9 @@ class ETLSchema:
     
     def get_feature_types_as_CSV(self):
         return ",".join(self.feature_types)    
+
+    def get_feature_type(self, feature_name):
+	for i, name in enumerate(self.feature_names):
+		if (name == feature_name):
+			return self.feature_types[i]
+	raise Exception('No such feature exists %s' % (feature_name))

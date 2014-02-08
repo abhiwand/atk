@@ -87,6 +87,36 @@ def _get_pig_args():
     args += ['-4', pig_log4j_path]
     return args
 
+def _make_range_spec(range):
+    result = ""
+    d = "-?[0-9]+\.?[0-9]*"                                     # decimal pattern
+    n = "-?[0-9]+"                                              # number pattern
+    if (range == "date" or range == "week" or range == "month" or range == "year" or range == "dayofweek" or range == "monthofyear"):
+        result = range
+    elif (re.match("^%s:%s:%s$" % (n,n,n), range)):             # ranges of type [min:max:stepsize] for integers
+        limits = [(f.strip()) for f in range.split(':')]
+        min, max, stepsize = int(limits[0]), int(limits[1]), int(limits[2])
+        if ((min >= max and stepsize > 0) or (min <= max and stepsize < 0)):
+            raise Exception('Illegal range %s' % (range))
+        for i in xrange(min, max, stepsize):
+                result += "%d," % (i)
+        result += "%d" % (max)
+    elif (re.match("^%s:%s:%s$" % (d,d,d), range)):             # ranges for type [min:max:stepsize] for floating points
+        limits = [(f.strip()) for f in range.split(':')]
+        min, max, stepsize = float(limits[0]), float(limits[1]), float(limits[2])
+        if ((min >= max and stepsize > 0) or (min <= max and stepsize < 0)):
+            raise Exception('Illegal range %s' % (range))
+        r = min
+        while r < max:
+            result += "%f," %(r)
+            r += stepsize
+        result += "%f" %(max)
+    elif (re.match("^%s(,%s)*" % (d,d),  range)):               # ranges of type a1,a2,a3,a4 ...  -- useful in custom stepsize
+        result = range
+
+    return result
+
+
 class HBaseTableException(Exception):
     pass
 
@@ -106,6 +136,187 @@ class HBaseTable(object):
         """
         self.table_name = table_name
         self.file_name = file_name
+
+    def aggregate(self,
+		  aggregate_frame_name,
+		  group_by_columns,
+		  aggregation_arguments,
+		  overwrite):
+		
+        #load schema info
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+	# You should check if the group_by_columns are valid or not
+
+	new_schema_def = ""
+	if (len(group_by_columns) == 1) :
+	    new_schema_def += "AggregateGroup:" + etl_schema.get_feature_type(group_by_columns[0])
+	else:
+            new_schema_def += "AggregateGroup:chararray"
+	
+	aggregation_list = []
+	for i in aggregation_arguments:
+	    function_name = column_to_apply = new_column_name = ""
+	    if isinstance(i, tuple):
+	        if (len(i) == 2):
+		    function_name,column_to_apply,new_column_name = i[0],i[1],i[1]
+		else:
+		    function_name,column_to_apply,new_column_name = i[0],i[1],i[2]
+	    else:
+		function_name = i
+		if (function_name == EvalFunctions.Aggregation.COUNT):
+		    column_to_apply, new_column_name = "*", "count"
+		else:
+                    raise HBaseTableException("Invalid aggregation: " + function_name)
+		
+	    try:
+	        aggregation_list.append(EvalFunctions.to_string(function_name))
+	    except:
+		raise HBaseTableException('The specified aggregation function is invalid: ' + function_name)
+
+
+	    if (column_to_apply != "*" and column_to_apply not in etl_schema.feature_names):
+                raise HBaseTableException("Column %s does not exist" % column_to_apply)
+
+	    aggregation_list.append(column_to_apply);
+	    aggregation_list.append(new_column_name)
+
+
+	    if (function_name in [EvalFunctions.Aggregation.COUNT, EvalFunctions.Aggregation.COUNT_DISTINCT]):
+	        new_schema_def += ",%s:int" % (new_column_name)
+	    elif (function_name in [EvalFunctions.Aggregation.DISTINCT]):
+	        new_schema_def += ",%s:chararray" % (new_column_name)
+	    else:
+	        new_schema_def += ",%s:%s" % (new_column_name, 
+					          etl_schema.get_feature_type(column_to_apply))
+	
+
+        script_path = os.path.join(etl_scripts_path, 'pig_aggregation.py')
+
+        args = _get_pig_args()
+
+
+	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
+        hbase_table = HBaseTable(new_table_name, self.file_name)
+
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+
+        args += [script_path,
+                '-i', self.table_name,
+                '-o', new_table_name, 
+		'-a', " ".join(aggregation_list),
+		'-g', ",".join(group_by_columns),
+                '-u', feature_names_as_str, '-r', feature_types_as_str,
+                ]
+
+        logger.debug(args)
+
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not apply transformation')
+
+
+	new_etl_schema = ETLSchema()
+	new_etl_schema.populate_schema(new_schema_def)
+        new_etl_schema.save_schema(new_table_name)
+
+	return hbase_table
+
+    def aggregate_on_range(self,
+		  aggregate_frame_name,
+		  group_by_column,
+		  range,
+		  aggregation_arguments,
+		  overwrite):
+		
+        #load schema info
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+	# You should check if the group_by_columns are valid or not
+
+	new_schema_def = "AggregateGroup:chararray"
+
+	aggregation_list = []
+	for i in aggregation_arguments:
+	    function_name = column_to_apply = new_column_name = ""
+	    if isinstance(i, tuple):
+	        if (len(i) == 2):
+		    function_name,column_to_apply,new_column_name = i[0],i[1],i[1]
+		else:
+		    function_name,column_to_apply,new_column_name = i[0],i[1],i[2]
+	    else:
+		function_name = i
+		if (function_name == EvalFunctions.Aggregation.COUNT):
+		    column_to_apply, new_column_name = "*", "count"
+		else:
+                    raise HBaseTableException("Invalid aggregation: " + function_name)
+		
+	    try:
+	        aggregation_list.append(EvalFunctions.to_string(function_name))
+	    except:
+		raise HBaseTableException('The specified aggregation function is invalid: ' + function_name)
+
+
+	    if (column_to_apply != "*" and column_to_apply not in etl_schema.feature_names):
+                raise HBaseTableException("Column %s does not exist" % column_to_apply)
+
+	    aggregation_list.append(column_to_apply);
+	    aggregation_list.append(new_column_name)
+
+
+	    if (function_name in [EvalFunctions.Aggregation.COUNT, EvalFunctions.Aggregation.COUNT_DISTINCT]):
+	        new_schema_def += ",%s:int" % (new_column_name)
+	    elif (function_name in [EvalFunctions.Aggregation.DISTINCT]):
+	        new_schema_def += ",%s:chararray" % (new_column_name)
+	    else:
+	        new_schema_def += ",%s:%s" % (new_column_name, 
+					          etl_schema.get_feature_type(column_to_apply))
+	
+        script_path = os.path.join(etl_scripts_path, 'pig_range_aggregation.py')
+        args = _get_pig_args()
+        _range = _make_range_spec(range)
+
+
+	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
+        hbase_table = HBaseTable(new_table_name, self.file_name)
+
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+
+        args += [script_path,
+                '-i', self.table_name,
+                '-o', new_table_name, 
+		'-a', " ".join(aggregation_list),
+		'-g', group_by_column,
+		'-l', _range,
+                '-u', feature_names_as_str, '-r', feature_types_as_str,
+                ]
+
+        logger.debug(args)
+
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not apply transformation')
+
+
+	new_etl_schema = ETLSchema()
+	new_etl_schema.populate_schema(new_schema_def)
+        new_etl_schema.save_schema(new_table_name)
+
+	return hbase_table
 
     def transform(self,
                   column_name,

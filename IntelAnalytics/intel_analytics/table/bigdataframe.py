@@ -245,6 +245,55 @@ class BigDataFrame(object):
             print traceback.format_exc()
             raise BigDataFrameException("transform exception " + str(e))
 
+    def aggregate(self, aggregate_frame_name, group_by_column_list, aggregation_list, overwrite=False):
+
+        """
+        Applies a built-in aggregation function to the given column
+
+        Parameters
+        ----------
+        aggregate_table_name: String
+            aggregate table name for the output of the aggregation
+        group_by_column_list: List
+            List of columns to group the data by before applying aggregation to each group
+        aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
+            aggregation functions to apply on each group
+	overwrite: Boolean
+	    whether to overwrite the existing table with the same name
+        """
+        try:
+            aggregate_table = self._table.aggregate(aggregate_frame_name, group_by_column_list, aggregation_list, overwrite)
+	    aggregate_frame = BigDataFrame(aggregate_frame_name, aggregate_table)
+	    return aggregate_frame
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("transform exception " + str(e))
+
+    def aggregate_on_range(self, aggregate_frame_name, group_by_column, range, aggregation_list, overwrite=False):
+
+        """
+        Applies a built-in aggregation function to the given column
+
+        Parameters
+        ----------
+        aggregate_table_name: String
+            aggregate table name for the output of the aggregation
+        group_by_column: String
+            Column to group the data by before applying aggregation to each group
+	range: String
+	    range of the group_by_column for applying the group  
+        aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
+            aggregation functions to apply on each group
+	overwrite: Boolean
+	    whether to overwrite the existing table with the same name
+        """
+        try:
+            aggregate_table = self._table.aggregate_on_range(aggregate_frame_name, group_by_column, range, aggregation_list, overwrite)
+	    aggregate_frame = BigDataFrame(aggregate_frame_name, aggregate_table)
+	    return aggregate_frame
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("transform exception " + str(e))
 
     def inspect(self, n=10):
         """
