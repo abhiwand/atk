@@ -49,8 +49,7 @@ public class GraphExporter {
         Path outputDir = new Path(cmd.getOptionValue("o"));
         Path queryOutputDir = new Path(new File(outputDir.toString(), "query").toString());
         Path exporterOutputDir = new Path(new File(outputDir.toString(), "exporter").toString());
-        String queryString = cmd.getOptionValue("q");
-
+        String queryXML = cmd.getOptionValue("q");
 
         Configuration conf = new Configuration();
         conf.set(FILE, fileName);
@@ -66,7 +65,7 @@ public class GraphExporter {
             fs.delete(outputDir, true);
         }
 
-        List<String> statements = getStatementListFromXMLString(queryString);
+        List<String> statements = getStatementListFromXMLString(queryXML);
         for (int i = 0; i < statements.size(); i++) {
             String statement = statements.get(i);
             Runtime r = Runtime.getRuntime();
