@@ -120,7 +120,7 @@ def _make_range_spec(range):
         result += "%f" %(max)
     elif (re.match("^%s(,%s)+$" % (d,d),  range)):               # ranges of type a1,a2,a3,a4 ...  -- useful in custom stepsize
 	L = [int(x) for x in range.split(',')]
-	if (_strictly_increasing(L) || _strictly_decreasing(L)):
+	if (_strictly_increasing(L) or _strictly_decreasing(L)):
             result = range
 	else:
 	    raise Exception('Range should be strictly increasing or decreasing')
