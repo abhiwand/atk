@@ -108,7 +108,7 @@ def main(argv):
     if (num_buckets > 1):
 	aggregate_relation_list = []
         for i in range(num_buckets-1):
-	    if (i == num_buckets-1):
+	    if (i == num_buckets-2):
 	        pig_statements.append("hbase_filter_data%d = FILTER hbase_data BY (%s >= %s) AND (%s <= %s);" % 
 				 (i, cmd_line_args.group_by_columns, ranges[i], cmd_line_args.group_by_columns, ranges[i+1]))
 	        pig_statements.append("hbase_filter_data%d = FOREACH hbase_filter_data%d GENERATE '%s' as column_range:chararray, %s;" % 
