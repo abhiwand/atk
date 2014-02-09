@@ -87,12 +87,19 @@ def _get_pig_args():
     args += ['-4', pig_log4j_path]
     return args
 
+def _strictly_increasing(L):
+    return all(a<b for a, b in zip(L, L[1:]))
+
+def _strictly_decreasing(L):
+    return all(a>b for a, b in zip(L, L[1:]))
+
 def _make_range_spec(range):
     result = ""
     d = "-?[0-9]+\.?[0-9]*"                                     # decimal pattern
     n = "-?[0-9]+"                                              # number pattern
     if (range == "date" or range == "week" or range == "month" or range == "year" or range == "dayofweek" or range == "monthofyear"):
         result = range
+	raise Exception('Unsupported feature of specifying time series as a range')
     elif (re.match("^%s:%s:%s$" % (n,n,n), range)):             # ranges of type [min:max:stepsize] for integers
         limits = [(f.strip()) for f in range.split(':')]
         min, max, stepsize = int(limits[0]), int(limits[1]), int(limits[2])
@@ -111,8 +118,17 @@ def _make_range_spec(range):
             result += "%f," %(r)
             r += stepsize
         result += "%f" %(max)
-    elif (re.match("^%s(,%s)*" % (d,d),  range)):               # ranges of type a1,a2,a3,a4 ...  -- useful in custom stepsize
-        result = range
+    elif (re.match("^%s(,%s)+$" % (d,d),  range)):               # ranges of type a1,a2,a3,a4 ...  -- useful in custom stepsize
+	L = [int(x) for x in range.split(',')]
+	if (_strictly_increasing(L) || _strictly_decreasing(L)):
+            result = range
+	else:
+	    raise Exception('Range should be strictly increasing or decreasing')
+    elif (re.match("^%s$" % (d),  range)):	                 # range specified as depth of each bucket 
+	raise Exception('Unsupported feature of specifying depth as a range')
+    else:
+	raise Exception('Unsupported feature for specifying range')
+
 
     return result
 

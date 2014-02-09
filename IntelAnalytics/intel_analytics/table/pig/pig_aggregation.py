@@ -97,6 +97,7 @@ def main(argv):
     datafu_jar = os.path.join(config['pig_lib'], 'datafu-0.0.10.jar')
     pig_statements.append("REGISTER %s; -- for the VAR UDF" % datafu_jar)
     pig_statements.append("DEFINE VAR datafu.pig.stats.VAR();")
+    pig_statements.append("SET DEFAULT_PARALLEL 20;")
         
     pig_statements.append("hbase_data = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s', '-loadKey true') as (key:chararray, %s);" \
                           % (cmd_line_args.input, hbase_constructor_args, pig_schema_info))
