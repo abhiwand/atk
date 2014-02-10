@@ -44,6 +44,7 @@ class EvalFunctions:
         UPPER=15
         TOKENIZE=16
         LENGTH=17
+        CONCAT=18   #CONCAT is part of Pig Eval functions
         
     """Math functions
     """        
@@ -54,9 +55,23 @@ class EvalFunctions:
         POW=1003
         EXP=1004
         STND=1005 #STND: Standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization).
+
+        # Arithmetic operations, e.g., +-*/%?, syntax checking is left to pig script engine:
+        ARITHMETIC=1100
+
+        FLOOR=1006
+        CEIL=1007
+        ROUND=1008
+        SQRT=1009
+        DIV=1010
+        MOD=1011
+        RANDOM=1012
         
     class Json:
         EXTRACT_FIELD=2000
+
+    class Xml:
+	EXTRACT_FIELD=3000
 
     @staticmethod
     def to_string(x):
@@ -79,6 +94,7 @@ class EvalFunctions:
             EvalFunctions.String.UPPER: 'UPPER',
             EvalFunctions.String.TOKENIZE: 'TOKENIZE',
             EvalFunctions.String.LENGTH: 'org.apache.pig.piggybank.evaluation.string.LENGTH',
+            EvalFunctions.String.CONCAT: 'CONCAT',
 
             EvalFunctions.Math.ABS: 'ABS',
             EvalFunctions.Math.LOG: 'LOG',
@@ -86,8 +102,17 @@ class EvalFunctions:
             EvalFunctions.Math.POW: 'org.apache.pig.piggybank.evaluation.math.POW',
             EvalFunctions.Math.EXP: 'EXP',
             EvalFunctions.Math.STND: 'STND',
+            EvalFunctions.Math.FLOOR: 'FLOOR',
+            EvalFunctions.Math.CEIL: 'CEIL',
+            EvalFunctions.Math.ROUND: 'ROUND',
+            EvalFunctions.Math.SQRT: 'SQRT',
+            EvalFunctions.Math.DIV: 'DIV',
+            EvalFunctions.Math.MOD: 'MOD',
+            EvalFunctions.Math.RANDOM: 'RANDOM',
+            EvalFunctions.Math.ARITHMETIC: 'ARITHMETIC',
 
-            EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON'
+            EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON',
+            EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPath'
         }
 
         if x in mapping:
@@ -98,6 +123,7 @@ class EvalFunctions:
 string_functions = []
 math_functions = []  
 json_functions = []
+xml_functions = []
 available_builtin_functions = []#used for validation, does the user try to call a valid function? 
 for key,val in EvalFunctions.String.__dict__.items():
     if key == '__module__' or key == '__doc__':
@@ -113,7 +139,12 @@ for key,val in EvalFunctions.Json.__dict__.items():
     if key == '__module__' or key == '__doc__':
         continue
     json_functions.append(EvalFunctions.to_string(val)) 
+for key,val in EvalFunctions.Xml.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    xml_functions.append(EvalFunctions.to_string(val))
 
 available_builtin_functions.extend(string_functions)
 available_builtin_functions.extend(math_functions)
 available_builtin_functions.extend(json_functions)
+available_builtin_functions.extend(xml_functions)

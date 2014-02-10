@@ -126,8 +126,39 @@ class HBaseTable(object):
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
-        if column_name and (column_name not in etl_schema.feature_names):
+        # input can't be null
+        if not column_name:
+            raise HBaseTableException("Input column is empty")
+
+        # check input: can be a single column or an expression of multiple columns
+        # accepted format exampe: transform('(a+b*(5+c))-d', ...
+        if transformation == EvalFunctions.Math.ARITHMETIC:
+            cols = re.split('\+|-|\*|\/|\%', re.sub('[()]', '', column_name))
+            if len(cols) < 2:
+                raise HBaseTableException("Arithmetic operations need more than 1 input")
+            for col in cols:
+                try:
+                    float(col)
+                except:
+                    if col not in etl_schema.feature_names:
+                        raise HBaseTableException("Column %s in expression %s does not exist" % (col, column_name))
+        # check input: comma separated columns or single-quoted string literals
+        # accepted format exampe: transform('(a,b,\'MyString\'', ...
+        elif transformation == EvalFunctions.String.CONCAT:
+            cols = column_name.split(',')
+            if len(cols) < 2:
+                raise HBaseTableException("Concatenation needs more than 1 input")
+            for col in cols:
+                if ((not ('\'' == col[0] and '\'' == col[len(col)-1])) and
+                    col not in etl_schema.feature_names):
+                    raise HBaseTableException("Column %s in expression %s does not exist" % (col, column_name))
+        # single column
+        elif column_name not in etl_schema.feature_names:
             raise HBaseTableException("Column %s does not exist" % column_name)
+
+        if not column_name:
+            column_name = '' #some operations does not requires a column name.
+
 
         script_path = os.path.join(etl_scripts_path, 'pig_transform.py')
 
@@ -146,6 +177,7 @@ class HBaseTable(object):
             args += ['-k']
 
         logger.debug(args)
+
 
         return_code = call(args, report_strategy=etl_report_strategy())
 
@@ -521,9 +553,41 @@ class HBaseFrameBuilder(FrameBuilder):
         
         return new_frame
             
-    def build_from_xml(self, frame_name, file_name, schema=None):
-        raise Exception("Not implemented")
+    def build_from_xml(self, frame_name, file_name, tag_name, overwrite=False):
+        #create some random table name
+        #we currently don't bother the user to specify table names
+        table_name = _create_table_name(frame_name, overwrite)
+        hbase_table = HBaseTable(table_name, file_name)
+        new_frame = BigDataFrame(frame_name, hbase_table)
 
+        schema='xml:chararray'#dump all records as chararray
+        
+        #save the schema of the dataset to import
+        etl_schema = ETLSchema()
+        etl_schema.populate_schema(schema)
+        etl_schema.save_schema(table_name)
+
+        script_path = os.path.join(etl_scripts_path,'pig_import_xml.py')
+
+        args = _get_pig_args()
+
+        args += [script_path, '-i', file_name, '-o', table_name, '-tag', tag_name]
+
+        logger.debug(args)
+        
+#         need to delete/create output table to write the transformed features
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(table_name,
+                                           [config['hbase_column_family']])
+            
+        return_code = call(args, report_strategy=etl_report_strategy())
+        
+        if return_code:
+            raise Exception('Could not import XML file')
+
+        hbase_registry.register(frame_name, table_name, overwrite)
+        
+        return new_frame
 
 
 class HBaseFrameBuilderFactory(object):

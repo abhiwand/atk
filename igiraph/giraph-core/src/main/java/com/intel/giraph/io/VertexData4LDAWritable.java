@@ -23,6 +23,7 @@
 
 package com.intel.giraph.io;
 
+import org.apache.hadoop.io.Writable;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
 import org.apache.mahout.math.VectorWritable;
@@ -31,20 +32,18 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.hadoop.io.Writable;
-
 /**
- * Writable to handle serialization of the fields associated with LDA vertex data
+ * Writable to handle serialization of the fields associated with vertex data of LDA
  */
 public class VertexData4LDAWritable implements Writable {
 
-    /** the vertex type supported by this vertex */
-    public enum VertexType { DOC, WORD };
+    /** The vertex type supported by this vertex */
+    public enum VertexType { LEFT, RIGHT };
 
-    /** the type of this vertex */
+    /** The type of this vertex */
     private VertexType type = null;
 
-    /** the vector value at this vertex */
+    /** The vector value at this vertex */
     private final VectorWritable vectorWritable = new VectorWritable();
 
     /**
@@ -76,19 +75,10 @@ public class VertexData4LDAWritable implements Writable {
     /**
      * Getter
      *
-     * @return type of type VertexType
+     * @return VertexType
      */
     public VertexType getType() {
         return type;
-    }
-
-    /**
-     * Getter
-     *
-     * @return vector of type Vector
-     */
-    public Vector getVector() {
-        return vectorWritable.get();
     }
 
     /**
@@ -98,6 +88,15 @@ public class VertexData4LDAWritable implements Writable {
      */
     public void setVector(Vector vector) {
         vectorWritable.set(vector);
+    }
+
+    /**
+     * Getter
+     *
+     * @return Vector
+     */
+    public Vector getVector() {
+        return vectorWritable.get();
     }
 
     @Override

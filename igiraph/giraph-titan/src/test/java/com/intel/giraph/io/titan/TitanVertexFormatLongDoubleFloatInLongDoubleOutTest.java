@@ -23,51 +23,51 @@
 package com.intel.giraph.io.titan;
 
 import com.intel.giraph.algorithms.pr.PageRankComputation;
-import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleFloat;
+import com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatLongDoubleNull;
 import com.thinkaurelius.titan.core.TitanEdge;
 import com.thinkaurelius.titan.core.TitanKey;
 import com.thinkaurelius.titan.core.TitanLabel;
 import com.thinkaurelius.titan.core.TitanVertex;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.junit.Assert;
 import org.junit.Test;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 
 /**
- * This class is for testing TitanHBaseVertexInputFormatLongDoubleFloat
+ * This class is for testing TitanHBaseVertexInputFormatLongDoubleNull
  * and TitanVertexOutputFormatLongIDDoubleValue
  * The test contains the following steps:
  * firstly load a graph to Titan/HBase,
- * then read out the graph via  TitanHBaseVertexInputFormatLongDoubleFloat,
+ * then read out the graph via  TitanHBaseVertexInputFormatLongDoubleNull,
  * then run algorithm with input data,
  * finally write back results to Titan via TitanVertexOutputFormatLongIDDoubleValue
  */
 public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest 
-    extends TitanTestBase<LongWritable, DoubleWritable, FloatWritable> {
+    extends TitanTestBase<LongWritable, DoubleWritable, NullWritable> {
 
     @Override
     protected void configure() {
         giraphConf.setComputationClass(PageRankComputation.class);
         giraphConf.setMasterComputeClass(PageRankComputation.PageRankMasterCompute.class);
         giraphConf.setAggregatorWriterClass(PageRankComputation.PageRankAggregatorWriter.class);
-        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleFloat.class);
+        giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongDoubleNull.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDDoubleValue.class);
         giraphConf.set("pr.maxSupersteps", "30");
         giraphConf.set("pr.resetProbability", "0.15");
         giraphConf.set("pr.convergenceThreshold", "0.0001");
 
-        INPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "default");
-        INPUT_EDGE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
+        INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.set(giraphConf, "default");
+        INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.set(giraphConf, "weight");
         INPUT_EDGE_LABEL_LIST.set(giraphConf, "edge");
         OUTPUT_VERTEX_PROPERTY_KEY_LIST.set(giraphConf, "rank");
     }
@@ -133,9 +133,6 @@ public class TitanVertexFormatLongDoubleFloatInLongDoubleOutTest
 
         Iterable<String> results = InternalVertexRunner.run(giraphConf, new String[0]);
         Assert.assertNotNull(results);
-        for (String resultLine : results) {
-            LOG.info(" got: " + resultLine);
-        }
 
         startNewTransaction();        
         long[] nid;

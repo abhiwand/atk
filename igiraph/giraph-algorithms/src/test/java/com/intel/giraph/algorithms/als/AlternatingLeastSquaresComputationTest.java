@@ -50,11 +50,11 @@ public class AlternatingLeastSquaresComputationTest {
     public void testToyData() throws Exception {
         // a small five-vertex graph
         String[] graph = new String[] {
-            "[0,[],[L],[[2,1,[tr]],[3,2,[te]]]]",
-            "[1,[],[L],[[2,5,[tr]],[4,3,[va]]]]",
-            "[2,[],[R],[[0,1,[tr]],[1,5,[tr]]]]",
-            "[3,[],[R],[[0,2,[te]]]]",
-            "[4,[],[R],[[1,3,[va]]]]"
+            "[0,[],[\"L\"],[[2,1,[\"TR\"]],[3,2,[\"te\"]]]]",
+            "[1,[],[\"L\"],[[2,5,[\"tr\"]],[4,3,[\"VA\"]]]]",
+            "[2,[],[\"R\"],[[0,1,[\"tr\"]],[1,5,[\"tr\"]]]]",
+            "[3,[],[\"R\"],[[0,2,[\"te\"]]]]",
+            "[4,[],[\"R\"],[[1,3,[\"va\"]]]]"
         };
 
         double[][] expectedValues = new double[][] {

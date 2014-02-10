@@ -125,13 +125,13 @@ public class GiraphTitanConstants {
     /**
      * the list of vertex properties to filter during data loading from Titan
      */
-    public static final StrConfOption INPUT_VERTEX_PROPERTY_KEY_LIST = new StrConfOption(
-        "input.vertex.property.key.list", "", "the vertex property keys which Giraph reads from Titan");
+    public static final StrConfOption INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST = new StrConfOption(
+        "input.vertex.value.property.key.list", "", "the vertex property keys which Giraph reads from Titan");
     /**
      * the list of edge properties to filter during data loading from Titan
      */
-    public static final StrConfOption INPUT_EDGE_PROPERTY_KEY_LIST = new StrConfOption("input.edge.property.key.list",
-        "", "the edge property keys which Giraph needs");
+    public static final StrConfOption INPUT_EDGE_VALUE_PROPERTY_KEY_LIST = new StrConfOption(
+        "input.edge.value.property.key.list", "", "the edge property keys which Giraph needs");
     /**
      * the list of edge labels to filter during data loading from titan
      */
@@ -159,26 +159,32 @@ public class GiraphTitanConstants {
      */
     public static final StrConfOption OUTPUT_VERTEX_BIAS = new StrConfOption(
         "output.vertex.bias", "false", "whether to output vertex bias");
-
+    /**
+     * whether to support a vector for vertex and edge value
+     * when it is enabled, one vertex/edge value property value corresponds to
+     * a vector as its value
+     */
+    public static final StrConfOption VECTOR_VALUE = new StrConfOption(
+        "vector.value", "true", "whether to vertex property value for vertex and edge");
     /**
      * the vertex format type for KMeans which output distance map
      */
     public static final String LONG_DISTANCE_MAP_NULL = "LongDistanceMapNull";
     /**
-     * the vertex format type for Long Id, Double vertex value, Float edge value
+     * the vertex format type for Long Id, Double vertex value, Null edge value
      */
-    public static final String LONG_DOUBLE_FLOAT = "LongDoubleFloat";
+    public static final String LONG_DOUBLE_NULL = "LongDoubleNull";
     /**
      * the vertex format type for Long Id, Long vertex value, Null edge value
      */
     public static final String LONG_LONG_NULL = "LongLongNull";    /**
-     * the vertex format type for Long Id, Two Vector vertex value, Tow Vector edge value
+     * the vertex format type for Loopy Belief Propagation algorithm on property graph
      */
-    public static final String LONG_TWO_VECTOR_DOUBLE_TWO_VECTOR = "LongTwoVectorDoubleTwoVector";
+    public static final String PROPERTY_GRAPH_4_LBP = "PropertyGraph4LBP";
     /**
-     * the vertex format type for Long Id, Two Vector vertex value, Vector edge value
+     * the vertex format type for Label Propagation algorithm on property graph
      */
-    public static final String LONG_TWO_VECTOR_DOUBLE_VECTOR = "LongTwoVectorDoubleVector";
+    public static final String PROPERTY_GRAPH_4_LP = "PropertyGraph4LP";
     /**
      * the vertex format type for Collaborative Filtering algorithm on property graph
      */
@@ -305,38 +311,33 @@ public class GiraphTitanConstants {
      */
     public static final String CONFIGURED_DEFAULT = " is configured as default value. ";
     /**
-     * configured default
+     * Failed to connect hbase table
      */
     public static final String FAILED_CONNECT_HBASE_TABLE = "Failed to connect to HBase table ";
     /**
+     * wrong vertex type
+     */
+    public static final String WRONG_VERTEX_TYPE = "Vertex type string: %s isn't supported.";
+    /**
      * vertex type on the left side
      */
-    public static final String LEFT_VERTEX_TYPE = "L";
+    public static final String VERTEX_TYPE_LEFT = "l";
     /**
      * vertex type on the right side
      */
-    public static final String RIGHT_VERTEX_TYPE = "R";
+    public static final String VERTEX_TYPE_RIGHT = "r";
     /**
      * edge type for training data
      */
-    public static final String EDGE_TYPE_TRAIN = "tr";
+    public static final String TYPE_TRAIN = "tr";
     /**
      * edge type for validation data
      */
-    public static final String EDGE_TYPE_VALIDATION = "va";
+    public static final String TYPE_VALIDATE = "va";
     /**
      * edge type for test data
      */
-    public static final String EDGE_TYPE_TEST = "te";
-    /**
-     * vertex type for document
-     */
-    public static final String DOC_VERTEX = "d";
-    /**
-     * vertex type for word
-     */
-    public static final String WORD_VERTEX = "w";
-
+    public static final String TYPE_TEST = "te";
     /**
      * prevent instantiation of utility class
      */

@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
 
@@ -75,31 +75,31 @@ public class GiraphVertexLoaderLongLongNull {
     /**
      * HashSet of configured vertex properties
      */
-    private Set<String> vertexPropertyKeyValues = null;
+    private Set<String> vertexValuePropertyKeys = null;
     /**
      * HashSet of configured edge labels
      */
-    private Set<String> edgeLabelValues = null;
+    private Set<String> edgeLabelKeys = null;
 
     /**
-     * GiraphVertexLoaderLongDoubleFloat constructor
+     * GiraphVertexLoaderLongDoubleNull constructor
      *
      * @param conf : Giraph configuration
      * @param id   vertex id
      */
     public GiraphVertexLoaderLongLongNull(final ImmutableClassesGiraphConfiguration conf, final long id) {
-        /** Vertex properties to filter */
-        final String[] vertexPropertyKeyList;
+        /** Vertex value properties to filter */
+        final String[] vertexValuePropertyKeyList;
         /** Edge labels to filter */
         final String[] edgeLabelList;
 
         vertex = conf.createVertex();
         vertex.initialize(new LongWritable(id), new LongWritable(0));
         vertexId = id;
-        vertexPropertyKeyList = INPUT_VERTEX_PROPERTY_KEY_LIST.get(conf).split(",");
+        vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
         edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
-        vertexPropertyKeyValues = new HashSet<String>(Arrays.asList(vertexPropertyKeyList));
-        edgeLabelValues = new HashSet<String>(Arrays.asList(edgeLabelList));
+        vertexValuePropertyKeys = new HashSet<String>(Arrays.asList(vertexValuePropertyKeyList));
+        edgeLabelKeys = new HashSet<String>(Arrays.asList(edgeLabelList));
     }
 
     /**
@@ -239,7 +239,7 @@ public class GiraphVertexLoaderLongLongNull {
             if (this.type.isPropertyKey()) {
                 Preconditions.checkNotNull(value);
                 // filter vertex property key name
-                if (vertexPropertyKeyValues.contains(this.type.getName())) {
+                if (vertexValuePropertyKeys.contains(this.type.getName())) {
                     final Object vertexValueObject = this.value;
                     final long vertexValue = Long.parseLong(vertexValueObject.toString());
                     vertex.setValue(new LongWritable(vertexValue));
@@ -248,7 +248,7 @@ public class GiraphVertexLoaderLongLongNull {
                 Preconditions.checkArgument(this.type.isEdgeLabel());
                 // filter Edge Label
                 if (this.relationID > 0) {
-                    if (edgeLabelValues.contains(this.type.getName())) {
+                    if (edgeLabelKeys.contains(this.type.getName())) {
                         if (this.direction.equals(Direction.OUT)) {
                             Edge<LongWritable, NullWritable> edge = EdgeFactory.create(new LongWritable(
                                 this.otherVertexID), NullWritable.get());

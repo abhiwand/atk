@@ -35,8 +35,8 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.DenseVector;
-import com.intel.giraph.io.VertexDataWritable;
-import com.intel.giraph.io.VertexDataWritable.VertexType;
+import com.intel.giraph.io.VertexData4CFWritable;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -44,24 +44,24 @@ import static org.mockito.Mockito.*;
 
 public class TestJsonPropertyGraph4CFOutputFormat extends JsonPropertyGraph4CFOutputFormat {
     /** Test configuration */
-    private ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable, Writable> conf;
+    private ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CFWritable, Writable> conf;
     /**
      * Dummy class to allow ImmutableClassesGiraphConfiguration to be created.
      */
-    public static class DummyComputation extends NoOpComputation<LongWritable, VertexDataWritable, Writable,
+    public static class DummyComputation extends NoOpComputation<LongWritable, VertexData4CFWritable, Writable,
         Writable> { }
 
     @Before
     public void setUp() {
         GiraphConfiguration giraphConfiguration = new GiraphConfiguration();
         giraphConfiguration.setComputationClass(DummyComputation.class);
-        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexDataWritable,
+        conf = new ImmutableClassesGiraphConfiguration<LongWritable, VertexData4CFWritable,
             Writable>(giraphConfiguration);
     }
 
     @Test
     public void testOuputFormat() throws IOException, InterruptedException {
-        Text expected = new Text("[1,[0],[4,5],[L]]");
+        Text expected = new Text("[1,[0],[4,5],[\"L\"]]");
 
         TaskAttemptContext tac = mock(TaskAttemptContext.class);
         when(tac.getConfiguration()).thenReturn(conf);
@@ -69,14 +69,14 @@ public class TestJsonPropertyGraph4CFOutputFormat extends JsonPropertyGraph4CFOu
         Vertex vertex = mock(Vertex.class);
         when(vertex.getId()).thenReturn(new LongWritable(1L));
         
-        when(vertex.getValue()).thenReturn(new VertexDataWritable(VertexType.LEFT,
+        when(vertex.getValue()).thenReturn(new VertexData4CFWritable(VertexType.LEFT,
             new DenseVector(new double[]{4.0, 5.0})));
 
         // Create empty iterator == no edges
         when(vertex.getEdges()).thenReturn(new ArrayList<Text>());
 
         final RecordWriter<Text, Text> tw = mock(RecordWriter.class);
-        JsonLongIDVertexDataWriter writer = new JsonLongIDVertexDataWriter() {
+        JsonPropertyGraph4CFWriter writer = new JsonPropertyGraph4CFWriter() {
             @Override
             protected RecordWriter<Text, Text> createLineRecordWriter(TaskAttemptContext context)
                 throws IOException, InterruptedException {
