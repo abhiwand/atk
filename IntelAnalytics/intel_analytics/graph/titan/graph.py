@@ -28,7 +28,7 @@ __all__ = []
 
 from intel_analytics.graph.biggraph import \
     PropertyGraphBuilder, BipartiteGraphBuilder,\
-    GraphBuilderEdge, GraphBuilderFactory, GraphTypes
+    GraphBuilderEdge, GraphBuilderFactory, GraphTypes, GraphWrapper
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 from intel_analytics.graph.titan.config import titan_config
@@ -93,7 +93,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def _get_graph(self, graph_name, titan_table_name):
         rexster_uri = titan_config.get_rexster_server_uri(titan_table_name)
         bulbs_config = bulbsConfig(rexster_uri)
-        titan_graph = bulbsGraph(bulbs_config)
+        titan_graph = GraphWrapper(bulbsGraph(bulbs_config))
         titan_graph.user_graph_name = graph_name
         titan_graph.titan_table_name = titan_table_name
         titan_graph.ml = TitanGiraphMachineLearning(titan_graph)
