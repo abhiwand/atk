@@ -26,6 +26,10 @@ The BigGraph and Graph Builder common classes.
 
 import abc
 from intel_analytics.config import global_config, dynamic_import
+from xml.etree.ElementTree import tostring
+import xml.etree.cElementTree as ET
+from intel_analytics.report import ProgressReportStrategy
+from intel_analytics.subproc import call
 
 
 __all__ = ['get_graph_builder',
@@ -391,6 +395,59 @@ class GraphWrapper:
 
     def build_proxy(self, element_class, index_class=None):
         self._graph.build_proxy(self, element_class, index_class)
+
+    def _get_vertex_schema_xml(self):
+        pass
+
+    def _get_edge_schema_xml(self):
+        pass
+
+    def export_sub_graph_as_graphml(self, statements, file):
+        xml = self._get_query_xml(statements)
+        vertex_schema = self._get_vertex_schema_xml()
+        edge_schema = self._get_edge_schema_xml()
+        temp_output = 'graph_query'
+
+        args = []
+        args += ['hadoop',
+                 'jar',
+                 global_config['intel_analytics_jar'],
+                 global_config['graphml_exporter_class'],
+                 '-v', vertex_schema,
+                 '-e', edge_schema,
+                 '-f', file,
+                 '-o', temp_output,
+                 '-q', xml,
+                 '-t', self._graph.titan_table_name
+        ]
+
+        return_code = call(args, report_strategy=ProgressReportStrategy())
+        if return_code:
+            raise Exception('Could not export graph')
+
+    @staticmethod
+    def _get_query_xml(statements):
+        root = ET.Element("query")
+
+        for statement in statements:
+            statementNode = ET.SubElement(root, "statement")
+            statementNode.text = statement + ".transform('{[it,it.map()]}')"
+
+        return tostring(root)
+
+    @staticmethod
+    def _get_schema_xml(schema_dictionary):
+        root = ET.Element("schema")
+        for feature in schema_dictionary.keys():
+            feature_type = schema_dictionary[feature]
+            featureNode = ET.SubElement(root, "feature")
+            featureNode.set("name", feature)
+            featureNode.set("type", feature_type)
+
+        return tostring(root)
+
+
+
 
     def __raise_(self, ex):
         raise ex
