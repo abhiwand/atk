@@ -61,7 +61,7 @@ DEFINE LOAD_TITAN(input_hbase_table_name, vertex_rule, edge_rule, config_file, o
 	-- we do a dummy STORE/LOAD below as the MAPREDUCE operator 
 	-- requires a STORE and then a LOAD operation
 	
-	stored_graph = MAPREDUCE 'target/graphbuilder-2.0-alpha-with-deps.jar' 
+	stored_graph = MAPREDUCE 'target/graphbuilder-2.0-alpha.jar' 
 	  		STORE dummy INTO '/tmp/tmp_store_1'
 	  		LOAD '/tmp/empty' USING TextLoader() AS (line:chararray) 
 	  		`com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB -conf $config_file --tablename $input_hbase_table_name --vertices $vertex_rule $edge_rule $other_args`;

@@ -23,7 +23,7 @@
 * and use of XMLLoader to load XML data
 */
 
-REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
+REGISTER target/graphbuilder-2.0-alpha.jar;
 IMPORT 'pig/graphbuilder.pig';
 
 json_data = LOAD 'examples/data/tshirts.json' USING TextLoader() AS (json: chararray);

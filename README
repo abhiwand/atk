@@ -100,7 +100,7 @@ Configuration & Tuning
 To use the Intel Graph Builder library,
 please set the $HADOOP_CLASSPATH as follows:
 
-`export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GRAPHBUILDER_HOME/target/graphbuilder-2.0-alpha-with-deps.jar`
+`export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GRAPHBUILDER_HOME/target/graphbuilder-2.0-alpha.jar`
 
 ##### Tuning
 
