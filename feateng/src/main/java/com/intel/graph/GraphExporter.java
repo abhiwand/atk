@@ -17,9 +17,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +37,7 @@ public class GraphExporter {
         options.addOption("f", true, "File Name");
         options.addOption("o", true, "Faunus query output directory");
         options.addOption("q", true, "query definition xml");
+        options.addOption("t", true, "graph table name");
         CommandLine cmd = parser.parse(options, args);
 
         String fileName = cmd.getOptionValue("f");
@@ -66,13 +65,23 @@ public class GraphExporter {
         }
 
         List<String> statements = getStatementListFromXMLString(queryXML);
+        String tableName = cmd.getOptionValue("t");
         for (int i = 0; i < statements.size(); i++) {
             String statement = statements.get(i);
-            Runtime r = Runtime.getRuntime();
-
             String subStepOutputDir = new File(queryOutputDir.toString(), "step-" + i).toString();
-            String[] commandArray = new String[]{faunusGremlinFile, "-i", faunusPropertiesFile, statement, "-Dfaunus.output.location=" + subStepOutputDir};
-            Process p = r.exec(commandArray);
+            String[] commandArray = new String[]{faunusGremlinFile, "-i", faunusPropertiesFile, statement, "-Dfaunus.output.location=" + subStepOutputDir + " faunus.graph.input.titan.storage.tablename=" + tableName};
+            ProcessBuilder builder = new ProcessBuilder(commandArray);
+
+            builder.redirectErrorStream(true);
+            Process p = builder.start();
+            BufferedReader stdInput = new BufferedReader(new
+                    InputStreamReader(p.getInputStream()));
+
+            String line = "";
+            while ((line = stdInput.readLine ()) != null) {
+                System.out.println (line);
+            }
+
             p.waitFor();
 
             FileStatus[] fileStatuses = fs.listStatus(new Path(subStepOutputDir));
