@@ -74,11 +74,11 @@ public class TestGraphExporter {
     @Test
     public void testGraphElementFactory_getVertex() {
         IGraphElementFactory factory = new TitanFaunusGraphElementFactory();
-        IGraphElement element = factory.makeElement("800316\t{_id=800316, _gb_ID=-164, etl-cf:vertex_type=r}");
+        IGraphElement element = factory.makeElement("[v[800316], {_gb_ID=-164, etl-cf:vertex_type=R}]");
         assertEquals(element.getElementType(), GraphElementType.Vertex);
         assertEquals(800316, element.getId());
         assertEquals("-164", element.getAttributes().get("_gb_ID"));
-        assertEquals("r", element.getAttributes().get("etl-cf:vertex_type"));
+        assertEquals("R", element.getAttributes().get("etl-cf:vertex_type"));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class TestGraphExporter {
 
     @Test
     public void testGetKeyTypesMapping() throws ParserConfigurationException, SAXException, IOException {
-        String schemaXML = "<xml><feature name=\"etl-cf:edge_type\" type=\"chararray\"/><feature name=\"etl-cf:weight\" type=\"long\"/></xml>";
+        String schemaXML = "<schema><feature name=\"etl-cf:edge_type\" type=\"chararray\" /><feature name=\"etl-cf:weight\" type=\"long\" /></schema>";
         Map<String, String> mapping = GraphExportReducer.getKeyTypesMapping(schemaXML);
         assertTrue(mapping.containsKey("etl-cf:edge_type"));
         assertTrue(mapping.containsKey("etl-cf:weight"));
