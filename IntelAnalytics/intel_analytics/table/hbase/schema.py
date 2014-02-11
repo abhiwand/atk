@@ -91,3 +91,10 @@ class ETLSchema:
 		if (name == feature_name):
 			return self.feature_types[i]
 	raise Exception('No such feature exists %s' % (feature_name))
+
+    def get_schema_as_str(self):
+	"""
+	Returns the schema as a string in the format a:int,b:chararray,c:bytearray
+	"""
+        return ','.join(s[0] + ':' + s[1] for s in zip(self.feature_names,self.feature_types))
+

@@ -437,6 +437,61 @@ class HBaseTable(object):
 
         return HBaseTable(new_table_name, self.file_name)
 
+    def drop(self, filter, column, isregex, inplace, new_table_name):
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+	# Modify filter to append column family name
+	#feature_dict = {}
+	#for i in etl_schema.feature_names:
+	#    feature_dict[i] = config['hbase_column_family'] + i
+	#for i,j in feature_dict.iteritems():
+	#    filter = filter.replace(i,j)
+
+        script_path = os.path.join(etl_scripts_path, 'pig_filter.py')
+
+        args = _get_pig_args()
+
+        # need to delete/create output table so that we can write the remaining rows after filtering 
+	hbase_table_name = _create_table_name(new_table_name, True)
+        hbase_table = HBaseTable(hbase_table_name, self.file_name)
+
+	hbase_table_name = self.table_name
+	if (inplace == False):
+             # need to delete/create output table so that we can write the remaining rows after filtering 
+             hbase_table_name = _create_table_name(new_table_name, True)
+             hbase_table = HBaseTable(hbase_table_name, self.file_name)
+             with ETLHBaseClient() as hbase_client:
+                 hbase_client.drop_create_table(hbase_table_name,
+                                           [config['hbase_column_family']])
+
+        args += [script_path, 
+		'-i', self.table_name,
+                '-o', hbase_table_name, 
+		'-n', feature_names_as_str,
+                '-t', feature_types_as_str,
+		'-p', 'True' if inplace else 'False',
+		'-c', column,
+		'-r', 'True' if isregex else 'False',
+		'-f', filter]
+
+        logger.debug(args)
+        
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not drop rows using the filter')
+
+	new_etl_schema = ETLSchema()
+	new_etl_schema.populate_schema(etl_schema.get_schema_as_str())
+        new_etl_schema.save_schema(hbase_table_name)
+
+	return hbase_table
+
 
     def drop_columns(self, columns):
         etl_schema = ETLSchema()

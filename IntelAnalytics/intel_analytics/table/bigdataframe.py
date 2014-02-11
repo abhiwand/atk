@@ -320,19 +320,46 @@ class BigDataFrame(object):
     # Cleaning
     #----------------------------------------------------------------------
 
-    def drop(self, column_name, func):
+    def drop(self, filter, column='', isregex=False, inplace=True, frame_name=''):
         """
         Drops rows which meet given criteria
 
         Parameters
         ----------
-        column_name : String
-            name of column for the function
-        func : function
-            filter function evaluated at each cell in the given column; if
-            result is true, row is dropped
+        filter: String
+            filter function evaluated at each row
+            if result is true, row is dropped
+	column: String
+	    name of the column on which filter needs to be applied (required in case of regex filter)
+	isregex: Boolean
+	    if the filter is a regex expression
+        inplace: Boolean
+	    True:  drop the rows and update the frame
+	    False: drop the rows and create a new frame with the remaining rows
+	frame_name: String
+	    name of the new frame to be created if inplace is False
+	
+	Returns
+	-------
+        frame : C{BigDataFrame}
         """
-        raise BigDataFrameException("Not implemented")
+	
+        try:
+	    if (inplace == False and frame_name.strip() == ''):
+		raise Exception('Invalid frame_name: Please input a valid frame_name')
+	    if (isregex == True and column == ''):
+		raise Exception('Invalid column: Please input a valid column for regex to be applied')
+
+            result_table = self._table.drop(filter, column, isregex, inplace, frame_name)
+	    if (inplace):
+		frame = self
+	    else:
+	        frame = BigDataFrame(frame_name, result_table)
+	    return frame
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("Unable to drop rows " + str(e))
+
 
     def dropna(self, how='any', column_name=None):
     #         def dropna(self, how='any', thresh=None, subset=None):
