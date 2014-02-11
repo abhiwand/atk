@@ -570,11 +570,13 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                     continue;
                 }
 
-                currentSrcVertexName.set(srcVertexName);
-                currentTgtVertexName.set("null");
-                isDangling = true;
-                processEdge(input, inputSchema, currentSrcVertexName, currentTgtVertexName, srcLabel, tgtLabel,
-                        eLabel,  edgeAttributes,  edgeRule, fieldNameToDataType, isDangling, outputBag);
+                if (this.retainDanglingEdges) {
+                    currentSrcVertexName.set(srcVertexName);
+                    currentTgtVertexName.set("null");
+                    isDangling = true;
+                    processEdge(input, inputSchema, currentSrcVertexName, currentTgtVertexName, srcLabel, tgtLabel,
+                            eLabel,  edgeAttributes,  edgeRule, fieldNameToDataType, isDangling, outputBag);
+                }
                 continue;
             }
             for (String tgtVertexName: expandString(tgtVertexCellString)) {
@@ -640,9 +642,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         Edge<StringType> edge = new Edge<StringType>(currentSrcVertexName,srcLabel, currentTgtVertexName, tgtLabel,
                 new StringType(eLabel));
 
-        addEdgeToPropElementBag(outputBag, edge);
-        incrementCounter(Counters.NUM_EDGES, 1L);
-
         for (int countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
             propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
             property = edgeAttributes[countEdgeAttr];
@@ -654,6 +653,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         }
 
         addEdgeToPropElementBag(outputBag, edge);
+        incrementCounter(Counters.NUM_EDGES, 1L);
 
         if (isDangling && this.retainDanglingEdges) {
             incrementCounter(Counters.NUM_DANGLING_EDGES, 1L);
@@ -662,13 +662,13 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         // need to make sure both ends of the edge are proper
         // vertices!
 
-        if (this.retainDanglingEdges) {
-            if (!(currentSrcVertexName.isEmpty() || currentSrcVertexName.equals("null"))) {
+        if (!this.retainDanglingEdges) {
+            if (!(currentSrcVertexName.isEmpty() || currentSrcVertexName.toString().equals("null"))) {
                 Vertex<StringType> srcVertex = new Vertex<StringType>(currentSrcVertexName, srcLabel);
                 addVertexToPropElementBag(outputBag, srcVertex);
             }
 
-            if (!(currentTgtVertexName.isEmpty() || currentTgtVertexName.equals("null"))) {
+            if (!(currentTgtVertexName.isEmpty() || currentTgtVertexName.toString().equals("null"))) {
                 Vertex<StringType> tgtVertex = new Vertex<StringType>(currentTgtVertexName, tgtLabel);
                 addVertexToPropElementBag(outputBag, tgtVertex);
             }
