@@ -51,7 +51,6 @@ public class TestGBUdfExceptionHandler {
 
 	@Test(expected = RuntimeException.class)
 	public void testFailureCase() throws IOException {
-		System.out.println("Testing failure cases");
 		GBUdfExceptionHandler.handleError(toRdfUdf, new IOException(
 				new GBUdfException("test_exception")));
 	}

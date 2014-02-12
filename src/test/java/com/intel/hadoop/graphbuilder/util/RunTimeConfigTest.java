@@ -142,7 +142,6 @@ public class RunTimeConfigTest {
 				spiedRuntime.getProperty("NAMESPACE_VALUEKEYTWO").equals("two"));
 		assertTrue("verify value key three is false name space is incorrect",
 				spiedRuntime.getProperty("NAMESPACE_VALUEKEYTHREE") == null);
-		System.out.print(true);
 	}
 
 	@Test

@@ -40,7 +40,6 @@ public class TestGetPropGraphElementID {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting GetPropGraphElementID tests. ***");
 		graphElmentIDUDF = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec("com.intel.pig.udf.eval.GetPropGraphElementID");
 	}
@@ -86,7 +85,6 @@ public class TestGetPropGraphElementID {
 
 	@After
 	public void done() {
-		System.out.println("*** Done with the GetPropGraphElementID tests ***");
 	}
 
 }

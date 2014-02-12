@@ -52,13 +52,11 @@ public class TestCreateRowKey {
 		assertEquals("Tuple fields must match", result.get(2), t.get(1));
 		assertEquals("Tuple fields must match", result.get(3), t.get(2));
 		assertEquals("Tuple fields must match", result.get(4), t.get(3));
-		System.out.println("row key " + result.get(0));
 
 		Tuple tupleWithNullElement = TupleFactory.getInstance().newTuple(1);
 		tupleWithNullElement.set(0, null);
 		result = (Tuple) rowKeyAssignerUDF.exec(tupleWithNullElement);
 		assertEquals("result must be of size 2", result.size(), 2);
 		assertEquals("1st field must be null", result.get(1), null);
-		System.out.println("row key " + result.get(0));
 	}
 }
