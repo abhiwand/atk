@@ -136,8 +136,8 @@ public class TestCreatePropGraphElements
 
         String id1_s  = "vertexId1";
         String id2_s  = "vertexId2";
-        String id3_s  = "vertexId3";
-        String id4_s  = "vertexId4";
+        String id3_s  = "";
+        String id4_s  = "";
         String id5_s  = "vertexId5";
         String id6_s  = "vertexId6";
         String vp0_s  = "vertexProperty0";
@@ -188,7 +188,7 @@ public class TestCreatePropGraphElements
 
         DataBag result = (DataBag) createPropGraphElementsUDF_1.exec(t);
 
-        assert(result.size() == 13);
+        assert(result.size() == 30);
     }
 
     @After

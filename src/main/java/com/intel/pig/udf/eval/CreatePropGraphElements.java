@@ -334,6 +334,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
         }
+
     }
 
     private void addEdgeToPropElementBag(DataBag outputBag, Edge edge) throws IOException{
@@ -351,7 +352,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
         }
-
     }
 
     private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte) throws IllegalArgumentException{
