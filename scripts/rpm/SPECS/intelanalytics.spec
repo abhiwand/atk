@@ -1,6 +1,6 @@
-Summary: Intel Graph Analytics System
+Summary: Intel Graph Analytics System. Build number: %{?BUILD_NUMBER}. Time %{?$TIMESTAMP}.
 
-Version: 0.8.0
+Version: 0.8.%{?BUILD_NUMBER}
 
 License: Apache
 
@@ -22,7 +22,7 @@ Buildroot: /tmp/intelanaylticsrpm
 
 %description
 
-The Intel Graph Analytics System. Build number: %{?BUILD_NUMBER}.
+The Intel Graph Analytics System. Build number: Build number: %{?BUILD_NUMBER}. Time %{?$TIMESTAMP}.
 
 %define __os_install_post    \
     /usr/lib/rpm/redhat/brp-compress \
