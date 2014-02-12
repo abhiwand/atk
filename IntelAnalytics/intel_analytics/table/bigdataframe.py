@@ -320,7 +320,7 @@ class BigDataFrame(object):
     # Cleaning
     #----------------------------------------------------------------------
 
-    def drop(self, filter, column='', isregex=False, inplace=True, frame_name=''):
+    def drop(self, filter, column='', frame_name=''):
         """
         Drops rows which meet given criteria
 
@@ -330,14 +330,9 @@ class BigDataFrame(object):
             filter function evaluated at each row
             if result is true, row is dropped
 	column: String
-	    name of the column on which filter needs to be applied (required in case of regex filter)
-	isregex: Boolean
-	    if the filter is a regex expression
-        inplace: Boolean
-	    True:  drop the rows and update the frame
-	    False: drop the rows and create a new frame with the remaining rows
+	    name of the column on which filter needs to be applied if the filter is a regular expression
 	frame_name: String
-	    name of the new frame to be created if inplace is False
+	    create a new frame for the remaining records; original frame is not updated
 	
 	Returns
 	-------
@@ -345,10 +340,12 @@ class BigDataFrame(object):
         """
 	
         try:
-	    if (inplace == False and frame_name.strip() == ''):
-		raise Exception('Invalid frame_name: Please input a valid frame_name')
-	    if (isregex == True and column == ''):
-		raise Exception('Invalid column: Please input a valid column for regex to be applied')
+	    inplace = True
+	    isregex = False
+	    if (frame_name.strip() != ''):
+		inplace = False
+	    if (column.strip() != ''):
+		isregex = True
 
             result_table = self._table.drop(filter, column, isregex, inplace, frame_name)
 	    if (inplace):

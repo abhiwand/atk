@@ -707,5 +707,54 @@ class HbaseTableTest(unittest.TestCase):
         except:
             print "Caught exception on invalid column inputs for ARITHMETIC"
 
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def aggregate(self, groupby, aggregations, etl_schema_class, call_method):
+
+        table_name = "original_table"
+        file_name = "original_file"
+	aggregated_table_name = "aggregated_table"
+        feat_name = ["long1", "long2", "double1", "double2", "str1", "str2", "str3"]
+        feat_type = ["long",  "long", "double",  "double",  "chararray", "chararray", "chararray"]
+        result_holder = {}
+
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+        etl_schema_class.return_value.feature_names = feat_name
+        etl_schema_class.return_value.feature_types = feat_type
+        etl_schema_class.return_value.save_schema(table_name)
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        featname = ','.join(feat_name)
+        feattype = ','.join(feat_type)
+        featfunc = EvalFunctions.to_string(featop)
+
+        table = HBaseTable(table_name, file_name)
+	
+        table.aggregate(aggregated_table_name, groupby, aggregations)
+
+        self.assertEqual('pig', str(result_holder["call_args"][0]))
+        self.assertEqual(",".join(groupby), result_holder["call_args"][result_holder["call_args"].index('-g') + 1])
+        self.assertEqual(featname, result_holder["call_args"][result_holder["call_args"].index('-u') + 1])
+        self.assertEqual(feattype, result_holder["call_args"][result_holder["call_args"].index('-r') + 1])
+        self.assertEqual(" ".join(aggregation_list), result_holder["call_args"][result_holder["call_args"].index('-a') + 1])
+        self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
+        self.assertEqual(aggregated_table_name, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
+
+        script_path = os.path.join(config['pig_py_scripts'], 'pig_aggregation.py')
+        self.assertTrue(script_path in result_holder["call_args"])
+
+
+    def test_aggregate_max(self):
+	try:
+	    self.aggregate_with_max("long1", [(EvalFunctions.Aggregation.MAX, "long2", "maxlong2")])
+	except:
+	    print "Caught exception on aggregation"
+
+
 if __name__ == '__main__':
     unittest.main()
