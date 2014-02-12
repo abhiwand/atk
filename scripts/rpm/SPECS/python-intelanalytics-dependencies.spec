@@ -12,7 +12,7 @@ Requires: java >= 1.7, blas,  bzip2-devel,  dos2unix,  freetype-devel,  gcc,  gt
 
 Prefix: /usr
 
-Release: %{?TIMESTAMP}
+Release: %{?BUILD_NUMBER}
 
 Source: python-intelanalytics-dependencies-%{version}.tar.gz
 

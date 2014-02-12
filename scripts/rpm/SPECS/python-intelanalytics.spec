@@ -12,7 +12,7 @@ Requires: python-intelanalytics-dependencies
 
 Prefix: /usr
 
-Release: %{?TIMESTAMP}
+Release: %{?BUILD_NUMBER}
 
 Source: python-intelanalytics-%{version}.tar.gz
 
