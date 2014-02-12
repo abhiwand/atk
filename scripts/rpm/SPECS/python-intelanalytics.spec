@@ -22,7 +22,7 @@ Buildroot: /tmp/intelanalyticsrpm
 
 %description
 
-The Intel Graph System Python libraries
+The Intel Graph System Python libraries Build number: %{?TC_BUILD_NUMBER}.
 
 %prep
 

@@ -22,7 +22,7 @@ Buildroot: /tmp/intelanaylticsrpm
 
 %description
 
-The Intel Graph Analytics System.
+The Intel Graph Analytics System. Build number: %{?TC_BUILD_NUMBER}.
 
 %define __os_install_post    \
     /usr/lib/rpm/redhat/brp-compress \
