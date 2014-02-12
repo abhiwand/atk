@@ -12,7 +12,7 @@ Requires: java >= 1.7
 
 Prefix: /usr
 
-Release: %{?BUILD_NUMBER}
+Release: %{?TIMESTAMP}
 
 Source: intelanalytics-%{version}.tar.gz
 
@@ -22,7 +22,7 @@ Buildroot: /tmp/intelanaylticsrpm
 
 %description
 
-The Intel Graph Analytics System. Build number: %{?TC_BUILD_NUMBER}.
+The Intel Graph Analytics System. Build number: %{?BUILD_NUMBER}.
 
 %define __os_install_post    \
     /usr/lib/rpm/redhat/brp-compress \

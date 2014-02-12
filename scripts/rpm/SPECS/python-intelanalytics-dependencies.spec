@@ -12,7 +12,7 @@ Requires: java >= 1.7, blas,  bzip2-devel,  dos2unix,  freetype-devel,  gcc,  gt
 
 Prefix: /usr
 
-Release: %{?BUILD_NUMBER}
+Release: %{?TIMESTAMP}
 
 Source: python-intelanalytics-dependencies-%{version}.tar.gz
 
@@ -22,7 +22,7 @@ Buildroot: /tmp/intelanalyticsrpm
 
 %description
 
-Install IPython and Intel Graph System Python dependencies. Build number: %{?TC_BUILD_NUMBER}.
+Install IPython and Intel Graph System Python dependencies. Build number: %{?BUILD_NUMBER}.
 
 %prep
 

@@ -12,7 +12,7 @@ Requires: python-intelanalytics-dependencies
 
 Prefix: /usr
 
-Release: %{?BUILD_NUMBER}
+Release: %{?TIMESTAMP}
 
 Source: python-intelanalytics-%{version}.tar.gz
 
@@ -22,7 +22,7 @@ Buildroot: /tmp/intelanalyticsrpm
 
 %description
 
-The Intel Graph System Python libraries Build number: %{?TC_BUILD_NUMBER}.
+The Intel Graph System Python libraries Build number: %{?BUILD_NUMBER}.
 
 %prep
 
