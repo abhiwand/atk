@@ -77,13 +77,7 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedGraphE
 
         RecordTypeHBaseRow record = getRecordTypeHBaseRow(row, columns);
 
-        baseMapper.getTokenizer().parse(record, context);
-
-        //The base mapper class handles writing edges and vertices as well as exception handling.
-
-        baseMapper.writeEdges(context);
-
-        baseMapper.writeVertices(context);
+        baseMapper.getTokenizer().parse(record, context, baseMapper);
     }
 
     public void setBaseMapper(BaseMapper baseMapper) {

@@ -170,7 +170,7 @@ public class BaseMapper {
      * @param {@code key}      The vertex and edge key  to write.
      * @param {@code val}      The property graph element to write, either vertex or edge.
      */
-    protected void contextWrite(Mapper.Context context, IntWritable key, SerializedGraphElement val) {
+    public void contextWrite(Mapper.Context context, IntWritable key, SerializedGraphElement val) {
         try {
             context.write(key, val);
         } catch (IOException e) {
@@ -182,53 +182,12 @@ public class BaseMapper {
         }
     }
 
-    /**
-     * Iterates through the edge list, creates the Edge graph element, gets its key and writes it. 
-     * {@code NullPointerException}s are captured whenever edge or vertex has any null values.
-     *
-     * @param {@code context}  The mapper's current context.
-     */
-    public void writeEdges(Mapper.Context context) {
-        try {
-             Iterator<Edge> edgeIterator = tokenizer.getEdges();
-
-            while (edgeIterator.hasNext()) {
-
-                Edge edge = edgeIterator.next();
-
-                mapVal.init(edge);
-                mapKey.set(keyFunction.getEdgeKey(edge));
-
-                contextWrite(context, mapKey, mapVal);
-            }
-        } catch (NullPointerException e) {
-            context.getCounter(getEdgeWriteErrorCounter()).increment(1);
-            log.error(e.getMessage(), e);
-        }
+    public IntWritable getMapKey() {
+        return this.mapKey;
     }
 
-    /**
-     * Iterates through the vertex list, creates a vertex graph element, gets its key, and writes it. 
-     * {@code NullPointerException}s are captured whenever the edge or vertex has any null values.
-     *
-     * @param {@code context} The mapper's current context.
-     */
-    public void writeVertices(Mapper.Context context) {
-        try {
-            Iterator<Vertex> vertexIterator = tokenizer.getVertices();
-            while (vertexIterator.hasNext()) {
-
-                Vertex vertex = vertexIterator.next();
-
-                mapVal.init(vertex);
-                mapKey.set(keyFunction.getVertexKey(vertex));
-
-                contextWrite(context, mapKey, mapVal);
-            }
-        } catch (NullPointerException e) {
-            context.getCounter(getVertexWriteErrorCounter()).increment(1);
-            log.error(e.getMessage(), e);
-        }
+    public SerializedGraphElement getMapVal() {
+        return this.mapVal;
     }
 
     public void setMapKey(IntWritable mapKey) {
@@ -265,5 +224,9 @@ public class BaseMapper {
      */
     public static Counters getVertexWriteErrorCounter() {
         return Counters.VERTEX_WRITE_ERROR;
+    }
+
+    public KeyFunction getKeyFunction() {
+        return keyFunction;
     }
 }
