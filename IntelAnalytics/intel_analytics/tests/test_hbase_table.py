@@ -731,7 +731,6 @@ class HbaseTableTest(unittest.TestCase):
 
         featname = ','.join(feat_name)
         feattype = ','.join(feat_type)
-        featfunc = EvalFunctions.to_string(featop)
 
         table = HBaseTable(table_name, file_name)
 	
@@ -741,7 +740,6 @@ class HbaseTableTest(unittest.TestCase):
         self.assertEqual(",".join(groupby), result_holder["call_args"][result_holder["call_args"].index('-g') + 1])
         self.assertEqual(featname, result_holder["call_args"][result_holder["call_args"].index('-u') + 1])
         self.assertEqual(feattype, result_holder["call_args"][result_holder["call_args"].index('-r') + 1])
-        self.assertEqual(" ".join(aggregation_list), result_holder["call_args"][result_holder["call_args"].index('-a') + 1])
         self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
         self.assertEqual(aggregated_table_name, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
 
@@ -751,10 +749,21 @@ class HbaseTableTest(unittest.TestCase):
 
     def test_aggregate_max(self):
 	try:
-	    self.aggregate_with_max("long1", [(EvalFunctions.Aggregation.MAX, "long2", "maxlong2")])
+	    self.aggregate("long1", [(EvalFunctions.Aggregation.MAX, "long2", "maxlong2")])
 	except:
 	    print "Caught exception on aggregation"
 
+    def test_aggregate_on_multicolumns(self):
+	try:
+	    self.aggregate("str1,str2", [(EvalFunctions.Aggregation.AVG, "long2", "maxlong2")])
+	except:
+	    print "Caught exception on aggregation multiple columns"
+
+    def test_aggregate_multiple(self):
+	try:
+	    self.aggregate("str1,str2", [(EvalFunctions.Aggregation.AVG, "long2", "maxlong2"), [EvalFunctions.Aggregation.SUM, "double1", "totaldouble1"]])
+	except:
+	    print "Caught exception on aggregation multiple columns"
 
 if __name__ == '__main__':
     unittest.main()
