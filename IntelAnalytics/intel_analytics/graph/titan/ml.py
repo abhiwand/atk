@@ -541,9 +541,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
-        input_edge_property_list : List (comma-separated list of strings)
-            The edge properties which contain the input edge values if you
-            use more than one edge property.
         input_edge_label : String
             The edge property which contains the edge label.
         output_vertex_property_list : List (comma-separated list of strings)
