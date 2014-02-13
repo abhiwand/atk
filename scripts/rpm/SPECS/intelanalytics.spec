@@ -1,4 +1,4 @@
-Summary: Intel Graph Analytics System
+Summary: Intel Graph Analytics System. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
 Version: 0.8.0
 
@@ -21,8 +21,7 @@ URL: <TODO>
 Buildroot: /tmp/intelanaylticsrpm
 
 %description
-
-The Intel Graph Analytics System. Build number: %{?BUILD_NUMBER}.
+The Intel Graph Analytics System. Build number: Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
 %define __os_install_post    \
     /usr/lib/rpm/redhat/brp-compress \
@@ -32,6 +31,8 @@ The Intel Graph Analytics System. Build number: %{?BUILD_NUMBER}.
     /usr/lib/rpm/brp-python-bytecompile \
     /usr/lib/rpm/redhat/brp-python-hardlink \
 %{nil}
+
+%define TIMESTAMP %(echo $TIMESTAMP)
 
 %prep
 

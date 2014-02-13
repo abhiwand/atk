@@ -1,4 +1,4 @@
-Summary: Intel Graph Analytics System development libraries
+Summary: Intel Graph Analytics System development libraries. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
 Version: 0.8.0
 
@@ -21,8 +21,9 @@ URL: <TODO>
 Buildroot: /tmp/intelanalyticsrpm
 
 %description
+Install IPython and Intel Graph System Python dependencies. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
-Install IPython and Intel Graph System Python dependencies. Build number: %{?BUILD_NUMBER}.
+%define TIMESTAMP %(echo $TIMESTAMP)
 
 %prep
 
