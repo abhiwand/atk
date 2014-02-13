@@ -267,7 +267,7 @@ class BigDataFrame(object):
 	    return aggregate_frame
         except Exception, e:
             print traceback.format_exc()
-            raise BigDataFrameException("transform exception " + str(e))
+            raise BigDataFrameException("Error during aggregation " + str(e))
 
     def aggregate_on_range(self, aggregate_frame_name, group_by_column, range, aggregation_list, overwrite=False):
 
@@ -293,7 +293,7 @@ class BigDataFrame(object):
 	    return aggregate_frame
         except Exception, e:
             print traceback.format_exc()
-            raise BigDataFrameException("transform exception " + str(e))
+            raise BigDataFrameException("Error during aggregation on range " + str(e))
 
     def inspect(self, n=10):
         """

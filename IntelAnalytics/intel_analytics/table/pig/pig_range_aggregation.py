@@ -71,7 +71,7 @@ def generate_aggregation_statement(cmd_line_args, table_name):
     return aggregation_statement
     
 def main(argv):
-    parser = ArgumentParser(description='applies feature transformations to features in a big dataset')
+    parser = ArgumentParser(description='applies groupby and aggregation on ranges to features in a big dataset')
     parser.add_argument('-i', '--input', dest='input', help='the input HBase table', required=True)
     parser.add_argument('-o', '--output', dest='output', help='the output HBase table', required=True)
     parser.add_argument('-a', '--aggregation', dest='aggregation_function_list', help='Aggregation function arguments as a list', required=True)
