@@ -21,7 +21,7 @@
 * This script should be run from the top level directory
 * Demonstrates how to bulk load the Titan graph database
 */
-REGISTER target/graphbuilder-2.0-alpha-with-deps.jar
+REGISTER target/graphbuilder-2.0-alpha.jar
 IMPORT 'pig/graphbuilder.pig';
 
 --prepare temp storage that is used by the LOAD_TITAN macro
