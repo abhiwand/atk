@@ -32,7 +32,8 @@ public enum StatusCode {
     INDESCRIBABLE_FAILURE(9,      "GRAPHBUILDER: failure"),
     HBASE_ERROR(10,               "GRAPHBUILDER: hbase error"),
     TITAN_ERROR(11,               "GRAPHBUILDER: Titan error"),
-    CANNOT_FIND_CONFIG_FILE(12,   "GRAPHBUILDER: cannot locate config file");
+    CANNOT_FIND_CONFIG_FILE(12,   "GRAPHBUILDER: cannot locate config file"),
+    CANNOT_FIND_DEPENDENCIES(13,   "GRAPHBUILDER: cannot find dependencies");
 
     private final int    status;
     private final String message;

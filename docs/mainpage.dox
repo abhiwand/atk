@@ -82,25 +82,26 @@
 	 mvn -P idh_3 initialize
 	 mvn -P idh_3 clean package 
 	 \endcode 
- * and graphbuilder-2.0-alpha-with-deps.jar will be created under the target directory. In order to skip unit tests during the build you can use
+ * and graphbuilder-2.0-alpha.jar will be created under the target directory. In order to skip unit tests during the build you can use
  \code
  mvn clean package -DskipTests 
  \endcode
 * <H2>Running the Examples</H2>
  * Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, you can run the provided example scripts with
     \code
-     export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar
-     cd /usr/local/gb/
+     export GB_HOME=/usr/local/gb/
+     export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GB_HOME/target/lib/*
+     cd $GB_HOME
      pig -x local -f examples/rdf_example.pig     
     \endcode
     
  * <H2>Using GB 2.0 (alpha)</H2>
- *  To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT \link graphbuilder.pig \endlink script. The 
+ *  First of all GB_HOME environment variable must be set to point to GB 2.0 (alpha) installation directory. To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha.jar and IMPORT \link graphbuilder.pig \endlink script. The 
  * \link graphbuilder.pig \endlink script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user
  * has to define the other UDFs with the constructor arguments they want; please see examples under the examples/ directory for the use of GB functionality in your Pig scripts.
  *  Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script:
     \code
-     REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar;
+     REGISTER /usr/local/gb/target/graphbuilder-2.0-alpha.jar;
      IMPORT '/usr/local/gb/pig/graphbuilder.pig';
     \endcode
  * 

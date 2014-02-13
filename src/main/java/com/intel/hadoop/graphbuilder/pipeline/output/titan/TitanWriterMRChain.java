@@ -19,25 +19,19 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
-import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.util.*;
-import com.intel.hadoop.graphbuilder.util.Timer;
-import com.thinkaurelius.titan.core.KeyMaker;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
@@ -50,8 +44,27 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
-import java.util.*;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
+import com.intel.hadoop.graphbuilder.util.BaseCLI;
+import com.intel.hadoop.graphbuilder.util.Functional;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
+import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.PassThruMapperIntegerKey;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
+import com.intel.hadoop.graphbuilder.util.Timer;
+import com.thinkaurelius.titan.core.KeyMaker;
+import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.core.TitanKey;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
 /**
  * This class handles loading the constructed property graph into Titan.
@@ -514,9 +527,29 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      */
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
-
-        // Warns the user if the Titan table already exists in Hbase.
-
+		String pathExpression = System.getenv("GB_HOME") + File.separator
+				+ "target" + File.separator + "lib/*";
+        FileSystem filesystem = FileSystem.getLocal(new Configuration());
+        FileStatus[] files = filesystem.globStatus(new Path(pathExpression));
+        boolean filesExist = !(files == null || files.length == 0);
+		if (filesExist) {
+			for (FileStatus file : files) {
+				Path path = file.getPath();
+				LOG.info("Adding file to distributed cache " + path);
+				DistributedCache.addFileToClassPath(path, conf);
+			}
+		} else {
+			GraphBuilderExit
+					.graphbuilderFatalExitNoException(
+							StatusCode.CANNOT_FIND_DEPENDENCIES,
+							"GRAPHBUILDER_FAILURE: Couldn't find dependencies under "
+									+ pathExpression
+									+ ". Please make sure it contains Graph Builder dependencies",
+							LOG);
+		}
+    	
+		// Warns the user if the Titan table already exists in Hbase.
+		
         String titanTableName = TitanConfig.config.getProperty
                 ("TITAN_STORAGE_TABLENAME");
 
