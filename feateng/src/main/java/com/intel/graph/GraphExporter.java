@@ -25,15 +25,15 @@ import java.util.List;
 public class GraphExporter {
 
     public static final String FILE = "file";
-    public static final String VERTEX_SCHEMA = "Vertex Schema";
-    public static final String EDGE_SCHEMA = "Edge Schema";
+    public static final String METADATA_FILE_PREFIX = "metadata_";
+    public static final String SCHEMA = "schema";
+    public static final String FEATURE = "feature";
+    public static final String JOB_NAME = "Export graph";
 
     public static void main(String[] args) throws ParseException, ParserConfigurationException, SAXException, IOException, InterruptedException, ClassNotFoundException {
 
         Parser parser = new PosixParser();
         Options options = new Options();
-        options.addOption("v", true, "vertex schema");
-        options.addOption("e", true, "edge schema");
         options.addOption("f", true, "File Name");
         options.addOption("o", true, "Faunus query output directory");
         options.addOption("q", true, "query definition xml");
@@ -52,9 +52,7 @@ public class GraphExporter {
 
         Configuration conf = new Configuration();
         conf.set(FILE, fileName);
-        conf.set(VERTEX_SCHEMA, cmd.getOptionValue("v"));
-        conf.set(EDGE_SCHEMA, cmd.getOptionValue("e"));
-        Job job = new Job(conf, "Export graph");
+        Job job = new Job(conf, JOB_NAME);
         job.setJarByClass(GraphExporter.class);
         job.setMapperClass(GraphExportMapper.class);
         job.setReducerClass(GraphExportReducer.class);

@@ -7,6 +7,9 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -93,12 +96,21 @@ public class TestGraphExporter {
 
     @Test
     public void testGetKeyTypesMapping() throws ParserConfigurationException, SAXException, IOException {
-        String schemaXML = "<schema><feature name=\"etl-cf:edge_type\" type=\"chararray\" /><feature name=\"etl-cf:weight\" type=\"long\" /></schema>";
-        Map<String, String> mapping = GraphExportReducer.getKeyTypesMapping(schemaXML);
-        assertTrue(mapping.containsKey("etl-cf:edge_type"));
-        assertTrue(mapping.containsKey("etl-cf:weight"));
-        assertEquals("chararray", mapping.get("etl-cf:edge_type"));
-        assertEquals("long", mapping.get("etl-cf:weight"));
+        String schemaXML = "<?xml version=\"1.0\" ?><schema><feature attr.name=\"etl-cf:edge_type\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"etl-cf:weight\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"_id\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"_gb_ID\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:vertex_type\" attr.type=\"bytearray\" for=\"Vertex\"></feature></schema>";
+        Reader reader = new StringReader(schemaXML);
+
+        Map<String, String> vertexKeyTypes = new HashMap<String, String>();
+        Map<String, String> edgeKeyTypes = new HashMap<String, String>();
+        GraphExportReducer.getKeyTypesMapping(reader, vertexKeyTypes, edgeKeyTypes);
+
+        assertEquals(edgeKeyTypes.get("etl-cf:edge_type"), "bytearray");
+        assertEquals(edgeKeyTypes.get("etl-cf:weight"), "bytearray");
+        assertEquals(edgeKeyTypes.size(), 2);
+
+        assertEquals(vertexKeyTypes.get("_id"), "bytearray");
+        assertEquals(vertexKeyTypes.get("_gb_ID"), "bytearray");
+        assertEquals(vertexKeyTypes.get("etl-cf:vertex_type"), "bytearray");
+        assertEquals(vertexKeyTypes.size(), 3);
     }
 
     @Test

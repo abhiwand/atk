@@ -2,14 +2,15 @@ package com.intel.graph;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -22,12 +23,15 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.*;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable, Text> {
 
-    private FSDataOutputStream output;
+    private FSDataOutputStream outputStream;
     XMLStreamWriter writer = null;
 
     @Override
@@ -35,39 +39,37 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
 
         Configuration conf = context.getConfiguration();
         String fileName = conf.get(GraphExporter.FILE);
-        String vertexSchema = conf.get(GraphExporter.VERTEX_SCHEMA);
-        String edgeSchema = conf.get(GraphExporter.EDGE_SCHEMA);
 
+        Map<String, String> edgeKeyTypes = new HashMap<String, String>();
+        Map<String, String> vertexKeyTypes = new HashMap<String, String>();
 
-        Map<String, String> edgeKeyTypes = null;
-        try {
-            edgeKeyTypes = getKeyTypesMapping(edgeSchema);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read schema info for edges");
-        }
-
-        Map<String, String> vertexKeyTypes = null;
-        try {
-            vertexKeyTypes = getKeyTypesMapping(vertexSchema);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to read schema info for vertices");
-        }
-
-        Path path = new Path(fileName);
+        Path outputFilePath = new Path(fileName);
         FileSystem fs = FileSystem.get(context.getConfiguration());
-        if (fs.exists(path)) {
-            fs.delete(path, true);
+        if (fs.exists(outputFilePath)) {
+            fs.delete(outputFilePath, true);
         }
-        output = fs.create(path, true);
 
-        final XMLOutputFactory inputFactory = XMLOutputFactory.newInstance();
-        inputFactory.setProperty("escapeCharacters", false);
+        outputStream = fs.create(outputFilePath, true);
+        final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+        outputFactory.setProperty("escapeCharacters", false);
 
         try {
-            writer = inputFactory.createXMLStreamWriter(output, "UTF8");
+            writer = outputFactory.createXMLStreamWriter(outputStream, "UTF8");
+
+            FileStatus[] fileStatuses = fs.listStatus(TextOutputFormat.getOutputPath(context));
+            for (FileStatus status : fileStatuses) {
+                String name = status.getPath().getName();
+                if(name.startsWith(GraphExporter.METADATA_FILE_PREFIX)) {
+
+                    // collects the schema info created by mappers
+                    getKeyTypesMapping(new InputStreamReader(fs.open(status.getPath())), vertexKeyTypes, edgeKeyTypes);
+                }
+            }
+
             writer.writeStartDocument();
             writer.writeStartElement(GraphMLTokens.GRAPHML);
             writer.writeAttribute(GraphMLTokens.XMLNS, GraphMLTokens.GRAPHML_XMLNS);
+
             //XML Schema instance namespace definition (xsi)
             writer.writeAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG,
                     XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
@@ -75,51 +77,46 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
             writer.writeAttribute(GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG + ":" + GraphMLTokens.XML_SCHEMA_LOCATION_ATTRIBUTE,
                     GraphMLTokens.GRAPHML_XMLNS + " " + GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION);
 
-            Set<String> keySet = vertexKeyTypes.keySet();
-            for (String key : keySet) {
-                writer.writeStartElement(GraphMLTokens.KEY);
-                writer.writeAttribute(GraphMLTokens.ID, key);
-                writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.NODE);
-                writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
-                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, vertexKeyTypes.get(key));
-                writer.writeEndElement();
-            }
-            keySet = edgeKeyTypes.keySet();
-            for (String key : keySet) {
-                writer.writeStartElement(GraphMLTokens.KEY);
-                writer.writeAttribute(GraphMLTokens.ID, key);
-                writer.writeAttribute(GraphMLTokens.FOR, GraphMLTokens.EDGE);
-                writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
-                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, edgeKeyTypes.get(key));
-                writer.writeEndElement();
-            }
+            writeSchemaInfo(vertexKeyTypes, GraphMLTokens.NODE);
+            writeSchemaInfo(edgeKeyTypes, GraphMLTokens.EDGE);
 
             writer.writeStartElement(GraphMLTokens.GRAPH);
             writer.writeAttribute(GraphMLTokens.ID, GraphMLTokens.G);
             writer.writeAttribute(GraphMLTokens.EDGEDEFAULT, GraphMLTokens.DIRECTED);
-        } catch (XMLStreamException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to write header");
         }
     }
 
-    public static Map<String, String> getKeyTypesMapping(String schemaXML) throws IOException, SAXException, ParserConfigurationException {
-        Map<String, String> mapping = new HashMap<String, String>();
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = null;
-        dBuilder = dbFactory.newDocumentBuilder();
-        InputSource is = new InputSource(new StringReader(schemaXML));
-        Document doc = null;
-        doc = dBuilder.parse(is);
+    private void writeSchemaInfo(Map<String, String> vertexKeyTypes, String node) throws XMLStreamException {
+        Set<String> keySet = vertexKeyTypes.keySet();
+        for (String key : keySet) {
+            writer.writeStartElement(GraphMLTokens.KEY);
+            writer.writeAttribute(GraphMLTokens.ID, key);
+            writer.writeAttribute(GraphMLTokens.FOR, node);
+            writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
+            writer.writeAttribute(GraphMLTokens.ATTR_TYPE, vertexKeyTypes.get(key));
+            writer.writeEndElement();
+        }
+    }
 
-        NodeList nList = doc.getElementsByTagName("feature");
+    public static void getKeyTypesMapping(Reader reader, Map<String, String> vertexKeyTypes, Map<String, String> edgeKeyTypes) throws IOException, SAXException, ParserConfigurationException {
+
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(new InputSource(reader));
+
+        NodeList nList = doc.getElementsByTagName(GraphExporter.FEATURE);
         for (int temp = 0; temp < nList.getLength(); temp++) {
             Element nNode = (Element)nList.item(temp);
-
-            String name = nNode.getAttribute("name");
-            String type = nNode.getAttribute("type");
-            mapping.put(name, type);
+            String name = nNode.getAttribute(GraphMLTokens.ATTR_NAME);
+            String type = nNode.getAttribute(GraphMLTokens.ATTR_TYPE);
+            String elementType = nNode.getAttribute(GraphMLTokens.FOR);
+            if(GraphElementType.Vertex.toString().equalsIgnoreCase(elementType))
+                vertexKeyTypes.put(name, type);
+            else
+                edgeKeyTypes.put(name, type);
         }
-        return mapping;
     }
 
     @Override
@@ -147,6 +144,5 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to write closing tags");
         }
-
     }
 }
