@@ -5,6 +5,9 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
@@ -127,5 +130,33 @@ public class TestGraphExporter {
         assertEquals(2, statements.size());
         assertEquals("g.V('_gb_ID','11').out.map", statements.get(0));
         assertEquals("g.V('_gb_ID','11').outE.transform('{[it,it.map()]}')", statements.get(1));
+    }
+
+    @Test
+    public void testGraphMLGeneration() throws XMLStreamException, ParserConfigurationException, SAXException, IOException {
+        GraphExportReducer reducer = new GraphExportReducer();
+        ByteArrayOutputStream f = new ByteArrayOutputStream();
+        XMLOutputFactory xmlInputFactory = XMLOutputFactory.newInstance();
+        xmlInputFactory.setProperty("escapeCharacters", false);
+        XMLStreamWriter writer = xmlInputFactory.createXMLStreamWriter(f);
+
+
+        String schemaXML = "<?xml version=\"1.0\" ?><schema><feature attr.name=\"etl-cf:edge_type\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"etl-cf:weight\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"_id\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"_gb_ID\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:vertex_type\" attr.type=\"bytearray\" for=\"Vertex\"></feature></schema>";
+        Reader reader = new StringReader(schemaXML);
+
+        Map<String, String> vertexKeyTypes = new HashMap<String, String>();
+        Map<String, String> edgeKeyTypes = new HashMap<String, String>();
+        GraphExportReducer.getKeyTypesMapping(reader, vertexKeyTypes, edgeKeyTypes);
+
+        reducer.writeGraphMLHeaderSection(writer, vertexKeyTypes, edgeKeyTypes);
+        reducer.writeElementData(writer, "<edge id=\"62018421\" source=\"4\" target=\"5600276\" label=\"label\"><data key=\"etl-cf:edge_type\">tr</data><data key=\"etl-cf:weight\">3</data></edge>");
+        reducer.writeElementData(writer, "<node id=\"4000284\"><data key=\"_id\">4000284</data><data key=\"_gb_ID\">-304</data><data key=\"etl-cf:vertex_type\">R</data></node>");
+        reducer.writeGraphMLEndSection(writer);
+        String result = f.toString();
+        String expected = "<?xml version=\"1.0\" ?><graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd\"><key id=\"_id\" for=\"node\" attr.name=\"_id\" attr.type=\"bytearray\"></key><key id=\"_gb_ID\" for=\"node\" attr.name=\"_gb_ID\" attr.type=\"bytearray\"></key><key id=\"etl-cf:vertex_type\" for=\"node\" attr.name=\"etl-cf:vertex_type\" attr.type=\"bytearray\"></key><key id=\"etl-cf:edge_type\" for=\"edge\" attr.name=\"etl-cf:edge_type\" attr.type=\"bytearray\"></key><key id=\"etl-cf:weight\" for=\"edge\" attr.name=\"etl-cf:weight\" attr.type=\"bytearray\"></key><graph id=\"G\" edgedefault=\"directed\">" +
+                "<edge id=\"62018421\" source=\"4\" target=\"5600276\" label=\"label\"><data key=\"etl-cf:edge_type\">tr</data><data key=\"etl-cf:weight\">3</data></edge>\n" +
+                "<node id=\"4000284\"><data key=\"_id\">4000284</data><data key=\"_gb_ID\">-304</data><data key=\"etl-cf:vertex_type\">R</data></node>\n" +
+                "</graph></graphml>";
+        assertEquals(expected, result);
     }
 }

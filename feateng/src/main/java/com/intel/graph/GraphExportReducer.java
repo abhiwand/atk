@@ -50,45 +50,48 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         }
 
         outputStream = fs.create(outputFilePath, true);
+
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
         outputFactory.setProperty("escapeCharacters", false);
 
         try {
-            writer = outputFactory.createXMLStreamWriter(outputStream, "UTF8");
-
             FileStatus[] fileStatuses = fs.listStatus(TextOutputFormat.getOutputPath(context));
             for (FileStatus status : fileStatuses) {
                 String name = status.getPath().getName();
                 if(name.startsWith(GraphExporter.METADATA_FILE_PREFIX)) {
-
                     // collects the schema info created by mappers
                     getKeyTypesMapping(new InputStreamReader(fs.open(status.getPath())), vertexKeyTypes, edgeKeyTypes);
                 }
             }
 
-            writer.writeStartDocument();
-            writer.writeStartElement(GraphMLTokens.GRAPHML);
-            writer.writeAttribute(GraphMLTokens.XMLNS, GraphMLTokens.GRAPHML_XMLNS);
-
-            //XML Schema instance namespace definition (xsi)
-            writer.writeAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG,
-                    XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-            //XML Schema location
-            writer.writeAttribute(GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG + ":" + GraphMLTokens.XML_SCHEMA_LOCATION_ATTRIBUTE,
-                    GraphMLTokens.GRAPHML_XMLNS + " " + GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION);
-
-            writeSchemaInfo(vertexKeyTypes, GraphMLTokens.NODE);
-            writeSchemaInfo(edgeKeyTypes, GraphMLTokens.EDGE);
-
-            writer.writeStartElement(GraphMLTokens.GRAPH);
-            writer.writeAttribute(GraphMLTokens.ID, GraphMLTokens.G);
-            writer.writeAttribute(GraphMLTokens.EDGEDEFAULT, GraphMLTokens.DIRECTED);
+            writer = outputFactory.createXMLStreamWriter(outputStream, "UTF8");
+            writeGraphMLHeaderSection(writer, vertexKeyTypes, edgeKeyTypes);
         } catch (Exception e) {
             throw new RuntimeException("Failed to write header");
         }
     }
 
-    private void writeSchemaInfo(Map<String, String> vertexKeyTypes, String node) throws XMLStreamException {
+    public void writeGraphMLHeaderSection(XMLStreamWriter writer, Map<String, String> vertexKeyTypes, Map<String, String> edgeKeyTypes) throws XMLStreamException {
+        writer.writeStartDocument();
+        writer.writeStartElement(GraphMLTokens.GRAPHML);
+        writer.writeAttribute(GraphMLTokens.XMLNS, GraphMLTokens.GRAPHML_XMLNS);
+
+        //XML Schema instance namespace definition (xsi)
+        writer.writeAttribute(XMLConstants.XMLNS_ATTRIBUTE + ":" + GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG,
+                XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+        //XML Schema location
+        writer.writeAttribute(GraphMLTokens.XML_SCHEMA_NAMESPACE_TAG + ":" + GraphMLTokens.XML_SCHEMA_LOCATION_ATTRIBUTE,
+                GraphMLTokens.GRAPHML_XMLNS + " " + GraphMLTokens.DEFAULT_GRAPHML_SCHEMA_LOCATION);
+
+        writeSchemaInfo(writer, vertexKeyTypes, GraphMLTokens.NODE);
+        writeSchemaInfo(writer, edgeKeyTypes, GraphMLTokens.EDGE);
+
+        writer.writeStartElement(GraphMLTokens.GRAPH);
+        writer.writeAttribute(GraphMLTokens.ID, GraphMLTokens.G);
+        writer.writeAttribute(GraphMLTokens.EDGEDEFAULT, GraphMLTokens.DIRECTED);
+    }
+
+    public void writeSchemaInfo(XMLStreamWriter writer, Map<String, String> vertexKeyTypes, String node) throws XMLStreamException {
         Set<String> keySet = vertexKeyTypes.keySet();
         for (String key : keySet) {
             writer.writeStartElement(GraphMLTokens.KEY);
@@ -123,18 +126,25 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
     protected void reduce(LongWritable key, Iterable<Text> values, Context context) {
 
         for(Text value: values){
-            try {
-                writer.writeCharacters(value.toString());
-                writer.writeCharacters("\n");
-            } catch (XMLStreamException e) {
-                throw new RuntimeException("Failed to write graph element data");
-            }
+            writeElementData(writer, value.toString());
         }
+    }
 
+    public void writeElementData(XMLStreamWriter writer, String value) {
+        try {
+            writer.writeCharacters(value);
+            writer.writeCharacters("\n");
+        } catch (XMLStreamException e) {
+            throw new RuntimeException("Failed to write graph element data");
+        }
     }
 
     @Override
     protected void cleanup(Context context) {
+        writeGraphMLEndSection(writer);
+    }
+
+    public void writeGraphMLEndSection(XMLStreamWriter writer) {
         try {
             writer.writeEndElement(); // graph
             writer.writeEndElement(); // graphml
