@@ -71,6 +71,31 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         }
     }
 
+    @Override
+    protected void reduce(LongWritable key, Iterable<Text> values, Context context) {
+
+        for(Text value: values){
+            writeElementData(writer, value.toString());
+        }
+    }
+
+    @Override
+    protected void cleanup(Context context) {
+        writeGraphMLEndSection(writer);
+    }
+
+    public void writeGraphMLEndSection(XMLStreamWriter writer) {
+        try {
+            writer.writeEndElement(); // graph
+            writer.writeEndElement(); // graphml
+            writer.writeEndDocument();
+            writer.flush();
+            writer.close();
+        } catch (XMLStreamException e) {
+            throw new RuntimeException("Failed to write closing tags");
+        }
+    }
+
     public void writeGraphMLHeaderSection(XMLStreamWriter writer, Map<String, String> vertexKeyTypes, Map<String, String> edgeKeyTypes) throws XMLStreamException {
         writer.writeStartDocument();
         writer.writeStartElement(GraphMLTokens.GRAPHML);
@@ -122,37 +147,12 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         }
     }
 
-    @Override
-    protected void reduce(LongWritable key, Iterable<Text> values, Context context) {
-
-        for(Text value: values){
-            writeElementData(writer, value.toString());
-        }
-    }
-
     public void writeElementData(XMLStreamWriter writer, String value) {
         try {
             writer.writeCharacters(value);
             writer.writeCharacters("\n");
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to write graph element data");
-        }
-    }
-
-    @Override
-    protected void cleanup(Context context) {
-        writeGraphMLEndSection(writer);
-    }
-
-    public void writeGraphMLEndSection(XMLStreamWriter writer) {
-        try {
-            writer.writeEndElement(); // graph
-            writer.writeEndElement(); // graphml
-            writer.writeEndDocument();
-            writer.flush();
-            writer.close();
-        } catch (XMLStreamException e) {
-            throw new RuntimeException("Failed to write closing tags");
         }
     }
 }

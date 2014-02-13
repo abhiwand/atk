@@ -41,12 +41,16 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
             context.write(key, new Text(f.toString()));
 
             // collects schema info
-            Set<String> keySet = element.getAttributes().keySet();
-            for(String feature : keySet) {
-                propertyElementTypeMapping.put(feature, element.getElementType());
-            }
+            collectSchemaInfo(element, propertyElementTypeMapping);
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to generate xml node for the element");
+        }
+    }
+
+    private void collectSchemaInfo(IGraphElement element, Map<String, GraphElementType> propertyElementTypeMapping1) {
+        Set<String> keySet = element.getAttributes().keySet();
+        for(String feature : keySet) {
+            propertyElementTypeMapping1.put(feature, element.getElementType());
         }
     }
 
@@ -61,24 +65,28 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
         try {
             XMLStreamWriter writer = outputFactory.createXMLStreamWriter(output, "UTF8");
-            writer.writeStartDocument();
-            writer.writeStartElement(GraphExporter.SCHEMA);
-
-            for(Map.Entry<String, GraphElementType> e : propertyElementTypeMapping.entrySet()) {
-                writer.writeStartElement(GraphExporter.FEATURE);
-                writer.writeAttribute(GraphMLTokens.ATTR_NAME, e.getKey());
-                writer.writeAttribute(GraphMLTokens.ATTR_TYPE, "bytearray");
-                writer.writeAttribute(GraphMLTokens.FOR, e.getValue().toString());
-                writer.writeEndElement();
-            }
-
-            writer.writeEndElement(); // schema
-            writer.writeEndDocument();
-            writer.flush();
-            writer.close();
+            writeSchemaToXML(writer, propertyElementTypeMapping);
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to export schema info from mapper");
         }
+    }
+
+    private void writeSchemaToXML(XMLStreamWriter writer, Map<String, GraphElementType> propertyElementTypeMapping1) throws XMLStreamException {
+        writer.writeStartDocument();
+        writer.writeStartElement(GraphExporter.SCHEMA);
+
+        for(Map.Entry<String, GraphElementType> e : propertyElementTypeMapping1.entrySet()) {
+            writer.writeStartElement(GraphExporter.FEATURE);
+            writer.writeAttribute(GraphMLTokens.ATTR_NAME, e.getKey());
+            writer.writeAttribute(GraphMLTokens.ATTR_TYPE, "bytearray");
+            writer.writeAttribute(GraphMLTokens.FOR, e.getValue().toString());
+            writer.writeEndElement();
+        }
+
+        writer.writeEndElement(); // schema
+        writer.writeEndDocument();
+        writer.flush();
+        writer.close();
     }
 }
 
