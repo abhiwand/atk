@@ -19,7 +19,9 @@
 
 package com.intel.pig.udf.eval;
 
-import com.intel.hadoop.graphbuilder.graphelements.*;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.types.*;
 import com.intel.hadoop.graphbuilder.util.BaseCLI;
@@ -28,10 +30,10 @@ import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -42,8 +44,11 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.apache.pig.tools.pigstats.PigStatusReporter;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -57,8 +62,10 @@ import java.util.concurrent.TimeUnit;
  * <pre>
  * {@code
  * REGISTER target/graphbuilder-2.0alpha-with-deps.jar;
- * x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id: int, name: chararray, age: int, dept: chararray, managerId: int, tenure: chararray);
- * DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "name=age,managerId" -e "name,dept,worksAt,tenure"');
+ * x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id: int, name: chararray, age: int,
+ * dept: chararray, managerId: int, tenure: chararray);
+ * DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "name=age,managerId" -e "name,
+ * dept,worksAt,tenure"');
  * pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
  *    }
  * </pre>
@@ -99,19 +106,22 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     private BagFactory mBagFactory = BagFactory.getInstance();
 
-    private String   tokenizationRule;
-    private String[] rawEdgeRules;
-    private String[] vertexRules;
-    private String[] rawDirectedEdgeRules;
-
+    private boolean retainDanglingEdges = false;
     private boolean flattenLists = false;
     private List<String> vertexIdFieldList;
     private Hashtable<String, String[]> vertexPropToFieldNamesMap;
     private Hashtable<String, String> vertexLabelMap;
+    private Hashtable<String, EdgeRule> edgeLabelToEdgeRules;
 
-    private Hashtable<String, EdgeRule>     edgeLabelToEdgeRules;
-
-    private Hashtable<String, Byte> fieldNameToDataType;
+    /**
+     * Implements the dangling edge counters.
+     * Use getter methods to call these counters
+     */
+    public enum Counters {
+        NUM_DANGLING_EDGES,
+        NUM_EDGES,
+        NUM_VERTICES
+    }
 
     /**
      * Encapsulation of the rules for creating edges.
@@ -194,45 +204,34 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         commandLineInterface = new CommandLineInterface();
 
         Options options = new Options();
-
         options.addOption(BaseCLI.Options.vertex.get());
-
         options.addOption(BaseCLI.Options.edge.get());
-
         options.addOption(BaseCLI.Options.directedEdge.get());
-        
         options.addOption(BaseCLI.Options.flattenList.get());
-        
+        options.addOption(BaseCLI.Options.retainDanglingEdges.get());
+
         commandLineInterface.setOptions(options);
 
         CommandLine cmd = commandLineInterface.checkCli(tokenizationRule.split(" "));
 
-        this.tokenizationRule = tokenizationRule;
-
-
-        vertexLabelMap = new Hashtable<String, String>();
+        vertexLabelMap            = new Hashtable<String, String>();
         vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
-        vertexIdFieldList = new ArrayList<String>();
+        vertexIdFieldList         = new ArrayList<String>();
+        edgeLabelToEdgeRules      = new Hashtable<String, EdgeRule>();
 
-        edgeLabelToEdgeRules  = new Hashtable<String, EdgeRule>();
-
-        vertexRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
-
-        rawEdgeRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
-
-        rawDirectedEdgeRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
+        String[] vertexRules  = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
+        String[] rawEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
+        String[] rawDirectedEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge
+                .getLongOpt()));
         
         flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
-        
+        retainDanglingEdges = cmd.hasOption(BaseCLI.Options.retainDanglingEdges.getLongOpt());
+
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
 
-
-        String   vertexIdFieldName  = null;
-        String   vertexLabel      = null;
+        String vertexIdFieldName = null;
+        String vertexLabel = null;
 
         for (String vertexRule : vertexRules) {
 
@@ -260,7 +259,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
             String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
             String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
-            String   label                = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
+            String   label                  = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawEdgeRule);
 
@@ -276,11 +275,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
             String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawDirectedEdgeRule);
             String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawDirectedEdgeRule);
-            String   label                = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
+            String   label                  = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
 
-            EdgeRule edgeRule         = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED);
+            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED);
 
             for (String edgePropertyFieldName : edgePropertyFieldNames) {
                 edgeRule.addPropertyColumnName(edgePropertyFieldName);
@@ -288,7 +287,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
             edgeLabelToEdgeRules.put(label, edgeRule);
         }
-    }
+    }   // End of constructor
 
     private String[] expandString(String string) {
 
@@ -330,10 +329,12 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         try {
             graphElementTuple.set(0, serializedgraphElement);
             outputBag.add(graphElementTuple);
+            incrementCounter(Counters.NUM_VERTICES, 1L);
         } catch (ExecException e) {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
         }
+
     }
 
     private void addEdgeToPropElementBag(DataBag outputBag, Edge edge) throws IOException{
@@ -351,7 +352,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
         }
-
     }
 
     private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte) throws IllegalArgumentException{
@@ -398,7 +398,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     public DataBag exec(Tuple input) throws IOException {
 
         Schema inputSchema = getInputSchema();
-        fieldNameToDataType = new Hashtable<String,Byte>();
+        Hashtable<String, Byte> fieldNameToDataType = new Hashtable<String,Byte>();
 
         for (Schema.FieldSchema field : inputSchema.getFields()) {
             fieldNameToDataType.put(field.alias, field.type);
@@ -451,22 +451,18 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             }  else {
                 warn("Null data, skipping tuple.", PigWarning.UDF_WARNING_1);
             }
-        }// End of vertex block
+        }   // End of vertex block
 
         // check tuple for edges
 
-        Object propertyValue;
-        String property;
         String srcVertexFieldName;
         String tgtVertexFieldName;
 
         for (String eLabel : edgeLabelToEdgeRules.keySet()) {
 
-            int          countEdgeAttr  = 0;
             EdgeRule     edgeRule           = edgeLabelToEdgeRules.get(eLabel);
             List<String> edgeAttributeList  = edgeRule.getPropertyFieldNames();
             String[]     edgeAttributes     = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
-
 
             srcVertexFieldName     = edgeRule.getSrcFieldName();
             tgtVertexFieldName     = edgeRule.getDstFieldName();
@@ -486,61 +482,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                 tgtLabel = new StringType(tgtLabelString);
             }
 
-            if (srcVertexCellString != null && tgtVertexCellString != null && eLabel != null) {
-
-                for (String srcVertexName : expandString(srcVertexCellString)) {
-                    for (String tgtVertexName: expandString(tgtVertexCellString)) {
-
-                        Edge<StringType> edge = new Edge<StringType>(new StringType
-                                (srcVertexName),srcLabel,
-                                new StringType(tgtVertexName),
-                                tgtLabel, new StringType(eLabel));
-
-                        for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-                            propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
-                            property = edgeAttributes[countEdgeAttr];
-
-                            if (propertyValue != null) {
-                                edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
-                                        fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
-                            }
-                        }
-
-                        addEdgeToPropElementBag(outputBag, edge);
-
-                        // need to make sure both ends of the edge are proper
-                        // vertices!
-
-                        Vertex<StringType> srcVertex = new Vertex<StringType>(new
-                                StringType(srcVertexName), srcLabel);
-                        Vertex<StringType> tgtVertex = new Vertex<StringType>(new
-                                StringType(tgtVertexName), tgtLabel);
-                        addVertexToPropElementBag(outputBag, srcVertex);
-                        addVertexToPropElementBag(outputBag, tgtVertex);
-
-                        if (edgeRule.isBiDirectional()) {
-                            Edge<StringType> opposingEdge = new Edge<StringType>(new
-                                    StringType(tgtVertexName), tgtLabel,
-                                    new StringType(srcVertexName), srcLabel,
-                                    new StringType(eLabel));
-
-                            // now add the edge properties
-
-                            for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-                                propertyValue = (String) getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
-
-                                property = edgeAttributes[countEdgeAttr];
-
-                                if (propertyValue != null) {
-                                    edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
-                                            fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
-                                }
-                            }
-                            addEdgeToPropElementBag(outputBag, opposingEdge);
-                        }
-                    }
-                }
-            }
+            createEdges(input, inputSchema, srcVertexCellString, tgtVertexCellString, srcLabel, tgtLabel, eLabel,
+                    edgeAttributes, edgeRule, fieldNameToDataType, outputBag);
         }
 
         return outputBag;
@@ -566,6 +509,186 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             // This should not happen
             throw new RuntimeException("Bug : exception thrown while "
                     + "creating output schema for CreatePropGraphElements udf", e);
+        }
+    }
+
+    /**
+     * Increment counters for Hadoop Job in this UDF
+     * @param key   Enumerate counter name
+     * @param value Increment value
+     */
+    public void incrementCounter(Enum key, Long value) {
+
+        PigStatusReporter reporter = PigStatusReporter.getInstance();
+        Counter reporterCounter = reporter.getCounter(key);
+        if (reporter != null && reporterCounter != null) {
+            reporterCounter.increment(value);
+        }
+    }
+
+    /**
+     * This function creates edges from two source and target data structures. These data structures can be either
+     * primitive Java data types or comma-separated strings enclosed in curly braces
+     *
+     * @param input
+     * @param inputSchema
+     * @param srcVertexCellString
+     * @param tgtVertexCellString
+     * @param srcLabel
+     * @param tgtLabel
+     * @param eLabel
+     * @param edgeAttributes
+     * @param edgeRule
+     * @param fieldNameToDataType
+     * @param outputBag
+     * @throws IOException
+     */
+    public void createEdges(Tuple input, Schema inputSchema, String srcVertexCellString, String tgtVertexCellString,
+                            StringType srcLabel, StringType tgtLabel, String eLabel, String[] edgeAttributes,
+                            EdgeRule edgeRule, Hashtable<String, Byte> fieldNameToDataType,
+                            DataBag outputBag) throws IOException {
+
+        boolean isDangling = false;
+        StringType currentSrcVertexName = new StringType();
+        StringType currentTgtVertexName = new StringType();
+
+        if (srcVertexCellString == null && tgtVertexCellString == null) {
+            return;
+        }
+
+        for (String srcVertexName: expandString(srcVertexCellString)) {
+
+            isDangling = false;
+
+            // If tgtVertexCellString == null calling expandString() with it will cause a NullPointerException
+            // Handle this case before the for loop
+            // Also, ignore the edge if both srcVertexName and tgtVertexCellString are null
+
+            if (tgtVertexCellString == null && srcVertexName != null) {
+
+                if (srcVertexName.isEmpty()) {
+                    continue;
+                }
+
+                if (this.retainDanglingEdges) {
+                    currentSrcVertexName.set(srcVertexName);
+                    currentTgtVertexName.set("null");
+                    isDangling = true;
+                    processEdge(input, inputSchema, currentSrcVertexName, currentTgtVertexName, srcLabel, tgtLabel,
+                            eLabel,  edgeAttributes,  edgeRule, fieldNameToDataType, isDangling, outputBag);
+                }
+                continue;
+            }
+            for (String tgtVertexName: expandString(tgtVertexCellString)) {
+
+                isDangling = false;
+                if (srcVertexName == null && tgtVertexName == null) {
+                    // Edges with both source and target vertices = NULL are discarded even if
+                    // dangling edges are  retained
+
+                    continue;
+                } else if (srcVertexName.isEmpty() && tgtVertexName.isEmpty()) {
+                    continue;
+                } else {
+
+                    if (srcVertexName == null && this.retainDanglingEdges) {
+                        currentSrcVertexName.set("null");
+                        isDangling = true;
+                    } else {
+                        currentSrcVertexName.set(srcVertexName);
+                    }
+
+                    if (tgtVertexName == null && this.retainDanglingEdges) {
+                        currentTgtVertexName.set("null");
+                        isDangling = true;
+                    } else {
+                        currentTgtVertexName.set(tgtVertexName);
+                    }
+
+                    processEdge(input, inputSchema, currentSrcVertexName, currentTgtVertexName, srcLabel, tgtLabel,
+                            eLabel,  edgeAttributes,  edgeRule, fieldNameToDataType, isDangling, outputBag);
+                }
+            }   // End of for expand(tgtVertexCellString)
+        }   // End of for expand(srcVertexCellString)
+
+        return;
+    }   // End of createEdge() method definition
+
+    /**
+     * Function to add Edge, source and target vertices and edge properties to the outputBag
+     * @param input
+     * @param inputSchema
+     * @param currentSrcVertexName
+     * @param currentTgtVertexName
+     * @param srcLabel
+     * @param tgtLabel
+     * @param eLabel
+     * @param edgeAttributes
+     * @param edgeRule
+     * @param fieldNameToDataType
+     * @param isDangling
+     * @param outputBag
+     * @throws IOException
+     */
+    private void processEdge(Tuple input, Schema inputSchema, StringType currentSrcVertexName,
+                             StringType currentTgtVertexName, StringType srcLabel, StringType tgtLabel,
+                             String eLabel, String[] edgeAttributes, EdgeRule edgeRule,
+                             Hashtable<String, Byte> fieldNameToDataType, boolean isDangling,
+                             DataBag outputBag) throws IOException {
+
+        String property = "";
+        Object propertyValue = null;
+
+        Edge<StringType> edge = new Edge<StringType>(currentSrcVertexName,srcLabel, currentTgtVertexName, tgtLabel,
+                new StringType(eLabel));
+
+        for (int countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
+            propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
+            property = edgeAttributes[countEdgeAttr];
+
+            if (propertyValue != null) {
+                edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
+                    fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
+            }
+        }
+
+        addEdgeToPropElementBag(outputBag, edge);
+        incrementCounter(Counters.NUM_EDGES, 1L);
+
+        if (isDangling && this.retainDanglingEdges) {
+            incrementCounter(Counters.NUM_DANGLING_EDGES, 1L);
+        }
+
+        // need to make sure both ends of the edge are proper
+        // vertices!
+
+        if (!this.retainDanglingEdges) {
+            if (!(currentSrcVertexName.isEmpty() || currentSrcVertexName.toString().equals("null"))) {
+                Vertex<StringType> srcVertex = new Vertex<StringType>(currentSrcVertexName, srcLabel);
+                addVertexToPropElementBag(outputBag, srcVertex);
+            }
+
+            if (!(currentTgtVertexName.isEmpty() || currentTgtVertexName.toString().equals("null"))) {
+                Vertex<StringType> tgtVertex = new Vertex<StringType>(currentTgtVertexName, tgtLabel);
+                addVertexToPropElementBag(outputBag, tgtVertex);
+            }
+        } else {
+            Vertex<StringType> srcVertex = new Vertex<StringType>(currentSrcVertexName, srcLabel);
+            Vertex<StringType> tgtVertex = new Vertex<StringType>(currentTgtVertexName, tgtLabel);
+            addVertexToPropElementBag(outputBag, srcVertex);
+            addVertexToPropElementBag(outputBag, tgtVertex);
+        }
+
+        if (edgeRule.isBiDirectional()) {
+            Edge<StringType> opposingEdge = new Edge<StringType>(currentTgtVertexName, tgtLabel,
+            currentSrcVertexName, srcLabel, new StringType(eLabel));
+
+            addEdgeToPropElementBag(outputBag, opposingEdge);
+            incrementCounter(Counters.NUM_EDGES, 1L);
+        }
+
+        if (isDangling && this.retainDanglingEdges) {
+            incrementCounter(Counters.NUM_DANGLING_EDGES, 1L);
         }
     }
 }

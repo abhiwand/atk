@@ -19,14 +19,21 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
+import com.intel.hadoop.graphbuilder.util.*;
+import com.intel.hadoop.graphbuilder.util.Timer;
+import com.thinkaurelius.titan.core.KeyMaker;
+import com.thinkaurelius.titan.core.TitanGraph;
+import com.thinkaurelius.titan.core.TitanKey;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
@@ -44,27 +51,9 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.log4j.Logger;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
-import com.intel.hadoop.graphbuilder.util.BaseCLI;
-import com.intel.hadoop.graphbuilder.util.Functional;
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
-import com.intel.hadoop.graphbuilder.util.HBaseUtils;
-import com.intel.hadoop.graphbuilder.util.PassThruMapperIntegerKey;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
-import com.intel.hadoop.graphbuilder.util.Timer;
-import com.thinkaurelius.titan.core.KeyMaker;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanKey;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * This class handles loading the constructed property graph into Titan.

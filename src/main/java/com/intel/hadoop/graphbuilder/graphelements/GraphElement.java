@@ -19,7 +19,10 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import com.intel.hadoop.graphbuilder.graphelements.callbacks.*;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementDst;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementSrc;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementType;
+import com.intel.hadoop.graphbuilder.graphelements.callbacks.GraphElementTypeCallback;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;

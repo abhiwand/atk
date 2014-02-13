@@ -18,10 +18,7 @@
  */
 package com.intel.pig.udf.eval;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
-
+import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
@@ -29,7 +26,9 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import com.intel.pig.udf.GBUdfExceptionHandler;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 /**
  * \brief FlattenAsGBString UDF converts a given bag of strings to a flattened

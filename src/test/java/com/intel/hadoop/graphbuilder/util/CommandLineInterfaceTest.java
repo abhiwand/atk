@@ -25,12 +25,11 @@ import static junit.framework.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.powermock.api.mockito.PowerMockito.spy;
 import static org.powermock.api.support.membermodification.MemberMatcher.method;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
-
+import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
@@ -44,7 +43,15 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Random;
+
+import static junit.framework.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(GraphBuilderExit.class)

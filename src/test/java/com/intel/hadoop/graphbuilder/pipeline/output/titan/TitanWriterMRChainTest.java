@@ -19,12 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-
-import java.util.List;
-
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementLongTypeVids;
+import com.intel.hadoop.graphbuilder.pipeline.TestMapReduceDriverUtils;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
+import com.intel.hadoop.graphbuilder.types.LongType;
+import com.intel.hadoop.graphbuilder.types.StringType;
+import com.thinkaurelius.titan.core.TitanElement;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -38,13 +39,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementLongTypeVids;
-import com.intel.hadoop.graphbuilder.pipeline.TestMapReduceDriverUtils;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.types.LongType;
-import com.intel.hadoop.graphbuilder.types.StringType;
-import com.thinkaurelius.titan.core.TitanElement;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(TitanElement.class)
@@ -66,11 +66,12 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
 	@Test
 	public void test_hbase_to_vertices_to_titan_MR() throws Exception {
 
-		Pair<ImmutableBytesWritable, Result> alice = new Pair<ImmutableBytesWritable, Result>(
-				new ImmutableBytesWritable(Bytes.toBytes("row1")),
-				sampleDataAlice());
+		AtomicReference<Pair<ImmutableBytesWritable, Result>> alice = new AtomicReference<Pair<ImmutableBytesWritable, Result>>();
+        alice.set(new Pair<ImmutableBytesWritable, Result>(
+                new ImmutableBytesWritable(Bytes.toBytes("row1")),
+                sampleDataAlice()));
 
-		Pair<ImmutableBytesWritable, Result>[] pairs = new Pair[] { alice };
+        Pair<ImmutableBytesWritable, Result>[] pairs = new Pair[] { alice };
 
 		com.tinkerpop.blueprints.Vertex bpVertex = vertexMock();
 

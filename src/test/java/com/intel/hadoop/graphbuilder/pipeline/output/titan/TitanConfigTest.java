@@ -19,12 +19,11 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertSame;
-
+import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
 import org.junit.Test;
 
-import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertSame;
 
 public class TitanConfigTest {
 

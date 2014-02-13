@@ -21,8 +21,9 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
 import org.junit.Test;
+import org.junit.Test;
+import static junit.framework.Assert.assertNotNull;
 
 public class EdgeSchemaTest {
 

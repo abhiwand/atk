@@ -19,12 +19,6 @@
  */
 package com.intel.hadoop.graphbuilder.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
-import java.util.HashMap;
-
 import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
@@ -34,6 +28,12 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
+
+import java.util.HashMap;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(RuntimeConfig.class)
@@ -141,7 +141,7 @@ public class RunTimeConfigTest {
 		assertTrue("verify value key two",
 				spiedRuntime.getProperty("NAMESPACE_VALUEKEYTWO").equals("two"));
 		assertTrue("verify value key three is false name space is incorrect",
-				spiedRuntime.getProperty("NAMESPACE_VALUEKEYTHREE") == null);
+                spiedRuntime.getProperty("NAMESPACE_VALUEKEYTHREE") == null);
 	}
 
 	@Test
