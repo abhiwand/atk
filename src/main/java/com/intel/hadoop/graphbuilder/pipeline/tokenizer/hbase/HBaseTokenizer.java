@@ -476,7 +476,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             mapVal.init(edge);
 
             baseMapper.contextWrite(context, mapKey, mapVal);
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             context.getCounter(baseMapper.getEdgeWriteErrorCounter()).increment(1);
             LOG.error(e.getMessage(), e);
         }
