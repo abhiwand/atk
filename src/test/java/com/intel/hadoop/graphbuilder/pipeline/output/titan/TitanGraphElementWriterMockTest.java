@@ -19,20 +19,16 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.thinkaurelius.titan.core.TitanGraph;
+import com.tinkerpop.blueprints.Vertex;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.junit.Test;
-
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.tinkerpop.blueprints.Vertex;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.*;
 
 public class TitanGraphElementWriterMockTest {
 

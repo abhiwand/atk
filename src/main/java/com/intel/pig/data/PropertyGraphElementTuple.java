@@ -18,24 +18,19 @@
  */
 package com.intel.pig.data;
 
+import com.carrotsearch.sizeof.RamUsageEstimator;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.util.HashUtil;
+import org.apache.pig.PigException;
+import org.apache.pig.backend.executionengine.ExecException;
+import org.apache.pig.data.*;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-
-import org.apache.pig.PigException;
-import org.apache.pig.backend.executionengine.ExecException;
-import org.apache.pig.data.AbstractTuple;
-import org.apache.pig.data.DataReaderWriter;
-import org.apache.pig.data.DataType;
-import org.apache.pig.data.DefaultTuple;
-import org.apache.pig.data.TupleFactory;
-
-import com.carrotsearch.sizeof.RamUsageEstimator;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.util.HashUtil;
 
 /**
  * \brief PropertyGraphElementTuple is the tuple type processed by the GB 2.0

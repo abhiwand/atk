@@ -18,12 +18,12 @@
  */
 package com.intel.hadoop.graphbuilder.test;
 
-import java.io.File;
-import java.util.Collection;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import java.io.File;
+import java.util.Collection;
 
 /**
  * Imperfect test for checking for expected Intel Header.

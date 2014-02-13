@@ -19,16 +19,6 @@
  */
 package com.intel.hadoop.graphbuilder.util;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Random;
 import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;

@@ -40,7 +40,6 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -66,12 +65,11 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
 	@Test
 	public void test_hbase_to_vertices_to_titan_MR() throws Exception {
 
-		AtomicReference<Pair<ImmutableBytesWritable, Result>> alice = new AtomicReference<Pair<ImmutableBytesWritable, Result>>();
-        alice.set(new Pair<ImmutableBytesWritable, Result>(
-                new ImmutableBytesWritable(Bytes.toBytes("row1")),
-                sampleDataAlice()));
+		Pair<ImmutableBytesWritable, Result> alice = new Pair<ImmutableBytesWritable, Result>(
+				new ImmutableBytesWritable(Bytes.toBytes("row1")),
+				sampleDataAlice());
 
-        Pair<ImmutableBytesWritable, Result>[] pairs = new Pair[] { alice };
+		Pair<ImmutableBytesWritable, Result>[] pairs = new Pair[] { alice };
 
 		com.tinkerpop.blueprints.Vertex bpVertex = vertexMock();
 

@@ -18,11 +18,11 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static org.junit.Assert.*;
-import java.io.IOException;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.types.DoubleType;
+import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.Writable;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataBag;
@@ -32,11 +32,14 @@ import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
 import org.junit.Before;
 import org.junit.Test;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.types.DoubleType;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.types.StringType;
+
+import java.io.IOException;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestMergeDuplicateGraphElements {
 	EvalFunc<?> flattenUdf;
