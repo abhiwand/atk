@@ -89,8 +89,8 @@
 * <H2>Running the Examples</H2>
  * Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, you can run the provided example scripts with
     \code
-     export GB_HOME=/usr/local/gb/
-     export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GB_HOME/target/lib/*
+     export GB_HOME=/usr/local/graphbuilder/
+     export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GB_HOME/target/graphbuilder-2.0-alpha.jar:$GB_HOME/target/lib/*
      cd $GB_HOME
      pig -x local -f examples/rdf_example.pig     
     \endcode
@@ -108,6 +108,7 @@
  * <H2>Known Issues:</H2>
  *  <B>ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
  *  Could not find class com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids, while attempting to de-serialize it</B><BR/>
- *  Make sure you do not overwrite HADOOP_CLASSPATH variable in $HADOOP_HOME/conf/hadoop-env.sh and in other places.
+ *  Make sure you set the HADOOP_CLASSPATH environment variable as described above and make sure that the HADOOP_CLASSPATH variable is not overwritten
+ *  in other scripts like $HADOOP_HOME/conf/hadoop-env.sh.
  * 
  */
