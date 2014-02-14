@@ -29,7 +29,6 @@ public class GraphExporter {
     public static final String SCHEMA = "schema";
     public static final String FEATURE = "feature";
     public static final String JOB_NAME = "Export graph";
-    public static final String OUTPUT_FOLDER = "output_folder";
 
     public static void main(String[] args) throws ParseException, ParserConfigurationException, SAXException, IOException, InterruptedException, ClassNotFoundException {
 
@@ -53,7 +52,6 @@ public class GraphExporter {
 
         Configuration conf = new Configuration();
         conf.set(FILE, fileName);
-        conf.set(OUTPUT_FOLDER, exporterOutputDir.toString());
         Job job = new Job(conf, JOB_NAME);
         job.setJarByClass(GraphExporter.class);
         job.setMapperClass(GraphExportMapper.class);

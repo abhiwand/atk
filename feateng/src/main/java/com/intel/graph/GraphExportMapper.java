@@ -31,7 +31,6 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
     protected void setup(Context context) {
         elementFactory = new TitanFaunusGraphElementFactory();
         xmlInputFactory = XMLOutputFactory.newInstance();
-        outputStreamGenerator = new FileOutputStreamGenerator();
     }
 
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -60,8 +59,10 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
     protected void cleanup(Context context) throws IOException, InterruptedException {
 
         TaskAttemptID id = context.getTaskAttemptID();
-        Configuration conf = context.getConfiguration();
-        Path path = new Path(new File(conf.get(GraphExporter.OUTPUT_FOLDER), GraphExporter.METADATA_FILE_PREFIX + id.toString()).toString());
+        Path path = new Path(new File(TextOutputFormat.getOutputPath(context).toString(), GraphExporter.METADATA_FILE_PREFIX + id.toString()).toString());
+
+        if(outputStreamGenerator == null)
+            outputStreamGenerator = new FileOutputStreamGenerator();
 
         OutputStream output = outputStreamGenerator.getOutputStream(context, path);
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();

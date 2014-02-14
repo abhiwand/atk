@@ -7,10 +7,14 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -23,10 +27,12 @@ import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 
-
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({TextOutputFormat.class})
 public class TestGraphExporter {
 
     @Test
@@ -231,10 +237,14 @@ public class TestGraphExporter {
             }
         };
 
+        PowerMockito.mockStatic(FileOutputFormat.class);
+        when(FileOutputFormat.getOutputPath(any(JobContext.class))).thenReturn(new Path("123"));
 
         LongWritable key = new LongWritable(1);
         mapDriver.withInput(key, new Text("2400308\t{_id=2400308, _gb_ID=-102, etl-cf:vertex_type=R}"));
         mapDriver.addOutput(key, new Text("<node id=\"2400308\"><data key=\"_id\">2400308</data><data key=\"_gb_ID\">-102</data><data key=\"etl-cf:vertex_type\">R</data></node>"));
         mapDriver.runTest();
+
+
     }
 }
