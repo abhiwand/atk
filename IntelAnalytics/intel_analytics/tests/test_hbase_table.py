@@ -23,6 +23,7 @@
 import os
 import unittest
 import sys
+from intel_analytics.graph.biggraph import GraphWrapper
 
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
@@ -706,6 +707,25 @@ class HbaseTableTest(unittest.TestCase):
             self.transform_with_multiple_columns("fakecol1+fakecol2", "fakeout3", EvalFunctions.Math.ARITHMETIC)
         except:
             print "Caught exception on invalid column inputs for ARITHMETIC"
+
+    @patch('intel_analytics.graph.biggraph.call')
+    def test_export_sub_graph_as_graphml(self, call_method):
+
+        result_holder = {}
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+        graph = MagicMock()
+        graph.vertices = MagicMock()
+        graph.edges = MagicMock()
+        wrapper = GraphWrapper(graph)
+        wrapper.titan_table_name = "test_table"
+        statements = ["g.V('_gb_ID','11').out"]
+        wrapper.export_sub_graph_as_graphml(statements, "output.xml")
+        self.assertEqual("\"<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement></query>\"", result_holder["call_args"][result_holder["call_args"].index('-q') + 1])
+
 
 if __name__ == '__main__':
     unittest.main()
