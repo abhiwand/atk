@@ -646,5 +646,68 @@ class HbaseTableTest(unittest.TestCase):
         self.assertEqual('chararray', schema['col2'])
         self.assertEqual('long', schema['col3'])
 
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def transform_with_multiple_columns(self, featin, featout, featop, etl_schema_class, call_method):
+
+        table_name = "cross_column_test_table"
+        file_name = "cross_column_test_file"
+        feat_name = ["long1", "long2", "double1", "double2", "str1", "str2", "str3"]
+        feat_type = ["long",  "long", "double",  "double",  "chararray", "chararray", "chararray"]
+        result_holder = {}
+
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+        etl_schema_class.return_value.feature_names = feat_name
+        etl_schema_class.return_value.feature_types = feat_type
+        etl_schema_class.return_value.save_schema(table_name)
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        featname = ','.join(feat_name)
+        feattype = ','.join(feat_type)
+        featfunc = EvalFunctions.to_string(featop)
+
+        table = HBaseTable(table_name, file_name)
+        table.transform(featin, featout, featop, transformation_args = "transform_args")
+
+        self.assertEqual('pig', str(result_holder["call_args"][0]))
+        self.assertEqual(featin, result_holder["call_args"][result_holder["call_args"].index('-f') + 1])
+        self.assertEqual(featout, result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
+        self.assertEqual(featname, result_holder["call_args"][result_holder["call_args"].index('-u') + 1])
+        self.assertEqual(feattype, result_holder["call_args"][result_holder["call_args"].index('-r') + 1])
+        self.assertEqual(featfunc, result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
+        self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
+        self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
+        self.assertEqual('transform_args', result_holder["call_args"][result_holder["call_args"].index('-a') + 1])
+
+        script_path = os.path.join(config['pig_py_scripts'], 'pig_transform.py')
+        self.assertTrue(script_path in result_holder["call_args"])
+
+    def test_arithmetics(self):
+        self.transform_with_multiple_columns("long1+long2", "long3", EvalFunctions.Math.ARITHMETIC)
+        self.transform_with_multiple_columns("double1+double2", "double3", EvalFunctions.Math.ARITHMETIC)
+        self.transform_with_multiple_columns("double1-double2+4/5*6", "double4", EvalFunctions.Math.ARITHMETIC)
+
+    def test_concatentaion(self):
+        self.transform_with_multiple_columns("str1,str2", "strout1", EvalFunctions.String.CONCAT)
+        self.transform_with_multiple_columns("str1,str2,str3", "strout2", EvalFunctions.String.CONCAT)
+        self.transform_with_multiple_columns("str1,str2,\'MyString1\',str3,\'MyString2\'", "strout3", EvalFunctions.String.CONCAT)
+
+    def test_concatentaion_with_random_columns(self):
+        try:
+            self.transform_with_multiple_columns("fakecol1,fakecol2", "fakeout3", EvalFunctions.String.CONCAT)
+        except:
+            print "Caught exception on invalid column inputs for CONCAT"
+
+    def test_arithmetics_with_random_columns(self):
+        try:
+            self.transform_with_multiple_columns("fakecol1+fakecol2", "fakeout3", EvalFunctions.Math.ARITHMETIC)
+        except:
+            print "Caught exception on invalid column inputs for ARITHMETIC"
+
 if __name__ == '__main__':
     unittest.main()

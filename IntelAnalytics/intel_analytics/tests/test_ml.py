@@ -32,7 +32,6 @@ from mock import patch, Mock, MagicMock, sentinel
 _current_dir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
     os.path.join(os.path.join(_current_dir, os.pardir), os.pardir)))
-_test_data_dir = os.path.join(_current_dir, 'test_data')
 
 if __name__ == '__main__':
     sys.modules['intel_analytics.config'] = __import__('mock_config')
@@ -91,18 +90,16 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
     @patch('__builtin__.open')
     def test_page_rank_required_inputs(self, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
-        result = ml.page_rank('test_edge_property',
-                              'test_edge_label',
+        result = ml.page_rank('test_edge_label',
                               'test_output_vertex_properties')
         self.assertEqual('test_graph', result.graph_name)
 
     @patch('__builtin__.open')
     def test_page_rank_optional_inputs(self, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
-        result = ml.page_rank('test_edge_property',
-                              'test_edge_label',
+        result = ml.page_rank('test_edge_label',
                               'test_output_vertex_properties',
-                              num_worker='15')
+                              num_worker='3')
         self.assertEqual('test_graph', result.graph_name)
 
     @patch('__builtin__.open')
@@ -111,7 +108,8 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
         result = ml.belief_prop('test_vertex_properties',
                                 'test_edge_property',
                                 'test_edge_label',
-                                'test_output_vertex_properties')
+                                'test_output_vertex_properties',
+                                'test_vertex_type')
         self.assertEqual('test_graph', result.graph_name)
 
     @patch('__builtin__.open')
@@ -121,6 +119,7 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                                 'test_edge_property',
                                 'test_edge_label',
                                 'test_output_vertex_properties',
+                                'test_vertex_type',
                                 max_supersteps='25')
         self.assertEqual('test_graph', result.graph_name)
 
@@ -135,6 +134,22 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
     def test_apl_optional_inputs(self, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.avg_path_len('test_edge_label',
+                                 'test_output_vertex_properties',
+                                 num_worker='3')
+        self.assertEqual('test_graph', result.graph_name)
+
+
+    @patch('__builtin__.open')
+    def test_cc_required_inputs(self, mock_open):
+        ml = TitanGiraphMachineLearning(self.graph)
+        result = ml.connected_components('test_edge_label',
+                                 'test_output_vertex_properties')
+        self.assertEqual('test_graph', result.graph_name)
+
+    @patch('__builtin__.open')
+    def test_cc_optional_inputs(self, mock_open):
+        ml = TitanGiraphMachineLearning(self.graph)
+        result = ml.connected_components('test_edge_label',
                                  'test_output_vertex_properties',
                                  num_worker='3')
         self.assertEqual('test_graph', result.graph_name)
@@ -164,8 +179,7 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
         result = ml.lda('test_edge_property',
                         'test_edge_label',
                         'test_output_vertex_properties',
-                        'test_vertex_type',
-                        'test_edge_type')
+                        'test_vertex_type')
         self.assertEqual('test_graph', result.graph_name)
 
     @patch('__builtin__.open')
@@ -175,7 +189,6 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         'test_edge_label',
                         'test_output_vertex_properties',
                         'test_vertex_type',
-                        'test_edge_type',
                         max_supersteps='30')
         self.assertEqual('test_graph', result.graph_name)
 
@@ -221,30 +234,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         max_supersteps='10')
         self.assertEqual('test_graph', result.graph_name)
 
-    @patch('__builtin__.open')
-    def test_gd_required_inputs(self, mock_open):
-        ml = TitanGiraphMachineLearning(self.graph)
-        result = ml.gd('test_edge_property',
-                       'test_edge_label',
-                       'test_output_vertex_properties',
-                       'test_vertex_type',
-                       'test_edge_type')
-        self.assertEqual('test_graph', result.graph_name)
-
-    @patch('__builtin__.open')
-    def test_gd_optional_inputs(self, mock_open):
-        ml = TitanGiraphMachineLearning(self.graph)
-        result = ml.gd('test_edge_property',
-                       'test_edge_label',
-                       'test_output_vertex_properties',
-                       'vertex_type',
-                       'test_edge_type',
-                       max_supersteps='50')
-        self.assertEqual('test_graph', result.graph_name)
-
     def test_recommend_throw_exception(self):
         ml = TitanGiraphMachineLearning(self.graph)
-        #except to have ValueError
+        #expect to have ValueError
         with self.assertRaises(ValueError):
             ml.recommend('101010')
 
@@ -253,6 +245,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
         ml._output_vertex_property_list = 'test_vertex_properties'
         ml._vertex_type = 'test_vertex_type'
         ml._edge_type = 'test_edge_type'
+        ml._vector_value = 'test_vector_value'
+        ml._feature_dimension = 'test_dimension'
+        ml._bias_on =  'test_bias_on'
         result = ml.recommend('101010')
         self.assertEqual('test_graph', result.graph_name)
         self.assertEqual([], result.recommend_id)

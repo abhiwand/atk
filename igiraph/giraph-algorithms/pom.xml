@@ -34,25 +34,14 @@
   	<groupId>com.intel.hadoop</groupId>
   	<artifactId>IntelAnalytics-igiraph</artifactId>
   	<relativePath>../pom.xml</relativePath>  
-  	<version>0.5-SNAPSHOT</version>
+  	<version>0.8-SNAPSHOT</version>
   </parent>
 
-  <build>
-    <plugins>
-     <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <configuration>
-            <failOnViolation>false</failOnViolation>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-   <dependencies>
-      <dependency>
+  <dependencies>
+     <dependency>
         <groupId>${project.groupId}</groupId>
-          <artifactId>igiraph-core</artifactId>
-          <version>${project.version}</version>
+        <artifactId>igiraph-core</artifactId>
+        <version>${project.version}</version>
      </dependency>
-    </dependencies>
+  </dependencies>
 </project>

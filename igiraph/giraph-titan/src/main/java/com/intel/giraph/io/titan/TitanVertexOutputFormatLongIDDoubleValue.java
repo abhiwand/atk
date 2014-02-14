@@ -78,7 +78,7 @@ public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
 
     @Override
     public TextVertexWriter createVertexWriter(TaskAttemptContext context) {
-        return new TitanLongIDTwoDoubleValueWriter();
+        return new TitanLongIDDoubleValueWriter();
     }
 
     /**
@@ -86,23 +86,23 @@ public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
      * vertices with <code>Long</code> id
      * and <code>TwoVector</code> values.
      */
-    protected class TitanLongIDTwoDoubleValueWriter extends TextVertexWriterToEachLine {
+    protected class TitanLongIDDoubleValueWriter extends TextVertexWriterToEachLine {
 
         /**
          * TitanFactory to write back results
          */
         private TitanGraph graph = null;
         /**
-         * Vertex properties to filter
+         * Vertex value properties to filter
          */
-        private String[] vertexPropertyKeyList = null;
+        private String[] vertexValuePropertyKeyList = null;
 
         @Override
         public void initialize(TaskAttemptContext context) throws IOException,
             InterruptedException {
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
-            vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
+            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
         }
 
 
@@ -111,12 +111,12 @@ public class TitanVertexOutputFormatLongIDDoubleValue<I extends LongWritable,
 
             long vertexId = vertex.getId().get();
             com.tinkerpop.blueprints.Vertex bluePrintVertex = this.graph.getVertex(vertexId);
-            if (1 == vertexPropertyKeyList.length) {
-                bluePrintVertex.setProperty(vertexPropertyKeyList[0], vertex.getValue().toString());
+            if (1 == vertexValuePropertyKeyList.length) {
+                bluePrintVertex.setProperty(vertexValuePropertyKeyList[0], vertex.getValue().toString());
                 //  LOG.info("saved " + vertexId);
             } else {
                 LOG.error(VERTEX_PROPERTY_MISMATCH + EXPECTED_SIZE_OF_VERTEX_PROPERTY + "1" +
-                    REAL_SIZE_OF_VERTEX_PROPERTY + vertexPropertyKeyList.length);
+                    REAL_SIZE_OF_VERTEX_PROPERTY + vertexValuePropertyKeyList.length);
                 throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
                     CURRENT_VERTEX + vertex.getId());
             }

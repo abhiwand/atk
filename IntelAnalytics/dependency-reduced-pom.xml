@@ -3,7 +3,7 @@
   <parent>
     <artifactId>IntelAnalytics</artifactId>
     <groupId>com.intel.hadoop</groupId>
-    <version>0.5-SNAPSHOT</version>
+    <version>0.8-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>IntelAnalytics-application</artifactId>
@@ -28,7 +28,7 @@
   </build>
   <profiles>
     <profile>
-      <id>rpm-builder</id>
+      <id>python-tester</id>
       <build>
         <plugins>
           <plugin>
@@ -46,6 +46,20 @@
                   <executable>intel_analytics/tests/exec_all.sh</executable>
                 </configuration>
               </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>rpm-builder</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>1.2.1</version>
+            <executions>
               <execution>
                 <id>chmod-shellscripts</id>
                 <phase>package</phase>
@@ -56,10 +70,10 @@
                   <executable>/bin/chmod</executable>
                   <arguments>
                     <argument>+x</argument>
-                    <argument>${basedir}/../scripts/rpm/package.sh</argument>
-                    <argument>${basedir}/../scripts/rpm/fetch_sources.sh</argument>
-                    <argument>${basedir}/../scripts/rpm/build_rpms.sh</argument>
-                    <argument>${basedir}/../scripts/rpm/python.sh</argument>
+                    <argument>/home/bkeller/src/source_code/IntelAnalytics/../scripts/rpm/package.sh</argument>
+                    <argument>/home/bkeller/src/source_code/IntelAnalytics/../scripts/rpm/fetch_sources.sh</argument>
+                    <argument>/home/bkeller/src/source_code/IntelAnalytics/../scripts/rpm/build_rpms.sh</argument>
+                    <argument>/home/bkeller/src/source_code/IntelAnalytics/../scripts/rpm/python.sh</argument>
                   </arguments>
                 </configuration>
               </execution>

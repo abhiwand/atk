@@ -55,6 +55,7 @@ PYTHON_HOME=`dirname $DIR`
 export INTEL_ANALYTICS_PYTHON=`dirname $PYTHON_HOME`
 export INTEL_ANALYTICS_HOME=$INTEL_ANALYTICS_PYTHON
 export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
+export IN_UNIT_TESTS='true'
 
 pushd $INTEL_ANALYTICS_HOME
 
@@ -82,6 +83,8 @@ popd
 deactivate
 
 RESULT_FILE=$INTEL_ANALYTICS_HOME/nosetests.xml
+
+unset IN_UNIT_TESTS
 
 if grep -q 'failures="0"' "$RESULT_FILE" ; then
    echo "Python Tests Successful"

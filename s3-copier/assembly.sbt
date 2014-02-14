@@ -4,7 +4,9 @@ assemblySettings
 
 // your assembly settings here
 
-jarName in assembly := "s3-copier.jar"
+jarName in assembly := "s3copier.jar"
+
+test in assembly := {}
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {

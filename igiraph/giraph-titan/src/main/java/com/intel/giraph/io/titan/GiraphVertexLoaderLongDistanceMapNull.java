@@ -58,7 +58,7 @@ public class GiraphVertexLoaderLongDistanceMapNull {
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleFloat.class);
+    private static final Logger LOG = Logger.getLogger(GiraphVertexLoaderLongDoubleNull.class);
     /**
      * whether it is Titan system type
      */
@@ -74,7 +74,7 @@ public class GiraphVertexLoaderLongDistanceMapNull {
     /**
      * HashSet of configured edge labels
      */
-    private Set<String> edgeLabelValues = null;
+    private Set<String> edgeLabelKeys = null;
 
     /**
      * GiraphVertexLoaderLongDistanceMapNull constructor
@@ -90,7 +90,7 @@ public class GiraphVertexLoaderLongDistanceMapNull {
         vertex.initialize(new LongWritable(id), new DistanceMapWritable());
         vertexId = id;
         edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
-        edgeLabelValues = new HashSet<String>(Arrays.asList(edgeLabelList));
+        edgeLabelKeys = new HashSet<String>(Arrays.asList(edgeLabelList));
     }
 
     /**
@@ -233,7 +233,7 @@ public class GiraphVertexLoaderLongDistanceMapNull {
                 Preconditions.checkArgument(this.type.isEdgeLabel());
                 // filter Edge Label
                 if (this.relationID > 0) {
-                    if (edgeLabelValues.contains(this.type.getName())) {
+                    if (edgeLabelKeys.contains(this.type.getName())) {
                         if (this.direction.equals(Direction.OUT)) {
                             Edge<LongWritable, NullWritable> edge = EdgeFactory.create(new LongWritable(
                                 this.otherVertexID), NullWritable.get());

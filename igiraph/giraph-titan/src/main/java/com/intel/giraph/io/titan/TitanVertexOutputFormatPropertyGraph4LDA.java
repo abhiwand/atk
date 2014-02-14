@@ -43,6 +43,7 @@ import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EXPECTED_SIZ
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_GRAPH;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.REAL_SIZE_OF_VERTEX_PROPERTY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPERTY_MISMATCH;
 
 /**
@@ -105,9 +106,13 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
          */
         private TitanGraph graph = null;
         /**
-         * Vertex properties to filter
+         * Vertex value properties to filter
          */
-        private String[] vertexPropertyKeyList = null;
+        private String[] vertexValuePropertyKeyList = null;
+        /**
+         * Enable vector value
+         */
+        private String enableVectorValue = "true";
 
 
         @Override
@@ -116,7 +121,8 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
             super.initialize(context);
             this.graph = TitanGraphWriter.open(context);
             LOG.info(OPENED_GRAPH);
-            vertexPropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
+            enableVectorValue = VECTOR_VALUE.get(context.getConfiguration());
+            vertexValuePropertyKeyList = OUTPUT_VERTEX_PROPERTY_KEY_LIST.get(context.getConfiguration()).split(",");
         }
 
 
@@ -128,19 +134,44 @@ public class TitanVertexOutputFormatPropertyGraph4LDA<I extends LongWritable,
             Vector vector = vertex.getValue().getVector();
 
             //output vertex value
-            if (vector.size() == vertexPropertyKeyList.length) {
-                for (int i = 0; i < vector.size(); i++) {
-                    bluePrintVertex.setProperty(vertexPropertyKeyList[i], Double.toString(vector.getQuick(i)));
-                    //bluePrintVertex.setProperty(vertexPropertyKeyList[i], vector.getQuick(i));
+            if (enableVectorValue.equals("true")) {
+                //output in a comma separated value format
+                if (vertexValuePropertyKeyList.length == 1) {
+                    String vertexValue = "";
+                    for (int i = 0; i < vector.size(); i++) {
+                        vertexValue += Double.toString(vector.getQuick(i));
+                        if (i < (vector.size() - 1)) {
+                            vertexValue = vertexValue + ",";
+                        }
+                    }
+                    bluePrintVertex.setProperty(vertexValuePropertyKeyList[0], vertexValue);
+                } else {
+                    generateErrorMsg(1, vertex.getId().get());
                 }
             } else {
-                LOG.error(VERTEX_PROPERTY_MISMATCH + EXPECTED_SIZE_OF_VERTEX_PROPERTY + vector.size() +
-                    REAL_SIZE_OF_VERTEX_PROPERTY + vertexPropertyKeyList.length);
-                throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
-                    CURRENT_VERTEX + vertex.getId());
+                if (vector.size() == vertexValuePropertyKeyList.length) {
+                    for (int i = 0; i < vector.size(); i++) {
+                        bluePrintVertex.setProperty(vertexValuePropertyKeyList[i],
+                            Double.toString(vector.getQuick(i)));
+                    }
+                } else {
+                    generateErrorMsg(vector.size(), vertex.getId().get());
+                }
             }
 
             return null;
+        }
+
+        /**
+         *
+         * @param size  The number of vertex value properties
+         * @param vertexId  The vertex Id
+         */
+        public void generateErrorMsg(int size, long vertexId) {
+            LOG.error(VERTEX_PROPERTY_MISMATCH + EXPECTED_SIZE_OF_VERTEX_PROPERTY + size +
+                REAL_SIZE_OF_VERTEX_PROPERTY + vertexValuePropertyKeyList.length);
+            throw new IllegalArgumentException(VERTEX_PROPERTY_MISMATCH +
+                CURRENT_VERTEX + vertexId);
         }
 
         /**

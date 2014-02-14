@@ -23,24 +23,22 @@
 
 package com.intel.giraph.algorithms.lda;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import java.util.Map;
 import java.util.HashMap;
-
-import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.utils.InternalVertexRunner;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.junit.Test;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAMasterCompute;
 import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAAggregatorWriter;
 import com.intel.giraph.io.formats.JsonPropertyGraph4LDAInputFormat;
 import com.intel.giraph.io.formats.JsonPropertyGraph4LDAOutputFormat;
+
+import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.utils.InternalVertexRunner;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class CVB0LDAComputationTest {
 
@@ -49,34 +47,34 @@ public class CVB0LDAComputationTest {
      */
     @Test
     public void testToyData() throws Exception {
-        // a small five-vertex graph
+        // a small 11-vertex graph
         String[] graph = new String[] {
-            "[1,[],[d],[[-1,2,[]],[-3,1,[]]]]",
-            "[2,[],[d],[[-1,4,[]],[-3,4,[]]]]",
-            "[3,[],[d],[[-2,3,[]]]]",
-            "[4,[],[d],[[-2,6,[]]]]",
-            "[5,[],[d],[[-4,1,[]],[-5,3,[]]]]",
-            "[6,[],[d],[[-4,4,[]],[-5,2,[]]]]",
-            "[-1,[],[w],[[1,2,[]],[2,4,[]]]]",
-            "[-2,[],[w],[[3,3,[]],[4,6,[]]]]",
-            "[-3,[],[w],[[1,1,[]],[2,4,[]]]]",
-            "[-4,[],[w],[[5,1,[]],[6,4,[]]]]",
-            "[-5,[],[w],[[5,3,[]],[6,2,[]]]]"
+            "[1,[],[\"L\"],[[-1,2,[]],[-3,1,[]]]]",
+            "[2,[],[\"L\"],[[-1,4,[]],[-3,4,[]]]]",
+            "[3,[],[\"L\"],[[-2,3,[]]]]",
+            "[4,[],[\"L\"],[[-2,6,[]]]]",
+            "[5,[],[\"L\"],[[-4,1,[]],[-5,3,[]]]]",
+            "[6,[],[\"L\"],[[-4,4,[]],[-5,2,[]]]]",
+            "[-1,[],[\"R\"],[[1,2,[]],[2,4,[]]]]",
+            "[-2,[],[\"R\"],[[3,3,[]],[4,6,[]]]]",
+            "[-3,[],[\"R\"],[[1,1,[]],[2,4,[]]]]",
+            "[-4,[],[\"R\"],[[5,1,[]],[6,4,[]]]]",
+            "[-5,[],[\"R\"],[[5,3,[]],[6,2,[]]]]"
         };
 
         HashMap<Long, Double[]> expectedValues = new HashMap<Long, Double[]>();
-        expectedValues.put(1L, new Double[]{0.39540971888836407,0.4400389228117571,0.1645513582998787});
-        expectedValues.put(2L, new Double[]{0.5636766826066902,0.3392029513126395,0.09712036608067029});
-        expectedValues.put(3L, new Double[]{0.03445607335852895,0.3623027892045044,0.6032411374369667});
-        expectedValues.put(4L, new Double[]{0.01934509685453675,0.34691788510704574,0.6337370180384175});
-        expectedValues.put(5L, new Double[]{0.8345155568866784,0.07516547903223232,0.0903189640810892});
-        expectedValues.put(6L, new Double[]{0.7376090163164662,0.14546014724727488,0.11693083643625882});
-        expectedValues.put(-1L, new Double[]{0.1864179107886848,0.3134536847019867,0.10402459427447132});
-        expectedValues.put(-2L, new Double[]{0.009445193279079358,0.37335774842426245,0.7039562168192454});
-        expectedValues.put(-3L, new Double[]{0.23041662400214913,0.17213628914790263,0.057403553630716905});
-        expectedValues.put(-4L, new Double[]{0.26559424214339156,0.09496870724564004,0.07813036764847642});
-        expectedValues.put(-5L, new Double[]{0.30812603030574376,0.046083571327991596,0.05648526851858576});
-        
+        expectedValues.put(1L, new Double[]{0.39327226022569006,0.5154734233615633,0.09125431641274662});
+        expectedValues.put(2L, new Double[]{0.5558482319914905,0.3950470162065641,0.04910475180194528});
+        expectedValues.put(3L, new Double[]{0.03104958745039701,0.2456944558812926,0.7232559566683103});
+        expectedValues.put(4L, new Double[]{0.016228692898330264,0.224904766278556,0.7588665408231138});
+        expectedValues.put(5L, new Double[]{0.913307431198414,0.041242684072792385,0.045449884728793674});
+        expectedValues.put(6L, new Double[]{0.8864645776362499,0.06273490608963887,0.050800516274111134});
+        expectedValues.put(-1L, new Double[]{0.18817778276151342,0.3608563562756368,0.05115513283486491});
+        expectedValues.put(-2L, new Double[]{0.0072942875950831095,0.24210489486062656,0.8456708466481648});
+        expectedValues.put(-3L, new Double[]{0.22363876113033948,0.20580039507671766,0.03364507449663104});
+        expectedValues.put(-4L, new Double[]{0.32297026842503956,0.04200165323881062,0.035281823967909486});
+        expectedValues.put(-5L, new Double[]{0.33968467678632336,0.023150094485135348,0.02639742680737546});
+
         GiraphConfiguration conf = new GiraphConfiguration();
 
         conf.setComputationClass(CVB0LDAComputation.class);
@@ -90,6 +88,7 @@ public class CVB0LDAComputationTest {
         conf.set("lda.beta", "0.1");
         conf.set("lda.convergenceThreshold", "0");
         conf.set("lda.evaluateCost", "true");
+        conf.set("lda.bidirectionalCheck", "true");
 
         // run internally
         Iterable<String> results = InternalVertexRunner.run(conf, graph);

@@ -18,6 +18,7 @@ mkdir $source_folder/target
 shopt -s extglob
 cp -R $src/!(exclude|dist|target|build|src|tests|*.ipynb|ipython|install_pyenv.sh) $source_folder
 cp $src/target/*.jar $source_folder/target/
+cp $src/notebooks $source_folder/
 rm $source_folder/original-*.jar
 rm -rf $source_folder/intel_analytics
 rm -rf $source_folder/bin/*python*
@@ -30,6 +31,7 @@ mkdir $python_folder/conf
 
 cp -R $src/intel_analytics $python_folder
 cp $src/conf/intel_analytics.properties $python_folder/conf
+cp $src/conf/pig_log4j.properties $python_folder/conf
 cp $src/conf/ipython_notebook_config.py $python_folder/conf
 mkdir $python_folder/bin
 cp -R $src/bin/IntelAnalytics-ipython $python_folder/bin

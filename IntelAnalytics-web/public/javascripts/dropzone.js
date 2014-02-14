@@ -411,6 +411,7 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
     Dropzone.prototype.events = ["drop", "dragstart", "dragend", "dragenter", "dragover", "dragleave", "selectedfiles", "addedfile", "removedfile", "thumbnail", "error", "errormultiple", "processing", "processingmultiple", "uploadprogress", "totaluploadprogress", "sending", "sendingmultiple", "success", "successmultiple", "canceled", "canceledmultiple", "complete", "completemultiple", "reset", "maxfilesexceeded"];
 
     Dropzone.prototype.defaultOptions = {
+      legs:2,
       url: null,
       method: "post",
       withCredentials: false,
@@ -588,13 +589,16 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
       },
       processingmultiple: noop,
       uploadprogress: function(file, progress, bytesSent) {
+          console.log("progress: " + progress)
+
         return file.previewElement.querySelector("[data-dz-uploadprogress]").style.width = "" + progress + "%";
       },
       totaluploadprogress: noop,
       sending: noop,
       sendingmultiple: noop,
       success: function(file) {
-        return file.previewElement.classList.add("dz-success");
+
+        //return file.previewElement.classList.add("dz-success");
       },
       successmultiple: noop,
       canceled: function(file) {
@@ -767,7 +771,7 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
               _this.handleFiles(files);
             }
             return setupHiddenFileInput();
-          });
+          }, null);
         };
         setupHiddenFileInput();
       }
@@ -865,6 +869,7 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
       } else {
         totalUploadProgress = 100;
       }
+        totalUploadProgress = totalUploadProgress/2
       return this.emit("totaluploadprogress", totalUploadProgress, totalBytes, totalBytesSent);
     };
 
@@ -1326,9 +1331,11 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
             return;
           }
         }
+        progress = progress /2
         _results = [];
         for (_l = 0, _len3 = files.length; _l < _len3; _l++) {
           file = files[_l];
+
           _results.push(_this.emit("uploadprogress", file, progress, file.upload.bytesSent));
         }
         return _results;
@@ -1415,8 +1422,10 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
       for (_i = 0, _len = files.length; _i < _len; _i++) {
         file = files[_i];
         file.status = Dropzone.SUCCESS;
+        //remove progress upload
         this.emit("success", file, responseText, e);
-        this.emit("complete", file);
+
+        //this.emit("complete", file);
       }
       if (this.options.uploadMultiple) {
         this.emit("successmultiple", files, responseText, e);
@@ -1676,6 +1685,8 @@ require.register("dropzone/lib/dropzone.js", function(exports, require, module){
   Dropzone.ERROR = "error";
 
   Dropzone.SUCCESS = "success";
+
+  Dropzone.POLLING = "polling"
 
   /*
   # contentloaded.js
