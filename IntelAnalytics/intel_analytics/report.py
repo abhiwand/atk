@@ -114,7 +114,7 @@ class FaunusProgressReportStrategy(ProgressReportStrategy):
             return True
 
     def report(self, line):
-        if self.is_job_complete_signaled(line):
+        if self.is_job_complete_signaled(line) and self.job_progress_bar_list[-1].value < 100:
             self.job_progress_bar_list[-1].update(100)
         else:
             super(FaunusProgressReportStrategy, self).report(line)
