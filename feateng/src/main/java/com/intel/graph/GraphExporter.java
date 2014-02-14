@@ -103,6 +103,15 @@ public class GraphExporter {
         job.waitForCompletion(true);
     }
 
+    /**
+     * Parse the query statement xml and return a list of strings
+     * which contains query statements.
+     * @param queryXML
+     * @return List of string which contains query statements
+     * @throws ParserConfigurationException
+     * @throws IOException
+     * @throws SAXException
+     */
     public static List<String> getStatementListFromXMLString(String queryXML) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -119,6 +128,13 @@ public class GraphExporter {
         return statements;
     }
 
+    /**
+     * Determine which is the result folder. Faunus query can involve multiple
+     * step. Each step creates a folder. The query result is written to the last
+     * created folder.
+     * @param fileStatuses
+     * @return Path to the folder which contains the query result
+     */
     public static Path getResultFolder(FileStatus[] fileStatuses) {
 
         if (fileStatuses == null || fileStatuses.length == 0)
