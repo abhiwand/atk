@@ -81,10 +81,10 @@ def recommend(Vertex v,
     list1 = getResults(v, propertyList, vectorValue, biasOn)
 
     def list = []
-    for(Vertex v2 : g.V.filter{it.getProperty(key4VertexType) == recommendType}) {
+    for(Vertex v2 : g.V.filter{it.getProperty(key4VertexType).toLowerCase() == recommendType}) {
         list2 = getResults(v2, propertyList, vectorValue, biasOn)
         score = calculateScore(list1, list2, biasOn, featureDimension)
-        if (v2.outE.filter{it.getProperty(key4EdgeType) != trainStr}){
+        if (v2.outE.filter{it.getProperty(key4EdgeType).toLowerCase() != trainStr}){
             list.add new recommendation(id:v2.getProperty(key4VertexID), rec:score)
         }
     }
