@@ -23,7 +23,7 @@
 * with the Link-Page graph created from the Wikipedia dataset
 */
 
-REGISTER target/graphbuilder-2.0-alpha.jar
+REGISTER target/graphbuilder-2.0-alpha-with-deps.jar
 IMPORT 'pig/graphbuilder.pig';
 
 --prepare temp storage that is used by the LOAD_TITAN macro
