@@ -29,6 +29,7 @@ public class GraphExporter {
     public static final String SCHEMA = "schema";
     public static final String FEATURE = "feature";
     public static final String JOB_NAME = "Export graph";
+    public static final String OUTPUT_FOLDER = "output_folder";
 
     public static void main(String[] args) throws ParseException, ParserConfigurationException, SAXException, IOException, InterruptedException, ClassNotFoundException {
 
@@ -96,6 +97,7 @@ public class GraphExporter {
         }
 
         TextOutputFormat.setOutputPath(job, exporterOutputDir);
+        conf.set(OUTPUT_FOLDER, exporterOutputDir.toString());
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
         job.setNumReduceTasks(1);

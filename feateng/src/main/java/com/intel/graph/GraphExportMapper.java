@@ -1,7 +1,6 @@
 package com.intel.graph;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -24,6 +23,7 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
 
     IGraphElementFactory elementFactory = null;
     XMLOutputFactory xmlInputFactory = null;
+    IFileOutputStreamGenerator outputStreamGenerator = null;
 
     Map<String, GraphElementType> propertyElementTypeMapping = new HashMap<String, GraphElementType>();
 
@@ -31,6 +31,7 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
     protected void setup(Context context) {
         elementFactory = new TitanFaunusGraphElementFactory();
         xmlInputFactory = XMLOutputFactory.newInstance();
+        outputStreamGenerator = new FileOutputStreamGenerator();
     }
 
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
@@ -57,12 +58,12 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
 
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
+
         TaskAttemptID id = context.getTaskAttemptID();
+        Configuration conf = context.getConfiguration();
+        Path path = new Path(new File(conf.get(GraphExporter.OUTPUT_FOLDER), GraphExporter.METADATA_FILE_PREFIX + id.toString()).toString());
 
-        Path path = new Path(new File(TextOutputFormat.getOutputPath(context).toString(), GraphExporter.METADATA_FILE_PREFIX + id.toString()).toString());
-        FileSystem fs = FileSystem.get(context.getConfiguration());
-
-        OutputStream output = fs.create(path, true);
+        OutputStream output = outputStreamGenerator.getOutputStream(context, path);
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
         try {
             XMLStreamWriter writer = outputFactory.createXMLStreamWriter(output, "UTF8");
@@ -71,6 +72,8 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
             throw new RuntimeException("Failed to export schema info from mapper");
         }
     }
+
+
 
     public void writeSchemaToXML(XMLStreamWriter writer, Map<String, GraphElementType> propertyElementTypeMapping) throws XMLStreamException {
         writer.writeStartDocument();
@@ -89,5 +92,6 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         writer.flush();
         writer.close();
     }
+
 }
 

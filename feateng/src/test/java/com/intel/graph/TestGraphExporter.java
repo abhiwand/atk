@@ -1,29 +1,32 @@
 package com.intel.graph;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Test;
+import org.powermock.api.mockito.PowerMockito;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
+
+
 public class TestGraphExporter {
 
     @Test
@@ -215,16 +218,23 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testMap() throws IOException {
+    public void testMap() throws IOException, InterruptedException {
         GraphExportMapper mapper = new GraphExportMapper();
         MapDriver<LongWritable, Text, LongWritable, Text> mapDriver = new MapDriver<LongWritable, Text, LongWritable, Text>();
         mapDriver.setMapper(mapper);
 
-        LongWritable key = new LongWritable(1);
+        final ByteArrayOutputStream f = new ByteArrayOutputStream();
+        mapper.outputStreamGenerator = new IFileOutputStreamGenerator() {
+            @Override
+            public OutputStream getOutputStream(JobContext context, Path path) throws IOException {
+                return f;
+            }
+        };
 
+
+        LongWritable key = new LongWritable(1);
         mapDriver.withInput(key, new Text("2400308\t{_id=2400308, _gb_ID=-102, etl-cf:vertex_type=R}"));
         mapDriver.addOutput(key, new Text("<node id=\"2400308\"><data key=\"_id\">2400308</data><data key=\"_gb_ID\">-102</data><data key=\"etl-cf:vertex_type\">R</data></node>"));
-
         mapDriver.runTest();
     }
 }
