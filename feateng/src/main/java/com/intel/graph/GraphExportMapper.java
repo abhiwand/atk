@@ -23,7 +23,7 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
 
     IGraphElementFactory elementFactory = null;
     XMLOutputFactory xmlInputFactory = null;
-    IFileOutputStreamGenerator outputStreamGenerator = null;
+    IFileOutputStreamGenerator outputStreamGenerator = new FileOutputStreamGenerator();
 
     Map<String, GraphElementType> propertyElementTypeMapping = new HashMap<String, GraphElementType>();
 
@@ -60,9 +60,6 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
 
         TaskAttemptID id = context.getTaskAttemptID();
         Path path = new Path(new File(TextOutputFormat.getOutputPath(context).toString(), GraphExporter.METADATA_FILE_PREFIX + id.toString()).toString());
-
-        if(outputStreamGenerator == null)
-            outputStreamGenerator = new FileOutputStreamGenerator();
 
         OutputStream output = outputStreamGenerator.getOutputStream(context, path);
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
