@@ -11,18 +11,9 @@ class TestGraph(unittest.TestCase):
         statements.append("g.V('_gb_ID','11').outE")
 
         xml = GraphWrapper._get_query_xml(statements)
-        expected = "\"<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement><statement>g.V('_gb_ID','11').outE.transform('{[it,it.map()]}')</statement></query>\""
+        expected = "<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement><statement>g.V('_gb_ID','11').outE.transform('{[it,it.map()]}')</statement></query>"
         self.assertEqual(xml, expected)
 
-    def test_get_schema_xml(self):
-        schema = {}
-        schema['etl-cf:edge_type'] = 'chararray'
-        schema['etl-cf:weight'] = 'long'
-
-
-        xml = GraphWrapper._get_schema_xml(schema)
-        expected = "<schema><feature name=\"etl-cf:weight\" type=\"long\" /><feature name=\"etl-cf:edge_type\" type=\"chararray\" /></schema>"
-        self.assertEqual(xml, expected)
 
     @patch('intel_analytics.graph.biggraph.call')
     def test_export_sub_graph_as_graphml(self, call_method):
@@ -41,7 +32,7 @@ class TestGraph(unittest.TestCase):
         GraphWrapper._get_query_xml = MagicMock(return_value = "<query><statement>g.V('_gb_ID','11').out.map</statement></query>")
         wrapper.export_sub_graph_as_graphml(statements, "output.xml")
 
-        self.assertEqual("<query><statement>g.V('_gb_ID','11').out.map</statement></query>", result_holder["call_args"][result_holder["call_args"].index('-q') + 1])
+        self.assertEqual("\"<query><statement>g.V('_gb_ID','11').out.map</statement></query>\"", result_holder["call_args"][result_holder["call_args"].index('-q') + 1])
 
     def test_receive_faunus_job_complete_signal_no_signal(self):
         reportStrategy = FaunusProgressReportStrategy()
