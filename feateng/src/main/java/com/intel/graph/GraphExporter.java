@@ -53,6 +53,7 @@ public class GraphExporter {
 
         Configuration conf = new Configuration();
         conf.set(FILE, fileName);
+        conf.set(OUTPUT_FOLDER, exporterOutputDir.toString());
         Job job = new Job(conf, JOB_NAME);
         job.setJarByClass(GraphExporter.class);
         job.setMapperClass(GraphExportMapper.class);
@@ -97,7 +98,7 @@ public class GraphExporter {
         }
 
         TextOutputFormat.setOutputPath(job, exporterOutputDir);
-        conf.set(OUTPUT_FOLDER, exporterOutputDir.toString());
+
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
         job.setNumReduceTasks(1);
