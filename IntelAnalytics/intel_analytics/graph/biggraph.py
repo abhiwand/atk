@@ -434,7 +434,7 @@ class GraphWrapper:
         file: String
             output file path
         """
-        xml = '\"' + GraphWrapper._get_query_xml(statements) + '\"'
+        xml = '\"' + self._get_query_xml(statements) + '\"'
         temp_output = 'graph_query'
 
         args = []
@@ -452,8 +452,7 @@ class GraphWrapper:
         if return_code:
             raise Exception('Could not export graph')
 
-    @staticmethod
-    def _get_query_xml(statements):
+    def _get_query_xml(self, statements):
         """
         Returns a xml containing query statement as individual child node
 

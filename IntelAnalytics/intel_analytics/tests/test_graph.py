@@ -9,8 +9,8 @@ class TestGraph(unittest.TestCase):
         statements = []
         statements.append("g.V('_gb_ID','11').out")
         statements.append("g.V('_gb_ID','11').outE")
-
-        xml = GraphWrapper._get_query_xml(statements)
+        wrapper = GraphWrapper(MagicMock())
+        xml = wrapper._get_query_xml(statements)
         expected = "<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement><statement>g.V('_gb_ID','11').outE.transform('{[it,it.map()]}')</statement></query>"
         self.assertEqual(xml, expected)
 
@@ -27,9 +27,8 @@ class TestGraph(unittest.TestCase):
         graph = MagicMock()
         graph.vertices = MagicMock()
         graph.edges = MagicMock()
-        graph.titan_table_name = "test_graph_table"
-
         wrapper = GraphWrapper(graph)
+        wrapper.titan_table_name = "test_table"
         statements = ["g.V('_gb_ID','11').out"]
         wrapper.export_sub_graph_as_graphml(statements, "output.xml")
 
