@@ -1,6 +1,10 @@
 package com.intel.graph;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -158,5 +162,69 @@ public class TestGraphExporter {
                 "<node id=\"4000284\"><data key=\"_id\">4000284</data><data key=\"_gb_ID\">-304</data><data key=\"etl-cf:vertex_type\">R</data></node>\n" +
                 "</graph></graphml>";
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void testWriteSchemaToXML() throws XMLStreamException {
+        ByteArrayOutputStream f = new ByteArrayOutputStream();
+        XMLOutputFactory xmlInputFactory = XMLOutputFactory.newInstance();
+        xmlInputFactory.setProperty("escapeCharacters", false);
+        XMLStreamWriter writer = xmlInputFactory.createXMLStreamWriter(f);
+
+        GraphExportMapper mapper = new GraphExportMapper();
+        Map<String, GraphElementType> propertyElementTypeMapping = new HashMap<String, GraphElementType>();
+        propertyElementTypeMapping.put("etl-cf:edge_type", GraphElementType.Edge);
+        propertyElementTypeMapping.put("etl-cf:weight", GraphElementType.Edge);
+        propertyElementTypeMapping.put("_id", GraphElementType.Vertex);
+        propertyElementTypeMapping.put("_gb_ID", GraphElementType.Vertex);
+        propertyElementTypeMapping.put("etl-cf:vertex_type", GraphElementType.Vertex);
+        mapper.writeSchemaToXML(writer, propertyElementTypeMapping);
+
+        String result = f.toString();
+        String expected = "<?xml version=\"1.0\" ?><schema><feature attr.name=\"_id\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:edge_type\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"etl-cf:weight\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"_gb_ID\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:vertex_type\" attr.type=\"bytearray\" for=\"Vertex\"></feature></schema>";
+        assertEquals(expected, result);
+    }
+
+    @Test
+    public void testCollectSchemaInfo() {
+        Map<String, GraphElementType> propertyElementTypeMapping = new HashMap<String, GraphElementType>();
+        GraphExportMapper mapper = new GraphExportMapper();
+        IGraphElement vertex = new VertexElement(1);
+        Map<String, Object> vertexAttributes = new HashMap<String, Object>();
+        vertexAttributes.put("vf1", 1);
+        vertexAttributes.put("vf2", 1);
+        vertexAttributes.put("vf3", 1);
+        vertex.setAttributes(vertexAttributes);
+
+        IGraphElement edge = new EdgeElement(2);
+        Map<String, Object> edgeAttributes = new HashMap<String, Object>();
+        edgeAttributes.put("ef1", 1);
+        edgeAttributes.put("ef2", 1);
+        edgeAttributes.put("ef3", 1);
+        edge.setAttributes(edgeAttributes);
+
+        mapper.collectSchemaInfo(vertex, propertyElementTypeMapping);
+        mapper.collectSchemaInfo(edge, propertyElementTypeMapping);
+        assertEquals(6, propertyElementTypeMapping.size());
+        assertEquals(GraphElementType.Vertex, propertyElementTypeMapping.get("vf1"));
+        assertEquals(GraphElementType.Vertex, propertyElementTypeMapping.get("vf2"));
+        assertEquals(GraphElementType.Vertex, propertyElementTypeMapping.get("vf3"));
+        assertEquals(GraphElementType.Edge, propertyElementTypeMapping.get("ef1"));
+        assertEquals(GraphElementType.Edge, propertyElementTypeMapping.get("ef2"));
+        assertEquals(GraphElementType.Edge, propertyElementTypeMapping.get("ef3"));
+    }
+
+    @Test
+    public void testMap() throws IOException {
+        GraphExportMapper mapper = new GraphExportMapper();
+        MapDriver<LongWritable, Text, LongWritable, Text> mapDriver = new MapDriver<LongWritable, Text, LongWritable, Text>();
+        mapDriver.setMapper(mapper);
+
+        LongWritable key = new LongWritable(1);
+
+        mapDriver.withInput(key, new Text("2400308\t{_id=2400308, _gb_ID=-102, etl-cf:vertex_type=R}"));
+        mapDriver.addOutput(key, new Text("<node id=\"2400308\"><data key=\"_id\">2400308</data><data key=\"_gb_ID\">-102</data><data key=\"etl-cf:vertex_type\">R</data></node>"));
+
+        mapDriver.runTest();
     }
 }

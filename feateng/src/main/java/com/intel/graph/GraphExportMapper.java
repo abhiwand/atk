@@ -15,6 +15,7 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -47,10 +48,10 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         }
     }
 
-    private void collectSchemaInfo(IGraphElement element, Map<String, GraphElementType> propertyElementTypeMapping1) {
+    public void collectSchemaInfo(IGraphElement element, Map<String, GraphElementType> propertyElementTypeMapping) {
         Set<String> keySet = element.getAttributes().keySet();
         for(String feature : keySet) {
-            propertyElementTypeMapping1.put(feature, element.getElementType());
+            propertyElementTypeMapping.put(feature, element.getElementType());
         }
     }
 
@@ -61,7 +62,7 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         Path path = new Path(new File(TextOutputFormat.getOutputPath(context).toString(), GraphExporter.METADATA_FILE_PREFIX + id.toString()).toString());
         FileSystem fs = FileSystem.get(context.getConfiguration());
 
-        FSDataOutputStream output = fs.create(path, true);
+        OutputStream output = fs.create(path, true);
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
         try {
             XMLStreamWriter writer = outputFactory.createXMLStreamWriter(output, "UTF8");
@@ -71,11 +72,11 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         }
     }
 
-    private void writeSchemaToXML(XMLStreamWriter writer, Map<String, GraphElementType> propertyElementTypeMapping1) throws XMLStreamException {
+    public void writeSchemaToXML(XMLStreamWriter writer, Map<String, GraphElementType> propertyElementTypeMapping) throws XMLStreamException {
         writer.writeStartDocument();
         writer.writeStartElement(GraphExporter.SCHEMA);
 
-        for(Map.Entry<String, GraphElementType> e : propertyElementTypeMapping1.entrySet()) {
+        for(Map.Entry<String, GraphElementType> e : propertyElementTypeMapping.entrySet()) {
             writer.writeStartElement(GraphExporter.FEATURE);
             writer.writeAttribute(GraphMLTokens.ATTR_NAME, e.getKey());
             writer.writeAttribute(GraphMLTokens.ATTR_TYPE, "bytearray");
