@@ -17,22 +17,23 @@ class TestGraph(unittest.TestCase):
 
     @patch('intel_analytics.graph.biggraph.call')
     def test_export_sub_graph_as_graphml(self, call_method):
-        call_method.return_value = None
+
         result_holder = {}
         def call_side_effect(arg, report_strategy):
             result_holder["call_args"] = arg
 
+        call_method.return_value = None
         call_method.side_effect = call_side_effect
         graph = MagicMock()
         graph.vertices = MagicMock()
         graph.edges = MagicMock()
         graph.titan_table_name = "test_graph_table"
+
         wrapper = GraphWrapper(graph)
-        statements = []
-        GraphWrapper._get_query_xml = MagicMock(return_value = "<query><statement>g.V('_gb_ID','11').out.map</statement></query>")
+        statements = ["g.V('_gb_ID','11').out"]
         wrapper.export_sub_graph_as_graphml(statements, "output.xml")
 
-        self.assertEqual("\"<query><statement>g.V('_gb_ID','11').out.map</statement></query>\"", result_holder["call_args"][result_holder["call_args"].index('-q') + 1])
+        self.assertEqual("\"<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement></query>\"", result_holder["call_args"][result_holder["call_args"].index('-q') + 1])
 
     def test_receive_faunus_job_complete_signal_no_signal(self):
         reportStrategy = FaunusProgressReportStrategy()
