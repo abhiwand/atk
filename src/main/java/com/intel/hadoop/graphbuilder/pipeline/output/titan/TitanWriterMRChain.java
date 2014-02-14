@@ -19,7 +19,6 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,8 +29,6 @@ import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
@@ -527,27 +524,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      */
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
-		String pathExpression = System.getenv("GB_HOME") + File.separator
-				+ "target" + File.separator + "lib/*";
-        FileSystem filesystem = FileSystem.getLocal(new Configuration());
-        FileStatus[] files = filesystem.globStatus(new Path(pathExpression));
-        boolean filesExist = !(files == null || files.length == 0);
-		if (filesExist) {
-			for (FileStatus file : files) {
-				Path path = file.getPath();
-				LOG.info("Adding file to distributed cache " + path);
-				DistributedCache.addFileToClassPath(path, conf);
-			}
-		} else {
-			GraphBuilderExit
-					.graphbuilderFatalExitNoException(
-							StatusCode.CANNOT_FIND_DEPENDENCIES,
-							"GRAPHBUILDER_FAILURE: Couldn't find dependencies under "
-									+ pathExpression
-									+ ". Please make sure it contains Graph Builder dependencies",
-							LOG);
-		}
-    	
+   	
 		// Warns the user if the Titan table already exists in Hbase.
 		
         String titanTableName = TitanConfig.config.getProperty
