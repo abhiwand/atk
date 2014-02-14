@@ -365,7 +365,6 @@ def _get_graph_builder_factory_class():
 
 class GraphWrapper:
     def __init__(self, graph):
-        self.__dict__ = graph.__dict__.copy()
         self._graph = graph
         self._graph.vertices.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
         self._graph.edges.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
@@ -379,6 +378,26 @@ class GraphWrapper:
     @property
     def edges(self):
         return self._graph.edges
+
+    @property
+    def client(self):
+        return self._graph.client
+
+    @property
+    def config(self):
+        return self._graph.config
+
+    @property
+    def factory(self):
+        return self._graph.factory
+
+    @property
+    def gremlin(self):
+        return self._graph.gremlin
+
+    @property
+    def scripts(self):
+        return self._graph.scripts
 
     def load_graphml(self,uri):
         self._graph.load_graphml(uri)
