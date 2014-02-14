@@ -1,6 +1,8 @@
 package com.intel.graph;
 
-
+/**
+ * Tokens used in graphml construction
+ */
 public class GraphMLTokens {
     public static final String XML_SCHEMA_NAMESPACE_TAG = "xsi";
     public static final String DEFAULT_GRAPHML_SCHEMA_LOCATION = "http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd";

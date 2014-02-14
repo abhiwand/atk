@@ -84,6 +84,10 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         writeGraphMLEndSection(writer);
     }
 
+    /**
+     * Write the ending tags for the graphml file
+     * @param writer: stream writer to xml output
+     */
     public void writeGraphMLEndSection(XMLStreamWriter writer) {
         try {
             writer.writeEndElement(); // graph
@@ -96,6 +100,13 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         }
     }
 
+    /**
+     * Write the header section for the graphml file
+     * @param writer: stream writer to xml output
+     * @param vertexKeyTypes: mapping of vetex's property name and property type
+     * @param edgeKeyTypes: mapping of edge's property name and property type
+     * @throws XMLStreamException
+     */
     public void writeGraphMLHeaderSection(XMLStreamWriter writer, Map<String, String> vertexKeyTypes, Map<String, String> edgeKeyTypes) throws XMLStreamException {
         writer.writeStartDocument();
         writer.writeStartElement(GraphMLTokens.GRAPHML);
@@ -116,6 +127,13 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         writer.writeAttribute(GraphMLTokens.EDGEDEFAULT, GraphMLTokens.DIRECTED);
     }
 
+    /**
+     * Write schema to schema section for the graphml file
+     * @param writer: stream writer to xml output
+     * @param vertexKeyTypes: mapping of vetex's property name and property type
+     * @param node: The string representation for the type of the element
+     * @throws XMLStreamException
+     */
     public void writeSchemaInfo(XMLStreamWriter writer, Map<String, String> vertexKeyTypes, String node) throws XMLStreamException {
         Set<String> keySet = vertexKeyTypes.keySet();
         for (String key : keySet) {
@@ -147,6 +165,11 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         }
     }
 
+    /**
+     * Write the element node data which is from mapper to the graphml file
+     * @param writer: stream writer to xml output
+     * @param value: The content of the element node data. eg: <node id="800380"><data key="_id">800380</data><data key="_gb_ID">-395</data><data key="etl-cf:vertex_type">R</data></node>
+     */
     public void writeElementData(XMLStreamWriter writer, String value) {
         try {
             writer.writeCharacters(value);

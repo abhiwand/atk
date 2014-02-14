@@ -1,6 +1,5 @@
 package com.intel.graph;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -48,6 +47,12 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         }
     }
 
+    /**
+     * Iterating through the attribute name of the element. Record the attribute names and
+     * associate them with the element's type in propertyElementTypeMapping
+     * @param element: The graph element
+     * @param propertyElementTypeMapping: The mapping between attribute name and the type of element that the attribute is from
+     */
     public void collectSchemaInfo(IGraphElement element, Map<String, GraphElementType> propertyElementTypeMapping) {
         Set<String> keySet = element.getAttributes().keySet();
         for(String feature : keySet) {
@@ -72,7 +77,12 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
     }
 
 
-
+    /**
+     * Taking the collected schema information and writing it to xml
+     * @param writer: stream writer to xml output
+     * @param propertyElementTypeMapping mapping between attribute name and element type
+     * @throws XMLStreamException
+     */
     public void writeSchemaToXML(XMLStreamWriter writer, Map<String, GraphElementType> propertyElementTypeMapping) throws XMLStreamException {
         writer.writeStartDocument();
         writer.writeStartElement(GraphExporter.SCHEMA);
