@@ -85,17 +85,17 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         private List<String> propertyColumnNames;
         boolean              isBiDirectional;
 
-        private EdgeRule() {
+        protected EdgeRule() {
 
-        };
+        }
 
         /**
-         * This constructor must take source, destination, and bidirectionality 
+         * This constructor must take source, destination, and bidirectionality
 		 * as arguments.
          * <p>There is no public default constructor.</p>
-         * @param {@code srcColumnName}  The column name from which to get the 
+         * @param {@code srcColumnName}  The column name from which to get the
 		 *                               source vertex.
-         * @param {@code dstColumnName}  The column name from which to get the 
+         * @param {@code dstColumnName}  The column name from which to get the
 		 *                               destination vertex.
          * @param {@code biDirectional}  Is this edge bidirectional or not?
          */
@@ -146,7 +146,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     /**
      * Extracts the vertex and edge generation rules from the configuration.
      *
-     * The edge and vertex rules are placed in the configuration by 
+     * The edge and vertex rules are placed in the configuration by
 	 * the {@code HBaseGraphBuildingRule}.
      *
      * @param {@code conf}  The jobc configuration, provided by Hadoop.
@@ -216,7 +216,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             List<String> edgePropertyCols =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
 
-            EdgeRule edgeRule         = new EdgeRule(srcVertexColName, tgtVertexColName, DIRECTED);
+            EdgeRule edgeRule = new EdgeRule(srcVertexColName, tgtVertexColName, DIRECTED);
 
             for (String edgePropertyColumn : edgePropertyCols) {
                 edgeRule.addPropertyColumnName(edgePropertyColumn);
@@ -226,7 +226,6 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             edgeLabelList.add(label);
 
         }
-
     }
 
 
@@ -236,7 +235,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
      * Leading and trailing whitespace is trimmed from all entries.
      *
      * @param {@code columns}         The HTable columns for the current row.
-     * @param {@code fullColumnName}  The Name of the HTABLE column - 
+     * @param {@code fullColumnName}  The Name of the HTABLE column -
 	 *                                {@code column_family:column_qualifier}.
      * @param {@code context}         Hadoop's mapper context. Used for error logging.
      */
@@ -288,7 +287,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     }
 
     /**
-     * Reads an hbase record, and generate vertices and edges according to the 
+     * Reads an hbase record, and generate vertices and edges according to the
      * generation rules previously extracted from the configuration.
      *
      * @param {@code record}   An hbase row.
@@ -464,11 +463,10 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     /**
      * This method is used to emit edges from the HBaseReaderMapper
      * @param edge
-     * @param context
      * @param baseMapper
      */
-    public void writeEdgeToContext(Edge edge, Mapper.Context context, BaseMapper baseMapper)
-    {
+    public void writeEdgeToContext(Edge<StringType> edge, Mapper.Context context, BaseMapper baseMapper) {
+
         try {
             IntWritable mapKey = baseMapper.getMapKey();
             mapKey.set(baseMapper.getKeyFunction().getEdgeKey(edge));
@@ -485,10 +483,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     /**
      * This method is used to emit vertices from the HBaseReaderMapper
      * @param vertex
-     * @param context
      * @param baseMapper
      */
-    public void writeVertexToContext(Vertex vertex, Mapper.Context context, BaseMapper baseMapper) {
+    public void writeVertexToContext(Vertex<StringType> vertex, Mapper.Context context, BaseMapper baseMapper) {
 
         try {
             IntWritable mapKey = baseMapper.getMapKey();

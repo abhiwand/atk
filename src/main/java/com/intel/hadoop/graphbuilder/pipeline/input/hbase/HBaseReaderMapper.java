@@ -47,7 +47,7 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedGraphE
 	 * Any errors during setup will be caught by the {@code BaseMapper} class and logged as fatal 
 	 * and a {@code system.exit} will be called.
      *
-     * @param {@code context} The mapper context.
+     * @param context The mapper context
      */
 
     @Override
@@ -65,14 +65,16 @@ public class HBaseReaderMapper extends TableMapper<IntWritable, SerializedGraphE
      * {@code contex.write} inside the base mapper class will be caught and logged as errors so we can
      * continue to the next record.	 
      *
-     * @param {@code row}      The row key.
-     * @param {@code columns}  The columns of the row.
-     * @param {@code context}  The task context.
+     * @param row      The row key
+     * @param columns  The columns of the row
+     * @param context  The task context
      */
 
     @Override
     public void map(ImmutableBytesWritable row, Result columns, Context context) {
 
+        if (baseMapper.getContext() == null)
+            baseMapper.setContext(context);
         context.getCounter(GBHTableConfiguration.Counters.HTABLE_ROWS_READ).increment(1);
 
         RecordTypeHBaseRow record = getRecordTypeHBaseRow(row, columns);

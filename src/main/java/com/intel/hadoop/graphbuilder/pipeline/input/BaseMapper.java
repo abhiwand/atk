@@ -23,8 +23,6 @@
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
@@ -33,7 +31,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * This class implements the basic mapper {@code context.writes} tasks 
@@ -52,14 +49,13 @@ public class BaseMapper {
         EDGE_WRITE_ERROR,
     }
 
-    private Logger               log;
-    private IntWritable          mapKey;
+    private Logger                 log;
+    private IntWritable            mapKey;
     private SerializedGraphElement mapVal;
-    private Class                valClass;
-    private GraphTokenizer       tokenizer;
-    private KeyFunction          keyFunction;
-    private Mapper.Context       context;
-    private Configuration        conf;
+    private Class                  valClass;
+    private GraphTokenizer         tokenizer;
+    private KeyFunction            keyFunction;
+    private Mapper.Context         context;
 
     /**
      * An Exception construction will log a fatal error and cause a {@code system.exit}. There is no point in 
@@ -72,7 +68,6 @@ public class BaseMapper {
     public BaseMapper(Mapper.Context context, Configuration conf, Logger log) {
         this.context = context;
         this.log     = log;
-        this.conf    = conf;
         setUp(conf);
     }
 
@@ -228,5 +223,13 @@ public class BaseMapper {
 
     public KeyFunction getKeyFunction() {
         return keyFunction;
+    }
+
+    public Mapper.Context getContext() {
+        return context;
+    }
+
+    public void setContext(Mapper.Context context) {
+        this.context = context;
     }
 }
