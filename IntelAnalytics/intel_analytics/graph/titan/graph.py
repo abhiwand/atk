@@ -28,7 +28,7 @@ __all__ = []
 
 from intel_analytics.graph.biggraph import \
     PropertyGraphBuilder, BipartiteGraphBuilder,\
-    GraphBuilderEdge, GraphBuilderFactory, GraphTypes, GraphWrapper
+    GraphBuilderEdge, GraphBuilderFactory, GraphTypes
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 from intel_analytics.graph.titan.config import titan_config
@@ -93,7 +93,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def _get_graph(self, graph_name, titan_table_name):
         rexster_uri = titan_config.get_rexster_server_uri(titan_table_name)
         bulbs_config = bulbsConfig(rexster_uri)
-        titan_graph = GraphWrapper(bulbsGraph(bulbs_config))
+        titan_graph = BulbsGraphWrapper(bulbsGraph(bulbs_config))
         titan_graph.user_graph_name = graph_name
         titan_graph.titan_table_name = titan_table_name
         titan_graph.ml = TitanGiraphMachineLearning(titan_graph)
@@ -287,3 +287,61 @@ Many graph operations will fail.  Two options:
          >>> global_config['missing_key'] = 'missing_value'
 """.format(', '.join(missing), global_config.srcfile))
     sys.stderr.flush()
+
+
+class BulbsGraphWrapper:
+    def __init__(self, graph):
+        self._graph = graph
+        self._graph.vertices.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
+        self._graph.edges.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
+        self.client_class = graph.client_class
+        self.default_index = graph.default_index
+
+    @property
+    def vertices(self):
+        return self._graph.vertices
+
+    @property
+    def edges(self):
+        return self._graph.edges
+
+    @property
+    def client(self):
+        return self._graph.client
+
+    @property
+    def config(self):
+        return self._graph.config
+
+    @property
+    def factory(self):
+        return self._graph.factory
+
+    @property
+    def gremlin(self):
+        return self._graph.gremlin
+
+    @property
+    def scripts(self):
+        return self._graph.scripts
+
+    def load_graphml(self,uri):
+        self._graph.load_graphml(uri)
+
+    def get_graphml(self):
+        self._graph.get_graphml()
+
+    def warm_cache(self):
+        self._graph.warm_cache()
+
+    def clear(self):
+        self._graph.clear()
+
+    def add_proxy(self, proxy_name, element_class, index_class=None):
+        self._graph.add_proxy(proxy_name, element_class, index_class)
+
+    def build_proxy(self, element_class, index_class=None):
+        self._graph.build_proxy(self, element_class, index_class)
+
+    def __raise_(self, ex):
+        raise ex
