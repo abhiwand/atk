@@ -28,8 +28,12 @@ from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
-from intel_analytics.table.pig import pig_helpers
 from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
+
+# import sys is needed here because test_hbase_table module relies
+# on it to patch sys.stdout
+import sys
+
 from schema import ETLSchema, merge_schema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
