@@ -36,17 +36,19 @@ class TestFrameBuilder(unittest.TestCase):
         return object
 
 
-
+    @patch('intel_analytics.table.hbase.schema.ETLSchema')
     @patch('intel_analytics.table.hbase.table.PigJobReportStrategy')
     @patch('intel_analytics.table.hbase.table.call')
     @patch('intel_analytics.table.hbase.table.ETLSchema')
-    def test_append_to_append_from_csv_same_schema(self, etl_schema_class, call_method, pig_report_strategy_class):
+    def test_append_to_append_from_csv_same_schema(self, etl_schema_class, call_method, pig_report_strategy_class, etl_schema_class_schema):
 
         result_holder = {}
         etl_object = self.create_mock_etl_object(result_holder)
         etl_object.feature_names = []
         etl_object.feature_types = []
         etl_schema_class.return_value = etl_object
+
+        etl_schema_class_schema.return_value = MagicMock()
 
         pig_report_strategy = MagicMock()
         report_content = {}
