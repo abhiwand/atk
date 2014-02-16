@@ -75,6 +75,10 @@ public class GiraphVertexLoaderLongDistanceMapNull {
      * HashSet of configured edge labels
      */
     private Set<String> edgeLabelKeys = null;
+    /**
+     * regular expression of the deliminators for a property list
+     */
+    private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
     /**
      * GiraphVertexLoaderLongDistanceMapNull constructor
@@ -89,7 +93,7 @@ public class GiraphVertexLoaderLongDistanceMapNull {
         vertex = conf.createVertex();
         vertex.initialize(new LongWritable(id), new DistanceMapWritable());
         vertexId = id;
-        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
+        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(regexp);
         edgeLabelKeys = new HashSet<String>(Arrays.asList(edgeLabelList));
     }
 

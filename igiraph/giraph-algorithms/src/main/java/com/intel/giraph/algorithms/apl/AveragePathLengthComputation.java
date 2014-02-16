@@ -48,6 +48,7 @@ import org.apache.hadoop.mapreduce.Mapper.Context;
 
 /**
  * Average path length calculation.
+ * http://en.wikipedia.org/wiki/Average_path_length
  */
 @Algorithm(
         name = "Average path length",
@@ -89,6 +90,14 @@ public class AveragePathLengthComputation extends BasicComputation
         }
     }
 
+    @Override
+    public void preSuperstep() {
+        convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
+        if (convergenceProgressOutputInterval < 1) {
+            throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
+        }
+    }
+
     /**
      * algorithm compute
      *
@@ -98,11 +107,6 @@ public class AveragePathLengthComputation extends BasicComputation
     @Override
     public void compute(Vertex<LongWritable, DistanceMapWritable, NullWritable> vertex,
                         Iterable<HopCountWritable> messages) {
-
-        convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
-        if (convergenceProgressOutputInterval < 1) {
-            throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
-        }
 
         // initial condition - start with sending message to all its neighbors
         if (getSuperstep() == 0) {
@@ -134,10 +138,10 @@ public class AveragePathLengthComputation extends BasicComputation
                 } else {
                     delta = (double) distance;
                 }
-                vertex.getValue().distanceMapPut(source, distance);
-                floodMessage(vertex, source, distance + 1);
                 aggregate(SUM_DELTA, new DoubleWritable(delta));
                 aggregate(SUM_UPDATES, new DoubleWritable(1d));
+                vertex.getValue().distanceMapPut(source, distance);
+                floodMessage(vertex, source, distance + 1);
             }
         }
         vertex.voteToHalt();
@@ -234,6 +238,8 @@ public class AveragePathLengthComputation extends BasicComputation
                 if (numUpdates > 0) {
                     double avgUpdates = sumDelta / numUpdates;
                     output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                    output.writeBytes(String.format("numUpdates = %f%c", numUpdates, '\t'));
+                    output.writeBytes(String.format("sumDelta = %f%c", sumDelta, '\t'));
                     output.writeBytes(String.format("avgUpdates = %f%n", avgUpdates));
                 }
             }
