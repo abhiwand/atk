@@ -362,6 +362,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                     input_edge_label,
                     output_vertex_property_list,
                     vertex_type,
+                    num_mapper=global_config['giraph_number_mapper'],
+                    mapper_memory=global_config['giraph_mapper_memory'],
                     vector_value=global_config['giraph_vector_value'],
                     num_worker=global_config['giraph_workers'],
                     max_supersteps=global_config['giraph_belief_propagation_max_supersteps'],
@@ -394,6 +396,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             you use more than one vertex property.
         vertex_type : String
             The vertex property which contains vertex type.
+
+        num_mapper: String, optional
+            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            on the fly when it is needed for users' data sets.
+        mapper_memory: String, optional
+            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            on the fly when it is needed for users' data sets.
         vector_value: String, optional
             "true" means a vector as vertex value is supported
             "false" means a vector as vertex value is not supported
@@ -429,6 +438,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             self._vertex_type,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -457,6 +468,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.num_mapper = num_mapper
+        output.mapper_memory = mapper_memory
         output.max_superstep = max_supersteps
         output.bidirectional_check = bidirectional_check
         output.convergence_threshold = convergence_threshold
@@ -478,6 +491,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -494,6 +509,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
+                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
                 global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],
@@ -531,6 +548,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     def page_rank(self,
                   input_edge_label,
                   output_vertex_property_list,
+                  num_mapper=global_config['giraph_number_mapper'],
+                  mapper_memory=global_config['giraph_mapper_memory'],
                   num_worker=global_config['giraph_workers'],
                   max_supersteps=global_config['giraph_page_rank_max_supersteps'],
                   convergence_threshold=global_config['giraph_page_rank_convergence_threshold'],
@@ -546,7 +565,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output_vertex_property_list : List (comma-separated list of strings)
              The vertex properties which contain the output vertex values
              if you use one vertex property.
-
+        num_mapper: String, optional
+            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            on the fly when it is needed for users' data sets.
+        mapper_memory: String, optional
+            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            on the fly when it is needed for users' data sets.
         num_worker : String, optional
             The number of workers.
         max_supersteps : String, optional
@@ -572,6 +596,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self._table_name,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper,
+            mapper_memory,
             num_worker,
             max_supersteps,
             convergence_threshold,
@@ -596,6 +622,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.num_mapper = num_mapper
+        output.mapper_memory = mapper_memory
         output.max_superstep = max_supersteps
         output.convergence_threshold = convergence_threshold
         output.reset_probability = reset_probability
@@ -611,6 +639,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             table_name,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper,
+            mapper_memory,
             num_worker,
             max_supersteps,
             convergence_threshold,
@@ -626,6 +656,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
+                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
                 global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],
@@ -657,11 +689,14 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper=global_config['giraph_number_mapper'],
+            mapper_memory=global_config['giraph_mapper_memory'],
             convergence_output_interval=global_config['giraph_convergence_output_interval'],
             num_worker=global_config['giraph_workers']
     ):
         """
         The average path length calculation.
+        http://en.wikipedia.org/wiki/Average_path_length
 
         Parameters
         ----------
@@ -671,6 +706,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex properties which contain the output vertex values if
             you use more than one vertex property.
 
+        num_mapper: String, optional
+            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            on the fly when it is needed for users' data sets.
+        mapper_memory: String, optional
+            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            on the fly when it is needed for users' data sets.
         convergence_output_interval : String, optional
             The convergence progress output interval.
             The default value is 1, which means output every super step.
@@ -689,6 +730,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self._table_name,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper,
+            mapper_memory,
+            convergence_output_interval,
             output_path,
             num_worker
         )
@@ -710,6 +754,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.num_mapper = num_mapper
+        output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
         output.super_steps = list(apl_results[0])
         output.convergence_progress = list(apl_results[1])
@@ -722,6 +768,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             table_name,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper,
+            mapper_memory,
+            convergence_output_interval,
             output_path,
             num_worker,
     ):
@@ -733,6 +782,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
+                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
                 global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],
@@ -753,7 +804,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output_path,
                 '-w',
-                num_worker]
+                num_worker,
+                global_config['giraph_param_average_path_length_convergence_output_interval'] + convergence_output_interval]
 
 
 
@@ -761,6 +813,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper=global_config['giraph_number_mapper'],
+            mapper_memory=global_config['giraph_mapper_memory'],
             convergence_output_interval=global_config['giraph_convergence_output_interval'],
             num_worker=global_config['giraph_workers']
     ):
@@ -774,7 +828,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output_vertex_property_list : List (comma-separated list of strings)
             The vertex properties which contain the output vertex values if
             you use more than one vertex property.
-
+        num_mapper: String, optional
+            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            on the fly when it is needed for users' data sets.
+        mapper_memory: String, optional
+            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            on the fly when it is needed for users' data sets.
         convergence_output_interval : String, optional
             The convergence progress output interval.
             The default value is 1, which means output every super step.
@@ -794,6 +853,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             output_path,
+            num_mapper,
+            mapper_memory,
+            convergence_output_interval,
             num_worker
         )
         cc_cmd = ' '.join(map(str, cc_command))
@@ -814,6 +876,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.num_mapper = num_mapper
+        output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
         output.super_steps = list(cc_results[0])
         output.convergence_progress = list(cc_results[1])
@@ -827,7 +891,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             output_path,
-            num_worker,
+            num_mapper,
+            mapper_memory,
+            convergence_output_interval,
+            num_worker
             ):
         """
         generate connected component command line
@@ -837,6 +904,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
+                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
                 global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],
@@ -857,7 +926,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 '-op',
                 output_path,
                 '-w',
-                num_worker]
+                num_worker,
+                global_config['giraph_param_connected_components_convergence_output_interval'] + convergence_output_interval]
 
 
     def label_prop(
@@ -866,6 +936,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper=global_config['giraph_number_mapper'],
+            mapper_memory=global_config['giraph_mapper_memory'],
             vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_label_propagation_max_supersteps'],
@@ -883,7 +955,26 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
         Parameters
         ----------
+        input_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain prior vertex values if you
+            use more than one vertex property.
+        input_edge_property_list : List (comma-separated list of strings)
+            The edge properties which contain the input edge values if you
+            use more than one edge property.
+        input_edge_label : String
+            The edge property which contains the edge label.
+        output_vertex_property_list : List (comma-separated list of strings)
+            The vertex properties which contain the output vertex values if
+            you use more than one vertex property.
+        vertex_type : String
+            The vertex property which contains vertex type.
 
+        num_mapper: String, optional
+            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            on the fly when it is needed for users' data sets.
+        mapper_memory: String, optional
+            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            on the fly when it is needed for users' data sets.
         num_worker : String, optional
             The number of Giraph workers.
         max_supersteps : String, optional
@@ -913,6 +1004,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -940,6 +1033,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.num_mapper = num_mapper
+        output.mapper_memory = mapper_memory
         output.max_superstep = max_supersteps
         output.convergence_threshold = convergence_threshold
         output.param_lambda = lp_lambda
@@ -958,6 +1053,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -975,6 +1072,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
+                global_config['giraph_param_num_mapper'] + num_mapper,
+                global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
                 global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],
@@ -1013,6 +1112,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
+            num_mapper=global_config['giraph_number_mapper'],
+            mapper_memory=global_config['giraph_mapper_memory'],
             vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_latent_dirichlet_allocation_max_supersteps'],
@@ -1041,6 +1142,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         vertex_type : String
             The vertex property which contains vertex type.
 
+        num_mapper: String, optional
+            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            on the fly when it is needed for users' data sets.
+        mapper_memory: String, optional
+            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            on the fly when it is needed for users' data sets.
         vector_value: String, optional
             "true" means a vector as vertex value is supported
             "false" means a vector as vertex value is not supported
@@ -1082,6 +1189,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             self._vertex_type,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -1118,6 +1227,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.num_mapper = num_mapper
+        output.mapper_memory = mapper_memory
         output.max_superstep = max_supersteps
         output.convergence_threshold = convergence_threshold
         output.alpha = alpha
@@ -1139,6 +1250,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             vertex_type,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -1160,6 +1273,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
+                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
                 global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],
@@ -1205,6 +1320,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_mapper=global_config['giraph_number_mapper'],
+            mapper_memory=global_config['giraph_mapper_memory'],
             vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_alternating_least_square_max_supersteps'],
@@ -1241,6 +1358,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex property which contains vertex type.
         edge_type : String
             The edge property which contains edge type.
+
+        num_mapper: String, optional
+            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            on the fly when it is needed for users' data sets.
+        mapper_memory: String, optional
+            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            on the fly when it is needed for users' data sets.
         vector_value: String, optional
             "true" means a vector as vertex value is supported
             "false" means a vector as vertex value is not supported
@@ -1291,6 +1415,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             self._vertex_type,
             self._edge_type,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -1321,6 +1447,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.num_mapper = num_mapper
+        output.mapper_memory = mapper_memory
         output.max_superstep = max_supersteps
         output.convergence_threshold = convergence_threshold
         output.feature_dimension = feature_dimension
@@ -1345,6 +1473,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -1366,6 +1496,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
+                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
                 global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],
@@ -1414,6 +1546,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_mapper=global_config['giraph_number_mapper'],
+            mapper_memory=global_config['giraph_mapper_memory'],
             vector_value=global_config['giraph_vector_value'],
             num_worker=global_config['giraph_workers'],
             max_supersteps=global_config['giraph_conjugate_gradient_descent_max_supersteps'],
@@ -1448,6 +1582,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex property which contains vertex type.
         edge_type : String
             The edge property which contains edge type.
+        num_mapper: String, optional
+            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            on the fly when it is needed for users' data sets.
+        mapper_memory: String, optional
+            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            on the fly when it is needed for users' data sets.
+
         vector_value: String, optional
             "true" means a vector as vertex value is supported
             "false" means a vector as vertex value is not supported
@@ -1474,7 +1615,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         bias_on : String, optional
             True means turn on bias calculation and False means turn off
             bias calculation.
-	bidirectional_check : String, optional
+	    bidirectional_check : String, optional
             If it is true, Giraph will firstly check whether each edge is bidirectional.
         num_iters : String, optional
             The number of CGD iterations in each super step.
@@ -1500,6 +1641,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             self._vertex_type,
             self._edge_type,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -1532,6 +1675,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.num_mapper = num_mapper
+        output.mapper_memory = mapper_memory
         output.max_superstep = max_supersteps
         output.convergence_threshold = convergence_threshold
         output.feature_dimension = feature_dimension
@@ -1557,6 +1702,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             vertex_type,
             edge_type,
+            num_mapper,
+            mapper_memory,
             vector_value,
             num_worker,
             max_supersteps,
@@ -1579,6 +1726,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
+                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
                 global_config['giraph_param_storage_port'] + global_config['titan_storage_port'],

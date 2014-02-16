@@ -161,7 +161,9 @@ public class PageRankComputation extends BasicComputation<LongWritable,
 
         double delta = 0;
 
-        if (getSuperstep() >= 1) {
+        if (getSuperstep() == 0) {
+            vertex.setValue(new DoubleWritable(1d));
+        } else {
             double sum = 0;
             for (DoubleWritable message : messages) {
                 sum += message.get();
