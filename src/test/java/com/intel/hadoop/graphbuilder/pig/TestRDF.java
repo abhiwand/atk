@@ -32,7 +32,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements
+        .SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
@@ -48,7 +49,8 @@ public class TestRDF {
 
 	@Test
 	public void runTests() throws IOException {
-		SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
+		SerializedGraphElementStringTypeVids serializedGraphElement =
+                new SerializedGraphElementStringTypeVids();
 		Vertex<StringType> vertex = new Vertex<StringType>(new StringType(
 				"test_vertex"));
 		serializedGraphElement.init(vertex);
@@ -65,18 +67,18 @@ public class TestRDF {
 		while (iter.hasNext()) {
 			Tuple resultTuple = iter.next();
 			String rdfStatement = (String) resultTuple.get(0);
-			if (rdfStatement.contains("rdf-syntax-ns#type")) {
-				assertEquals(
-						"RDF statement mismatch",
+            if (rdfStatement.contains("rdf-syntax-ns#type")) {
+    			assertEquals(
+	    				"RDF statement mismatch",
 			    		"<http://www.w3.org/2002/07/owl#test_vertex> " +
                         "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
                         "<vertex_label> .", rdfStatement);
-			} else {
-				assertEquals("RDF statement mismatch", 
+            } else {
+				assertEquals("RDF statement mismatch",
 						"<http://www.w3.org/2002/07/owl#test_vertex> " +
                         "<http://www.w3.org/2002/07/owl#p-1> <\"v-1\"> .",
                         rdfStatement);
-			}
+            }
 		}
 
 		serializedGraphElement = new SerializedGraphElementStringTypeVids();
@@ -96,7 +98,7 @@ public class TestRDF {
 		while (iter.hasNext()) {
 			Tuple resultTuple = iter.next();
 			String rdfStatement = (String) resultTuple.get(0);
-			assertEquals("RDF statement mismatch", 
+			assertEquals("RDF statement mismatch",
                     "<http://www.w3.org/2002/07/owl#src> " +
                     "<http://www.w3.org/2002/07/owl#edge_label> " +
                     "<http://www.w3.org/2002/07/owl#target> .",
@@ -109,6 +111,6 @@ public class TestRDF {
 		t = new PropertyGraphElementTuple(1);
 		t.set(0, serializedGraphElement);
 		result = (DataBag) toRdfUdf.exec(t);
-		assertNull(result);
+        assertNull(result);
 	}
 }

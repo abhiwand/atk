@@ -95,14 +95,8 @@ import java.util.concurrent.TimeUnit;
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class CreatePropGraphElements extends EvalFunc<DataBag> {
-    private CommandLineInterface commandLineInterface = new CommandLineInterface();
 
     private BagFactory mBagFactory = BagFactory.getInstance();
-
-    private String   tokenizationRule;
-    private String[] rawEdgeRules;
-    private String[] vertexRules;
-    private String[] rawDirectedEdgeRules;
 
     private boolean flattenLists = false;
     private List<String> vertexIdFieldList;
@@ -110,8 +104,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     private Hashtable<String, String> vertexLabelMap;
 
     private Hashtable<String, EdgeRule>     edgeLabelToEdgeRules;
-
-    private Hashtable<String, Byte> fieldNameToDataType;
 
     /**
      * Encapsulation of the rules for creating edges.
@@ -191,24 +183,17 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      */
     public CreatePropGraphElements(String tokenizationRule) {
 
-        commandLineInterface = new CommandLineInterface();
+        CommandLineInterface commandLineInterface = new CommandLineInterface();
 
         Options options = new Options();
-
         options.addOption(BaseCLI.Options.vertex.get());
-
         options.addOption(BaseCLI.Options.edge.get());
-
         options.addOption(BaseCLI.Options.directedEdge.get());
-        
         options.addOption(BaseCLI.Options.flattenList.get());
         
         commandLineInterface.setOptions(options);
 
         CommandLine cmd = commandLineInterface.checkCli(tokenizationRule.split(" "));
-
-        this.tokenizationRule = tokenizationRule;
-
 
         vertexLabelMap = new Hashtable<String, String>();
         vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
@@ -216,14 +201,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         edgeLabelToEdgeRules  = new Hashtable<String, EdgeRule>();
 
-        vertexRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
+        String[] vertexRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
 
-        rawEdgeRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
+        String[] rawEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
 
-        rawDirectedEdgeRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
+        String[] rawDirectedEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
         
         flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
         
@@ -398,7 +380,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     public DataBag exec(Tuple input) throws IOException {
 
         Schema inputSchema = getInputSchema();
-        fieldNameToDataType = new Hashtable<String,Byte>();
+        Hashtable<String, Byte> fieldNameToDataType = new Hashtable<String, Byte>();
 
         for (Schema.FieldSchema field : inputSchema.getFields()) {
             fieldNameToDataType.put(field.alias, field.type);

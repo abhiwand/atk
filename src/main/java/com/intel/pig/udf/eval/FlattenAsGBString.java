@@ -43,7 +43,7 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
 public class FlattenAsGBString extends EvalFunc<String> {
 
 	/* GB accepts comma delimited fields */
-	private String delimeter = ",";
+	private static final String DELIMITER = ",";
 
 	@Override
 	public String exec(Tuple input) throws IOException {
@@ -64,7 +64,7 @@ public class FlattenAsGBString extends EvalFunc<String> {
 			flattened.append(t.get(0).toString());
 			processed++;
 			if (processed != tupleCount) {
-				flattened.append(delimeter);
+				flattened.append(DELIMITER);
 			}
 		}
 		flattened.append("}");

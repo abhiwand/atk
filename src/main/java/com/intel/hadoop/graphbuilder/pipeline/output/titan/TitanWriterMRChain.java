@@ -125,7 +125,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private Configuration    conf;
 
     private HBaseUtils hbaseUtils = null;
-    private boolean    usingHBase = false;
 
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
@@ -158,7 +157,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         this.graphBuildingRule  = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
         this.graphSchema        = graphBuildingRule.getGraphSchema();
-        this.usingHBase         = true;
 
         try {
             this.hbaseUtils = HBaseUtils.getInstance();
@@ -572,7 +570,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         initTitanGraph(keyCommandLine);
 
-        runReadInputLoadVerticesMRJob(intermediateDataFilePath, cmd);
+        runReadInputLoadVerticesMRJob(intermediateDataFilePath);
 
         runIntermediateEdgeWriteMRJob(intermediateDataFilePath,
                 intermediateEdgeFilePath);
@@ -587,8 +585,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         fs.delete(intermediateEdgeFilePath, true);
     }
 
-    private void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath,
-                                               CommandLine cmd)
+    private void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath)
             throws IOException, ClassNotFoundException, InterruptedException {
 
         // Set required parameters in configuration

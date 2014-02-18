@@ -19,8 +19,8 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;

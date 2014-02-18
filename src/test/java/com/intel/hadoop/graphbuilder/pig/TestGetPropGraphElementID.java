@@ -18,7 +18,7 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static junit.framework.TestCase.assertNotNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -81,10 +81,6 @@ public class TestGetPropGraphElementID {
 		assertEquals("Returned ID should have been ==EDGE "
 				+ edge.getId().toString(), result, "EDGE "
 				+ edge.getId().toString());
-	}
-
-	@After
-	public void done() {
 	}
 
 }
