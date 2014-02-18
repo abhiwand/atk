@@ -1072,7 +1072,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
-                global_config['giraph_param_num_mapper'] + num_mapper,
+                global_config['giraph_param_number_mapper'] + num_mapper,
                 global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
