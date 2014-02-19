@@ -193,7 +193,7 @@ public class CommandLineInterfaceTest {
      * @return a string array that mimics the main input args array
      */
     public String[] getRandomizedCommandLine(HashMap<String, String> hadoopArgs, HashMap<String, String> gbArgs){
-        ArrayList<String> args = new ArrayList<>();
+        ArrayList<String> args = new ArrayList<String>();
         int maxCount = hadoopArgs.size()*2;
 
         //randomize the hadoop options first since they always have to be first

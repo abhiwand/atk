@@ -139,11 +139,11 @@ public class EdgeListFormat {
         if (StringUtils.contains(labelDotName, ".")) {
             String name = StringUtils.substringBeforeLast(labelDotName, DOT_SEPARATOR);
             String label = StringUtils.substringAfterLast(labelDotName, DOT_SEPARATOR);
-            return new VertexID<>(new StringType(label), new StringType(name));
+            return new VertexID<StringType>(new StringType(label), new StringType(name));
         }
         else {
             // no label
-            return new VertexID<>(new StringType(labelDotName));
+            return new VertexID<StringType>(new StringType(labelDotName));
         }
     }
 
