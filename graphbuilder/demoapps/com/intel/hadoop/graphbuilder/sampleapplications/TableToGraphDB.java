@@ -121,19 +121,30 @@ import org.apache.log4j.Logger;
 public class TableToGraphDB {
 
     private static final Logger LOG = Logger.getLogger(TableToGraphDB.class);
+    private static boolean configFilePresent = false;
 
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
+
         options.addOption(BaseCLI.Options.titanAppend.get());
+
         options.addOption(BaseCLI.Options.titanOverwrite.get());
+
         options.addOption(BaseCLI.Options.flattenList.get());
+
         options.addOption(BaseCLI.Options.stripColumnFamilyNames.get());
+
         options.addOption(BaseCLI.Options.hbaseTable.get());
+
         options.addOption(BaseCLI.Options.vertex.get());
+
         options.addOption(BaseCLI.Options.edge.get());
+
         options.addOption(BaseCLI.Options.directedEdge.get());
+
         options.addOption(BaseCLI.Options.titanKeyIndex.get());
+
         commandLineInterface.setOptions(options);
     }
 

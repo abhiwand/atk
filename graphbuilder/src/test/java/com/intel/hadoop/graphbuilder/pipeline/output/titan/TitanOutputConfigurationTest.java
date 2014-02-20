@@ -17,8 +17,18 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.types;
+package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-public interface EncapsulatedObject{
-    public Object getBaseObject();
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+
+import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
+import org.junit.Test;
+
+public class TitanOutputConfigurationTest {
+    @Test
+    public void testConstructor() throws Exception {
+        TitanOutputConfiguration titanOutputConfiguration = new TitanOutputConfiguration();
+        assertNotNull(titanOutputConfiguration.getGraphGenerationMRJob());
+    }
 }

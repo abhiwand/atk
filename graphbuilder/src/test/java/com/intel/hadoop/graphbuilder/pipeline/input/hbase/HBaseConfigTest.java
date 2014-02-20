@@ -1,3 +1,4 @@
+
 /**
  * Copyright (C) 2013 Intel Corporation.
  *     All rights reserved.
@@ -17,8 +18,18 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.types;
+package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-public interface EncapsulatedObject{
-    public Object getBaseObject();
+import com.intel.hadoop.graphbuilder.util.RuntimeConfig;
+import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+
+public class HBaseConfigTest {
+
+    @Test
+    public void testStaticClass() throws Exception {
+        assertEquals(HBaseConfig.HBASE_CACHE_SIZE, 500);
+        assertEquals(HBaseConfig.config, RuntimeConfig.getInstance(HBaseConfig.class));
+    }
 }

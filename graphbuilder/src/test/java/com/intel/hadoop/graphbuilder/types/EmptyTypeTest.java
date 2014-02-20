@@ -19,37 +19,32 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
-import org.apache.hadoop.io.Writable;
+import static junit.framework.Assert.assertEquals;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import org.junit.Test;
 
-/**
- * Basic type in the library. Represents a dummy type of empty.
- */
-public class EmptyType implements Writable, Mergeable<EmptyType>, EncapsulatedObject {
+public class EmptyTypeTest {
 
-    public final static EmptyType INSTANCE = new EmptyType();
-
-    @Override
-    public void readFields(DataInput arg0) throws IOException {
+    @Test
+    public void testEmptyString() throws Exception {
+        EmptyType emptyType = new EmptyType();
+        String emptyString = emptyType.toString();
+        assertEquals(emptyString, "");
     }
 
-    @Override
-    public void write(DataOutput arg0) throws IOException {
+    @Test
+    public void testGetBaseObject() throws Exception {
+        EmptyType emptyType = new EmptyType();
+        assertEquals(emptyType.getBaseObject(), EmptyType.INSTANCE);
     }
 
-    @Override
-    public String toString() {
-        return "";
-    }
+    @Test
+    public void testAdd() throws Exception {
+        EmptyType emptyType_0 = new EmptyType();
+        EmptyType emptyType_1 = new EmptyType();
+        EmptyType emptyType_2 = emptyType_0;
 
-    @Override
-    public void add(EmptyType other) {
-    }
-
-    public Object getBaseObject() {
-        return INSTANCE;
+        emptyType_0.add(emptyType_1);
+        assertEquals(emptyType_0, emptyType_2);
     }
 }
