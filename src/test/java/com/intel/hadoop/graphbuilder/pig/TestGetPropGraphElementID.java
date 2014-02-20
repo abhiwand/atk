@@ -25,14 +25,13 @@ import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 
-import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class TestGetPropGraphElementID {
 	EvalFunc<?> graphElmentIDUDF;
@@ -80,10 +79,6 @@ public class TestGetPropGraphElementID {
 		assertEquals("Returned ID should have been ==EDGE "
 				+ edge.getId().toString(), result, "EDGE "
 				+ edge.getId().toString());
-	}
-
-	@After
-	public void done() {
 	}
 
 }

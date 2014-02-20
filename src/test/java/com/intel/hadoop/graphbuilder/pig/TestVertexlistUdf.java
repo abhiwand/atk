@@ -35,45 +35,48 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestVertexlistUdf {
-	EvalFunc<?> toEdgelistUdf0;
-	EvalFunc<?> toEdgelistUdf1;
+    EvalFunc<?> toEdgelistUdf0;
+    EvalFunc<?> toEdgelistUdf1;
 
-	@Before
-	public void setup() throws Exception {
-		toEdgelistUdf0 = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec("com.intel.pig.udf.eval.VertexList('false')");
-		toEdgelistUdf1 = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec("com.intel.pig.udf.eval.VertexList('true')");
-	}
+    @Before
+    public void setup() throws Exception {
+        toEdgelistUdf0 = (EvalFunc<?>) PigContext
+                .instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.VertexList('false')");
+        toEdgelistUdf1 = (EvalFunc<?>) PigContext
+                .instantiateFuncFromSpec(
+                        "com.intel.pig.udf.eval.VertexList('true')");
+    }
 
-	@Test
-	public void runTests() throws IOException {
-		SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
+    @Test
+    public void runTests() throws IOException {
+        SerializedGraphElementStringTypeVids serializedGraphElement
+                = new SerializedGraphElementStringTypeVids();
 
-		PropertyMap map0 = new PropertyMap();
-		map0.setProperty("name", new StringType("Alice"));
-		map0.setProperty("age", new StringType("30"));
+        PropertyMap map0 = new PropertyMap();
+        map0.setProperty("name", new StringType("Alice"));
+        map0.setProperty("age", new StringType("30"));
 
-		Vertex<StringType> vertex = new Vertex<StringType>();
-		vertex.configure(
-				new VertexID<StringType>(new StringType("Employee001")), map0);
-		vertex.setLabel(new StringType("HAWK.People"));
+        Vertex<StringType> vertex = new Vertex<StringType>();
+        vertex.configure( new VertexID<StringType>(new StringType("Employee001")),
+                map0);
+        vertex.setLabel(new StringType("HAWK.People"));
 
-		serializedGraphElement.init(vertex);
+        serializedGraphElement.init(vertex);
 
-		PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
-		t.set(0, serializedGraphElement);
+        PropertyGraphElementTuple t = new PropertyGraphElementTuple(1);
+        t.set(0, serializedGraphElement);
 
-		String statement0 = (String) toEdgelistUdf0.exec(t);
-		assertEquals("Vertex tuple mismatch", statement0,
-				"Employee001\tHAWK.People");
+        String statement0 = (String) toEdgelistUdf0.exec(t);
+        assertEquals(
+                    "Vertex tuple mismatch",
+                    statement0,
+                    "Employee001\tHAWK.People");
 
-		String statement1 = (String) toEdgelistUdf1.exec(t);
-		boolean flag = statement1.contains("HAWK.People.Employee001");
-		assertTrue("Vertex tuple mismatch", flag);
-		flag = statement1.contains("name:Alice");
-		assertTrue("Vertex tuple mismatch", flag);
-		flag = statement1.contains("age:30");
-		assertTrue("Vertex tuple mismatch", flag);
-	}
+        String statement1 = (String) toEdgelistUdf1.exec(t);
+
+        assertTrue("Vertex tuple mismatch, statement1:" + statement1, statement1.contains("Employee001\tHAWK.People"));
+        assertTrue("Vertex tuple mismatch, statement1:" + statement1, statement1.contains("name\tAlice"));
+        assertTrue("Vertex tuple mismatch, statement1:" + statement1, statement1.contains("age\t30"));
+    }
 }

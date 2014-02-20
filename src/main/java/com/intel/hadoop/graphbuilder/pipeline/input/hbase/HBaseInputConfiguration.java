@@ -55,7 +55,6 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
     private static final Logger LOG = Logger.getLogger(HBaseInputConfiguration.class);
 
-    private HBaseUtils hBaseUtils   = null;
     private String     srcTableName = null;
 
     private Scan       scan         = new Scan();
@@ -69,8 +68,9 @@ public class HBaseInputConfiguration implements InputConfiguration {
 
         this.srcTableName = srcTableName;
 
+        HBaseUtils hBaseUtils   = null;
         try {
-            this.hBaseUtils = HBaseUtils.getInstance();
+            hBaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNABLE_TO_CONNECT_TO_HBASE,
                     "GRAPHBUILDER_ERROR: Cannot allocate the HBaseUtils object. Check hbase connection.", LOG, e);

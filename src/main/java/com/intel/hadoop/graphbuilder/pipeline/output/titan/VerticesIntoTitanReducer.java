@@ -78,9 +78,6 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
         NUM_EDGES
     }
 
-    private Hashtable<EdgeID, Writable> edgeSet;
-    private Hashtable<Object, Writable>   vertexSet;
-
     private TitanGraphElementWriter titanWriter;
     private GraphElementTypeCallback graphElementMerge;
 
@@ -187,8 +184,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
     public void reduce(IntWritable key, Iterable<SerializedGraphElement>
             values, Context context) throws IOException, InterruptedException {
 
-        edgeSet       = new Hashtable<EdgeID, Writable>();
-        vertexSet     = new Hashtable<Object, Writable>();
+        Hashtable<EdgeID, Writable> edgeSet = new Hashtable<EdgeID, Writable>();
+        Hashtable<Object, Writable> vertexSet = new Hashtable<Object, Writable>();
 
         for(SerializedGraphElement serializedGraphElement : values){
             GraphElement graphElement = serializedGraphElement.graphElement();

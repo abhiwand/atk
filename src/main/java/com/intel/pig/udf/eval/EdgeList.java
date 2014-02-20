@@ -19,9 +19,12 @@
 
 package com.intel.pig.udf.eval;
 
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.serializers.EdgeListFormat;
 import com.intel.pig.udf.GBUdfExceptionHandler;
+import com.intel.pig.udf.util.BooleanUtils;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
@@ -30,7 +33,6 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * EdgeList UDF intakes property graph elements and spits out
@@ -45,9 +47,10 @@ import java.util.Arrays;
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class)
 public class EdgeList extends EvalFunc<String> {
-	private boolean printProperties;
-    private static final String[] booleanValues =
-            new String [] {"0", "1", "TRUE", "true", "FALSE", "false"};
+
+    private boolean printProperties;
+
+    private EdgeListFormat edgeListFormat = new EdgeListFormat();
 
     /**
      * Constructor of EdgeList
@@ -57,21 +60,7 @@ public class EdgeList extends EvalFunc<String> {
      *                        if set to "0", "FALSE" or "false"
      */
 	public EdgeList(String printProperties) {
-
-        if (!Arrays.asList(booleanValues).contains(printProperties)) {
-            throw new IllegalArgumentException(
-                    printProperties + " is not a valid argument." +
-                    "Use '0', '1', 'TRUE', 'true', 'FALSE' or 'false')");
-        }
-        if (printProperties.equals("1") ||
-            printProperties.equals("TRUE") ||
-            printProperties.equals("true")) {
-            this.printProperties = true;
-        } else if (printProperties.equals("0") ||
-                   printProperties.equals("FALSE") ||
-                   printProperties.equals("false")) {
-            this.printProperties = false;
-        }
+        this.printProperties = BooleanUtils.toBoolean(printProperties);
 	}
 
 	@Override
@@ -87,15 +76,7 @@ public class EdgeList extends EvalFunc<String> {
 
 		// Print edges, skip vertices
 		if (graphElement.isEdge()) {
-            String edgeString = "";
-            if (this.printProperties) {
-                edgeString = graphElement.toString();
-            } else {
-			    edgeString = graphElement.getSrc().toString() + "\t" +
-                             graphElement.getDst().toString() + "\t" +
-                             graphElement.getLabel().toString();
-            }
-			return edgeString;
+            return edgeListFormat.toString((Edge) graphElement, this.printProperties);
 		}
 
         return null;

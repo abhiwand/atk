@@ -109,7 +109,7 @@ To use the Intel Graph Builder library, first set the GB_HOME environment variab
 
 then set the HADOOP_CLASSPATH environment variable:
 
-`export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GB_HOME/target/graphbuilder-2.0-alpha.jar:$GB_HOME/target/lib/*`
+`export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar:$GB_HOME/target/lib/*`
 
 ##### Tuning
 

@@ -66,9 +66,7 @@ import java.util.regex.PatternSyntaxException;
 public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 	private static TupleFactory tupleFactory = TupleFactory.getInstance();
 
-	private String regularExpression = null;
-
-	@Override
+    @Override
 	public DataBag exec(Tuple input) throws IOException {
 		Pattern pattern = null;
 		if (input.size() != 2) {
@@ -83,7 +81,7 @@ public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 		Matcher m = null;
 
 		try {
-			regularExpression = (String) input.get(1);
+            String regularExpression = (String) input.get(1);
 			pattern = Pattern.compile(regularExpression);
 			m = pattern.matcher(sourceString);
 		} catch (PatternSyntaxException e) {

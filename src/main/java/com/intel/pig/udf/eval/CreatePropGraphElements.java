@@ -205,7 +205,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      */
     public CreatePropGraphElements(String tokenizationRule) {
 
-        commandLineInterface = new CommandLineInterface();
+        CommandLineInterface commandLineInterface = new CommandLineInterface();
 
         Options options = new Options();
         options.addOption(BaseCLI.Options.vertex.get());
@@ -227,7 +227,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         String[] rawEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
         String[] rawDirectedEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge
                 .getLongOpt()));
-        
+
         flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
         retainDanglingEdges = cmd.hasOption(BaseCLI.Options.retainDanglingEdges.getLongOpt());
 
