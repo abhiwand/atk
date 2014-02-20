@@ -74,7 +74,8 @@ public class GraphExporter {
             String subStepOutputDir = new File(queryOutputDir.toString(), "step-" + i).toString();
             executeFaunusQuery(faunusGremlinFile, faunusPropertiesFile, tableName, statement, subStepOutputDir);
 
-            addQueryOutputToInputPath(job, fs, subStepOutputDir, new IPathCollector() {
+
+            final IPathCollector collector = new IPathCollector() {
                 @Override
                 public void collectPath(Path path) {
                     try {
@@ -83,7 +84,8 @@ public class GraphExporter {
                         throw new RuntimeException("Failed to add query output for processing");
                     }
                 }
-            });
+            };
+            addQueryOutputToInputPath(job, fs, subStepOutputDir, collector);
         }
 
         Path[] eligibleInputPaths = TextInputFormat.getInputPaths(job);
@@ -100,7 +102,7 @@ public class GraphExporter {
         job.waitForCompletion(true);
     }
 
-    private static void executeFaunusQuery(String faunusGremlinFile, String faunusPropertiesFile, String tableName, String statement, String subStepOutputDir) throws IOException, InterruptedException {
+    static void executeFaunusQuery(String faunusGremlinFile, String faunusPropertiesFile, String tableName, String statement, String subStepOutputDir) throws IOException, InterruptedException {
         String[] commandArray = new String[]{faunusGremlinFile, "-i", faunusPropertiesFile, statement, "-Dfaunus.output.location=" + subStepOutputDir + " faunus.graph.input.titan.storage.tablename=" + tableName};
         ProcessBuilder builder = new ProcessBuilder(commandArray);
 
