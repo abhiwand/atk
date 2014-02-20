@@ -182,7 +182,7 @@ public class GraphExporterTest {
         mapper.writeSchemaToXML(writer, propertyElementTypeMapping);
 
         String result = f.toString();
-        String expected = "<?xml version=\"1.0\" ?><schema><feature attr.name=\"_id\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:edge_type\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"etl-cf:weight\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"_gb_ID\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:vertex_type\" attr.type=\"bytearray\" for=\"Vertex\"></feature></schema>";
+        String expected = "<?xml version=\"1.0\" ?><schema><feature attr.name=\"_id\" attr.type=\"string\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:edge_type\" attr.type=\"string\" for=\"Edge\"></feature><feature attr.name=\"etl-cf:weight\" attr.type=\"string\" for=\"Edge\"></feature><feature attr.name=\"_gb_ID\" attr.type=\"string\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:vertex_type\" attr.type=\"string\" for=\"Vertex\"></feature></schema>";
         assertEquals(expected, result);
     }
 
