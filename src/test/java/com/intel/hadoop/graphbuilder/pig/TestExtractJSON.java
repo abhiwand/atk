@@ -18,18 +18,17 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.Arrays;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestExtractJSON {
 	EvalFunc<?> testFn;
@@ -40,13 +39,10 @@ public class TestExtractJSON {
 	public void setup() throws Exception {
 		testFn = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec("com.intel.pig.udf.eval.ExtractJSONField");
-		System.out.println(testJson);
 	}
 
 	@Test
 	public void testSuccessCases() throws IOException {
-		System.out.println("Testing success cases");
-
 		String testQuery = "Sizes[0].Price";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
@@ -83,8 +79,6 @@ public class TestExtractJSON {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase1() throws IOException {
-		System.out.println("Testing failure cases");
-
 		String testQuery = "Sizes.Price";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
@@ -94,8 +88,6 @@ public class TestExtractJSON {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase2() throws IOException {
-		System.out.println("Testing failure cases");
-
 		String testQuery = "Colors";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
@@ -105,8 +97,6 @@ public class TestExtractJSON {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase3() throws IOException {
-		System.out.println("Testing failure cases");
-
 		String testQuery = "Sizes.findAll{Sizes -> Sizes.Price>5}";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(

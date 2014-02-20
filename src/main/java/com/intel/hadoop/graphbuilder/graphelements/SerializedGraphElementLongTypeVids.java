@@ -21,7 +21,6 @@ package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import org.apache.hadoop.io.WritableComparable;
 
 /**
 

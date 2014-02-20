@@ -20,7 +20,6 @@ package com.intel.pig.udf.eval;
 
 import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;

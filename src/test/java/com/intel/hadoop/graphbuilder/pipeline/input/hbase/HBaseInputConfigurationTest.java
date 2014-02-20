@@ -19,14 +19,8 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-
-import java.security.Permission;
-
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -37,17 +31,21 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import java.security.Permission;
+
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({ HBaseInputConfiguration.class, HBaseUtils.class,
-		GraphBuilderExit.class })
+@PrepareForTest({HBaseInputConfiguration.class,HBaseUtils.class, GraphBuilderExit.class})
 public class HBaseInputConfigurationTest {
 
-	Logger loggerMock;
-	HBaseUtils hBaseUtilsMock;
-	Scan scanMock;
+    Logger     loggerMock;
+    HBaseUtils hBaseUtilsMock;
+    Scan       scanMock;
 
 	private static class ExitTrappedException extends SecurityException {
 	}
@@ -67,41 +65,39 @@ public class HBaseInputConfigurationTest {
 		System.setSecurityManager(null);
 	}
 
-	@BeforeClass
-	public static final void beforeClass() {
-		// this is to suppress the log 4j errors during the tests
-		// we should be moving to the new context logger
-		System.setProperty("log4j.ignoreTCL", "true");
-	}
+    @BeforeClass
+    public static final void beforeClass(){
+        //this is to suppress the log 4j errors during the tests
+        //we should be moving to the new context logger
+        System.setProperty("log4j.ignoreTCL","true");
+    }
 
-	@Before
-	public final void setupHBaseForTest() throws Exception {
-		loggerMock = mock(Logger.class);
-		Whitebox.setInternalState(HBaseInputConfiguration.class, "LOG",
-				loggerMock);
-	}
+    @Before
+    public final void setupHBaseForTest() throws Exception {
+        loggerMock = mock(Logger.class);
+        Whitebox.setInternalState(HBaseInputConfiguration.class, "LOG", loggerMock);
+    }
 
-	@Test
-	public void testSimpleUseCase() throws Exception {
+    @Test
+    public void testSimpleUseCase() throws Exception {
 
-		String tableName = "fakeyTable";
-		hBaseUtilsMock = mock(HBaseUtils.class);
+        String tableName = "fakeyTable";
+        hBaseUtilsMock = mock(HBaseUtils.class);
 
-		mockStatic(HBaseUtils.class);
+        mockStatic(HBaseUtils.class);
 
-		when(HBaseUtils.getInstance()).thenReturn(hBaseUtilsMock);
-		when(hBaseUtilsMock.tableExists(tableName)).thenReturn(true);
+        when(HBaseUtils.getInstance()).thenReturn(hBaseUtilsMock);
+        when(hBaseUtilsMock.tableExists(tableName)).thenReturn(true);
 
-		HBaseInputConfiguration hbic = new HBaseInputConfiguration(tableName);
+        HBaseInputConfiguration hbic = new HBaseInputConfiguration(tableName);
 
 		assertTrue(hbic.usesHBase());
-		assertSame(hbic.getMapperClass(), HBaseReaderMapper.class);
+        assertSame(hbic.getMapperClass(), HBaseReaderMapper.class);
 
-		// conceivably you could vary this, but you don't want to violate it
-		// accidentally
+        // conceivably you could vary this, but you don't want to violate it accidentally
 		assertTrue(hbic.getDescription().contains(tableName));
 
-	}
+    }
 
 	@Test
 	public void testFailure() throws Exception {

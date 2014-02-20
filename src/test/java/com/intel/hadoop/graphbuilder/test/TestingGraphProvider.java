@@ -18,14 +18,13 @@
  */
 package com.intel.hadoop.graphbuilder.test;
 
-import java.io.File;
-import java.io.IOException;
-
+import com.thinkaurelius.titan.core.TitanFactory;
+import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 
-import com.thinkaurelius.titan.core.TitanFactory;
-import com.thinkaurelius.titan.core.TitanGraph;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Get a TitanGraph backed by Berkeley for testing purposes.

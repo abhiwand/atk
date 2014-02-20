@@ -19,14 +19,14 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.util.*;
 import com.intel.hadoop.graphbuilder.util.Timer;
 import com.thinkaurelius.titan.core.KeyMaker;
@@ -34,7 +34,6 @@ import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.TitanKey;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
@@ -115,7 +114,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private Configuration    conf;
 
     private HBaseUtils hbaseUtils = null;
-    private boolean    usingHBase = false;
 
     private GraphBuildingRule  graphBuildingRule;
     private InputConfiguration inputConfiguration;
@@ -148,7 +146,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         this.graphBuildingRule  = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
         this.graphSchema        = graphBuildingRule.getGraphSchema();
-        this.usingHBase         = true;
 
         try {
             this.hbaseUtils = HBaseUtils.getInstance();
@@ -514,9 +511,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      */
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
-
-        // Warns the user if the Titan table already exists in Hbase.
-
+   	
+		// Warns the user if the Titan table already exists in Hbase.
+		
         String titanTableName = TitanConfig.config.getProperty
                 ("TITAN_STORAGE_TABLENAME");
 
@@ -562,7 +559,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         initTitanGraph(keyCommandLine);
 
-        runReadInputLoadVerticesMRJob(intermediateDataFilePath, cmd);
+        runReadInputLoadVerticesMRJob(intermediateDataFilePath);
 
         runIntermediateEdgeWriteMRJob(intermediateDataFilePath,
                 intermediateEdgeFilePath);
@@ -577,8 +574,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         fs.delete(intermediateEdgeFilePath, true);
     }
 
-    private void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath,
-                                               CommandLine cmd)
+    private void runReadInputLoadVerticesMRJob(Path intermediateDataFilePath)
             throws IOException, ClassNotFoundException, InterruptedException {
 
         // Set required parameters in configuration

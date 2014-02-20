@@ -33,6 +33,7 @@ import org.apache.pig.data.*;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+
 import java.io.IOException;
 
 /**

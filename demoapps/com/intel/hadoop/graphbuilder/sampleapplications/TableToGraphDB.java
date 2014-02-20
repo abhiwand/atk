@@ -19,15 +19,15 @@
  */
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
-
-import com.intel.hadoop.graphbuilder.util.*;
-
-import org.apache.commons.cli.*;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
+import com.intel.hadoop.graphbuilder.util.BaseCLI;
+import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
+import com.intel.hadoop.graphbuilder.util.Timer;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
 
 /**
@@ -121,30 +121,19 @@ import org.apache.log4j.Logger;
 public class TableToGraphDB {
 
     private static final Logger LOG = Logger.getLogger(TableToGraphDB.class);
-    private static boolean configFilePresent = false;
 
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
     static {
         Options options = new Options();
-
         options.addOption(BaseCLI.Options.titanAppend.get());
-
         options.addOption(BaseCLI.Options.titanOverwrite.get());
-
         options.addOption(BaseCLI.Options.flattenList.get());
-
         options.addOption(BaseCLI.Options.stripColumnFamilyNames.get());
-
         options.addOption(BaseCLI.Options.hbaseTable.get());
-
         options.addOption(BaseCLI.Options.vertex.get());
-
         options.addOption(BaseCLI.Options.edge.get());
-
         options.addOption(BaseCLI.Options.directedEdge.get());
-
         options.addOption(BaseCLI.Options.titanKeyIndex.get());
-
         commandLineInterface.setOptions(options);
     }
 
@@ -157,7 +146,7 @@ public class TableToGraphDB {
     public static void main(String[] args)  {
 
         Timer timer = new Timer();
-        configFilePresent = (args[0].equals("-conf"));
+        boolean configFilePresent = (args[0].equals("-conf"));
         if (!configFilePresent) {
             commandLineInterface.showError("When writing to Titan, the Titan config file must be specified by -conf <config> ");
         }

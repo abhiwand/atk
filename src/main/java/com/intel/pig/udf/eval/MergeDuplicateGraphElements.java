@@ -19,22 +19,20 @@
 
 package com.intel.pig.udf.eval;
 
-import java.io.IOException;
-import java.util.Iterator;
-
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.pig.data.GBTupleFactory;
+import com.intel.pig.data.PropertyGraphElementTuple;
 import org.apache.pig.Algebraic;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.pig.data.GBTupleFactory;
-import com.intel.pig.data.PropertyGraphElementTuple;
+import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * \brief MergeDuplicateGraphElements ... combine duplicate property graph
@@ -163,3 +161,4 @@ public class MergeDuplicateGraphElements extends EvalFunc<Tuple> implements
 		return outTuple;
 	}
 }
+

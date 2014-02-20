@@ -18,10 +18,7 @@
  */
 package com.intel.pig.udf.eval;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
-
+import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
@@ -29,7 +26,9 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import com.intel.pig.udf.GBUdfExceptionHandler;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 /**
  * \brief FlattenAsGBString UDF converts a given bag of strings to a flattened
@@ -43,7 +42,7 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
 public class FlattenAsGBString extends EvalFunc<String> {
 
 	/* GB accepts comma delimited fields */
-	private String delimeter = ",";
+	private static final String DELIMITER = ",";
 
 	@Override
 	public String exec(Tuple input) throws IOException {
@@ -64,7 +63,7 @@ public class FlattenAsGBString extends EvalFunc<String> {
 			flattened.append(t.get(0).toString());
 			processed++;
 			if (processed != tupleCount) {
-				flattened.append(delimeter);
+				flattened.append(DELIMITER);
 			}
 		}
 		flattened.append("}");

@@ -31,7 +31,8 @@ the edge list exports.
 How to compile the Graph Builder Library?
 -------------------------------
 Intel Graph Builder uses Apache Maven v3.1.1 as the build manager. Please
-ensure Maven3 is installed in your system.
+ensure Maven3 is installed in your system. Graph Builder currently
+supports Apache Hadoop 1.2.1 and Intel Distribution for Hadooop (IDH) 3.0.2.
 To build the library without running the unit tests:
 
 `mvn clean package -DskipTests`
@@ -43,6 +44,11 @@ To build the library and run the unit tests:
 To install Graph Builder:
 
 `mvn clean install`
+
+To build the library for IDH 3.0.2 you can use the idh_3 profile
+
+`mvn -P idh_3 initialize`	 
+`mvn -P idh_3 clean package -DskipTests`
 
 How to use the Graph Builder Library?
 -------------------------------------
@@ -95,12 +101,15 @@ Added the following UDFs and macros:
 Configuration & Tuning
 ------------------------
 
-##### Setting the Hadoop classpath 
+##### Configuration
 
-To use the Intel Graph Builder library,
-please set the $HADOOP_CLASSPATH as follows:
+To use the Intel Graph Builder library, first set the GB_HOME environment variable:
 
-`export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GRAPHBUILDER_HOME/target/graphbuilder-2.0-alpha-with-deps.jar`
+`export GB_HOME=/usr/local/graphbuilder`
+
+then set the HADOOP_CLASSPATH environment variable:
+
+`export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar:$GB_HOME/target/lib/*`
 
 ##### Tuning
 
@@ -135,7 +144,12 @@ For the HBase configuration, we recommend tuning the following parameters:
 - hbase.rpc.timeout
 - hbase.client.write.buffer
 
-Dependencies
+ Dependencies
 ------------
-
-Please use Titan-0.4.1, HBase-0.94.12 and Hadoop-1.2.1 to use the Graph Builder 2.0 (alpha) library.
+Graph Builder 2.0 (alpha) has been tested against:
+- Java 1.6+
+- Apache Hadoop 1.2.1
+- IDH 3.0.2 (Hadoop-2.0.4-alpha, Pig 0.11.1, HBase-0.94.7-security)
+- Apache Pig 0.12.0
+- Apache HBase 0.0.94.12-security
+- Titan 0.4.2

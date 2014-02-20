@@ -18,16 +18,14 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import java.io.IOException;
-
+import com.intel.pig.udf.GBUdfException;
+import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.intel.pig.udf.GBUdfException;
-import com.intel.pig.udf.GBUdfExceptionHandler;
+import java.io.IOException;
 
 public class TestGBUdfExceptionHandler {
 	EvalFunc<?> toRdfUdf;
@@ -51,7 +49,6 @@ public class TestGBUdfExceptionHandler {
 
 	@Test(expected = RuntimeException.class)
 	public void testFailureCase() throws IOException {
-		System.out.println("Testing failure cases");
 		GBUdfExceptionHandler.handleError(toRdfUdf, new IOException(
 				new GBUdfException("test_exception")));
 	}

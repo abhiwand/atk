@@ -28,19 +28,15 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.Desti
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.util.*;
 import com.thinkaurelius.titan.core.TitanGraph;
-
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
-
-import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Hashtable;
-
-import org.apache.hadoop.io.IntWritable;
-
-import org.apache.log4j.Logger;
 
 /**
  * This reducer performs the following tasks:
@@ -81,9 +77,6 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
         NUM_VERTICES,
         NUM_EDGES
     }
-
-    private Hashtable<EdgeID, Writable> edgeSet;
-    private Hashtable<Object, Writable>   vertexSet;
 
     private TitanGraphElementWriter titanWriter;
     private GraphElementTypeCallback graphElementMerge;
@@ -191,8 +184,8 @@ public class VerticesIntoTitanReducer extends Reducer<IntWritable,
     public void reduce(IntWritable key, Iterable<SerializedGraphElement>
             values, Context context) throws IOException, InterruptedException {
 
-        edgeSet       = new Hashtable<EdgeID, Writable>();
-        vertexSet     = new Hashtable<Object, Writable>();
+        Hashtable<EdgeID, Writable> edgeSet = new Hashtable<EdgeID, Writable>();
+        Hashtable<Object, Writable> vertexSet = new Hashtable<Object, Writable>();
 
         for(SerializedGraphElement serializedGraphElement : values){
             GraphElement graphElement = serializedGraphElement.graphElement();

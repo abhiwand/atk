@@ -19,13 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
+import org.junit.Test;
 
 import java.io.DataInput;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
 
 public class DoubleTypeTest {
 	private static final double EPSILON = 0.0001d;

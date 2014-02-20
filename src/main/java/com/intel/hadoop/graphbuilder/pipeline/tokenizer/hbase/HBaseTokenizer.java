@@ -19,13 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;

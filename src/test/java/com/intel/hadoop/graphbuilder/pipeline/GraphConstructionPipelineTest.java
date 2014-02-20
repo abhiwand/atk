@@ -19,12 +19,12 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 public class GraphConstructionPipelineTest {
 	@Test

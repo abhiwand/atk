@@ -19,187 +19,182 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
+import com.intel.hadoop.graphbuilder.util.Triple;
 import org.junit.Test;
 
-import com.intel.hadoop.graphbuilder.util.Triple;
+import static org.junit.Assert.*;
 
 public class EdgeIDTest {
-	@Test
-	public final void testGetA() throws Exception {
-		Triple<Integer, Integer, Integer> t = new Triple(7, 8, 9);
+    @Test
+    public final void testGetA() throws Exception {
+        Triple<Integer, Integer, Integer> t = new Triple(7, 8, 9);
 
-		int a = t.getA();
-		assertEquals(a, 7);
-	}
+        int a = t.getA();
+        assertEquals(a, 7);
+    }
 
-	@Test
-	public final void testConstructorGet() {
-		Object src = new String("src");
-		Object dst = new String("dst");
-		Object label = new String("label");
+    @Test
+    public final void testConstructorGet() {
+        Object src = new String("src");
+        Object dst = new String("dst");
+        Object label = new String("label");
 
-		EdgeID edgeID = new EdgeID(src, dst, label);
+        EdgeID edgeID = new EdgeID(src, dst, label);
 
-		assertNotNull(edgeID);
-		assertSame(edgeID.getSrc(), src);
-		assertSame(edgeID.getDst(), dst);
-		assertSame(edgeID.getLabel(), label);
-	}
+        assertNotNull(edgeID);
+        assertSame(edgeID.getSrc(), src);
+        assertSame(edgeID.getDst(), dst);
+        assertSame(edgeID.getLabel(), label);
+    }
 
-	@Test
-	public final void testConstructorGetSet() {
-		Object src = new String("src");
-		Object dst = new String("dst");
-		Object label = new String("label");
+    @Test
+    public final void testConstructorGetSet() {
+        Object src = new String("src");
+        Object dst = new String("dst");
+        Object label = new String("label");
 
-		Object one = new Integer(0);
-		Object two = new Integer(1);
-		Object three = new Integer(2);
+        Object one = new Integer(0);
+        Object two = new Integer(1);
+        Object three = new Integer(2);
 
-		EdgeID edgeID = new EdgeID(src, dst, label);
+        EdgeID edgeID = new EdgeID(src, dst, label);
 
-		assertNotNull(edgeID);
-		assertSame(edgeID.getSrc(), src);
-		assertSame(edgeID.getDst(), dst);
-		assertSame(edgeID.getLabel(), label);
+        assertNotNull(edgeID);
+        assertSame(edgeID.getSrc(), src);
+        assertSame(edgeID.getDst(), dst);
+        assertSame(edgeID.getLabel(), label);
 
-		edgeID.setSrc(one);
+        edgeID.setSrc(one);
 
-		assertSame(edgeID.getSrc(), one);
-		assertSame(edgeID.getDst(), dst);
-		assertSame(edgeID.getLabel(), label);
+        assertSame(edgeID.getSrc(), one);
+        assertSame(edgeID.getDst(), dst);
+        assertSame(edgeID.getLabel(), label);
 
-		edgeID.setDst(two);
+        edgeID.setDst(two);
 
-		assertSame(edgeID.getSrc(), one);
-		assertSame(edgeID.getDst(), two);
-		assertSame(edgeID.getLabel(), label);
+        assertSame(edgeID.getSrc(), one);
+        assertSame(edgeID.getDst(), two);
+        assertSame(edgeID.getLabel(), label);
 
-		edgeID.setLabel(three);
+        edgeID.setLabel(three);
 
-		assertSame(edgeID.getSrc(), one);
-		assertSame(edgeID.getDst(), two);
-		assertSame(edgeID.getLabel(), three);
+        assertSame(edgeID.getSrc(), one);
+        assertSame(edgeID.getDst(), two);
+        assertSame(edgeID.getLabel(), three);
 
-		edgeID.setLabel(label);
+        edgeID.setLabel(label);
 
-		assertSame(edgeID.getSrc(), one);
-		assertSame(edgeID.getDst(), two);
-		assertSame(edgeID.getLabel(), label);
+        assertSame(edgeID.getSrc(), one);
+        assertSame(edgeID.getDst(), two);
+        assertSame(edgeID.getLabel(), label);
 
-		edgeID.setDst(dst);
+        edgeID.setDst(dst);
 
-		assertSame(edgeID.getSrc(), one);
-		assertSame(edgeID.getDst(), dst);
-		assertSame(edgeID.getLabel(), label);
+        assertSame(edgeID.getSrc(), one);
+        assertSame(edgeID.getDst(), dst);
+        assertSame(edgeID.getLabel(), label);
 
-		edgeID.setSrc(src);
+        edgeID.setSrc(src);
 
-		assertSame(edgeID.getSrc(), src);
-		assertSame(edgeID.getDst(), dst);
-		assertSame(edgeID.getLabel(), label);
-	}
+        assertSame(edgeID.getSrc(), src);
+        assertSame(edgeID.getDst(), dst);
+        assertSame(edgeID.getLabel(), label);
+    }
 
-	@Test
-	public final void testReverseEdge() {
-		Object src = new String("src");
-		Object dst = new String("dst");
-		Object label = new String("label");
+    @Test
+    public final void testReverseEdge() {
+        Object src = new String("src");
+        Object dst = new String("dst");
+        Object label = new String("label");
 
-		EdgeID edgeID = new EdgeID(src, dst, label);
+        EdgeID edgeID = new EdgeID(src, dst, label);
 
-		assertNotNull(edgeID);
-		assertSame(edgeID.getSrc(), src);
-		assertSame(edgeID.getDst(), dst);
-		assertSame(edgeID.getLabel(), label);
+        assertNotNull(edgeID);
+        assertSame(edgeID.getSrc(), src);
+        assertSame(edgeID.getDst(), dst);
+        assertSame(edgeID.getLabel(), label);
 
-		EdgeID reverseEdgeID = edgeID.reverseEdge();
-		assertSame(reverseEdgeID.getSrc(), dst);
-		assertSame(reverseEdgeID.getDst(), src);
-		assertSame(reverseEdgeID.getLabel(), label);
+        EdgeID reverseEdgeID = edgeID.reverseEdge();
+        assertSame(reverseEdgeID.getSrc(), dst);
+        assertSame(reverseEdgeID.getDst(), src);
+        assertSame(reverseEdgeID.getLabel(), label);
 
-		EdgeID reverseReverseEdgeID = edgeID.reverseEdge().reverseEdge();
-		assertSame(reverseReverseEdgeID.getSrc(), src);
-		assertSame(reverseReverseEdgeID.getDst(), dst);
-		assertSame(reverseReverseEdgeID.getLabel(), label);
-	}
+        EdgeID reverseReverseEdgeID = edgeID.reverseEdge().reverseEdge();
+        assertSame(reverseReverseEdgeID.getSrc(), src);
+        assertSame(reverseReverseEdgeID.getDst(), dst);
+        assertSame(reverseReverseEdgeID.getLabel(), label);
+    }
 
-	@Test
-	public final void testEquals() {
-		Object src = new String("src");
-		Object badSrc = new String("badSrc");
-		Object dst = new String("dst");
-		Object badDst = new String("badDst");
-		Object label = new String("label");
-		Object badLabel = new String("I hate labels");
+    @Test
+    public final void testEquals() {
+        Object src = new String("src");
+        Object badSrc = new String("badSrc");
+        Object dst = new String("dst");
+        Object badDst = new String("badDst");
+        Object label = new String("label");
+        Object badLabel = new String("I hate labels");
 
-		EdgeID edgeID = new EdgeID(src, dst, label);
-		EdgeID edgeIDSame = new EdgeID(src, dst, label);
-		EdgeID edgeIDDelta1 = new EdgeID(badSrc, dst, label);
-		EdgeID edgeIDDelta2 = new EdgeID(src, badDst, label);
-		EdgeID edgeIDDelta3 = new EdgeID(src, dst, badLabel);
+        EdgeID edgeID = new EdgeID(src, dst, label);
+        EdgeID edgeIDSame = new EdgeID(src, dst, label);
+        EdgeID edgeIDDelta1 = new EdgeID(badSrc, dst, label);
+        EdgeID edgeIDDelta2 = new EdgeID(src, badDst, label);
+        EdgeID edgeIDDelta3 = new EdgeID(src, dst, badLabel);
 
 		assertTrue(edgeID.equals(edgeIDSame));
-		assertFalse(edgeID.equals(edgeIDDelta1));
-		assertFalse(edgeID.equals(edgeIDDelta2));
-		assertFalse(edgeID.equals(edgeIDDelta3));
+        assertFalse(edgeID.equals(edgeIDDelta1));
+        assertFalse(edgeID.equals(edgeIDDelta2));
+        assertFalse(edgeID.equals(edgeIDDelta3));
 
-		// can't forget this one
-		assertFalse(edgeID.equals(null));
-	}
+        // can't forget this one
+        assertFalse(edgeID.equals(null));
+    }
 
-	@Test
-	public final void testHashCode() {
-		Object src = new String("src");
-		Object dst = new String("dst");
-		Object label = new String("label");
+    @Test
+    public final void testHashCode() {
+        Object src = new String("src");
+        Object dst = new String("dst");
+        Object label = new String("label");
 
-		EdgeID edgeID = new EdgeID(src, dst, label);
+        EdgeID edgeID = new EdgeID(src, dst, label);
 
-		int hash = edgeID.hashCode();
+        int hash = edgeID.hashCode();
 
-		assertNotNull(hash);
-	}
+        assertNotNull(hash);
+    }
 
-	@Test
-	public final void testToString() {
-		Object src = new String("src");
-		Object dst = new String("dst");
-		Object label = new String("label");
+    @Test
+    public final void testToString() {
+        Object src = new String("src");
+        Object dst = new String("dst");
+        Object label = new String("label");
 
-		Object src2 = new String("src");
-		Object dst2 = new String("dst");
-		Object label2 = new String("label");
+        Object src2 = new String("src");
+        Object dst2 = new String("dst");
+        Object label2 = new String("label");
 
-		EdgeID edgeID1 = new EdgeID(src, dst, label);
-		EdgeID edgeID2 = new EdgeID(src2, dst2, label2);
+        EdgeID edgeID1 = new EdgeID(src, dst, label);
+        EdgeID edgeID2 = new EdgeID(src2, dst2, label2);
 
-		String toString1 = edgeID1.toString();
-		String toString2 = edgeID2.toString();
+        String toString1 = edgeID1.toString();
+        String toString2 = edgeID2.toString();
 
-		assertNotNull(toString1);
-		assertFalse(toString1.compareTo("") == 0);
+        assertNotNull(toString1);
+        assertFalse(toString1.compareTo("") == 0);
 
 		assertEquals("Should be equal", 0, toString2.compareTo(toString1));
 
-		// all those wonderful negative tests
+        // all those wonderful negative tests
 
-		Object badSrc = new String("badSrc");
-		Object badDst = new String("badDst");
-		Object badLabel = new String("badLabel");
+        Object badSrc = new String("badSrc");
+        Object badDst = new String("badDst");
+        Object badLabel = new String("badLabel");
 
-		EdgeID edgeIDDelta1 = new EdgeID(badSrc, dst, label);
-		EdgeID edgeIDDelta2 = new EdgeID(src, badDst, label);
-		EdgeID edgeIDDelta3 = new EdgeID(src, dst, badLabel);
+        EdgeID edgeIDDelta1 = new EdgeID(badSrc, dst, label);
+        EdgeID edgeIDDelta2 = new EdgeID(src, badDst, label);
+        EdgeID edgeIDDelta3 = new EdgeID(src, dst, badLabel);
 
-		assertFalse(toString1.compareTo(edgeIDDelta1.toString()) == 0);
-		assertFalse(toString1.compareTo(edgeIDDelta2.toString()) == 0);
-		assertFalse(toString1.compareTo(edgeIDDelta3.toString()) == 0);
-	}
+        assertFalse(toString1.compareTo(edgeIDDelta1.toString()) == 0);
+        assertFalse(toString1.compareTo(edgeIDDelta2.toString()) == 0);
+        assertFalse(toString1.compareTo(edgeIDDelta3.toString()) == 0);
+    }
 }

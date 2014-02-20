@@ -18,17 +18,20 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static org.junit.Assert.*;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.pig.backend.executionengine.ExecException;
-import org.junit.Test;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.DoubleType;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
+import org.apache.pig.backend.executionengine.ExecException;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
 
 public class TestPropertyGraphElementTuple {
 

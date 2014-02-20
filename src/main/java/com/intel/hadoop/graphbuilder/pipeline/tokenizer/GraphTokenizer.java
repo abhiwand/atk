@@ -19,14 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer;
 
-import java.util.Iterator;
-
 import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.WritableComparable;
-
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import org.apache.hadoop.mapreduce.Mapper;
 
 /**

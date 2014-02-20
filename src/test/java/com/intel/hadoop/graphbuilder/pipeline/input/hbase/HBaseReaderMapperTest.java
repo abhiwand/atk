@@ -19,23 +19,16 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.doNothing;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.mockito.PowerMockito.when;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
-
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.KeyValue;
@@ -58,16 +51,16 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseTokenizer;
-import com.intel.hadoop.graphbuilder.types.StringType;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.*;
+import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(HBaseReaderMapper.class)
@@ -489,52 +482,43 @@ public class HBaseReaderMapperTest {
 
 		if (graphElementType.equals("EDGE")) {
 			assertTrue(pair.getSecond().graphElement().isEdge());
-		} else {
+        } else {
 			assertTrue(pair.getSecond().graphElement().isVertex());
-		}
+        }
 
-		if (pair.getSecond().graphElement().isEdge()) {
-			Edge edgeFromPair = (Edge) pair.getSecond().graphElement();
-			assertTrue(edgeFromPair.getSrc().equals(edge.getSrc()));
-			assertTrue(edgeFromPair.getDst().equals(edge.getDst()));
-			assertTrue(edgeFromPair.getLabel().equals(edge.getLabel()));
-			for (Writable writable : edgeFromPair.getProperties()
-					.getPropertyKeys()) {
-				String key = ((StringType) writable).get();
-				String value = ((StringType) edgeFromPair.getProperty(key))
-						.get();
-				assertTrue(String.format(
-						"Look for %s:%s pair in our baseline object ", key,
-						value), ((StringType) edge.getProperty(key)).get()
-						.equals(value));
-			}
-		} else if (pair.getSecond().graphElement().isVertex()) {
-			Vertex vertexFromPair = (Vertex) pair.getSecond().graphElement();
-			assertTrue("", vertexFromPair.getId().equals(vertex.getId()));
-			for (Writable writable : vertexFromPair.getProperties()
-					.getPropertyKeys()) {
-				String key = ((StringType) writable).get();
-				String value = ((StringType) vertexFromPair.getProperty(key))
-						.get();
-				assertTrue(String.format(
-						"Look for %s:%s pair in our baseline object ", key,
-						value), ((StringType) vertex.getProperty(key)).get()
-						.equals(value));
-			}
-		}
-	}
+        if (pair.getSecond().graphElement().isEdge()) {
+            Edge edgeFromPair = (Edge) pair.getSecond().graphElement();
+            assertTrue(edgeFromPair.getSrc().equals(edge.getSrc()));
+            assertTrue(edgeFromPair.getDst().equals(edge.getDst()));
+            assertTrue(edgeFromPair.getLabel().equals(edge.getLabel()));
+            for (Writable writable : edgeFromPair.getProperties().getPropertyKeys()) {
+                String key = ((StringType) writable).get();
+                String value = ((StringType) edgeFromPair.getProperty(key)).get();
+                assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value),
+                        ((StringType) edge.getProperty(key)).get().equals(value));
+            }
+        } else if (pair.getSecond().graphElement().isVertex()) {
+            Vertex vertexFromPair = (Vertex) pair.getSecond().graphElement();
+            assertTrue("", vertexFromPair.getId().equals(vertex.getId()));
+            for (Writable writable : vertexFromPair.getProperties().getPropertyKeys()) {
+                String key = ((StringType) writable).get();
+                String value = ((StringType) vertexFromPair.getProperty(key)).get();
+                assertTrue(String.format("Look for %s:%s pair in our baseline object ", key, value),
+                        ((StringType) vertex.getProperty(key)).get().equals(value));
+            }
+        }
+    }
 
-	/**
-	 * creates a spied tokenizer we can use in other mocks
-	 * 
-	 * @return spied tokenizer
-	 * @throws ParserConfigurationException
-	 */
-	public final HBaseTokenizer getTokenizer()
-			throws ParserConfigurationException {
-		HBaseTokenizer HBaseTokenizer = new HBaseTokenizer();
-		HBaseTokenizer spiedHBaseTokenizer = spy(HBaseTokenizer);
-		spiedHBaseTokenizer.configure(conf);
-		return spiedHBaseTokenizer;
-	}
+    /**
+     * creates a spied tokenizer we can use in other mocks
+     *
+     * @return spied tokenizer
+     * @throws ParserConfigurationException
+     */
+    public final HBaseTokenizer getTokenizer() throws ParserConfigurationException {
+        HBaseTokenizer HBaseTokenizer = new HBaseTokenizer();
+        HBaseTokenizer spiedHBaseTokenizer = spy(HBaseTokenizer);
+        spiedHBaseTokenizer.configure(conf);
+        return spiedHBaseTokenizer;
+    }
 }

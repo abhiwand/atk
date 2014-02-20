@@ -20,7 +20,6 @@
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer;
 
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
-import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 
 /**
