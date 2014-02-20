@@ -620,7 +620,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         StringType currentTgtVertexName = new StringType(tgtVertexName);
 
         addNewEdge(input, inputSchema, edgeAttributes, fieldNameToDataType, currentSrcVertexName, srcLabel,
-                currentTgtVertexName, tgtLabel, eLabel, false, outputBag);
+                currentTgtVertexName, tgtLabel, eLabel, outputBag);
 
 
         // need to make sure both ends of the edge are proper
@@ -634,30 +634,41 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         if (edgeRule.isBiDirectional()) {
 
             addNewEdge(input, inputSchema, edgeAttributes, fieldNameToDataType, currentTgtVertexName, tgtLabel,
-                    currentSrcVertexName, srcLabel, eLabel, true, outputBag);
+                    currentSrcVertexName, srcLabel, eLabel, outputBag);
         }
     }   // End of processEdges
 
+    /**
+     * Creates the edge object, adds the properties to it and adds the edge object to the output bag
+     * @param input
+     * @param inputSchema
+     * @param edgeAttributes
+     * @param fieldNameToDataType
+     * @param srcVertexName
+     * @param srcLabel
+     * @param tgtVertexName
+     * @param tgtLabel
+     * @param eLabel
+     * @param outputBag
+     * @throws IOException
+     */
     private void addNewEdge(Tuple input, Schema inputSchema, String[] edgeAttributes, Hashtable<String,
             Byte> fieldNameToDataType, StringType srcVertexName, StringType srcLabel,
-                            StringType tgtVertexName, StringType tgtLabel, String eLabel, boolean isReverseEdge,
+                            StringType tgtVertexName, StringType tgtLabel, String eLabel,
                             DataBag outputBag) throws IOException {
 
-        Edge<StringType> edge = new Edge<StringType>(srcVertexName,srcLabel, tgtVertexName, tgtLabel,
-                new StringType(eLabel));
+        Edge<StringType> edge = new Edge<StringType>(srcVertexName,srcLabel, tgtVertexName, tgtLabel, new StringType(eLabel));
 
-        if (isReverseEdge) {
-            String property = "";
-            Object propertyValue = null;
+        String property = "";
+        Object propertyValue = null;
 
-            for (int countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-                propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
-                property = edgeAttributes[countEdgeAttr];
+        for (int countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
+            propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
+            property = edgeAttributes[countEdgeAttr];
 
-                if (propertyValue != null) {
-                    edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
-                            fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
-                }
+            if (propertyValue != null) {
+                edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
+                        fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
             }
         }
 
