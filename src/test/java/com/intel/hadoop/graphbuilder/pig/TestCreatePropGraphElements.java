@@ -97,7 +97,7 @@ public class TestCreatePropGraphElements
     }
 
     @Test
-    public void retainDanglingEdges() throws IOException, IllegalAccessException {
+    public void test_retainDanglingEdges() throws IOException, IllegalAccessException {
 
         Schema.FieldSchema id1         = new Schema.FieldSchema("id1", DataType.CHARARRAY);
         Schema.FieldSchema id2         = new Schema.FieldSchema("id2", DataType.CHARARRAY);

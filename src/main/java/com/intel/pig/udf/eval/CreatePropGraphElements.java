@@ -516,12 +516,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     public Schema outputSchema(Schema input) {
         try {
 
-            Schema pgeTuple = new Schema(new Schema.FieldSchema(
-                    "property graph element (unary tuple)", DataType.TUPLE));
-
-
-            return new Schema(new Schema.FieldSchema("property graph elements",
-                    pgeTuple, DataType.BAG));
+            Schema pgeTuple = new Schema(new Schema.FieldSchema("property_graph_element_schema", DataType.TUPLE));
+            return new Schema(new Schema.FieldSchema(null, pgeTuple, DataType.BAG));
 
         } catch (FrontendException e) {
             // This should not happen
@@ -648,8 +644,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         // need to make sure both ends of the edge are proper
         // vertices!
 
-        Vertex<StringType> srcVertex = new Vertex<StringType>(srcVertexName, srcLabel);
-        Vertex<StringType> tgtVertex = new Vertex<StringType>(tgtVertexName, tgtLabel);
+        Vertex<StringType> srcVertex = new Vertex<StringType>(currentSrcVertexName, srcLabel);
+        Vertex<StringType> tgtVertex = new Vertex<StringType>(currentTgtVertexName, tgtLabel);
         addVertexToPropElementBag(outputBag, srcVertex);
         addVertexToPropElementBag(outputBag, tgtVertex);
 
