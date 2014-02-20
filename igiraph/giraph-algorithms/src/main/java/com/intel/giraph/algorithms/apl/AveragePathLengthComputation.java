@@ -34,6 +34,7 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.master.DefaultMasterCompute;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.counters.GiraphStats;
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.HopCountWritable;
 import org.apache.giraph.Algorithm;
@@ -226,6 +227,12 @@ public class AveragePathLengthComputation extends BasicComputation
             long realStep = lastStep;
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
             if (superstep == 0) {
+                output.writeBytes("======Graph Statistics======\n");
+                output.writeBytes(String.format("Number of vertices: %d%n",
+                    GiraphStats.getInstance().getVertices().getValue()));
+                output.writeBytes(String.format("Number of edges: %d%n",
+                    GiraphStats.getInstance().getEdges().getValue()));
+                output.writeBytes("\n");
                 output.writeBytes("======Average Path Length Configuration======\n");
                 output.writeBytes(String.format("convergenceProgressOutputInterval: %d%n",
                     convergenceProgressOutputInterval));
