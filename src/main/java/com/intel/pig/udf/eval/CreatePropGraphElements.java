@@ -615,31 +615,13 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                              String eLabel, String[] edgeAttributes, EdgeRule edgeRule,
                              Hashtable<String, Byte> fieldNameToDataType, DataBag outputBag) throws IOException {
 
-        String property = "";
-        Object propertyValue = null;
 
         StringType currentSrcVertexName = new StringType(srcVertexName);
         StringType currentTgtVertexName = new StringType(tgtVertexName);
 
-        Edge<StringType> edge = new Edge<StringType>(currentSrcVertexName,srcLabel, currentTgtVertexName, tgtLabel,
-                new StringType(eLabel));
+        addNewEdge(input, inputSchema, edgeAttributes, fieldNameToDataType, currentSrcVertexName, srcLabel,
+                currentTgtVertexName, tgtLabel, eLabel, false, outputBag);
 
-        for (int countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-            propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
-            property = edgeAttributes[countEdgeAttr];
-
-            if (propertyValue != null) {
-                edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
-                    fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
-            }
-        }
-
-        addEdgeToPropElementBag(outputBag, edge);
-        incrementCounter(Counters.NUM_EDGES, 1L);
-
-        if (isDangling(srcVertexName, tgtVertexName) && this.retainDanglingEdges) {
-            incrementCounter(Counters.NUM_DANGLING_EDGES, 1L);
-        }
 
         // need to make sure both ends of the edge are proper
         // vertices!
@@ -650,17 +632,42 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         addVertexToPropElementBag(outputBag, tgtVertex);
 
         if (edgeRule.isBiDirectional()) {
-            Edge<StringType> opposingEdge = new Edge<StringType>(currentTgtVertexName, tgtLabel,
-            currentSrcVertexName, srcLabel, new StringType(eLabel));
 
-            addEdgeToPropElementBag(outputBag, opposingEdge);
-            incrementCounter(Counters.NUM_EDGES, 1L);
-
-            if (isDangling(tgtVertexName, srcVertexName) && this.retainDanglingEdges) {
-                incrementCounter(Counters.NUM_DANGLING_EDGES, 1L);
-            }
+            addNewEdge(input, inputSchema, edgeAttributes, fieldNameToDataType, currentTgtVertexName, tgtLabel,
+                    currentSrcVertexName, srcLabel, eLabel, true, outputBag);
         }
     }   // End of processEdges
+
+    private void addNewEdge(Tuple input, Schema inputSchema, String[] edgeAttributes, Hashtable<String,
+            Byte> fieldNameToDataType, StringType srcVertexName, StringType srcLabel,
+                            StringType tgtVertexName, StringType tgtLabel, String eLabel, boolean isReverseEdge,
+                            DataBag outputBag) throws IOException {
+
+        Edge<StringType> edge = new Edge<StringType>(srcVertexName,srcLabel, tgtVertexName, tgtLabel,
+                new StringType(eLabel));
+
+        if (isReverseEdge) {
+            String property = "";
+            Object propertyValue = null;
+
+            for (int countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
+                propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
+                property = edgeAttributes[countEdgeAttr];
+
+                if (propertyValue != null) {
+                    edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
+                            fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
+                }
+            }
+        }
+
+        addEdgeToPropElementBag(outputBag, edge);
+        incrementCounter(Counters.NUM_EDGES, 1L);
+
+        if (isDangling(srcVertexName.get(), tgtVertexName.get()) && this.retainDanglingEdges) {
+            incrementCounter(Counters.NUM_DANGLING_EDGES, 1L);
+        }
+    }
 
     /**
      *
