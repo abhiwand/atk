@@ -398,22 +398,22 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         for i in range(0, len(prior_data[0])):
             fig1 = plt.figure()
             if second_property_name != '':
-                prefix = 'Prior Value - Feature '
+                prefix = 'Prior: ' + first_property_name + ' - Feature '
             else:
-                prefix = 'Property Value - Feature '
+                prefix = 'Property: ' + first_property_name + ' - Feature '
             self._plot_histogram(fig1,
                                  bin_num,
                                  prior_data[:,i],
                                  prefix + str(i) + ' Histgoram',
-                                 prefix + str(i) + ' Value',
+                                 prefix + str(i),
                                  0)
             if second_property_name != '':
-                prefix = 'Posterior Value - Feature '
+                prefix = 'Posterior: ' + first_property_name + ' - Feature '
                 self._plot_histogram(fig1,
                                      bin_num,
                                      posterior_data[:,i],
                                      prefix + str(i) + ' Histgoram',
-                                     prefix + str(i) + ' Value',
+                                     prefix + str(i),
                                      1)
 
                 if enable_roc == "true":
