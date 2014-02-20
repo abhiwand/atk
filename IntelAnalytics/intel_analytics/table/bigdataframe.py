@@ -26,7 +26,7 @@ The common methods and class for buiding and operating with big data frames
 import sys
 import abc
 import traceback
-from intel_analytics.config import global_config, dynamic_import
+from intel_analytics.config import global_config, dynamic_import, get_time_str
 
 __all__ = ['get_frame_builder',
            'get_frame',
@@ -461,3 +461,77 @@ class BigDataFrame(object):
             comma separated column names such as f1,f2,f3
         """
         self._table.drop_columns(column_names)
+
+    def join(self, right=[], on=[], how='inner', suffixes=[], sort=False, join_frame_name=''):
+        """
+        Perform SQL JOIN on BigDataFrame
+
+        Syntax is similar to pandas DataFrame.join.
+
+        Parameters
+        ----------
+        right : List of BigDataFrame frames to be joined
+        how : {'left', 'right', 'outer', 'inner'}, default 'inner'
+            * left: use only keys from left frame (SQL: left outer join)
+            * right: use only keys from right frame (SQL: right outer join)
+            * outer: use union of keys from both frames (SQL: full outer join)
+            * inner: use intersection of keys from both frames (SQL: inner join)
+        on : label or list
+            Field names to join on. Must be found in both BigDataFrames. If on is
+            None and not merging on indexes, then it joins on the intersection of
+            the columns by default.
+        suffixes: list of suffixes to be applied after joining
+        sort: TODO
+        joined_frame: Name of the joined BigDataFrame
+
+        Notes
+        -----
+        1. Sorting
+        2. Filtering out replicated columns
+
+        Examples
+        --------
+        TODO
+
+        Returns
+        -------
+        joined : BigDataFrame
+        """
+
+        if not right:
+            raise BigDataFrameException('TODO: self-join')
+
+        if output:
+            raise BigDataFrameException('TODO: not inplace')
+
+        if sort:
+            raise BigDataFrameException('TODO: sorting')
+
+        # right must be the same big frame type
+        if not all(isinstance(bdf, BigDataFrame) for bdf in right):
+            raise BigDataFrameException('Input frame(s) are not ' + self.__class__.__name__)
+
+        # allowed join types: python outer is actually full
+        if not how in ['inner', 'outer', 'left', 'right'] :
+            raise BigDataFrameException('Join operation ' + how + ' is not supported')
+
+        # FIXME: columns check is currently done by backend as BigDataFrame
+        # currently does not have the columns/schema attribute
+        if not on:
+            raise BigDataFrameException('Please specify the columns to be joined on')
+
+        try:
+            if not join_frame_name:
+                join_frame_name = self.name + '_join' + get_time_str()
+
+            tables = [x._table.table_name for x in right]
+            join_frame = self._table.join(right=tables, output=output, on=on, how=how, \
+                                          suffixes=suffixes, sort=sort, \
+                                          join_frame_name=join_frame_name)
+            join_frame._lineage.append(join_frame._table.table_name)
+
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("join exception "+ str(e))
+
+        return join_frame
