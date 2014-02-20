@@ -1,11 +1,9 @@
 package com.intel.graph;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
@@ -161,10 +159,10 @@ public class TestGraphExporter {
         Map<String, String> edgeKeyTypes = new HashMap<String, String>();
         GraphExportReducer.getKeyTypesMapping(reader, vertexKeyTypes, edgeKeyTypes);
 
-        reducer.writeGraphMLHeaderSection(writer, vertexKeyTypes, edgeKeyTypes);
-        reducer.writeElementData(writer, "<edge id=\"62018421\" source=\"4\" target=\"5600276\" label=\"label\"><data key=\"etl-cf:edge_type\">tr</data><data key=\"etl-cf:weight\">3</data></edge>");
-        reducer.writeElementData(writer, "<node id=\"4000284\"><data key=\"_id\">4000284</data><data key=\"_gb_ID\">-304</data><data key=\"etl-cf:vertex_type\">R</data></node>");
-        reducer.writeGraphMLEndSection(writer);
+        GraphMLWriter.writeGraphMLHeaderSection(writer, vertexKeyTypes, edgeKeyTypes);
+        GraphMLWriter.writeElementData(writer, "<edge id=\"62018421\" source=\"4\" target=\"5600276\" label=\"label\"><data key=\"etl-cf:edge_type\">tr</data><data key=\"etl-cf:weight\">3</data></edge>");
+        GraphMLWriter.writeElementData(writer, "<node id=\"4000284\"><data key=\"_id\">4000284</data><data key=\"_gb_ID\">-304</data><data key=\"etl-cf:vertex_type\">R</data></node>");
+        GraphMLWriter.writeGraphMLEndSection(writer);
         String result = f.toString();
         String expected = "<?xml version=\"1.0\" ?><graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.1/graphml.xsd\"><key id=\"_id\" for=\"node\" attr.name=\"_id\" attr.type=\"bytearray\"></key><key id=\"_gb_ID\" for=\"node\" attr.name=\"_gb_ID\" attr.type=\"bytearray\"></key><key id=\"etl-cf:vertex_type\" for=\"node\" attr.name=\"etl-cf:vertex_type\" attr.type=\"bytearray\"></key><key id=\"etl-cf:edge_type\" for=\"edge\" attr.name=\"etl-cf:edge_type\" attr.type=\"bytearray\"></key><key id=\"etl-cf:weight\" for=\"edge\" attr.name=\"etl-cf:weight\" attr.type=\"bytearray\"></key><graph id=\"G\" edgedefault=\"directed\">" +
                 "<edge id=\"62018421\" source=\"4\" target=\"5600276\" label=\"label\"><data key=\"etl-cf:edge_type\">tr</data><data key=\"etl-cf:weight\">3</data></edge>\n" +
@@ -244,7 +242,5 @@ public class TestGraphExporter {
         mapDriver.withInput(key, new Text("2400308\t{_id=2400308, _gb_ID=-102, etl-cf:vertex_type=R}"));
         mapDriver.addOutput(key, new Text("<node id=\"2400308\"><data key=\"_id\">2400308</data><data key=\"_gb_ID\">-102</data><data key=\"etl-cf:vertex_type\">R</data></node>"));
         mapDriver.runTest();
-
-
     }
 }

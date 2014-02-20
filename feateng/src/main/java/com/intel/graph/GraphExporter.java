@@ -2,6 +2,7 @@ package com.intel.graph;
 
 import org.apache.commons.cli.*;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -17,8 +18,12 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -30,7 +35,7 @@ public class GraphExporter {
     public static final String FEATURE = "feature";
     public static final String JOB_NAME = "Export graph";
 
-    public static void main(String[] args) throws ParseException, ParserConfigurationException, SAXException, IOException, InterruptedException, ClassNotFoundException {
+    public static void main(String[] args) throws ParseException, ParserConfigurationException, SAXException, IOException, InterruptedException, ClassNotFoundException, XMLStreamException {
 
         Parser parser = new PosixParser();
         Options options = new Options();
@@ -91,8 +96,16 @@ public class GraphExporter {
             /* The query results are return to sideeffect files */
             Path resultFile = new Path(resultFolder, "sideeffect*");
 
+            FileStatus[] matches = fs.globStatus(resultFile);
             /* add the query output to exporter's input path for collecting the query results */
-            TextInputFormat.addInputPath(job, resultFile);
+            if(matches != null && matches.length > 0)
+                TextInputFormat.addInputPath(job, resultFile);
+        }
+
+        Path[] eligibleInputPaths = TextInputFormat.getInputPaths(job);
+        if(eligibleInputPaths == null || eligibleInputPaths.length == 0) {
+            writeEmptyGraphML(fileName);
+            return;
         }
 
         TextOutputFormat.setOutputPath(job, exporterOutputDir);
@@ -101,6 +114,15 @@ public class GraphExporter {
         job.setOutputFormatClass(TextOutputFormat.class);
         job.setNumReduceTasks(1);
         job.waitForCompletion(true);
+    }
+
+    private static void writeEmptyGraphML(String fileName) throws IOException, XMLStreamException {
+        final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+        outputFactory.setProperty("escapeCharacters", false);
+        FSDataOutputStream outputStream = GraphMLWriter.createFile(fileName, new Configuration());
+        XMLStreamWriter writer = outputFactory.createXMLStreamWriter(outputStream, "UTF8");
+        GraphMLWriter.writeGraphMLHeaderSection(writer, new HashMap<String, String>(), new HashMap<String, String>());
+        GraphMLWriter.writeGraphMLEndSection(writer);
     }
 
     /**
