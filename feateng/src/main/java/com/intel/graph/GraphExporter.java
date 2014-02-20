@@ -119,7 +119,7 @@ public class GraphExporter {
     private static void writeEmptyGraphML(String fileName) throws IOException, XMLStreamException {
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
         outputFactory.setProperty("escapeCharacters", false);
-        FSDataOutputStream outputStream = GraphMLWriter.createFile(fileName, new Configuration());
+        FSDataOutputStream outputStream = GraphMLWriter.createFile(fileName, FileSystem.get(new Configuration()));
         XMLStreamWriter writer = outputFactory.createXMLStreamWriter(outputStream, "UTF8");
         GraphMLWriter.writeGraphMLHeaderSection(writer, new HashMap<String, String>(), new HashMap<String, String>());
         GraphMLWriter.writeGraphMLEndSection(writer);

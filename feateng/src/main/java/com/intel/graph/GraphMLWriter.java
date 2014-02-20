@@ -90,8 +90,7 @@ public class GraphMLWriter {
         }
     }
 
-    static FSDataOutputStream createFile(String fileName, Configuration conf) throws IOException {
-        FileSystem fs = FileSystem.get(conf);
+    static FSDataOutputStream createFile(String fileName, FileSystem fs) throws IOException {
         Path outputFilePath = new Path(fileName);
         if (fs.exists(outputFilePath)) {
             fs.delete(outputFilePath, true);

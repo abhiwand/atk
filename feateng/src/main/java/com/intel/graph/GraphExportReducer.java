@@ -52,7 +52,7 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
                 }
             }
 
-            outputStream = GraphMLWriter.createFile(fileName, conf);
+            outputStream = GraphMLWriter.createFile(fileName, FileSystem.get(conf));
             writer = outputFactory.createXMLStreamWriter(outputStream, "UTF8");
             GraphMLWriter.writeGraphMLHeaderSection(writer, vertexKeyTypes, edgeKeyTypes);
         } catch (Exception e) {
