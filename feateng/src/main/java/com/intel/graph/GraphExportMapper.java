@@ -90,7 +90,7 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         for(Map.Entry<String, GraphElementType> e : propertyElementTypeMapping.entrySet()) {
             writer.writeStartElement(GraphExporter.FEATURE);
             writer.writeAttribute(GraphMLTokens.ATTR_NAME, e.getKey());
-            writer.writeAttribute(GraphMLTokens.ATTR_TYPE, "bytearray");
+            writer.writeAttribute(GraphMLTokens.ATTR_TYPE, "string");
             writer.writeAttribute(GraphMLTokens.FOR, e.getValue().toString());
             writer.writeEndElement();
         }
@@ -100,6 +100,5 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         writer.flush();
         writer.close();
     }
-
 }
 
