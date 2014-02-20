@@ -4,7 +4,9 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
@@ -20,6 +22,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -257,5 +260,64 @@ public class GraphExporterTest {
         verify(fs).delete(outputFilePath, true);
         verify(fs).create(outputFilePath, true);
 
+    }
+
+    @Test
+    public void addQueryOutputToInputPath_no_match() throws IOException {
+        Job job = mock(Job.class);
+        FileSystem fs = mock(FileSystem.class);
+        String path = "test_folder";
+
+        FileStatus[] statusArray = new FileStatus[1];
+        FileStatus status = mock(FileStatus.class);
+        statusArray[0] = status;
+
+        Path result = new Path("job-0");
+        when(status.getPath()).thenReturn(result);
+        when(fs.listStatus(new Path(path))).thenReturn(statusArray);
+
+        Path resultFile = new Path(result, "sideeffect*");
+        when(fs.globStatus(resultFile)).thenReturn(null);
+
+        final List<Path> container = new ArrayList<Path>();
+        IPathCollector collector = new IPathCollector() {
+            @Override
+            public void collectPath(Path path) {
+                container.add(path);
+            }
+        };
+
+        GraphExporter.addQueryOutputToInputPath(job, fs, path, collector);
+        assertEquals(0, container.size());
+    }
+
+    @Test
+    public void addQueryOutputToInputPath_with_match() throws IOException {
+        Job job = mock(Job.class);
+        FileSystem fs = mock(FileSystem.class);
+        String path = "test_folder";
+
+        FileStatus[] statusArray = new FileStatus[1];
+        FileStatus status = mock(FileStatus.class);
+        statusArray[0] = status;
+
+        Path result = new Path("job-0");
+        when(status.getPath()).thenReturn(result);
+        when(fs.listStatus(new Path(path))).thenReturn(statusArray);
+
+        Path resultFile = new Path(result, "sideeffect*");
+        when(fs.globStatus(resultFile)).thenReturn(statusArray);
+
+        final List<Path> container = new ArrayList<Path>();
+        IPathCollector collector = new IPathCollector() {
+            @Override
+            public void collectPath(Path path) {
+                container.add(path);
+            }
+        };
+
+        GraphExporter.addQueryOutputToInputPath(job, fs, path, collector);
+        assertEquals(1, container.size());
+        assertEquals(resultFile, container.get(0));
     }
 }

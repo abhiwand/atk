@@ -57,7 +57,7 @@ public class GraphExporter {
 
         Configuration conf = new Configuration();
         conf.set(FILE, fileName);
-        Job job = new Job(conf, JOB_NAME);
+        final Job job = new Job(conf, JOB_NAME);
         job.setJarByClass(GraphExporter.class);
         job.setMapperClass(GraphExportMapper.class);
         job.setReducerClass(GraphExportReducer.class);
@@ -72,34 +72,18 @@ public class GraphExporter {
         for (int i = 0; i < statements.size(); i++) {
             String statement = statements.get(i);
             String subStepOutputDir = new File(queryOutputDir.toString(), "step-" + i).toString();
-            String[] commandArray = new String[]{faunusGremlinFile, "-i", faunusPropertiesFile, statement, "-Dfaunus.output.location=" + subStepOutputDir + " faunus.graph.input.titan.storage.tablename=" + tableName};
-            ProcessBuilder builder = new ProcessBuilder(commandArray);
+            executeFaunusQuery(faunusGremlinFile, faunusPropertiesFile, tableName, statement, subStepOutputDir);
 
-            builder.redirectErrorStream(true);
-            Process p = builder.start();
-            BufferedReader stdInput = new BufferedReader(new
-                    InputStreamReader(p.getInputStream()));
-
-            String line = "";
-            while ((line = stdInput.readLine ()) != null) {
-                System.out.println (line);
-            }
-
-            p.waitFor();
-
-            FileStatus[] fileStatuses = fs.listStatus(new Path(subStepOutputDir));
-
-            /* Faunus generates a folder for each map reduce job. For query that requires multiple map reduce
-            * jobs, the query result is written to the last created folder. */
-            Path resultFolder = getResultFolder(fileStatuses);
-
-            /* The query results are return to sideeffect files */
-            Path resultFile = new Path(resultFolder, "sideeffect*");
-
-            FileStatus[] matches = fs.globStatus(resultFile);
-            /* add the query output to exporter's input path for collecting the query results */
-            if(matches != null && matches.length > 0)
-                TextInputFormat.addInputPath(job, resultFile);
+            addQueryOutputToInputPath(job, fs, subStepOutputDir, new IPathCollector() {
+                @Override
+                public void collectPath(Path path) {
+                    try {
+                        TextInputFormat.addInputPath(job, path);
+                    } catch (IOException e) {
+                        throw new RuntimeException("Failed to add query output for processing");
+                    }
+                }
+            });
         }
 
         Path[] eligibleInputPaths = TextInputFormat.getInputPaths(job);
@@ -114,6 +98,39 @@ public class GraphExporter {
         job.setOutputFormatClass(TextOutputFormat.class);
         job.setNumReduceTasks(1);
         job.waitForCompletion(true);
+    }
+
+    private static void executeFaunusQuery(String faunusGremlinFile, String faunusPropertiesFile, String tableName, String statement, String subStepOutputDir) throws IOException, InterruptedException {
+        String[] commandArray = new String[]{faunusGremlinFile, "-i", faunusPropertiesFile, statement, "-Dfaunus.output.location=" + subStepOutputDir + " faunus.graph.input.titan.storage.tablename=" + tableName};
+        ProcessBuilder builder = new ProcessBuilder(commandArray);
+
+        builder.redirectErrorStream(true);
+        Process p = builder.start();
+        BufferedReader stdInput = new BufferedReader(new
+                InputStreamReader(p.getInputStream()));
+
+        String line = "";
+        while ((line = stdInput.readLine ()) != null) {
+            System.out.println (line);
+        }
+
+        p.waitFor();
+    }
+
+    static void addQueryOutputToInputPath(Job job, FileSystem fs, String subStepOutputDir, IPathCollector collector) throws IOException {
+        FileStatus[] fileStatuses = fs.listStatus(new Path(subStepOutputDir));
+
+            /* Faunus generates a folder for each map reduce job. For query that requires multiple map reduce
+            * jobs, the query result is written to the last created folder. */
+        Path resultFolder = getResultFolder(fileStatuses);
+
+            /* The query results are return to sideeffect files */
+        Path resultFile = new Path(resultFolder, "sideeffect*");
+
+        FileStatus[] matches = fs.globStatus(resultFile);
+            /* add the query output to exporter's input path for collecting the query results */
+        if(matches != null && matches.length > 0)
+            collector.collectPath(resultFile);
     }
 
     private static void writeEmptyGraphML(String fileName) throws IOException, XMLStreamException {
