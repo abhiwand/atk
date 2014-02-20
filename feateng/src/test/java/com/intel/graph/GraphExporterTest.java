@@ -1,6 +1,6 @@
 package com.intel.graph;
 
-import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -26,15 +26,17 @@ import java.util.Map;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({TextOutputFormat.class})
-public class TestGraphExporter {
+public class GraphExporterTest {
 
     @Test
-    public void testGetResultFolder_no_job_step() {
+    public void getResultFolder_no_job_step() {
         boolean isExceptionRaised = false;
         FileStatus[] fileStatuses = new FileStatus[]{};
         try {
@@ -47,7 +49,7 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testGetResultFolder_single_job_step() {
+    public void getResultFolder_single_job_step() {
         FileStatus status1 = mock(FileStatus.class);
         Path path1 = mock(Path.class);
         when(path1.getName()).thenReturn("job-0");
@@ -58,7 +60,7 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testGetResultFolder_two_job_step() {
+    public void getResultFolder_two_job_step() {
         FileStatus status0 = mock(FileStatus.class);
         Path path0 = mock(Path.class);
         when(path0.getName()).thenReturn("job-0");
@@ -75,7 +77,7 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testGraphElementFactory_getEdge() {
+    public void makeElement_getEdge() {
         IGraphElementFactory factory = new TitanFaunusGraphElementFactory();
         IGraphElement element = factory.makeElement("[e[64007973][4-edge->6000264], {etl-cf:edge_type=tr, etl-cf:weight=4}]\n");
         assertEquals(element.getElementType(), GraphElementType.Edge);
@@ -89,7 +91,7 @@ public class TestGraphExporter {
 
 
     @Test
-    public void testGraphElementFactory_getVertex() {
+    public void makeElement_getVertex() {
         IGraphElementFactory factory = new TitanFaunusGraphElementFactory();
         IGraphElement element = factory.makeElement("[v[800316], {_gb_ID=-164, etl-cf:vertex_type=R}]");
         assertEquals(element.getElementType(), GraphElementType.Vertex);
@@ -99,17 +101,7 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testByteArrayStream() throws IOException {
-        ByteArrayOutputStream f = new ByteArrayOutputStream();
-        f.write("test1".getBytes());
-        f.write(",test2".getBytes());
-        f.write(",test3".getBytes());
-
-        assertEquals("test1,test2,test3", f.toString());
-    }
-
-    @Test
-    public void testGetKeyTypesMapping() throws ParserConfigurationException, SAXException, IOException {
+    public void getKeyTypesMapping() throws ParserConfigurationException, SAXException, IOException {
         String schemaXML = "<?xml version=\"1.0\" ?><schema><feature attr.name=\"etl-cf:edge_type\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"etl-cf:weight\" attr.type=\"bytearray\" for=\"Edge\"></feature><feature attr.name=\"_id\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"_gb_ID\" attr.type=\"bytearray\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:vertex_type\" attr.type=\"bytearray\" for=\"Vertex\"></feature></schema>";
         Reader reader = new StringReader(schemaXML);
 
@@ -128,14 +120,14 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testGetStatementListFromXMLString_0_statments() throws IOException, SAXException, ParserConfigurationException {
+    public void getStatementListFromXMLString_0_statments() throws IOException, SAXException, ParserConfigurationException {
         String xml = "<query></query>";
         List<String> statements = GraphExporter.getStatementListFromXMLString(xml);
         assertEquals(0, statements.size());
     }
 
     @Test
-    public void testGetStatementListFromXMLString_2_statments() throws IOException, SAXException, ParserConfigurationException {
+    public void getStatementListFromXMLString_2_statments() throws IOException, SAXException, ParserConfigurationException {
         String xml = "<query><statement>g.V('_gb_ID','11').out.map</statement><statement>g.V('_gb_ID','11').outE.transform('{[it,it.map()]}')</statement></query>";
         List<String> statements = GraphExporter.getStatementListFromXMLString(xml);
         assertEquals(2, statements.size());
@@ -144,8 +136,7 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testGraphMLGeneration() throws XMLStreamException, ParserConfigurationException, SAXException, IOException {
-        GraphExportReducer reducer = new GraphExportReducer();
+    public void graphMLGeneration_whole_file() throws XMLStreamException, ParserConfigurationException, SAXException, IOException {
         ByteArrayOutputStream f = new ByteArrayOutputStream();
         XMLOutputFactory xmlInputFactory = XMLOutputFactory.newInstance();
         xmlInputFactory.setProperty("escapeCharacters", false);
@@ -172,7 +163,7 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testWriteSchemaToXML() throws XMLStreamException {
+    public void writeSchemaToXML_from_mapper() throws XMLStreamException {
         ByteArrayOutputStream f = new ByteArrayOutputStream();
         XMLOutputFactory xmlInputFactory = XMLOutputFactory.newInstance();
         xmlInputFactory.setProperty("escapeCharacters", false);
@@ -193,7 +184,7 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testCollectSchemaInfo() {
+    public void collectSchemaInfo() {
         Map<String, GraphElementType> propertyElementTypeMapping = new HashMap<String, GraphElementType>();
         GraphExportMapper mapper = new GraphExportMapper();
         IGraphElement vertex = new VertexElement(1);
@@ -222,7 +213,7 @@ public class TestGraphExporter {
     }
 
     @Test
-    public void testMap() throws IOException, InterruptedException {
+    public void map() throws IOException, InterruptedException {
         GraphExportMapper mapper = new GraphExportMapper();
         MapDriver<LongWritable, Text, LongWritable, Text> mapDriver = new MapDriver<LongWritable, Text, LongWritable, Text>();
         mapDriver.setMapper(mapper);
@@ -242,5 +233,29 @@ public class TestGraphExporter {
         mapDriver.withInput(key, new Text("2400308\t{_id=2400308, _gb_ID=-102, etl-cf:vertex_type=R}"));
         mapDriver.addOutput(key, new Text("<node id=\"2400308\"><data key=\"_id\">2400308</data><data key=\"_gb_ID\">-102</data><data key=\"etl-cf:vertex_type\">R</data></node>"));
         mapDriver.runTest();
+    }
+
+    @Test
+    public void createFile_no_existing_file() throws IOException {
+        FileSystem fs = mock(FileSystem.class);
+        String fileName = "testfile";
+        Path outputFilePath = new Path(fileName);
+        when(fs.exists(outputFilePath)).thenReturn(false);
+        GraphMLWriter.createFile(fileName, fs);
+        verify(fs, never()).delete(outputFilePath, true);
+        verify(fs).create(outputFilePath, true);
+
+    }
+
+    @Test
+    public void createFile_delete_existing() throws IOException {
+        FileSystem fs = mock(FileSystem.class);
+        String fileName = "testfile";
+        Path outputFilePath = new Path(fileName);
+        when(fs.exists(outputFilePath)).thenReturn(true);
+        GraphMLWriter.createFile(fileName, fs);
+        verify(fs).delete(outputFilePath, true);
+        verify(fs).create(outputFilePath, true);
+
     }
 }
