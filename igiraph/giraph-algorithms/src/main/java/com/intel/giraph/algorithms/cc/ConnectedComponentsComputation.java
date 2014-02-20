@@ -26,6 +26,7 @@ import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
@@ -231,6 +232,12 @@ public class ConnectedComponentsComputation extends
             long realStep = lastStep;
 
             if (superstep == 0) {
+                output.writeBytes("======Graph Statistics======\n");
+                output.writeBytes(String.format("Number of vertices: %d%n",
+                    GiraphStats.getInstance().getVertices().getValue()));
+                output.writeBytes(String.format("Number of edges: %d%n",
+                    GiraphStats.getInstance().getEdges().getValue()));
+                output.writeBytes("\n");
                 output.writeBytes("======Connected Components Configuration======\n");
                 output.writeBytes(String.format("convergenceProgressOutputInterval: %d%n",
                     convergenceProgressOutputInterval));
