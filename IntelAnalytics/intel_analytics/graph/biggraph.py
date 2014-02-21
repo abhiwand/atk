@@ -423,9 +423,9 @@ class GraphWrapper:
     def build_proxy(self, element_class, index_class=None):
         self._graph.build_proxy(self, element_class, index_class)
 
-    def export_sub_graph_as_graphml(self, statements, file):
+    def export_as_graphml(self, statements, file):
         """
-        Execute graph queries and output as xml in the specified file location
+        Execute graph queries and output result as a graphml file in the specified file location.
 
         Parameters
         ----------
@@ -433,6 +433,14 @@ class GraphWrapper:
            Iterable of query strings
         file: String
             output file path
+
+        Examples
+        --------
+        >>> statements = []
+        >>> statements.append("g.V('_gb_ID','11').out")
+        >>> graph = get_graph("SampleGraph")
+        >>> graph.export_as_graphml(statements, "example.xml")
+
         """
         xml = '\"' + self._get_query_xml(statements) + '\"'
         temp_output = 'graph_query'
@@ -448,6 +456,7 @@ class GraphWrapper:
                  '-t', self.titan_table_name
         ]
 
+        print " ".join(args)
         return_code = call(args, report_strategy=FaunusProgressReportStrategy())
         if return_code:
             raise Exception('Could not export graph')

@@ -723,7 +723,7 @@ class HbaseTableTest(unittest.TestCase):
         wrapper = GraphWrapper(graph)
         wrapper.titan_table_name = "test_table"
         statements = ["g.V('_gb_ID','11').out"]
-        wrapper.export_sub_graph_as_graphml(statements, "output.xml")
+        wrapper.export_as_graphml(statements, "output.xml")
         self.assertEqual("\"<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement></query>\"", result_holder["call_args"][result_holder["call_args"].index('-q') + 1])
 
 
