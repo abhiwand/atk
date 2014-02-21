@@ -29,3 +29,4 @@ target
 *.tar.gz
 testgraphs
 *.zip
+*/dependency-reduced-pom.xml
