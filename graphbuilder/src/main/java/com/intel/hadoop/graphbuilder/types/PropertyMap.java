@@ -19,10 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
+import com.intel.hadoop.graphbuilder.util.HashUtil;
+import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.Writable;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
 import java.util.Map;
 import java.util.Set;
 

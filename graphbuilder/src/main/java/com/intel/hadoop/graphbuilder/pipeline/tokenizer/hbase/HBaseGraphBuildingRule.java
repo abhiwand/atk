@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+
 /**
  * This class handles the configuration time aspects of the graph construction 
  * rule (graph tokenizer) that converts hbase records into property graph elements.

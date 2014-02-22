@@ -18,50 +18,33 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import java.io.IOException;
-
+import com.intel.pig.udf.GBUdfException;
+import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.intel.pig.udf.GBUdfException;
-import com.intel.pig.udf.GBUdfExceptionHandler;
+import java.io.IOException;
 
 public class TestGBUdfExceptionHandler {
 	EvalFunc<?> toRdfUdf;
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting GBUdfExceptionHandler tests. ***");
 		toRdfUdf = (EvalFunc<?>) PigContext
 				.instantiateFuncFromSpec("com.intel.pig.udf.eval.RDF('OWL')");
 
-		GBUdfExceptionHandler.handleError(toRdfUdf,
-                new NullPointerException());
-		GBUdfExceptionHandler.handleError(toRdfUdf,
-                new RuntimeException());
-		GBUdfExceptionHandler.handleError(toRdfUdf,
-                new IOException("test_exception"));
-
-	}
-
-	@Test
-	public void runTests() throws IOException {
+		GBUdfExceptionHandler.handleError(toRdfUdf, new NullPointerException());
+		GBUdfExceptionHandler.handleError(toRdfUdf, new RuntimeException());
+		GBUdfExceptionHandler.handleError(toRdfUdf, new IOException(
+				"test_exception"));
 
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void testFailureCase() throws IOException {
-		System.out.println("Testing failure cases");
-		GBUdfExceptionHandler.handleError(toRdfUdf,
-                new IOException(new GBUdfException("test_exception")));
+		GBUdfExceptionHandler.handleError(toRdfUdf, new IOException(
+				new GBUdfException("test_exception")));
 	}
-
-	@After
-	public void done() {
-		System.out.println("*** Done with the GBUdfExceptionHandler tests ***");
-	}
-
 }

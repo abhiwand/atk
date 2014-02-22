@@ -69,19 +69,11 @@
  * GB 2.0 (alpha) requires <a href="http://hadoop.apache.org/">Apache Hadoop</a> and <a href="http://pig.apache.org/">Apache Pig</a> installed. 
  * To use the \link graphbuilder.pig LOAD_TITAN \endlink macro for bulk loading graphs to Titan, 
  * <a href="http://hbase.apache.org/">HBase</a> and <a href="http://thinkaurelius.github.io/titan/">Titan graph database</a> are also required. 
- * GB 2.0 (alpha) has been tested against:
- * <UL>
- * <LI> Java 1.6+
- * <LI> Apache Hadoop 1.2.1
- * <LI> IDH 3.0.2 (Hadoop-2.0.4-alpha, Pig 0.11.1, HBase-0.94.7-security)
- * <LI> Apache Pig 0.12.0
- * <LI> Apache HBase 0.0.94.12-security
- * <LI> Titan 0.4.2
- * </UL>
+ * In particular, GB 2.0 (alpha) has been tested against Java 1.7, Hadoop 1.2.1, Pig 0.12, Hbase 0.94.12, and Titan 0.4.1. 
   
  * <H2>Building The Source Code</H2>
  * GB 2.0 (alpha) uses <a href="http://maven.apache.org/">Apache Maven</a> as the build manager. GB 2.0 (alpha) currently supports 
- * Apache Hadoop 1.2.1 and Intel&reg; Distribution for Apache Hadoop (IDH) 3.0.2. To build GB for Apache Hadoop 1.2.1 run
+ * Apache Hadoop 1.2.1 and Intel &reg; Distribution for Apache Hadoop (IDH) 3.0.2. To build GB for Apache Hadoop 1.2.1 run
 	 \code
 	 mvn clean package 
 	 \endcode
@@ -94,17 +86,17 @@
  \code
  mvn clean package -DskipTests 
  \endcode
- 
- * <H2>Running the Examples</H2>
+* <H2>Running the Examples</H2>
  * Assuming GB 2.0 (alpha) is installed at /usr/local/gb/, you can run the provided example scripts with
     \code
-     export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:/usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar
-     cd /usr/local/gb/
+     export GB_HOME=/usr/local/graphbuilder/
+     export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar:$GB_HOME/target/lib/*
+     cd $GB_HOME
      pig -x local -f examples/rdf_example.pig     
     \endcode
     
  * <H2>Using GB 2.0 (alpha)</H2>
- *  To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT \link graphbuilder.pig \endlink script. The 
+ *  First of all GB_HOME environment variable must be set to point to GB 2.0 (alpha) installation directory. To use GB 2.0 (alpha) UDFs, in your Pig script REGISTER graphbuilder-2.0-alpha-with-deps.jar and IMPORT \link graphbuilder.pig \endlink script. The 
  * \link graphbuilder.pig \endlink script defines the ExtractJSONField and CreateRowKey UDFs (the UDFs that take no constructor arguments), and LOAD_TITAN and MERGEDUPLICATEGRAPHELEMENTS macros. The user
  * has to define the other UDFs with the constructor arguments they want; please see examples under the examples/ directory for the use of GB functionality in your Pig scripts.
  *  Assuming GB 2.0 (alpha) is installed at /usr/local/gb/ add the following to the beginning of your Pig script:
@@ -116,6 +108,7 @@
  * <H2>Known Issues:</H2>
  *  <B>ERROR org.apache.pig.tools.grunt.Grunt - ERROR 2998: Unhandled internal error. java.io.IOException: 
  *  Could not find class com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids, while attempting to de-serialize it</B><BR/>
- *  Please export HADOOP_CLASSPATH=/usr/local/gb/target/graphbuilder-2.0-alpha-with-deps.jar and also make sure that
- *  you do not overwrite HADOOP_CLASSPATH variable in $HADOOP_HOME/conf/hadoop-env.sh and in other scripts.
+ *  Make sure you set the HADOOP_CLASSPATH environment variable as described above and make sure that the HADOOP_CLASSPATH variable is not overwritten
+ *  in other scripts like $HADOOP_HOME/conf/hadoop-env.sh.
+ * 
  */

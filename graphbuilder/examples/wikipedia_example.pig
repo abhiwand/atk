@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Intel Corporation.
+/* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,11 +30,12 @@
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
 
-xml_data = LOAD 'examples/data/wiki_single.txt' using com.intel.pig.load.XMLLoader('page') AS (page: chararray);
-id_extracted = FOREACH xml_data GENERATE REGEX_EXTRACT(page, '<id>(.*?)</id>', 1) AS (id: chararray), page;
-title_extracted = FOREACH id_extracted GENERATE REGEX_EXTRACT(page, '<title>(.*?)</title>', 1) AS (title: chararray), id, page;
-text_extracted = FOREACH title_extracted GENERATE REGEX_EXTRACT(page, '<text\\s.*>(.*?)</text>', 1) AS (text: chararray), id, title, page;
-links_extracted = FOREACH text_extracted GENERATE RegexExtractAllMatches(page, '\\[\\[(.*?)\\]\\]') AS (links:bag{}), id, title; --extract all links as a bag
+
+xml_data = LOAD 'examples/data/wiki_single.txt' using com.intel.pig.load.XMLLoader('page') AS page: chararray;
+id_extracted = FOREACH xml_data GENERATE REGEX_EXTRACT(page, '<id>(.*?)</id>', 1) AS id: chararray, page;
+title_extracted = FOREACH id_extracted GENERATE REGEX_EXTRACT(page, '<title>(.*?)</title>', 1) AS title: chararray, id, page;
+text_extracted = FOREACH title_extracted GENERATE REGEX_EXTRACT(page, '<text\\s.*>(.*?)</text>', 1) AS text: chararray, id, title, page;
+links_extracted = FOREACH text_extracted GENERATE RegexExtractAllMatches(page, '\\[\\[(.*?)\\]\\]') AS links:bag{}, id, title; --extract all links as a bag
 links_flattened = FOREACH links_extracted GENERATE id, title, FlattenAsGBString(links) AS flattened_links:chararray;--flatten the bag of links in the format GB can process
 final_relation = FOREACH links_flattened GENERATE FLATTEN(CreateRowKey(*)); --assign row keys 
 
@@ -48,6 +49,7 @@ STORE final_relation INTO 'hbase://wiki_table' USING org.apache.pig.backend.hado
 --build a directed graph with the --directedEdges argument		
 -- -O flag specifies overwriting the input Titan table
 -- -F flag specifies to unflatten the links (see links_flattened relation above) during tokenization 
+-- to bulk load the graph to Cassandra, use examples/cassandra-titan-conf.xml configuration file below
 LOAD_TITAN('wiki_table', '"features:title=features:id" "features:flattened_links"', 
                              '--directedEdges "features:title,features:flattened_links,LINKS"',
                            'examples/hbase-titan-conf.xml', '-O -F'); 

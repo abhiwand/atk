@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Intel Corporation.
+/* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -82,3 +82,15 @@ DEFINE LOAD_TITAN(input_hbase_table_name, vertex_rule, edge_rule, config_file, o
 	STORE stored_graph INTO '/tmp/load_titan_dummy_location3' USING NoOpStore();
 };
 
+
+/**
+ * GRAPH_UNION macro takes two relations of property graph elements (SerializedGraphElements)
+ * and then performs a union and removes duplicates.
+ *
+ * @param propertyGraph1 relation of property graph elements
+ * @param propertyGraph2 relation of property graph elements
+ */
+DEFINE GRAPH_UNION(propertyGraph1, propertyGraph2) RETURNS propertyGraphUnion {
+    withDuplicates = UNION $propertyGraph1, $propertyGraph2;
+    $propertyGraphUnion = MERGE_DUPLICATE_ELEMENTS(withDuplicates);
+};

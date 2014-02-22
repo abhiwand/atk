@@ -19,13 +19,11 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNotSame;
-import static junit.framework.Assert.assertSame;
+import org.junit.Test;
 
 import java.util.HashMap;
 
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 public class PropertyGraphSchemaTest {
 
@@ -49,7 +47,7 @@ public class PropertyGraphSchemaTest {
 
         graphSchema.addVertexSchema(vertexSchema);
 
-        assert(graphSchema.getVertexSchemata().contains(vertexSchema));
+		assertTrue(graphSchema.getVertexSchemata().contains(vertexSchema));
     }
 
     @Test
@@ -61,7 +59,7 @@ public class PropertyGraphSchemaTest {
 
         graphSchema.addEdgeSchema(edgeSchema);
 
-        assert(graphSchema.getEdgeSchemata().contains(edgeSchema));
+		assertTrue(graphSchema.getEdgeSchemata().contains(edgeSchema));
     }
 
     @Test

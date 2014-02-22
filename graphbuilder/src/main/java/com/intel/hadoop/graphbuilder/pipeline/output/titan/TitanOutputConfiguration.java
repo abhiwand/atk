@@ -19,8 +19,8 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import com.intel.hadoop.graphbuilder.pipeline.output.OutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
+import com.intel.hadoop.graphbuilder.pipeline.output.OutputConfiguration;
 
 public class TitanOutputConfiguration implements OutputConfiguration {
     private GraphGenerationMRJob graphGenerationMRJob;
