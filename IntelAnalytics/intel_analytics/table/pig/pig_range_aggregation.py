@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2013 Intel Corporation All Rights Reserved.
+# Copyright 2014 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -24,22 +24,19 @@ import os
 import ast
 import sys
 
-#Coverage.py will attempt to import every python module to generate coverage statistics.
-#Since Pig is only available to Jython than this will cause the coverage tool to throw errors thus breaking the build.
-#This try/except block will allow us to run coverage on the Jython files.
+from intel_analytics.table.pig import pig_helpers
 try:
     from org.apache.pig.scripting import Pig
-except:
-    print("Pig is either not installed or not executing through Jython. Pig is required for this module.")
+except ImportError, e:
+    print "Pig is either not installed or not executing through Jython. Pig is required for this module."
 
 from intel_analytics.config import global_config as config
 from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
-from intel_analytics.table.pig import pig_helpers
 from intel_analytics.table.builtin_functions import available_builtin_functions
 from intel_analytics.table.builtin_functions import EvalFunctions
 
 
-def generate_hbase_store_args(features, cmd_line_args):
+def generate_hbase_store_args(cmd_line_args):
     hbase_store_args = config['hbase_column_family'] + "AggregateGroup "
     arg_list = cmd_line_args.aggregation_function_list.split(" ")
     for i in range(0,len(arg_list), 3):
@@ -85,7 +82,7 @@ def main(argv):
     features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
-    hbase_store_args = generate_hbase_store_args(features, cmd_line_args)
+    hbase_store_args = generate_hbase_store_args(cmd_line_args)
 
     #don't forget to add the key we read from hbase, we read from hbase like .... as (key:chararray, ... remaining_features ...), see below
     features.insert(0, 'key')
@@ -97,7 +94,7 @@ def main(argv):
     datafu_jar = os.path.join(config['pig_lib'], 'datafu-0.0.10.jar')
     pig_statements.append("REGISTER %s; -- for the VAR UDF" % datafu_jar)
     pig_statements.append("DEFINE VAR datafu.pig.stats.VAR();")
-    pig_statements.append("SET DEFAULT_PARALLEL 20;")
+    pig_statements.append("SET DEFAULT_PARALLEL %s;" % (config['pig_parallelism_factor']))
         
     pig_statements.append("hbase_data = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s', '-loadKey true') as (key:chararray, %s);" \
                           % (cmd_line_args.input, hbase_constructor_args, pig_schema_info))
@@ -127,7 +124,7 @@ def main(argv):
 	pig_statements.append("store aggregated_output into 'hbase://$OUTPUT' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (hbase_store_args))
 
     else:
-	raise Exception('Unsupport group by range feature')
+	raise Exception('Unsupport group by range feature %s' % (cmd_line_args.range))
 
     pig_script = "\n".join(pig_statements)
     compiled = Pig.compile(pig_script)

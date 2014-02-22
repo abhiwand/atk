@@ -24,22 +24,20 @@ import os
 import ast
 import sys
 
-#Coverage.py will attempt to import every python module to generate coverage statistics.
-#Since Pig is only available to Jython than this will cause the coverage tool to throw errors thus breaking the build.
-#This try/except block will allow us to run coverage on the Jython files.
+from intel_analytics.table.pig import pig_helpers
+
 try:
     from org.apache.pig.scripting import Pig
-except:
-    print("Pig is either not installed or not executing through Jython. Pig is required for this module.")
+except ImportError, e:
+    print "Pig is either not installed or not executing through Jython. Pig is required for this module."
 
 from intel_analytics.config import global_config as config
 from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
-from intel_analytics.table.pig import pig_helpers
 from intel_analytics.table.builtin_functions import available_builtin_functions
 from intel_analytics.table.builtin_functions import EvalFunctions
 
 
-def generate_hbase_store_args(features, cmd_line_args):
+def generate_hbase_store_args(features):
     hbase_store_args = ''#for storing, we need to update the transformed field's name when storing
     cf = config['hbase_column_family']
     for i, f in enumerate(features):
@@ -63,7 +61,7 @@ def main(argv):
     features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
-    hbase_store_args = generate_hbase_store_args(features, cmd_line_args)
+    hbase_store_args = generate_hbase_store_args(features)
 
     #don't forget to add the key we read from hbase, we read from hbase like .... as (key:chararray, ... remaining_features ...), see below
     features.insert(0, 'key')
@@ -89,7 +87,7 @@ def main(argv):
     if (cmd_line_args.inplace == 'False'):	# Write into new table
         pig_statements.append("store filter_data into 'hbase://$OUTPUT' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (hbase_store_args))
     else:					# Update the same table
-	pig_statements.append("DEFINE HBaseDeleteRowsUDF com.intel.pig.udf.HBaseDeleteRowsUDF('$OUTPUT', '1000');--table to delete rows from is rdf_test and the batch size 1000")
+	pig_statements.append("DEFINE HBaseDeleteRowsUDF com.intel.pig.udf.HBaseDeleteRowsUDF('$OUTPUT', '%s');--table to delete rows given the batch size default is 1000" % (config['hbase_delete_row_batchsize']))
 	pig_statements.append("result = FOREACH filter_data GENERATE HBaseDeleteRowsUDF(*);")
 	pig_statements.append("STORE result INTO '/tmp/dummy_file_wont_be_created' USING com.intel.pig.udf.store.NoOpStore();")
 

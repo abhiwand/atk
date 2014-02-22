@@ -87,6 +87,9 @@ class ETLSchema:
         return ",".join(self.feature_types)    
 
     def get_feature_type(self, feature_name):
+	"""
+	Return feature type for feature name
+	"""
 	for i, name in enumerate(self.feature_names):
 		if (name == feature_name):
 			return self.feature_types[i]

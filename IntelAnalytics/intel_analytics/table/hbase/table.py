@@ -34,6 +34,7 @@ from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy
+from range import ETLRange
 
 
 try:
@@ -87,50 +88,58 @@ def _get_pig_args():
     args += ['-4', pig_log4j_path]
     return args
 
-def _strictly_increasing(L):
-    return all(a<b for a, b in zip(L, L[1:]))
-
-def _strictly_decreasing(L):
-    return all(a>b for a, b in zip(L, L[1:]))
-
-def _make_range_spec(range):
-    result = ""
-    d = "-?[0-9]+\.?[0-9]*"                                     # decimal pattern
-    n = "-?[0-9]+"                                              # number pattern
-    if (range == "date" or range == "week" or range == "month" or range == "year" or range == "dayofweek" or range == "monthofyear"):
-        result = range
-	raise Exception('Unsupported feature of specifying time series as a range')
-    elif (re.match("^%s:%s:%s$" % (n,n,n), range)):             # ranges of type [min:max:stepsize] for integers
-        limits = [(f.strip()) for f in range.split(':')]
-        min, max, stepsize = int(limits[0]), int(limits[1]), int(limits[2])
-        if ((min >= max and stepsize > 0) or (min <= max and stepsize < 0)):
-            raise Exception('Illegal range %s' % (range))
-        for i in xrange(min, max, stepsize):
-                result += "%d," % (i)
-        result += "%d" % (max)
-    elif (re.match("^%s:%s:%s$" % (d,d,d), range)):             # ranges for type [min:max:stepsize] for floating points
-        limits = [(f.strip()) for f in range.split(':')]
-        min, max, stepsize = float(limits[0]), float(limits[1]), float(limits[2])
-        if ((min >= max and stepsize > 0) or (min <= max and stepsize < 0)):
-            raise Exception('Illegal range %s' % (range))
-        r = min
-        while r < max:
-            result += "%f," %(r)
-            r += stepsize
-        result += "%f" %(max)
-    elif (re.match("^%s(,%s)+$" % (d,d),  range)):               # ranges of type a1,a2,a3,a4 ...  -- useful in custom stepsize
-	L = [int(x) for x in range.split(',')]
-	if (_strictly_increasing(L) or _strictly_decreasing(L)):
-            result = range
-	else:
-	    raise Exception('Range should be strictly increasing or decreasing')
-    elif (re.match("^%s$" % (d),  range)):	                 # range specified as depth of each bucket 
-	raise Exception('Unsupported feature of specifying depth as a range')
-    else:
-	raise Exception('Unsupported feature for specifying range')
-
-
-    return result
+#def _strictly_increasing(L):
+#    return all(a<b for a, b in zip(L, L[1:]))
+#
+#def _strictly_decreasing(L):
+#    return all(a>b for a, b in zip(L, L[1:]))
+#
+#def _is_valid_range(min, max, stepsize):
+#    result = True
+#    if ((min > max and stepsize > 0) or 
+#        (min < max and stepsize < 0) or
+#        (min == max) or
+#   	(stepsize == 0)):
+#	result = False
+#    return result
+#
+#def _make_range_spec(range):
+#    result = ""
+#    d = "[-+]?[0-9]+(\.[0-9]+)?"                                # decimal pattern
+#    n = "-?[0-9]+"                                              # number pattern
+#    if (range in ["date","week","month","year","dayofweek","monthofyear"]):
+#        result = range
+#	raise Exception('Unsupported feature %s of specifying time series as a range' % (range))
+#    elif (re.match("^%s:%s:%s$" % (n,n,n), range)):             # ranges of type [min:max:stepsize] for integers
+#        limits = [(f.strip()) for f in range.split(':')]
+#        min, max, stepsize = int(limits[0]), int(limits[1]), int(limits[2])
+#	if (not _is_valid_range(min, max, stepsize)):
+#            raise Exception('Illegal range %s' % (range))
+#	result = ','.join(str(i) for i in xrange(min, max, stepsize)) 
+#        result += ",%d" % (max)
+#    elif (re.match("^%s:%s:%s$" % (d,d,d), range)):             # ranges for type [min:max:stepsize] for floating points
+#        limits = [(f.strip()) for f in range.split(':')]
+#        min, max, stepsize = float(limits[0]), float(limits[1]), float(limits[2])
+#	if (not _is_valid_range(min, max, stepsize)):
+#            raise Exception('Illegal range %s' % (range))
+#        r = min
+#        while r < max:
+#            result += "%f," %(r)
+#            r += stepsize
+#        result += "%f" %(max)
+#    elif (re.match("^%s(,%s)+$" % (d,d),  range)):               # ranges of type a1,a2,a3,a4 ...  -- useful in custom stepsize
+#	L = [int(x) for x in range.split(',')]
+#	if (_strictly_increasing(L) or _strictly_decreasing(L)):
+#            result = range
+#	else:
+#	    raise Exception('Range should be strictly increasing or decreasing')
+#    elif (re.match("^%s$" % (d),  range)):	                 # range specified as depth of each bucket 
+#	raise Exception('Unsupported feature of specifying depth as a range')
+#    else:
+#	raise Exception('Unsupported feature for specifying range')
+#
+#
+#    return result
 
 
 class HBaseTableException(Exception):
@@ -300,7 +309,7 @@ class HBaseTable(object):
 	
         script_path = os.path.join(etl_scripts_path, 'pig_range_aggregation.py')
         args = _get_pig_args()
-        _range = _make_range_spec(range)
+        _range = ETLRange(range).toString()
 
 
 	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
@@ -445,23 +454,14 @@ class HBaseTable(object):
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
-	# Modify filter to append column family name
-	#feature_dict = {}
-	#for i in etl_schema.feature_names:
-	#    feature_dict[i] = config['hbase_column_family'] + i
-	#for i,j in feature_dict.iteritems():
-	#    filter = filter.replace(i,j)
-
         script_path = os.path.join(etl_scripts_path, 'pig_filter.py')
 
         args = _get_pig_args()
 
-        # need to delete/create output table so that we can write the remaining rows after filtering 
-	hbase_table_name = _create_table_name(new_table_name, True)
-        hbase_table = HBaseTable(hbase_table_name, self.file_name)
-
-	hbase_table_name = self.table_name
-	if (inplace == False):
+	if (inplace):
+	    hbase_table_name = self.table_name
+            hbase_table = HBaseTable(hbase_table_name, self.file_name)
+	else:
              # need to delete/create output table so that we can write the remaining rows after filtering 
              hbase_table_name = _create_table_name(new_table_name, True)
              hbase_table = HBaseTable(hbase_table_name, self.file_name)
@@ -486,9 +486,10 @@ class HBaseTable(object):
         if return_code:
             raise HBaseTableException('Could not drop rows using the filter')
 
-	new_etl_schema = ETLSchema()
-	new_etl_schema.populate_schema(etl_schema.get_schema_as_str())
-        new_etl_schema.save_schema(hbase_table_name)
+	if (not inplace):
+	    new_etl_schema = ETLSchema()
+	    new_etl_schema.populate_schema(etl_schema.get_schema_as_str())
+            new_etl_schema.save_schema(hbase_table_name)
 
 	return hbase_table
 
