@@ -1,0 +1,86 @@
+div.input_prompt{
+    font-size:20px;
+    text-align:middle;
+    vertical-align:top;
+    width:110px;
+}
+div.output_prompt{
+    font-size:20px;
+    text-align:middle;
+    vertical-align:top;
+    width:110px;
+}
+
+@-webkit-keyframes spin {
+    to { -webkit-transform: rotate(1turn); }
+}
+
+@keyframes spinsf {
+    to { transform: rotate(1turn); }
+}
+
+.progresss {
+    position: relative;
+    display: inline-block;
+    width: 5em;
+    height: 5em;
+    margin: 0 .5em;
+    font-size: 5px;
+    text-indent: 999em;
+    overflow: hidden;
+    margin-top:3px;
+    animation: spinsf 1s infinite steps(8);
+    -webkit-animation: spin 1s infinite steps(8);
+}
+
+.small.progresss {
+    font-size: 4px;
+}
+
+.progresss:before,
+.progresss:after,
+.progresss > div:before,
+.progresss > div:after
+{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 2.25em; /* (container width - part width)/2  */
+    width: 0.5em;
+    height: 1.5em;
+    border-radius: 0.2em;
+    background: #0088cc;
+    box-shadow: 0 3.5em #0088cc; /* container height - part height */
+    -webkit-transform-origin: 50% 2.5em; /* container height / 2 */
+    transform-origin: 50% 2.5em; /* container height / 2 */
+}
+
+.progresss:before
+{
+    background: #0088cc;
+    opacity:0.6;
+}
+
+.progresss:after
+{
+    -webkit-transform: rotate(-45deg);
+    transform: rotate(-45deg);
+    background: #0088cc;
+    opacity:0.5;
+}
+
+.progresss > div:before
+{
+    -webkit-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    background: #0088cc;
+    opacity:0.7;
+}
+
+.progresss > div:after
+{
+    -webkit-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+    background: #0088cc;
+    opacity:1;
+}

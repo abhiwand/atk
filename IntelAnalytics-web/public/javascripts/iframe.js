@@ -1,6 +1,6 @@
 function setIframeHeight(){
     if($('#ipython').length > 0){
-        $("#ipython").css("height", ($(window).height()-50) + "px");
+        $("#ipython").css("height", ($(window).height()-150) + "px");
         $("#main").css("overflow", "hidden");
         $("body").css("overflow", "hidden");
     }
