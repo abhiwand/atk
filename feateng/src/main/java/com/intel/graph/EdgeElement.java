@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represent an edge object in the graph
+ */
 public class EdgeElement implements IGraphElement {
 
     Map<String, Object> attributes = new HashMap<String, Object>();

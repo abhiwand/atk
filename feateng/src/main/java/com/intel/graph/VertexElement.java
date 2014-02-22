@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Represent a vertex element in the class.
+ */
 public class VertexElement implements IGraphElement{
 
     Map<String, Object> attributes = new HashMap<String, Object>();

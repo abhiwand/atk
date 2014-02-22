@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Mapper takes in the graph query output and writes out the xml representation for each vertex and edge for reduce phase.
+ */
 public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, Text> {
 
     IGraphElementFactory elementFactory = null;
@@ -32,6 +35,15 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         xmlInputFactory = XMLOutputFactory.newInstance();
     }
 
+    /**
+     * Convert a line Faunus query output to a graph element object.
+     * Then write the element's data as xml.
+     * @param key
+     * @param value
+     * @param context
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         ByteArrayOutputStream f = new ByteArrayOutputStream();
         try {
@@ -39,11 +51,11 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
             IGraphElement element = elementFactory.makeElement(value.toString());
             element.writeToXML(writer);
             context.write(key, new Text(f.toString()));
-
+            writer.close();
             // collects schema info
             collectSchemaInfo(element, propertyElementTypeMapping);
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Failed to generate xml node for the element");
+            throw new RuntimeException("Failed to generate xml node for the element", e);
         }
     }
 
@@ -60,6 +72,14 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         }
     }
 
+    /**
+     * Write the collected schema info to intermediate files.
+     * The files will be read from reducer to write schema section in the
+     * final graphml file.
+     * @param context
+     * @throws IOException
+     * @throws InterruptedException
+     */
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
 
@@ -71,8 +91,11 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         try {
             XMLStreamWriter writer = outputFactory.createXMLStreamWriter(output, "UTF8");
             writeSchemaToXML(writer, propertyElementTypeMapping);
+            writer.close();
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Failed to export schema info from mapper");
+            throw new RuntimeException("Failed to export schema info from mapper", e);
+        } finally {
+            output.close();
         }
     }
 

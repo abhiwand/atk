@@ -6,7 +6,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
@@ -287,7 +286,7 @@ public class GraphExporterTest {
             }
         };
 
-        GraphExporter.addQueryOutputToInputPath(job, fs, path, collector);
+        GraphExporter.addQueryOutputToInputPath(fs, path, collector);
         assertEquals(0, container.size());
     }
 
@@ -316,7 +315,7 @@ public class GraphExporterTest {
             }
         };
 
-        GraphExporter.addQueryOutputToInputPath(job, fs, path, collector);
+        GraphExporter.addQueryOutputToInputPath(fs, path, collector);
         assertEquals(1, container.size());
         assertEquals(resultFile, container.get(0));
     }

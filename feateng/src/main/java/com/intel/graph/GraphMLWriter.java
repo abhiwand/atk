@@ -22,10 +22,8 @@ public class GraphMLWriter {
             writer.writeEndElement(); // graph
             writer.writeEndElement(); // graphml
             writer.writeEndDocument();
-            writer.flush();
-            writer.close();
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Failed to write closing tags");
+            throw new RuntimeException("Failed to write closing tags", e);
         }
     }
 
@@ -86,7 +84,7 @@ public class GraphMLWriter {
             writer.writeCharacters(value);
             writer.writeCharacters("\n");
         } catch (XMLStreamException e) {
-            throw new RuntimeException("Failed to write graph element data");
+            throw new RuntimeException("Failed to write graph element data", e);
         }
     }
 

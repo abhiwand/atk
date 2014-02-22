@@ -19,6 +19,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,6 +27,10 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Reducer first writes the header section of the graphml. It then puts the xml content for each element (coming from mapper)
+ * to the graphml. It writes the end section of the graph in the end.
+ */
 public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable, Text> {
 
     private FSDataOutputStream outputStream;
@@ -69,8 +74,16 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
     }
 
     @Override
-    protected void cleanup(Context context) {
+    protected void cleanup(Context context) throws IOException {
         GraphMLWriter.writeGraphMLEndSection(writer);
+        try {
+            writer.flush();
+            writer.close();
+        } catch (XMLStreamException e) {
+            throw new RuntimeException("Failed to close the xml writer", e);
+        } finally {
+            outputStream.close();
+        }
     }
 
     public static void getKeyTypesMapping(Reader reader, Map<String, String> vertexKeyTypes, Map<String, String> edgeKeyTypes) throws IOException, SAXException, ParserConfigurationException {

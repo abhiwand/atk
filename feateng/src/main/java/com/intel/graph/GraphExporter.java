@@ -27,6 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 
 
+/**
+ * GraphExporter runs faunus queries, collects query results and
+ * then generates a graphml file based on the query results.
+ */
 public class GraphExporter {
 
     public static final String FILE = "file";
@@ -85,7 +89,7 @@ public class GraphExporter {
                     }
                 }
             };
-            addQueryOutputToInputPath(job, fs, subStepOutputDir, collector);
+            addQueryOutputToInputPath(fs, subStepOutputDir, collector);
         }
 
         Path[] eligibleInputPaths = TextInputFormat.getInputPaths(job);
@@ -102,6 +106,16 @@ public class GraphExporter {
         job.waitForCompletion(true);
     }
 
+    /**
+     * Execute faunus query
+     * @param faunusGremlinFile: The path to gremlin.sh under Faunus installation
+     * @param faunusPropertiesFile: The path to input properties file for executing Faunus query
+     * @param tableName: The graph table name
+     * @param statement: Faunus query statement
+     * @param subStepOutputDir: The output directory for this query
+     * @throws IOException
+     * @throws InterruptedException
+     */
     static void executeFaunusQuery(String faunusGremlinFile, String faunusPropertiesFile, String tableName, String statement, String subStepOutputDir) throws IOException, InterruptedException {
         String[] commandArray = new String[]{faunusGremlinFile, "-i", faunusPropertiesFile, statement, "-Dfaunus.output.location=" + subStepOutputDir + " faunus.graph.input.titan.storage.tablename=" + tableName};
         ProcessBuilder builder = new ProcessBuilder(commandArray);
@@ -119,7 +133,14 @@ public class GraphExporter {
         p.waitFor();
     }
 
-    static void addQueryOutputToInputPath(Job job, FileSystem fs, String subStepOutputDir, IPathCollector collector) throws IOException {
+    /**
+     * Add Faunus query output folder to the input path of GraphExporter map-reduce job.
+     * @param fs: Filesystem instance
+     * @param subStepOutputDir: The output directory for this query
+     * @param collector: path collector instance to collect Faunus query output path
+     * @throws IOException
+     */
+    static void addQueryOutputToInputPath(FileSystem fs, String subStepOutputDir, IPathCollector collector) throws IOException {
         FileStatus[] fileStatuses = fs.listStatus(new Path(subStepOutputDir));
 
             /* Faunus generates a folder for each map reduce job. For query that requires multiple map reduce
@@ -135,6 +156,13 @@ public class GraphExporter {
             collector.collectPath(resultFile);
     }
 
+    /**
+     * Generate an graphml which only has starting and end tags. It does not
+     * have element data regarding vertices and edges
+     * @param fileName: The output file name
+     * @throws IOException
+     * @throws XMLStreamException
+     */
     private static void writeEmptyGraphML(String fileName) throws IOException, XMLStreamException {
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
         outputFactory.setProperty("escapeCharacters", false);
