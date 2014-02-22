@@ -456,7 +456,6 @@ class GraphWrapper:
                  '-t', self.titan_table_name
         ]
 
-        print " ".join(args)
         return_code = call(args, report_strategy=FaunusProgressReportStrategy())
         if return_code:
             raise Exception('Could not export graph')
