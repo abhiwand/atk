@@ -28,7 +28,6 @@ import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.log4j.Logger;
-
 import java.util.HashMap;
 import java.io.IOException;
 

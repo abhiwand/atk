@@ -19,14 +19,11 @@
  */
 package com.intel.hadoop.graphbuilder.sampleapplications;
 
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptions;
-import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
-import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.GraphConstructionPipeline;
-
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseInputConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
+import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.util.*;
-
 import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
@@ -157,9 +154,9 @@ public class TableToGraphDB {
     public static void main(String[] args)  {
 
         Timer timer = new Timer();
-        configFilePresent = (args[0].equals("-conf"));
+        boolean configFilePresent = (args[0].equals("-conf"));
         if (!configFilePresent) {
-            commandLineInterface.showError("Missing configuration file for Titan. Please provide -conf <config>");
+            commandLineInterface.showError("When writing to Titan, the Titan config file must be specified by -conf <config> ");
         }
 
         CommandLine cmd = commandLineInterface.checkCli(args);

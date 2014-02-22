@@ -19,23 +19,20 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import static junit.framework.Assert.assertNotNull;
-
 import org.junit.Test;
 
+import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 
 public class EdgeSchemaTest {
 
     @Test
     public void edgeSchemaConstructorTest() throws Exception {
-
         final String THE_EDGE = "The Edge";
-        final String BONO     = "Bono";
-
         EdgeSchema edgeSchema = new EdgeSchema(THE_EDGE);
-
         assertNotNull(edgeSchema.getPropertySchemata());
-        assert(edgeSchema.getLabel().compareTo(THE_EDGE) == 0);
+		assertEquals("Should have been 0", 0,
+				edgeSchema.getLabel().compareTo(THE_EDGE));
     }
 
     @Test
@@ -46,13 +43,16 @@ public class EdgeSchemaTest {
 
         EdgeSchema edgeSchema = new EdgeSchema(THE_EDGE);
 
-        assert(edgeSchema.getLabel().compareTo(THE_EDGE) == 0);
+		assertEquals("Should have been 0", 0,
+				edgeSchema.getLabel().compareTo(THE_EDGE));
 
         edgeSchema.setLabel(BONO);
-        assert(edgeSchema.getLabel().compareTo(BONO) == 0);
+		assertEquals("Should have been 0", 0,
+				edgeSchema.getLabel().compareTo(BONO));
 
         edgeSchema.setLabel(THE_EDGE);
-        assert(edgeSchema.getLabel().compareTo(THE_EDGE) == 0);
+		assertEquals("Should have been 0", 0,
+				edgeSchema.getLabel().compareTo(THE_EDGE));
     }
 
 }
