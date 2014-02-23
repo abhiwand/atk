@@ -9,7 +9,8 @@ pushd SOURCES
 project_name=intelanalytics
 source_folder=$project_name-$TRIBECA_VERSION
 python_folder=python-$source_folder
-python_dependencies_folder=python-$project_name-dependencies-$TRIBECA_VERSION
+python_deps_precompiled_folder=$project_name-python-deps-precompiled-$TRIBECA_VERSION
+python_deps_localbuild_folder=$project_name-python-deps-localbuild-$TRIBECA_VERSION
 src=../../../IntelAnalytics
 rm -rf $source_folder
 
@@ -36,13 +37,17 @@ cp $src/conf/ipython_notebook_config.py $python_folder/conf
 mkdir $python_folder/bin
 cp -R $src/bin/IntelAnalytics-ipython $python_folder/bin
 
-mkdir $python_dependencies_folder
+for f in $python_deps_precompiled_folder $python_deps_localbuild_folder
+do
+  mkdir $f
 
-cp $src/install_pyenv.sh $python_dependencies_folder
-tar -cvzf $python_dependencies_folder/template_overrides.tar.gz -C $src/ipython/TemplateOverrides .
+  cp $src/install_pyenv.sh $f
+  tar -cvzf $f/template_overrides.tar.gz -C $src/ipython/TemplateOverrides .
+  tar czvf $f.tar.gz $f
+done
 
 tar czvf $source_folder.tar.gz $source_folder
 tar czvf $python_folder.tar.gz $python_folder
-tar czvf $python_dependencies_folder.tar.gz $python_dependencies_folder
+
 popd
 
