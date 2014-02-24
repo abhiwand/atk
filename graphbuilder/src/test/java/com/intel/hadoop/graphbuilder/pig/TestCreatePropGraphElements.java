@@ -18,6 +18,14 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.pig.data.PropertyGraphElementTuple;
+import com.intel.pig.udf.GBUdfException;
+import org.apache.hadoop.io.Writable;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.FuncSpec;
 import org.apache.pig.data.DataBag;
@@ -26,35 +34,41 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestCreatePropGraphElements
 {
-    EvalFunc<?> createPropGraphElementsUDF_0;
-    EvalFunc<?> createPropGraphElementsUDF_1;
+    EvalFunc<?> createPropGraphElementsUDF_bhp;
+    EvalFunc<?> createPropGraphElementsUDF_rde;
+    EvalFunc<?> createPropGraphElementsUDF_dvp;
 
     @Before
     public void setup() throws Exception {
-        createPropGraphElementsUDF_0 = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
+        createPropGraphElementsUDF_bhp = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
                 new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
                 "-v name=age,managerId department -e name,department,worksAt,tenure"));
-        createPropGraphElementsUDF_1 = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
+        createPropGraphElementsUDF_rde = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
                 new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
                         "-v id1=vp0,vp1,vp2,vp3,vp4,vp5,vp6,vp7,vp8,vp9 id2=vp10,vp11,vp12 " +
                         "id3=vp13 id4 id5 id6 " +
                         "-e id1,id2,edgeType0,ep0,ep1,ep2 id1,id3,edgeType1 id2,id3,edgeType2 id1,id6,edgeType3 " +
                         "id4,id5,edgeType4,ep3,ep4 id2,id5,edgeType5,ep4 -x"));
+        createPropGraphElementsUDF_dvp = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
+                new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
+                        "-v id1=vp1 id2 " + "-e id1,id2,connects -p"));
     }
 
     @Test
-    public void runTests() throws IOException, IllegalAccessException {
+    public void test_basic_happy_path() throws IOException, IllegalAccessException {
 
         Schema.FieldSchema idField         = new Schema.FieldSchema("id", DataType.INTEGER);
         Schema.FieldSchema nameField       = new Schema.FieldSchema("name", DataType.CHARARRAY);
@@ -72,7 +86,7 @@ public class TestCreatePropGraphElements
 
         Schema schema = new Schema(fsList);
 
-        createPropGraphElementsUDF_0.setInputSchema(schema);
+        createPropGraphElementsUDF_bhp.setInputSchema(schema);
 
         Tuple t = TupleFactory.getInstance().newTuple(6);
 
@@ -90,7 +104,7 @@ public class TestCreatePropGraphElements
         t.set(4, tenure);
         t.set(5, department);
 
-        DataBag result = (DataBag) createPropGraphElementsUDF_0.exec(t);
+        DataBag result = (DataBag) createPropGraphElementsUDF_bhp.exec(t);
 
         assert(result.size() == 6);
     }
@@ -129,7 +143,7 @@ public class TestCreatePropGraphElements
 
         Schema schema = new Schema(fsList);
 
-        createPropGraphElementsUDF_1.setInputSchema(schema);
+        createPropGraphElementsUDF_rde.setInputSchema(schema);
 
         Tuple t = TupleFactory.getInstance().newTuple(26);
 
@@ -185,8 +199,66 @@ public class TestCreatePropGraphElements
         t.set(23, ep3_s);
         t.set(24, ep4_s);
 
-        DataBag result = (DataBag) createPropGraphElementsUDF_1.exec(t);
+        DataBag result = (DataBag) createPropGraphElementsUDF_rde.exec(t);
 
         assert(result.size() == 30);
+    }
+
+    @Test
+    public void test_direction_vertex_property() throws IOException, IllegalAccessException, GBUdfException {
+        Schema.FieldSchema id1         = new Schema.FieldSchema("id1", DataType.CHARARRAY);
+        Schema.FieldSchema id2         = new Schema.FieldSchema("id2", DataType.CHARARRAY);
+        Schema.FieldSchema vp1         = new Schema.FieldSchema("vp1", DataType.CHARARRAY);
+
+        List fsList = asList(id1,id2,vp1);
+
+        Schema schema = new Schema(fsList);
+
+        createPropGraphElementsUDF_dvp.setInputSchema(schema);
+
+        Tuple t = TupleFactory.getInstance().newTuple(4);
+
+        String id1_s  = "vertexId1";
+        String id2_s  = "vertexId2";
+        String vp1_s  = "vertexProperty1";
+
+        t.set(0, id1_s);
+        t.set(1, id2_s);
+        t.set(2, vp1_s);
+
+        DataBag result = (DataBag) createPropGraphElementsUDF_dvp.exec(t);
+
+        Iterator<Tuple> it   = result.iterator();
+        StringType left_dir  = new StringType("L");
+        StringType right_dir = new StringType("R");
+        boolean left_found   = false;
+        boolean right_found  = false;
+        Writable direction;
+
+        while (it.hasNext()) {
+            PropertyGraphElementTuple pge_tuple = (PropertyGraphElementTuple) it.next();
+            SerializedGraphElementStringTypeVids serializedGraphElement =
+                    (SerializedGraphElementStringTypeVids) pge_tuple.get(0);
+            GraphElement graphElement = serializedGraphElement.graphElement();
+            System.out.println(graphElement);
+            if (graphElement.isVertex()) {
+                System.out.println(graphElement.getId());
+                direction = graphElement.getProperties().getProperty("direction");
+                if (graphElement.getId().toString().equals(id1_s)) {
+                    System.out.println("Direction: " + direction);
+                    if (direction != null && direction.toString() == "L")
+                        left_found = true;
+                } else if (graphElement.getId().toString().equals(id2_s)) {
+                    System.out.println("Direction: " + direction);
+                    if (direction != null && direction.toString() == right_dir.get())
+                        right_found = true;
+                } else {
+                    throw new GBUdfException("Incorrect creation of property graph elements");
+                }
+            }
+        }   // End of while
+
+        assertTrue(left_found);
+        assertTrue(right_found);
     }
 }
