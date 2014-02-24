@@ -23,7 +23,7 @@ URL: https://www.intel.com
 Buildroot: /tmp/intelanalytics_deps_rpm
 
 %description
-Install IPython and Intel Graph System Python dependencies. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
+Install IPython and other dependencies for the Intel Analytics Toolkit. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
 %define TIMESTAMP %(echo $TIMESTAMP)
 
@@ -38,16 +38,20 @@ Install IPython and Intel Graph System Python dependencies. Build number: %{?BUI
 
 rm -fr $RPM_BUILD_ROOT
 
+mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
+
 cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
 
-ln -sf /usr/lib/IntelAnalytics/virtpy/bin/activate %{_bindir}/virtpy
 
-tar xvf $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/template_overrides.tar.gz -C /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/IPython
 
 %clean
 
 %post
+ln -sf /usr/lib/IntelAnalytics/virtpy/bin/activate %{_bindir}/virtpy
+tar xvf $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/template_overrides.tar.gz -C /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/IPython
+
 %postun
+rm %{_bindir}/virtpy
 
 %files
 %{_exec_prefix}/lib/IntelAnalytics
