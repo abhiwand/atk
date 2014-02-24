@@ -101,10 +101,10 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         GraphMLWriter.writeGraphMLEndSection(writer);
         try {
             writer.flush();
-            writer.close();
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to close the xml writer", e);
         } finally {
+            GraphMLWriter.closeXMLWriter(writer);
             outputStream.close();
         }
     }

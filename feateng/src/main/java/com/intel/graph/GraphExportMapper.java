@@ -69,17 +69,18 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
      */
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         ByteArrayOutputStream f = new ByteArrayOutputStream();
+        XMLStreamWriter writer = null;
         try {
-            XMLStreamWriter writer = xmlInputFactory.createXMLStreamWriter(f);
+            writer = xmlInputFactory.createXMLStreamWriter(f);
             IGraphElement element = elementFactory.makeElement(value.toString());
             element.writeToXML(writer);
             context.write(key, new Text(f.toString()));
-            writer.close();
             // collects schema info
             collectSchemaInfo(element, propertyElementTypeMapping);
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to generate xml node for the element", e);
         }  finally {
+            GraphMLWriter.closeXMLWriter(writer);
             f.close();
         }
     }
@@ -113,13 +114,15 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
 
         OutputStream output = outputStreamGenerator.getOutputStream(context, path);
         final XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
+        XMLStreamWriter writer = null;
         try {
-            XMLStreamWriter writer = outputFactory.createXMLStreamWriter(output, "UTF8");
+            writer = outputFactory.createXMLStreamWriter(output, "UTF8");
             writeSchemaToXML(writer, propertyElementTypeMapping);
-            writer.close();
+
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to export schema info from mapper", e);
         } finally {
+            GraphMLWriter.closeXMLWriter(writer);
             output.close();
         }
     }

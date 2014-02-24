@@ -129,4 +129,13 @@ public class GraphMLWriter {
 
         return fs.create(outputFilePath, true);
     }
+
+    public static void closeXMLWriter(XMLStreamWriter writer) {
+        if(writer != null)
+            try {
+                writer.close();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException("Failed to close xml writer", e);
+            }
+    }
 }
