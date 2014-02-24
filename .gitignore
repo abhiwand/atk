@@ -31,3 +31,9 @@ download
 *.swp
 dist
 /bin
+cscope*
+tags
+*.patch
+*.diff
+patches-*
+dependency-reduced-pom.xml
