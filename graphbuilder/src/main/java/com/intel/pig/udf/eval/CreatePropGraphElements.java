@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 /**
  * CreatePropGraphElements ... converts tuples of scalar data into bag of property graph elements..
  * <p/>
@@ -102,9 +103,10 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     /**
      * Special vertex name used when retaining dangling edgess
      */
-    public static final String NULL_VERTEX_NAME = "null";
-
-    private CommandLineInterface commandLineInterface = new CommandLineInterface();
+    public static final String NULL_VERTEX_NAME          = "null";
+    public static final String VERTEX_PROPERTY_DIRECTION = "direction";
+    public static final String LEFT_DIRECTION            = "L";
+    public static final String RIGHT_DIRECTION           = "R";
 
     private BagFactory mBagFactory = BagFactory.getInstance();
 
@@ -114,6 +116,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     private Hashtable<String, String[]> vertexPropToFieldNamesMap;
     private Hashtable<String, String> vertexLabelMap;
     private Hashtable<String, EdgeRule> edgeLabelToEdgeRules;
+    private boolean addDirectionToVertices = false;
 
     /**
      * Implements the dangling edge counters.
@@ -211,6 +214,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         options.addOption(BaseCLI.Options.directedEdge.get());
         options.addOption(BaseCLI.Options.flattenList.get());
         options.addOption(BaseCLI.Options.retainDanglingEdges.get());
+        options.addOption(BaseCLI.Options.addDirectionToVertex.get());
 
         commandLineInterface.setOptions(options);
 
@@ -228,13 +232,14 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
         retainDanglingEdges = cmd.hasOption(BaseCLI.Options.retainDanglingEdges.getLongOpt());
+        addDirectionToVertices = cmd.hasOption(BaseCLI.Options.addDirectionToVertex.getLongOpt());
 
+        System.out.println("Will add direction prop to vertices ? " + addDirectionToVertices);
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
 
-
-        String   vertexIdFieldName  = null;
-        String   vertexLabel      = null;
+        String vertexIdFieldName;
+        String vertexLabel;
 
         for (String vertexRule : vertexRules) {
 
@@ -294,19 +299,17 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     private String[] expandString(String string) {
 
-        String[] outArray = null;
+        String[] outArray;
 
         int inLength = string.length();
 
         if (this.flattenLists && string.startsWith("{") && string.endsWith("}")) {
 
             String bracesStrippedString     = string.substring(1,inLength-1);
-            String parenthesesDroppedString = bracesStrippedString.replace("(","").replace(")","");
-            String[] expandedString         = parenthesesDroppedString.split("\\,");
-            outArray                        = expandedString;
-
+            String parenthesesDroppedString = bracesStrippedString.replace("(","").replace(")", "");
+            outArray                        = parenthesesDroppedString.split("\\,");
         }  else {
-            outArray = new String[] {string} ;
+            outArray = new String[] {string};
         }
 
         return outArray;
@@ -345,6 +348,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
         }
+
+        System.out.println("Vertex after adding to bag : " + vertex);
     }
 
     private void addEdgeToPropElementBag(DataBag outputBag, Edge edge) throws IOException{
@@ -374,13 +379,13 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      * Chararray -> String
      * @param value
      * @param typeByte
-     * @return
+     *
      * @throws IllegalArgumentException
      */
     private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte)
             throws IllegalArgumentException {
 
-        WritableComparable object = null;
+        WritableComparable object;
 
         switch(typeByte) {
             case DataType.BYTE:
@@ -430,6 +435,9 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         }
 
         DataBag outputBag = mBagFactory.newDefaultBag();
+        Object value;
+        StringType serializedVertexId = new StringType();
+        String[] vpFieldNames;
 
         // check tuple for vertices
 
@@ -441,25 +449,23 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
                 for (String vertexId : expandString(vidCell)) {
 
-                    // create vertex
-
-                    Vertex<StringType> vertex = new Vertex<StringType>(new StringType(vertexId));
+                    serializedVertexId.set(vertexId);
+                    Vertex<StringType> vertex = new Vertex<StringType>(serializedVertexId);
 
                     // add the vertex properties
 
-                    String[] vpFieldNames = vertexPropToFieldNamesMap.get(fieldName);
+                    vpFieldNames = vertexPropToFieldNamesMap.get(fieldName);
 
                     if (null != vpFieldNames && vpFieldNames.length > 0) {
                         for (String vertexPropertyFieldName : vpFieldNames) {
-                            Object value = null;
-
                             value =  getTupleData(input, inputSchema, vertexPropertyFieldName);
                             if (value != null) {
                                 try {
                                     vertex.setProperty(vertexPropertyFieldName, pigTypesToSerializedJavaTypes(value,
                                             fieldNameToDataType.get(vertexPropertyFieldName)));
                                 } catch (ClassCastException e) {
-                                    warn("Cannot cast Pig type to Java type, skipping entry.", PigWarning.UDF_WARNING_1);
+                                    warn("Cannot cast Pig type to Java type, skipping entry.",
+                                            PigWarning.UDF_WARNING_1);
                                 }
                             }
                         }
@@ -480,14 +486,22 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         // check tuple for edges
 
-        String srcVertexFieldName;
-        String tgtVertexFieldName;
+        String     srcVertexFieldName;
+        String     tgtVertexFieldName;
+        String     srcLabelString;
+        String     tgtLabelString;
+        StringType srcLabel = null;
+        StringType tgtLabel = null;
+
+        EdgeRule     edgeRule;
+        List<String> edgeAttributeList;
+        String[]     edgeAttributes;
 
         for (String eLabel : edgeLabelToEdgeRules.keySet()) {
 
-            EdgeRule     edgeRule           = edgeLabelToEdgeRules.get(eLabel);
-            List<String> edgeAttributeList  = edgeRule.getPropertyFieldNames();
-            String[]     edgeAttributes     = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
+            edgeRule           = edgeLabelToEdgeRules.get(eLabel);
+            edgeAttributeList  = edgeRule.getPropertyFieldNames();
+            edgeAttributes     = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
 
             srcVertexFieldName     = edgeRule.getSrcFieldName();
             tgtVertexFieldName     = edgeRule.getDstFieldName();
@@ -495,16 +509,14 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             String srcVertexCellString = (String) getTupleData(input, inputSchema, srcVertexFieldName);
             String tgtVertexCellString = (String) getTupleData(input, inputSchema, tgtVertexFieldName);
 
-            StringType srcLabel = null;
-            String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
+            srcLabelString = vertexLabelMap.get(srcVertexFieldName);
             if (srcLabelString != null) {
-                srcLabel = new StringType(srcLabelString);
+                srcLabel.set(srcLabelString);
             }
 
-            StringType tgtLabel = null;
-            String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
+            tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
             if (tgtLabelString != null) {
-                tgtLabel = new StringType(tgtLabelString);
+                tgtLabel.set(tgtLabelString);
             }
 
             processEdges(input, inputSchema, srcVertexCellString, tgtVertexCellString, srcLabel, tgtLabel, eLabel,
@@ -541,9 +553,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     public void incrementCounter(Enum key, Long value) {
 
         PigStatusReporter reporter = PigStatusReporter.getInstance();
-        Counter reporterCounter = reporter.getCounter(key);
-        if (reporter != null && reporterCounter != null) {
-            reporterCounter.increment(value);
+        if (reporter != null) {
+            Counter reporterCounter = reporter.getCounter(key);
+            if (reporterCounter != null) {
+                reporterCounter.increment(value);
+            }
         }
     }
 
@@ -622,19 +636,16 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                              String eLabel, String[] edgeAttributes, EdgeRule edgeRule,
                              Hashtable<String, Byte> fieldNameToDataType, DataBag outputBag) throws IOException {
 
-
         StringType currentSrcVertexName = new StringType(srcVertexName);
         StringType currentTgtVertexName = new StringType(tgtVertexName);
 
         addNewEdge(input, inputSchema, edgeAttributes, fieldNameToDataType, currentSrcVertexName, srcLabel,
                 currentTgtVertexName, tgtLabel, eLabel, outputBag);
 
+        // Add both ends of the edge to the list of serialized property graph elements
 
-        // need to make sure both ends of the edge are proper
-        // vertices!
-
-        Vertex<StringType> srcVertex = new Vertex<StringType>(currentSrcVertexName, srcLabel);
-        Vertex<StringType> tgtVertex = new Vertex<StringType>(currentTgtVertexName, tgtLabel);
+        Vertex<StringType> srcVertex = newVertex(currentSrcVertexName, srcLabel, LEFT_DIRECTION);
+        Vertex<StringType> tgtVertex = newVertex(currentTgtVertexName, tgtLabel, RIGHT_DIRECTION);
         addVertexToPropElementBag(outputBag, srcVertex);
         addVertexToPropElementBag(outputBag, tgtVertex);
 
@@ -666,16 +677,16 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         Edge<StringType> edge = new Edge<StringType>(srcVertexName,srcLabel, tgtVertexName, tgtLabel, new StringType(eLabel));
 
-        String property = "";
-        Object propertyValue = null;
+        String property;
+        Object propertyValue;
 
-        for (int countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-            propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
-            property = edgeAttributes[countEdgeAttr];
+        for (String edgeAttribute : edgeAttributes) {
+            propertyValue = getTupleData(input, inputSchema, edgeAttribute);
+            property = edgeAttribute;
 
             if (propertyValue != null) {
                 edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
-                        fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
+                        fieldNameToDataType.get(edgeAttribute)));
             }
         }
 
@@ -688,6 +699,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     }
 
     /**
+     * Determines whether an edge is dangling or not
      *
      * @param srcVertexName
      * @param tgtVertexName
@@ -695,5 +707,36 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      */
     private boolean isDangling(String srcVertexName, String tgtVertexName) {
         return srcVertexName.equals(NULL_VERTEX_NAME) || tgtVertexName.equals(NULL_VERTEX_NAME);
+    }
+
+    /**
+     * Creates a new vertex data type with direction property "L" or "R"
+     *
+     * @param vertexName
+     * @param label
+     * @param direction
+     * @return
+     */
+    private Vertex<StringType> newVertex(StringType vertexName, StringType label, String direction) {
+        Vertex<StringType> vertex = new Vertex<StringType>(vertexName, label);
+
+        // If "-p" flag is enabled, then add the direction property to vertices
+        // The direction property retains the original relationship direction as a vertex property
+        // E.g., a data set with schema user, movie and ratings must create graph elements as
+        // user1 "L" movie1 "R" rating1
+        // movie1 "R" user1 "L" rating1, and not as
+        // user1 "L" movie1 "R" rating1
+        // user1 "R" movie1 "L" rating1
+        // movie1 "R" user1 "L" rating1
+        // movie1 "R" user1 "L" rating1
+        // This property is not added in the reverse edge when bidirectional edges are enabled
+
+        if (addDirectionToVertices) {
+            System.out.println("Adding " + direction + " to vertex");
+            vertex.setProperty(VERTEX_PROPERTY_DIRECTION, pigTypesToSerializedJavaTypes(direction, DataType.CHARARRAY));
+        } else {
+            System.out.println("Not adding " + direction + " to vertex");
+        }
+        return vertex;
     }
 }
