@@ -218,7 +218,6 @@ class HBaseTable(object):
 
         return HBaseTable(new_table_name, self.file_name)
 
-
     def drop_columns(self, columns):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -733,6 +732,93 @@ class HBaseFrameBuilder(FrameBuilder):
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         etl_schema.save_table_properties(table_name, properties)
 
+    def join(self, right=[], on=[], how='left', suffixes=[], sort=False, join_frame_name=''):
+        """
+        pandas join syntax:
+            join(self, right=None, on=None, how='left',
+                 lsuffix='', rsuffix='', sort=False)
+
+        pandas merge syntax:
+            merge(self, right, on=None, how='inner', 
+                  left_on=None, right_on=None, 
+                  left_index=False, right_index=False,
+                  sort=False, suffixes=('_x', '_y'), copy=True)
+
+        Join tables, similar usage to pandas.DataFrame.join
+
+        Parameters
+        ----------
+        right:
+            List of HBaseTable names to be joined
+        on:
+            Column(s) to use for joining
+        how:
+            The type of join, INNER, OUTER, LEFT, RIGHT
+        suffix:
+            List of suffixes to use for overlapping columns
+        sort:
+            Sort the results
+
+        Return
+        ------
+        BigDataFrame
+
+        """
+
+        # TODO: right being None means self join
+        if not right:
+            raise HBaseTableException('TODO: self join')
+
+        # allowed join types: python outer is actually full
+        if not how in ['inner', 'outer', 'left', 'right'] :
+            raise HBaseTableException('Invalid join operation type: ' + how)
+
+        # right must be the same big frame type
+        if not all(isinstance(ht, HBaseTable) for ht in right):
+            raise HBaseTableException('Unsupported table type ')
+
+        # delete/create output table to write the joined features
+        if not join_frame_name:
+            raise HBaseTableException('TODO: In-place join')
+
+        join_table_name = _create_table_name(join_frame_name, overwrite=False)
+        try:
+            with ETLHBaseClient() as hbase_client:
+                hbase_client.drop_create_table(join_table_name, [config['hbase_column_family']])
+        except KeyError:
+            raise KeyError("Could not create output table for '" + output + "'")
+
+        # prepare the script
+        join_etl_schema = ETLSchema()
+        tables = [self.table_name]
+        tables.append(right)
+        pig_builder = PigScriptBuilder()
+        join_pig_acript, join_pig_schema = pig_builder.get_join_statement(join_etl_schema,  \
+                                                                          join_table_name,  \
+                                                                          tables=tables,    \
+                                                                          on=on,            \
+                                                                          how=how,          \
+                                                                          suffixes=suffixes,\
+                                                                          sort=sort)
+
+        # FIXME: move the script name, path to a class container instead of hardcoding it
+        script_path = os.path.join(etl_scripts_path, 'pig_execute.py')
+        args = _get_pig_args()
+        args += [script_path, '-s', join_pig_script]
+
+        try:
+            pig_report = PigJobReportStrategy();
+            return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+            if return_code:
+                raise DataAppendException('Failed to join data.')
+
+        except DataAppendException:
+            raise Exception('Could not join frame')
+
+        # the schema is populated now
+        join_etl_schema.populate_schema(join_pig_schema)
+        join_etl_schema.save_schema(join_table_name)
+        return BigDataFrame(join_frame_name, HBaseTable(join_table_name, ''))
 
 class HBaseFrameBuilderFactory(object):
     def __init__(self):
