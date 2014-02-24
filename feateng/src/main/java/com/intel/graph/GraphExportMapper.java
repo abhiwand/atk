@@ -56,6 +56,8 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
             collectSchemaInfo(element, propertyElementTypeMapping);
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to generate xml node for the element", e);
+        }  finally {
+            f.close();
         }
     }
 

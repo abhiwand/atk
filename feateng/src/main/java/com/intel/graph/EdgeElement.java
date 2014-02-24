@@ -62,18 +62,34 @@ public class EdgeElement implements IGraphElement {
         writer.writeEndElement();
     }
 
+    /**
+     * get incoming vertex's id
+     * @return incoming vertex's id
+     */
     public long getInVertexId() {
         return inVertexId;
     }
 
+    /**
+     * set incoming vertex' id
+     * @param inVertexId: incoming vertex's id
+     */
     public void setInVertexId(long inVertexId) {
         this.inVertexId = inVertexId;
     }
 
+    /**
+     * return outgoing vertex's id
+     * @return outgoing vertex's id
+     */
     public long getOutVertexId() {
         return outVertexId;
     }
 
+    /**
+     * set outgoing vertex's id
+     * @param outVertexId: outgoing vertex's id
+     */
     public void setOutVertexId(long outVertexId) {
         this.outVertexId = outVertexId;
     }

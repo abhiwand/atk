@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Provide methods to construct graphml
+ */
 public class GraphMLWriter {
     /**
      * Write the ending tags for the graphml file
@@ -88,6 +91,13 @@ public class GraphMLWriter {
         }
     }
 
+    /**
+     * Delete any existing file with the same name in the same path and create a new file
+     * @param fileName: The file to be created
+     * @param fs: FileSystem object for the current file system
+     * @return FSDataOutputStream object
+     * @throws IOException
+     */
     static FSDataOutputStream createFile(String fileName, FileSystem fs) throws IOException {
         Path outputFilePath = new Path(fileName);
         if (fs.exists(outputFilePath)) {

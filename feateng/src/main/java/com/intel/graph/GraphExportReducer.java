@@ -86,6 +86,15 @@ public class GraphExportReducer extends Reducer<LongWritable, Text, LongWritable
         }
     }
 
+    /**
+     * Retrieve schema info from the file written by mapper
+     * @param reader: Reader object for the file content
+     * @param vertexKeyTypes: vertex schema mapping
+     * @param edgeKeyTypes: edge schema mapping
+     * @throws IOException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     */
     public static void getKeyTypesMapping(Reader reader, Map<String, String> vertexKeyTypes, Map<String, String> edgeKeyTypes) throws IOException, SAXException, ParserConfigurationException {
 
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();

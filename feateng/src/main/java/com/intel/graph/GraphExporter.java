@@ -39,6 +39,17 @@ public class GraphExporter {
     public static final String FEATURE = "feature";
     public static final String JOB_NAME = "Export graph";
 
+    /**
+     * Run faunus query then run map-reduce job to collect the result and generate a graphml file.
+     * @param args
+     * @throws ParseException
+     * @throws ParserConfigurationException
+     * @throws SAXException
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ClassNotFoundException
+     * @throws XMLStreamException
+     */
     public static void main(String[] args) throws ParseException, ParserConfigurationException, SAXException, IOException, InterruptedException, ClassNotFoundException, XMLStreamException {
 
         Parser parser = new PosixParser();
