@@ -48,12 +48,12 @@ class ETLRange:
 
     __d = "[-+]?[0-9]+(\.[0-9]+)?"                                # decimal pattern
     __n = "-?[0-9]+"                                              # number pattern
+    __s = "%s:%s:%s" % (__d,__d,__d)				  	  # mixed pattern
 
     def __init__(self, range):
         self.range_expression = "".join(range.split())		  # Remove all white space characters
 	
-	d,n = ETLRange.__d, ETLRange.__n
-        s = "%s:%s:%s" % (d,d,d)				  # mixed pattern
+	d,n,s = ETLRange.__d, ETLRange.__n, ETLRange.__s
  
         if (self.range_expression in ["date","week","month","year","dayofweek","monthofyear"]):
             self.range_type = ETLRange.__range_timeseries
@@ -107,8 +107,7 @@ class ETLRange:
             range_str += "%f" %(max)
 
         elif (self.range_type == ETLRange.__range_mixed):
-	    d = ETLRange.__d
-            s = "%s:%s:%s" % (d,d,d)				  # mixed pattern
+	    d,s = ETLRange.__d, ETLRange.__s
 	    range_list = []
             for i in self.range_expression.split(','):
                 if (re.match("^%s$" % (d),i)):
