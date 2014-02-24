@@ -107,11 +107,8 @@ class ProgressReportStrategy(ReportStrategy):
 class FaunusProgressReportStrategy(ProgressReportStrategy):
     def is_job_complete_signaled(self, line):
         pattern = '.*Job complete.*'
-        match = re.match(pattern, line)
-        if not match:
-            return False
-        else:
-            return True
+        matched = re.match(pattern, line) != None
+        return matched
 
     def report(self, line):
         if self.is_job_complete_signaled(line) and self.job_progress_bar_list[-1].value < 100:
