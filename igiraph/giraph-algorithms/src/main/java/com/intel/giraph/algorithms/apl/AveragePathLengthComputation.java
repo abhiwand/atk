@@ -34,6 +34,7 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.master.DefaultMasterCompute;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.counters.GiraphStats;
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.HopCountWritable;
 import org.apache.giraph.Algorithm;
@@ -48,6 +49,7 @@ import org.apache.hadoop.mapreduce.Mapper.Context;
 
 /**
  * Average path length calculation.
+ * http://en.wikipedia.org/wiki/Average_path_length
  */
 @Algorithm(
         name = "Average path length",
@@ -89,6 +91,14 @@ public class AveragePathLengthComputation extends BasicComputation
         }
     }
 
+    @Override
+    public void preSuperstep() {
+        convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
+        if (convergenceProgressOutputInterval < 1) {
+            throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
+        }
+    }
+
     /**
      * algorithm compute
      *
@@ -98,11 +108,6 @@ public class AveragePathLengthComputation extends BasicComputation
     @Override
     public void compute(Vertex<LongWritable, DistanceMapWritable, NullWritable> vertex,
                         Iterable<HopCountWritable> messages) {
-
-        convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
-        if (convergenceProgressOutputInterval < 1) {
-            throw new IllegalArgumentException("Convergence curve output interval should be >= 1.");
-        }
 
         // initial condition - start with sending message to all its neighbors
         if (getSuperstep() == 0) {
@@ -134,10 +139,10 @@ public class AveragePathLengthComputation extends BasicComputation
                 } else {
                     delta = (double) distance;
                 }
-                vertex.getValue().distanceMapPut(source, distance);
-                floodMessage(vertex, source, distance + 1);
                 aggregate(SUM_DELTA, new DoubleWritable(delta));
                 aggregate(SUM_UPDATES, new DoubleWritable(1d));
+                vertex.getValue().distanceMapPut(source, distance);
+                floodMessage(vertex, source, distance + 1);
             }
         }
         vertex.voteToHalt();
@@ -222,6 +227,12 @@ public class AveragePathLengthComputation extends BasicComputation
             long realStep = lastStep;
             int convergenceProgressOutputInterval = getConf().getInt(CONVERGENCE_CURVE_OUTPUT_INTERVAL, 1);
             if (superstep == 0) {
+                output.writeBytes("======Graph Statistics======\n");
+                output.writeBytes(String.format("Number of vertices: %d%n",
+                    GiraphStats.getInstance().getVertices().getValue()));
+                output.writeBytes(String.format("Number of edges: %d%n",
+                    GiraphStats.getInstance().getEdges().getValue()));
+                output.writeBytes("\n");
                 output.writeBytes("======Average Path Length Configuration======\n");
                 output.writeBytes(String.format("convergenceProgressOutputInterval: %d%n",
                     convergenceProgressOutputInterval));
@@ -234,6 +245,8 @@ public class AveragePathLengthComputation extends BasicComputation
                 if (numUpdates > 0) {
                     double avgUpdates = sumDelta / numUpdates;
                     output.writeBytes(String.format("superstep = %d%c", realStep, '\t'));
+                    output.writeBytes(String.format("numUpdates = %f%c", numUpdates, '\t'));
+                    output.writeBytes(String.format("sumDelta = %f%c", sumDelta, '\t'));
                     output.writeBytes(String.format("avgUpdates = %f%n", avgUpdates));
                 }
             }

@@ -17,6 +17,18 @@ import java.util.List;
 public class HBaseColumnDropperMapper extends TableMapper<IntWritable, IntWritable> {
 
     List<Delete> deleteList = new ArrayList<Delete>();
+    private final int BUCKET_SIZE = 1000;
+    HTable table;
+
+    @Override
+    protected void setup(Context context) {
+        String tableName = context.getConfiguration().get(HBaseColumnDropper.TABLE_NAME);
+        try {
+            table = new HTable(context.getConfiguration(), tableName);
+        } catch(Exception e) {
+            throw new RuntimeException("Error in initializing HTable object");
+        }
+    }
 
     @Override
     public void map(ImmutableBytesWritable row, Result columns, Context context) {
@@ -37,15 +49,25 @@ public class HBaseColumnDropperMapper extends TableMapper<IntWritable, IntWritab
             Delete delete = new Delete(row.get());
             delete.deleteColumn(columnFamilyBytes, column.getBytes(), timestamp);
             deleteList.add(delete);
+
+            if(deleteList.size() >= BUCKET_SIZE) {
+                SendBatchDeleteCommand();
+                deleteList.clear();
+            }
         }
     }
 
     @Override
     protected void cleanup(Context context) {
+        SendBatchDeleteCommand();
+    }
 
-        String tableName = context.getConfiguration().get(HBaseColumnDropper.TABLE_NAME);
+    private void SendBatchDeleteCommand() {
+
+        if(deleteList.isEmpty())
+            return;
+
         try {
-            HTable table = new HTable(context.getConfiguration(), tableName);
             table.batch(deleteList);
         } catch(Exception e) {
             System.out.println("Error in submitting batch command to hbase");

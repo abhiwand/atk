@@ -29,6 +29,7 @@ import org.apache.giraph.aggregators.DoubleMinAggregator;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.aggregators.LongSumAggregator;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.master.DefaultMasterCompute;
@@ -161,7 +162,9 @@ public class PageRankComputation extends BasicComputation<LongWritable,
 
         double delta = 0;
 
-        if (getSuperstep() >= 1) {
+        if (getSuperstep() == 0) {
+            vertex.setValue(new DoubleWritable(1d));
+        } else {
             double sum = 0;
             for (DoubleWritable message : messages) {
                 sum += message.get();
@@ -364,6 +367,12 @@ public class PageRankComputation extends BasicComputation<LongWritable,
             if (superstep == 0) {
                 float convergenceThreshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.0001f);
                 float resetProbability = getConf().getFloat(RESET_PROBABILITY, 0.15f);
+                output.writeBytes("======Graph Statistics======\n");
+                output.writeBytes(String.format("Number of vertices: %d%n",
+                    GiraphStats.getInstance().getVertices().getValue()));
+                output.writeBytes(String.format("Number of edges: %d%n",
+                    GiraphStats.getInstance().getEdges().getValue()));
+                output.writeBytes("\n");
                 output.writeBytes("======PageRank Configuration======\n");
                 output.writeBytes(String.format("maxSupersteps: %d%n", maxSupersteps));
                 output.writeBytes(String.format("convergenceThreshold: %f%n", convergenceThreshold));

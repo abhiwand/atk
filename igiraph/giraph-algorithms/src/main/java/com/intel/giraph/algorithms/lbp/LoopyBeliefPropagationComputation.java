@@ -38,6 +38,7 @@ import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.aggregators.LongSumAggregator;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
@@ -84,8 +85,6 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
     private static final String SUM_VALIDATE_VERTICES = "num_validate_vertices";
     /** Number of test vertices */
     private static final String SUM_TEST_VERTICES = "num_test_vertices";
-    /** Number of edges */
-    private static final String NUM_EDGES = "num_edges";
     /** Average delta value on validation data of previous super step for convergence monitoring */
     private static final String PREV_AVG_DELTA = "prev_avg_delta";
 
@@ -303,10 +302,7 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
                 return;
             }
 
-            if (step == 1) {
-                // store number of edges for graph statistics
-                getConf().setLong(NUM_EDGES, getTotalNumEdges());
-            } else {
+            if (step != 1) {
                 // calculate average delta on training data
                 DoubleWritable sumTrainDelta = getAggregatedValue(SUM_TRAIN_DELTA);
                 long numTrainVertices = this.<LongWritable>getAggregatedValue(SUM_TRAIN_VERTICES).get();
@@ -397,12 +393,12 @@ public class LoopyBeliefPropagationComputation extends BasicComputation<LongWrit
                 long numTrainVertices = Long.parseLong(map.get(SUM_TRAIN_VERTICES));
                 long numValidateVertices = Long.parseLong(map.get(SUM_VALIDATE_VERTICES));
                 long numTestVertices = Long.parseLong(map.get(SUM_TEST_VERTICES));
-                long numEdges = getConf().getLong(NUM_EDGES, 0L);
                 output.writeBytes("======Graph Statistics======\n");
                 output.writeBytes(String.format("Number of vertices: %d (train: %d, validate: %d, test: %d)%n",
                     numTrainVertices + numValidateVertices + numTestVertices,
                     numTrainVertices, numValidateVertices, numTestVertices));
-                output.writeBytes(String.format("Number of edges: %d%n", numEdges));
+                output.writeBytes(String.format("Number of edges: %d%n",
+                    GiraphStats.getInstance().getEdges().getValue()));
                 output.writeBytes("\n");
                 // output LBP configuration
                 int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 10);

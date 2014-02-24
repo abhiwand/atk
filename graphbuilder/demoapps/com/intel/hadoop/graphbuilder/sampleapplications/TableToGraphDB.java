@@ -78,7 +78,8 @@ import org.apache.log4j.Logger;
  * <p>
  *     EXAMPLES:
  *     <p>
- *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age"  -d "cf:name,cf:dept,worksAt,cf:seniority"</code>
+ *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age"  -d "cf:name,cf:dept,worksAt,
+ * cf:seniority"</code>
  *     </p>
  *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
  *     one employee, and a directed edge labeled "worksAt" between each employee and their department, annotated by their
@@ -90,21 +91,29 @@ import org.apache.log4j.Logger;
  *  <code>-keys <key rule 1>,<key rule 2>, ... <key rule n></code>
  *  where a key rule is a ; separated list beginning with a column name and including the following options:
  *  <ul>
- *    <li>{@code String} selects the String datatype for the key's values <default value>.</li>
- *    <li>{@code Float} selects the Float datatype for the key's values.</li>
- *    <li>{@code Double} selects the Double datatype for the key's values.</li>
- *    <li>{@code Integer} selects the Integer datatype for the key's values.</li>
- *    <li>{@code Long} selects the Long datatype for the key's value.</li>
- *    <li>{@code E} marks the key to be used as an edge index.</li>
- *    <li>{@code V} marks the key to be used as a vertex index (edge and vertex indexing are not exclusive).</li>
- *     <li>{@code U} marks the key as taking values unique to each vertex.</li>
- *    <li> {@code NU} marks the key as taking values that are not necessarily unique to each vertex.</li>
+ *    <li><code>String</code> selects the String datatype for the key's values <default value>.</li>
+ *    <li><code>Float</code> selects the Float datatype for the key's values.</li>
+ *    <li><code>Double</code> selects the Double datatype for the key's values.</li>
+ *    <li><code>Integer</code> selects the Integer datatype for the key's values.</li>
+ *    <li><code>Long</code> selects the Long datatype for the key's value.</li>
+ *    <li><code>E</code> marks the key to be used as an edge index.</li>
+ *    <li><code>V</code> marks the key to be used as a vertex index (edge and vertex indexing are not exclusive).</li>
+ *     <li><code>U</code> marks the key as taking values unique to each vertex.</li>
+ *    <li> <code>NU</code> marks the key as taking values that are not necessarily unique to each vertex.</li>
  *</ul>
  * </p>
  *
  * <p>
  *  EXAMPLE:
  *  <code>-keys cf:name;V;U,cf:tenure:E;V;Integer</code>
+ * </p>
+ *
+ * <p>
+ *     EXAMPLE: Optional arguments
+ *     <code>-a</code> : -a means the new graph data will be appended to an existing graph in Titan. The graph
+ *                       specified by the storage.tablename in the input configuration file will be appended
+ *     <code>-O</code> : -O means the graph specified as storage.tablename in configuration file will be
+ *                       overwritten
  * </p>
  *
  */
@@ -150,7 +159,7 @@ public class TableToGraphDB {
         Timer timer = new Timer();
         configFilePresent = (args[0].equals("-conf"));
         if (!configFilePresent) {
-            commandLineInterface.showError("When writing to Titan, the Titan config file must be specified by -conf <config> ");
+            commandLineInterface.showError("Missing configuration file for Titan. Please provide -conf <config>");
         }
 
         CommandLine cmd = commandLineInterface.checkCli(args);

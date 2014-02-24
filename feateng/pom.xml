@@ -48,30 +48,14 @@
 		<profile>
 			<id>IntelAnalytics-one</id>
 			<activation>
-				<activeByDefault>false</activeByDefault>
+				<activeByDefault>true</activeByDefault>
 			</activation>
 			<properties>
 				<hadoop.artifact>hadoop-core</hadoop.artifact>
 				<hadoop.version>1.2.1</hadoop.version>
 			</properties>
 		</profile>
-		<profile>
-			<id>IntelAnalytics-two</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
-			<properties>
-				<hadoop.artifact>hadoop-common</hadoop.artifact>
-				<hadoop.version>2.0.4-alpha</hadoop.version>
-			</properties>
-			<dependencies>
-				<dependency>
-					<groupId>org.apache.hadoop</groupId>
-					<artifactId>hadoop-mapreduce-client-core</artifactId>
-					<version>${hadoop.version}</version>
-				</dependency>
-			</dependencies>
-		</profile>
+
 	</profiles>
 
 	<!-- global properties -->
@@ -118,6 +102,7 @@
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
 			<version>11.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.jayway.restassured</groupId>

@@ -1,4 +1,4 @@
-Summary: Intel Graph Analytics System development libraries
+Summary: Intel Graph Analytics System development libraries. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
 Version: 0.8.0
 
@@ -8,7 +8,7 @@ Group: Development
 
 Name: python-intelanalytics-dependencies
 
-Requires: java >= 1.7, blas,  bzip2-devel,  dos2unix,  freetype-devel,  gcc,  gtk2-devel,  libffi-devel,  libpng-devel,  ncurses-devel,  openssl-devel,  pygtk2-devel,  python-devel,  readline-devel,  sqlite-devel,  tk-devel,  tkinter, atlas, atlas-devel, blas-devel, freetype, freetype-devel, gcc-c++, lapack, lapack-devel, libpng-devel, python-devel, python-setuptools, yum-utils, zlib-devel, boost-devel, intelanalytics
+Requires: java >= 1.7, blas,  bzip2-devel,  dos2unix,  freetype-devel,  gcc,  gtk2-devel,  libffi-devel,  libpng-devel,  ncurses-devel,  openssl-devel,  pygtk2-devel,  python-devel,  readline-devel,  sqlite-devel,  tk-devel,  tkinter, atlas, atlas-devel, blas-devel, freetype, freetype-devel, gcc-c++, lapack, lapack-devel, libpng-devel, python-devel, python-setuptools, yum-utils, zlib-devel, boost-devel, patch, perl-libwww-perl, intelanalytics, make
 
 Prefix: /usr
 
@@ -21,10 +21,23 @@ URL: <TODO>
 Buildroot: /tmp/intelanalyticsrpm
 
 %description
+Install IPython and Intel Graph System Python dependencies. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
-Install IPython and Intel Graph System Python dependencies
+%define TIMESTAMP %(echo $TIMESTAMP)
 
 %prep
+
+url="http://www.w3.org"
+timeout=20
+result=`HEAD -d -t $timeout $url`
+ 
+if [ "$result" = "200 OK" ]; then
+    echo "Web connectivity present"
+else
+    echo "Could not connect to download dependencies. Please check your proxy settings"
+    echo "Aborting Install"
+    exit 1
+fi
 
 %setup -q
 

@@ -26,10 +26,28 @@ from intel_analytics.config import global_config as config
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 
+def merge_schema(schemas):
+    if not schemas:
+        raise Exception('Schema list is empty.')
+
+    merged = ETLSchema()
+    merged.feature_names.extend(schemas[0].feature_names)
+    merged.feature_types.extend(schemas[0].feature_types)
+
+    for schema in schemas[1:]:
+        for j,feature_name in enumerate(schema.feature_names):
+            if feature_name not in merged.feature_names:
+                feature_type = schema.feature_types[j]
+                merged.feature_names.append(feature_name)
+                merged.feature_types.append(feature_type)
+
+    return merged
+
 class ETLSchema:
     def __init__(self):
         self.feature_names=[]
         self.feature_types=[]
+
       
     def populate_schema(self, schema_string):
         """
@@ -43,7 +61,39 @@ class ETLSchema:
             feature_type = feature_type.strip()
             self.feature_names.append(feature_name)
             self.feature_types.append(feature_type)
-    
+
+    def get_table_properties(self, table_name):
+        schema_table = config['hbase_schema_table']
+        with ETLHBaseClient() as hbase_client:
+            data_dict = hbase_client.get(schema_table, table_name + '_PROPERTIES')
+            properties = {}
+            for key in data_dict:
+                properties[re.sub(config['hbase_column_family'],'',key)] = data_dict[key]
+
+            return properties
+
+    def save_table_properties(self, table_name, properties):
+        schema_table = config['hbase_schema_table']
+        with ETLHBaseClient() as hbase_client:
+            #create if etl schema table doesn't exist
+            logger.debug('creating etl schema table ' + schema_table + " with column family: " + config['hbase_column_family'])
+            if not hbase_client.table_exists(schema_table):
+                hbase_client.drop_create_table(schema_table,
+                                               [config['hbase_column_family']])
+
+            key = table_name + '_PROPERTIES'
+                #check if an entry already exists in ETL_SCHEMA
+            row = hbase_client.get(schema_table, key)
+            if len(row) > 0:#there is an entry for this table in ETL_SCHEMA, overwrite it
+                hbase_client.delete(schema_table, key)
+
+            data_dict = {}
+            for attribute in properties.keys():
+                data_dict[config['hbase_column_family'] + attribute] = properties[attribute]
+
+            hbase_client.put(schema_table, key, data_dict)
+
+
     def load_schema(self, table_name):
         """
         Loads schema from HBase for the given table.
