@@ -27,8 +27,11 @@
 #This script requires the installation of the install_pyenv.sh script
 
 
-
-ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+if [[ -f /usr/lib/IntelAnalytics/virthpy/bin/activate ]]; then
+    ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+else
+    ACTIVATE_FILE=/usr/local/virtpy/bin/activate
+fi
 
 if [[ ! -f $ACTIVATE_FILE ]]; then
     echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
