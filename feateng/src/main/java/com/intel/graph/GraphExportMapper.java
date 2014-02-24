@@ -149,7 +149,6 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         writer.writeEndElement(); // schema
         writer.writeEndDocument();
         writer.flush();
-        writer.close();
     }
 }
 
