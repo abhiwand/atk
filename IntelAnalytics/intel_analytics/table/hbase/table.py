@@ -457,7 +457,7 @@ class HBaseFrameBuilder(FrameBuilder):
                                            [config['hbase_column_family']])
 
         etl_schema = ETLSchema()
-        etl_schema.load_schema(data_frame._original_table_name)
+        etl_schema.load_schema(data_frame._table.table_name)
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
         new_table = data_frame._table.copy(new_table_name, feature_names_as_str, feature_types_as_str)
