@@ -38,6 +38,7 @@ import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
@@ -75,10 +76,6 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
     public static final String ANCHOR_THRESHOLD = "lp.anchorThreshold";
     /** Custom argument for checking bi-directional edge or not (default: false) */
     public static final String BIDIRECTIONAL_CHECK = "lp.bidirectionalCheck";
-    /** Number of vertices */
-    private static final String NUM_VERTICES = "num_vertices";
-    /** Number of edges */
-    private static final String NUM_EDGES = "num_edges";
     /** Aggregator name for sum of cost at each super step */
     private static String SUM_COST = "sum_cost";
     /** Cost of previous super step for convergence monitoring */
@@ -220,13 +217,7 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
             if (step <= 0) {
                 return;
             }
-            if (step == 1) {
-                // collect graph statistics
-                long numVertices = getTotalNumVertices();
-                long numEdges = getTotalNumEdges();
-                getConf().setLong(NUM_VERTICES, numVertices);
-                getConf().setLong(NUM_EDGES, numEdges);
-            } else {
+            if (step != 1) {
                 // evaluate convergence condition
                 float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 float prevCost = getConf().getFloat(PREV_COST, 0f);
@@ -287,11 +278,11 @@ public class LabelPropagationComputation extends BasicComputation<LongWritable, 
 
             if (realStep == 0) {
                 // output graph statistics
-                long numVertices = getConf().getLong(NUM_VERTICES, 0L);
-                long numEdges = getConf().getLong(NUM_EDGES, 0L);
                 output.writeBytes("======Graph Statistics======\n");
-                output.writeBytes(String.format("Number of vertices: %d%n", numVertices));
-                output.writeBytes(String.format("Number of edges: %d%n", numEdges));
+                output.writeBytes(String.format("Number of vertices: %d%n",
+                    GiraphStats.getInstance().getVertices().getValue()));
+                output.writeBytes(String.format("Number of edges: %d%n",
+                    GiraphStats.getInstance().getEdges().getValue()));
                 output.writeBytes("\n");
                 // output LP configuration
                 float lambda = getConf().getFloat(LAMBDA, 0f);

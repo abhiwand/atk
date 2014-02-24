@@ -36,7 +36,6 @@ sys.path.append(os.path.abspath(
 if __name__ == '__main__':
     sys.modules['intel_analytics.config'] = __import__('mock_config')
     sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
-    #sys.modules['intel_analytics.report'] = __import__('mock_report')
     sys.modules['intel_analytics.progress'] = __import__('mock_progress')
 else:
     #to get coverage on all of our modules we need to execute the unit tests utilizing a test runner
@@ -232,6 +231,23 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         'vertex_type',
                         'test_edge_type',
                         max_supersteps='10')
+        self.assertEqual('test_graph', result.graph_name)
+
+    @patch('__builtin__.open')
+    @patch('numpy.genfromtxt')
+    def test_get_histogram_required_inputs(self, mock_ny,mock_open):
+        ml = TitanGiraphMachineLearning(self.graph)
+        result = ml.get_histogram('test_first_property_name')
+        self.assertEqual('test_graph', result.graph_name)
+
+    @patch('__builtin__.open')
+    @patch('numpy.genfromtxt')
+    def test_get_histogram_optional_inputs(self, mock_py, mock_open):
+        ml = TitanGiraphMachineLearning(self.graph)
+        result = ml.get_histogram('test_first_property_name',
+                                  second_property_name = 'test_second_property_name',
+                                  enable_roc = 'true',
+                                  path = 'test_path')
         self.assertEqual('test_graph', result.graph_name)
 
     def test_recommend_throw_exception(self):

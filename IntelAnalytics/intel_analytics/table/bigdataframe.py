@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-BigDataFrame
+The common methods and class for buiding and operating with big data frames
 """
 import sys
 import abc
@@ -31,7 +31,8 @@ from intel_analytics.config import global_config, dynamic_import
 __all__ = ['get_frame_builder',
            'get_frame',
            'get_frame_names',
-           'BigDataFrame'
+           'BigDataFrame',
+           'FrameBuilder'
            ]
 
 
@@ -60,61 +61,135 @@ class FrameBuilderFactory(object):
 
 class FrameBuilder(object):
     """
-   An abstract class for the various table builders to inherit.
-   """
+    Builds BigDataFrame objects
+    """
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def build_from_csv(self, frame_name, file_name, schema, skip_header=False):
         """
-        Reads a CSV (comma-separated-value) file and loads it into a table.
+        Reads a CSV (comma-separated-value) file and loads it into a frame.
 
         Parameters
         ----------
-        C{filename} : String
-            The path to the CSV file.
-        C{schema} : String
-            TODO:
-
-        TODO: Other parameters for the csv parser.
+        frame_name : String
+            The name of the new frame
+        file_name : String
+            The path to the source CSV file.
+        schema : String
+            The schema of the source file.  A comma-separated list of ``key:value``
+            pairs, where *key* is the name of the column and *value* is the data
+            type of the column (`valid data types <http://pig.apache.org/docs/r0.7.0/piglatin_ref2.html#Data+Types>`_)
+            ``'user:long,vertex_type:chararray,movie:long,rating:long,splits:chararray'``
+        skip_header : Bool
+            if True, skip the first line of the file
 
         Returns
         -------
-        C{frame} : C{BigDataFrame}
+        frame : BigDataFrame
+            The new frame
+
+        Examples
+        --------
+        >>> fb = get_frame_builder()
+        >>> frame = fb.build_from_csv('my_frame', 'big_data.csv', schema='user:long,vertex_type:chararray,movie:long,rating:long,splits:chararray')
+
+        """
+        pass
+
+    @abc.abstractmethod
+    def append_from_csv(self, data_frame, file_name, skip_header=False):
+        """
+        Reads a CSV (comma-separated-value) file and append it into an existing data frame.
+
+        Parameters
+        ----------
+        C{data_frame} : BigDataFrame
+            An existing big data frame
+        C{file_name} : String or list of strings
+            File/Files to be imported
         """
         pass
 
     @abc.abstractmethod
     def build_from_json(self, frame_name, file_name):
         """
-        Reads a JSON (www.json.org) file and loads it into a table.
+        Reads a JSON (www.json.org) file and loads it into a frame.
 
         Parameters
         ----------
-        C{filename} : String
-            The path to the JSON file.
-
-        TODO: Other parameters for the parser.
+        frame_name : String
+            The name of the new frame
+        file_name : String
+            The path to the source CSV file.
 
         Returns
         -------
-        C{frame} : C{BigDataFrame}
+        frame : BigDataFrame
+            The new frame
+        """
+        pass
+
+    def append_from_json(self, data_frame, file_name):
+        """
+        Reads an XML file and loads it into a frame.
+        Reads an JSON file and append it into an existing data frame
+
+        Parameters
+        ----------
+        C{data_frame} : BigDataFrame
+            An existing big data frame
+        C{file_name} : String or list of strings
+            File/Files to be imported:
         """
         pass
 
     @abc.abstractmethod
-    def build_from_xml(self, frame_name, file_name, schema=None):
+    def build_from_xml(self, frame_name, file_name, tag_name=None):
         """
         Reads an XML file and loads it into a table.
 
         Parameters
         ----------
-        C{filename} : String
-            The path to the XML file.
-        C{schema} : String
-            TODO:
+        frame_name : String
+            The name of the new frame
+        file_name : String
+            The path to the source CSV file.
+        tag_name : String
+            The XML tag name
+        schema : String, optional
+            The schema of the source file
+        C{frame_name} : String
+            The name for the data frame
+        C{filename} : String or list of strings
+            The path to the XML file/files
+        C{tag_name} : String
+            XML tag for record:
 
-        TODO: Other parameters for the parser.
+        TODO: Other parameters for the parser
+
+        Returns
+        -------
+        frame : BigDataFrame
+            The new frame
+        """
+        pass
+
+    @abc.abstractmethod
+    def append_from_xml(self, data_frame, file_name, tag_name):
+        """
+        Reads an XML file and append it into a existing data frame.
+
+        Parameters
+        ----------
+        C{data_frame} : BigDataFrame
+            An existing big data frame.
+        C{filename} : String or list of strings
+            The path to the XML file/files
+        C{tag_name} : String
+            XML tag for record.
+
+        TODO: Other parameters for the parser
 
         Returns
         -------
@@ -122,10 +197,26 @@ class FrameBuilder(object):
         """
         pass
 
+    @abc.abstractmethod
+    def append_from_data_frame(self, target_data_frame, source_data_frame):
+        """
+        Apped list of source data frames to target data frame.
+
+        Parameters
+        ----------
+        C{target_data_frame} : BigDataFrame
+            The data frame to append data to
+        C{source_data_frame} : List
+            List of data frame which data will be appended to the target data frame
+        """
+        pass
+
+
+
 
 def get_frame_builder():
     """
-    Returns a frame_builder with which to create BigDataFrame objects
+    Returns a frame builder object which creates BigDataFrame objects
     """
     factory_class = _get_frame_builder_factory_class()
     return factory_class.get_frame_builder()
@@ -134,13 +225,26 @@ def get_frame_builder():
 def get_frame(frame_name):
     """
     Returns a previously created frame
+
+    Parameters
+    ----------
+    frame_name : String
+        Name of previously created frame
+
+    Returns
+    -------
+    frame : BigDataFrame
+
+    Examples
+    --------
+    >>> frame = get_frame("my_frame")
     """
     factory_class = _get_frame_builder_factory_class()
     return factory_class.get_frame(frame_name)
 
 def get_frame_names():
     """
-    Returns a previously created frame
+    Returns the names of previously created frames that are available
     """
     factory_class = _get_frame_builder_factory_class()
     return factory_class.get_frame_names()
@@ -198,12 +302,7 @@ class BigDataFrame(object):
     """
 
     def __init__(self, name, table):
-        """
-        (internal constructor)
-        Parameters
-        ----------
-        C{table} : Table
-        """
+        """Internal constructor; see FrameBuilder and get_frame_builder()"""
         #if not isinstance(table, Table):
         #    raise Exception("bad table given to Constructor")
         if name is None:
@@ -213,11 +312,11 @@ class BigDataFrame(object):
 
         self.name = name
         self._table = table
-        #This holds the original table from which we imported the data, will be used for understanding which features are derived or not.
-        self._original_table_name = self._table.table_name
         self.source_file = self._table.file_name
-        self.lineage=[]
-        self.lineage.append(self._table.table_name)
+        """The name of the file from which this frame was originally created"""
+        self._lineage=[]
+        """history of table names"""
+        self._lineage.append(self._table.table_name)
 
     def __str__(self):
         buf = 'BigDataFrame{ '
@@ -251,7 +350,6 @@ class BigDataFrame(object):
 
 
     def transform(self, column_name, new_column_name, transformation, transformation_args=None):
-
         """
         Applies a built-in transformation function to the given column
 
@@ -261,14 +359,19 @@ class BigDataFrame(object):
             source column for the function
         new_column_name : String
             name for the new column that will be created as a result of applying the transformation
-        transformation : enumeration
-            transformation to apply
-        transformation_args: list
-            the arguments for the transformation to apply
+        transformation : :ref:`EvalFunctions <evalfunctions>` enumeration
+            function to apply
+        transformation_args: List
+            arguments for the function
+
+        Examples
+        --------
+        >>> frame.transform('rating', 'log_rating', EvalFunctions.Math.LOG)
+
         """
         try:
             self._table.transform(column_name, new_column_name, transformation, transformation_args)
-            self.lineage.append(self._table.table_name)
+            self._lineage.append(self._table.table_name)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("transform exception " + str(e))
@@ -334,17 +437,16 @@ class BigDataFrame(object):
 
     def inspect(self, n=10):
         """
-        Provides string representation of the n sample lines of the table
+        Provides string representation of n sample lines of the table
 
         Parameters
         ----------
         n : int
             number of rows
-            Returns
 
         Returns
         -------
-        C{head} : String
+        output : String
         """
         # For IPython, consider dumping 2D array (NDarray) for pretty-print.
 
@@ -393,7 +495,6 @@ class BigDataFrame(object):
 
 
     def dropna(self, how='any', column_name=None):
-    #         def dropna(self, how='any', thresh=None, subset=None):
         """
         Drops all rows which have NA values
 
@@ -410,7 +511,7 @@ class BigDataFrame(object):
         #             considers only the given columns in the check, None means all
         try:
             self._table.dropna(how, column_name)
-            self.lineage.append(self._table.table_name)
+            self._lineage.append(self._table.table_name)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("dropna exception " + str(e))
@@ -429,7 +530,7 @@ class BigDataFrame(object):
 
         try:
             self._table.fillna(column_name, value)
-            self.lineage.append(self._table.table_name)
+            self._lineage.append(self._table.table_name)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("fillna exception "+ str(e))
@@ -451,7 +552,7 @@ class BigDataFrame(object):
 
         try:
             self._table.impute(column_name, how)
-            self.lineage.append(self._table.table_name)
+            self._lineage.append(self._table.table_name)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("impute exception "+ str(e))

@@ -126,6 +126,10 @@ public class GiraphVertexLoaderPropertyGraph4CF {
      * Enable vector value
      */
     private String enableVectorValue = "true";
+    /**
+     * regular expression of the deliminators for a property list
+     */
+    private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
     /**
      * GiraphVertexLoaderPropertyGraph4CF Constructor with ID
@@ -149,9 +153,9 @@ public class GiraphVertexLoaderPropertyGraph4CF {
         final String[] edgeLabelList;
 
         enableVectorValue = VECTOR_VALUE.get(conf);
-        vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
+        vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
+        edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
+        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(regexp);
         vertexTypePropertyKey = VERTEX_TYPE_PROPERTY_KEY.get(conf);
         edgeTypePropertyKey = EDGE_TYPE_PROPERTY_KEY.get(conf);
         int size = vertexValuePropertyKeyList.length;
@@ -322,7 +326,6 @@ public class GiraphVertexLoaderPropertyGraph4CF {
                     if (enableVectorValue.equals("true")) {
                         //one property key has a vector as value
                         //split by either space or comma or tab
-                        String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
                         String[] valueString = vertexValueObject.toString().split(regexp);
                         for (int i = 0; i < valueString.length; i++) {
                             vector.set(i, Double.parseDouble(valueString[i]));

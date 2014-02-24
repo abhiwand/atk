@@ -33,7 +33,7 @@ if 'intel_analytics.config' in sys.modules:
 from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
-from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
+from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException, HBaseFrameBuilder
 from mock import patch, Mock, MagicMock
 
 config['hbase_column_family'] = "etl-cf:"
@@ -540,6 +540,8 @@ class HbaseTableTest(unittest.TestCase):
         table = HBaseTable(table_name, file_name)
         self.assertRaises(HBaseTableException, table._HBaseTable__drop, output_table, 'col1')
 
+
+
     @patch('intel_analytics.table.hbase.table.ETLSchema')
     def test__drop_invalid_column(self, etl_schema_class):
 
@@ -764,6 +766,40 @@ class HbaseTableTest(unittest.TestCase):
 	    self.aggregate("str1,str2", [(EvalFunctions.Aggregation.AVG, "long2", "maxlong2"), [EvalFunctions.Aggregation.SUM, "double1", "totaldouble1"]])
 	except:
 	    print "Caught exception on aggregation multiple columns"
+class HBaseFrameBuilderTest(unittest.TestCase):
+
+    @patch("intel_analytics.table.hbase.table.exists")
+    def test_validate_exists_hdfs(self, exists):
+        exists.return_value = True
+
+        builder = HBaseFrameBuilder()
+        builder._validate_exists('/mock/location/that/exists')
+
+    @patch("intel_analytics.table.hbase.table.exists")
+    def test_validate_exists_not_found_in_hdfs(self, exists):
+        exists.return_value = False
+
+        builder = HBaseFrameBuilder()
+        with self.assertRaises(Exception):
+            builder._validate_exists('/mock/location/that/does/not/exist')
+
+    @patch("intel_analytics.table.hbase.table.is_local_run")
+    @patch("intel_analytics.table.hbase.table.os.path.isfile")
+    def test_validate_exists_locally(self, is_file, is_local_run):
+        is_file.return_value = True
+        is_local_run.return_value = True
+
+        builder = HBaseFrameBuilder()
+        builder._validate_exists('/mock/location/that/exists')
+
+    @patch("intel_analytics.table.hbase.table.is_local_run")
+    def test_validate_exists_not_found_locally(self, is_local_run):
+        is_local_run.return_value = True
+
+        builder = HBaseFrameBuilder()
+        with self.assertRaises(Exception):
+            builder._validate_exists('/some/real/path/that/does/not/exist')
+
 
 if __name__ == '__main__':
     unittest.main()
