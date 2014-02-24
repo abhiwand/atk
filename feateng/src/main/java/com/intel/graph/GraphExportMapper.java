@@ -80,8 +80,8 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to generate xml node for the element", e);
         }  finally {
-            GraphMLWriter.closeXMLWriter(writer);
             f.close();
+            GraphMLWriter.closeXMLWriter(writer);
         }
     }
 
@@ -122,8 +122,8 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to export schema info from mapper", e);
         } finally {
-            GraphMLWriter.closeXMLWriter(writer);
             output.close();
+            GraphMLWriter.closeXMLWriter(writer);
         }
     }
 
