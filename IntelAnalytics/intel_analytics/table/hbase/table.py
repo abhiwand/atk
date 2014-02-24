@@ -160,9 +160,7 @@ class HBaseTable(object):
 					          etl_schema.get_feature_type(column_to_apply))
 	
 
-        script_path = os.path.join(etl_scripts_path, 'pig_aggregation.py')
-
-        args = _get_pig_args()
+        args = get_pig_args('pig_aggregation.py')
 
 
 	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
@@ -173,12 +171,11 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
 
-        args += [script_path,
-                '-i', self.table_name,
-                '-o', new_table_name, 
-		'-a', " ".join(aggregation_list),
-		'-g', ",".join(group_by_columns),
-                '-u', feature_names_as_str, '-r', feature_types_as_str,
+        args += ['-i', self.table_name,
+                 '-o', new_table_name, 
+		 '-a', " ".join(aggregation_list),
+		 '-g', ",".join(group_by_columns),
+                 '-u', feature_names_as_str, '-r', feature_types_as_str,
                 ]
 
         logger.debug(args)
@@ -248,8 +245,7 @@ class HBaseTable(object):
 	        new_schema_def += ",%s:%s" % (new_column_name, 
 					          etl_schema.get_feature_type(column_to_apply))
 	
-        script_path = os.path.join(etl_scripts_path, 'pig_range_aggregation.py')
-        args = _get_pig_args()
+        args = get_pig_args('pig_range_aggregation.py')
         _range = ETLRange(range).toString()
 
 
@@ -261,13 +257,12 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
 
-        args += [script_path,
-                '-i', self.table_name,
-                '-o', new_table_name, 
-		'-a', " ".join(aggregation_list),
-		'-g', group_by_column,
-		'-l', _range,
-                '-u', feature_names_as_str, '-r', feature_types_as_str,
+        args += ['-i', self.table_name,
+                 '-o', new_table_name, 
+		 '-a', " ".join(aggregation_list),
+		 '-g', group_by_column,
+		 '-l', _range,
+                 '-u', feature_names_as_str, '-r', feature_types_as_str,
                 ]
 
         logger.debug(args)
@@ -387,9 +382,7 @@ class HBaseTable(object):
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
-        script_path = os.path.join(etl_scripts_path, 'pig_filter.py')
-
-        args = _get_pig_args()
+        args = get_pig_args('pig_filter.py')
 
 	if (inplace):
 	    hbase_table_name = self.table_name
@@ -402,15 +395,14 @@ class HBaseTable(object):
                  hbase_client.drop_create_table(hbase_table_name,
                                            [config['hbase_column_family']])
 
-        args += [script_path, 
-		'-i', self.table_name,
-                '-o', hbase_table_name, 
-		'-n', feature_names_as_str,
-                '-t', feature_types_as_str,
-		'-p', 'True' if inplace else 'False',
-		'-c', column,
-		'-r', 'True' if isregex else 'False',
-		'-f', filter]
+        args += ['-i', self.table_name,
+                 '-o', hbase_table_name, 
+		 '-n', feature_names_as_str,
+                 '-t', feature_types_as_str,
+		 '-p', 'True' if inplace else 'False',
+		 '-c', column,
+		 '-r', 'True' if isregex else 'False',
+		 '-f', filter]
 
         logger.debug(args)
         
