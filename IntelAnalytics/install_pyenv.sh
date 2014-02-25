@@ -204,13 +204,6 @@ function ins_ignore_virt {
 	python_module=$(python_module_version_lookup $1)
         pip install $python_module
         pkgs=${PYTHON_VIRTUALENV}/lib/python2.7/site-packages
-        pushd ${pkgs}
-        for f in /usr/lib/python2.7/site-packages/${1}*
-        do
-            echo $hdr Create symlink to ${f} at ${pkgs}
-            ln -sf ${f}
-        done
-        popd
     fi
 }
 
