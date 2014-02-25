@@ -237,7 +237,7 @@ class PropertyGraphBuilder(GraphBuilder):
         self._edge_list = []
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite=False, append=False, flatten=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False, withVertexDirection=False):
         """
         Builds a property graph according to the settings in the builder
 
