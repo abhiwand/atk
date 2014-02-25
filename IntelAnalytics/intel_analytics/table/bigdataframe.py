@@ -278,19 +278,6 @@ class BigDataFilter(object):
         self.filter_condition = filter
         self.column_to_apply = column
 
-    def getFilter(self):
-        return self.filter_condition
-
-    def getColumn(self):
-        return self.column_to_apply
-
-    def setFilter(self, filter):
-        self.filter_condition = filter
-
-    def setColumn(self, column):
-        self.column_to_apply = column
-	
-
 
 class BigDataFrameException(Exception):
     pass
@@ -476,15 +463,12 @@ class BigDataFrame(object):
         """
 	
         try:
-	    inplace = True
-	    isregex = False
-	    if (frame_name.strip() != ''):
-		inplace = False
-	    if (filter.getColumn().strip() != ''):
-		isregex = True
+	    inplace = (frame_name.strip() == '')
+	    isregex = (filter.filter_condition.strip() != '')
 
-            result_table = self._table.drop(filter.getFilter(), filter.getColumn(), isregex, inplace, frame_name)
-	    if (inplace):
+            result_table = self._table.drop(filter.filter_condition, filter.column_to_apply, isregex, inplace, frame_name)
+
+	    if inplace:
 		frame = self
 	    else:
 	        frame = BigDataFrame(frame_name, result_table)
