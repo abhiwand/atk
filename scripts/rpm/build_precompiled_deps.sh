@@ -12,7 +12,11 @@ mkdir -p $source_folder
 tribeca_ia=$(abspath `dirname $0`/../../IntelAnalytics)
 
 #Writing to /usr/lib/IntelAnalytics/virtpy requires that /usr/lib/IntelAnalytics be writable by this user.
-(cd /usr/lib/IntelAnalytics && rm -rf ./virtpy && $tribeca_ia/install_pyenv.sh)
+
+#For right now, we don't destroy the virtpy folder every time, since
+#these change so rarely, and rebuilding virtpy takes at least 15 minutes
+#(cd /usr/lib/IntelAnalytics && rm -rf ./virtpy && $tribeca_ia/install_pyenv.sh)
+(cd /usr/lib/IntelAnalytics && $tribeca_ia/install_pyenv.sh)
 
 cp -R /usr/lib/IntelAnalytics/virtpy SOURCES/$package-$TRIBECA_VERSION
 
