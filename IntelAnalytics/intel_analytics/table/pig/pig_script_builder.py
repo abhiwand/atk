@@ -41,13 +41,6 @@ class PigScriptBuilder(object):
 
         return "\n".join(statements)
 
-    """
-    helper
-    """
-    def dump_statement(statements):
-        for s in statements:
-            sys.stderr.write(s + '\n')
-
     def get_join_statement(self, tables, on, how='inner', suffixes=None, sort=False, join_table_name=''):
         """
 
@@ -107,7 +100,6 @@ class PigScriptBuilder(object):
 
         # inner join supports multiple tables
         # FIXME: do we have a max??
-        statements = []
         joins = []
         loads = []
         pig_schemas = []
@@ -140,8 +132,9 @@ class PigScriptBuilder(object):
             pig_schemas.append(_get_pig_schema(suffixed_features, etl_schema.feature_types))
 
         # build the statements
+        statements = []
         statements.append('-- Loading input tables')
-        statements.append(loads)
+        statements.extend(loads)
         statements.append('-- Joining input tables')
         statements.append(', '.join(joins) + ';')
 
@@ -163,6 +156,6 @@ class PigScriptBuilder(object):
         join_script = "\n".join(statements)
 
         # TODO: remove the debug
-        dump_statement(statements)
+        print(join_script)
 
         return join_script, join_pig_schema

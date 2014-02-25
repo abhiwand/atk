@@ -833,7 +833,7 @@ class HBaseFrameBuilder(FrameBuilder):
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         etl_schema.save_table_properties(table_name, properties)
 
-    def join_data_frame(self, left, right, left_on, right_on, suffixes, sort, join_frame_name):
+    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, sort, join_frame_name):
         """
         Joins a left BigDataFrame with a list of (right) BigDataFrame(s)
         """
