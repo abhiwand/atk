@@ -44,10 +44,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static junit.framework.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -195,47 +192,22 @@ public class GraphExporterTest {
         XMLStreamWriter writer = xmlInputFactory.createXMLStreamWriter(f);
 
         GraphExportMapper mapper = new GraphExportMapper();
-        Map<String, GraphElementType> propertyElementTypeMapping = new HashMap<String, GraphElementType>();
-        propertyElementTypeMapping.put("etl-cf:edge_type", GraphElementType.Edge);
-        propertyElementTypeMapping.put("etl-cf:weight", GraphElementType.Edge);
-        propertyElementTypeMapping.put("_id", GraphElementType.Vertex);
-        propertyElementTypeMapping.put("_gb_ID", GraphElementType.Vertex);
-        propertyElementTypeMapping.put("etl-cf:vertex_type", GraphElementType.Vertex);
-        mapper.writeSchemaToXML(writer, propertyElementTypeMapping);
+        Set<String> vertexFeatures = new HashSet<String>();
+        Set<String> edgeFeatures = new HashSet<String>();
+        vertexFeatures.add("_id");
+        vertexFeatures.add("_gb_ID");
+        vertexFeatures.add("etl-cf:vertex_type");
+
+        edgeFeatures.add("etl-cf:edge_type");
+        edgeFeatures.add("etl-cf:weight");
+
+        mapper.writeSchemaToXML(writer, vertexFeatures, edgeFeatures);
 
         String result = f.toString();
-        String expected = "<?xml version=\"1.0\" ?><schema><feature attr.name=\"_id\" attr.type=\"string\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:edge_type\" attr.type=\"string\" for=\"Edge\"></feature><feature attr.name=\"etl-cf:weight\" attr.type=\"string\" for=\"Edge\"></feature><feature attr.name=\"_gb_ID\" attr.type=\"string\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:vertex_type\" attr.type=\"string\" for=\"Vertex\"></feature></schema>";
+        String expected = "<?xml version=\"1.0\" ?><schema><feature attr.name=\"_id\" attr.type=\"string\" for=\"Vertex\"></feature><feature attr.name=\"_gb_ID\" attr.type=\"string\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:vertex_type\" attr.type=\"string\" for=\"Vertex\"></feature><feature attr.name=\"etl-cf:edge_type\" attr.type=\"string\" for=\"Edge\"></feature><feature attr.name=\"etl-cf:weight\" attr.type=\"string\" for=\"Edge\"></feature></schema>";
         assertEquals(expected, result);
     }
 
-    @Test
-    public void collectSchemaInfo() {
-        Map<String, GraphElementType> propertyElementTypeMapping = new HashMap<String, GraphElementType>();
-        GraphExportMapper mapper = new GraphExportMapper();
-        IGraphElement vertex = new VertexElement(1);
-        Map<String, Object> vertexAttributes = new HashMap<String, Object>();
-        vertexAttributes.put("vf1", 1);
-        vertexAttributes.put("vf2", 1);
-        vertexAttributes.put("vf3", 1);
-        vertex.setAttributes(vertexAttributes);
-
-        IGraphElement edge = new EdgeElement(2);
-        Map<String, Object> edgeAttributes = new HashMap<String, Object>();
-        edgeAttributes.put("ef1", 1);
-        edgeAttributes.put("ef2", 1);
-        edgeAttributes.put("ef3", 1);
-        edge.setAttributes(edgeAttributes);
-
-        mapper.collectSchemaInfo(vertex, propertyElementTypeMapping);
-        mapper.collectSchemaInfo(edge, propertyElementTypeMapping);
-        assertEquals(6, propertyElementTypeMapping.size());
-        assertEquals(GraphElementType.Vertex, propertyElementTypeMapping.get("vf1"));
-        assertEquals(GraphElementType.Vertex, propertyElementTypeMapping.get("vf2"));
-        assertEquals(GraphElementType.Vertex, propertyElementTypeMapping.get("vf3"));
-        assertEquals(GraphElementType.Edge, propertyElementTypeMapping.get("ef1"));
-        assertEquals(GraphElementType.Edge, propertyElementTypeMapping.get("ef2"));
-        assertEquals(GraphElementType.Edge, propertyElementTypeMapping.get("ef3"));
-    }
 
     @Test
     public void map() throws IOException, InterruptedException {

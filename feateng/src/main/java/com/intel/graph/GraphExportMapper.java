@@ -37,8 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -50,7 +49,8 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
     XMLOutputFactory xmlInputFactory = null;
     IFileOutputStreamGenerator outputStreamGenerator = new FileOutputStreamGenerator();
 
-    Map<String, GraphElementType> propertyElementTypeMapping = new HashMap<String, GraphElementType>();
+    Set<String> vertexFeatures = new HashSet<String>();
+    Set<String> edgeFeatures = new HashSet<String>();
 
     @Override
     protected void setup(Context context) {
@@ -75,26 +75,17 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
             IGraphElement element = elementFactory.makeElement(value.toString());
             element.writeToXML(writer);
             context.write(key, new Text(f.toString()));
-            // collects schema info
-            collectSchemaInfo(element, propertyElementTypeMapping);
+
+            if(GraphElementType.Vertex == element.getElementType())
+                vertexFeatures.addAll(element.getAttributes().keySet());
+            else
+                edgeFeatures.addAll(element.getAttributes().keySet());
+
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to generate xml node for the element", e);
         }  finally {
             f.close();
             GraphMLWriter.closeXMLWriter(writer);
-        }
-    }
-
-    /**
-     * Iterating through the attribute name of the element. Record the attribute names and
-     * associate them with the element's type in propertyElementTypeMapping
-     * @param element: The graph element
-     * @param propertyElementTypeMapping: The mapping between attribute name and the type of element that the attribute is from
-     */
-    public void collectSchemaInfo(IGraphElement element, Map<String, GraphElementType> propertyElementTypeMapping) {
-        Set<String> keySet = element.getAttributes().keySet();
-        for(String feature : keySet) {
-            propertyElementTypeMapping.put(feature, element.getElementType());
         }
     }
 
@@ -117,7 +108,7 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
         XMLStreamWriter writer = null;
         try {
             writer = outputFactory.createXMLStreamWriter(output, "UTF8");
-            writeSchemaToXML(writer, propertyElementTypeMapping);
+            writeSchemaToXML(writer, vertexFeatures, edgeFeatures);
 
         } catch (XMLStreamException e) {
             throw new RuntimeException("Failed to export schema info from mapper", e);
@@ -131,24 +122,31 @@ public class GraphExportMapper extends Mapper<LongWritable, Text, LongWritable, 
     /**
      * Taking the collected schema information and writing it to xml
      * @param writer: stream writer to xml output
-     * @param propertyElementTypeMapping mapping between attribute name and element type
+     * @param vertexFeatures: feature names for vertex
+     * @param edgeFeatures: feature names for edge
      * @throws XMLStreamException
      */
-    public void writeSchemaToXML(XMLStreamWriter writer, Map<String, GraphElementType> propertyElementTypeMapping) throws XMLStreamException {
+    public void writeSchemaToXML(XMLStreamWriter writer, Set<String> vertexFeatures, Set<String> edgeFeatures) throws XMLStreamException {
         writer.writeStartDocument();
         writer.writeStartElement(GraphExporter.SCHEMA);
 
-        for(Map.Entry<String, GraphElementType> e : propertyElementTypeMapping.entrySet()) {
-            writer.writeStartElement(GraphExporter.FEATURE);
-            writer.writeAttribute(GraphMLTokens.ATTR_NAME, e.getKey());
-            writer.writeAttribute(GraphMLTokens.ATTR_TYPE, "string");
-            writer.writeAttribute(GraphMLTokens.FOR, e.getValue().toString());
-            writer.writeEndElement();
-        }
+        writeSchemaForElementType(writer, vertexFeatures, GraphElementType.Vertex.toString());
+        writeSchemaForElementType(writer, edgeFeatures, GraphElementType.Edge.toString());
 
         writer.writeEndElement(); // schema
         writer.writeEndDocument();
         writer.flush();
+    }
+
+    private void writeSchemaForElementType(XMLStreamWriter writer, Set<String> vertexFeatures, String elementType) throws XMLStreamException {
+        Set<String> features = vertexFeatures;
+        for(String key : features) {
+            writer.writeStartElement(GraphExporter.FEATURE);
+            writer.writeAttribute(GraphMLTokens.ATTR_NAME, key);
+            writer.writeAttribute(GraphMLTokens.ATTR_TYPE, "string");
+            writer.writeAttribute(GraphMLTokens.FOR, elementType);
+            writer.writeEndElement();
+        }
     }
 }
 
