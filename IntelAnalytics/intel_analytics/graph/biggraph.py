@@ -430,7 +430,8 @@ class GraphWrapper:
         Parameters
         ----------
         statements : Iterable
-           Iterable of query strings
+           Iterable of query strings. The query returns vertices or edges.
+           For example, g.V('name','11').out
         file: String
             output file path
 
