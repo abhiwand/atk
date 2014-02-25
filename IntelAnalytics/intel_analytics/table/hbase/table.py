@@ -160,7 +160,7 @@ class HBaseTable(object):
 	else:
             new_schema_def += "AggregateGroup:chararray"
 
-	aggregation_list, new_schema_def = self.__get_aggregation_list(aggregation_arguments, etl_schema, new_schema_def)
+	aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
 	
         args = get_pig_args('pig_aggregation.py')
 
@@ -211,7 +211,7 @@ class HBaseTable(object):
 
 	new_schema_def = "AggregateGroup:chararray"
 
-        aggregation_list, new_schema_def = self.__get_aggregation_list(aggregation_arguments, etl_schema, new_schema_def)
+        aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
 	
         args = get_pig_args('pig_range_aggregation.py')
         _range = ETLRange(range).toString()
