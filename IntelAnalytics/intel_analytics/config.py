@@ -32,6 +32,7 @@ import os
 import time
 import datetime
 import platform
+import sys
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -66,11 +67,18 @@ if not os.getenv('TITAN_HOME'):
 if not os.getenv('PIG_OPTS'):
     os.environ['PIG_OPTS'] = "-Dpython.verbose=error"#to get rid of Jython logging
 
+if not os.getenv('SPARK_HOME'):
+    os.environ['SPARK_HOME'] = '/home/hadoop/IntelAnalytics/spark'
+
+if not os.getenv('MASTER'):
+    os.environ['MASTER'] = 'spark://master:7077'
+
 properties_file = os.path.join(
         os.getenv('INTEL_ANALYTICS_HOME', _here_folder),
         'conf',
         'intel_analytics.properties')
 
+sys.path.append(os.path.join(os.getenv('SPARK_HOME'), 'python'))
 
 def get_time_str():
     """
@@ -331,7 +339,6 @@ try:
 
     os.environ["JYTHONPATH"] = global_config['pig_jython_path']#required to ship jython scripts with pig
 except Exception, e:
-    import sys
     sys.stderr.write("""
 WARNING - could not load default properties file %s because:
   %s
