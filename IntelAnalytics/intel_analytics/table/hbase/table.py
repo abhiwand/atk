@@ -103,7 +103,7 @@ class HBaseTable(object):
         self.table_name = table_name
         self.file_name = file_name
 
-    def __get_aggregation_list(self, aggregation_arguments, etl_schema):
+    def __get_aggregation_list_and_schema(self, aggregation_arguments, etl_schema, new_schema_def):
 
 	aggregation_list = []
 	for i in aggregation_arguments:
@@ -138,8 +138,7 @@ class HBaseTable(object):
 	        new_schema_def += ",%s:%s" % (new_column_name, 
 					          etl_schema.get_feature_type(column_to_apply))
 
-	return aggregation_list
-	
+	return aggregation_list, new_schema_def
 
     def aggregate(self,
 		  aggregate_frame_name,
@@ -161,7 +160,7 @@ class HBaseTable(object):
 	else:
             new_schema_def += "AggregateGroup:chararray"
 
-	aggregation_list = self.__get_aggregation_list(aggregation_arguments, etl_schema)
+	aggregation_list, new_schema_def = self.__get_aggregation_list(aggregation_arguments, etl_schema, new_schema_def)
 	
         args = get_pig_args('pig_aggregation.py')
 
@@ -212,7 +211,7 @@ class HBaseTable(object):
 
 	new_schema_def = "AggregateGroup:chararray"
 
-        aggregation_list = self.__get_aggregation_list(aggregation_arguments, etl_schema)
+        aggregation_list, new_schema_def = self.__get_aggregation_list(aggregation_arguments, etl_schema, new_schema_def)
 	
         args = get_pig_args('pig_range_aggregation.py')
         _range = ETLRange(range).toString()
