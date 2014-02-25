@@ -10,7 +10,7 @@ Name: intelanalytics-python-deps-precompiled
 
 Provides: intelanalytics-python-dependencies
 
-Requires: intelanalytics, blas, bzip2, dos2unix, freetype, gtk2, libffi, libpng, ncurses, openssl, pygtk2, readline, sqlite, tk, tkinter, atlas, lapack, python-setuptools, yum-utils, zlib, boost, patch, perl-libwww-perl
+Requires: intelanalytics, blas, bzip2, dos2unix, freetype, gtk2, libffi, libpng, ncurses, openssl, pygtk2, readline, sqlite, tk, tkinter, atlas, lapack, python-setuptools, yum-utils, zlib, boost, patch, perl-libwww-perl, zeromq
 
 Prefix: /usr
 
