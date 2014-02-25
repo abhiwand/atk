@@ -464,7 +464,7 @@ class BigDataFrame(object):
 	
         try:
 	    inplace = (frame_name.strip() == '')
-	    isregex = (filter.filter_condition.strip() != '')
+	    isregex = (filter.column_to_apply.strip() != '')
 
             result_table = self._table.drop(filter.filter_condition, filter.column_to_apply, isregex, inplace, frame_name)
 
