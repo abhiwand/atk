@@ -18,11 +18,8 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfException;
 import org.apache.hadoop.io.Writable;
@@ -34,7 +31,6 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -42,7 +38,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static org.antlr.tool.ErrorManager.assertTrue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -91,7 +86,7 @@ public class TestCreatePropGraphElements
 
         DataBag result = (DataBag) createPropGraphElementsUDF_bhp.exec(t);
 
-        assert(result.size() == 6);
+        assertEquals(result.size(), 6);
     }
 
     @Test
@@ -193,7 +188,7 @@ public class TestCreatePropGraphElements
 
         DataBag result = (DataBag) createPropGraphElementsUDF_rde.exec(t);
 
-        assert(result.size() == 30);
+        assertEquals(result.size(), 30);
     }
 
     @Test
