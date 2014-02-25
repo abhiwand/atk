@@ -449,6 +449,22 @@ class HBaseRegistry(Registry):
 
 class HBaseFrameBuilder(FrameBuilder):
     def copy_data_frame(self, data_frame, new_frame_name, overwrite=False):
+        """
+        Create a new data frame and copy data from source data frame to the new data frame
+        Parameters
+        ----------
+        data_frame : BigDataFrame
+            source data frame
+        new_frame_name : String
+            name for the new data frame
+        overwrite : Boolean
+            overwrite existing big data frame
+
+        Examples
+        --------
+        >>> new_frame = fb.copy_data_frame(source_data_frame, "new_data_frame")
+
+        """
 
         new_table_name = _create_table_name(new_frame_name, overwrite)
         # need to delete/create output table to write the transformed features
