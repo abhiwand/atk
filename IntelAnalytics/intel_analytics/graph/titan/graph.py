@@ -165,7 +165,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                 + '\n'.join(map(lambda x: edge_str(x, True), self._edge_list))
         return s
 
-    def build(self, graph_name, overwrite=False, append=False, flatten=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False, withVertexDirection=False):
         return build(graph_name,
                      self._source,
                      self._vertex_list,
@@ -173,10 +173,11 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                      is_directed=True,
                      overwrite=overwrite,
                      append=append,
-                     flatten=flatten)
+                     flatten=flatten,
+                     withVertexDirection=withVertexDirection)
 
 
-def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten):
+def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten, withVertexDirection):
 
     # TODO: implement column validation
 
@@ -195,7 +196,7 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
     gb_conf_file = titan_config.write_gb_cfg(dst_hbase_table_name)
 
     cmd = get_gb_build_command(gb_conf_file, src_hbase_table_name, vertex_list, edge_list, is_directed, overwrite,
-                               append, flatten)
+                               append, flatten, withVertexDirection)
 
     return_code = call(cmd, report_strategy=etl_report_strategy())
 
@@ -251,7 +252,8 @@ def edge_str(edge, public=False):
     return s
 
 
-def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list, is_directed, overwrite, append, flatten):
+def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list, is_directed, overwrite, append, flatten,
+                         withVertexDirection):
     """
     Build the Pig command line call to the Jython script
     """
@@ -274,6 +276,8 @@ def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list, is_di
         args += ['-d', 'is_directed']
     if flatten:
         args += ['-f', 'is_flatten']
+    if withVertexDirection:
+        args += ['-p']
 
     return args
 
