@@ -80,6 +80,18 @@ properties_file = os.path.join(
 
 sys.path.append(os.path.join(os.getenv('SPARK_HOME'), 'python'))
 
+def get_spark_context():
+   import pyspark
+
+   if pyspark.SparkContext._active_spark_context:
+       sc = pyspark.SparkContext._active_spark_context
+   else:
+       sc = pyspark.SparkContext(master = os.getenv('MASTER'), 
+                                 appName = 'IntelAnalytics-python',
+	  			 sparkHome = os.getenv('SPARK_HOME'))
+   return sc
+
+
 def get_time_str():
     """
     get current time stamp
