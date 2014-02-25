@@ -105,8 +105,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      */
     public static final String NULL_VERTEX_NAME          = "null";
     public static final String VERTEX_PROPERTY_DIRECTION = "direction";
-    public static final String LEFT_DIRECTION            = "L";
-    public static final String RIGHT_DIRECTION           = "R";
+    public static final String LEFT                      = "L";
+    public static final String RIGHT                     = "R";
 
     private BagFactory mBagFactory = BagFactory.getInstance();
 
@@ -234,12 +234,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         retainDanglingEdges = cmd.hasOption(BaseCLI.Options.retainDanglingEdges.getLongOpt());
         addDirectionToVertices = cmd.hasOption(BaseCLI.Options.addDirectionToVertex.getLongOpt());
 
-        System.out.println("Will add direction prop to vertices ? " + addDirectionToVertices);
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
-
-        String vertexIdFieldName;
-        String vertexLabel;
 
         for (String vertexRule : vertexRules) {
 
@@ -247,7 +243,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             // routines as subroutines... those routines have nothing to do with hbase and simply extract field
             // ("column") names from command strings
 
-            vertexIdFieldName = HBaseGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
+            String vertexIdFieldName = HBaseGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
 
             vertexIdFieldList.add(vertexIdFieldName);
 
@@ -257,7 +253,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             vertexPropToFieldNamesMap.put(vertexIdFieldName, vertexPropertiesFieldNames);
 
             // Vertex labels are maintained in a separate map
-            vertexLabel = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
+            String vertexLabel = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
             if (vertexLabel != null) {
                 vertexLabelMap.put(vertexIdFieldName, vertexLabel);
             }
@@ -281,9 +277,9 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         for (String rawDirectedEdgeRule : rawDirectedEdgeRules) {
 
-            String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawDirectedEdgeRule);
-            String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawDirectedEdgeRule);
-            String   label                  = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
+            String srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawDirectedEdgeRule);
+            String tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawDirectedEdgeRule);
+            String label                  = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
 
@@ -333,23 +329,18 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     private void addVertexToPropElementBag(DataBag outputBag, Vertex vertex) throws IOException {
 
-        PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory()
-                .newTuple(1);
-
-        SerializedGraphElementStringTypeVids serializedgraphElement = new SerializedGraphElementStringTypeVids();
-
-        serializedgraphElement.init(vertex);
+        PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory().newTuple(1);
+        SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
+        serializedGraphElement.init(vertex);
 
         try {
-            graphElementTuple.set(0, serializedgraphElement);
+            graphElementTuple.set(0, serializedGraphElement);
             outputBag.add(graphElementTuple);
             incrementCounter(Counters.NUM_VERTICES, 1L);
         } catch (ExecException e) {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
         }
-
-        System.out.println("Vertex after adding to bag : " + vertex);
     }
 
     private void addEdgeToPropElementBag(DataBag outputBag, Edge edge) throws IOException{
@@ -435,9 +426,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         }
 
         DataBag outputBag = mBagFactory.newDefaultBag();
-        Object value;
         StringType serializedVertexId = new StringType();
-        String[] vpFieldNames;
 
         // check tuple for vertices
 
@@ -454,11 +443,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
                     // add the vertex properties
 
-                    vpFieldNames = vertexPropToFieldNamesMap.get(fieldName);
+                    String[] vpFieldNames = vertexPropToFieldNamesMap.get(fieldName);
 
                     if (null != vpFieldNames && vpFieldNames.length > 0) {
                         for (String vertexPropertyFieldName : vpFieldNames) {
-                            value =  getTupleData(input, inputSchema, vertexPropertyFieldName);
+                            Object value =  getTupleData(input, inputSchema, vertexPropertyFieldName);
                             if (value != null) {
                                 try {
                                     vertex.setProperty(vertexPropertyFieldName, pigTypesToSerializedJavaTypes(value,
@@ -486,35 +475,27 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         // check tuple for edges
 
-        String     srcVertexFieldName;
-        String     tgtVertexFieldName;
-        String     srcLabelString;
-        String     tgtLabelString;
         StringType srcLabel = null;
         StringType tgtLabel = null;
 
-        EdgeRule     edgeRule;
-        List<String> edgeAttributeList;
-        String[]     edgeAttributes;
-
         for (String eLabel : edgeLabelToEdgeRules.keySet()) {
 
-            edgeRule           = edgeLabelToEdgeRules.get(eLabel);
-            edgeAttributeList  = edgeRule.getPropertyFieldNames();
-            edgeAttributes     = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
+            EdgeRule     edgeRule           = edgeLabelToEdgeRules.get(eLabel);
+            List<String> edgeAttributeList  = edgeRule.getPropertyFieldNames();
+            String[]     edgeAttributes     = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
 
-            srcVertexFieldName     = edgeRule.getSrcFieldName();
-            tgtVertexFieldName     = edgeRule.getDstFieldName();
+            String srcVertexFieldName     = edgeRule.getSrcFieldName();
+            String tgtVertexFieldName     = edgeRule.getDstFieldName();
 
             String srcVertexCellString = (String) getTupleData(input, inputSchema, srcVertexFieldName);
             String tgtVertexCellString = (String) getTupleData(input, inputSchema, tgtVertexFieldName);
 
-            srcLabelString = vertexLabelMap.get(srcVertexFieldName);
+            String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
             if (srcLabelString != null) {
                 srcLabel.set(srcLabelString);
             }
 
-            tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
+            String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
             if (tgtLabelString != null) {
                 tgtLabel.set(tgtLabelString);
             }
@@ -644,8 +625,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         // Add both ends of the edge to the list of serialized property graph elements
 
-        Vertex<StringType> srcVertex = newVertex(currentSrcVertexName, srcLabel, LEFT_DIRECTION);
-        Vertex<StringType> tgtVertex = newVertex(currentTgtVertexName, tgtLabel, RIGHT_DIRECTION);
+        Vertex<StringType> srcVertex = createVertexWithDirection(currentSrcVertexName, srcLabel, LEFT);
+        Vertex<StringType> tgtVertex = createVertexWithDirection(currentTgtVertexName, tgtLabel, RIGHT);
         addVertexToPropElementBag(outputBag, srcVertex);
         addVertexToPropElementBag(outputBag, tgtVertex);
 
@@ -717,7 +698,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      * @param direction
      * @return
      */
-    private Vertex<StringType> newVertex(StringType vertexName, StringType label, String direction) {
+    private Vertex<StringType> createVertexWithDirection(StringType vertexName, StringType label, String direction) {
         Vertex<StringType> vertex = new Vertex<StringType>(vertexName, label);
 
         // If "-p" flag is enabled, then add the direction property to vertices
@@ -732,10 +713,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         // This property is not added in the reverse edge when bidirectional edges are enabled
 
         if (addDirectionToVertices) {
-            System.out.println("Adding " + direction + " to vertex");
             vertex.setProperty(VERTEX_PROPERTY_DIRECTION, pigTypesToSerializedJavaTypes(direction, DataType.CHARARRAY));
-        } else {
-            System.out.println("Not adding " + direction + " to vertex");
         }
         return vertex;
     }
