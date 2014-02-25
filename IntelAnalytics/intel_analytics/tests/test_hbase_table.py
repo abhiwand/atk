@@ -698,16 +698,32 @@ class HbaseTableTest(unittest.TestCase):
         self.transform_with_multiple_columns("str1,str2,\'MyString1\',str3,\'MyString2\'", "strout3", EvalFunctions.String.CONCAT)
 
     def test_concatentaion_with_random_columns(self):
+        test_expression="fakecol1,fakecol2"
         try:
-            self.transform_with_multiple_columns("fakecol1,fakecol2", "fakeout3", EvalFunctions.String.CONCAT)
+            self.transform_with_multiple_columns(test_expression, "fakeout3", EvalFunctions.String.CONCAT)
         except:
-            print "Caught exception on invalid column inputs for CONCAT"
+            print "Caught exception on invalid column inputs for CONCAT:' %s '" % test_expression
 
     def test_arithmetics_with_random_columns(self):
+        test_expression="fakecol1+fakecol2"
         try:
-            self.transform_with_multiple_columns("fakecol1+fakecol2", "fakeout3", EvalFunctions.Math.ARITHMETIC)
+            self.transform_with_multiple_columns(test_expression, "fakeout3", EvalFunctions.Math.ARITHMETIC)
         except:
-            print "Caught exception on invalid column inputs for ARITHMETIC"
+            print "Caught exception on invalid column inputs for ARITHMETIC:' %s '" % test_expression
+
+    def test_arithmetics_with_random_spaces(self):
+        test_expression="long1 + long2 * double1 - double2"
+        try:
+            self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
+        except:
+            print "Caught exception on given ARITHMETIC expression with spaces:' %s '" % test_expression
+
+    def test_arithmetics_with_random_parentheses(self):
+        test_expression="long1((+long2*(double1/)((double4("
+        try:
+            self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
+        except:
+            print "Caught exception on given ARITHMETIC expression with parentheses:' %s '" % test_expression
 
 if __name__ == '__main__':
     unittest.main()

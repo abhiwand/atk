@@ -141,7 +141,10 @@ class HBaseTable(object):
         # check input: can be a single column or an expression of multiple columns
         # accepted format exampe: transform('(a+b*(5+c))-d', ...
         if transformation == EvalFunctions.Math.ARITHMETIC:
-            cols = re.split('\+|-|\*|\/|\%', re.sub('[()]', '', column_name))
+            # basic syntax check of matching parentheses
+            if column_name.count('(') != column_name.count(')'):
+                raise HBaseTableException("Arithmetic expression syntax error!")
+            cols = re.split('\+|-|\*|\/|\%', re.sub('[() ]', '', column_name))
             if len(cols) < 2:
                 raise HBaseTableException("Arithmetic operations need more than 1 input")
             for col in cols:
