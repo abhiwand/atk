@@ -212,7 +212,7 @@ class FrameBuilder(object):
         pass
 
     @abc.abstractmethod
-    def join_data_frame(self, left, right, left_on, right_on, how, suffixes, sort, join_frame_name):
+    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, sort, join_frame_name):
         """
         Join a left frame with a list of right frames
 
@@ -523,66 +523,78 @@ class BigDataFrame(object):
         joined : BigDataFrame
         """
 
-        def __iscolumn(column):
+        def __tolist(v, v_type, v_default):
+            """
+            check if input is a v_type, or a list/tuple of v_type object
+            and return a list of v_type
+            """
+            if not v:
+                return v_default
+            print "Check input '%s(%s)' against type '%s'" %(str(v), type(v), str(v_type))
+            if isinstance(v, v_type):
+                return [v]
+            if isinstance(v, (list, tuple)) and all(isinstance(vv, v_type) for vv in v):
+                return [x for x in v]
+            return None
+
+        def __iscolumn(frame, column):
             if not column:
                 return False
-            return column in self.get_schema().keys()
+            print "Check column '%s' on columns '%s' on frame '%s'" % (column, str(frame.get_schema().keys()), frame.name)
+            return column in frame.get_schema().keys()
 
+        def __check_left(left, left_on):
+            if not left_on:
+                return ','.join(left.get_schema().keys())
+            if not all(__iscolumn(left, x) for x in left_on.split(',')):
+                return None
+            return left_on
 
-        # right being None implies self join
+        def __check_right(right, rigth_on):
+            right_on_default = [ ','.join(r.get_schema().keys()) for r in right ]
+            ron = __tolist(right_on, str, right_on_default)
+            if not all(all(__iscolumn(r, x) for x in c.split(',')) for r,c in zip(right, ron)):
+                return None
+            if len(right) != len(ron):
+                return None
+            return ron
+
+        def __check_suffixes(suffixes, right):
+            if not suffixes:
+                suffixes = ['_x']
+                suffixes.extend(['_y' + str(x) for x in range(1, len(right) + 1)])
+
+            if len(suffixes) != (len(right) + 1):
+                return None
+            return suffixes
+
+        # check input
+        right = __tolist(right, BigDataFrame, [self])
         if not right:
-            right = self;
-
+            raise BigDataFrameException("Error! Input frame must be '%s'" \
+                                        % self.__class__.__name__)
         if right is self:
             raise BigDataFrameException('TODO: self-join')
 
-        # make a list
-        if not isinstance(right, list):
-            right = [right]
-
-        if isinstance(right, tuple):
-            right = [x for x in right]
-
-        # right is BigDataFrame, or list/tuple of BigDataFrame
-        if not all(isinstance(frame, BigDataFrame) for frame in right):
-           raise BigDataFrameException("Error! Input frame must be '%s'" \
-                                        % self.__class__.__name__)
-        # allowed join types: python outer is actually full
         if not how.lower() in ['inner', 'outer', 'left', 'right'] :
             raise BigDataFrameException("Error! Unsupported join type '%s'!" % how)
 
-        # FIXME: columns check is currently done by backend as BigDataFrame
-        # currently does not have the columns/schema attribute
+        left_on = __check_left(self, left_on)
         if not left_on:
-            left_on = ','.join(self.get_schema().keys())
+            raise BigDataFrameException('Error! Invalid column names from left side.')
 
-        # check if columns are valid
-        if not all(__iscolumn(x) for x in left_on.split(',')):
-            raise BigDataFrameException('Error! Invalid column names frm left side.')
-
+        right_on = __check_right(right, right_on)
         if not right_on:
-            right_on = []
-            for r in right:
-                right_on.append(','.join(r.get_schema().keys()))
-
-        if not all(all(__iscolumn(x) for x in r.split(',')) for r in right_on):
-            raise BigDataFrameException('Error! Invalid column names found.')
-
-        if len(right) != len(right_on):
-            raise BigDataFrameException('Error! Input frames must match input columns.')
+            raise BigDataFrameException('Error! Invalid column names from right side.')
 
         if not all(len(left_on.split(',')) == len(r.split(',')) for r in right_on):
             raise BigDataFrameException("Error! The number of columns selected from left " \
                                         "does not match!")
         # left: _x, right: _y1, _y2, ...
+        suffixes = __check_suffixes(suffixes, right)
         if not suffixes:
-            suffixes = ['_x']
-            suffixes.extend(['_y' + str(x) for x in range(1, len(right) + 1)])
-
-        if len(suffixes) != (len(right) + 1):
-            raise BigDataFrameException("Error! The number of suffixes does not match "
+           raise BigDataFrameException("Error! The number of suffixes does not match "
                                         "total number of frames from left and right!")
-
         if sort:
             raise BigDataFrameException('TODO: sorting')
 
