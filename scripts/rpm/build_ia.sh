@@ -13,7 +13,7 @@ mkdir $source_folder/target
 src=$(abspath `dirname $0`/../../IntelAnalytics)
 
 shopt -s extglob
-cp -R $src/!(exclude|dist|target|build|src|notebooks|tests|*.ipynb|ipython|install_pyenv.sh|intel_analytics|checkstyle*|*pom.xml|integration_tests) $source_folder
+cp -R $src/!(exclude|dist|target|build|src|notebooks|tests|*.ipynb|ipython|install_pyenv.sh|intel_analytics|checkstyle*|*pom.xml|test*|nose*|cover) $source_folder
 cp $src/target/*.jar $src/target/*.pig $source_folder/target/
 rm -f $source_folder/target/original-*.jar
 rm -f $source_folder/target/*-tests.jar
