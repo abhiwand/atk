@@ -199,7 +199,6 @@
     <orderEntry type="library" name="Maven: org.apache.jena:jena-iri:1.0.0" level="project" />
     <orderEntry type="library" name="Maven: xerces:xercesImpl:2.11.0" level="project" />
     <orderEntry type="library" name="Maven: xml-apis:xml-apis:1.4.01" level="project" />
-    <orderEntry type="library" name="Maven: org.slf4j:jcl-over-slf4j:1.6.4" level="project" />
     <orderEntry type="library" name="Maven: com.carrotsearch:java-sizeof:0.0.4" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.pig:pigunit:0.12.0" level="project" />
     <orderEntry type="library" scope="TEST" name="Maven: org.apache.mrunit:mrunit:hadoop1:1.0.0" level="project" />
@@ -257,6 +256,7 @@
         <entry key="CheckCalls" value="false" />
         <entry key="CheckExpectedWarnings" value="false" />
         <entry key="CheckImmutableAnnotation" value="true" />
+        <entry key="CheckRelaxingNullnessAnnotation" value="true" />
         <entry key="CheckTypeQualifiers" value="true" />
         <entry key="CloneIdiom" value="true" />
         <entry key="ComparatorIdiom" value="true" />
