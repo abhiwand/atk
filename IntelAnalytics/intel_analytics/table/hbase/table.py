@@ -455,9 +455,8 @@ class HBaseTable(object):
                                                                           join_table_name=join_table_name)
 
         # FIXME: move the script name, path to a class container instead of hardcoding it
-        script_path = os.path.join(etl_scripts_path, 'pig_execute.py')
-        args = _get_pig_args()
-        args += [script_path, '-s', join_pig_script]
+        args = get_pig_args('pig_execute.py')
+        args += ['-s', join_pig_script]
 
         try:
             pig_report = PigJobReportStrategy();
@@ -471,8 +470,12 @@ class HBaseTable(object):
         join_etl_schema = ETLSchema()
         join_etl_schema.populate_schema(join_pig_schema)
         join_etl_schema.save_schema(join_table_name)
-        # ? properties
-        return BigDataFrame(join_frame_name, HBaseTable(join_table_name, ''))
+        # FIXME: properties?
+        hbase_registry.register(join_frame_name, join_table_name)
+
+        # file name is fake, for information purpose only
+        join_file_name = 'joined from ' + ', '.join(tables)
+        return BigDataFrame(join_frame_name, HBaseTable(join_table_name, join_file_name))
 
     @classmethod
     def delete_table(cls, victim_table_name):
