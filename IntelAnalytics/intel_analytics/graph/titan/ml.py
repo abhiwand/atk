@@ -671,7 +671,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 	        If it is true, Giraph will firstly check whether each edge is bidirectional before
 	        running algorithm. This option is mainly for graph integrity check. Turning it on
 	        only makes sense when all nodes are labeled as "TR", otherwise the algorithm will
-	        terminate, because all edgs connected to "VA"/"TE" nodes will be treated internally
+	        terminate, because all edges connected to "VA"/"TE" nodes will be treated internally
 	        as single directional even though they are defined as bi-directional input graph.
             The default value is false.
         anchor_threshold : String, optional
