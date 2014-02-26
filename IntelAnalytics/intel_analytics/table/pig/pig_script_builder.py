@@ -98,7 +98,6 @@ class PigScriptBuilder(object):
             raise Exception('Must specify an output table name for join operation!')
 
         # inner join supports multiple tables
-        # FIXME: do we have a max??
         joins = []
         loads = []
         pig_schemas = []
@@ -140,8 +139,6 @@ class PigScriptBuilder(object):
         # generate row key using rank
         statements.append('-- Use rank to generate the row key')
         statements.append('R = RANK J;')
-
-        # TODO: other filtering
         statements.append('final = R;')
 
         # STORE
@@ -153,8 +150,5 @@ class PigScriptBuilder(object):
         # return the pig schema to be saved
         join_pig_schema = ', '.join(pig_schemas)
         join_script = "\n".join(statements)
-
-        # TODO: remove the debug
-        print(join_script)
 
         return join_script, join_pig_schema
