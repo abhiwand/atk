@@ -573,9 +573,6 @@ class BigDataFrame(object):
         if not right:
             raise BigDataFrameException("Error! Input frame must be '%s'" \
                                         % self.__class__.__name__)
-        if right is self:
-            raise BigDataFrameException('TODO: self-join')
-
         if not how.lower() in ['inner', 'outer', 'left', 'right'] :
             raise BigDataFrameException("Error! Unsupported join type '%s'!" % how)
 
