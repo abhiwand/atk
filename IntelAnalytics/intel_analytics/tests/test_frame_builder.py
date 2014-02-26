@@ -1,8 +1,9 @@
 import unittest
 from mock import patch, MagicMock
+
 from intel_analytics.table.bigdataframe import get_frame_builder, BigDataFrame
 from intel_analytics.table.hbase.schema import ETLSchema, merge_schema
-from intel_analytics.table.hbase.table import MAX_ROW_KEY
+from intel_analytics.table.hbase.table import MAX_ROW_KEY, HBaseFrameBuilder
 
 class TestFrameBuilder(unittest.TestCase):
 
@@ -195,6 +196,33 @@ class TestFrameBuilder(unittest.TestCase):
         self.assertTrue('GNI' in merged_schema.feature_names)
         self.assertTrue('Internet_users' in merged_schema.feature_names)
 
+    @patch('intel_analytics.table.hbase.table.hbase_registry')
+    @patch('intel_analytics.table.hbase.table._create_table_name')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
+    def test_copy_data_frame(self, etl_base_client_class, etl_object_class, _create_table_name, hbase_registry):
+
+        hbase_registry.register = MagicMock()
+        frame_builder = HBaseFrameBuilder()
+        table = MagicMock()
+        table.table_name = "test_table"
+
+
+        _create_table_name.return_value = "new_frame_1234"
+
+
+        copy_method =  MagicMock(return_value = MagicMock())
+        table.copy = copy_method
+        data_frame = BigDataFrame("frame", table)
+        etl_base_client_class.drop_create_table = MagicMock()
+
+        result_holder = {}
+        etl_object = self.create_mock_etl_object(result_holder)
+        etl_object.get_feature_names_as_CSV = MagicMock(return_value = 'f1,f2,f3')
+        etl_object.get_feature_types_as_CSV = MagicMock(return_value = 'long,long,chararray')
+        etl_object_class.return_value = etl_object
+        frame_builder.copy_data_frame(data_frame, "new_frame")
+        copy_method.assert_called_with("new_frame_1234", 'f1,f2,f3', 'long,long,chararray')
 
 
 
