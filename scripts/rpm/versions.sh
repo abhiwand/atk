@@ -3,6 +3,9 @@ export TRIBECA_VERSION="0.8.0"
 set -u
 set -e
 
+
+# Find the absolute path for the given (possibly relative) path
+# http://www.linuxquestions.org/questions/programming-9/bash-script-return-full-path-and-filename-680368/page3.html
 function abspath {
     if [[ -d "$1" ]]
     then
