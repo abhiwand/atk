@@ -312,10 +312,10 @@ done
 echo 
 #ready auto scale config options
 
-cmd_lc_opts="/usr/local/bin/aws autoscaling create-launch-configuration  --launch-configuration-name \"${cname}\" \
+cmd_lc_opts="aws autoscaling create-launch-configuration  --launch-configuration-name \"${cname}\" \
     --instance-type ${cinstype} --image-id ${camiid} --key-name ${ciamuser} \
     --security-groups '$csgroup' '$csgroup_admssh'  "
-cmd_asg_opts="/usr/local/bin/aws autoscaling create-auto-scaling-group  --launch-configuration-name \"${cname}\" \
+cmd_asg_opts="aws autoscaling create-auto-scaling-group  --launch-configuration-name \"${cname}\" \
     --auto-scaling-group-name \"${cname}\" --min-size ${csize} --max-size ${csize} --desired-capacity ${csize} \
     --vpc-zone-identifier \"${csubnet}\"\
     --tags ResourceId=\"${cname}\",ResourceType=\"auto-scaling-group\",Key=\"Name\",Value=\"${cname}\",PropagateAtLaunch=true "
