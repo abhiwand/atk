@@ -15,6 +15,7 @@
 #    IA_SGROUP_ADMSSH, the default Adm SSH access security group for this VPC
 # - You must have the most recent EC2 CLI to allow this scrip to work, particularly the
 #   ec2-run-instances needs the latest version to support public ip enabling option
+# - You must have the jq json command line parser and version 1.2.1 of aws cli tools.
 # - This currently does not support rolling back to delete resources created but failed to
 #   get started
 # - By default this only does a fake dry-run, "fake" as it is still only create some resources
@@ -44,6 +45,7 @@ function usage()
 {
     echo "Usage: $(basename $0) 
     --cluster-id <id>       // valid range for id is [1, 40]
+    [--owner "owner" ]      // the owner of the cluster, primary user
     [--cluster-size <n> ]   // default to n=4
     [--build <Build.nn> ]   // build version as "Build.01", "Build.02", etc
     [--version <rev> ]      // rev is the product relsease version, default to 0.5
@@ -103,6 +105,10 @@ do
     case "$1" in
         --cluster-id)
             cid=$2
+            shift 2
+            ;;
+        --owner)
+            owner=$2
             shift 2
             ;;
         --cluster-size)
@@ -304,78 +310,68 @@ do
     cnnames[$i]=`IA_format_node_name ${cname} $i`
 done
 
-# create instances
-for (( i = 0; i < ${csize}; i++ ))
-do
-    # check if instance is already created
-    IA_loginfo "Check if instance for ${cnnames[$i]} already exists..."
-    iid=`IA_get_instance_id ${cnnames[${i}]}`
-    if [ ! -z "${iid}" ]; then
-        IA_loginfo "Bypass launching existing instance \"${iid}\" for ${cnnames[$i]}..."
-        continue;
+echo 
+#ready auto scale config options
+
+cmd_lc_opts="/usr/local/bin/aws autoscaling create-launch-configuration  --launch-configuration-name \"${cname}\" \
+    --instance-type ${cinstype} --image-id ${camiid} --key-name ${ciamuser} \
+    --security-groups '$csgroup' '$csgroup_admssh'  "
+cmd_asg_opts="/usr/local/bin/aws autoscaling create-auto-scaling-group  --launch-configuration-name \"${cname}\" \
+    --auto-scaling-group-name \"${cname}\" --min-size ${csize} --max-size ${csize} --desired-capacity ${csize} \
+    --vpc-zone-identifier \"${csubnet}\"\
+    --tags ResourceId=\"${cname}\",ResourceType=\"auto-scaling-group\",Key=\"Name\",Value=\"${cname}\",PropagateAtLaunch=true "
+
+    #check for an ower tag
+    if [[ ! -z "$owner" ]]; then
+        cmd_asg_opts="${cmd_asg_opts} ResourceId=\"${cname}\",ResourceType=\"auto-scaling-group\",Key=\"Owner\",Value=\"${owner}\",PropagateAtLaunch=true "
     fi
-
-    # Command launch options
-    cmd_opts="${IA_EC2_OPTS} ${camiid} \
---instance-count 1 \
---key ${ciamuser} \
---instance-type ${cinstype} \
---subnet ${csubnet} \
---group ${csgroup} \
---group ${csgroup_admssh}"
-
+    
     # For master node, open inbound https for master node hosting ipython
     # also allows public ip for master node
     # For slave nodes, if cluster wide public (e.g. for s3ditscp) enable
     # public ip for slave nodes as well
-    if [ $i -eq 0 ]; then
-        cmd_opts="${cmd_opts} --group ${csgroup_https}"
-        IA_loginfo "Will enable inbound https for ${cnnames[$i]}..."
-    fi
+   # if [ $i -eq 0 ]; then
+       # cmd_opts="${cmd_opts} --group ${csgroup_https}"
+        #IA_loginfo "Will enable inbound https for ${cnnames[$i]}..."
+    #fi
     if [ $i -eq 0 ] || [ "${cpublic}" == "yes" ]; then
-        cmd_opts="${cmd_opts} --associate-public-ip-address true"
+        cmd_lc_opts="${cmd_lc_opts} --associate-public-ip-address"
         IA_loginfo "Will enable public ip for ${cnnames[$i]}..."
     fi
-    # placement group is not required
-    if  [ "${cpgroup}" != "no" ]; then
-        cmd_opts="${cmd_opts} --placement-group ${cpgroup}"
-        IA_loginfo "Will enable placement group for ${cnnames[$i]}..."
-    fi
-    # set tag
+    # create launch config and auto scale group
     if [ "${dryrun}" == "no" ]; then
-        IA_loginfo "Creating ${i}-th instance as node ${cnnames[$i]}, executing..."
-        IA_loginfo "  ec2-run-instances ${cmd_opts}"
-        cniids[$i]=`ec2-run-instances ${cmd_opts} | grep INSTANCE | awk '{print $2}'`
-        IA_add_name_tag ${cniids[$i]} ${cnnames[$i]}
+        IA_loginfo "Creating launch config ${cname}, executing..."
+        IA_loginfo " ${cmd_lc_opts}"
+        eval $cmd_lc_opts
+        IA_loginfo "Creating scaling group ${cname}, executing..."
+	    IA_loginfo " ${cmd_asg_opts}"
+        eval $cmd_asg_opts
+        #IA_add_name_tag ${cniids[$i]} ${cnnames[$i]}
     else
-        IA_loginfo "DRYRUN:creating ${i}-th instance as node ${cnnames[$i]}, executing..."
-        IA_loginfo "  ec2-run-instances ${cmd_opts}"
+        IA_loginfo "DRYRUN:creating launch config  ${cname}, executing..."
+        IA_loginfo " ${cmd_lc_opts}"
+        IA_loginfo "DRYRUN:creating scaling group ${cname}, executing..."
+        IA_loginfo " ${cmd_asg_opts}"
     fi
-done
+#done
 
 # dump
 IA_create_dump
-
-# check how man we have created
-if [ "${dryrun}" == "no" ] && [ ${#cniids[@]} -ne ${csize} ]; then
-    IA_logerr "Requested ${csize} instances, only created ${#cniids[@]} instances!"
-fi
 
 # generate hosts file
 if [ "${dryrun}" == "no" ]; then
     # polling wellness of the instances, retry up to 5 times
     for (( i = 0; i < 10; i++ ))
     do
-        # check instance status, max 5 waits, every wait is 10s
-        IA_check_instance_status ${cniids[@]}
-        if [ $? -eq 0 ]; then
-            IA_loginfo "Instances status check ${i} passed on instances:${cniids[@]}..."
+        IA_health_check_auto_scale ${cname}
+      
+        if [ $(($csize * 2 )) -eq $? ]; then
+            IA_loginfo "All instances passed health check"
             break
         fi
-        IA_loginfo "Instances status check ${i} failed on instances:${cniids[@]}..."
         sleep 10s
-    done
+	done
 
     # now instances are running, create hosts file
-    IA_generate_hosts_file ${cid} ${csize} ${IA_CLUSTERS}
+    IA_generate_hosts_file_auto_scale ${cid} ${csize} ${cname} ${csgroup_https}  ${IA_CLUSTERS}
 fi
