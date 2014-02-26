@@ -695,3 +695,109 @@ function IA_generate_hosts_file()
     IA_loginfo "Generated hosts file ${outhosts}..."
     IA_loginfo "Generated nodes file ${outnodes}..."
 }
+
+#Pretty much the same has IA_generate_hosts_file except that
+#it iterates through a list of networks details from the aws cli api
+#will also mark the first launched instance as the master
+#Params:
+#   cid: cluster id
+#   csize: cluster size
+#   clusterName: the cluster name aka cname
+#   masterGroup: the security group attached to the master to allow https to all ips
+#   outdir: the output directory for the hosts and nodes file
+function IA_generate_hosts_file_auto_scale()
+{
+    local cid=$1
+    local csize=$2
+    #the name of the auto scaling group
+    local clusterName=$3
+    local masterGroup=$4
+    local outdir=$5
+    
+    if [ ! -d ${outdir} ]; then
+        IA_logerr "Output director \"${outdir}\" not found!"
+        return 1
+    fi
+    headers=${outdir}/headers.hosts
+    if [ ! -f ${headers} ]; then
+        IA_logerr "Hosts file header \"${headers}\" not found!"
+        return 1
+    fi
+
+    cname=`IA_format_cluster_name "${cid}-${csize}"`
+    outhosts=${outdir}/${cname}.hosts
+    outnodes=${outdir}/${cname}.nodes
+    rm -f ${outhosts} 2>&1 > /dev/null
+    rm -f ${outnodes} 2>&1 > /dev/null
+
+    cat ${headers} > ${outhosts}
+    #get all the instance ids for the auto scaling group
+    instanceIds=$(/usr/local/bin/aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $clusterName | jq -r -c '.AutoScalingGroups[0].Instances[].InstanceId' | tr "\\n" " ")
+
+    #get all the network details for all instances
+    instanceDetails=$(/usr/local/bin/aws ec2 describe-instances --instance-ids $instanceIds | jq -c '.Reservations[].Instances[] | {InstanceId,AmiLaunchIndex,SecurityGroups,PrivateDnsName,PrivateIpAddress,PublicDnsName,PublicIpAddress}')
+    IA_loginfo " Getting instance networks details "
+    IA_loginfo " ${instanceDetails}"
+    
+    for details in $instanceDetails
+    do
+        privateDns=$(echo $details | jq -r -c '.PrivateDnsName')
+        privateIp=$(echo $details | jq -r -c '.PrivateIpAddress')
+        securityGroups=$(echo $details | jq  '.SecurityGroups[].GroupId' | tr "\\n" " "  )
+        instanceId=$(echo $details | jq -r -c  '.InstanceId' )
+        echo $privateIp
+        i=$(echo $details | jq -r -c '.AmiLaunchIndex')
+        #while i'm deciding the fate of the instances i'm going to set the first launched instance as the master
+        #set the extra security group and update the name tag
+        if [ $i -eq 0  ]; then
+            echo $i
+            /usr/local/bin/aws ec2 create-tags --resources $instanceId --tags Key=Name,Value="$clusterName-master"
+            eval " /usr/local/bin/aws ec2 modify-instance-attribute --instance-id $instanceId --groups $securityGroups \"$masterGroup\" "
+        fi
+        hosts[$i]=`IA_format_node_name_role $i`
+        nname[$i]=`IA_format_node_name ${cname} $i`
+        ip[$i]=$privateIp
+        dnsfull[$i]=$privateDns
+        dns[$i]=`echo ${dnsfull[$i]} | awk -F"." '{print $1}'`
+        echo "${ip[$i]} ${hosts[$i]} ${dns[$i]}" >> ${outhosts}
+        echo "${dnsfull[$i]}" >> ${outnodes}
+        
+    done
+    IA_loginfo "Generated hosts file ${outhosts}..."
+    IA_loginfo "Generated nodes file ${outnodes}..."
+}
+
+#run a health check on cluster, make sure everything is in a healty state and
+#ips have been provisioned
+#Params:
+#   takes the cluster name aka cname
+function IA_health_check_auto_scale()
+{
+
+    local clusterName=$1
+
+    getInstances=$(/usr/local/bin/aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names "${cname}" | jq -c '.AutoScalingGroups[0].Instances[] | {LifecycleState,HealthStatus,InstanceId}')
+    healthPassed=0
+    for instanceDetails in $getInstances
+    do
+        lifeCycleState=$(echo $instanceDetails |  jq  -r -c '.LifecycleState')
+        healthStatus=$(echo $instanceDetails |  jq  -r -c '.HealthStatus')
+        instanceId=$(echo $instanceDetails |  jq  -r -c '.InstanceId')
+        if [ "$lifeCycleState" == "InService" ] && [ "$healthStatus" == "Healthy" ]; then
+            healthPassed=$(($healthPassed + 1))
+            IA_loginfo " Instance id $instanceId passed initial health check reviewing running state"
+            getRunState=$(/usr/local/bin/aws ec2 describe-instances --instance-ids $instanceId  | jq -c '.Reservations[].Instances[] | {AmiLaunchIndex,State,PrivateDnsName,PrivateIpAddress,PublicDnsName,PublicIpAddress}')
+            stateName=$(echo $getRunState | jq -r -c '.State.Name')
+            stateCode=$(echo $getRunState | jq -r -c '.State.Code')
+            privateDns=$(echo $getRunState | jq -r -c '.PrivateDnsName')
+            privateIp=$(echo $getRunState | jq -r -c '.PrivateIpAddress')
+                        
+            if [ "${stateCode}" == "16" ] && [ "${stateName}" == "running" ] && [ $privateDns ] && [ $privateIp ]; then
+                healthPassed=$(($healthPassed +1))
+                IA_loginfo " passed runing state check "
+            fi
+        fi
+    done
+
+    return $healthPassed   
+}
