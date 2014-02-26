@@ -383,7 +383,6 @@ class HBaseTable(object):
              left_on=None,
              right_on=None,
              suffixes=None,
-             sort=False,
              join_frame_name=''):
 
         """
@@ -396,15 +395,18 @@ class HBaseTable(object):
         left_on: String
             String of columnes from left table, space or comma separated
             e.g., 'c1,c2' or 'b2 b3'
-        right_on: String, list of tuple of strings
-            String of columnes from left table, space or comma separated
-            e.g., ['c1,c2', 'b2 b3']
-        how:
+        right_on: List
+            List of strings, each of which is in comma separated indicating
+            columns to be joined corresponding to the list of tables as 
+            the 'right', e.g., ['c1,c2', 'b2 b3']
+        how: String
             The type of join, INNER, OUTER, LEFT, RIGHT
-        suffixes:
-            List of suffixes to use for overlapping columns
-        sort:
-            Sort the results
+        suffixes: List
+            List of strings, each of which is used as suffix to the column
+            names from left and right of the join, e.g. ['_x', '_y1', '_y2'].
+            Note the first one is always for the left
+        join_frame_name: String
+            Output BigDataFrame name
 
         Return
         ------
@@ -428,9 +430,6 @@ class HBaseTable(object):
         if (not suffixes) or (len(suffixes) != (len(right) + 1)):
             raise HBaseTableException('Error! Invalid suffixes!')
 
-        if sort:
-            raise HBaseTableException('TODO: sorted join')
-
         # delete/create output table to write the joined features
         if not join_frame_name:
             raise HBaseTableException('TODO: In-place join')
@@ -453,7 +452,6 @@ class HBaseTable(object):
                                                                           how=how.lower(),  \
                                                                           on=on,            \
                                                                           suffixes=suffixes,\
-                                                                          sort=sort,        \
                                                                           join_table_name=join_table_name)
 
         # FIXME: move the script name, path to a class container instead of hardcoding it
@@ -835,7 +833,7 @@ class HBaseFrameBuilder(FrameBuilder):
         elif not exists(file_name):
             raise Exception('ERROR: File does NOT exist ' + file_name + ' in HDFS')
 
-    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, sort, join_frame_name):
+    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name):
         """
         Joins a left BigDataFrame with a list of (right) BigDataFrame(s)
         """
@@ -844,7 +842,6 @@ class HBaseFrameBuilder(FrameBuilder):
                          left_on=left_on,   \
                          right_on=right_on, \
                          suffixes=suffixes, \
-                         sort=sort, \
                          join_frame_name=join_frame_name);
 
 class HBaseFrameBuilderFactory(object):

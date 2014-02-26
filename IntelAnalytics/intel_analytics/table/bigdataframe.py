@@ -212,21 +212,36 @@ class FrameBuilder(object):
         pass
 
     @abc.abstractmethod
-    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, sort, join_frame_name):
+    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name):
         """
-        Join a left frame with a list of right frames
+        Perform SQL JOIN like operation on input BigDataFrames
 
         Parameters
         ----------
         left: BigDataFrame
-            Left side of the JOIN
-        right: BigDataFrame, [BigDataFrame, ...]
-            Right side of the JOIN
+            Left side of the join
+        right: List
+            List of BigDataFrame(s) on the right side of the join
+        left_on: String
+            String of columnes from left table, space or comma separated
+            e.g., 'c1,c2' or 'b2 b3'
+        right_on: List
+            List of strings, each of which is in comma separated indicating
+            columns to be joined corresponding to the list of tables as 
+            the 'right', e.g., ['c1,c2', 'b2 b3']
+        how: String
+            The type of join, INNER, OUTER, LEFT, RIGHT
+        suffixes: List
+            List of strings, each of which is used as suffix to the column
+            names from left and right of the join, e.g. ['_x', '_y1', '_y2'].
+            Note the first one is always for the left
+        join_frame_name: String
+            Output BigDataFrame name
 
-        Returns
-        -------
-        frame : BigDataFrame
-            The new frame
+        Return
+        ------
+        BigDataFrame
+
         """
         pass
 
@@ -484,7 +499,6 @@ class BigDataFrame(object):
              left_on=None,
              right_on=None,
              suffixes=None,
-             sort=False,
              join_frame_name=''):
 
         """
@@ -504,8 +518,6 @@ class BigDataFrame(object):
             Columns selected to bed joined on from right frame(s)
         suffixes: tuple of Str
             Suffixes to apply to columns on the output frame
-        sort: Boolean
-            TODO
         join_frame_name: Str
             The name of the BigDataFrame that holds the result of join
 
@@ -592,8 +604,6 @@ class BigDataFrame(object):
         if not suffixes:
            raise BigDataFrameException("Error! The number of suffixes does not match "
                                         "total number of frames from left and right!")
-        if sort:
-            raise BigDataFrameException('TODO: sorting')
 
         if not join_frame_name:
             join_frame_name = self.name + '_join' + get_time_str()
@@ -607,7 +617,6 @@ class BigDataFrame(object):
                                           left_on=left_on,  \
                                           right_on=right_on,\
                                           suffixes=suffixes,\
-                                          sort=sort,        \
                                           join_frame_name=join_frame_name)
 
             join_frame._lineage.append(join_frame._table.table_name)
