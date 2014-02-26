@@ -1,1 +1,1 @@
-export TRIBECA_VERSION="0.5.0"
+export TRIBECA_VERSION="0.8.0"

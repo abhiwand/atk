@@ -11,15 +11,16 @@ String vertexID = inputs[1]
 String key4Results = inputs[2]
 String leftName = inputs[6]
 String rightName = inputs[7]
-String leftTypeStr = inputs[8]
-String rightTypeStr = inputs[9]
-String trainStr = inputs[10]
+String leftTypeStr = inputs[8].toUpperCase()
+String rightTypeStr = inputs[9].toUpperCase()
+String trainStr = inputs[10].toUpperCase()
 String key4VertexID = inputs[11]
 String key4VertexType = inputs[12]
 String key4EdgeType = inputs[13]
-String vertexType = inputs[14]
+String vertexType = inputs[14].toUpperCase()
 String vectorValue = inputs[15]
 String biasOn = inputs[16]
+Integer featureDimension = inputs[17].toInteger()
 String[] propertyList = key4Results.tokenize(",")
 
 BaseConfiguration conf = new BaseConfiguration()
@@ -29,11 +30,10 @@ conf.setProperty("storage.port",inputs[5])
 conf.setProperty("storage.tablename", graphDB)
 Graph g = TitanFactory.open(conf)
 
-//Vertex v = g.V(key4VertexID, vertexID).next()
 //Get vertex based on its original input vertex Id
 //and the vertex type
 Vertex v = g. V(key4VertexID, vertexID).
-        filter{it.getProperty(key4VertexType) == vertexType}.next()
+        filter{it.getProperty(key4VertexType).toUpperCase() == vertexType}.next()
 
 recommend(v,
         g,
@@ -49,7 +49,8 @@ recommend(v,
         rightTypeStr,
         vertexType,
         vectorValue,
-        biasOn)
+        biasOn,
+        featureDimension)
 
 def recommend(Vertex v,
               Graph g,
@@ -65,7 +66,8 @@ def recommend(Vertex v,
               String rightTypeStr,
               String vertexType,
               String vectorValue,
-              String biasOn) {
+              String biasOn,
+              Integer featureDimension) {
     entities = [(leftTypeStr):leftName + '  ', (rightTypeStr):rightName + '  ']
     commonStr = 'Top 10 recommendations to '
     comments = [(leftTypeStr):commonStr + leftName + ': ', (rightTypeStr):commonStr + rightName + ': ']
@@ -74,15 +76,15 @@ def recommend(Vertex v,
     if (vertexType == rightTypeStr) {
         recommendType = leftTypeStr
     }
+
     println "================" + comments[vertexType] + vertexID + "================"
     list1 = getResults(v, propertyList, vectorValue, biasOn)
 
     def list = []
-    count=0
-    for(Vertex v2 : g.V.filter{it.getProperty(key4VertexType) == recommendType}) {
+    for(Vertex v2 : g.V.filter{(it.getProperty(key4VertexType)).toUpperCase() == recommendType}) {
         list2 = getResults(v2, propertyList, vectorValue, biasOn)
-        score = calculateScore(list1, list2)
-        if (v2.outE.filter{it.getProperty(key4EdgeType) != trainStr}){
+        score = calculateScore(list1, list2, biasOn, featureDimension)
+        if (v2.outE.filter{it.getProperty(key4EdgeType).toUpperCase() != trainStr}){
             list.add new recommendation(id:v2.getProperty(key4VertexID), rec:score)
         }
     }
@@ -99,6 +101,7 @@ class recommendation {
 def getResults(Vertex v, String[] propertyList, String vectorValue, String biasOn) {
     def list = []
     length = propertyList.length
+    valueLength = length
     if(length == 0){
       println "ERROR: no property provided for ML result!"
     } else if (vectorValue == "true"  &&
@@ -109,19 +112,18 @@ def getResults(Vertex v, String[] propertyList, String vectorValue, String biasO
 
     //firstly add bias
     if(biasOn == "true"){
-      println "biasOn"
       list.add v.getProperty(propertyList[length-1]).toDouble()
+      valueLength = length - 1
     }
 
     //then add the results
     if(vectorValue == "true"){
-      println "vectorValue"
       values = v.getProperty(propertyList[0]).split("[\\s,\\t]+")
         for(i in 0..<values.size()){
             list.add values[i].toDouble()
         }
     } else {
-        for(i in 0..length -2){
+        for(i in 0..<valueLength){
             list.add v.getProperty(propertyList[i]).toDouble()
         }
     }
@@ -129,11 +131,18 @@ def getResults(Vertex v, String[] propertyList, String vectorValue, String biasO
     return list
 }
 
-def calculateScore(list1, list2) {
-    sum = list1[0] + list2[0]
-    (1..3).each {
-        sum += list1[it] * list2[it]
+def calculateScore(list1, list2, biasOn, featureDimension) {
+    if(biasOn == "true"){
+        sum = list1[0] + list2[0]
+        (1..featureDimension).each {
+            sum += list1[it] * list2[it]
+        }
+    } else {
+        (0..<featureDimension).each {
+            sum = list1[it] * list2[it]
+        }
     }
+
     return sum    
 }
 

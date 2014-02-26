@@ -35,13 +35,34 @@
 	<groupId>com.intel.hadoop</groupId>
 	<artifactId>IntelAnalytics</artifactId>
 	<relativePath>../pom.xml</relativePath>  
-	<version>0.5-SNAPSHOT</version>
+	<version>0.8-SNAPSHOT</version>
   </parent>
   
   
   <build>
 
   <plugins>
+      <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.6</version>
+          <executions>
+              <execution>
+                  <id>copy-resources</id>
+                  <phase>package</phase>
+                  <goals>
+                      <goal>copy-resources</goal>
+                  </goals>
+                  <configuration>
+                      <outputDirectory>${basedir}/target/</outputDirectory>
+                      <resources>
+                          <resource>
+                              <directory>${basedir}/../graphbuilder/pig/</directory>
+                          </resource>
+                      </resources>
+                  </configuration>
+              </execution>
+          </executions>
+      </plugin>
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -54,6 +75,7 @@
             </goals>
             <configuration>
               <!-- <minimizeJar>true</minimizeJar> -->
+              <createDependencyReducedPom>false</createDependencyReducedPom>
             </configuration>
           </execution>
         </executions>
@@ -62,12 +84,12 @@
 </build>
   <profiles>
       <profile>
-        <id>rpm-builder</id>
-        <activation>
+	<id>python-tester</id>
+	<activation>
 	  <property>
-            <name>env.BUILD_NUMBER</name>
-          </property>
-        </activation>
+	    <name>!skipTests</name>
+	  </property>
+	</activation>
         <build>
           <plugins>
               <plugin>
@@ -85,6 +107,25 @@
                       <executable>intel_analytics/tests/exec_all.sh</executable>
                     </configuration>
                   </execution>
+		</executions>
+            </plugin>
+          </plugins>
+        </build>
+       </profile>
+      <profile>
+        <id>rpm-builder</id>
+        <activation>
+	  <property>
+            <name>env.BUILD_NUMBER</name>
+          </property>
+        </activation>
+        <build>
+          <plugins>
+              <plugin>
+                <artifactId>exec-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <version>1.2.1</version>
+                <executions>
                   <execution>
                     <id>chmod-shellscripts</id>
                     <phase>package</phase>
@@ -136,7 +177,7 @@
     <dependency>
       <groupId>${project.groupId}.graphbuilder</groupId>
       <artifactId>graphbuilder</artifactId>
-      <version>2.0</version>
+      <version>2.0-alpha</version>
     </dependency>
     <dependency>
        <groupId>${project.groupId}</groupId>

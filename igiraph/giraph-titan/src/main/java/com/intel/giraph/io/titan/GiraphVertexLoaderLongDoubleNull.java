@@ -86,6 +86,10 @@ public class GiraphVertexLoaderLongDoubleNull {
      * HashSet of configured edge labels
      */
     private Set<String> edgeLabelKeys = null;
+    /**
+     * regular expression of the deliminators for a property list
+     */
+    private String regexp = "[\\s,\\t]+";     //.split("/,?\s+/");
 
     /**
      * GiraphVertexLoaderLongDoubleNull constructor
@@ -104,9 +108,9 @@ public class GiraphVertexLoaderLongDoubleNull {
         vertex = conf.createVertex();
         vertex.initialize(new LongWritable(id), new DoubleWritable(0));
         vertexId = id;
-        vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(",");
-        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(",");
+        vertexValuePropertyKeyList = INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
+        edgeValuePropertyKeyList = INPUT_EDGE_VALUE_PROPERTY_KEY_LIST.get(conf).split(regexp);
+        edgeLabelList = INPUT_EDGE_LABEL_LIST.get(conf).split(regexp);
         vertexValuePropertyKeys = new HashSet<String>(Arrays.asList(vertexValuePropertyKeyList));
         edgeValuePropertyKeys = new HashSet<String>(Arrays.asList(edgeValuePropertyKeyList));
         edgeLabelKeys = new HashSet<String>(Arrays.asList(edgeLabelList));

@@ -63,11 +63,13 @@ if not os.getenv('TITAN_HOME'):
     if os.path.exists('/home/hadoop/IntelAnalytics/titan-server'):
         os.environ['TITAN_HOME'] = '/home/hadoop/IntelAnalytics/titan-server'
 
+if not os.getenv('PIG_OPTS'):
+    os.environ['PIG_OPTS'] = "-Dpython.verbose=error"#to get rid of Jython logging
+
 properties_file = os.path.join(
         os.getenv('INTEL_ANALYTICS_HOME', _here_folder),
         'conf',
         'intel_analytics.properties')
-
 
 
 def get_time_str():
@@ -326,6 +328,8 @@ class Config(object):
 # Global Config Singleton
 try:
     global_config = Config(properties_file)
+
+    os.environ["JYTHONPATH"] = global_config['pig_jython_path']#required to ship jython scripts with pig
 except Exception, e:
     import sys
     sys.stderr.write("""
@@ -337,3 +341,4 @@ Try global_config.load()
 """ % (properties_file, e))
     sys.stderr.flush()
     global_config = Config()
+

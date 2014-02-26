@@ -41,6 +41,7 @@ import org.apache.giraph.aggregators.DoubleMaxAggregator;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
 import org.apache.giraph.aggregators.LongSumAggregator;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
@@ -98,8 +99,6 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
     private static String SUM_COST = "sum_cost";
     /** Aggregator name for max of delta at each super step */
     private static String MAX_DELTA = "max_delta";
-    /** Number of edges */
-    private static String NUM_EDGES = "num_edges";
     /** Max delta value of previous super step for convergence monitoring */
     private static String PREV_MAX_DELTA = "prev_max_delta";
 
@@ -406,10 +405,7 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
             }
 
             // store number of edges for graph statistics
-            if (step == 1) {
-                long numEdges = getTotalNumEdges();
-                getConf().setLong(NUM_EDGES, numEdges);
-            } else {
+            if (step != 1) {
                 // evaluate convergence condition
                 float threshold = getConf().getFloat(CONVERGENCE_THRESHOLD, 0.001f);
                 float prevMaxDelta = getConf().getFloat(PREV_MAX_DELTA, 0f);
@@ -483,11 +479,11 @@ public class CVB0LDAComputation extends BasicComputation<LongWritable, VertexDat
                 // output graph statistics
                 long numDocVertices = Long.parseLong(map.get(SUM_DOC_VERTEX_COUNT));
                 long numWordVertices = Long.parseLong(map.get(SUM_WORD_VERTEX_COUNT));
-                long numEdges = getConf().getLong(NUM_EDGES, 0L);
                 output.writeBytes("======Graph Statistics======\n");
                 output.writeBytes(String.format("Number of vertices: %d (doc: %d, word: %d)%n",
                     numDocVertices + numWordVertices, numDocVertices, numWordVertices));
-                output.writeBytes(String.format("Number of edges: %d%n", numEdges));
+                output.writeBytes(String.format("Number of edges: %d%n",
+                    GiraphStats.getInstance().getEdges().getValue()));
                 output.writeBytes("\n");
                 // output LDA configuration
                 int maxSupersteps = getConf().getInt(MAX_SUPERSTEPS, 20);
