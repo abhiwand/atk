@@ -1,6 +1,6 @@
 import unittest
-from mock import MagicMock
-from intel_analytics.graph.biggraph import GraphWrapper
+from mock import MagicMock, patch
+from intel_analytics.graph.titan.graph import BulbsGraphWrapper
 from intel_analytics.report import FaunusProgressReportStrategy
 
 
@@ -9,7 +9,7 @@ class TestGraph(unittest.TestCase):
         statements = []
         statements.append("g.V('_gb_ID','11').out")
         statements.append("g.V('_gb_ID','11').outE")
-        wrapper = GraphWrapper(MagicMock())
+        wrapper = BulbsGraphWrapper(MagicMock())
         xml = wrapper._get_query_xml(statements)
         expected = "<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement><statement>g.V('_gb_ID','11').outE.transform('{[it,it.map()]}')</statement></query>"
         self.assertEqual(xml, expected)
@@ -51,6 +51,9 @@ class TestGraph(unittest.TestCase):
         reportStrategy.report("14:21:51 INFO mapred.JobClient: Job complete: job_201402121231_0117")
         progressbar = reportStrategy.job_progress_bar_list[-1]
         self.assertEquals(100, progressbar.value)
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
