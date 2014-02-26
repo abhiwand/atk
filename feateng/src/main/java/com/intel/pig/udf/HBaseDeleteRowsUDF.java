@@ -75,7 +75,6 @@ public class HBaseDeleteRowsUDF extends EvalFunc<Tuple> {
 				// some DELETEs to process
 				try {
 					table.delete(deleteBatch);
-					deleteBatch.clear();
 				} catch (Exception e) {
 					log.warn("Problem during batch delete", e);
 				}
@@ -113,7 +112,6 @@ public class HBaseDeleteRowsUDF extends EvalFunc<Tuple> {
 		if (deleteBatch.size() > batchSize) {
 			try {
 				table.delete(deleteBatch);
-				deleteBatch.clear();
 			} catch (Exception e) {
 				// need to catch it to continue
 				// processing DELETEs on partial failures
