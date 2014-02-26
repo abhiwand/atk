@@ -29,8 +29,11 @@ import sys
 from shutil import copyfile
 from mock import patch, Mock, MagicMock
 from testutils import RegistryCallableFactory, get_diff_str
+from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
+from intel_analytics.graph.biggraph import GraphBuilderVertex, GraphBuilderEdge, GraphBuilderVertexProperties, GraphBuilderEdgeProperties
 
 get_registry_callable = RegistryCallableFactory().get_registry_callable
+pig_script_builder = PigScriptBuilder()
 
 _here_folder = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
@@ -287,48 +290,169 @@ colD,colB,edgeDB,colU"""
         self.assertIsNotNone(g)
         self.assertIsNotNone(mock_registry.get_value(graph_name))
 
+    
+    #LOAD_TITAN macro tests
+    def test_gb_load_titan_several_graph_elements(self):
+        directed = True
+        other_args = ''
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('v_1', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('v_2', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('v_3', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('v_4', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('v_5', ['v_prop_1','v_prop_2']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('v_1', 'v_2', 'label_1'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_2', 'v_3', 'label_2'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_3', 'v_4', 'label_3'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_4', 'v_5', 'label_4'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_5', 'v_1', 'label_5'), ['e_prop_1', 'e_prop_2']))
+        
+        load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
+        expected = "LOAD_TITAN('source_table', '\"etl-cf:v_1=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:v_2=etl-cf:v_prop_1,etl-cf:v_prop_2\" "\
+         "\"etl-cf:v_3=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:v_4=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:v_5=etl-cf:v_prop_1,etl-cf:v_prop_2\"', " \
+         "'-d \"etl-cf:v_1,etl-cf:v_2,label_1,etl-cf:e_prop_1,etl-cf:e_prop_2\" \"etl-cf:v_2,etl-cf:v_3,label_2,etl-cf:e_prop_1,etl-cf:e_prop_2\" \"etl-cf:v_3,etl-cf:v_4,label_3,etl-cf:e_prop_1,etl-cf:e_prop_2\" "\
+         "\"etl-cf:v_4,etl-cf:v_5,label_4,etl-cf:e_prop_1,etl-cf:e_prop_2\" \"etl-cf:v_5,etl-cf:v_1,label_5,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '');"
+        self.assertEqual(load_titan, expected)
 
-    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
-    def test_get_gb_build_command_overwrite(self, get_pig_args_with_gb):
-        get_pig_args_with_gb.return_value = [ 'mock_pig' ]
-        result = " ".join(get_gb_build_command("gb_config", "table_name", [], [], is_directed=False, overwrite=True, append=False, flatten=False))
+    def test_gb_load_titan_overwrite(self):
+        directed = True
+        other_args = '-O'
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('from_vertex', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('to_vertex', ['v_prop_1','v_prop_2']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2']))
+        load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
+        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-d \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-O');"
+        self.assertEqual(load_titan, expected)
 
-        self.assertEqual("mock_pig -t table_name -c gb_config -e  -v  -o is_overwrite", result)
-        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
+        directed = False
+        load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
+        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-e \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-O');"
+        self.assertEqual(load_titan, expected)
+                
+    def test_gb_load_titan_append(self):
+        directed = True
+        other_args = '-a'
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('from_vertex', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('to_vertex', ['v_prop_1','v_prop_2']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2']))
+        load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
+        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-d \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-a');"
+        self.assertEqual(load_titan, expected)
 
-    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
-    def test_get_gb_build_command_append(self, get_pig_args_with_gb):
-        get_pig_args_with_gb.return_value = [ 'mock_pig' ]
-        result = " ".join(get_gb_build_command("gb_config", "table_name", [], [], is_directed=False, overwrite=False, append=True, flatten=False))
+        directed = False
+        load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
+        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-e \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-a');"
+        self.assertEqual(load_titan, expected)
+        
+    def test_gb_load_titan_flatten(self):
+        directed = True
+        other_args = '-f'
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('from_vertex', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('to_vertex', ['v_prop_1','v_prop_2']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2']))
+        load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
+        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-d \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-f');"
+        self.assertEqual(load_titan, expected)
 
-        self.assertEqual("mock_pig -t table_name -c gb_config -e  -v  -a is_append", result)
-        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
+        directed = False
+        load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
+        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-e \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-f');"
+        self.assertEqual(load_titan, expected)
+        
+        
+    #STORE_GRAPH macro tests
+    def test_gb_store_graph_several_graph_elements(self):
+        schema_dict = {}
+        schema_dict['v_prop_1']='chararray'
+        schema_dict['v_prop_2']='chararray'
+        schema_dict['e_prop_1']='double'
+        schema_dict['e_prop_2']='float'
+        
+        other_args = '-a -F'
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('v_1', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('v_2', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('v_3', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('v_4', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('v_5', ['v_prop_1','v_prop_2']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('v_1', 'v_2', 'label_1'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_2', 'v_3', 'label_2'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_3', 'v_4', 'label_3'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_4', 'v_5', 'label_4'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_5', 'v_1', 'label_5'), ['e_prop_1', 'e_prop_2']))   
+        
+        store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
+        expected = "STORE_GRAPH(to_store, 'conf.xml', 'v_prop_2:String,e_prop_2:Float,e_prop_1:Double,v_prop_1:String', 'label_4,e_prop_2,label_5,e_prop_1,label_1,label_2,label_3', '-a -F');"
+        self.assertEqual(store_graph, expected)             
 
-    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
-    def test_get_gb_build_command_overwrite_append(self, get_pig_args_with_gb):
-        get_pig_args_with_gb.return_value = [ 'goat_disguised_as_pig' ]
-        result = " ".join(get_gb_build_command("gb_config", "table_name", [], [], is_directed=False, overwrite=True, append=True, flatten=False))
-
-        self.assertEqual("goat_disguised_as_pig -t table_name -c gb_config -e  -v  -a is_append -o is_overwrite", result)
-        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
-
-    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
-    def test_get_gb_build_command_is_directed(self, get_pig_args_with_gb):
-        get_pig_args_with_gb.return_value = [ 'lamb' ]
-        result = " ".join(get_gb_build_command("config1", "table2", [], [], is_directed=True, overwrite=False, append=False, flatten=False))
-
-        self.assertEqual("lamb -t table2 -c config1 -e  -v  -d is_directed", result)
-        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
-
-    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
-    def test_get_gb_build_command_flatten(self, get_pig_args_with_gb):
-        get_pig_args_with_gb.return_value = [ 'mock_pig' ]
-        result = " ".join(get_gb_build_command("config1", "table2", [], [], is_directed=False, overwrite=False, append=True, flatten=True))
-
-        self.assertEqual("mock_pig -t table2 -c config1 -e  -v  -a is_append -f is_flatten", result)
-        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
-
-
+    def test_gb_store_graph_overwrite(self):
+        schema_dict = {}
+        schema_dict['v_prop_1']='chararray'
+        schema_dict['v_prop_2']='chararray'
+        schema_dict['to_vertex']='int'
+        schema_dict['e_prop_1']='long'
+        schema_dict['e_prop_2']='long'
+        schema_dict['e_prop_3']='float'
+        
+        other_args = '-O'
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('from_vertex', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('to_vertex', ['v_prop_1','v_prop_2']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2', 'e_prop_3']))
+        store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
+        expected = "STORE_GRAPH(to_store, 'conf.xml', 'e_prop_1:Long,v_prop_2:String,e_prop_3:Float,v_prop_1:String,e_prop_2:Long', 'e_prop_2,e_prop_3,e_prop_1,label', '-O');"
+        self.assertEqual(store_graph, expected)
+                
+    def test_gb_store_graph_append(self):
+        schema_dict = {}
+        schema_dict['v_prop_1']='chararray'
+        schema_dict['v_prop_2']='chararray'
+        schema_dict['to_vertex']='int'
+        schema_dict['e_prop_1']='long'
+        schema_dict['e_prop_2']='long'
+        
+        other_args = '-a'
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('from_vertex', ['v_prop_1','v_prop_2']))
+        vertex_list.append(GraphBuilderVertex('to_vertex', ['v_prop_1','v_prop_2']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2']))
+        store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
+        expected = "STORE_GRAPH(to_store, 'conf.xml', 'e_prop_1:Long,v_prop_2:String,v_prop_1:String,e_prop_2:Long', 'e_prop_2,e_prop_1,label', '-a');"
+        self.assertEqual(store_graph, expected)
+        
+    def test_gb_store_graph_flatten(self):
+        schema_dict = {}
+        schema_dict['v_prop_1']='chararray'
+        schema_dict['v_prop_2']='chararray'
+        schema_dict['v_prop_3']='int'
+        schema_dict['v_prop_4']='int'
+        schema_dict['v_prop_5']='double'
+        schema_dict['v_prop_6']='double'        
+                
+        schema_dict['e_prop_1']='long'
+        schema_dict['e_prop_2']='long'
+        schema_dict['e_prop_3']='float'
+        
+        other_args = '-F'
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('from_vertex', ['v_prop_1','v_prop_2', 'v_prop_3']))
+        vertex_list.append(GraphBuilderVertex('to_vertex', ['v_prop_4','v_prop_5', 'v_prop_6']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2', 'e_prop_3']))
+        store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
+        expected = "STORE_GRAPH(to_store, 'conf.xml', 'v_prop_6:Double,v_prop_1:String,v_prop_2:String,v_prop_3:Integer,e_prop_2:Long,e_prop_1:Long,e_prop_3:Float,v_prop_5:Double,v_prop_4:Integer', 'e_prop_2,e_prop_3,e_prop_1,label', '-F');"
+        self.assertEqual(store_graph, expected)
+            
 class TestGraphConfig(unittest.TestCase):
     def test_write_gb_config(self):
         titan_config.write_gb_cfg('g1_f1_timeA_titan')

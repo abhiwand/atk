@@ -25,6 +25,7 @@ import java.io.IOException;
 
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
+
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
@@ -203,6 +204,14 @@ public abstract class SerializedGraphElement<VidType extends WritableComparable<
         } else {
             return 1;
         }
+    }
+    
+    @Override
+    public String toString() {
+		if (graphElement != null)
+			return graphElement.toString();
+		else
+			return "graphElement is null";
     }
 }
 
