@@ -40,6 +40,7 @@
 set -e
 
 
+# Find absolute path of the given (possibly relative) path
 function abs_path {
   (cd "${1%/*}" &>/dev/null && printf "%s/%s" "$(pwd)" "${1##*/}")
 }
