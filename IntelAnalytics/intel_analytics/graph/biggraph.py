@@ -142,7 +142,15 @@ class GraphBuilder(object):
         overwrite : Bool, optional
             if the given graph_name already exists, overwrite=True will
             overwrite the existing graph; overwrite=False will raise an Error
-
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
+            
         Returns
         -------
         graph : Graph
