@@ -438,7 +438,7 @@ class GraphWrapper:
         Examples
         --------
         >>> statements = []
-        >>> statements.append("g.V('_gb_ID','11').out")
+        >>> statements.append("g.V('name','user_123').out")
         >>> graph = get_graph("SampleGraph")
         >>> graph.export_as_graphml(statements, "example.xml")
 
