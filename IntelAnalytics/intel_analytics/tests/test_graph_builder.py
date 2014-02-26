@@ -79,7 +79,7 @@ config['hbase_names_file'] = \
     os.path.join(config['conf_folder'], "table_name.txt")
 
 from intel_analytics.graph.biggraph import GraphTypes
-from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory, build
+from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory, build, get_gb_build_command
 from intel_analytics.graph.titan.config import titan_config
 
 # mock HBase Registry
@@ -180,7 +180,7 @@ class TestGraphBuilder(unittest.TestCase):
         self.assertFalse(graph_name in mock_registry)
         frame = Mock()
         frame._table.table_name = 'f3_time'
-        g = build(graph_name, frame, [], [], False, overwrite=False)
+        g = build(graph_name, frame, [], [], False, overwrite=False, append=False, flatten=False)
         self.assertIsNotNone(g)
         self.assertIsNotNone(mock_registry.get_value(graph_name))
 
@@ -203,7 +203,7 @@ class TestGraphBuilder(unittest.TestCase):
         frame = Mock()
         frame._table.table_name = 'f3_time'
         try:
-            build(graph_name, frame, [], [], False, overwrite=False)
+            build(graph_name, frame, [], [], False, overwrite=False, append=False)
         except Exception:
             # make sure graph_name is not in the registry
             self.assertFalse(graph_name in mock_registry)
@@ -286,6 +286,47 @@ colD,colB,edgeDB,colU"""
         g = gb.build(graph_name)
         self.assertIsNotNone(g)
         self.assertIsNotNone(mock_registry.get_value(graph_name))
+
+
+    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
+    def test_get_gb_build_command_overwrite(self, get_pig_args_with_gb):
+        get_pig_args_with_gb.return_value = [ 'mock_pig' ]
+        result = " ".join(get_gb_build_command("gb_config", "table_name", [], [], is_directed=False, overwrite=True, append=False, flatten=False))
+
+        self.assertEqual("mock_pig -t table_name -c gb_config -e  -v  -o is_overwrite", result)
+        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
+
+    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
+    def test_get_gb_build_command_append(self, get_pig_args_with_gb):
+        get_pig_args_with_gb.return_value = [ 'mock_pig' ]
+        result = " ".join(get_gb_build_command("gb_config", "table_name", [], [], is_directed=False, overwrite=False, append=True, flatten=False))
+
+        self.assertEqual("mock_pig -t table_name -c gb_config -e  -v  -a is_append", result)
+        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
+
+    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
+    def test_get_gb_build_command_overwrite_append(self, get_pig_args_with_gb):
+        get_pig_args_with_gb.return_value = [ 'goat_disguised_as_pig' ]
+        result = " ".join(get_gb_build_command("gb_config", "table_name", [], [], is_directed=False, overwrite=True, append=True, flatten=False))
+
+        self.assertEqual("goat_disguised_as_pig -t table_name -c gb_config -e  -v  -a is_append -o is_overwrite", result)
+        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
+
+    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
+    def test_get_gb_build_command_is_directed(self, get_pig_args_with_gb):
+        get_pig_args_with_gb.return_value = [ 'lamb' ]
+        result = " ".join(get_gb_build_command("config1", "table2", [], [], is_directed=True, overwrite=False, append=False, flatten=False))
+
+        self.assertEqual("lamb -t table2 -c config1 -e  -v  -d is_directed", result)
+        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
+
+    @patch('intel_analytics.graph.titan.graph.get_pig_args_with_gb')
+    def test_get_gb_build_command_flatten(self, get_pig_args_with_gb):
+        get_pig_args_with_gb.return_value = [ 'mock_pig' ]
+        result = " ".join(get_gb_build_command("config1", "table2", [], [], is_directed=False, overwrite=False, append=True, flatten=True))
+
+        self.assertEqual("mock_pig -t table2 -c config1 -e  -v  -a is_append -f is_flatten", result)
+        get_pig_args_with_gb.assert_called_once_with('pig_load_titan.py')
 
 
 class TestGraphConfig(unittest.TestCase):
