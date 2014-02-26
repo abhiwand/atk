@@ -196,8 +196,6 @@ class PigScriptBuilder(object):
             
             assert final_union_alias != None
             
-            statements.append("merged = MERGE_DUPLICATE_ELEMENTS(%s);" % (final_union_alias))
-            
             #populate the name/type dictionary from etl_schema, which will be used 
             #when generating the STORE_GRAPH statement in the end
             table_names = [source_table_name]
@@ -211,9 +209,11 @@ class PigScriptBuilder(object):
             #create the property type definitions and
             #edge labels and edge property names to be passed to STORE_GRAPH
             #don't forget to add the additional vertex/edge properties
-            vertex_list.append(registered_vertex_properties.vertex)
-            edge_list.append(registered_edge_properties.edge)
-            statements.append(self._build_store_graph_statement('merged', gb_conf_file, vertex_list, edge_list, schema_dict, other_args.strip()))
+            if registered_vertex_properties != None:
+                vertex_list.append(registered_vertex_properties.vertex)
+            if registered_edge_properties != None:
+                edge_list.append(registered_edge_properties.edge)
+            statements.append(self._build_store_graph_statement(final_union_alias, gb_conf_file, vertex_list, edge_list, schema_dict, other_args.strip()))
 
         return "\n".join(statements)
         
