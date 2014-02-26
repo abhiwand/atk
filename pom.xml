@@ -30,7 +30,7 @@
   <groupId>com.intel.hadoop</groupId>
   <artifactId>IntelAnalytics</artifactId>
   <packaging>pom</packaging>
-	<version>0.5-SNAPSHOT</version>
+	<version>0.8-SNAPSHOT</version>
   <name>IntelAnalytics Parent</name>
   <description>IntelAnalytics : Large Scale Graph Analytics</description>
   <inceptionYear>2013</inceptionYear>

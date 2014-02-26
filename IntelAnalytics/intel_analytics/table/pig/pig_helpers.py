@@ -22,6 +22,8 @@
 ##############################################################################
 from intel_analytics.config import global_config as config
 
+
+
 def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
     """
     Returns a schema string in Pig's format given a comma separated feature
@@ -40,18 +42,85 @@ def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
             pig_schema+=','
     return pig_schema
 
-def get_hbase_storage_schema_string(feature_names_as_str, feature_types_as_str):
+def get_hbase_storage_schema_string(feature_names_as_str):
     """
     Returns the schema string in HBaseStorage's format given a comma-separated
     feature names and types string
     """
     feature_names = feature_names_as_str.split(',')
-    feature_types = feature_types_as_str.split(',')
-            
     hbase_storage_schema = ''
     for i,feature_name in enumerate(feature_names):
-        feature_type = feature_types[i] 
         hbase_storage_schema += (config['hbase_column_family'] + feature_name)
         if i != len(feature_names)-1:
             hbase_storage_schema+=' '
     return hbase_storage_schema
+
+
+def get_load_statement_list(files, raw_load_statement, out_relation):
+    """
+    Returns the list of load statements
+
+    Parameters
+        ----------
+        files : list
+            list of file path.
+        raw_load_statement : String
+            raw statement which needs to take a file path to finish.
+            The statement looks similar to:
+                LOAD '%s' USING org.apache.pig.piggybank.storage.CSVExcelStorage(',') AS (state:chararray);
+        out_relation : String
+            The resulting relation name for the loading.
+            It will be the relation for subsequent operation such as storing into data store.
+
+    """
+    relationship_names = []
+    load_statements = []
+    for i, file in enumerate(files):
+        relation = 'relations_' + str(i)
+        relationship_names.append(relation)
+        load_statement = raw_load_statement % (file)
+        load_statement = relation + ' = ' + load_statement
+        load_statements.append(load_statement)
+    if len(relationship_names) > 1:
+        load_statements.append("%s = UNION %s;" % (out_relation, ','.join(relationship_names)))
+    elif len(relationship_names) == 1:
+        load_statements.append("%s = %s;" % (out_relation, relationship_names[0]))
+    return load_statements
+
+def get_generate_key_statements(in_relation, out_relation, features, offset = 0):
+    """
+    Return the list of load statements that generate row key
+
+    Parameters
+        ----------
+        in_relation : String
+            The input relation which does not contain row key
+        out_relation : String
+            The output relation which has row key assigned
+        features : String
+            Comma separated features names such as f1, f2, f3
+        offset : long
+            The previous maximum row key
+
+    """
+    statements = []
+    if offset == 0:
+        statements.append('%s = rank %s;' %(out_relation, in_relation))
+    else:
+        statements.append('temp = rank %s;' %(in_relation))
+        statements.append('%s = foreach temp generate $0 + %s as key, %s;' %(out_relation, str(offset), features))
+
+    return statements
+
+
+def report_job_status(status):
+    print 'Pig job status report-Start:'
+    input_status = status.getInputStats()
+    input_count = 0
+    for status in input_status:
+        input_count = input_count + status.getNumberRecords()
+
+    print '%s:%s' %('input_count', str(input_count))
+    print 'Pig job status report-End:'
+
+

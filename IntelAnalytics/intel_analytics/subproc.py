@@ -23,6 +23,7 @@
 """
 Invokes subprocess calls with polling to check progress.
 """
+import types
 
 import time
 import re
@@ -62,7 +63,11 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, return
     # A non-blocking invocation of the subprocess.
     p = Popen(args, shell=shell, stderr=PIPE, stdout=PIPE)
     report_service = JobReportService()
-    report_service.add_report_strategy(report_strategy)
+    if isinstance(report_strategy, types.ListType):
+        for strategy in report_strategy:
+            report_service.add_report_strategy(strategy)
+    else:
+        report_service.add_report_strategy(report_strategy)
 
     # Spawns a thread to consume the subprocess's STDERR in a non-blocking manner.
     err_txt = []

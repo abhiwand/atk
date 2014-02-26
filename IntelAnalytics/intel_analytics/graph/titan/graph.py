@@ -23,12 +23,13 @@
 """
 The Titan-specific graph implementation.
 """
+from intel_analytics.pig import get_pig_args_with_gb
 
 __all__ = []
 
 from intel_analytics.graph.biggraph import \
     PropertyGraphBuilder, BipartiteGraphBuilder,\
-    GraphBuilderEdge, GraphBuilderFactory, GraphTypes, GraphWrapper
+    GraphBuilderEdge, GraphBuilderFactory, GraphTypes
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 from intel_analytics.graph.titan.config import titan_config
@@ -38,8 +39,12 @@ from intel_analytics.config import global_config
 
 from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import Config as bulbsConfig
-from intel_analytics.report import ProgressReportStrategy
 from intel_analytics.logger import stdout_logger as logger
+
+try:
+    from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
+except ImportError, e:
+    from intel_analytics.report import PrintReportStrategy as etl_report_strategy
 
 
 #class TitanGraph(object):   # TODO: inherit BigGraph later
@@ -93,7 +98,7 @@ class TitanGraphBuilderFactory(GraphBuilderFactory):
     def _get_graph(self, graph_name, titan_table_name):
         rexster_uri = titan_config.get_rexster_server_uri(titan_table_name)
         bulbs_config = bulbsConfig(rexster_uri)
-        titan_graph = GraphWrapper(bulbsGraph(bulbs_config))
+        titan_graph = BulbsGraphWrapper(bulbsGraph(bulbs_config))
         titan_graph.user_graph_name = graph_name
         titan_graph.titan_table_name = titan_table_name
         titan_graph.ml = TitanGiraphMachineLearning(titan_graph)
@@ -123,7 +128,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
                 '\n'.join(map(lambda x: vertex_str(x, True), self._vertex_list))
         return s
 
-    def build(self, graph_name, overwrite=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False):
         if len(self._vertex_list) != 2:
             raise ValueError("ERROR: bipartite graph construction requires 2 " +
                 "vertex sources; " + str(len(self._vertex_list)) + " detected")
@@ -137,7 +142,9 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
                      self._vertex_list,
                      edge_list,
                      is_directed=False,
-                     overwrite=overwrite)
+                     overwrite=overwrite,
+                     append=append,
+                     flatten=flatten)
 
 
 class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
@@ -158,46 +165,47 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                 + '\n'.join(map(lambda x: edge_str(x, True), self._edge_list))
         return s
 
-    def build(self, graph_name, overwrite=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False):
         return build(graph_name,
                      self._source,
                      self._vertex_list,
                      self._edge_list,
                      is_directed=True,
-                     overwrite=overwrite)
+                     overwrite=overwrite,
+                     append=append,
+                     flatten=flatten)
 
 
-def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite):
+def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten):
 
-    # todo: implement column validation
+    # TODO: implement column validation
 
     dst_hbase_table_name = generate_titan_table_name(graph_name, source)
     src_hbase_table_name = _get_table_name_from_source(source)
+
+    # TODO: Graph Builder could handle overwrite instead of the registry, not sure if that is better?
 
     # Must register now to make sure the dest table is clean before calling GB
     hbase_registry.register(graph_name,
                             dst_hbase_table_name,
                             overwrite=overwrite,
-                            delete_table=True)
+                            append=append,
+                            delete_table=not append)
+
     gb_conf_file = titan_config.write_gb_cfg(dst_hbase_table_name)
-    build_command = get_gb_build_command(
-        gb_conf_file,
-        src_hbase_table_name,
-        vertex_list,
-        edge_list,
-        is_directed)
-    gb_cmd = ' '.join(map(str, build_command))
-    logger.debug(gb_cmd)
-    # print gb_cmd
-    try:
-        call(gb_cmd, shell=True, report_strategy=ProgressReportStrategy())
-    except:
+
+    cmd = get_gb_build_command(gb_conf_file, src_hbase_table_name, vertex_list, edge_list, is_directed, overwrite,
+                               append, flatten)
+
+    return_code = call(cmd, report_strategy=etl_report_strategy())
+
+    if return_code:
         try:  # try to clean up registry
-            hbase_registry.unregister_key(graph_name, delete_table=True)
+            hbase_registry.unregister_key(graph_name, delete_table=not append)
         except:
             logger.error("Graph Builder call failed and unable to unregister "
-                         + "table for graph " + graph_name)
-        raise
+                              + "table for graph " + graph_name)
+        raise Exception('Could not load titan')
 
     titan_config.rexster_xml_add_graph(dst_hbase_table_name)
 
@@ -243,28 +251,39 @@ def edge_str(edge, public=False):
     return s
 
 
-# static templates and commands, validated against config on load.
+def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list, is_directed, overwrite, append, flatten):
+    """
+    Build the Pig command line call to the Jython script
+    """
+    args = get_pig_args_with_gb('pig_load_titan.py')
 
-def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list,
-                         is_directed):
-    return ['hadoop',
-            'jar',
-            global_config['graph_builder_jar'],
-            global_config['graph_builder_class'],
-            '-conf',
-            gb_conf_file,
-            '-t',
-            table_name,
-            '-v',
-            ', '.join(map(lambda v: '"' + vertex_str(v) + '"', vertex_list)),
-            '-d' if is_directed is True else '-e',
-            ', '.join(map(lambda e: '"' + edge_str(e) + '"', edge_list))
-            ]
+    # These are the command line arguments are for the Jython script.  It is confusing
+    # because they aren't the same as the command line args that GraphBuilder takes
+    args += ['-t', table_name,
+             '-c', gb_conf_file,
+             # edge and vertices lists should be surrounded with double quotes
+             '-e', ' '.join(map(lambda e: '"' + edge_str(e) + '"', edge_list)),
+             '-v', ' '.join(map(lambda v: '"' + vertex_str(v) + '"', vertex_list))]
+
+    # TODO: can we pass argument names without a value? These are all on/off flags only
+    if append:
+        args += ['-a', 'is_append']
+    if overwrite:
+        args += ['-o', 'is_overwrite']
+    if is_directed:
+        args += ['-d', 'is_directed']
+    if flatten:
+        args += ['-f', 'is_flatten']
+
+    return args
+
 
 # validate the config can supply the necessary parameters
 missing = []
 try:
-    get_gb_build_command('', '', [], [], False)
+    # needed by Jython script passed to Pig
+    global_config['graph_builder_jar']
+    global_config['graph_builder_pig_udf']
 except KeyError as e:
     missing.append(str(e))
 
@@ -287,3 +306,61 @@ Many graph operations will fail.  Two options:
          >>> global_config['missing_key'] = 'missing_value'
 """.format(', '.join(missing), global_config.srcfile))
     sys.stderr.flush()
+
+
+class BulbsGraphWrapper:
+    def __init__(self, graph):
+        self._graph = graph
+        self._graph.vertices.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
+        self._graph.edges.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
+        self.client_class = graph.client_class
+        self.default_index = graph.default_index
+
+    @property
+    def vertices(self):
+        return self._graph.vertices
+
+    @property
+    def edges(self):
+        return self._graph.edges
+
+    @property
+    def client(self):
+        return self._graph.client
+
+    @property
+    def config(self):
+        return self._graph.config
+
+    @property
+    def factory(self):
+        return self._graph.factory
+
+    @property
+    def gremlin(self):
+        return self._graph.gremlin
+
+    @property
+    def scripts(self):
+        return self._graph.scripts
+
+    def load_graphml(self,uri):
+        self._graph.load_graphml(uri)
+
+    def get_graphml(self):
+        self._graph.get_graphml()
+
+    def warm_cache(self):
+        self._graph.warm_cache()
+
+    def clear(self):
+        self._graph.clear()
+
+    def add_proxy(self, proxy_name, element_class, index_class=None):
+        self._graph.add_proxy(proxy_name, element_class, index_class)
+
+    def build_proxy(self, element_class, index_class=None):
+        self._graph.build_proxy(self, element_class, index_class)
+
+    def __raise_(self, ex):
+        raise ex

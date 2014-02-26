@@ -23,7 +23,6 @@
 import os
 import unittest
 import sys
-from intel_analytics.graph.biggraph import GraphWrapper
 
 curdir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
@@ -34,7 +33,7 @@ if 'intel_analytics.config' in sys.modules:
 from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
-from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException
+from intel_analytics.table.hbase.table import HBaseTable, Imputation, HBaseTableException, HBaseFrameBuilder
 from mock import patch, Mock, MagicMock
 
 config['hbase_column_family'] = "etl-cf:"
@@ -707,6 +706,41 @@ class HbaseTableTest(unittest.TestCase):
             self.transform_with_multiple_columns("fakecol1+fakecol2", "fakeout3", EvalFunctions.Math.ARITHMETIC)
         except:
             print "Caught exception on invalid column inputs for ARITHMETIC"
+
+class HBaseFrameBuilderTest(unittest.TestCase):
+
+    @patch("intel_analytics.table.hbase.table.exists")
+    def test_validate_exists_hdfs(self, exists):
+        exists.return_value = True
+
+        builder = HBaseFrameBuilder()
+        builder._validate_exists('/mock/location/that/exists')
+
+    @patch("intel_analytics.table.hbase.table.exists")
+    def test_validate_exists_not_found_in_hdfs(self, exists):
+        exists.return_value = False
+
+        builder = HBaseFrameBuilder()
+        with self.assertRaises(Exception):
+            builder._validate_exists('/mock/location/that/does/not/exist')
+
+    @patch("intel_analytics.table.hbase.table.is_local_run")
+    @patch("intel_analytics.table.hbase.table.os.path.isfile")
+    def test_validate_exists_locally(self, is_file, is_local_run):
+        is_file.return_value = True
+        is_local_run.return_value = True
+
+        builder = HBaseFrameBuilder()
+        builder._validate_exists('/mock/location/that/exists')
+
+    @patch("intel_analytics.table.hbase.table.is_local_run")
+    def test_validate_exists_not_found_locally(self, is_local_run):
+        is_local_run.return_value = True
+
+        builder = HBaseFrameBuilder()
+        with self.assertRaises(Exception):
+            builder._validate_exists('/some/real/path/that/does/not/exist')
+
 
     @patch('intel_analytics.graph.biggraph.call')
     def test_export_sub_graph_as_graphml(self, call_method):

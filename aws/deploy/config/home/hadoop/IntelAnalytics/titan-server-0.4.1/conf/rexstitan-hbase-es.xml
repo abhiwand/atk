@@ -46,7 +46,7 @@
         <io-strategy>leader-follower</io-strategy>
     </rexpro>
     <shutdown-port>8183</shutdown-port>
-    <shutdown-host>ip-10-0-64-83</shutdown-host>
+    <shutdown-host>127.0.0.1</shutdown-host>
     <script-engines>
         <script-engine>
             <name>gremlin-groovy</name>
@@ -81,8 +81,8 @@
             <properties>
                 <rates-time-unit>SECONDS</rates-time-unit>
                 <duration-time-unit>SECONDS</duration-time-unit>
-                <report-period>10</report-period>
-                <report-time-unit>MINUTES</report-time-unit>
+                <report-period>1</report-period>
+                <report-time-unit>HOURS</report-time-unit>
                 <includes>http.rest.*</includes>
                 <excludes>http.rest.*.delete</excludes>
             </properties>

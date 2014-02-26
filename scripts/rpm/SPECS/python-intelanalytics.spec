@@ -1,6 +1,6 @@
-Summary: Intel Graph Analytics System development libraries
+Summary: Intel Graph Analytics System development libraries. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
-Version: 0.5.0
+Version: 0.8.0
 
 License: Apache
 
@@ -21,8 +21,9 @@ URL: <TODO>
 Buildroot: /tmp/intelanalyticsrpm
 
 %description
+The Intel Graph System Python libraries. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
-The Intel Graph System Python libraries
+%define TIMESTAMP %(echo $TIMESTAMP)
 
 %prep
 
@@ -46,6 +47,11 @@ if [ ! -d /home/hadoop/.intelanalytics ]
 then
     mkdir /home/hadoop/.intelanalytics
 fi
+if [ ! -d /home/hadoop/.intelanalytics/conf ]
+then
+    mkdir /home/hadoop/.intelanalytics/conf
+fi
+cp /usr/lib/IntelAnalytics/conf/pig_log4j.properties /home/hadoop/.intelanalytics/conf/
 if [ `ls /usr/lib/IntelAnalytics/notebooks/*.ipynb | wc -l` -gt 0 ]
 then
     mv /usr/lib/IntelAnalytics/notebooks/*.ipynb  /home/hadoop/.intelanalytics/

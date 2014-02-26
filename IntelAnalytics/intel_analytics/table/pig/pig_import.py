@@ -46,7 +46,7 @@ def main(argv):
     cmd_line_args = parser.parse_args()
 
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
-    hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
+    hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names)
 
     features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
     
