@@ -5,6 +5,8 @@
 #
 source IntelAnalytics_common_env.sh
 
+#globals
+ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
 # existing AMI Names (with build version, can override 
 if [ -z "${IA_AMI_BUILD}" ]; then
     IA_AMI_BUILD="Build.14"
@@ -33,7 +35,7 @@ fi
 export IA_CLUSTER_ID_RSV=0
 export IA_CLUSTER_ID_MIN=1
 export IA_CLUSTER_ID_MAX=40
-export IA_CLUSTER_SIZE_MIN=4
+export IA_CLUSTER_SIZE_MIN=2
 export IA_CLUSTER_SIZE_MAX=20
 export IA_CLUSTER_SIZE_INC=4
 
@@ -97,7 +99,7 @@ function IA_check_cluster_id()
 }
 
 # validate the cluster size
-# Supports 4, 8, 12, 16, 20 (5 bit netmask, but we max to 20 for cc2.8xlarge)
+# Supports 2, 4, 8, 12, 16, 20 (5 bit netmask, but we max to 20 for cc2.8xlarge)
 function IA_check_cluster_size()
 {
     local size=$1
@@ -814,8 +816,7 @@ function IA_health_check_auto_scale()
 #   dimensions: the metrics dimension in our case it's always Name=AutoScalingGroupName,Value=$clusterName
 function IA_add_alarm()
 {
-    #will change to pdl when external access is approved
-    local ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:rodorad"
+    #local ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
     
     local name=$1
     local description=$2
@@ -838,11 +839,12 @@ function IA_add_alarm()
 #enable metrics and attach alarms and notifications
 #Params:
 #   clusterName: the cluster name aka cname
+#   clusterSize: the cluster size
 function IA_add_notifications()
 {
     local clusterName=$1
-    
-    local ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:rodorad"
+    local clusterSize=$2
+    #local ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
     
     IA_loginfo "Enable scaling group metrics"
     aws autoscaling enable-metrics-collection --auto-scaling-group-name "$clusterName" --granularity "1Minute"
@@ -851,8 +853,9 @@ function IA_add_notifications()
     --topic-arn $ALARM_ARN_NOTIFICATION --notification-types "autoscaling:EC2_INSTANCE_TERMINATE" 
     IA_loginfo "Add alarms"
     
-    IA_add_alarm "$clusterName-Instance-count" "monitor instance count" "GroupInServiceInstances" "AWS/AutoScaling" "Sum" 60 3.0 "LessThanOrEqualToThreshold" "Name=AutoScalingGroupName,Value=$clusterName"
+    IA_add_alarm "$clusterName-Instance-count" "monitor instance count" "GroupInServiceInstances" "AWS/AutoScaling" "Sum" 60 $(($clusterSize - 1)) "LessThanOrEqualToThreshold" "Name=AutoScalingGroupName,Value=$clusterName"
     
     IA_add_alarm "$clusterName-failed-status" "monitor failed state should catch reboots" "StatusCheckFailed" "AWS/EC2" "Sum" 60 0.0  "GreaterThanThreshold" "Name=AutoScalingGroupName,Value=$clusterName"
 
 }
+

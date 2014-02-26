@@ -345,7 +345,7 @@ cmd_asg_opts="/usr/local/bin/aws autoscaling create-auto-scaling-group  --launch
         IA_loginfo "Creating scaling group ${cname}, executing..."
 	    IA_loginfo " ${cmd_asg_opts}"
         eval $cmd_asg_opts
-        IA_add_notifications ${cname}
+        IA_add_notifications ${cname} ${csize}
     else
         IA_loginfo "DRYRUN:creating launch config  ${cname}, executing..."
         IA_loginfo " ${cmd_lc_opts}"

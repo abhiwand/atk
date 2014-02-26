@@ -15,7 +15,7 @@ KEY_NAME="IntelAnalytics-SaaS-Admin"
 SCALE_MIN=1
 SCALE_MAX=20
 LOAD_BALANCER="IntelAnalytics-SaaS-pre-prod"
-ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:rodorad"
+ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
 
 TEMP=`getopt -o l: --long launch-config-name:,instance-type:,image-id:,key-name:,scale-min:,scale-max:,load-balancer:,alarm-notification: -n 'IntelAnalytics_SaaS_AutoScale.sh' -- "$@"`
 
