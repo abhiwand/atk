@@ -22,10 +22,12 @@
 ##############################################################################
 import os
 import re
+import sys #used by unit tests
 import collections
 
 from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
+from intel_analytics.pig import get_pig_args, is_local_run
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
@@ -39,6 +41,7 @@ from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
+from pydoop.hdfs.path import exists
 
 MAX_ROW_KEY = 'max_row_key'
 
@@ -46,22 +49,6 @@ try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
 except ImportError, e:
     from intel_analytics.report import PrintReportStrategy as etl_report_strategy
-
-
-
-#for quick testing
-try:
-    local_run = config['local_run'].lower().strip() == 'true'
-except:
-    local_run = False
-
-base_script_path = os.path.dirname(os.path.abspath(__file__))
-etl_scripts_path = config['pig_py_scripts']
-pig_log4j_path = os.path.join(config['conf_folder'], 'pig_log4j.properties')
-logger.debug('Using %s ' % pig_log4j_path)
-
-os.environ["PIG_OPTS"] = "-Dpython.verbose=error"#to get rid of Jython logging
-os.environ["JYTHONPATH"] = config['pig_jython_path']#required to ship jython scripts with pig
 
 
 class DataAppendException(Exception):
@@ -76,7 +63,7 @@ class Imputation:
     Currently the only supported imputation method is mean imputation, which replaces all missing values with
     the mean.
     """
-
+    
     MEAN = 1
 
     @staticmethod
@@ -125,9 +112,9 @@ class HBaseTable(object):
             transformation_to_apply = EvalFunctions.to_string(transformation)
         except:
             raise HBaseTableException('The specified transformation function is invalid')
-
+        
         #by default all transforms are now in-place
-        keep_source_column = True#For in-place transformations the source/original feature has to be kept
+        keep_source_column=True#For in-place transformations the source/original feature has to be kept
         #load schema info
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -170,13 +157,9 @@ class HBaseTable(object):
         if not column_name:
             column_name = '' #some operations does not requires a column name.
 
+        args = get_pig_args('pig_transform.py')
 
-        script_path = os.path.join(etl_scripts_path, 'pig_transform.py')
-
-        args = _get_pig_args()
-
-        args += [script_path,
-                 '-f', column_name, '-i', self.table_name,
+        args += ['-f', column_name, '-i', self.table_name,
                  '-o', self.table_name, '-t', transformation_to_apply,
                  '-u', feature_names_as_str, '-r', feature_types_as_str,
                  '-n', new_column_name]
@@ -199,23 +182,19 @@ class HBaseTable(object):
         if not keep_source_column:
             etl_schema.feature_names.remove(column_name)
         etl_schema.feature_names.append(new_column_name)
-
+        
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types
         etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
     def copy(self, new_table_name, feature_names, feature_types):
-        script_path = os.path.join(etl_scripts_path, 'pig_copy_table.py')
-        args = _get_pig_args()
+        args = get_pig_args('pig_copy_table.py')
 
-        args += [script_path,
-                 '-i', self.table_name,
-                 '-o', new_table_name,
-                 '-n', feature_names,
-                 '-t', feature_types]
+        args += ['-i', self.table_name, '-o', new_table_name,
+                 '-n', feature_names, '-t', feature_types]
 
-        return_code = call(args, report_strategy=etl_report_strategy())
+        return_code = call(args, report_strategy = etl_report_strategy())
         if return_code:
             raise HBaseTableException('Could not copy table')
 
@@ -233,7 +212,7 @@ class HBaseTable(object):
                  '-t', self.table_name,
                  '-n', columns,
                  '-f', re.sub(':', '', global_config['hbase_column_family'])
-        ]
+                 ]
 
         return_code = call(args, report_strategy=MapOnlyProgressReportStrategy())
         if return_code:
@@ -253,7 +232,7 @@ class HBaseTable(object):
         etl_schema.feature_names = new_feature_names
         etl_schema.feature_types = new_feature_types
         etl_schema.save_schema(self.table_name)
-
+        
     def _peek(self, n):
 
         if n < 0:
@@ -265,16 +244,16 @@ class HBaseTable(object):
         first_N_rows = []
 
         with ETLHBaseClient() as hbase_client:
-            table = hbase_client.connection.table(self.table_name)
-            nrows_read = 0
-            for key, data in table.scan():
-                orderedData = collections.OrderedDict(sorted(data.items()))
-                first_N_rows.append(orderedData)
-                nrows_read += 1
-                if nrows_read >= n:
-                    break
+           table = hbase_client.connection.table(self.table_name)
+           nrows_read = 0
+           for key, data in table.scan():
+               orderedData = collections.OrderedDict(sorted(data.items()))
+               first_N_rows.append(orderedData)
+               nrows_read+=1
+               if nrows_read >= n:
+                   break
         return first_N_rows
-
+    
     def inspect(self, n=10):
 
         first_N_rows = self._peek(n)
@@ -283,51 +262,51 @@ class HBaseTable(object):
         column_array = []
         print("--------------------------------------------------------------------")
         for i, column in enumerate(columns):
-            header = re.sub("^" + config['hbase_column_family'], '', column)
+            header = re.sub("^" + config['hbase_column_family'],'',column)
             column_array.append(header)
 
         print "\t".join(column_array)
         print("--------------------------------------------------------------------")
 
         for orderedData in first_N_rows:
-            data = []
-            for col in column_array:
-                col = config['hbase_column_family'] + col
-                if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
-                    data.append(orderedData[col])
-                else:
-                    data.append("NA")
+           data = []
+           for col in column_array:
+               col = config['hbase_column_family'] + col
+               if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
+                   data.append(orderedData[col])
+               else:
+                   data.append("NA")
 
-            print "  |  ".join(data)
-
+           print "  |  ".join(data)
+               
     def inspect_as_html(self, nRows=10):
         first_N_rows = self._peek(nRows)
-        html_table = '<table border="1">'
+        html_table='<table border="1">'
 
         schema = self.get_schema()
         columns = schema.keys()
         column_array = []
-        html_table += '<tr>'
+        html_table+='<tr>'
         for i, column in enumerate(columns):
-            header = re.sub("^" + config['hbase_column_family'], '', column)
+            header = re.sub("^" + config['hbase_column_family'],'',column)
             column_array.append(header)
-            html_table += '<th>%s</th>' % header
-        html_table += '</tr>'
+            html_table+='<th>%s</th>' % header
+        html_table+='</tr>'
 
         for orderedData in first_N_rows:
-            html_table += '<tr>'
-            for col in column_array:
-                col = config['hbase_column_family'] + col
-                if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
-                    html_table += ("<td>%s</td>" % (orderedData[col]))
-                else:
-                    html_table += '<td>NA</td>'
+           html_table+='<tr>'
+           for col in column_array:
+               col = config['hbase_column_family'] + col
+               if col in orderedData and orderedData[col] != '' and orderedData[col] is not None:
+                   html_table+=("<td>%s</td>" % (orderedData[col]))
+               else:
+                   html_table+='<td>NA</td>'
 
-            html_table += '</tr>'
+           html_table+='</tr>'
 
-        html_table += '</table>'
+        html_table+='</table>'
         return html_table
-
+    
     def __drop(self, output_table, column_name=None, how=None, replace_with=None):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -338,16 +317,13 @@ class HBaseTable(object):
         if column_name and (column_name not in etl_schema.feature_names):
             raise HBaseTableException("Column %s does not exist" % (column_name))
 
-        script_path = os.path.join(etl_scripts_path, 'pig_clean.py')
+        args = get_pig_args('pig_clean.py')
 
-        args = _get_pig_args()
-
-        args += [script_path, '-i', self.table_name,
-                 '-o', output_table, '-n', feature_names_as_str,
-                 '-t', feature_types_as_str]
+        args += ['-i', self.table_name, '-o', output_table,
+                 '-n', feature_names_as_str, '-t', feature_types_as_str]
 
         if replace_with:
-            args += ['-r', replace_with]
+            args += [ '-r' , replace_with]
 
         if column_name:
             args += ['-f', column_name]
@@ -362,7 +338,7 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
         logger.debug(args)
-
+        
         return_code = call(args, report_strategy=etl_report_strategy())
 
         if return_code:
@@ -519,9 +495,12 @@ class HBaseRegistry(Registry):
     def __init__(self, filename):
         super(HBaseRegistry, self).__init__(filename)
 
-    def register(self, key, table_name, overwrite=False, delete_table=False):
+    def register(self, key, table_name, overwrite=False, append=False, delete_table=False):
         """
         Registers an HBaseTable name with key and does table garbage collection
+
+        If append=True, don't delete anything.
+        Otherwise:
 
         If key is already being used in the registry:
             If overwrite=True, then currently registered table is deleted from
@@ -531,18 +510,19 @@ class HBaseRegistry(Registry):
         If table_name is already being used in the registry:
             If delete_table=True, then table is deleted from HBase
         """
-        # test if reusing key
-        try:
-            tmp = self.get_value(key)
-        except:
-            pass
-        else:
-            if not overwrite:
-                raise Exception("Big item '" + key + "' already exists.")
-            HBaseTable.delete_table(tmp)
+        if not append:
+            # test if reusing key
+            try:
+                tmp = self.get_value(key)
+            except:
+                pass
+            else:
+                if not overwrite:
+                    raise Exception("Big item '" + key + "' already exists.")
+                HBaseTable.delete_table(tmp)
             # test if reusing table_name
-        if delete_table and self.has_value(table_name):
-            HBaseTable.delete_table(table_name)
+            if delete_table and self.has_value(table_name):
+                HBaseTable.delete_table(table_name)
 
         super(HBaseRegistry, self).register(key, table_name)
 
@@ -561,14 +541,31 @@ class HBaseRegistry(Registry):
     def replace_value(self, victim, replacement, delete_table=False):
         key = self.get_key(victim)
         if not key:
-            raise ("Internal error: no key found for big item")
+            raise("Internal error: no key found for big item")
         HBaseTable.delete_table(victim)
         if delete_table and self.get_key(replacement):
             HBaseTable.delete_table(replacement)
         super(HBaseRegistry, self).replace_value(victim, replacement)
 
+
 class HBaseFrameBuilder(FrameBuilder):
     def copy_data_frame(self, data_frame, new_frame_name, overwrite=False):
+        """
+        Create a new data frame and copy data from source data frame to the new data frame
+        Parameters
+        ----------
+        data_frame : BigDataFrame
+            source data frame
+        new_frame_name : String
+            name for the new data frame
+        overwrite : Boolean
+            overwrite existing big data frame
+
+        Examples
+        --------
+        >>> new_frame = fb.copy_data_frame(source_data_frame, "new_data_frame")
+
+        """
 
         new_table_name = _create_table_name(new_frame_name, overwrite)
         # need to delete/create output table to write the transformed features
@@ -577,7 +574,7 @@ class HBaseFrameBuilder(FrameBuilder):
                                            [config['hbase_column_family']])
 
         etl_schema = ETLSchema()
-        etl_schema.load_schema(data_frame._original_table_name)
+        etl_schema.load_schema(data_frame._table.table_name)
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
         new_table = data_frame._table.copy(new_table_name, feature_names_as_str, feature_types_as_str)
@@ -595,6 +592,8 @@ class HBaseFrameBuilder(FrameBuilder):
 
     def build_from_csv(self, frame_name, file_name, schema,
                        skip_header=False, overwrite=False):
+        self._validate_exists(file_name)
+
         table_name = _create_table_name(frame_name, overwrite)
 
         #save the schema of the dataset to import
@@ -604,13 +603,9 @@ class HBaseFrameBuilder(FrameBuilder):
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
-        script_path = os.path.join(etl_scripts_path, 'pig_import_csv.py')
+        args = get_pig_args('pig_import_csv.py')
 
-        args = _get_pig_args()
-
-        file_name = self._get_file_name_string_for_import(file_name)
-
-        args += [script_path, '-i', file_name, '-o', table_name,
+        args += ['-i', file_name, '-o', table_name,
                  '-f', feature_names_as_str, '-t', feature_types_as_str]
 
         if skip_header:
@@ -626,7 +621,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-
+        
         if return_code:
             raise Exception('Could not import CSV file')
 
@@ -644,14 +639,12 @@ class HBaseFrameBuilder(FrameBuilder):
         new_data_feature_names_as_str = new_data_etl_schema.get_feature_names_as_CSV()
         new_data_feature_types_as_str = new_data_etl_schema.get_feature_types_as_CSV()
 
-        script_path = os.path.join(etl_scripts_path, 'pig_import_csv.py')
-
-        args = _get_pig_args()
+        args = get_pig_args('pig_import_csv.py')
 
         file_name = self._get_file_name_string_for_import(file_name)
 
         table_name = data_frame._table.table_name
-        args += [script_path, '-i', file_name, '-o', table_name,
+        args += ['-i', file_name, '-o', table_name,
                  '-f', new_data_feature_names_as_str, '-t', new_data_feature_types_as_str]
 
         if skip_header:
@@ -672,37 +665,37 @@ class HBaseFrameBuilder(FrameBuilder):
 
 
     def build_from_json(self, frame_name, file_name, overwrite=False):
+        self._validate_exists(file_name)
+
         #create some random table name
         #we currently don't bother the user to specify table names
         table_name = _create_table_name(frame_name, overwrite)
         hbase_table = HBaseTable(table_name, file_name)
         new_frame = BigDataFrame(frame_name, hbase_table)
 
-        schema = 'json:chararray'#dump all records as chararray
-
+        schema='json:chararray'#dump all records as chararray
+        
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
         etl_schema.populate_schema(schema)
         etl_schema.save_schema(table_name)
 
-        script_path = os.path.join(etl_scripts_path, 'pig_import_json.py')
-
-        args = _get_pig_args()
-
         file_name = self._get_file_name_string_for_import(file_name)
 
-        args += [script_path, '-i', file_name, '-o', table_name]
+        args = get_pig_args('pig_import_json.py')
+
+        args += ['-i', file_name, '-o', table_name]
 
         logger.debug(args)
-
-        #         need to delete/create output table to write the transformed features
+        
+#         need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-
+            
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-
+        
         if return_code:
             raise Exception('Could not import JSON file')
 
@@ -712,21 +705,20 @@ class HBaseFrameBuilder(FrameBuilder):
 
         hbase_registry.register(frame_name, table_name, overwrite)
         return new_frame
-
+            
     def append_from_json(self, data_frame, file_name):
         #create some random table name
         #we currently don't bother the user to specify table names
 
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
-        script_path = os.path.join(etl_scripts_path, 'pig_import_json.py')
 
-        args = _get_pig_args()
+        args = get_pig_args('pig_import_json.py')
 
         file_name = self._get_file_name_string_for_import(file_name)
 
         table_name = data_frame._table.table_name
-        args += [script_path, '-i', file_name, '-o', table_name]
+        args += ['-i', file_name, '-o', table_name]
         try:
             self._append_data(args, etl_schema, table_name)
         except DataAppendException:
@@ -734,37 +726,37 @@ class HBaseFrameBuilder(FrameBuilder):
 
 
     def build_from_xml(self, frame_name, file_name, tag_name, overwrite=False):
+        self._validate_exists(file_name)
+
         #create some random table name
         #we currently don't bother the user to specify table names
         table_name = _create_table_name(frame_name, overwrite)
         hbase_table = HBaseTable(table_name, file_name)
         new_frame = BigDataFrame(frame_name, hbase_table)
 
-        schema = 'xml:chararray'#dump all records as chararray
-
+        schema='xml:chararray'#dump all records as chararray
+        
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
         etl_schema.populate_schema(schema)
         etl_schema.save_schema(table_name)
 
-        script_path = os.path.join(etl_scripts_path, 'pig_import_xml.py')
-
-        args = _get_pig_args()
-
         file_name = self._get_file_name_string_for_import(file_name)
 
-        args += [script_path, '-i', file_name, '-o', table_name, '-tag', tag_name]
+        args = get_pig_args('pig_import_xml.py')
+
+        args += ['-i', file_name, '-o', table_name, '-tag', tag_name]
 
         logger.debug(args)
-
-        #         need to delete/create output table to write the transformed features
+        
+#         need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-
+            
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-
+        
         if return_code:
             raise Exception('Could not import XML file')
 
@@ -773,18 +765,17 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.save_table_properties(table_name, properties)
 
         hbase_registry.register(frame_name, table_name, overwrite)
-
+        
         return new_frame
 
     def append_from_xml(self, data_frame, file_name, tag_name):
 
-        script_path = os.path.join(etl_scripts_path, 'pig_import_xml.py')
-        args = _get_pig_args()
+        args = get_pig_args('pig_import_xml.py')
 
         file_name = self._get_file_name_string_for_import(file_name)
 
         table_name = data_frame._table.table_name
-        args += [script_path, '-i', file_name, '-o', table_name, '-tag', tag_name]
+        args += ['-i', file_name, '-o', table_name, '-tag', tag_name]
 
         logger.debug(args)
         etl_schema = ETLSchema()
@@ -808,10 +799,9 @@ class HBaseFrameBuilder(FrameBuilder):
         pig_builder = PigScriptBuilder()
         target_table_name = target_data_frame._table.table_name
         script = pig_builder.get_append_tables_statement(ETLSchema(), target_table_name, source_names)
-        script_path = os.path.join(etl_scripts_path, 'pig_execute.py')
 
-        args = _get_pig_args()
-        args += [script_path, '-s', script]
+        args = get_pig_args('pig_execute.py')
+        args += ['-s', script]
 
         try:
             self._append_data(args, merged_schema, target_table_name, is_args_final = True)
@@ -832,6 +822,18 @@ class HBaseFrameBuilder(FrameBuilder):
 
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         etl_schema.save_table_properties(table_name, properties)
+
+    def _validate_exists(self, file_name):
+        """
+        Check if a file exists either in HDFS, or locally, if is_local_run()
+
+        Raise exception if file does NOT exist.
+        """
+        if is_local_run():
+            if not os.path.isfile(file_name):
+                raise Exception('ERROR: File does NOT exist ' + file_name + ' locally')
+        elif not exists(file_name):
+            raise Exception('ERROR: File does NOT exist ' + file_name + ' in HDFS')
 
     def join_data_frame(self, left, right, how, left_on, right_on, suffixes, sort, join_frame_name):
         """
@@ -876,7 +878,7 @@ class HBaseFrameBuilderFactory(object):
 #global singleton instance
 hbase_frame_builder_factory = HBaseFrameBuilderFactory()
 hbase_registry = HBaseRegistry(os.path.join(config['conf_folder'],
-                                            config['hbase_names_file']))
+                                       config['hbase_names_file']))
 
 
 def _create_table_name(name, overwrite):
@@ -886,13 +888,5 @@ def _create_table_name(name, overwrite):
         pass
     else:
         if not overwrite:
-            raise Exception("Big item '" + name + "' already exists.")
+            raise Exception("Big item '" + name  + "' already exists.")
     return name + get_time_str()
-
-
-def _get_pig_args():
-    args = ['pig']
-    if local_run:
-        args += ['-x', 'local']
-    args += ['-4', pig_log4j_path]
-    return args
