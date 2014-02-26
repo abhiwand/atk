@@ -41,21 +41,20 @@ class PigScriptBuilder(object):
 
         return "\n".join(statements)
 
-    def get_join_statement(self, tables, on, how='inner', suffixes=None, sort=False, join_table_name=''):
+    def get_join_statement(self, tables, on, how='inner', suffixes=None, join_table_name=''):
         """
-
         Parameters
         ----------
-        self
-        tables
-        on:
+        tables: List
+            List of HBase table names
+        on: List
             List of columns to be joined on
-
-        TODO:
-        1. filtering
-        2. sorting (RANK, ORDER BY)
-        3. parallel,parititioning
-        4. performance (USING skewed, etc.)
+        how: String
+            {'inner', 'outer', 'left', 'right'}
+        suffixes: List
+            List of suffixes
+        join_table_name: String
+            Output table name
         """
 
         def _get_pig_schema(features, types):
