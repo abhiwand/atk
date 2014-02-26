@@ -459,18 +459,22 @@ class HBaseTable(object):
         args += ['-s', join_pig_script]
 
         try:
-            pig_report = PigJobReportStrategy();
-            return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+            join_pig_report = PigJobReportStrategy();
+            return_code = call(args, report_strategy=[etl_report_strategy(), join_pig_report])
             if return_code:
                 raise HBaseTableException('Failed to join data.')
         except:
             raise HBaseTableException('Could not join frame')
 
         # the schema is populated now
+        join_table_properties = {}
+        join_table_properties[MAX_ROW_KEY] = join_pig_report.content['input_count']
         join_etl_schema = ETLSchema()
         join_etl_schema.populate_schema(join_pig_schema)
         join_etl_schema.save_schema(join_table_name)
-        # FIXME: properties?
+        join_etl_schema.save_table_properties(join_table_name, join_table_properties)
+
+        # save the table name
         hbase_registry.register(join_frame_name, join_table_name)
 
         # file name is fake, for information purpose only
