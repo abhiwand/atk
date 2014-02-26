@@ -5,15 +5,12 @@
     <artifactId>graphbuilder</artifactId>
     <version>2.0-alpha</version>
 
-    <!--
-	TODO: seems like this needs to be added back but graphbuilder-2 repo removed checkstyle.xml, not sure the story on this yet
-
-	parent>
+	<parent>
         <groupId>com.intel.hadoop</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>0.8-SNAPSHOT</version>
-    </parent-->
+    </parent>
 
     <build>
         <plugins>
@@ -75,6 +72,14 @@
                 <version>2.12</version>
                 <configuration>
                     <forkMode>always</forkMode>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <configuration>
+                    <failOnViolation>false</failOnViolation>
                 </configuration>
             </plugin>
 

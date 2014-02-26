@@ -12,6 +12,9 @@ git
 */.idea/tasks.xml
 */.idea/workspace.xml
 *.iml
+/IntelAnalytics/.coverage
+/IntelAnalytics/cover/
+/IntelAnalytics/nosetests.xml
 largegit.sh
 make.sh
 .metadata*
