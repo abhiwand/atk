@@ -335,7 +335,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             posterior properties.
 
         second_property_name : String, optional
-            The posterior property name property names on which users want to get histogram.
+            The property name on which users want to get histogram.
             The default value is empty string.
         enable_roc : String, optional
             "true" means to plot ROC curve on the validation (VA) and test(TE) splits of
@@ -347,7 +347,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The ROC threshold parameters in "min:step:max" format.
             The default value is "0:0.05:1"
         property_type : String, optional
-            The type of the prior_property and posteriror_type.
+            The type of the first and second property.
             Valid values are either VERTEX_PROPERTY or EDGE_PROPERTY.
             The default value is VERTEX_PROPERTY.
         vertex_type_key : String, optional

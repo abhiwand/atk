@@ -9,7 +9,7 @@ import groovy.lang.Binding
 if(args.length < 1){
     println "================================="
     println "The usage of this program is"
-    println "gremlin.sh -e histogram.groovy table_name [property_type] [enable_roc] [roc_params] [prior_property_name] [posterior_property_name] [output_path] [type_key] [split_types] [host_name] [port_num] [backend]"
+    println "gremlin.sh -e histogram.groovy 'table_name::[property_type]::[enable_roc]::[roc_params]::[prior_property_name]::[posterior_property_name]::[output_path]::[type_key]::[split_types]::[host_name]::[port_num]::[backend]'"
     println "The arguments in [] are optional."
     println ""
     println "The default value for property_type is VERTEX_PROPERTY"
@@ -29,18 +29,29 @@ if(args.length < 1){
 String[] inputs = args[0].split("\\::")
 String tableName = inputs[0]
 String propertyType = 'VERTEX_PROPERTY'
-if(inputs.length > 1){
-    propertyType = inputs[1]
-}
 String enableRoc = 'false'
-if(inputs.length > 2){
-    enableRoc = inputs[2]
-}
 String rocParams = "0:0.05:1"
+String priorName = '_gb_ID'
+String posteriorName = ''
+String outputPath = '/tmp/giraph/histogram/'
+String key4Type = 'etl-cf:vertex_type'
+String[] splitTypes = ['TR','VA','TE']
+String hostName = 'localhost'
+String port = '2181'
+String backend = 'hbase'
 float rocMin = 0
 float rocStep = 0.05
 float rocMax = 1
 int rocSize = 21
+int splitSize = splitTypes.length
+BaseConfiguration conf = new BaseConfiguration()
+
+if(inputs.length > 1){
+    propertyType = inputs[1]
+}
+if(inputs.length > 2){
+    enableRoc = inputs[2]
+}
 if(inputs.length > 3){
     rocParams = inputs[3]
     String[] rocList =  rocParams.split('\\:')
@@ -53,42 +64,31 @@ if(inputs.length > 3){
         rocSize = (rocMax - rocMin)/rocStep + 2
     }
 }
-
-String priorName = '_gb_ID'
 if(inputs.length > 4){
     priorName = inputs[4]
 }
-String posteriorName = ''
 if(inputs.length > 5){
     posteriorName = inputs[5]
 }
-String outputPath = '/tmp/giraph/histogram/'
 if(inputs.length > 6){
     outputPath = inputs[6]
 }
-String key4Type = 'etl-cf:vertex_type'
 if(inputs.length > 7){
     key4Type = inputs[7]
 }
-String[] splitTypes = ['TR','VA','TE']
 if(inputs.length > 8){
     splitTypes = inputs[8].toUpperCase().split(',')
+    splitSize = splitTypes.length
 }
-int splitSize = splitTypes.length
-String hostName = 'localhost'
 if(inputs.length > 9){
     hostName = inputs[9]
 }
-String port = '2181'
 if(inputs.length > 10){
     port = inputs[10]
 }
-String backend = 'hbase'
 if(inputs.length > 11){
     backend = inputs[11]
 }
-
-BaseConfiguration conf = new BaseConfiguration()
 conf.setProperty("storage.tablename", tableName)
 conf.setProperty("storage.backend", backend)
 conf.setProperty("storage.hostname", hostName)
@@ -103,38 +103,95 @@ if (propertyType == 'VERTEX_PROPERTY'){
     throw new IllegalArgumentException("Input Property Type is not supported!")
 }
 int featureSize = tmp.split(' ').length
-def list1 = []
-def list2 = []
-def list3 = new Object[featureSize][splitSize][rocSize+2]
-def sortList3 = new Object[featureSize][splitSize][rocSize+2]
+def rocList = new Object[featureSize][splitSize][rocSize+2]
+def sortRocList = new Object[featureSize][splitSize][rocSize+2]
 def priorList = []
 def posteriorList = []
 int[][][] fpCount = new int[featureSize][splitSize][rocSize]
 int[][][] tpCount = new int[featureSize][splitSize][rocSize]
 int[][][] negCount = new int[featureSize][splitSize][rocSize]
 int[][][] posCount = new int[featureSize][splitSize][rocSize]
-String outputPath1 = outputPath + priorName + '.txt'
-String outputPath2 = outputPath + posteriorName + '.txt'
-String outputPath3 = outputPath + priorName + "_" + posteriorName + '_roc_'
+String priorPath = outputPath + priorName + '.txt'
+String posteriorPath = outputPath + posteriorName + '.txt'
+String rocPath = outputPath + priorName + "_" + posteriorName + '_roc_'
 class roc{
     def threshold
     def fpr
     def tpr
 }
 
+class rocCalData{
+    def j
+    def prior
+    def posterior
+    def enableRoc
+    def featureSize
+    def rocSize
+    def rocMin
+    def rocMax
+    def rocStep
+    def fpCount
+    def tpCount
+    def negCount
+    def posCount
+}
+
+class rocUpdateData{
+    def featureSize
+    def rocMin
+    def rocStep
+    def rocSize
+    def splitSize
+    def rocList
+    def sortRocList
+    def fpCount
+    def tpCount
+    def negCount
+    def posCount
+}
+rocCal = new rocCalData(
+        j:0,
+        prior:0,
+        posterior:0,
+        enableRoc:enableRoc,
+        featureSize:featureSize,
+        rocSize:rocSize,
+        rocMin:rocMin,
+        rocMax:rocMax,
+        rocStep:rocStep,
+        fpCount:fpCount,
+        tpCount:tpCount,
+        negCount:negCount,
+        posCount:posCount
+)
+
+rocUpdates = new rocUpdateData(
+        featureSize:featureSize,
+        rocMin:rocMin,
+        rocStep:rocStep,
+        rocSize:rocSize,
+        splitSize:splitSize,
+        rocList:rocList,
+        sortRocList:sortRocList,
+        fpCount:fpCount,
+        tpCount:tpCount,
+        negCount:negCount,
+        posCount:posCount
+)
+
 if(posteriorName == ''){
     if (propertyType == 'VERTEX_PROPERTY'){
         for(Vertex v : g.V){
-           list1.add(v.getProperty(priorName))
+           priorList.add(v.getProperty(priorName))
         }
     } else if(propertyType == 'EDGE_PROPERTY') {
         for(Edge e : g.E){
-           list1.add(e.getProperty(priorName))
+           priorList.add(e.getProperty(priorName))
         }
     } else {
         throw new IllegalArgumentException("Input Property Type is not supported!")
     }
-    writeHistogramFile(outputPath1, list1)
+    writeHistogramFile(priorPath, priorList)
 } else {
     if (propertyType == 'VERTEX_PROPERTY'){
         for(Vertex v : g.V){
@@ -142,80 +199,42 @@ if(posteriorName == ''){
                 if (v.filter{it.getProperty(key4Type).toUpperCase() == splitTypes[j]}){
                     prior = v.getProperty(priorName)
                     posterior = v.getProperty(posteriorName)
-                    list1.add(prior)
-                    list2.add(posterior)
-                    calculateRoc(j,
-                            prior,
-                            posterior,
-                            enableRoc,
-                            featureSize,
-                            rocSize,
-                            rocMin,
-                            rocMax,
-                            rocStep,
-                            fpCount,
-                            tpCount,
-                            negCount,
-                            posCount)
+                    priorList.add(prior)
+                    posteriorList.add(posterior)
+                    rocCal.j = j
+                    rocCal.prior = prior
+                    rocCal.posterior = posterior
+                    calculateRoc(rocCal)
                 }
             }
         }
-        updateRoc(featureSize,
-                rocMin,
-                rocStep,
-                rocSize,
-                splitSize,
-                list3,
-                sortList3,
-                fpCount,
-                tpCount,
-                negCount,
-                posCount)
+        updateRoc(rocUpdates)
     } else if(propertyType == 'EDGE_PROPERTY') {
         for(Edge e : g.E){
             for(int j in 0..<splitSize){
                 if (e.filter{it.getProperty(key4Type).toUpperCase() == splitTypes[j]}){
                     prior = e.getProperty(priorName)
                     posterior = e.getProperty(posteriorName)
-                    list1.add(prior)
-                    list2.add(posterior)
-                    calculateRoc(j,
-                            prior,
-                            posterior,
-                            enableRoc,
-                            featureSize,
-                            rocSize,
-                            rocMin,
-                            rocMax,
-                            rocStep,
-                            fpCount,
-                            tpCount,
-                            negCount,
-                            posCount)
+                    priorList.add(prior)
+                    posteriorList.add(posterior)
+                    rocCal.j = j
+                    rocCal.prior = prior
+                    rocCal.posterior = posterior
+                    calculateRoc(rocCal)
                 }
             }
         }
-        updateRoc(featureSize,
-                rocMin,
-                rocStep,
-                rocSize,
-                splitSize,
-                list3,
-                sortList3,
-                fpCount,
-                tpCount,
-                negCount,
-                posCount)
+        updateRoc(rocUpdates)
     } else {
         throw new IllegalArgumentException("Input Property Type is not supported!")
     }
-    writeHistogramFile(outputPath1, list1)
-    writeHistogramFile(outputPath2, list2)
+    writeHistogramFile(priorPath, priorList)
+    writeHistogramFile(posteriorPath, posteriorList)
 
     if(enableRoc == "true"){
         for(int l in 0..<featureSize){
             for(int m in 0..<splitSize){
-                writeRocFile(outputPath3 + l + '_' + splitTypes[m] + '.txt', sortList3[l][m])
+                writeRocFile(rocPath + l + '_' + splitTypes[m] + '.txt', sortRocList[l][m])
             }
         }
     }
@@ -223,36 +242,24 @@ if(posteriorName == ''){
 }
 
 
-def calculateRoc(j,
-                 priorInfo,
-                 posteriorInfo,
-                 enableRoc,
-                 featureSize,
-                 rocSize,
-                 rocMin,
-                 rocMax,
-                 rocStep,
-                 fpCount,
-                 tpCount,
-                 negCount,
-                 posCount){
-    if(enableRoc == "true"){
-        priorList = priorInfo.split()
-        posteriorList = posteriorInfo.split(',')
-        for(int i in 0..<featureSize){
-            for(int k in 0..<rocSize){
-                tmp = (rocMin + rocStep*k).round(3)
-                rocThreshold = (tmp > rocMax? rocMax : tmp )
+def calculateRoc(rocCal){
+    if(rocCal.enableRoc == "true"){
+        priorList = rocCal.prior.split()
+        posteriorList = rocCal.posterior.split(',')
+        for(int i in 0..<rocCal.featureSize){
+            for(int k in 0..<rocCal.rocSize){
+                tmp = (rocCal.rocMin + rocCal.rocStep*k).round(3)
+                rocThreshold = (tmp > rocCal.rocMax? rocCal.rocMax : tmp )
                 if(priorList[i].toFloat() >= rocThreshold){
-                    posCount[i][j][k] ++
+                    rocCal.posCount[i][rocCal.j][k] ++
                     if(posteriorList[i].toFloat() >= rocThreshold) {
-                        tpCount[i][j][k] ++
+                        rocCal.tpCount[i][rocCal.j][k] ++
                     }
                 }
                 else{
-                    negCount[i][j][k] ++
+                    rocCal.negCount[i][rocCal.j][k] ++
                     if(posteriorList[i].toFloat() >= rocThreshold) {
-                        fpCount[i][j][k] ++
+                        rocCal.fpCount[i][rocCal.j][k] ++
                     }
                 }
             }
@@ -260,27 +267,17 @@ def calculateRoc(j,
     }
 }
 
-def updateRoc(featureSize,
-              rocMin,
-              rocStep,
-              rocSize,
-              splitSize,
-              list3,
-              sortList3,
-              fpCount,
-              tpCount,
-              negCount,
-              posCount){
-    for(int i in 0..<featureSize){
-        for(int j in 0..<splitSize){
-            for(int k in 0..<rocSize) {
-                list3[i][j][k] = new roc(threshold: (rocMin + rocStep*k).round(3),
-                        fpr:(negCount[i][j][k]>0? fpCount[i][j][k].toFloat()/negCount[i][j][k].toFloat() : 0),
-                        tpr:(posCount[i][j][k]>0? tpCount[i][j][k].toFloat()/posCount[i][j][k].toFloat() : 0))
+def updateRoc(rocUpdates){
+    for(int i in 0..<rocUpdates.featureSize){
+        for(int j in 0..<rocUpdates.splitSize){
+            for(int k in 0..<rocUpdates.rocSize) {
+                rocUpdates.rocList[i][j][k] = new roc(threshold: (rocUpdates.rocMin + rocUpdates.rocStep*k).round(3),
+                        fpr:(rocUpdates.negCount[i][j][k]>0? rocUpdates.fpCount[i][j][k].toFloat()/rocUpdates.negCount[i][j][k].toFloat() : 0),
+                        tpr:(rocUpdates.posCount[i][j][k]>0? rocUpdates.tpCount[i][j][k].toFloat()/rocUpdates.posCount[i][j][k].toFloat() : 0))
             }
-            list3[i][j][rocSize] = new roc(threshold:0, fpr:0, tpr:0)
-            list3[i][j][rocSize+1] = new roc(threshold:1, fpr:1, tpr:1)
-            sortList3[i][j] = list3[i][j].sort{a,b -> a.fpr<=>b.fpr}
+            rocUpdates.rocList[i][j][rocUpdates.rocSize] = new roc(threshold:0, fpr:0, tpr:0)
+            rocUpdates.rocList[i][j][rocUpdates.rocSize+1] = new roc(threshold:1, fpr:1, tpr:1)
+            rocUpdates.sortRocList[i][j] = rocUpdates.rocList[i][j].sort{a,b -> a.fpr<=>b.fpr}
         }
     }
 }
