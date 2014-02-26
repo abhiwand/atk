@@ -132,6 +132,30 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
         return s
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False):
+        """
+        Builds a bipartite graph according to the settings in the builder
+
+        Parameters
+        ----------
+        graph_name : string
+            name for the new graph
+        overwrite : Bool, optional
+            if the given graph_name already exists, overwrite=True will
+            overwrite the existing graph; overwrite=False will raise an Error
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
+
+        Returns
+        -------
+        graph : Graph
+            new graph object
+        """
         if len(self._vertex_list) != 2:
             raise ValueError("ERROR: bipartite graph construction requires 2 " +
                 "vertex sources; " + str(len(self._vertex_list)) + " detected")
@@ -169,6 +193,30 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
         return s
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False):
+        """
+        Builds a property graph according to the settings in the builder
+
+        Parameters
+        ----------
+        graph_name : string
+            name for the new graph
+        overwrite : Bool, optional
+            if the given graph_name already exists, overwrite=True will
+            overwrite the existing graph; overwrite=False will raise an Error
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
+
+        Returns
+        -------
+        graph : Graph
+            new graph object
+        """
         return build(graph_name,
                      self._source,
                      self._vertex_list,
