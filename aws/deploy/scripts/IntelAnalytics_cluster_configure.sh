@@ -158,12 +158,12 @@ then
     nodes="master"
     for ((i = 1; i < ${csize}; i++))
     do
-        nodes="${nodes},`printf "%02d" ${i}`"
+        nodes="${nodes},`printf "node%02d" ${i}`"
     done
     ${dryrun} ssh -i ${pemfile} ${IA_USR}@${m} bash -c "'
     pushd ~/IntelAnalytics;
-    echo $nodes | sed 's/,/\n/g' > hadoop/conf/slaves;
-    echo $nodes | sed 's/,/\n/g' > hbase/conf/regionservers;
+    echo $nodes | sed \"s/,/\n/g\" > hadoop/conf/slaves;
+    echo $nodes | sed \"s/,/\n/g\" > hbase/conf/regionservers;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase.properties;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase-es.properties;
     sed -i \"s/<storage.hostname.*storage.hostname>/<storage.hostname>"${nodes}"</storage.hostname>/g\" titan/conf/rexstitan-hbase-es.xml;
