@@ -15,7 +15,6 @@
 #    IA_SGROUP_ADMSSH, the default Adm SSH access security group for this VPC
 # - You must have the most recent EC2 CLI to allow this scrip to work, particularly the
 #   ec2-run-instances needs the latest version to support public ip enabling option
-# - You must have the jq json command line parser and version 1.2.1 of aws cli tools.
 # - This currently does not support rolling back to delete resources created but failed to
 #   get started
 # - By default this only does a fake dry-run, "fake" as it is still only create some resources
@@ -346,7 +345,7 @@ cmd_asg_opts="/usr/local/bin/aws autoscaling create-auto-scaling-group  --launch
         IA_loginfo "Creating scaling group ${cname}, executing..."
 	    IA_loginfo " ${cmd_asg_opts}"
         eval $cmd_asg_opts
-        #IA_add_name_tag ${cniids[$i]} ${cnnames[$i]}
+        IA_add_notifications ${cname}
     else
         IA_loginfo "DRYRUN:creating launch config  ${cname}, executing..."
         IA_loginfo " ${cmd_lc_opts}"

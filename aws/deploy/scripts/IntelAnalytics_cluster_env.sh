@@ -745,12 +745,11 @@ function IA_generate_hosts_file_auto_scale()
         privateIp=$(echo $details | jq -r -c '.PrivateIpAddress')
         securityGroups=$(echo $details | jq  '.SecurityGroups[].GroupId' | tr "\\n" " "  )
         instanceId=$(echo $details | jq -r -c  '.InstanceId' )
-        echo $privateIp
+    
         i=$(echo $details | jq -r -c '.AmiLaunchIndex')
         #while i'm deciding the fate of the instances i'm going to set the first launched instance as the master
         #set the extra security group and update the name tag
         if [ $i -eq 0  ]; then
-            echo $i
             /usr/local/bin/aws ec2 create-tags --resources $instanceId --tags Key=Name,Value="$clusterName-master"
             eval " /usr/local/bin/aws ec2 modify-instance-attribute --instance-id $instanceId --groups $securityGroups \"$masterGroup\" "
         fi
@@ -800,4 +799,60 @@ function IA_health_check_auto_scale()
     done
 
     return $healthPassed   
+}
+
+#create a cloud watch alarms and assign notification
+#Params:
+#   name: the alarm name
+#   description: the alarm description
+#   metric: The metric to watch
+#   namespace: the namespace of the metric ie "AWS/EC2
+#   statistic: aggregation of the metric Sum/Count/Samples/Average
+#   period: interval we should run at
+#   threshold: value we check comparision against
+#   comparison: the comparison operator
+#   dimensions: the metrics dimension in our case it's always Name=AutoScalingGroupName,Value=$clusterName
+function IA_add_alarm()
+{
+    #will change to pdl when external access is approved
+    local ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:rodorad"
+    
+    local name=$1
+    local description=$2
+    local metric=$3
+    local namespace=$4
+    local statistic=$5
+    local period=$6
+    local evaluationPeriod=1
+    local threshold=$7
+    local comparision=$8
+    local dimensions=$9
+    
+    aws cloudwatch put-metric-alarm --alarm-name "$name" \
+    --alarm-description "$description" --metric-name "$metric" \
+    --namespace "$namespace" --statistic "$statistic" --period $period --evaluation-periods $evaluationPeriod --threshold $threshold \
+    --comparison-operator $comparision --dimensions  ${dimensions} \
+    --alarm-actions "$ALARM_ARN_NOTIFICATION"
+}
+
+#enable metrics and attach alarms and notifications
+#Params:
+#   clusterName: the cluster name aka cname
+function IA_add_notifications()
+{
+    local clusterName=$1
+    
+    local ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:rodorad"
+    
+    IA_loginfo "Enable scaling group metrics"
+    aws autoscaling enable-metrics-collection --auto-scaling-group-name "$clusterName" --granularity "1Minute"
+    IA_loginfo "Enable scaling group notifications"
+    aws autoscaling put-notification-configuration --auto-scaling-group-name "$clusterName" \
+    --topic-arn $ALARM_ARN_NOTIFICATION --notification-types "autoscaling:EC2_INSTANCE_TERMINATE" 
+    IA_loginfo "Add alarms"
+    
+    IA_add_alarm "$clusterName-Instance-count" "monitor instance count" "GroupInServiceInstances" "AWS/AutoScaling" "Sum" 60 3.0 "LessThanOrEqualToThreshold" "Name=AutoScalingGroupName,Value=$clusterName"
+    
+    IA_add_alarm "$clusterName-failed-status" "monitor failed state should catch reboots" "StatusCheckFailed" "AWS/EC2" "Sum" 60 0.0  "GreaterThanThreshold" "Name=AutoScalingGroupName,Value=$clusterName"
+
 }
