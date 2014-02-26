@@ -35,13 +35,47 @@ public class PropertyGraphSchema {
 
     private ArrayList<VertexSchema> vertexSchemata;
     private ArrayList<EdgeSchema>   edgeSchemata;
+    private HashMap<String, Class<?>> propTypeMap;
+
 
     /**
      * Allocates a new property graph schema.
      */
+
     public PropertyGraphSchema() {
         vertexSchemata = new ArrayList<VertexSchema>();
         edgeSchemata   = new ArrayList<EdgeSchema>();
+        this.propTypeMap = new HashMap<String, Class<?>>();
+    }
+
+    /**
+     * Allocate and initialize the property graph schema from property type information and edge signatures.
+     * @param propTypeMap  Map of property names to datatype classes.
+     * @param edgeSignatures  Map of edge labels to lists of property names.
+     */
+    public PropertyGraphSchema(HashMap<String, Class<?>> propTypeMap, HashMap<String, ArrayList<String>> edgeSignatures) {
+        vertexSchemata = new ArrayList<VertexSchema>();
+        edgeSchemata   = new ArrayList<EdgeSchema>();
+        this.propTypeMap = propTypeMap;
+
+        for (String edgeLabel : edgeSignatures.keySet()) {
+
+            EdgeSchema edgeSchema = new EdgeSchema(edgeLabel);
+
+            ArrayList<String> properties = edgeSignatures.get(edgeLabel);
+
+            for (String property : properties) {
+
+                // this is horrible, but I won't clean it up until I can safely get rid of the old code
+                // the "schema" information should contain property names to datatypes, and edge labels to lists of names
+                // with no datatype
+                PropertySchema propertySchema = new PropertySchema(property, propTypeMap.get(property));
+                edgeSchema.getPropertySchemata().add(propertySchema);
+            }
+
+            edgeSchemata.add(edgeSchema);
+        }
+
     }
 
     /**
@@ -76,6 +110,11 @@ public class PropertyGraphSchema {
         return edgeSchemata;
     }
 
+
+    public HashMap<String, Class<?>> getPropTypeMap() {
+        return this.propTypeMap;
+
+    }
     /**
      * Gets a set of the property names used in the schema of the property graph.
      * <p>The set is newly allocated and populated with each call.</p>
@@ -85,15 +124,26 @@ public class PropertyGraphSchema {
 
         HashMap<String, Class<?>> map = new HashMap<String, Class<?>>();
 
+        for (String property : propTypeMap.keySet()) {
+            map.put(property, propTypeMap.get(property));
+        }
+
+        // nls todo : these aren't really helping... they shouldn't be doing anything, but in the legacy path,
+        // they are being used
+
         for (EdgeSchema edgeSchema : edgeSchemata) {
             for (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {
-                map.put(propertySchema.getName(), propertySchema.getType());
+                if (!map.containsKey(propertySchema.getName())) {
+                    map.put(propertySchema.getName(), propertySchema.getType());
+                }
             }
         }
 
         for (VertexSchema vertexSchema : vertexSchemata) {
             for (PropertySchema propertySchema : vertexSchema.getPropertySchemata()) {
-                map.put(propertySchema.getName(), propertySchema.getType());
+                if (!map.containsKey(propertySchema.getName())) {
+                    map.put(propertySchema.getName(), propertySchema.getType());
+                }
             }
         }
         return map;

@@ -29,6 +29,8 @@
 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
+REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
+
 
 json_data = LOAD 'examples/data/tshirts.json' USING TextLoader() AS (json: chararray);
 extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(json, 'Sizes[0].Price') AS price: double;
