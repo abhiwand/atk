@@ -207,7 +207,7 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
     cmd = get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, registered_edge_properties, 
                                is_directed, overwrite, append, flatten)
     
-    #set up GB environment
+    #setup GB environment
     try:
         old_hadoop_cp = os.environ['HADOOP_CLASSPATH']
     except:#may not exist
@@ -253,27 +253,7 @@ def get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registere
     print "script >> \n", script
     args = get_pig_args_with_gb('pig_execute.py')
     args += ['-s', script]
-
-    # These are the command line arguments are for the Jython script.  It is confusing
-    # because they aren't the same as the command line args that GraphBuilder takes
-#     args += ['-t', table_name,
-#              '-c', gb_conf_file,
-#              # edge and vertices lists should be surrounded with double quotes
-#              '-e', ' '.join(map(lambda e: '"' + edge_str(e) + '"', edge_list)),
-#              '-v', ' '.join(map(lambda v: '"' + vertex_str(v) + '"', vertex_list))]
-
-    # TODO: can we pass argument names without a value? These are all on/off flags only
-#     if append:
-#         args += ['-a', 'is_append']
-#     if overwrite:
-#         args += ['-o', 'is_overwrite']
-#     if is_directed:
-#         args += ['-d', 'is_directed']
-#     if flatten:
-#         args += ['-f', 'is_flatten']
-
     return args
-
 
 # validate the config can supply the necessary parameters
 missing = []
