@@ -56,6 +56,8 @@ public class BaseCLI {
     private static final String TITAN_APPEND = TitanCommandLineOptions.APPEND;
     private static final String TITAN_OVERWRITE = TitanCommandLineOptions.OVERWRITE;
     private static final String TITAN_STORAGE = TitanCommandLineOptions.STORE;
+    private static final String TITAN_PROPERTY_TYPES = TitanCommandLineOptions.PROPERTY_TYPES;
+    private static final String TITAN_EDGE_SIGNATURES = TitanCommandLineOptions.EDGE_SIGNATURES;
     private static final String TITAN_KEY_INDEX_DECLARATION_CLI_HELP = TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP;
     private static final String TITAN_KEY_INDEX = TitanCommandLineOptions.CMD_KEYS_OPTNAME;
 
@@ -74,7 +76,9 @@ public class BaseCLI {
         titanStorage(CLI_TITAN_STORAGE_OPTION),
         outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION),
         retainDanglingEdges(CLI_RETAIN_DANGLING_EDGE_OPTION),
-        addDirectionToVertex(CLI_ADD_DIRECTION_TO_VERTEX);
+        addDirectionToVertex(CLI_ADD_DIRECTION_TO_VERTEX),
+        titanPropertyTypes(CLI_TITAN_PROPERTY_TYPES),
+        titanEdgeSignatures(CLI_TITAN_EDGE_SIGNATURES);
 
         private final Option option;
         Options(Option option){this.option = option;}
@@ -83,6 +87,18 @@ public class BaseCLI {
     }
 
     //shared options amongst the demo apps no reason duplicate these configs all over the place
+    private static final Option CLI_TITAN_PROPERTY_TYPES = OptionBuilder.withLongOpt(TITAN_PROPERTY_TYPES)
+            .withDescription("specify data types of edge and vertex properties")
+            .withArgName("proptypes")
+            .hasArg()
+            .create("p");
+
+    private static final Option CLI_TITAN_EDGE_SIGNATURES = OptionBuilder.withLongOpt(TITAN_EDGE_SIGNATURES)
+            .withDescription("specify edge signatures")
+            .withArgName("edgesignatures")
+            .hasArg()
+            .create("E");
+
     private static final Option CLI_TITAN_STORAGE_OPTION = OptionBuilder.withLongOpt(TITAN_STORAGE)
             .withDescription("select Titan for graph storage")
             .withArgName("titan")
