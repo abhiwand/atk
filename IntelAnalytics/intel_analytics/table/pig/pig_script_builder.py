@@ -172,6 +172,7 @@ class PigScriptBuilder(object):
             vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v, True) + '"', vertex_list))        
             edge_rule = ('-d ' if directed else '-e ') + edges
                         
+            statements.append("SET default_parallel %s;" % global_config['pig_parallelism_factor'])
             statements.append("DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v %s %s');" % (vertex_rule, edge_rule))
             statements.append(self._build_hbase_table_load_statement(source_table_name, "base_graph"))
             statements.append("g_0 = FOREACH base_graph GENERATE FLATTEN(CreatePropGraphElements(*));")
