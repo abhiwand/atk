@@ -394,7 +394,7 @@ class PropertyGraphBuilder(GraphBuilder):
         self.registered_edge_properties = GraphBuilderEdgeProperties(edge_property_frame, edge_tuple, edge_property_cols)                     
 
 #TODO would be nice to use GraphBuilderVertexProperties/GraphBuilderEdgeProperties
-# or all properties, not only for properties added with register_vertex/edge_properties 
+#for all properties, not only for properties added with register_vertex/edge_properties 
 class GraphBuilderVertexProperties:
     """
     Class for holding GraphBuilder vertex properties that can be built from different frames

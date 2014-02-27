@@ -179,7 +179,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                      append=append,
                      flatten=flatten,
                      registered_vertex_properties=self.registered_vertex_properties,
-                     registered_edge_properties=self.registered_edge_properties,)
+                     registered_edge_properties=self.registered_edge_properties)
 
 
 def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten, registered_vertex_properties = None, registered_edge_properties = None):
