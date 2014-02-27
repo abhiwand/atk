@@ -34,6 +34,7 @@ import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.TitanKey;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
@@ -441,13 +442,16 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                 .getMapOfPropertyNamesToDataTypes();
 
         for (String property : propertyNameToTypeMap.keySet()) {
-
+        	Class<?> propertyType = propertyNameToTypeMap.get(property);
             if (!keyMap.containsKey(property)) {
-                TitanKey key = graph.makeKey(property).dataType
-                        (propertyNameToTypeMap.get(property)).make();
-                keyMap.put(property, key);
+                TitanKey key;
+				try {
+					key = graph.makeKey(property).dataType(propertyType).make();
+					keyMap.put(property, key);
+				} catch (Throwable t) {
+					LOG.error("Could not create Titan type for property " + property + " type " + propertyType, t);
+				}
             }
-
         }
 
         return keyMap;
