@@ -1016,7 +1016,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             str(num_worker)
         )
         apl_cmd = ' '.join(map(str, apl_command))
-        print apl_cmd
+        #print apl_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
         time_str = get_time_str()
