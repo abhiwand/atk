@@ -112,7 +112,8 @@ for n in `cat ${nodesfile}`; do
 done
 
 # get the master node ip
-m=`sed '1q;d' ${nodesfile}`
+m=`grep "master" ${hostsfile} | awk -F" " '{print $1}'`
+
 # get the actual cluster size
 csize=`cat ${nodesfile} | wc -l`
 
