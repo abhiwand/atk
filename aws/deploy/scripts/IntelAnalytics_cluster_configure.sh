@@ -80,6 +80,11 @@ if [ -z "${pemfile}" ] || [ ! -f ${pemfile} ]; then
     usage $(basename $0)
 fi
 
+#make sure we can ssh into the instance
+for n in `cat ${nodesfile}`; do
+    ${dryrun} ssh -o ConnectTimeout=10 -o ConnectionAttempts=10 -i ${pemfile} ${n} "ls"
+done
+
 # Update cluster-wide hosts file
 for n in `cat ${nodesfile}`; do
     # update the host file

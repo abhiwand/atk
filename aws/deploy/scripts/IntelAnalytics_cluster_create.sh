@@ -339,6 +339,8 @@ cmd_asg_opts="aws autoscaling create-auto-scaling-group  --launch-configuration-
     fi
     # create launch config and auto scale group
     if [ "${dryrun}" == "no" ]; then
+        IA_loginfo "Delete old launch config"
+        aws autoscaling delete-launch-configuration --launch-configuration-name ${cname}
         IA_loginfo "Creating launch config ${cname}, executing..."
         IA_loginfo " ${cmd_lc_opts}"
         eval $cmd_lc_opts
