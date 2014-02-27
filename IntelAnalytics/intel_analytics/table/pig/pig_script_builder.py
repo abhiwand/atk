@@ -102,17 +102,24 @@ class PigScriptBuilder(object):
         """
         return ('-d ' if directed else '-e ') + self.edge_str(registered_edge_properties.edge, True)
     
-    def _populate_schema_table(self, table_names):
-        schema_dict = {}
+    def _populate_type_table(self, table_names):
+        type_table = {}
         for table_name in table_names:
             schema = ETLSchema()
             schema.load_schema(table_name)
             field_count = len(schema.feature_names)
             for i in range(field_count):
-                schema_dict[schema.feature_names[i]] = schema.feature_types[i]
-        return schema_dict
+                try:
+                    #each property name should be associated with exactly one data type
+                    t = type_table[schema.feature_names[i]]
+                    if t != schema.feature_types[i]:
+                        raise Exception("Encountered property %s with different types %s and %s" % (schema.feature_names[i], schema.feature_types[i], t))
+                except:
+                    pass
+                type_table[schema.feature_names[i]] = schema.feature_types[i]           
+        return type_table
     
-    def _build_store_graph_statement(self, pig_alias, gb_conf_file, vertex_list, edge_list, schema_dict, other_args):
+    def _build_store_graph_statement(self, pig_alias, gb_conf_file, vertex_list, edge_list, type_table, other_args):
         #to understand the format of edge schemata and property type definitions see STORE_GRAPH macro in graphbuilder.pig
         #need to keep track of labels/properties per edge-label to union them
         edge_property_sets = {}
@@ -123,15 +130,15 @@ class PigScriptBuilder(object):
         property_typedefs = set()
         for gb_vertex in vertex_list:
             for vertex_property in gb_vertex.properties:
-                vertex_property_type = schema_dict[vertex_property]
+                vertex_property_type = type_table[vertex_property]
                 entry = vertex_property + ':' + gb_type_mapping[vertex_property_type]
                 property_typedefs.add(entry)  
-             
+                
         for gb_edge in edge_list: 
             edge_def = ''
             for edge_property in gb_edge.properties:
                 edge_property_sets[gb_edge.label].add(edge_property)
-                edge_property_type = schema_dict[edge_property]
+                edge_property_type = type_table[edge_property]
                 entry = edge_property + ':' + gb_type_mapping[edge_property_type]
                 property_typedefs.add(entry)
                 
@@ -216,7 +223,7 @@ class PigScriptBuilder(object):
                 table_names.append(registered_vertex_properties.source_frame._table.table_name)
             if registered_edge_properties:
                 table_names.append(registered_edge_properties.source_frame._table.table_name)
-            schema_dict = self._populate_schema_table(table_names)
+            type_table = self._populate_type_table(table_names)
                         
             #create the property type definitions and
             #edge labels and edge property names to be passed to STORE_GRAPH
@@ -225,6 +232,6 @@ class PigScriptBuilder(object):
                 vertex_list.append(registered_vertex_properties.vertex)
             if registered_edge_properties != None:
                 edge_list.append(registered_edge_properties.edge)
-            statements.append(self._build_store_graph_statement(final_union_alias, gb_conf_file, vertex_list, edge_list, schema_dict, other_args.strip()))
+            statements.append(self._build_store_graph_statement(final_union_alias, gb_conf_file, vertex_list, edge_list, type_table, other_args.strip()))
 
         return "\n".join(statements)
