@@ -133,7 +133,10 @@ class GraphBuilder(object):
     @abc.abstractmethod
     def build(self, graph_name, overwrite, append, flatten):
         """
-        Builds a graph according to the settings in the builder
+        Builds a graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
 
         Parameters
         ----------
@@ -150,7 +153,7 @@ class GraphBuilder(object):
             as a vertex ID, it is to be expanded into one vertex for each
             entry in the list. This applies to the source and destination
             columns for edges as well. It does not apply to properties.
-            
+
         Returns
         -------
         graph : Graph
@@ -172,7 +175,10 @@ class BipartiteGraphBuilder(GraphBuilder):
     @abc.abstractmethod
     def build(self, graph_name, overwrite=False, append=False, flatten=False):
         """
-        Builds a bipartite graph according to the settings in the builder
+        Builds a bipartite graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
 
         Parameters
         ----------
@@ -255,7 +261,10 @@ class PropertyGraphBuilder(GraphBuilder):
     @abc.abstractmethod
     def build(self, graph_name, overwrite=False, append=False, flatten=False):
         """
-        Builds a property graph according to the settings in the builder
+        Builds a property graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
 
         Parameters
         ----------

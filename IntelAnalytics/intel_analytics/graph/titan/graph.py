@@ -133,7 +133,10 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False):
         """
-        Builds a bipartite graph according to the settings in the builder
+        Builds a bipartite graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
 
         Parameters
         ----------
@@ -194,7 +197,10 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False):
         """
-        Builds a property graph according to the settings in the builder
+        Builds a property graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
 
         Parameters
         ----------
