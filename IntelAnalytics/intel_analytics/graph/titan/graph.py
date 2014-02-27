@@ -250,7 +250,6 @@ def get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registere
     """
     pig_builder = PigScriptBuilder()
     script = pig_builder.create_pig_bulk_load_script(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, registered_edge_properties, is_directed, overwrite, append, flatten)
-    print "script >> \n", script
     args = get_pig_args_with_gb('pig_execute.py')
     args += ['-s', script]
     return args
