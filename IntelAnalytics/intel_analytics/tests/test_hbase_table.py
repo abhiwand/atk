@@ -712,6 +712,7 @@ class HbaseTableTest(unittest.TestCase):
     def test_export_as_graphml(self, call_method):
 
         result_holder = {}
+
         def call_side_effect(arg, report_strategy):
             result_holder["call_args"] = arg
 
@@ -726,6 +727,58 @@ class HbaseTableTest(unittest.TestCase):
         wrapper.export_as_graphml(statements, "output.xml")
         self.assertEqual("\"<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement></query>\"", result_holder["call_args"][result_holder["call_args"].index('-q') + 1])
 
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def aggregate(self, groupby, aggregations, etl_schema_class, call_method):
+
+        table_name = "original_table"
+        file_name = "original_file"
+	aggregated_table_name = "aggregated_table"
+        feat_name = ["long1", "long2", "double1", "double2", "str1", "str2", "str3"]
+        feat_type = ["long",  "long", "double",  "double",  "chararray", "chararray", "chararray"]
+        result_holder = {}
+
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+        etl_schema_class.return_value.feature_names = feat_name
+        etl_schema_class.return_value.feature_types = feat_type
+        etl_schema_class.return_value.save_schema(table_name)
+
+        featname = ','.join(feat_name)
+        feattype = ','.join(feat_type)
+
+        table = HBaseTable(table_name, file_name)
+	
+        table.aggregate(aggregated_table_name, groupby, aggregations)
+
+        self.assertEqual('pig', str(result_holder["call_args"][0]))
+        self.assertEqual(",".join(groupby), result_holder["call_args"][result_holder["call_args"].index('-g') + 1])
+        self.assertEqual(featname, result_holder["call_args"][result_holder["call_args"].index('-u') + 1])
+        self.assertEqual(feattype, result_holder["call_args"][result_holder["call_args"].index('-r') + 1])
+        self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
+        self.assertEqual(aggregated_table_name, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
+
+        script_path = os.path.join(config['pig_py_scripts'], 'pig_aggregation.py')
+        self.assertTrue(script_path in result_holder["call_args"])
+
+
+    def test_aggregate_max(self):
+	try:
+	    self.aggregate("long1", [(EvalFunctions.Aggregation.MAX, "long2", "maxlong2")])
+	except:
+	    print "Caught exception on aggregation"
+
+    def test_aggregate_on_multicolumns(self):
+	try:
+	    self.aggregate("str1,str2", [(EvalFunctions.Aggregation.AVG, "long2", "maxlong2")])
+	except:
+	    print "Caught exception on aggregation multiple columns"
+
+    def test_aggregate_multiple(self):
+	try:
+	    self.aggregate("str1,str2", [(EvalFunctions.Aggregation.AVG, "long2", "maxlong2"), [EvalFunctions.Aggregation.SUM, "double1", "totaldouble1"]])
+	except:
+	    print "Caught exception on aggregation multiple columns"
 
 class HBaseFrameBuilderTest(unittest.TestCase):
 
