@@ -499,28 +499,34 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     /**
      * Executes the MR chain that constructs a graph from the raw input
      * specified by
-     * {@code InputConfiguration} according to the graph construction rule
-     * {@code GraphBuildingRule},
+     * <code>InputConfiguration</code> according to the graph construction rule
+     * <code>GraphBuildingRule</code>,
      * and loads it into the Titan graph database.
      *
-     * @param {@code cmd}  User specified command line.
+     * @param cmd  User specified command line.
      * @throws IOException
      * @throws ClassNotFoundException
      * @throws InterruptedException
      */
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
-   	
-		// Warns the user if the Titan table already exists in Hbase.
-		
+
+        // Warns the user if the Titan table already exists in Hbase.
+
+        if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
+            conf.setBoolean(TitanConfig.GRAPHBUILDER_TITAN_APPEND, Boolean.TRUE);
+        }
+
         String titanTableName = TitanConfig.config.getProperty
                 ("TITAN_STORAGE_TABLENAME");
 
+        boolean needsInit = true;
         if (hbaseUtils.tableExists(titanTableName)) {
             if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
                 LOG.info("WARNING:  hbase table " + titanTableName +
                          " already exists. Titan will append new graph to " +
                         "existing data.");
+                needsInit = false;
             } else if (cmd.hasOption(BaseCLI.Options.titanOverwrite
                     .getLongOpt())) {
                 HBaseUtils.getInstance().removeTable(titanTableName);
@@ -556,7 +562,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                     .getLongOpt());
         }
 
-        initTitanGraph(keyCommandLine);
+        if (needsInit) {
+            initTitanGraph(keyCommandLine);
+        }
 
         runReadInputLoadVerticesMRJob(intermediateDataFilePath);
 
