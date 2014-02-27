@@ -113,11 +113,14 @@ class PigScriptBuilder(object):
         return schema_dict
     
     def _build_store_graph_statement(self, pig_alias, gb_conf_file, vertex_list, edge_list, schema_dict, other_args):
+        #to understand the format of edge schemata and property type definitions see STORE_GRAPH macro in graphbuilder.pig
+        #need to keep track of labels/properties per edge-label to union them
+        edge_property_sets = {}
+        for gb_edge in edge_list: 
+            edge_property_sets[gb_edge.label] = set()
+            
         #create the property type definitions in property_typedefs set
-        #create the edge labels and edge property names in edge_schemata set
-        #see STORE_GRAPH macro in graphbuilder.pig
         property_typedefs = set()
-        edge_schemata = [] # order is important in edge_schemata, need label first
         for gb_vertex in vertex_list:
             for vertex_property in gb_vertex.properties:
                 vertex_property_type = schema_dict[vertex_property]
@@ -126,18 +129,23 @@ class PigScriptBuilder(object):
              
         for gb_edge in edge_list: 
             edge_def = ''
-            #gb_edge.label may already exist in edge_schemata list
-            if gb_edge.label not in edge_schemata:
-                edge_schemata.append(gb_edge.label)
             for edge_property in gb_edge.properties:
-                #edge_property may already exist in edge_schemata list
-                if edge_property not in edge_schemata:
-                    edge_schemata.append(edge_property)
+                edge_property_sets[gb_edge.label].add(edge_property)
                 edge_property_type = schema_dict[edge_property]
                 entry = edge_property + ':' + gb_type_mapping[edge_property_type]
                 property_typedefs.add(entry)
+                
         type_info = ','.join(property_typedefs)
-        edge_schemata_str = ','.join(edge_schemata)        
+        
+        edge_schemata_str = ''
+        edge_labels = edge_property_sets.keys()
+        for i in range(len(edge_labels)):
+            label = edge_labels[i]
+            property_set = edge_property_sets[label]
+            edge_schemata_str += label + ',' + ','.join(property_set)  
+            if i != len(edge_labels) - 1:
+                edge_schemata_str += ';'
+                
         return "STORE_GRAPH(%s, '%s', '%s', '%s', '%s');" % (pig_alias, gb_conf_file, type_info, edge_schemata_str, other_args)
     
     def _build_load_titan_statement(self, directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args): 
@@ -169,7 +177,11 @@ class PigScriptBuilder(object):
         #@Deprecated: LOAD_TITAN should be removed later, we want to move to a single bulk loading pig macro
         if registered_vertex_properties == None and registered_edge_properties == None:
             statements.append(self._build_load_titan_statement(directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args)) 
-        else:      
+        else:
+            #first delete the temp files used by STORE_GRAPH
+            statements.append("rmf /tmp/empty_file_to_end_pig_action")
+            statements.append("rmf /tmp/empty_file_to_start_pig_action")
+            statements.append("fs -mkdir /tmp/empty_file_to_start_pig_action")
             edges = ' '.join(map(lambda e: '"' + self.edge_str(e, True) + '"', edge_list))
             vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v, True) + '"', vertex_list))        
             edge_rule = ('-d ' if directed else '-e ') + edges
@@ -197,8 +209,6 @@ class PigScriptBuilder(object):
                     statements.append("unioned = GRAPH_UNION(g_0, g_ep);")
                 final_union_alias='unioned'
             
-            assert final_union_alias != None
-            
             #populate the name/type dictionary from etl_schema, which will be used 
             #when generating the STORE_GRAPH statement in the end
             table_names = [source_table_name]
@@ -207,7 +217,6 @@ class PigScriptBuilder(object):
             if registered_edge_properties:
                 table_names.append(registered_edge_properties.source_frame._table.table_name)
             schema_dict = self._populate_schema_table(table_names)
-            print "schema_dict " , schema_dict
                         
             #create the property type definitions and
             #edge labels and edge property names to be passed to STORE_GRAPH
@@ -219,4 +228,3 @@ class PigScriptBuilder(object):
             statements.append(self._build_store_graph_statement(final_union_alias, gb_conf_file, vertex_list, edge_list, schema_dict, other_args.strip()))
 
         return "\n".join(statements)
-        
