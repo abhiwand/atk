@@ -435,11 +435,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         for (String fieldName : vertexIdFieldList) {
 
-            String vidCell = (String) getTupleData(input, inputSchema, fieldName);
+            Object vidCell =  getTupleData(input, inputSchema, fieldName);
 
             if (null != vidCell) {
 
-                for (String vertexId : expandString(vidCell)) {
+                for (String vertexId : expandString(vidCell.toString())) {
 
                     // create vertex
 
@@ -492,23 +492,29 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             srcVertexFieldName     = edgeRule.getSrcFieldName();
             tgtVertexFieldName     = edgeRule.getDstFieldName();
 
-            String srcVertexCellString = (String) getTupleData(input, inputSchema, srcVertexFieldName);
-            String tgtVertexCellString = (String) getTupleData(input, inputSchema, tgtVertexFieldName);
+            Object srcVertexCell =  getTupleData(input, inputSchema, srcVertexFieldName);
+            Object tgtVertexCell =  getTupleData(input, inputSchema, tgtVertexFieldName);
 
-            StringType srcLabel = null;
-            String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
-            if (srcLabelString != null) {
-                srcLabel = new StringType(srcLabelString);
+            if (srcVertexCell != null && tgtVertexCell != null)  {
+
+                String srcVertexCellString =  srcVertexCell.toString();
+                String tgtVertexCellString =  tgtVertexCell.toString();
+
+                StringType srcLabel = null;
+                String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
+                if (srcLabelString != null) {
+                    srcLabel = new StringType(srcLabelString);
+                }
+
+                StringType tgtLabel = null;
+                String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
+                if (tgtLabelString != null) {
+                    tgtLabel = new StringType(tgtLabelString);
+                }
+
+                processEdges(input, inputSchema, srcVertexCellString, tgtVertexCellString, srcLabel, tgtLabel, eLabel,
+                        edgeAttributes, edgeRule, fieldNameToDataType, outputBag);
             }
-
-            StringType tgtLabel = null;
-            String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
-            if (tgtLabelString != null) {
-                tgtLabel = new StringType(tgtLabelString);
-            }
-
-            processEdges(input, inputSchema, srcVertexCellString, tgtVertexCellString, srcLabel, tgtLabel, eLabel,
-                    edgeAttributes, edgeRule, fieldNameToDataType, outputBag);
         }
 
         return outputBag;

@@ -45,4 +45,4 @@ merged = MERGE_DUPLICATE_ELEMENTS(pge); -- merge the duplicate vertices and edge
 
 
 -- -O flag specifies overwriting the input Titan table
-STORE_GRAPH(merged, '$GB_HOME/examples/hbase-titan-conf.xml', 'employee_id:Integer,name:String,age:Integer,dept:String,manager:Integer,underManager:String', 'worksUnder,underManager', '-O');
+STORE_GRAPH(merged, '$GB_HOME/examples/hbase-titan-conf.xml', 'name:String,age:Integer,dept:String,underManager:String', 'worksUnder,underManager', '-O');
