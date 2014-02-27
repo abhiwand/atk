@@ -383,14 +383,14 @@ colD,colB,edgeDB,colU"""
         vertex_list.append(GraphBuilderVertex('v_4', ['v_prop_1','v_prop_2']))
         vertex_list.append(GraphBuilderVertex('v_5', ['v_prop_1','v_prop_2']))
         edge_list = []
-        edge_list.append(GraphBuilderEdge(('v_1', 'v_2', 'label_1'), ['e_prop_1', 'e_prop_2']))
-        edge_list.append(GraphBuilderEdge(('v_2', 'v_3', 'label_2'), ['e_prop_1', 'e_prop_2']))
-        edge_list.append(GraphBuilderEdge(('v_3', 'v_4', 'label_3'), ['e_prop_1', 'e_prop_2']))
-        edge_list.append(GraphBuilderEdge(('v_4', 'v_5', 'label_4'), ['e_prop_1', 'e_prop_2']))
-        edge_list.append(GraphBuilderEdge(('v_5', 'v_1', 'label_5'), ['e_prop_1', 'e_prop_2']))   
+        edge_list.append(GraphBuilderEdge(('v_1', 'v_2', 'label'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_2', 'v_3', 'label'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_3', 'v_4', 'label'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_4', 'v_5', 'label'), ['e_prop_1', 'e_prop_2']))
+        edge_list.append(GraphBuilderEdge(('v_5', 'v_1', 'label'), ['e_prop_1', 'e_prop_2']))   
         
         store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
-        expected = "STORE_GRAPH(to_store, 'conf.xml', 'v_prop_2:String,e_prop_2:Float,e_prop_1:Double,v_prop_1:String', 'label_4,e_prop_2,label_5,e_prop_1,label_1,label_2,label_3', '-a -F');"
+        expected = "STORE_GRAPH(to_store, 'conf.xml', 'v_prop_2:String,e_prop_2:Float,e_prop_1:Double,v_prop_1:String', 'label,e_prop_1,e_prop_2', '-a -F');"
         self.assertEqual(store_graph, expected)             
 
     def test_gb_store_graph_overwrite(self):
@@ -409,7 +409,7 @@ colD,colB,edgeDB,colU"""
         edge_list = []
         edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2', 'e_prop_3']))
         store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
-        expected = "STORE_GRAPH(to_store, 'conf.xml', 'e_prop_1:Long,v_prop_2:String,e_prop_3:Float,v_prop_1:String,e_prop_2:Long', 'e_prop_2,e_prop_3,e_prop_1,label', '-O');"
+        expected = "STORE_GRAPH(to_store, 'conf.xml', 'e_prop_1:Long,v_prop_2:String,e_prop_3:Float,v_prop_1:String,e_prop_2:Long', 'label,e_prop_1,e_prop_2,e_prop_3', '-O');"
         self.assertEqual(store_graph, expected)
                 
     def test_gb_store_graph_append(self):
@@ -427,7 +427,7 @@ colD,colB,edgeDB,colU"""
         edge_list = []
         edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2']))
         store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
-        expected = "STORE_GRAPH(to_store, 'conf.xml', 'e_prop_1:Long,v_prop_2:String,v_prop_1:String,e_prop_2:Long', 'e_prop_2,e_prop_1,label', '-a');"
+        expected = "STORE_GRAPH(to_store, 'conf.xml', 'e_prop_1:Long,v_prop_2:String,v_prop_1:String,e_prop_2:Long', 'label,e_prop_1,e_prop_2', '-a');"
         self.assertEqual(store_graph, expected)
         
     def test_gb_store_graph_flatten(self):
@@ -450,7 +450,7 @@ colD,colB,edgeDB,colU"""
         edge_list = []
         edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2', 'e_prop_3']))
         store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
-        expected = "STORE_GRAPH(to_store, 'conf.xml', 'v_prop_6:Double,v_prop_1:String,v_prop_2:String,v_prop_3:Integer,e_prop_2:Long,e_prop_1:Long,e_prop_3:Float,v_prop_5:Double,v_prop_4:Integer', 'e_prop_2,e_prop_3,e_prop_1,label', '-F');"
+        expected = "STORE_GRAPH(to_store, 'conf.xml', 'v_prop_6:Double,v_prop_1:String,v_prop_2:String,v_prop_3:Integer,e_prop_2:Long,e_prop_1:Long,e_prop_3:Float,v_prop_5:Double,v_prop_4:Integer', 'label,e_prop_1,e_prop_2,e_prop_3', '-F');"
         self.assertEqual(store_graph, expected)
             
 class TestGraphConfig(unittest.TestCase):

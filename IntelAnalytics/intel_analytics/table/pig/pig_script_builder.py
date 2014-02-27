@@ -117,7 +117,7 @@ class PigScriptBuilder(object):
         #create the edge labels and edge property names in edge_schemata set
         #see STORE_GRAPH macro in graphbuilder.pig
         property_typedefs = set()
-        edge_schemata = set()
+        edge_schemata = [] # order is important in edge_schemata, need label first
         for gb_vertex in vertex_list:
             for vertex_property in gb_vertex.properties:
                 vertex_property_type = schema_dict[vertex_property]
@@ -127,10 +127,12 @@ class PigScriptBuilder(object):
         for gb_edge in edge_list: 
             edge_def = ''
             #gb_edge.label may already exist in edge_schemata list
-            edge_schemata.add(gb_edge.label)
+            if gb_edge.label not in edge_schemata:
+                edge_schemata.append(gb_edge.label)
             for edge_property in gb_edge.properties:
                 #edge_property may already exist in edge_schemata list
-                edge_schemata.add(edge_property)
+                if edge_property not in edge_schemata:
+                    edge_schemata.append(edge_property)
                 edge_property_type = schema_dict[edge_property]
                 entry = edge_property + ':' + gb_type_mapping[edge_property_type]
                 property_typedefs.add(entry)
