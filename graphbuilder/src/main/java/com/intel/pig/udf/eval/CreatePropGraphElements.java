@@ -104,7 +104,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      * Special vertex name used when retaining dangling edgess
      */
     public static final String NULL_VERTEX_NAME          = "null";
-    public static final String VERTEX_PROPERTY_DIRECTION = "direction";
+    public static final String VERTEX_PROPERTY_SIDE      = "side";
     public static final String LEFT                      = "L";
     public static final String RIGHT                     = "R";
 
@@ -370,7 +370,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      * Chararray -> String
      * @param value
      * @param typeByte
-     *
+     * @return
      * @throws IllegalArgumentException
      */
     private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte)
@@ -432,11 +432,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         for (String fieldName : vertexIdFieldList) {
 
-            String vidCell = (String) getTupleData(input, inputSchema, fieldName);
+            Object vidCell =  getTupleData(input, inputSchema, fieldName);
 
             if (null != vidCell) {
 
-                for (String vertexId : expandString(vidCell)) {
+                for (String vertexId : expandString(vidCell.toString())) {
 
                     serializedVertexId.set(vertexId);
                     Vertex<StringType> vertex = new Vertex<StringType>(serializedVertexId);
@@ -480,28 +480,34 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         for (String eLabel : edgeLabelToEdgeRules.keySet()) {
 
-            EdgeRule     edgeRule           = edgeLabelToEdgeRules.get(eLabel);
-            List<String> edgeAttributeList  = edgeRule.getPropertyFieldNames();
-            String[]     edgeAttributes     = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
+            EdgeRule     edgeRule          = edgeLabelToEdgeRules.get(eLabel);
+            List<String> edgeAttributeList = edgeRule.getPropertyFieldNames();
+            String[]     edgeAttributes    = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
 
-            String srcVertexFieldName     = edgeRule.getSrcFieldName();
-            String tgtVertexFieldName     = edgeRule.getDstFieldName();
+            String srcVertexFieldName      = edgeRule.getSrcFieldName();
+            String tgtVertexFieldName      = edgeRule.getDstFieldName();
 
-            String srcVertexCellString = (String) getTupleData(input, inputSchema, srcVertexFieldName);
-            String tgtVertexCellString = (String) getTupleData(input, inputSchema, tgtVertexFieldName);
+            Object srcVertexCell =  getTupleData(input, inputSchema, srcVertexFieldName);
+            Object tgtVertexCell =  getTupleData(input, inputSchema, tgtVertexFieldName);
 
-            String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
-            if (srcLabelString != null) {
-                srcLabel.set(srcLabelString);
+            if (srcVertexCell != null && tgtVertexCell != null)  {
+
+                String srcVertexCellString =  srcVertexCell.toString();
+                String tgtVertexCellString =  tgtVertexCell.toString();
+            
+                String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
+                if (srcLabelString != null) {
+                    srcLabel.set(srcLabelString);
+                }
+
+                String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
+                if (tgtLabelString != null) {
+                    tgtLabel.set(tgtLabelString);
+                }
+
+                processEdges(input, inputSchema, srcVertexCellString, tgtVertexCellString, srcLabel, tgtLabel, eLabel,
+                        edgeAttributes, edgeRule, fieldNameToDataType, outputBag);
             }
-
-            String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
-            if (tgtLabelString != null) {
-                tgtLabel.set(tgtLabelString);
-            }
-
-            processEdges(input, inputSchema, srcVertexCellString, tgtVertexCellString, srcLabel, tgtLabel, eLabel,
-                    edgeAttributes, edgeRule, fieldNameToDataType, outputBag);
         }
 
         return outputBag;
@@ -713,7 +719,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         // This property is not added in the reverse edge when bidirectional edges are enabled
 
         if (addDirectionToVertices) {
-            vertex.setProperty(VERTEX_PROPERTY_DIRECTION, pigTypesToSerializedJavaTypes(direction, DataType.CHARARRAY));
+            vertex.setProperty(VERTEX_PROPERTY_SIDE, pigTypesToSerializedJavaTypes(direction, DataType.CHARARRAY));
         }
         return vertex;
     }
