@@ -80,7 +80,7 @@ DEFINE STORE_GRAPH(graphelements, config_file, property_types, edge_schemata, ot
 	-- the STORE  dumps the graphelements into a sequence file for the map reduce task to consume
 	-- the LOAD is a dummy operation
 
-    stored_graph = MAPREDUCE 'target/graphbuilder-2.0-alpha-with-deps.jar'
+    stored_graph = MAPREDUCE '$GB_JAR'
                    STORE $graphelements INTO '/tmp/graphdb_storage_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile()
                    LOAD '/tmp/empty_file_to_start_pig_action' USING TextLoader() AS (line:chararray)
                    `com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB -conf $config_file -i /tmp/graphdb_storage_sequencefile -p $property_types -E $edge_schemata $other_args` ;
@@ -152,7 +152,7 @@ DEFINE LOAD_TITAN_NEW(input_hbase_table_name, full_column_names, schema, vertex_
 
     merged = MERGE_DUPLICATE_ELEMENTS(pge); -- merge the duplicate vertices and edges
 
-    stored_graph = MAPREDUCE 'target/graphbuilder-2.0-alpha-with-deps.jar'
+    stored_graph = MAPREDUCE '$GB_JAR'
                    STORE merged INTO '/tmp/graphdb_storage_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile()
                    LOAD '/tmp/empty_file_to_start_pig_action' USING TextLoader() AS (line:chararray)
                    `com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB -conf $config_file -i /tmp/graphdb_storage_sequencefile -p $property_types -E $edge_schemata $other_args` ;
