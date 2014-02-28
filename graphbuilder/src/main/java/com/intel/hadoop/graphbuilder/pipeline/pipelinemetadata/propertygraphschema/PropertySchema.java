@@ -19,26 +19,41 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
+import com.intel.hadoop.graphbuilder.types.StringType;
+import org.apache.hadoop.io.Writable;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+
 /**
  * Encapsulates the name and datatype of a property label.
  * <p>The expected use of this information is declaring keys for loading the 
  * constructed graph into a graph database.</p>
  */
 
-public class PropertySchema {
+public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
-    private String    name;
+    private StringType name = new StringType();
 
-    private Class<?>  type;
+    private StringType type = new StringType();
+
+    private StringType id = new StringType();
+
+    /**
+     * Empty constructor for read methods.
+     */
+    public PropertySchema() {
+    }
 
     /**
      * Constructor.
-     * @param name The name of the property.
-     * @param type The datatype of the property, a Class<?> object.
+     * @param name The name of the property as a serialized string (@code StringType).
+     * @param type The name of the datatype of the property as a serialized string (@code StringType).
      */
     public PropertySchema(String name, Class<?> type) {
-        this.name = name;
-        this.type = type;
+        this.name.set(name);
+        this.type.set(type.getName());
     }
 
     /**
@@ -46,7 +61,7 @@ public class PropertySchema {
      * @param name The name of the property.
      */
     public void setName(String name) {
-        this.name = name;
+        this.name.set(name);
     }
 
     /**
@@ -54,22 +69,67 @@ public class PropertySchema {
      * @return  The name of the property.
      */
     public String getName() {
-        return this.name;
+        return this.name.get();
     }
 
+    /**
+     * Equality test.
+     * @return true if the constituent name and datatype of the two property schemata are equal
+     */
+    @Override
+    public boolean equals(Object in){
+
+        try {
+            return ((in instanceof PropertySchema)
+                    && (this.getName().equals(((PropertySchema) in).getName()))
+                    && (this.getType().equals(((PropertySchema) in).getType())));
+        } catch (ClassNotFoundException e) {
+            // nls todo : maybe raising an exception is better
+            return false;
+        }
+
+    }
+
+    public StringType getID() {
+        id.set(PROPERTY_SCHEMA + "." + name.get());
+        return id;
+    }
     /**
      * Sets the datatype of the property.
      * @param type  The datatype of the property.
      */
     public void setType(Class<?> type) {
-        this.type = type;
+        this.type.set(type.getName());
     }
 
     /**
      * Gets the datatype of the property.
      * @return datatype The datatype of the property.
      */
-    public Class<?> getType() {
-        return this.type;
+    public Class<?> getType() throws ClassNotFoundException {
+        return Class.forName(this.type.get());
+    }
+
+
+    /**
+     * Reads a PropertySchema from an input stream.
+     * @param input  The input stream.
+     * @throws java.io.IOException
+     */
+    @Override
+    public void readFields(DataInput input) throws IOException {
+        name.readFields(input);
+        type.readFields(input);
+    }
+
+    /**
+     * Writes a PropertySchema to an output stream.
+     * @param output  The output stream.
+     * @throws IOException
+     */
+    @Override
+    public void write(DataOutput output) throws IOException {
+        name.write(output);
+        type.write(output);
     }
 }

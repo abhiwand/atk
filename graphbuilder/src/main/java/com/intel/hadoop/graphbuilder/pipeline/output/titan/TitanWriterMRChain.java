@@ -127,6 +127,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private Functional edgeReducerFunction;
     private boolean    cleanBidirectionalEdge;
 
+    public TitanWriterMRChain() {
+    }
 
     /**
      * Acquires the set-up time components necessary for creating a graph from  
@@ -159,43 +161,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         this.conf = hbaseUtils.getConfiguration();
 
-    }
-
-    /**
-     * Sets the user defined functions to reduce duplicate vertices and edges.
-     *
-     * If the user does not specify these functions, the default method of  
-	 * merging property lists will be used.
-     *
-     * @param vertexReducerFunction   The user specified function for
-	 *                                        reducing duplicate vertices.
-     * @param edgeReducerFunction     The user specified function for
-	 *                                        reducing duplicate edges.
-     */
-
-    public void setFunctionClass(Class vertexReducerFunction,
-                                 Class edgeReducerFunction) {
-        try {
-            if (vertexReducerFunction != null) {
-                this.vertexReducerFunction = (Functional)
-                        vertexReducerFunction.newInstance();
-            }
-
-            if (edgeReducerFunction != null) {
-                this.edgeReducerFunction = (Functional) edgeReducerFunction
-                        .newInstance();
-            }
-        } catch (InstantiationException e) {
-            GraphBuilderExit.graphbuilderFatalExitException(StatusCode
-                    .CLASS_INSTANTIATION_ERROR,
-                    "GRAPHBUILDER_ERROR: Unable to instantiate reducer " +
-                            "functions.", LOG, e);
-        } catch (IllegalAccessException e) {
-            GraphBuilderExit.graphbuilderFatalExitException(StatusCode
-                    .CLASS_INSTANTIATION_ERROR,
-                    "GRAPHBUILDER_ERROR: Illegal access exception when " +
-                            "instantiating reducer functions.", LOG, e);
-        }
     }
 
     /**
@@ -271,10 +236,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private Integer random(){
         Random rand = new Random();
 
-        int randomNum = rand.nextInt((RANDOM_MAX - RANDOM_MIN) + 1) +
+        return rand.nextInt((RANDOM_MAX - RANDOM_MIN) + 1) +
                 RANDOM_MIN;
-
-        return randomNum;
     }
 
     /**
@@ -286,7 +249,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     public void setUserOptions(HashMap<String, String> userOpts) {
         Set<String> keys = userOpts.keySet();
         for (String key : keys)
-            conf.set(key, userOpts.get(key.toString()));
+            conf.set(key, userOpts.get(key));
     }
 
 
@@ -324,11 +287,11 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      */
     private List<GBTitanKey> parseKeyCommandLine(String keyCommandLine) {
 
-        ArrayList<GBTitanKey> gbKeyList = new ArrayList<GBTitanKey>();
+        ArrayList<GBTitanKey> gbKeyList = new ArrayList<>();
 
         if (keyCommandLine.length() > 0) {
 
-            String[] keyRules = keyCommandLine.split("\\,");
+            String[] keyRules = keyCommandLine.split(",");
 
             for (String keyRule : keyRules) {
                 String[] ruleProperties = keyRule.split(";");
@@ -400,9 +363,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private HashMap<String, TitanKey>
         declareAndCollectKeys(TitanGraph graph, String keyCommandLine) {
 
-        HashMap<String, TitanKey> keyMap = new HashMap<String, TitanKey>();
+        HashMap<String, TitanKey> keyMap = new HashMap<>();
 
-        TitanKey gbIdKey = null;
+        TitanKey gbIdKey;
 
         // Because Titan requires combination of vertex names and vertex
         // labels into single strings for unique IDs the unique
@@ -473,31 +436,35 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                             "attempting to connect to Titan.",  LOG, e);
         }
 
-        HashMap<String, TitanKey> propertyNamesToTitanKeysMap =
-                declareAndCollectKeys(graph, keyCommandLine);
+        if (graph == null) {
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.TITAN_ERROR,
+                    "GRAPHBUILDER FAILURE:  Cannot connect to Titan.", LOG);
+        } else {
 
-        // now we declare the edge labels
-        // one of these days we'll probably want to fully expose all the
-        // Titan knobs regarding manyToOne, oneToMany, etc
+            HashMap<String, TitanKey> propertyNamesToTitanKeysMap =
+                    declareAndCollectKeys(graph, keyCommandLine);
+
+            // now we declare the edge labels
+            // one of these days we'll probably want to fully expose all the
+            // Titan knobs regarding manyToOne, oneToMany, etc
 
 
 
-        for (EdgeSchema edgeSchema : graphSchema.getEdgeSchemata())  {
-            ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
+            for (EdgeSchema edgeSchema : graphSchema.getEdgeSchemata())  {
+                ArrayList<TitanKey> titanKeys = new ArrayList<>();
 
-            for (PropertySchema propertySchema : edgeSchema
-                    .getPropertySchemata() ) {
-                titanKeys.add(propertyNamesToTitanKeysMap.get(propertySchema
-                        .getName()));
+                for (PropertySchema propertySchema : edgeSchema.getPropertySchemata() ) {
+                    titanKeys.add(propertyNamesToTitanKeysMap.get(propertySchema
+                            .getName()));
+                }
+
+                TitanKey[] titanKeyArray = titanKeys.toArray(new
+                        TitanKey[titanKeys.size()]);
+                graph.makeLabel(edgeSchema.getLabel()).signature(titanKeyArray)
+                        .make();
             }
-
-            TitanKey[] titanKeyArray = titanKeys.toArray(new
-                    TitanKey[titanKeys.size()]);
-            graph.makeLabel(edgeSchema.getLabel()).signature(titanKeyArray)
-                    .make();
+            graph.commit();
         }
-
-        graph.commit();
     }
 
     /**

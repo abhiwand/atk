@@ -50,7 +50,7 @@ public class TitanGraphInitializer {
     /**
      * Used for making the Titan keys required by the graph schema
      * @param conf the Titan configuration
-     * @param graphSchema
+     * @param graphSchema property datatypes and edge signatures for the graph
      * @param declaredKeys the set of Titan Key definitions parsed from the command line...
      */
     public TitanGraphInitializer(Configuration conf, PropertyGraphSchema graphSchema, List<GBTitanKey> declaredKeys) {
@@ -74,10 +74,9 @@ public class TitanGraphInitializer {
         // Titan knobs regarding manyToOne, oneToMany, etc
 
         for (EdgeSchema edgeSchema : graphSchema.getEdgeSchemata()) {
-            ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
+            ArrayList<TitanKey> titanKeys = new ArrayList<>();
 
-            for (PropertySchema propertySchema : edgeSchema
-                    .getPropertySchemata()) {
+            for (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {
                 titanKeys.add(propertyNamesToTitanKeysMap.get(propertySchema
                         .getName()));
             }
@@ -104,7 +103,7 @@ public class TitanGraphInitializer {
      */
     protected HashMap<String, TitanKey> declareAndCollectKeys() {
 
-        HashMap<String, TitanKey> keyMap = new HashMap<String, TitanKey>();
+        HashMap<String, TitanKey> keyMap = new HashMap<>();
 
         TitanKey gbIdKey = getOrCreateTitanKey(createGbId());
         keyMap.put(TitanConfig.GB_ID_FOR_TITAN, gbIdKey);

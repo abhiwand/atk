@@ -21,8 +21,11 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 
 import org.junit.Test;
 
+import java.io.*;
+
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class EdgeSchemaTest {
 
@@ -54,5 +57,39 @@ public class EdgeSchemaTest {
 		assertEquals("Should have been 0", 0,
 				edgeSchema.getLabel().compareTo(THE_EDGE));
     }
+    @Test
+    public final void testWriteRead() throws IOException {
+        final String A = "A";
+        final Class<?> dataTypeA = Integer.class;
 
+        final String B = "B";
+        final Class<?> dataTypeB = Float.class;
+        PropertySchema propertySchemaIn = new PropertySchema(A, dataTypeA);
+        PropertySchema propertySchemaOut = new PropertySchema(B, dataTypeB);
+
+        final String THE_EDGE = "The Edge";
+        final String BONO     = "Bono";
+
+        EdgeSchema edgeSchemaIn = new EdgeSchema(THE_EDGE);
+        edgeSchemaIn.addPropertySchema(propertySchemaIn);
+
+        EdgeSchema edgeSchemaOut = new EdgeSchema(BONO);
+        edgeSchemaOut.addPropertySchema(propertySchemaOut);
+
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        DataOutputStream dataOutputStream = new DataOutputStream(baos);
+
+        edgeSchemaIn.write(dataOutputStream);
+        dataOutputStream.flush();
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        DataInputStream dataInputStream = new DataInputStream(bais);
+
+        edgeSchemaOut.readFields(dataInputStream);
+
+        assertTrue(edgeSchemaIn.getLabel().equals(edgeSchemaOut.getLabel()));
+        assertTrue(edgeSchemaIn.getID().equals(edgeSchemaOut.getID()));
+        assertTrue(edgeSchemaIn.getPropertySchemata().equals(edgeSchemaOut.getPropertySchemata()));
+    }
 }

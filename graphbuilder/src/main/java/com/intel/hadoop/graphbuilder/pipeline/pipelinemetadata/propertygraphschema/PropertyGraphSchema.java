@@ -19,6 +19,10 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -33,6 +37,8 @@ import java.util.HashMap;
  */
 public class PropertyGraphSchema {
 
+    private static final Logger LOG = Logger.getLogger(PropertyGraphSchema.class);
+
     private ArrayList<VertexSchema> vertexSchemata;
     private ArrayList<EdgeSchema>   edgeSchemata;
     private HashMap<String, Class<?>> propTypeMap;
@@ -43,9 +49,9 @@ public class PropertyGraphSchema {
      */
 
     public PropertyGraphSchema() {
-        vertexSchemata = new ArrayList<VertexSchema>();
-        edgeSchemata   = new ArrayList<EdgeSchema>();
-        this.propTypeMap = new HashMap<String, Class<?>>();
+        vertexSchemata = new ArrayList<>();
+        edgeSchemata   = new ArrayList<>();
+        this.propTypeMap = new HashMap<>();
     }
 
     /**
@@ -54,8 +60,8 @@ public class PropertyGraphSchema {
      * @param edgeSignatures  Map of edge labels to lists of property names.
      */
     public PropertyGraphSchema(HashMap<String, Class<?>> propTypeMap, HashMap<String, ArrayList<String>> edgeSignatures) {
-        vertexSchemata = new ArrayList<VertexSchema>();
-        edgeSchemata   = new ArrayList<EdgeSchema>();
+        vertexSchemata = new ArrayList<>();
+        edgeSchemata   = new ArrayList<>();
         this.propTypeMap = propTypeMap;
 
         for (String edgeLabel : edgeSignatures.keySet()) {
@@ -70,7 +76,7 @@ public class PropertyGraphSchema {
                 // the "schema" information should contain property names to datatypes, and edge labels to lists of names
                 // with no datatype
                 PropertySchema propertySchema = new PropertySchema(property, propTypeMap.get(property));
-                edgeSchema.getPropertySchemata().add(propertySchema);
+                edgeSchema.addPropertySchema(propertySchema);
             }
 
             edgeSchemata.add(edgeSchema);
@@ -110,11 +116,6 @@ public class PropertyGraphSchema {
         return edgeSchemata;
     }
 
-
-    public HashMap<String, Class<?>> getPropTypeMap() {
-        return this.propTypeMap;
-
-    }
     /**
      * Gets a set of the property names used in the schema of the property graph.
      * <p>The set is newly allocated and populated with each call.</p>
@@ -122,7 +123,7 @@ public class PropertyGraphSchema {
      */
     public HashMap<String, Class<?>> getMapOfPropertyNamesToDataTypes() {
 
-        HashMap<String, Class<?>> map = new HashMap<String, Class<?>>();
+        HashMap<String, Class<?>> map = new HashMap<>();
 
         for (String property : propTypeMap.keySet()) {
             map.put(property, propTypeMap.get(property));
@@ -131,21 +132,33 @@ public class PropertyGraphSchema {
         // nls todo : these aren't really helping... they shouldn't be doing anything, but in the legacy path,
         // they are being used
 
-        for (EdgeSchema edgeSchema : edgeSchemata) {
-            for (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {
-                if (!map.containsKey(propertySchema.getName())) {
-                    map.put(propertySchema.getName(), propertySchema.getType());
+
+            for (EdgeSchema edgeSchema : edgeSchemata) {
+                for (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {
+                    if (!map.containsKey(propertySchema.getName())) {
+                        try {
+                            map.put(propertySchema.getName(), propertySchema.getType());
+                        } catch (ClassNotFoundException e) {
+                            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNKNOWN_CLASS_IN_GRAPHSCHEMA,
+                                    "GRAPHBUILDER_ERROR: IO Exception during map-reduce job execution.", LOG, e);
+                        }
+                    }
+                }
+            }
+
+            for (VertexSchema vertexSchema : vertexSchemata) {
+                for (PropertySchema propertySchema : vertexSchema.getPropertySchemata()) {
+                    if (!map.containsKey(propertySchema.getName())) {
+                    try {
+                        map.put(propertySchema.getName(), propertySchema.getType());
+                    } catch (ClassNotFoundException e) {
+                            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNKNOWN_CLASS_IN_GRAPHSCHEMA,
+                                    "GRAPHBUILDER_ERROR: IO Exception during map-reduce job execution.", LOG, e);
+                    }
                 }
             }
         }
 
-        for (VertexSchema vertexSchema : vertexSchemata) {
-            for (PropertySchema propertySchema : vertexSchema.getPropertySchemata()) {
-                if (!map.containsKey(propertySchema.getName())) {
-                    map.put(propertySchema.getName(), propertySchema.getType());
-                }
-            }
-        }
         return map;
     }
 
