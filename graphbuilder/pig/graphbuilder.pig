@@ -82,14 +82,14 @@ DEFINE STORE_GRAPH(graphelements, config_file, property_types, edge_schemata, ot
 
     stored_graph = MAPREDUCE '$GB_JAR'
                    STORE $graphelements INTO '/tmp/graphdb_storage_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile()
-                   LOAD '/tmp/empty_file_to_start_pig_action' USING TextLoader() AS (line:chararray)
+                   LOAD '/tmp/dummy_location' USING NoOpLoad() AS (line:chararray)
                    `com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB -conf $config_file -i /tmp/graphdb_storage_sequencefile -p $property_types -E $edge_schemata $other_args` ;
 
 
     -- Pig will optimize away the Titan load if we don't "STORE" its dataflow output
     -- even though its dataflow "output" is an empty text file
 
-    STORE stored_graph INTO '/tmp/empty_file_to_end_pig_action';
+    STORE stored_graph INTO '/tmp/dummy_location' USING NoOpStore();
 };
 
 /**
@@ -154,14 +154,14 @@ DEFINE LOAD_TITAN_NEW(input_hbase_table_name, full_column_names, schema, vertex_
 
     stored_graph = MAPREDUCE '$GB_JAR'
                    STORE merged INTO '/tmp/graphdb_storage_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile()
-                   LOAD '/tmp/empty_file_to_start_pig_action' USING TextLoader() AS (line:chararray)
+                   LOAD '/tmp/dummy_location' USING NoOpLoad() AS (line:chararray)
                    `com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB -conf $config_file -i /tmp/graphdb_storage_sequencefile -p $property_types -E $edge_schemata $other_args` ;
 
 
     -- Pig will optimize away the Titan load if we don't "STORE" its dataflow output
     -- even though its dataflow "output" is an empty text file
 
-    STORE stored_graph INTO '/tmp/empty_file_to_end_pig_action';
+   STORE stored_graph INTO '/tmp/dummy_location' USING NoOpStore();
 };
 
 /**
