@@ -23,6 +23,22 @@
 from intel_analytics.config import global_config as config
 
 
+def get_pig_schema(feature_names, feature_types):
+    """
+    Enumerate the features and types list to contruct the schema string that
+    is understood by Pig.
+    """
+    pig_schema = ','.join([x + ":" + y for x,y in zip(feature_names, feature_types)])
+    return pig_schema
+
+def get_hbase_storage_schema(feature_names):
+    """
+    Enumerate the features and types list to contruct the schema string that
+    is understood by HBase.
+    """
+    cf = config['hbase_column_family']
+    hbase_schema = ' '.join([cf + x for x in feature_names])
+    return hbase_schema
 
 def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
     """
@@ -31,8 +47,8 @@ def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
     """
     feature_names = feature_names_as_str.split(',')
     feature_types = feature_types_as_str.split(',')
-    pig_schema = ','.join([x + ":" + y for x,y in zip(feature_names, feature_types)])
-    return pig_schema
+
+    return get_pig_schema(feature_names, feature_types)
 
 def get_hbase_storage_schema_string(feature_names_as_str):
     """
@@ -40,10 +56,7 @@ def get_hbase_storage_schema_string(feature_names_as_str):
     feature names and types string
     """
     feature_names = feature_names_as_str.split(',')
-    cf = config['hbase_column_family']
-    hbase_schema = ' '.join([cf + x for x in feature_names])
-    return hbase_schema
-
+    return get_hbase_storage_schema(feature_names)
 
 def get_load_statement_list(files, raw_load_statement, out_relation):
     """

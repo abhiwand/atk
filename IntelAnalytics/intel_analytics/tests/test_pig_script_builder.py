@@ -57,12 +57,6 @@ class TestPigScriptBuilder(unittest.TestCase):
         self.assertEqual(statements[4], "combined_relation_out = foreach temp generate $0 + 1000 as key, f1,f2,f3,f4;")
         self.assertEqual(statements[5], "STORE combined_relation_out INTO 'target_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3 etl-cf:f4');")
 
-    def assert_statement(self, output, expected):
-        try:
-            self.assertEqual(output, expected)
-        except:
-            print "Failed!expected '%s', but got '%s'" % (expected, output)
-
     def test_get_join_statement(self):
 
         etl_schema = ETLSchema()
@@ -110,7 +104,7 @@ class TestPigScriptBuilder(unittest.TestCase):
             statements.append(join_pig_schema)
 
             for x,y in zip(statements, expected):
-                self.assert_statement(x, y)
+                self.assertEqual(x, y)
             print "INFO:%s: join type is '%s'...Passed" %(info, how)
 
         # single
@@ -119,7 +113,7 @@ class TestPigScriptBuilder(unittest.TestCase):
                             on=['lcol1', 'rcol4'], suffixes=['_l', '_r'],    \
                             join_table_name='jointable', \
                             expected=expected_statements,\
-                            info="INNER JOIN on single columns" )
+                            info="INNER JOIN on single column" )
 
         expected_statements[2]="J = JOIN L0 BY (lcol1,lcol2) , L1 BY (rcol3,rcol4);"
         join_statement_test(etl_schema, tables=['table_L', 'table_R'], how='inner', \

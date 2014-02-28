@@ -607,30 +607,30 @@ class HBaseTable(object):
         if not (right and isinstance(right, list) and \
                 all(isinstance(ht, HBaseTable) for ht in right)):
             raise HBaseTableException("Error! Invalid input 'right' %s, type %s!" \
-                                      % (str(right), type(right)))
+                                      % (right, type(right)))
 
         # allowed join types: python outer is actually full
         if not how.lower() in ['inner', 'outer', 'left', 'right']:
             raise HBaseTableException("Error! Invalid input 'how' %s, type %s!" \
-                                      % (str(how), type(how)))
+                                      % (how, type(how)))
 
         if not left_on:
             raise HBaseTableException("Error! Invalid input 'left_on' %s, type %s!" \
-                                      % (str(left_on), type(left_on)))
+                                      % (left_on, type(left_on)))
 
         if not (right_on and isinstance(right_on, list) and \
                 (len(right_on) == len(right))):
             raise HBaseTableException("Error! Invalid input 'right_on' %s, type %s!" \
-                                      % (str(right_on), type(right_on)))
+                                      % (right_on, type(right_on)))
 
         if not (suffixes and isinstance(suffixes, list) and \
                 (len(suffixes) == (len(right) + 1))):
             raise HBaseTableException("Error! Invalid input 'suffixes' %s, type %s!" \
-                                      % (str(suffixes), type(suffixes)))
+                                      % (suffixes, type(suffixes)))
 
         # delete/create output table to write the joined features
         if not join_frame_name:
-            raise HBaseTableException('TODO: In-place join')
+            raise HBaseTableException('In-place join is currently not supported')
 
         # in-place?
         join_table_name = _create_table_name(join_frame_name, overwrite=False)
@@ -643,8 +643,8 @@ class HBaseTable(object):
         # prepare the script
         tables = [self.table_name]
         tables.extend([x.table_name for x in right])
-        on = [left_on];
-        on.extend(right_on);
+        on = [left_on]
+        on.extend(right_on)
         pig_builder = PigScriptBuilder()
         join_pig_script, join_pig_schema = pig_builder.get_join_statement(ETLSchema(),      \
                                                                           tables=tables,    \

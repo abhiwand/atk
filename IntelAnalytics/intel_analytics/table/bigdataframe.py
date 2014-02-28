@@ -611,15 +611,6 @@ class BigDataFrame(object):
         join_frame_name: Str
             The name of the BigDataFrame that holds the result of join
 
-        Notes
-        -----
-        1. Sorting
-        2. Filtering out replicated columns
-
-        Examples
-        --------
-        TODO
-
         Returns
         -------
         joined : BigDataFrame
