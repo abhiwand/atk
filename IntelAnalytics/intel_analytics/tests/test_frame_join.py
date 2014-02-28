@@ -40,15 +40,21 @@ for how in ['outer', 'inner', 'left', 'right']:
     fJ.inspect()
     i=i+1
 
-# multiple
-for how in ['outer', 'inner', 'left', 'right']:
+# multiple: only supports 2 tables a time for outer
+fJ = fb.join_data_frame(fL, [fR1, fR2], \
+                        how='inner', \
+                        left_on='movie', \
+                        right_on=['movie', 'movie'], \
+                        suffixes=['_l', '_r1', '_r2'], \
+                        join_frame_name=name)
+for how in ['outer', 'left', 'right']:
     name = 'fJ%d_multiple_%s' % (i, how)
     print 'Multiple right join test: output %s'%name
-    fJ = fb.join_data_frame(fL, [fR1, fR2], \
-                            how='outer', \
+    fJ = fb.join_data_frame(fL, fR1, \
+                            how=how, \
                             left_on='movie', \
-                            right_on=['movie', 'movie'], \
-                            suffixes=['_l', '_r1', '_r2'], \
+                            right_on='movie', \
+                            suffixes=['_l', '_r'], \
                             join_frame_name=name)
     fJ.inspect()
     i=i+1
