@@ -13,31 +13,31 @@ gb_type_mapping = {'chararray': 'String',
                    'double': 'Double'}
 
 class GBPigScriptBuilder(object):
-    def vertex_str(self, vertex, public=False):
+    def vertex_str(self, vertex, with_col_family=False):
         """
         Gets the string for the vertex to use in the command call to graph_builder.
         vertex is of type GraphBuilderVertex
         """
         column_family = global_config['hbase_column_family']
-        s = (column_family + vertex.key) if public is False else vertex.key
+        s = (column_family + vertex.key) if with_col_family else vertex.key
         if len(vertex.properties) > 0:
             s += '=' + ','.join(
                 (map(lambda p: column_family + p, vertex.properties))
-                if public is False else vertex.properties)
+                if with_col_family else vertex.properties)
         return s
     
     
-    def edge_str(self, edge, public=False):
+    def edge_str(self, edge, with_col_family=False):
         """
         Gets the string for the edge to use in the command call to graph_builder.
         edge is of type GraphBuilderEdge
         """
         column_family = global_config['hbase_column_family']
-        s = ("{0}{1},{0}{2},{3}" if public is False else "{1},{2},{3}") \
+        s = ("{0}{1},{0}{2},{3}" if with_col_family else "{1},{2},{3}") \
             .format(column_family, edge.source, edge.target, edge.label)
         if len(edge.properties) > 0:
             s += ',' + ','.join((map(lambda p: column_family + p, edge.properties))
-                                if public is False else edge.properties)
+                                if with_col_family else edge.properties)
         return s
     
     def _build_hbase_table_load_statement(self, table_name, pig_alias):
@@ -53,14 +53,14 @@ class GBPigScriptBuilder(object):
         Creates the vertex rule for the additional registered_vertex_properties
         registered_vertex_properties is of type GraphBuilderVertexProperties
         """
-        return self.vertex_str(registered_vertex_properties.vertex, True)
+        return self.vertex_str(registered_vertex_properties.vertex)
     
     def _get_gb_edge_rule(self, registered_edge_properties, directed):
         """
         Creates the edge rule for the additional registered_edge_properties
         registered_edge_properties is of type GraphBuilderEdgeProperties
         """
-        return ('-d ' if directed else '-e ') + self.edge_str(registered_edge_properties.edge, True)
+        return ('-d ' if directed else '-e ') + self.edge_str(registered_edge_properties.edge)
     
     def _populate_type_table(self, table_names):
         type_table = {}
@@ -118,8 +118,8 @@ class GBPigScriptBuilder(object):
     def _build_load_titan_statement(self, directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args): 
         if other_args == None:
             other_args = ''
-        edges = ' '.join(map(lambda e: '"' + self.edge_str(e) + '"', edge_list))
-        vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v) + '"', vertex_list))        
+        edges = ' '.join(map(lambda e: '"' + self.edge_str(e, True) + '"', edge_list))
+        vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v, True) + '"', vertex_list))        
         edge_rule = ('-d ' if directed else '-e ') + edges
         return "LOAD_TITAN('%s', '%s', '%s', '%s', '%s');" % (source_table_name, vertex_rule, edge_rule, gb_conf_file, other_args)
         
@@ -149,8 +149,8 @@ class GBPigScriptBuilder(object):
         if registered_vertex_properties == None and registered_edge_properties == None:
             statements.append(self._build_load_titan_statement(directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args)) 
         else:
-            edges = ' '.join(map(lambda e: '"' + self.edge_str(e, True) + '"', edge_list))
-            vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v, True) + '"', vertex_list))        
+            edges = ' '.join(map(lambda e: '"' + self.edge_str(e) + '"', edge_list))
+            vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v) + '"', vertex_list))        
             edge_rule = ('-d ' if directed else '-e ') + edges
                         
             statements.append("SET default_parallel %s;" % global_config['pig_parallelism_factor'])

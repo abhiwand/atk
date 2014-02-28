@@ -330,6 +330,11 @@ try:
     global_config = Config(properties_file)
 
     os.environ["JYTHONPATH"] = global_config['pig_jython_path']#required to ship jython scripts with pig
+    try:
+        existing_hadoop_cp = os.environ['HADOOP_CLASSPATH']
+    except:
+        existing_hadoop_cp = ''
+    os.environ['HADOOP_CLASSPATH'] = existing_hadoop_cp + ':' + global_config['graph_builder_jar']#required for Graph Builder
 except Exception, e:
     import sys
     sys.stderr.write("""
