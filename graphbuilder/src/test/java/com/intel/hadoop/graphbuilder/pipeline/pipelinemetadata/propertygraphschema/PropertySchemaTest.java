@@ -21,36 +21,43 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 
 import org.junit.Test;
 
+import java.io.*;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class PropertySchemaTest {
 
 	@Test
-	public void testPropertySchemaConstructorGetters() {
+	public void testPropertySchemaConstructorGetters() throws ClassNotFoundException {
 
-		final String A = new String("A");
+		final String A = "A";
 		final Class<?> dataType = Integer.class;
 
 		PropertySchema propertySchema = new PropertySchema(A, dataType);
 
 		String testName = propertySchema.getName();
-		Class<?> testDataType = propertySchema.getType();
 
-		assertNotNull(testName);
-		assertEquals("Should have been 0", 0, testName.compareTo(A));
-		assertEquals(dataType, testDataType);
+
+        Class<?> testDataType = propertySchema.getType();
+        assertNotNull(testName);
+        assertEquals("Should have been 0", 0, testName.compareTo(A));
+        assertEquals(dataType, testDataType);
+
+
+
 	}
 
 	@Test
-	public void testPropertySchemaSetGet() {
-		final String A = new String("A");
+	public void testPropertySchemaSetGet() throws ClassNotFoundException {
+		final String A = "A";
 		final Class<?> dataTypeA = Integer.class;
 
-		final String B = new String("A");
+		final String B = "A";
 		final Class<?> dataTypeB = Float.class;
 
-		final String C = new String("C");
+		final String C = "C";
 		final Class<?> dataTypeC = String.class;
 
 		PropertySchema propertySchemaA = new PropertySchema(A, dataTypeA);
@@ -90,4 +97,40 @@ public class PropertySchemaTest {
 		assertEquals(dataTypeB, distinctType);
 	}
 
+
+    @Test
+    public final void testWriteRead() throws IOException {
+        final String A = "A";
+        final Class<?> dataTypeA = Integer.class;
+
+        final String B = "B";
+        final Class<?> dataTypeB = Float.class;
+
+
+        PropertySchema propertySchemaIn = new PropertySchema(A, dataTypeA);
+        PropertySchema propertySchemaOut = new PropertySchema(B, dataTypeB);
+
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        DataOutputStream dataOutputStream = new DataOutputStream(baos);
+
+        propertySchemaIn.write(dataOutputStream);
+        dataOutputStream.flush();
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        DataInputStream dataInputStream = new DataInputStream(bais);
+
+        propertySchemaOut
+                .readFields(dataInputStream);
+
+        assertTrue(propertySchemaIn.getID().equals(propertySchemaOut.getID()));
+        assertTrue(propertySchemaIn.getName().equals(propertySchemaOut.getName()));
+
+        try {
+            assertTrue(propertySchemaIn.getType().equals(propertySchemaOut.getType()));
+        } catch (ClassNotFoundException e) {
+            assertTrue(false);
+        }
+
+    }
 }

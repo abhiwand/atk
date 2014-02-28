@@ -75,7 +75,7 @@ public class PropertyGraphSchemaTest {
         EdgeSchema edgeSchemaZ = new EdgeSchema("dr zaius");
 
         edgeSchemaZ.setLabel("you d--- dirty ape");
-        edgeSchemaZ.getPropertySchemata().add(planetOfStrings);
+        edgeSchemaZ.addPropertySchema(planetOfStrings);
 
         VertexSchema vertexSchema = new VertexSchema();
         vertexSchema.getPropertySchemata().add(planetOfFloats);
