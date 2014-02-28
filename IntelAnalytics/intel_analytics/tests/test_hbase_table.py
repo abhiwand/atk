@@ -712,10 +712,7 @@ class HbaseTableTest(unittest.TestCase):
 
     def test_arithmetics_with_random_spaces(self):
         test_expression="long1 + long2 * double1 - double2"
-        try:
-            self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
-        except:
-            print "Caught exception on given ARITHMETIC expression with spaces:' %s '" % test_expression
+        self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
 
     def test_arithmetics_with_random_parentheses(self):
         test_expression="long1((+long2*(double1/)((double4("
