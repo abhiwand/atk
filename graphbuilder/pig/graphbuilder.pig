@@ -100,7 +100,8 @@ DEFINE STORE_GRAPH(graphelements, config_file, property_types, edge_schemata, ot
 *
 * @param input_hbase_table_name : name of the input HBase table that GraphBuilder (GB) will create the graph from <br/>
 * @param  vertex_rule 		    : vertex creation rule \link com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule see HBaseGraphBuildingRule \endlink <br/>
-* @param  edge_rule			    : edge creation rule \link com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule see HBaseGraphBuildingRule \endlink <br/>
+* @param  edge_rule			    : edge creation rule \link com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule see HBaseGraphBuildingRule \endlink 
+								  In this edge rule the user also has to specify the direction with a preceding --directedEdges or --edges <br/>
 * @param  config_file		    : path to the XML configuration file to be used by GB for bulk loading to Titan <br/>
 * @param other_args				: other command line arguments to \link com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB TableToGraphDB \endlink <br/>
 */
