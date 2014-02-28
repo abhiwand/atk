@@ -230,7 +230,7 @@ public class TestCreatePropGraphElements
                     (SerializedGraphElementStringTypeVids) pge_tuple.get(0);
             GraphElement graphElement = serializedGraphElement.graphElement();
             if (graphElement.isVertex()) {
-                Writable direction = graphElement.getProperties().getProperty("direction");
+                Writable direction = graphElement.getProperties().getProperty("side");
                 if (graphElement.getId().toString().equals(id1_s)) {
                     if (direction != null && direction.toString() == "L")
                         left_found = true;

@@ -1,4 +1,3 @@
-from intel_analytics import config
 from intel_analytics.table.pig import pig_helpers
 
 MAX_ROW_KEY = 'max_row_key'
