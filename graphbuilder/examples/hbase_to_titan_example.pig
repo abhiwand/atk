@@ -18,16 +18,15 @@
  */
 
 /**
-* This script should be run from the top level directory
-* Demonstrates how to bulk load the Titan graph database from Hbase using the new macro
+* <p>
+* This script assumes it is being called from the Graph Builder home directory.
+* You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
+* </p>
+* Demonstrates how to bulk load the Titan graph database from HBase using the new macro
 */
+%default GB_HOME '.'
 
-REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
-IMPORT 'pig/graphbuilder.pig';
-
-rmf /tmp/empty_file_to_end_pig_action
-rmf /tmp/empty_file_to_start_pig_action
-fs -mkdir /tmp/empty_file_to_start_pig_action
+IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
 employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS
 		(id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
@@ -50,7 +49,7 @@ STORE final_relation INTO 'hbase://gb_input_table'
 -- -O flag specifies overwriting the input Titan table
 
 
-LOAD_TITAN_NEW ( 'hbase://gb_input_table', 'cf:id cf:name cf:age cf:dept cf:manager cf:underManager',
+LOAD_TITAN_NEW('hbase://gb_input_table', 'cf:id cf:name cf:age cf:dept cf:manager cf:underManager',
                'id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray',
                 '"id=name,age,dept" "manager"', '"id,manager,worksUnder,underManager"',
                 'examples/hbase-titan-conf.xml',

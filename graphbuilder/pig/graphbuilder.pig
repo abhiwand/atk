@@ -82,14 +82,14 @@ DEFINE STORE_GRAPH(graphelements, config_file, property_types, edge_schemata, ot
 
     stored_graph = MAPREDUCE '$GB_JAR'
                    STORE $graphelements INTO '/tmp/graphdb_storage_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile()
-                   LOAD '/tmp/empty_file_to_start_pig_action' USING TextLoader() AS (line:chararray)
+                   LOAD '/tmp/dummy_location' USING NoOpLoad() AS (line:chararray)
                    `com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB -conf $config_file -i /tmp/graphdb_storage_sequencefile -p $property_types -E $edge_schemata $other_args` ;
 
 
     -- Pig will optimize away the Titan load if we don't "STORE" its dataflow output
     -- even though its dataflow "output" is an empty text file
 
-    STORE stored_graph INTO '/tmp/empty_file_to_end_pig_action';
+    STORE stored_graph INTO '/tmp/dummy_location' USING NoOpStore();
 };
 
 /**
@@ -100,7 +100,8 @@ DEFINE STORE_GRAPH(graphelements, config_file, property_types, edge_schemata, ot
 *
 * @param input_hbase_table_name : name of the input HBase table that GraphBuilder (GB) will create the graph from <br/>
 * @param  vertex_rule 		    : vertex creation rule \link com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule see HBaseGraphBuildingRule \endlink <br/>
-* @param  edge_rule			    : edge creation rule \link com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule see HBaseGraphBuildingRule \endlink <br/>
+* @param  edge_rule			    : edge creation rule \link com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule see HBaseGraphBuildingRule \endlink 
+								  In this edge rule the user also has to specify the direction with a preceding --directedEdges or --edges <br/>
 * @param  config_file		    : path to the XML configuration file to be used by GB for bulk loading to Titan <br/>
 * @param other_args				: other command line arguments to \link com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB TableToGraphDB \endlink <br/>
 */
@@ -154,14 +155,14 @@ DEFINE LOAD_TITAN_NEW(input_hbase_table_name, full_column_names, schema, vertex_
 
     stored_graph = MAPREDUCE '$GB_JAR'
                    STORE merged INTO '/tmp/graphdb_storage_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile()
-                   LOAD '/tmp/empty_file_to_start_pig_action' USING TextLoader() AS (line:chararray)
+                   LOAD '/tmp/dummy_location' USING NoOpLoad() AS (line:chararray)
                    `com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB -conf $config_file -i /tmp/graphdb_storage_sequencefile -p $property_types -E $edge_schemata $other_args` ;
 
 
     -- Pig will optimize away the Titan load if we don't "STORE" its dataflow output
     -- even though its dataflow "output" is an empty text file
 
-    STORE stored_graph INTO '/tmp/empty_file_to_end_pig_action';
+   STORE stored_graph INTO '/tmp/dummy_location' USING NoOpStore();
 };
 
 /**

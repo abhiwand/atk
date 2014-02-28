@@ -29,11 +29,11 @@ import sys
 from shutil import copyfile
 from mock import patch, Mock, MagicMock
 from testutils import RegistryCallableFactory, get_diff_str
-from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
+from intel_analytics.graph.pig.pig_script_builder import GBPigScriptBuilder
 from intel_analytics.graph.biggraph import GraphBuilderVertex, GraphBuilderEdge, GraphBuilderVertexProperties, GraphBuilderEdgeProperties
 
 get_registry_callable = RegistryCallableFactory().get_registry_callable
-pig_script_builder = PigScriptBuilder()
+pig_script_builder = GBPigScriptBuilder()
 
 _here_folder = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(

@@ -18,19 +18,15 @@
  */
 
 /**
- * This script demonstrates how to bulk load the Titan graph database
  * <p>
  * This script assumes it is being called from the Graph Builder home directory.
  * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
  * </p>
+ * This script demonstrates how to bulk load the Titan graph database 
  */
 %default GB_HOME '.'
 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
-
-rmf /tmp/empty_file_to_end_pig_action
-rmf /tmp/empty_file_to_start_pig_action
-fs -mkdir /tmp/empty_file_to_start_pig_action
 
 employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS
 		(employee_id:int, name:chararray, age:int, dept:chararray, manager:int, underManager:chararray);

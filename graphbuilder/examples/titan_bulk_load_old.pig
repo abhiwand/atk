@@ -16,14 +16,16 @@
  * For more about this software visit:
  *      http://www.01.org/GraphBuilder
  */
-
 /**
-* This script should be run from the top level directory
-* Demonstrates how to bulk load the Titan graph database
-*/
+ * <p>
+ * This script assumes it is being called from the Graph Builder home directory.
+ * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
+ * </p>
+ * This script demonstrates how to bulk load the Titan graph database 
+ */
+%default GB_HOME '.'
 
-REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
-IMPORT 'pig/graphbuilder.pig';
+IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
 --prepare temp storage that is used by the LOAD_TITAN macro
 --the temp storage is required for doing a dummy LOAD/STORE for the

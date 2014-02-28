@@ -41,7 +41,7 @@ from intel_analytics.config import global_config
 from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import Config as bulbsConfig
 from intel_analytics.logger import stdout_logger as logger
-from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
+from intel_analytics.graph.pig.pig_script_builder import GBPigScriptBuilder
 
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
@@ -123,12 +123,12 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
         super(HBase2TitanBipartiteGraphBuilder, self).__init__(source)
 
     def __repr__(self):
-        psb = PigScriptBuilder()
+        psb = GBPigScriptBuilder()
         s = "Source: " \
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
             s += '\nVertices:\n' + \
-                '\n'.join(map(lambda x: psb.vertex_str(x, True), self._vertex_list))
+                '\n'.join(map(lambda x: psb.vertex_str(x, False), self._vertex_list))
         return s
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False):
@@ -158,15 +158,15 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
         super(HBase2TitanPropertyGraphBuilder, self).__init__(source)
 
     def __repr__(self):
-        psb = PigScriptBuilder()
+        psb = GBPigScriptBuilder()
         s = "Source: "\
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
             s += '\nVertices:\n'\
-                + '\n'.join(map(lambda x: psb.vertex_str(x,True),self._vertex_list))
+                + '\n'.join(map(lambda x: psb.vertex_str(x,False),self._vertex_list))
         if len(self._edge_list) > 0:
             s += '\nEdges:\n'\
-                + '\n'.join(map(lambda x: psb.edge_str(x, True), self._edge_list))
+                + '\n'.join(map(lambda x: psb.edge_str(x, False), self._edge_list))
         return s
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False, withVertexSide=False):
@@ -208,13 +208,6 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
     cmd = get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, 
                                registered_edge_properties, is_directed, overwrite, append, flatten, withVertexSide)
     
-    #setup GB environment
-    try:
-        old_hadoop_cp = os.environ['HADOOP_CLASSPATH']
-    except:#may not exist
-        old_hadoop_cp = None
-    os.environ['HADOOP_CLASSPATH'] = global_config['graph_builder_jar']
-    
     return_code = call(cmd, report_strategy=etl_report_strategy())
 
     if return_code:
@@ -225,9 +218,6 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
                               + "table for graph " + graph_name)
         raise Exception('Could not load titan')
     
-    if old_hadoop_cp:# restore HADOOP_CLASSPATH
-        os.environ['HADOOP_CLASSPATH'] = old_hadoop_cp 
-        
     titan_config.rexster_xml_add_graph(dst_hbase_table_name)
 
     return titan_graph_builder_factory.get_graph(graph_name)
@@ -250,7 +240,7 @@ def get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registere
     """
     Build the Pig command line call to the Jython script
     """
-    pig_builder = PigScriptBuilder()
+    pig_builder = GBPigScriptBuilder()
     script = pig_builder.create_pig_bulk_load_script(gb_conf_file, source, vertex_list, edge_list, 
                                                      registered_vertex_properties, registered_edge_properties, 
                                                      is_directed, overwrite, append, flatten, withVertexSide)
