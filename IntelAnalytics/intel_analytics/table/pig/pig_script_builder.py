@@ -38,6 +38,4 @@ class PigScriptBuilder(object):
         statements.append('combined_relation_out = foreach temp generate $0 + %s as key, %s;' %(properties[MAX_ROW_KEY], ','.join(final_cols)))
         storing_hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(','.join(final_cols))
         statements.append("STORE combined_relation_out INTO '%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" %(target_table, storing_hbase_constructor_args))
-
-
         return "\n".join(statements)
