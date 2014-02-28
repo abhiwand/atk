@@ -448,7 +448,8 @@ class HBaseTable(object):
         on = [left_on];
         on.extend(right_on);
         pig_builder = PigScriptBuilder()
-        join_pig_script, join_pig_schema = pig_builder.get_join_statement(tables=tables,    \
+        join_pig_script, join_pig_schema = pig_builder.get_join_statement(ETLSchema(),      \
+                                                                          tables=tables,    \
                                                                           how=how.lower(),  \
                                                                           on=on,            \
                                                                           suffixes=suffixes,\

@@ -41,10 +41,12 @@ class PigScriptBuilder(object):
 
         return "\n".join(statements)
 
-    def get_join_statement(self, tables, on, how='inner', suffixes=None, join_table_name=''):
+    def get_join_statement(self, etl_schema, tables, on, how='inner', suffixes=None, join_table_name=''):
         """
         Parameters
         ----------
+        etl_schema: ETLSchema
+            The ETL Schema object used as a container to retrive table schema
         tables: List
             List of HBase table names
         on: List
@@ -63,8 +65,10 @@ class PigScriptBuilder(object):
         def _get_hbase_schema(features):
             return ' '.join([config['hbase_column_family'] + x for x in features])
 
-        from intel_analytics.table.hbase.schema import ETLSchema
         from intel_analytics.config import global_config as config
+
+        if not etl_schema:
+            raise Exception('Must have a valid reference to an ETLSchema object!')
 
         # supported types
         if (not tables) or (len(tables) < 2):
@@ -90,9 +94,10 @@ class PigScriptBuilder(object):
             join_type = 'FULL'
         else:
             join_type = ''
-            # Outer join in pig can only do two tables a time
-            if len(tables) != 2:
-                raise Exception('Outer join only works on two tables')
+
+        # Outer join in pig can only do two tables a time
+        if (not join_type) and len(tables) != 2:
+           raise Exception('Outer join only works on two tables')
 
         if not join_table_name:
             raise Exception('Must specify an output table name for join operation!')
@@ -104,7 +109,6 @@ class PigScriptBuilder(object):
         hbase_schemas = []
 
         for i, table in enumerate(tables):
-            etl_schema = ETLSchema()
             etl_schema.load_schema(table)
             hbase_schema = _get_hbase_schema(etl_schema.feature_names)
             pig_schema = _get_pig_schema(etl_schema.feature_names, etl_schema.feature_types)
