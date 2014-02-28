@@ -41,7 +41,7 @@ from intel_analytics.config import global_config
 from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import Config as bulbsConfig
 from intel_analytics.logger import stdout_logger as logger
-from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
+from intel_analytics.graph.pig.pig_script_builder import GBPigScriptBuilder
 
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
@@ -123,7 +123,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
         super(HBase2TitanBipartiteGraphBuilder, self).__init__(source)
 
     def __repr__(self):
-        psb = PigScriptBuilder()
+        psb = GBPigScriptBuilder()
         s = "Source: " \
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
@@ -158,7 +158,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
         super(HBase2TitanPropertyGraphBuilder, self).__init__(source)
 
     def __repr__(self):
-        psb = PigScriptBuilder()
+        psb = GBPigScriptBuilder()
         s = "Source: "\
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
@@ -248,7 +248,7 @@ def get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registere
     """
     Build the Pig command line call to the Jython script
     """
-    pig_builder = PigScriptBuilder()
+    pig_builder = GBPigScriptBuilder()
     script = pig_builder.create_pig_bulk_load_script(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, registered_edge_properties, is_directed, overwrite, append, flatten)
     args = get_pig_args_with_gb('pig_execute.py')
     args += ['-s', script]

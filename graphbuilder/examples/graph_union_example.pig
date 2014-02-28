@@ -18,14 +18,16 @@
  */
 
 /**
-* This script should be run from the top level directory.
-*
+* <p>
+* This script assumes it is being called from the Graph Builder home directory.
+* You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
+* </p>
 * This script builds on the edgelist example and demonstrates
 * how to perform a union on two relations of property graph elements.
 */
+%default GB_HOME '.'
 
-REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
-IMPORT 'pig/graphbuilder.pig';
+IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
 rmf /tmp/edgelist; --delete the output directory containing edges
 rmf /tmp/vertexlist; --delete the output directory containing vertices

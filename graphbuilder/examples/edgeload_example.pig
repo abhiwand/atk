@@ -18,18 +18,21 @@
  */
 
 /**
-* This script should be run from the top level directory
+ * <p>
+ * This script assumes it is being called from the Graph Builder home directory.
+ * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
+ * </p>
 * Demonstrates how to load edge list and vertex list
 * that were written in edgelist_example.pig.
 *
 * Run edgelist_example.pig before this script.
 */
+%default GB_HOME '.'
+
+IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
 rmf /tmp/vertexlist2; --delete the output directory containing vertices
 rmf /tmp/edgelist2; --delete the output directory containing edges
-
-REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
-IMPORT 'pig/graphbuilder.pig';
 
 DEFINE VertexLoad com.intel.pig.udf.load.VertexLoader('false');
 DEFINE EdgeLoad com.intel.pig.udf.load.EdgeLoader('false');
