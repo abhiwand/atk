@@ -63,7 +63,7 @@
               </execution>
           </executions>
       </plugin>
-
+<!-- Commented out for now, needs to be excluded if Sphinx is not installed 
       <plugin>
       	<artifactId>exec-maven-plugin</artifactId>
       	<groupId>org.codehaus.mojo</groupId>
@@ -81,7 +81,7 @@
       		</execution>
       	</executions>
       </plugin>
-
+-->
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
