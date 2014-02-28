@@ -393,41 +393,6 @@ class BulbsGraphWrapper:
         """
         return self._graph.clear()
 
-    def add_proxy(self, proxy_name, element_class, index_class=None):
-        """
-        Adds an element proxy to the Graph object for the element class.
-
-        Parameters
-        ----------
-        proxy_name : str
-        Attribute name to use for the proxy.
-
-        element_class : Element
-        Element class managed by this proxy.
-
-        index_class : Index
-        Index class for Element's primary index.
-        """
-        self._graph.add_proxy(proxy_name, element_class, index_class)
-
-    def build_proxy(self, element_class, index_class=None):
-        """
-        Returns an element proxy built to specifications.
-
-        Parameters
-        ----------
-        element_class : Element
-            Element class managed by this proxy.
-
-        index_class : Index
-            Optional Index class for Element's primary index.
-
-        Returns
-        -------
-        Element proxy
-        """
-        return self._graph.build_proxy(self, element_class, index_class)
-
     def export_as_graphml(self, statements, file):
         """
         Execute graph queries and output result as a graphml file in the specified file location.
