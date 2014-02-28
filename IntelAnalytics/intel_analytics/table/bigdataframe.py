@@ -542,7 +542,6 @@ class BigDataFrame(object):
             """
             if not v:
                 return v_default
-            print "Check input '%s(%s)' against type '%s'" %(str(v), type(v), str(v_type))
             if isinstance(v, v_type):
                 return [v]
             if isinstance(v, (list, tuple)) and all(isinstance(vv, v_type) for vv in v):
@@ -552,7 +551,6 @@ class BigDataFrame(object):
         def __iscolumn(frame, column):
             if not column:
                 return False
-            print "Check column '%s' on columns '%s' on frame '%s'" % (column, str(frame.get_schema().keys()), frame.name)
             return column in frame.get_schema().keys()
 
         def __check_left(left, left_on):
