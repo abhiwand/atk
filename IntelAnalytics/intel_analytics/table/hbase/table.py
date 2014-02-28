@@ -604,21 +604,29 @@ class HBaseTable(object):
 
         """
 
-        if (not right) or (not all(isinstance(ht, HBaseTable) for ht in right)):
-            raise HBaseTableException('Error! Invalid right!')
+        if not (right and isinstance(right, list) and \
+                all(isinstance(ht, HBaseTable) for ht in right)):
+            raise HBaseTableException("Error! Invalid input 'right' %s, type %s!" \
+                                      % (str(right), type(right)))
 
         # allowed join types: python outer is actually full
-        if not how.lower() in ['inner', 'outer', 'left', 'right'] :
-            raise HBaseTableException("Error! Invalid join operation type '%s'" % how)
+        if not how.lower() in ['inner', 'outer', 'left', 'right']:
+            raise HBaseTableException("Error! Invalid input 'how' %s, type %s!" \
+                                      % (str(how), type(how)))
 
         if not left_on:
-            raise HBaseTableException('Error! Invalid left_on!')
+            raise HBaseTableException("Error! Invalid input 'left_on' %s, type %s!" \
+                                      % (str(left_on), type(left_on)))
 
-        if (not right_on) or (len(right_on) != len(right)):
-            raise HBaseTableException('Error! Invalide rigth_on!')
+        if not (right_on and isinstance(right_on, list) and \
+                (len(right_on) == len(right))):
+            raise HBaseTableException("Error! Invalid input 'right_on' %s, type %s!" \
+                                      % (str(right_on), type(right_on)))
 
-        if (not suffixes) or (len(suffixes) != (len(right) + 1)):
-            raise HBaseTableException('Error! Invalid suffixes!')
+        if not (suffixes and isinstance(suffixes, list) and \
+                (len(suffixes) == (len(right) + 1))):
+            raise HBaseTableException("Error! Invalid input 'suffixes' %s, type %s!" \
+                                      % (str(suffixes), type(suffixes)))
 
         # delete/create output table to write the joined features
         if not join_frame_name:
