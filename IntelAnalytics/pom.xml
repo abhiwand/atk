@@ -63,6 +63,25 @@
               </execution>
           </executions>
       </plugin>
+
+      <plugin>
+      	<artifactId>exec-maven-plugin</artifactId>
+      	<groupId>org.codehaus.mojo</groupId>
+      	<version>1.2.1</version>
+      	<executions>
+      		<execution>
+      			<id>python-documentation</id>
+      			<phase>package</phase>
+      			<goals>
+      				<goal>exec</goal>
+      			</goals>
+      			<configuration>
+      				<executable>${basedir}/intel_analytics/doc/create-html-public.sh</executable>
+      			</configuration>
+      		</execution>
+      	</executions>
+      </plugin>
+
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
