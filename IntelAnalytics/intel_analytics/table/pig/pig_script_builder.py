@@ -1,4 +1,5 @@
 from intel_analytics.table.pig import pig_helpers
+from intel_analytics.config import global_config as config
 
 MAX_ROW_KEY = 'max_row_key'
 
@@ -59,13 +60,6 @@ class PigScriptBuilder(object):
             Output table name
         """
 
-        def _get_pig_schema(features, types):
-            return ','.join([x + ":" + y for x,y in zip(features, types)])
-
-        def _get_hbase_schema(features):
-            return ' '.join([config['hbase_column_family'] + x for x in features])
-
-        from intel_analytics.config import global_config as config
 
         if not etl_schema:
             raise Exception('Must have a valid reference to an ETLSchema object!')
@@ -75,14 +69,14 @@ class PigScriptBuilder(object):
             raise Exception('Invalid input table list.')
 
         if not how.lower() in ['inner', 'outer', 'left', 'right']:
-            raise Exception('No corresponding pig join type for the requested join as ' + how)
+            raise Exception("The requestioned join type '%s' is not supported." % how)
 
         if (not on) or (len(on) != len(tables)):
             raise Exception('Invalid columns to be joined on.')
 
         if not suffixes:
             suffixes = ['_x']
-            suffixes.append(['_y' + str(x) for x in range(1, len(tables))])
+            suffixes.extend(['_y' + str(x) for x in range(1, len(tables))])
 
         if len(suffixes) != len(tables):
             raise Exception('Input list of suffixes.')
@@ -110,8 +104,8 @@ class PigScriptBuilder(object):
 
         for i, table in enumerate(tables):
             etl_schema.load_schema(table)
-            hbase_schema = _get_hbase_schema(etl_schema.feature_names)
-            pig_schema = _get_pig_schema(etl_schema.feature_names, etl_schema.feature_types)
+            hbase_schema = pig_helpers.get_hbase_storage_schema(etl_schema.feature_names)
+            pig_schema = pig_helpers.get_pig_schema(etl_schema.feature_names, etl_schema.feature_types)
 
             # LOAD
             alias = 'L%d' % i
@@ -130,8 +124,8 @@ class PigScriptBuilder(object):
             # prepare the schema for hbase in STORE later
             suffix = suffixes[i]
             suffixed_features = [x + suffix for x in etl_schema.feature_names]
-            hbase_schemas.append(_get_hbase_schema(suffixed_features))
-            pig_schemas.append(_get_pig_schema(suffixed_features, etl_schema.feature_types))
+            hbase_schemas.append(pig_helpers.get_hbase_storage_schema(suffixed_features))
+            pig_schemas.append(pig_helpers.get_pig_schema(suffixed_features, etl_schema.feature_types))
 
         # build the statements
         statements = []
