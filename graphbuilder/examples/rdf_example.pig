@@ -18,16 +18,15 @@
  */
 
 /**
- * This script demonstrates how to generate RDF triples from property graph elements
- * <p>
- * This script assumes it is being called from the Graph Builder home directory.
- * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
- * </p>
- */
+* <p>
+* This script assumes it is being called from the Graph Builder home directory.
+* You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
+* </p>
+* This script demonstrates how to generate RDF triples from property graph elements
+*/
 %default GB_HOME '.'
 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
-
 
 rmf /tmp/rdf_triples; --delete the output directory
 
