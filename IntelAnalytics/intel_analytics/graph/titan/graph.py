@@ -348,22 +348,85 @@ class BulbsGraphWrapper:
         return self._graph.scripts
 
     def load_graphml(self,uri):
-        self._graph.load_graphml(uri)
+        """
+        Loads a GraphML file into the database and returns the response.
+
+        Parameters
+        ----------
+        uri : str
+        URI of the GraphML file to load.
+
+        Returns
+        -------
+        RexsterResult
+
+        """
+        return self._graph.load_graphml(uri)
 
     def get_graphml(self):
-        self._graph.get_graphml()
+        """
+        Returns a GraphML file representing the entire database.
+
+        Returns
+        -------
+        RexsterResult
+        """
+        return self._graph.get_graphml()
 
     def warm_cache(self):
-        self._graph.warm_cache()
+        """
+        Warms the server cache by loading elements into memory.
+
+        Returns
+        -------
+        RexsterResult
+        """
+        return self._graph.warm_cache()
 
     def clear(self):
-        self._graph.clear()
+        """
+        Deletes all the elements in the graph.
+
+        Returns
+        -------
+        RexsterResult
+        """
+        return self._graph.clear()
 
     def add_proxy(self, proxy_name, element_class, index_class=None):
+        """
+        Adds an element proxy to the Graph object for the element class.
+
+        Parameters
+        ----------
+        proxy_name : str
+        Attribute name to use for the proxy.
+
+        element_class : Element
+        Element class managed by this proxy.
+
+        index_class : Index
+        Index class for Element's primary index.
+        """
         self._graph.add_proxy(proxy_name, element_class, index_class)
 
     def build_proxy(self, element_class, index_class=None):
-        self._graph.build_proxy(self, element_class, index_class)
+        """
+        Returns an element proxy built to specifications.
+
+        Parameters
+        ----------
+        element_class : Element
+            Element class managed by this proxy.
+
+        index_class : Index
+            Optional Index class for Element's primary index.
+
+        Returns
+        -------
+        Element proxy
+        """
+        return self._graph.build_proxy(self, element_class, index_class)
 
     def export_as_graphml(self, statements, file):
         """
@@ -411,6 +474,10 @@ class BulbsGraphWrapper:
         ----------
         statements : Iterable
             Iterable of query strings
+
+        Returns
+        -------
+        query xml string
         """
         root = ET.Element("query")
 
