@@ -123,7 +123,9 @@ class GBPigScriptBuilder(object):
         edge_rule = ('-d ' if directed else '-e ') + edges
         return "LOAD_TITAN('%s', '%s', '%s', '%s', '%s');" % (source_table_name, vertex_rule, edge_rule, gb_conf_file, other_args)
         
-    def create_pig_bulk_load_script(self, gb_conf_file, source_frame, vertex_list, edge_list, registered_vertex_properties, registered_edge_properties, directed, overwrite, append, flatten):
+    def create_pig_bulk_load_script(self, gb_conf_file, source_frame, vertex_list, edge_list,
+                                    registered_vertex_properties, registered_edge_properties, directed, overwrite,
+                                    append, flatten, retainDanglingEdges, withVertexSide):
         
         source_table_name = source_frame._table.table_name
         
@@ -135,6 +137,10 @@ class GBPigScriptBuilder(object):
             other_args += " -a "
         if flatten:
             other_args += " -F "
+        if retainDanglingEdges:
+            other_args += " -x"
+        if withVertexSide:
+            other_args += " -p"
             
         #start generating pig statements
         statements = []

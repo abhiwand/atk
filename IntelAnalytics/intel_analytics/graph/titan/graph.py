@@ -23,7 +23,6 @@
 """
 The Titan-specific graph implementation.
 """
-import os
 from intel_analytics.pig import get_pig_args_with_gb
 
 __all__ = []
@@ -131,7 +130,8 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
                 '\n'.join(map(lambda x: psb.vertex_str(x, False), self._vertex_list))
         return s
 
-    def build(self, graph_name, overwrite=False, append=False, flatten=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False,
+              retainDanglingEdges=False, withVertexSide=False):
         if len(self._vertex_list) != 2:
             raise ValueError("ERROR: bipartite graph construction requires 2 " +
                 "vertex sources; " + str(len(self._vertex_list)) + " detected")
@@ -147,7 +147,9 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
                      is_directed=False,
                      overwrite=overwrite,
                      append=append,
-                     flatten=flatten)
+                     flatten=flatten,
+                     retainDanglingEdges=retainDanglingEdges,
+                     withVertexSide=withVertexSide)
 
 
 class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
@@ -169,7 +171,8 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                 + '\n'.join(map(lambda x: psb.edge_str(x, False), self._edge_list))
         return s
 
-    def build(self, graph_name, overwrite=False, append=False, flatten=False, withVertexSide=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False,
+              retainDanglingEdges=False, withVertexSide=False):
         return build(graph_name,
                      self._source,
                      self._vertex_list,
@@ -180,11 +183,13 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                      flatten=flatten,
                      registered_vertex_properties=self.registered_vertex_properties,
                      registered_edge_properties=self.registered_edge_properties,
+                     retainDanglingEdges=retainDanglingEdges,
                      withVertexSide=withVertexSide)
 
 
 def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten, 
-          registered_vertex_properties = None, registered_edge_properties = None, withVertexSide):
+          registered_vertex_properties = None, registered_edge_properties = None, retainDanglingEdges =  False,
+          withVertexSide = False):
 
     #overwrite and append are mutually exclusive
     if overwrite and append:
@@ -206,7 +211,8 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
     gb_conf_file = titan_config.write_gb_cfg(dst_hbase_table_name)
     
     cmd = get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, 
-                               registered_edge_properties, is_directed, overwrite, append, flatten, withVertexSide)
+                               registered_edge_properties, is_directed, overwrite, append, flatten,
+                               retainDanglingEdges, withVertexSide)
     
     return_code = call(cmd, report_strategy=etl_report_strategy())
 
@@ -236,14 +242,16 @@ def _get_table_name_from_source(source):
         raise Exception("Could not get table name from source")
 
 def get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, 
-                         registered_edge_properties, is_directed, overwrite, append, flatten, withVertexSide):
+                         registered_edge_properties, is_directed, overwrite, append, flatten,
+                         retainDanglingEdges, withVertexSide):
     """
     Build the Pig command line call to the Jython script
     """
     pig_builder = GBPigScriptBuilder()
     script = pig_builder.create_pig_bulk_load_script(gb_conf_file, source, vertex_list, edge_list, 
                                                      registered_vertex_properties, registered_edge_properties, 
-                                                     is_directed, overwrite, append, flatten, withVertexSide)
+                                                     is_directed, overwrite, append, flatten, retainDanglingEdges,
+                                                     withVertexSide)
     args = get_pig_args_with_gb('pig_execute.py')
     args += ['-s', script]
     return args

@@ -12,6 +12,27 @@
   <build>
     <plugins>
       <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>2.6</version>
+        <executions>
+          <execution>
+            <id>copy-resources</id>
+            <phase>package</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/target/</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>${basedir}/../graphbuilder/pig/</directory>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-shade-plugin</artifactId>
         <version>2.2</version>
         <executions>
@@ -70,10 +91,10 @@
                   <executable>/bin/chmod</executable>
                   <arguments>
                     <argument>+x</argument>
-                    <argument>/home/bkeller/src/source_code/IntelAnalytics/../scripts/rpm/package.sh</argument>
-                    <argument>/home/bkeller/src/source_code/IntelAnalytics/../scripts/rpm/fetch_sources.sh</argument>
-                    <argument>/home/bkeller/src/source_code/IntelAnalytics/../scripts/rpm/build_rpms.sh</argument>
-                    <argument>/home/bkeller/src/source_code/IntelAnalytics/../scripts/rpm/python.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/package.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/fetch_sources.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/build_rpms.sh</argument>
+                    <argument>${basedir}/../scripts/rpm/python.sh</argument>
                   </arguments>
                 </configuration>
               </execution>
