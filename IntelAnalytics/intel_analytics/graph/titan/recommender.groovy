@@ -90,7 +90,7 @@ def recommend(Vertex v,
     }
     sortedlist = list.sort{a,b -> b.rec<=>a.rec}[0..10]
     (0..10).each{ println entities[recommendType] + sortedlist[it].id + "  score " + sortedlist[it].rec }
-    println 'complete recommend'
+    println 'complete execution'
 }
 
 class recommendation {
