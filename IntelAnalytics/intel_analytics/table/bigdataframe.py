@@ -428,7 +428,7 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        n : int
+        n : int, optional
             number of rows
 
         Returns
@@ -442,6 +442,60 @@ class BigDataFrame(object):
         except Exception, e:
             raise BigDataFrameException("head exception " + str(e))
 
+    def autosplit(self,
+                input_column='',
+                test_fold_id=0,
+                split_percent=[70,20,10],
+                split_name=["TR","VA","TE"],
+                output_column='splits',
+                overwrite='false'):
+        """
+        Split users' data into different buckets.
+        A good usage example is to segment ML data into Train and Test,
+        or Train, Validate and Test.
+
+        Parameters
+        ----------
+        test_fold_id : Integer, optional
+            Which fold to use for test.
+            The default value is 0.
+        split_percent : List, optional
+            Each value is the percentage for each split.
+            The sum of all percentage values should be 100.
+            The default value is [70,20,10]
+        split_name : List, optional
+            Each value is the name for each split.
+            The default value is ["TR","VA","TE"]
+        output_column : string
+            The name of the column to store split results.
+            The default value is "splits"
+        overwrite : string
+            whether to overwrite if output_column already exists
+            The default value is "false"
+
+        Examples
+        --------
+        >>> frame.transform('rating','fold_id', EvalFunctions.Math.RANDOM,[1,100])
+        >>> frame.autosplit(input_column="fold_id",split_percent=[75,15,10], output_column="segment")
+        will label 75% of data as Train, 15% as Validate, 10% as Test, and save results in
+        a column named "segment"
+
+        It can be used together with EvalFunctions.Math.RANDOM for k-fold cross-validation
+        >>> frame.transform('rating','fold_id', EvalFunctions.Math.RANDOM,[1,10])
+        >>> frame.autosplit(input_column="fold_id", test_fold_id=2, split_name=["TE","TR"], output_column="type")
+        will label the second fold as Test, and the rest as Train
+
+        Returns
+        -------
+        output : new column which labels different segments
+
+        """
+
+        try:
+            self._table.autosplit(input_column, test_fold_id, split_percent, split_name, output_column, overwrite)
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("segment exception " + str(e))
     #----------------------------------------------------------------------
     # Cleaning
     #----------------------------------------------------------------------
@@ -454,7 +508,7 @@ class BigDataFrame(object):
         ----------
         filter: BigDataFilter
             Filter to be applied to each row, either on specific column or the complete row
-	frame_name: String
+	    frame_name: String, optional
 	    create a new frame for the remaining records if not deleting inplace
 	
 	Returns

@@ -313,7 +313,7 @@ class HBaseTable(object):
             args += ['-k']
 
         logger.debug(args)
-
+        print ' '.join(map(str,args))
 
         return_code = call(args, report_strategy=etl_report_strategy())
 
@@ -327,8 +327,66 @@ class HBaseTable(object):
         
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types
-        etl_schema.feature_types.append('bytearray')
+        if transformation == EvalFunctions.Math.RANDOM:
+            etl_schema.feature_types.append('float')
+        else:
+            etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
+
+    def autosplit(self, input_column, test_fold_id, split_percent, split_name, new_column, overwrite):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        if new_column in etl_schema.feature_names:
+            if overwrite is "false":
+                raise HBaseTableException("Column %s already existed and overwrite is False.\n"
+                                      "please turn overwrite on if you meant to overwrite." % output_column)
+            else:
+                idx =  etl_schema.feature_names.index(new_column)
+                etl_schema.feature_types.pop(idx)
+                etl_schema.feature_names.remove(new_column)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        if test_fold_id != 0:
+            if len(split_name) != 2:
+                raise HBaseTableException("You want to use this for k-fold cross-validation since test_fold_id is %s.\n"
+                                          "We expect the number of split_name is 2 in this case. You provide %s names."
+                                          % (test_fold_id, len(split_name)))
+        else:
+            if len(split_percent) != len(split_name):
+                raise HBaseTableException("The size of split_percent is %s. The size of split_name is %s. "
+                                           "We expect they are with the same size" %(len(split_percent),len(split_name) ))
+
+            percent_sum = sum(split_percent)
+            if sum(split_percent) != 100:
+                raise HBaseTableException("Sum of segement percentages is %s. It should be 100." % percent_sum)
+
+
+        args = get_pig_args('pig_autosplit.py')
+
+        args += ['-t', self.table_name,
+                 '-o', self.table_name,
+                 '-i', input_column,
+                 '-f', str(test_fold_id),
+                 '-p', str(split_percent),
+                 '-n', str(split_name),
+                 '-r', new_column,
+                 '-fn', feature_names_as_str,
+                 '-ft', feature_types_as_str,]
+
+        print ' '.join(map(str,args))
+        logger.debug(args)
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not split table')
+
+        etl_schema.feature_names.append(new_column)
+        etl_schema.feature_types.append('chararray')
+        etl_schema.save_schema(self.table_name)
+
 
     def copy(self, new_table_name, feature_names, feature_types):
         args = get_pig_args('pig_copy_table.py')
