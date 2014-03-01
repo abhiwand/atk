@@ -198,67 +198,86 @@ class HBaseTable(object):
 
         return HBaseTable(new_table_name, self.file_name)
 
-    def get_column_statistics(self, column_name, force_recomputation):
 
-        hist_file = '%s_%s_histogram' % (self.table_name, column_name)
-        stat_file = '%s_%s_stats' % (self.table_name, column_name)
+    def get_column_statistics(self, columns, force_recomputation):
 
-        if not (os.path.isfile(hist_file) and os.path.isfile(stat_file)) or force_recomputation:
+        hist_file,stat_file = {}, {}
+	for i in columns:
+	    hist_file[i] = '%s_%s_histogram' % (self.table_name, i)
+	    stat_file[i] = '%s_%s_stats' % (self.table_name, i)
+
+        # Check which columns need recomputation
+        recompute_columns = []
+        if (force_recomputation):
+            recompute_columns = columns
+        else:
+            for i in columns:
+               if not (os.path.isfile(hist_file[i]) and os.path.isfile(stat_file[i])):
+                    recompute_columns.append(i)
+
+        # Send to Pig only columns which need recomputation
+        if recompute_columns:
 
             etl_schema = ETLSchema()
             etl_schema.load_schema(self.table_name)
     
-            feature_names_as_str = etl_schema.get_feature_names_as_CSV()
-            feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+            feature_types = [etl_schema.get_feature_type(f) for f in recompute_columns]
+            feature_names_as_str = ",".join(recompute_columns)
+            feature_types_as_str = ",".join(feature_types)
+
     
             args = get_pig_args('pig_column_stats.py')
     	    args.extend(['-i', self.table_name, 
                     '-n', feature_names_as_str,
-                    '-t', feature_types_as_str,
-                    '-c', column_name])
+                    '-t', feature_types_as_str])
     
             return_code = call(args, report_strategy = etl_report_strategy())
             if return_code:
                 raise HBaseTableException('Could not generate statistics')
 
-        g = lambda x: 'hadoop fs -cat %s/part* > %s' % (x, x)
 
-        cmd_hist, cmd_stat = g(hist_file), g(stat_file)
-        
-        call(cmd_hist, shell=True)
-        call(cmd_stat, shell=True)
-        
-        with open(hist_file) as h:
-            hlines = h.readlines()
+            g = lambda x: 'hadoop fs -cat %s/part* > %s' % (x, x)
+            for i in recompute_columns:
+                cmd_hist, cmd_stat = g(hist_file[i]), g(stat_file[i])
+	        call(cmd_hist, shell=True)
+                call(cmd_stat, shell=True)
+
+        result = []
+
+        for c in columns:
+
+            with open(hist_file[c]) as h:
+                hlines = [x.strip() for x in h.readlines()]
+                
+            with open(stat_file[c]) as s:
+                slines = [x.strip() for x in s.readlines()]
+                result.append(slines)
             
-        with open(stat_file) as s:
-            slines = s.readlines()
-        
-        data_x = []
-        data_y = []
-        for i in range(len(hlines)):
-            t = hlines[i].split()
-            data_x.append(int(t[0]))
-            data_y.append(int(t[1]))
+            data_x = []
+            data_y = []
+            for i in range(len(hlines)):
+                t = hlines[i].split()
+                data_x.append(int(t[0]))
+                data_y.append(int(t[1]))
+                
+            n, bins, patches = plt.hist(data_x, weights=data_y)
+    
+            max_coordinate = int(float([s.split('=')[1] for s in slines if "max" in s][0]))
+    
+            latex_symbols = {'max' : '$\max$', 'min' : '$\min$', 'avg' : '$\mu$', 'stdev' : '$\sigma$', 'var' : '$\sigma^2$'}
+            for i,j in latex_symbols.iteritems():
+                slines = [w.replace(i, j) for w in slines]
             
-        n, bins, patches = plt.hist(data_x, weights=data_y)
+            stats = "\n".join(sorted(slines))
+            
+            plt.xlabel(c)
+            plt.ylabel('frequency')
+            plt.title('Column Statistics - %s' % (c))
+            plt.text(max_coordinate * 1.25, 0, r'%s' % (stats), fontsize = 18)
+            plt.grid(True)
+            plt.show()
 
-        max_coordinate = int([s.split('=')[1] for s in slines if "max" in s][0])
-
-        latex_symbols = {'max' : '$\max$', 'min' : '$\min$', 'avg' : '$\mu$', 'stdev' : '$\sigma$', 'var' : '$\sigma^2$'}
-        for i,j in latex_symbols.iteritems():
-            slines = [w.replace(i, j) for w in slines]
-        
-        stats = "".join(sorted(slines))
-        
-        plt.xlabel(column_name)
-        plt.ylabel('frequency')
-        plt.title('Column Statistics - %s' % (column_name))
-        plt.text(max_coordinate + 25, 0, r'%s' % (stats), fontsize = 18)
-        plt.grid(True)
-        plt.show()
-
-        return slines
+        return result 
 
     def drop_columns(self, columns):
         etl_schema = ETLSchema()

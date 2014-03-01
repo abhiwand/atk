@@ -320,8 +320,8 @@ class BigDataFrame(object):
     # Apply User-Defined Function (canned and UDF)
     #----------------------------------------------------------------------
 
-    def get_column_statistics(self, column_name, force_recomputation=False):
-        self._table.get_column_statistics(column_name, force_recomputation)
+    def get_column_statistics(self, columns, force_recomputation=False):
+        return self._table.get_column_statistics(columns, force_recomputation)
 
     def transform(self, column_name, new_column_name, transformation, transformation_args=None):
         """
