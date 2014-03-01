@@ -6,22 +6,22 @@ License: Apache
 
 Group: Development
 
-Name: python-intelanalytics
+Name: intelanalytics-python
 
-Requires: python-intelanalytics-dependencies
+Requires: intelanalytics-python-dependencies
 
 Prefix: /usr
 
 Release: %{?BUILD_NUMBER}
 
-Source: python-intelanalytics-%{version}.tar.gz
+Source: intelanalytics-python-%{version}.tar.gz
 
 URL: <TODO>
 
 Buildroot: /tmp/intelanalyticsrpm
 
 %description
-The Intel Graph System Python libraries. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
+The Intel Big Data Analytics Tookit libraries for Python. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
 %define TIMESTAMP %(echo $TIMESTAMP)
 
