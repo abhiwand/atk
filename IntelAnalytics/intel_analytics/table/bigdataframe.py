@@ -466,15 +466,16 @@ class BigDataFrame(object):
         split_name : List, optional
             Each value is the name for each split.
             The default value is ["TR","VA","TE"]
-        output_column : string
+        output_column : string, optional
             The name of the column to store split results.
             The default value is "splits"
-        overwrite : string
+        overwrite : string, optional
             whether to overwrite if output_column already exists
             The default value is "false"
 
         Examples
         --------
+        It can be used together with EvalFunctions.Math.RANDOM to split ML data into Train/Validate/Test
         >>> frame.transform('rating','fold_id', EvalFunctions.Math.RANDOM,[1,100])
         >>> frame.autosplit(input_column="fold_id",split_percent=[75,15,10], output_column="segment")
         will label 75% of data as Train, 15% as Validate, 10% as Test, and save results in
