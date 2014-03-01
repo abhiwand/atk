@@ -54,7 +54,7 @@ def generate_split_statement(features, cmd_line_args):
         # to split data for k-fold validation
         low = cmd_line_args.test_fold_id
         high = str(int(cmd_line_args.test_fold_id) + 1)
-        split_statement += "(( %s<= %s and %s < %s )? '%s' : '%s') " % (low, cmd_line_args.input_column, cmd_line_args.input_column, high, cmd_line_args.split_name[0], cmd_line_args.split_name[1])
+        split_statement += "(( %s <= %s and %s < %s )? '%s' : '%s') " % (low, cmd_line_args.input_column, cmd_line_args.input_column, high, cmd_line_args.split_name[0], cmd_line_args.split_name[1])
     else:
         #first split
         high = str(cmd_line_args.split_percent[0])
@@ -99,9 +99,6 @@ def main(argv):
     features.insert(0, 'key')
     pig_statements = []
     pig_statements.append("REGISTER %s;" % (config['feat_eng_jar']))
-    #pig_statements.append("REGISTER %s/contrib/piggybank/java/piggybank.jar;" % (os.environ.get('PIG_HOME')))#Pig binary sets the PIG_HOME env. variable when we run the script
-    #datafu_jar = os.path.join(config['pig_lib'], 'datafu-0.0.10.jar')
-    #pig_statements.append("REGISTER %s; " % datafu_jar)
     pig_statements.append("SET default_parallel %s;" % (config['pig_parallelism_factor']))
     pig_statements.append("hbase_data = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s', '-loadKey true') as (key:chararray, %s);" \
                           % (cmd_line_args.input_table, hbase_constructor_args, pig_schema_info))

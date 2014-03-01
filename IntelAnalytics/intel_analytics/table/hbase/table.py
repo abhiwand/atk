@@ -313,7 +313,7 @@ class HBaseTable(object):
             args += ['-k']
 
         logger.debug(args)
-        print ' '.join(map(str,args))
+        #print ' '.join(map(str,args))
 
         return_code = call(args, report_strategy=etl_report_strategy())
 
@@ -339,8 +339,8 @@ class HBaseTable(object):
 
         if new_column in etl_schema.feature_names:
             if overwrite is "false":
-                raise HBaseTableException("Column %s already existed and overwrite is False.\n"
-                                      "please turn overwrite on if you meant to overwrite." % output_column)
+                raise ValueError("Column %s already existed and overwrite is False.\n"
+                                      "please turn overwrite on if you meant to overwrite." % new_column)
             else:
                 idx =  etl_schema.feature_names.index(new_column)
                 etl_schema.feature_types.pop(idx)
@@ -351,17 +351,17 @@ class HBaseTable(object):
 
         if test_fold_id != 0:
             if len(split_name) != 2:
-                raise HBaseTableException("You want to use this for k-fold cross-validation since test_fold_id is %s.\n"
+                raise ValueError("You want to use this for k-fold cross-validation since test_fold_id is %s.\n"
                                           "We expect the number of split_name is 2 in this case. You provide %s names."
                                           % (test_fold_id, len(split_name)))
         else:
             if len(split_percent) != len(split_name):
-                raise HBaseTableException("The size of split_percent is %s. The size of split_name is %s. "
+                raise ValueError("The size of split_percent is %s. The size of split_name is %s. "
                                            "We expect they are with the same size" %(len(split_percent),len(split_name) ))
 
             percent_sum = sum(split_percent)
             if sum(split_percent) != 100:
-                raise HBaseTableException("Sum of segement percentages is %s. It should be 100." % percent_sum)
+                raise ValueError("Sum of segement percentages is %s. It should be 100." % percent_sum)
 
 
         args = get_pig_args('pig_autosplit.py')
