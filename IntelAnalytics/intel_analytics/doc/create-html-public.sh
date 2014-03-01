@@ -13,13 +13,8 @@ if [ -z "$TITAN_HOME" ]; then
     export TITAN_HOME=th
 fi
 
-pushd
-
-cd intel_analytics/doc
-python efuncgen.py > source/efunc.rst
-make -B html
-
-popd
+python intel_analytics/doc/efuncgen.py > intel_analytics/doc/source/efunc.rst
+make -B html -C intel_analytics/doc
 
 # undo if we made any changes above
 if [ "$CLUSTER_HOSTS" == ch ]; then
