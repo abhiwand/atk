@@ -23,14 +23,15 @@
 import os
 import unittest
 import sys
-from intel_analytics.graph.titan.graph import BulbsGraphWrapper
 
-curdir = os.path.dirname(__file__)
-sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
+_current_dir = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(
+    os.path.join(os.path.join(_current_dir, os.pardir), os.pardir)))
 
 if 'intel_analytics.config' in sys.modules:
     del sys.modules['intel_analytics.config']    #this  is done to verify that the global config is not patched by previous test scripts in the test runner.
 
+from intel_analytics.graph.titan.graph import BulbsGraphWrapper
 from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
@@ -116,6 +117,120 @@ class HbaseTableTest(unittest.TestCase):
 
         drop_action_mock = Mock(side_effect=drop_side_effect)
         return drop_action_mock
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_autosplit(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        table.autosplit(input_column='input',
+                        test_fold_id=3,
+                        split_percent=[30,20,50],
+                        split_name=['A','B'],
+                        new_column='label',
+                        overwrite='false')
+        self.assertEqual("label", result_holder["feature_names"][-1])
+        self.assertEqual("chararray", result_holder["feature_types"][-1])
+
+        # validate call arguments
+        self.assertEqual("pig", result_holder["call_args"][0])
+        self.assertEqual('test_table', result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
+        self.assertEqual('test_table', result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
+        self.assertEqual('input', result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
+        self.assertEqual('3', result_holder["call_args"][result_holder["call_args"].index('-f') + 1])
+        self.assertEqual('[30, 20, 50]', result_holder["call_args"][result_holder["call_args"].index('-p') + 1])
+        self.assertEqual("['A', 'B']", result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
+        self.assertEqual('label', result_holder["call_args"][result_holder["call_args"].index('-r') + 1])
+        self.assertEqual('col1,col2,col3', result_holder["call_args"][result_holder["call_args"].index('-fn') + 1])
+        self.assertEqual('long,chararray,long', result_holder["call_args"][result_holder["call_args"].index('-ft') + 1])
+
+        script_path = os.path.join(config['pig_py_scripts'], 'pig_autosplit.py')
+        self.assertTrue(script_path in result_holder["call_args"])
+
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_autosplit_with_wrong_name(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(ValueError,
+                          table.autosplit,
+                          input_column='input',
+                          test_fold_id=3,
+                          split_percent=[30,20,50],
+                          split_name=['A','B','C'],
+                          new_column='label',
+                          overwrite='false')
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_autosplit_with_wrong_percent(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(ValueError,
+                          table.autosplit,
+                          input_column='input',
+                          test_fold_id=0,
+                          split_percent=[30,20,10],
+                          split_name=['A','B','C'],
+                          new_column='label',
+                          overwrite='false')
+
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_autosplit_with_wrong_size(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(ValueError,
+                          table.autosplit,
+                          input_column='input',
+                          test_fold_id=0,
+                          split_percent=[30,20,10],
+                          split_name=['A','B'],
+                          new_column='label',
+                          overwrite='false')
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_autosplit_with_wrong_overwrite(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(ValueError,
+                          table.autosplit,
+                          input_column='input',
+                          test_fold_id=0,
+                          split_percent=[30,20,10],
+                          split_name=['A','B'],
+                          new_column='col1',
+                          overwrite='false')
 
     @patch('intel_analytics.table.hbase.table.call')
     @patch('intel_analytics.table.hbase.table.ETLSchema')
