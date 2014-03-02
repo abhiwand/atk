@@ -10,7 +10,7 @@ Created by Anand B Pillai <abpillai@gmail.com>.
 Nov 2013 - blbarker edited to include load with array of strings.
 """
 
-import sys,os
+import sys
 import re
 import time
 

@@ -29,10 +29,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import com.intel.hadoop.graphbuilder.util.HashUtil;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.MapWritable;
-
 /**
  *  A serialized property map.
  *

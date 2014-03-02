@@ -24,9 +24,10 @@
 package com.intel.giraph.io;
 
 import org.apache.hadoop.io.Writable;
-import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
+import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.VectorWritable;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;

@@ -33,7 +33,6 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * EdgeList UDF intakes property graph elements and spits out

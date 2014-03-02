@@ -32,6 +32,7 @@ import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.pig.EvalFunc;
@@ -45,7 +46,7 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.tools.pigstats.PigStatusReporter;
-import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;

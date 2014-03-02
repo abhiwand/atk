@@ -1,8 +1,6 @@
 package com.intel.graph;
 
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;

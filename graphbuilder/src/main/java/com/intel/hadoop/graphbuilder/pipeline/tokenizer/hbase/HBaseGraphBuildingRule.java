@@ -20,7 +20,6 @@
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.HBaseCommandLineOptions;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
@@ -28,7 +27,10 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsche
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import com.intel.hadoop.graphbuilder.util.*;
+import com.intel.hadoop.graphbuilder.util.BaseCLI;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;

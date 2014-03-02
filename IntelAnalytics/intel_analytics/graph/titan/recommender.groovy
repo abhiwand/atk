@@ -1,9 +1,6 @@
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
-import org.apache.commons.configuration.BaseConfiguration
 import com.thinkaurelius.titan.core.TitanFactory
 import com.tinkerpop.blueprints.Vertex
-import com.tinkerpop.blueprints.Direction
-import groovy.lang.Binding
+import org.apache.commons.configuration.BaseConfiguration
 
 String[] inputs = args[0].split("\\::")
 String graphDB = inputs[0]

@@ -32,7 +32,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * The passthrough tokenizer that takes serialized graph elements and put them in a vertex list and an edge list.

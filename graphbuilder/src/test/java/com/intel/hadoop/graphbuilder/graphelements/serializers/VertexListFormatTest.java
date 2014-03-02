@@ -22,7 +22,6 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

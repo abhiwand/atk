@@ -25,13 +25,15 @@
 Provides the 'global_config' singleton.
 """
 
-from pyjavaprops import Properties
 from StringIO import StringIO
 from string import Template
 import os
 import time
 import datetime
 import platform
+
+from pyjavaprops import Properties
+
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 

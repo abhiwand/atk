@@ -42,35 +42,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.Lock;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIGURED_DEFAULT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_PREFIX;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_TITAN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CONFIG_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CREATE_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.DOUBLE_CHECK_CONFIG;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.ENSURE_INPUT_FORMAT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.ENSURE_PORT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.FAILED_CONNECT_HBASE_TABLE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_BACKEND;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_HOSTNAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_PORT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_TABLENAME;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_LABEL;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_EDGE_TYPE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VERTEX_READ;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VERTEX_TYPE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_GRAPH;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_GRAPH_NOT_OPEN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_TX_NOT_OPEN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 
 /**

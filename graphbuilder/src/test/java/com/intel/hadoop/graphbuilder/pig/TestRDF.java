@@ -23,17 +23,18 @@ import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringT
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
-import static junit.framework.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.Iterator;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.PigContext;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.Iterator;
+
+import static junit.framework.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
 
 public class TestRDF {
 	EvalFunc<?> toRdfUdf;

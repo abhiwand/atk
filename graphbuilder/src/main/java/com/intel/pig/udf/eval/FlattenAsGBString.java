@@ -25,6 +25,7 @@ import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;

@@ -23,23 +23,22 @@
 
 package com.intel.giraph.algorithms.als;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.Map;
-
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter;
+import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute;
+import com.intel.giraph.io.formats.JsonPropertyGraph4CFInputFormat;
+import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.Test;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresMasterCompute;
-import com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation.AlternatingLeastSquaresAggregatorWriter;
-import com.intel.giraph.io.formats.JsonPropertyGraph4CFInputFormat;
-import com.intel.giraph.io.formats.JsonPropertyGraph4CFOutputFormat;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class AlternatingLeastSquaresComputationTest {
 
