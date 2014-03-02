@@ -30,7 +30,8 @@ import java.io.IOException;
 /**
  * The basic long type in the library.
  */
-public class LongType implements WritableComparable<LongType>, Mergeable<LongType>, JSONAware, EncapsulatedObject{
+public class LongType extends EncapsulatedObject
+        implements WritableComparable<LongType>, Mergeable<LongType>, JSONAware {
 
     public LongType() {
         this.val = 0;
@@ -58,11 +59,7 @@ public class LongType implements WritableComparable<LongType>, Mergeable<LongTyp
     @Override
     public boolean equals(Object obj) {
 
-        if (obj instanceof LongType) {
-            return ((LongType) obj).val == val;
-        } else {
-            return false;
-        }
+        return obj instanceof LongType && ((LongType) obj).val == val;
     }
 
     @Override

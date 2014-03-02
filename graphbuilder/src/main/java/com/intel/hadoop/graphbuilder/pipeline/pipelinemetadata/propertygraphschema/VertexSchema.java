@@ -19,6 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 import org.apache.hadoop.io.Writable;
 
 import java.io.DataInput;
@@ -26,6 +27,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 
 /**
  * The type of a vertex declaration used in graph construction. It encapsulates
@@ -76,5 +78,33 @@ public class VertexSchema implements Writable {
     public void write(DataOutput output) throws IOException {
         serializedPropertySchemata.set((Writable[]) propertySchemata.toArray());
         serializedPropertySchemata.write(output);
+    }
+
+
+    @Override
+    public boolean equals(Object in) {
+        boolean test = ((in instanceof VertexSchema)
+                && (this.getPropertySchemata().size() == (((EdgeSchema) in).getPropertySchemata().size())));
+
+        if (test) {
+            HashSet<PropertySchema> inPropertySchemata = ((EdgeSchema) in).getPropertySchemata();
+
+            for (PropertySchema propertySchema : this.getPropertySchemata()) {
+                test |= inPropertySchemata.contains(propertySchema);
+            }
+        }
+
+        return test;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 0;
+
+        for (PropertySchema propertySchema : this.getPropertySchemata()) {
+            hash = HashUtil.combine(hash, propertySchema);
+        }
+
+        return hash;
     }
 }

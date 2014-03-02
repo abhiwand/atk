@@ -17,12 +17,7 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.types;
+package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
-public abstract class EncapsulatedObject {
-    public abstract Object getBaseObject();
-
-    public Class<?> getBaseType() {
-        return this.getBaseObject().getClass();
-    }
+public class SchemaInferenceJob {
 }
