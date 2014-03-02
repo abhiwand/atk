@@ -44,6 +44,7 @@ def main(argv):
     cmd_line_args = parser.parse_args()
     
     features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
+    types = [(f.strip()) for f in cmd_line_args.feature_types.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names)
     
@@ -67,25 +68,33 @@ def main(argv):
     pig_statements.append("grouped_data1 = GROUP hbase_data ALL;")
 
     binding_variables = {}
-    for c in columns: 
+    for t,c in enumerate(columns): 
         binding_variables['STAT_%s' % (c)] = cmd_line_args.input + '_' + c + '_stats'
         binding_variables['HIST_%s' % (c)] = cmd_line_args.input + '_' + c + '_histogram'
+   
+        is_comparable  = lambda x: True if x in ['int', 'long', 'double', 'float'] else False
 
-        pig_statements.append("max_result_%s = FOREACH grouped_data1 GENERATE CONCAT('max=', (chararray)MAX(hbase_data.%s));" % (c,c))
-        pig_statements.append("min_result_%s = FOREACH grouped_data1 GENERATE CONCAT('min=', (chararray)MIN(hbase_data.%s));" % (c,c))
-        pig_statements.append("avg_result_%s = FOREACH grouped_data1 GENERATE CONCAT('avg=', (chararray)AVG(hbase_data.%s));" % (c,c))
-        pig_statements.append("var_result_%s = FOREACH grouped_data1 GENERATE CONCAT('var=', (chararray)VAR(hbase_data.%s));" % (c,c))
-        pig_statements.append("stdev_result_%s = FOREACH grouped_data1 GENERATE CONCAT('stdev=', (chararray)SQRT(VAR(hbase_data.%s)));" % (c,c))
+        if is_comparable(types[t]):
+            pig_statements.append("max_result_%s = FOREACH grouped_data1 GENERATE CONCAT('max=', (chararray)MAX(hbase_data.%s));" % (c,c))
+            pig_statements.append("min_result_%s = FOREACH grouped_data1 GENERATE CONCAT('min=', (chararray)MIN(hbase_data.%s));" % (c,c))
+            pig_statements.append("avg_result_%s = FOREACH grouped_data1 GENERATE CONCAT('avg=', (chararray)AVG(hbase_data.%s));" % (c,c))
+            pig_statements.append("var_result_%s = FOREACH grouped_data1 GENERATE CONCAT('var=', (chararray)VAR(hbase_data.%s));" % (c,c))
+            pig_statements.append("stdev_result_%s = FOREACH grouped_data1 GENERATE CONCAT('stdev=', (chararray)SQRT(VAR(hbase_data.%s)));" % (c,c))
+
         pig_statements.append("unique_val_count_%s = FOREACH grouped_data1 { unique_values = DISTINCT hbase_data.%s; GENERATE CONCAT('unique_values=', (chararray)COUNT(unique_values)); }" % (c,c))
     
         pig_statements.append("filter_data1_%s = FOREACH hbase_data GENERATE (%s is null ? 1 : 0) as null_value:int;" % (c,c))
         pig_statements.append("grouped_data2_%s = GROUP filter_data1_%s ALL;" % (c,c))
         pig_statements.append("missing_val_count_%s = FOREACH grouped_data2_%s GENERATE CONCAT('missing_values=', (chararray)SUM(filter_data1_%s.null_value));" % (c,c,c))
     
-        pig_statements.append("result_%s = UNION max_result_%s, min_result_%s, avg_result_%s, var_result_%s, stdev_result_%s, unique_val_count_%s, missing_val_count_%s;" % (c,c,c,c,c,c,c,c))
+
+        if is_comparable(types[t]):
+            pig_statements.append("result_%s = UNION max_result_%s, min_result_%s, avg_result_%s, var_result_%s, stdev_result_%s, unique_val_count_%s, missing_val_count_%s;" % (c,c,c,c,c,c,c,c))
+        else:
+            pig_statements.append("result_%s = UNION unique_val_count_%s, missing_val_count_%s;" % (c,c,c))
     
         pig_statements.append("grouped_data2_%s = GROUP hbase_data BY %s;" % (c,c))
-        pig_statements.append("histogram_%s = FOREACH grouped_data2_%s {distinct_values = DISTINCT hbase_data.%s; GENERATE group, COUNT(distinct_values);}" % (c,c,c))
+        pig_statements.append("histogram_%s = FOREACH grouped_data2_%s GENERATE group, COUNT(hbase_data);" % (c,c))
     
         pig_statements.append("rmf %s;" % (binding_variables['STAT_%s' % (c)]))
         pig_statements.append("rmf %s;" % (binding_variables['HIST_%s' % (c)]))

@@ -257,12 +257,15 @@ class HBaseTable(object):
             data_y = []
             for i in range(len(hlines)):
                 t = hlines[i].split()
-                data_x.append(int(t[0]))
+                data_x.append(t[0])
                 data_y.append(int(t[1]))
-                
-            n, bins, patches = plt.hist(data_x, weights=data_y)
+
+            plt.bar(range(len(data_y)), data_y)
+            plt.xticks(range(len(data_y)), data_x)
     
-            max_coordinate = int(float([s.split('=')[1] for s in slines if "max" in s][0]))
+            max_coordinate = 4
+            if any("max" in s for s in slines):
+                max_coordinate = int(float([s.split('=')[1] for s in slines if "max" in s][0]))
     
             latex_symbols = {'max' : '$\max$', 'min' : '$\min$', 'avg' : '$\mu$', 'stdev' : '$\sigma$', 'var' : '$\sigma^2$'}
             for i,j in latex_symbols.iteritems():
@@ -277,12 +280,17 @@ class HBaseTable(object):
             plt.grid(True)
             plt.show()
 
-        return result 
+        return result
+
 
     def drop_columns(self, columns):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
         args = []
+
+        args += ['hadoop',
+                 'jar',
+                 global_config['intel_analytics_jar'],
 
         args += ['hadoop',
                  'jar',
