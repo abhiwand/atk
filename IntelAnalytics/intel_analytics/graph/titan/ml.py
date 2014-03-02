@@ -38,13 +38,13 @@ if __name__ != '__main__':
         import matplotlib
         matplotlib.use("Agg",warn=False)
 
+import re
+import time
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.path as path
 import numpy as np
-import re
-import time
 
 from intel_analytics.subproc import call
 from intel_analytics.config import global_config, get_time_str

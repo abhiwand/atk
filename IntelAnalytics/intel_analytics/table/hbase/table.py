@@ -22,7 +22,6 @@
 ##############################################################################
 import os
 import re
-import sys #used by unit tests
 import collections
 
 from intel_analytics.config import Registry, \
@@ -34,7 +33,6 @@ from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
 
 # import sys is needed here because test_hbase_table module relies
 # on it to patch sys.stdout
-import sys
 
 from schema import ETLSchema, merge_schema
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient

@@ -30,7 +30,7 @@ from shutil import copyfile
 from mock import patch, Mock, MagicMock
 from testutils import RegistryCallableFactory, get_diff_str
 from intel_analytics.graph.pig.pig_script_builder import GBPigScriptBuilder
-from intel_analytics.graph.biggraph import GraphBuilderVertex, GraphBuilderEdge, GraphBuilderVertexProperties, GraphBuilderEdgeProperties
+from intel_analytics.graph.biggraph import GraphBuilderVertex, GraphBuilderEdge
 
 get_registry_callable = RegistryCallableFactory().get_registry_callable
 pig_script_builder = GBPigScriptBuilder()
@@ -82,7 +82,7 @@ config['hbase_names_file'] = \
     os.path.join(config['conf_folder'], "table_name.txt")
 
 from intel_analytics.graph.biggraph import GraphTypes
-from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory, build, get_gb_build_command
+from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory, build
 from intel_analytics.graph.titan.config import titan_config
 
 # mock HBase Registry

@@ -1,22 +1,17 @@
 package com.intel.giraph.algorithms.apl;
 
-import com.intel.giraph.io.formats.LongNullTextEdgeInputFormat;
-import com.intel.giraph.io.formats.AveragePathLengthComputationOutputFormat;
-
-import java.util.Map;
-import java.util.Arrays;
-
-import org.junit.Test;
-
-import org.apache.giraph.utils.InternalVertexRunner;
-import org.apache.giraph.conf.GiraphConfiguration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.intel.giraph.io.formats.AveragePathLengthComputationOutputFormat;
+import com.intel.giraph.io.formats.LongNullTextEdgeInputFormat;
+import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.utils.InternalVertexRunner;
+import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 /**
  * Unit test for average path length computation.

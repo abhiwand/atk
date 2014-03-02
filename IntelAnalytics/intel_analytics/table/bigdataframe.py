@@ -23,7 +23,6 @@
 """
 The common methods and class for buiding and operating with big data frames
 """
-import sys
 import abc
 import traceback
 from intel_analytics.config import global_config, dynamic_import

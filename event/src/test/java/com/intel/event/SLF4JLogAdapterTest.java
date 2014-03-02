@@ -5,12 +5,10 @@ import com.intel.event.adapter.SLF4JLogAdapter;
 import org.apache.log4j.PropertyConfigurator;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 import org.junit.experimental.theories.DataPoints;
 import org.junit.experimental.theories.Theories;
 import org.junit.experimental.theories.Theory;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -18,9 +16,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 import static com.intel.event.RegularExpressionMatcher.matchesPattern;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
 /* Copyright (C) 2013 Intel Corporation.
