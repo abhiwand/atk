@@ -58,6 +58,7 @@ public class BaseCLI {
     private static final String TITAN_STORAGE = TitanCommandLineOptions.STORE;
     private static final String TITAN_PROPERTY_TYPES = TitanCommandLineOptions.PROPERTY_TYPES;
     private static final String TITAN_EDGE_SIGNATURES = TitanCommandLineOptions.EDGE_SIGNATURES;
+    private static final String TITAN_INFER_SCHEMA = TitanCommandLineOptions.INFER_SCHEMA;
     private static final String TITAN_KEY_INDEX_DECLARATION_CLI_HELP = TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP;
     private static final String TITAN_KEY_INDEX = TitanCommandLineOptions.CMD_KEYS_OPTNAME;
 
@@ -75,7 +76,8 @@ public class BaseCLI {
         titanStorage(CLI_TITAN_STORAGE_OPTION),
         outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION),
         retainDanglingEdges(CLI_RETAIN_DANGLING_EDGE_OPTION),
-        titanPropertyTypes(CLI_TITAN_PROPERTY_TYPES), titanEdgeSignatures(CLI_TITAN_EDGE_SIGNATURES);
+        titanPropertyTypes(CLI_TITAN_PROPERTY_TYPES), titanEdgeSignatures(CLI_TITAN_EDGE_SIGNATURES),
+        titanInferSchema(CLI_TITAN_INFER_SCHEMA);
 
         private final Option option;
         Options(Option option){this.option = option;}
@@ -95,6 +97,10 @@ public class BaseCLI {
             .withArgName("edgesignatures")
             .hasArg()
             .create("E");
+
+    private static final Option CLI_TITAN_INFER_SCHEMA = OptionBuilder.withLongOpt(TITAN_INFER_SCHEMA)
+            .withDescription("infer graph schema with a scan over input")
+            .create("I");
 
     private static final Option CLI_TITAN_STORAGE_OPTION = OptionBuilder.withLongOpt(TITAN_STORAGE)
             .withDescription("select Titan for graph storage")
