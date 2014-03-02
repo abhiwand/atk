@@ -291,10 +291,6 @@ class HBaseTable(object):
         args += ['hadoop',
                  'jar',
                  global_config['intel_analytics_jar'],
-
-        args += ['hadoop',
-                 'jar',
-                 global_config['intel_analytics_jar'],
                  global_config['column_dropper_class'],
                  '-t', self.table_name,
                  '-n', columns,
