@@ -29,17 +29,12 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import com.intel.hadoop.graphbuilder.util.HashUtil;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.MapWritable;
-
 /**
- *  A serialized property map.
- *
+ * A serialized property map.
+ * <p/>
  * This class is mutable.  It wraps a  <code>MapWritable</code> and adds a friendly toString() method.
  */
-public class PropertyMap implements Writable
-{
+public class PropertyMap implements Writable {
     private MapWritable properties = null;
 
     /**
@@ -51,7 +46,8 @@ public class PropertyMap implements Writable
 
     /**
      * Sets a key value pair in the property map.
-     * @param key  Key at which value is to be inserted.
+     *
+     * @param key   Key at which value is to be inserted.
      * @param value Value to be inserted.
      */
     public void setProperty(final String key, final Writable value) {
@@ -61,9 +57,10 @@ public class PropertyMap implements Writable
 
     /**
      * Given a key, removes the key-value pair from the map if the key is present. No effect if the key is not present.
+     *
      * @param key The key whose value is to be removed.
-     * @return  The value previously associated with the key (if there was one),
-     * null if no value was associated with the key.
+     * @return The value previously associated with the key (if there was one),
+     *         null if no value was associated with the key.
      */
     public Writable removeProperty(final String key) {
         StringType keyStr = new StringType(key);
@@ -72,7 +69,8 @@ public class PropertyMap implements Writable
 
     /**
      * Get the value associated with a key.
-     * @param key  Key whose value is being queried.
+     *
+     * @param key Key whose value is being queried.
      * @return The value associated with the key, null if no value is associated with the key.
      */
     public Writable getProperty(final String key) {
@@ -89,14 +87,14 @@ public class PropertyMap implements Writable
 
     /**
      * Incorporate the key-value pairs of an incoming <code>PropertyMap</code> into this <code>PropertyMap</code>
-     *
+     * <p/>
      * If the incoming <code>PropertyMap</code> conflicts with this <code>PropertyMap</code>,the value from the incoming
      * map overrides the value previously in this map.
      *
      * @param propertyMap incoming property map.
      */
     public void mergeProperties(PropertyMap propertyMap) {
-        for(Writable key : propertyMap.getPropertyKeys()) {
+        for (Writable key : propertyMap.getPropertyKeys()) {
             this.setProperty(key.toString(), propertyMap.getProperty(key.toString()));
         }
     }
@@ -126,8 +124,9 @@ public class PropertyMap implements Writable
 
     /**
      * Override of the <code>hashCode</code> method to be consistent with the overridden <code>equals</code> method.
-     *
+     * <p/>
      * Hashcode values determined only by the hashes of the key/value pairs in the map.
+     *
      * @return int hashcode
      */
     @Override
@@ -147,17 +146,17 @@ public class PropertyMap implements Writable
     /**
      * Read the <code>PropertyMap</code> from a data stream.
      *
-     * @param in  The input data stream.
-     *
+     * @param in The input data stream.
      * @throws IOException
      */
     @Override
-    public  void readFields(DataInput in) throws IOException {
+    public void readFields(DataInput in) throws IOException {
         this.properties.readFields(in);
     }
 
     /**
      * Write the <code>PropertyMap</code> to a data stream.
+     *
      * @param out The output data stream.
      * @throws IOException
      */
@@ -175,16 +174,13 @@ public class PropertyMap implements Writable
     @Override
     public String toString() {
 
-        StringBuffer s = new StringBuffer();
+        StringBuilder s = new StringBuilder();
 
-        if (!properties.isEmpty())
-        {
+        if (!properties.isEmpty()) {
 
-            for (Map.Entry<Writable, Writable> entry : properties.entrySet())
-            {
-               s.append(entry.getKey() + ":" + entry.getValue() + "\t");
+            for (Map.Entry<Writable, Writable> entry : properties.entrySet()) {
+                s.append(entry.getKey()).append(":").append(entry.getValue()).append("\t");
             }
-
         }
 
         return s.toString();

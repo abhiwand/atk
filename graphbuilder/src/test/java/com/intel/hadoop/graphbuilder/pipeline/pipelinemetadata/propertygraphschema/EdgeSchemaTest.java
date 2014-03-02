@@ -57,6 +57,7 @@ public class EdgeSchemaTest {
 		assertEquals("Should have been 0", 0,
 				edgeSchema.getLabel().compareTo(THE_EDGE));
     }
+
     @Test
     public final void testWriteRead() throws IOException {
         final String A = "A";
@@ -90,6 +91,17 @@ public class EdgeSchemaTest {
 
         assertTrue(edgeSchemaIn.getLabel().equals(edgeSchemaOut.getLabel()));
         assertTrue(edgeSchemaIn.getID().equals(edgeSchemaOut.getID()));
-        assertTrue(edgeSchemaIn.getPropertySchemata().equals(edgeSchemaOut.getPropertySchemata()));
+
+        // just using .equals below fails because it checks if the two sets contain the same objects
+        // so we go down a level
+        assertTrue(edgeSchemaIn.getPropertySchemata().size() == edgeSchemaOut.getPropertySchemata().size());
+        for (PropertySchema pSchema : edgeSchemaIn.getPropertySchemata()) {
+            boolean test = false;
+            for (PropertySchema pSchemaOut : edgeSchemaOut.getPropertySchemata()) {
+                test |= pSchema.equals(pSchemaOut);
+            }
+            assert(test);
+        }
+
     }
 }

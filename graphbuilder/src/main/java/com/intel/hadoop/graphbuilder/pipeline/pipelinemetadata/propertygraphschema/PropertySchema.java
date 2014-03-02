@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
 import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 import org.apache.hadoop.io.Writable;
 
 import java.io.DataInput;
@@ -78,16 +79,19 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
      */
     @Override
     public boolean equals(Object in){
+        return ((in instanceof PropertySchema)
+                && (this.name.equals(((PropertySchema) in).name)
+                && (this.type.equals(((PropertySchema) in).type))));
+    }
 
-        try {
-            return ((in instanceof PropertySchema)
-                    && (this.getName().equals(((PropertySchema) in).getName()))
-                    && (this.getType().equals(((PropertySchema) in).getType())));
-        } catch (ClassNotFoundException e) {
-            // nls todo : maybe raising an exception is better
-            return false;
-        }
-
+    /**
+     * Hash code.
+     * Built from the name and type name.
+     * @return an integer.
+     */
+    @Override
+    public int hashCode() {
+         return HashUtil.hashPair(this.name, this.type);
     }
 
     public StringType getID() {
@@ -109,7 +113,6 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
     public Class<?> getType() throws ClassNotFoundException {
         return Class.forName(this.type.get());
     }
-
 
     /**
      * Reads a PropertySchema from an input stream.

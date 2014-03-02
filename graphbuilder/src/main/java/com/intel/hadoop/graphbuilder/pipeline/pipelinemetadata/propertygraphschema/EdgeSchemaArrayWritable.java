@@ -17,12 +17,14 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.types;
 
-public abstract class EncapsulatedObject {
-    public abstract Object getBaseObject();
+package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-    public Class<?> getBaseType() {
-        return this.getBaseObject().getClass();
-    }
+import org.apache.hadoop.io.ArrayWritable;
+
+
+public class EdgeSchemaArrayWritable extends ArrayWritable {
+
+    public EdgeSchemaArrayWritable() { super(PropertySchema.class);}
+
 }

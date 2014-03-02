@@ -21,10 +21,16 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
+import org.apache.hadoop.io.Writable;
 import org.apache.log4j.Logger;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /**
  * The schema or "signature" of a property graph. It contains all the possible 
@@ -35,12 +41,17 @@ import java.util.HashMap;
  * The expected use of this information is declaring keys for loading the 
  * constructed graph into a graph database. </p>
  */
-public class PropertyGraphSchema {
+public class PropertyGraphSchema implements Writable {
 
     private static final Logger LOG = Logger.getLogger(PropertyGraphSchema.class);
 
-    private ArrayList<VertexSchema> vertexSchemata;
-    private ArrayList<EdgeSchema>   edgeSchemata;
+    private HashSet<VertexSchema> vertexSchemata;
+    private HashSet<EdgeSchema>   edgeSchemata;
+
+    private VertexSchemaArrayWritable serializedVertexSchemata = new VertexSchemaArrayWritable();
+    private EdgeSchemaArrayWritable serializedEdgeSchemata = new EdgeSchemaArrayWritable();
+                                                                        ;
+
     private HashMap<String, Class<?>> propTypeMap;
 
 
@@ -49,8 +60,8 @@ public class PropertyGraphSchema {
      */
 
     public PropertyGraphSchema() {
-        vertexSchemata = new ArrayList<>();
-        edgeSchemata   = new ArrayList<>();
+        vertexSchemata = new HashSet<>();
+        edgeSchemata   = new HashSet<>();
         this.propTypeMap = new HashMap<>();
     }
 
@@ -60,8 +71,8 @@ public class PropertyGraphSchema {
      * @param edgeSignatures  Map of edge labels to lists of property names.
      */
     public PropertyGraphSchema(HashMap<String, Class<?>> propTypeMap, HashMap<String, ArrayList<String>> edgeSignatures) {
-        vertexSchemata = new ArrayList<>();
-        edgeSchemata   = new ArrayList<>();
+        vertexSchemata = new HashSet<>();
+        edgeSchemata   = new HashSet<>();
         this.propTypeMap = propTypeMap;
 
         for (String edgeLabel : edgeSignatures.keySet()) {
@@ -71,10 +82,6 @@ public class PropertyGraphSchema {
             ArrayList<String> properties = edgeSignatures.get(edgeLabel);
 
             for (String property : properties) {
-
-                // this is horrible, but I won't clean it up until I can safely get rid of the old code
-                // the "schema" information should contain property names to datatypes, and edge labels to lists of names
-                // with no datatype
                 PropertySchema propertySchema = new PropertySchema(property, propTypeMap.get(property));
                 edgeSchema.addPropertySchema(propertySchema);
             }
@@ -94,9 +101,9 @@ public class PropertyGraphSchema {
 
     /**
      * Gets the vertex schemas of the property graph.
-     * @return  A reference to the property graph's vertex schemas list.
+     * @return  A reference to the property graph's vertex schemas set.
      */
-    public ArrayList<VertexSchema> getVertexSchemata() {
+    public HashSet<VertexSchema> getVertexSchemata() {
         return vertexSchemata;
     }
 
@@ -110,10 +117,20 @@ public class PropertyGraphSchema {
 
     /**
      * Gets the edge schemas of the property graph.
-     * @return A reference to the property graph's edge schemas list.
+     * @return A reference to the property graph's edge schemas set.
      */
-    public ArrayList<EdgeSchema> getEdgeSchemata() {
+    public HashSet<EdgeSchema> getEdgeSchemata() {
         return edgeSchemata;
+    }
+
+    /**
+     * javadoc todo
+     * @param propertySchema
+     * @return
+     * @throws ClassNotFoundException
+     */
+    public void addPropertySchema(PropertySchema propertySchema) throws ClassNotFoundException {
+        propTypeMap.put(propertySchema.getName(), propertySchema.getType());
     }
 
     /**
@@ -160,6 +177,53 @@ public class PropertyGraphSchema {
         }
 
         return map;
+    }
+
+
+    /**
+     * Reads an {@code PropertyGraphSchema} from an input stream.
+     *
+     * @param input The input stream.
+     * @throws java.io.IOException
+     */
+    @Override
+    public void readFields(DataInput input) throws IOException {
+
+        serializedEdgeSchemata.readFields(input);
+        serializedVertexSchemata.readFields(input);
+
+        edgeSchemata.clear();
+        EdgeSchema[] edges = (EdgeSchema[]) serializedEdgeSchemata.toArray();
+        Collections.addAll(edgeSchemata, edges);
+
+        vertexSchemata.clear();
+        VertexSchema[] vertices = (VertexSchema[]) serializedVertexSchemata.toArray();
+        Collections.addAll(vertexSchemata, vertices);
+    }
+
+    /**
+     * Writes an {@code PropertyGraphSchema} to an output stream.
+     *
+     * @param output The output stream.
+     * @throws IOException
+     */
+    @Override
+    public void write(DataOutput output) throws IOException {
+
+        EdgeSchema[] edgeSchemas = new EdgeSchema[edgeSchemata.size()];
+        edgeSchemata.toArray(edgeSchemas);
+
+        serializedEdgeSchemata.set(edgeSchemas);
+
+        serializedEdgeSchemata.write(output);
+
+
+        VertexSchema[] vertexSchemas = new VertexSchema[vertexSchemata.size()];
+        vertexSchemata.toArray(vertexSchemas);
+
+        serializedVertexSchemata.set(vertexSchemas);
+
+        serializedVertexSchemata.write(output);
     }
 
 }
