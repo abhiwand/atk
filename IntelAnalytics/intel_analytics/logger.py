@@ -22,6 +22,7 @@
 ##############################################################################
 #TODO need more functionality like logging to file, setting the log levels, etc.
 import logging
+import datetime
 
 levels = {
     'DEBUG': logging.DEBUG,
@@ -38,4 +39,19 @@ except:
 
 logging.basicConfig(level=logger_level)
 stdout_logger = logging.getLogger(__name__)
+
+
+for handler in stdout_logger.handlers:
+    stdout_logger.removeHandler(handler)
+
+root = stdout_logger.root
+for handler in root.handlers:
+    root.removeHandler(handler)
+
+hdlr = logging.FileHandler(filename=conf['log_dir'] + '/' + datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f"), mode='w')
+
+stdout_logger.addHandler(hdlr)
+stdout_logger.setLevel(logger_level)
+stdout_logger.debug('debug')
+
 
