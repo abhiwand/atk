@@ -24,6 +24,7 @@
 Invokes subprocess calls with polling to check progress.
 """
 import types
+from intel_analytics.logger import stdout_logger
 
 import time
 import re
@@ -61,6 +62,7 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, return
     """
 
     # A non-blocking invocation of the subprocess.
+    stdout_logger.debug(' '.join(args))
     p = Popen(args, shell=shell, stderr=PIPE, stdout=PIPE)
     report_service = JobReportService()
     if isinstance(report_strategy, types.ListType):
@@ -123,6 +125,7 @@ def call(args, report_strategy=None, heartbeat=0, timeout=0, shell=False, return
 
 def _report_output(out, string_list, report_service, return_stdout):
     for line in iter(out.readline, b''):
+        stdout_logger.debug(line)
         report_service.report_line(line)
         if return_stdout > 0:
             string_list.append(line)
@@ -133,6 +136,7 @@ def _process_error_output(out, string_list, report_service):
     Continously reads from the stream and appends to a list of strings.
     """
     for line in iter(out.readline, b''):
+        stdout_logger.debug(line)
         report_service.report_line(line)
         string_list.append(line)
     out.close()
