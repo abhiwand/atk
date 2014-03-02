@@ -25,7 +25,7 @@ The Titan-specific graph implementation.
 """
 from intel_analytics.pig import get_pig_args_with_gb
 
-__all__ = []
+__all__ = ['BulbsGraphWrapper']
 
 from intel_analytics.graph.biggraph import \
     PropertyGraphBuilder, BipartiteGraphBuilder,\
@@ -370,18 +370,15 @@ class BulbsGraphWrapper:
         Returns
         -------
         RexsterResult
+
+        Examples
+        --------
+        >>> graph = get_graph("SampleGraph")
+        >>> result = graph.get_graphml()
+
         """
         return self._graph.get_graphml()
 
-    def warm_cache(self):
-        """
-        Warms the server cache by loading elements into memory.
-
-        Returns
-        -------
-        RexsterResult
-        """
-        return self._graph.warm_cache()
 
     def clear(self):
         """
@@ -390,6 +387,11 @@ class BulbsGraphWrapper:
         Returns
         -------
         RexsterResult
+
+        Examples
+        --------
+        >>> graph = get_graph("SampleGraph")
+        >>> graph.clear()
         """
         return self._graph.clear()
 
