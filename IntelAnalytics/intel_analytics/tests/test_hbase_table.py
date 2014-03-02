@@ -782,14 +782,14 @@ class HbaseTableTest(unittest.TestCase):
 
 class HBaseFrameBuilderTest(unittest.TestCase):
 
-    @patch("intel_analytics.table.hbase.table.exists")
+    @patch("intel_analytics.table.hbase.table.exists_hdfs")
     def test_validate_exists_hdfs(self, exists):
         exists.return_value = True
 
         builder = HBaseFrameBuilder()
         builder._validate_exists('/mock/location/that/exists')
 
-    @patch("intel_analytics.table.hbase.table.exists")
+    @patch("intel_analytics.table.hbase.table.exists_hdfs")
     def test_validate_exists_not_found_in_hdfs(self, exists):
         exists.return_value = False
 
