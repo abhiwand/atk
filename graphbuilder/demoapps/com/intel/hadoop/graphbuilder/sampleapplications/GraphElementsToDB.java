@@ -88,6 +88,8 @@ public class GraphElementsToDB {
 
         options.addOption(BaseCLI.Options.titanKeyIndex.get());
 
+        options.addOption(BaseCLI.Options.titanInferSchema.get());
+
         commandLineInterface.setOptions(options);
     }
 

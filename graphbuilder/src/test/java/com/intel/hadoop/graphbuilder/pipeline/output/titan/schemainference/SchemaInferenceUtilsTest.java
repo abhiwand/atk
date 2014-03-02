@@ -178,9 +178,6 @@ public class SchemaInferenceUtilsTest {
     @Test
     public void testCombineSchemata() {
 
-        // EdgeOrPropertySchema combineSchemata(Iterable<EdgeOrPropertySchema> values)
-
-        // combine two edge schemata, and two property schemata... simple as that... get them from those tests
         final String A = "A";
         final Class<?> dataTypeA = Integer.class;
 
@@ -190,36 +187,32 @@ public class SchemaInferenceUtilsTest {
         final String C = "C";
         final Class<?> dataTypeC = String.class;
 
+        final String D = "D";
+        final Class<?> dataTypeD = Long.class;
+
         PropertySchema propertySchemaA = new PropertySchema(A, dataTypeA);
         PropertySchema propertySchemaB = new PropertySchema(B, dataTypeB);
         PropertySchema propertySchemaA2 = new PropertySchema(A, dataTypeA);
         PropertySchema propertySchemaC = new PropertySchema(C, dataTypeC);
+        PropertySchema propertySchemaD = new PropertySchema(D, dataTypeD);
 
-        // test combination of property schema
+        // add the roperty schema
 
         ArrayList<EdgeOrPropertySchema> values = new ArrayList<>();
         values.add(propertySchemaA);
         values.add(propertySchemaA2);
+        values.add(propertySchemaD);
 
-        ArrayList<EdgeOrPropertySchema> propSchemaTestOut = SchemaInferenceUtils.combineSchemata(values);
-
-        // nls todo
-        // redo assertions
-        /*
-        assert (propSchemaTestOut instanceof ArrayPropertySchema);
-
-        PropertySchema propertySchema = (PropertySchema) propSchemaTestOut;
-        assert (propertySchema.getName().equals(A));
-        try {
-            assert (propertySchema.getType().equals(dataTypeA));
-        } catch (Exception e) {
-            assert (false);
-        }
-        */
 
         // now combine some edge schema
 
         final String THE_EDGE = "The Edge";
+        final String BONO  = "Bono";
+
+        EdgeSchema edgeSchema0 = new EdgeSchema(THE_EDGE);
+        edgeSchema0.addPropertySchema(propertySchemaA);
+        edgeSchema0.addPropertySchema(propertySchemaC);
+
 
         EdgeSchema edgeSchema1 = new EdgeSchema(THE_EDGE);
         edgeSchema1.addPropertySchema(propertySchemaA);
@@ -229,32 +222,66 @@ public class SchemaInferenceUtilsTest {
         edgeSchema2.addPropertySchema(propertySchemaB);
         edgeSchema2.addPropertySchema(propertySchemaC);
 
-        values.clear();
+        EdgeSchema edgeSchema3 = new EdgeSchema(BONO);
+        edgeSchema3.addPropertySchema(propertySchemaB);
+        edgeSchema3.addPropertySchema(propertySchemaC);
+
+        values.add(edgeSchema0);
         values.add(edgeSchema1);
         values.add(edgeSchema2);
+        values.add(edgeSchema3);
 
-        // nls todo
-        /*
-        EdgeOrPropertySchema edgeSchemaTestOut = SchemaInferenceUtils.combineSchemata(values);
 
-        assert (edgeSchemaTestOut instanceof EdgeSchema);
+        ArrayList<EdgeOrPropertySchema> testOut = SchemaInferenceUtils.combineSchemata(values);
 
-        EdgeSchema edgeSchema = (EdgeSchema) edgeSchemaTestOut;
-        assert (edgeSchema.getLabel().equals(THE_EDGE));
+        // one copy each of THE_EDGE, BONO, propertyA and propertyD
 
-        HashSet<PropertySchema> propertySchemata = edgeSchema.getPropertySchemata();
+        assert (testOut.size() == 4);
 
-        assert (propertySchemata.size() == 3);
+        for (EdgeOrPropertySchema schema : testOut)
+            if (schema instanceof PropertySchema) {
+                PropertySchema propertySchema = (PropertySchema) schema;
+                String name = propertySchema.getName();
+                try {
+                    Class<?> type = propertySchema.getType();
+                    assert ((name.equals(A) && type.equals(dataTypeA)
+                            || (propertySchema.getName().equals(D) && type.equals(dataTypeD))));
+                } catch (ClassNotFoundException e) {
+                    assert (false);
+                }
+            } else {
+                EdgeSchema edgeSchema = (EdgeSchema) schema;
+                String label = edgeSchema.getLabel();
 
-        for (PropertySchema pSchema : propertySchemata) {
-            try {
-                assert ((pSchema.getName().equals(A) && pSchema.getType().equals(dataTypeA))
-                        || (pSchema.getName().equals(B) && pSchema.getType().equals(dataTypeB))
-                        || (pSchema.getName().equals(C) && pSchema.getType().equals(dataTypeC)));
-            } catch (Exception e) {
-                assert (false);
+                assert (label.equals(BONO) || label.equals(THE_EDGE));
+
+                HashSet<PropertySchema> propertySchemata = edgeSchema.getPropertySchemata();
+
+                if (label.equals(THE_EDGE)) {
+                    assert (propertySchemata.size() == 3);
+
+                    for (PropertySchema pSchema : propertySchemata) {
+                        try {
+                            assert ((pSchema.getName().equals(A) && pSchema.getType().equals(dataTypeA))
+                                    || (pSchema.getName().equals(B) && pSchema.getType().equals(dataTypeB))
+                                    || (pSchema.getName().equals(C) && pSchema.getType().equals(dataTypeC)));
+                        } catch (Exception e) {
+                            assert (false);
+                        }
+                    }
+
+                }  else {
+                        assert (propertySchemata.size() == 2);
+
+                        for (PropertySchema pSchema : propertySchemata) {
+                            try {
+                                assert ((pSchema.getName().equals(B) && pSchema.getType().equals(dataTypeB))
+                                        || (pSchema.getName().equals(C) && pSchema.getType().equals(dataTypeC)));
+                            } catch (Exception e) {
+                                assert (false);
+                            }
+                        }
+                }
             }
-        }
-        */
     }
 }
