@@ -321,6 +321,25 @@ class BigDataFrame(object):
     #----------------------------------------------------------------------
 
     def get_column_statistics(self, columns, force_recomputation=False):
+        """
+        Fetch column statistics
+
+        Parameters
+        ----------
+        columns : List
+            list of column names in string to compute statistics for
+        force_recomputation : boolean
+            if true: will recompute statistics otherwise
+            will check if a cached result is available for each column
+
+        Returns
+        -------
+        List: List of statistics for each column
+
+        Examples
+        --------
+        >>> frame.get_column_statistics(["col1", "col2", "col3"])
+        """
         return self._table.get_column_statistics(columns, force_recomputation)
 
     def transform(self, column_name, new_column_name, transformation, transformation_args=None):
