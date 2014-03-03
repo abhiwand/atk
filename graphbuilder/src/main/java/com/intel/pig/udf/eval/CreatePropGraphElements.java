@@ -476,8 +476,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         // check tuple for edges
 
-        StringType srcLabel = null;
-        StringType tgtLabel = null;
+        StringType srcLabel = new StringType();
+        StringType tgtLabel = new StringType();
 
         for (String eLabel : edgeLabelToEdgeRules.keySet()) {
 
