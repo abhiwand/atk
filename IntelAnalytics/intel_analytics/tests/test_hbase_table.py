@@ -234,6 +234,15 @@ class HbaseTableTest(unittest.TestCase):
         # check column family
         self.assertEqual('etl-cf', call_args[call_args.index('-f') + 1])
 
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_drop_column(self, etl_schema_class):
+        etl_schema_class.return_value = self.create_mock_etl_object({})
+        table = HBaseTable("test_table", "test_file")
+        try:
+            table.drop_columns("bogus,col2")
+            self.fail()
+        except Exception as e:
+            self.assertEqual('Column bogus does not exist in frame', e.message)
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
     def test_get_first_N_same_columns(self, etl_base_client_class):

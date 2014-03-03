@@ -389,6 +389,12 @@ class HBaseTable(object):
     def drop_columns(self, columns):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
+
+        list_columns_to_drop = columns.split(',')
+        for c in list_columns_to_drop:
+            if c not in etl_schema.feature_names:
+                raise Exception("Column {0} does not exist in frame".format(c))
+
         args = []
 
         args += ['hadoop',
@@ -407,8 +413,6 @@ class HBaseTable(object):
         # save the schema for the new table
         new_feature_names = []
         new_feature_types = []
-
-        list_columns_to_drop = columns.split(',')
 
         for feature in etl_schema.feature_names:
             if feature not in list_columns_to_drop:
