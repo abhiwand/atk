@@ -358,7 +358,7 @@ class HBaseTable(object):
         if not isinstance(output_column, basestring):
             raise TypeError("output_column should be a string.")
         elif output_column[0].isdigit():
-            raise ValueError("output_column %s starts wSith number.\n"
+            raise ValueError("output_column %s starts with number.\n"
                              "It is not supported" % output_column)
 
         if output_column in etl_schema.feature_names:

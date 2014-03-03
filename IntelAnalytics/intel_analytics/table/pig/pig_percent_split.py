@@ -35,14 +35,6 @@ from intel_analytics.config import global_config as config
 from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
 
 
-def generate_hbase_store_args(features, cmd_line_args):
-    cf = config['hbase_column_family']
-    hbase_store_args =  " ".join([cf+f for f in features])
-    if cmd_line_args.randomize == "True":
-        hbase_store_args += ' ' + (cf+cmd_line_args.input_column)
-    hbase_store_args += ' ' + (cf+cmd_line_args.output_column)
-    return hbase_store_args
-
 def generate_split_statement(feature_list, cmd_line_args):
     if cmd_line_args.randomize == "True":
         feature_list += ', ' + cmd_line_args.input_column
@@ -103,7 +95,7 @@ def main(argv):
 
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names)
-    hbase_store_args = generate_hbase_store_args(features, cmd_line_args)
+    hbase_store_args = pig_helpers.generate_hbase_store_args_for_split(features, cmd_line_args)
     features.insert(0, 'key')
     feature_list = ", ".join([f for f in features])
     split_statement = generate_split_statement(feature_list, cmd_line_args)
