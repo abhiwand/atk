@@ -26,6 +26,7 @@ The common methods and class for buiding and operating with big data frames
 import sys
 import abc
 import traceback
+import collections
 from intel_analytics.config import global_config, dynamic_import, get_time_str
 
 __all__ = ['get_frame_builder',
@@ -625,7 +626,7 @@ class BigDataFrame(object):
                 return v_default
             if isinstance(v, v_type):
                 return [v]
-            if isinstance(v, (list, tuple)) and all(isinstance(vv, v_type) for vv in v):
+            if isinstance(v, collections.Iterable) and all(isinstance(vv, v_type) for vv in v):
                 return [x for x in v]
             return None
 
