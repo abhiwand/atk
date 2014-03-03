@@ -239,10 +239,10 @@ class HbaseTableTest(unittest.TestCase):
         etl_schema_class.return_value = self.create_mock_etl_object({})
         table = HBaseTable("test_table", "test_file")
         try:
-            table.drop_columns("bogus,col2")
+            table.drop_columns("bogus,col2,garbage")
             self.fail()
         except Exception as e:
-            self.assertEqual('Column bogus does not exist in frame', e.message)
+            self.assertEqual("Column 'bogus' not in frame; Column 'garbage' not in frame", e.message)
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
     def test_get_first_N_same_columns(self, etl_base_client_class):
