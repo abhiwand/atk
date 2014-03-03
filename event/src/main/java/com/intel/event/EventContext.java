@@ -246,6 +246,21 @@ public class EventContext implements AutoCloseable {
     }
 
     /**
+     * Create an event for the current context.
+     *
+     * @param severity the severity of the event
+     * @param message a literal string
+     * @param messageCode a numeric identifier for the message
+     * @param substitutions string substitutions that can be substituted
+     *                      into the message
+     * @return an EventBuilder that can be further customized and can generate
+     *          an Event that can be logged with EventLogger.
+     */
+    public static EventBuilder event(Severity severity, int messageCode, String message, String... substitutions) {
+        return new EventBuilder(getCurrent(), severity, messageCode, message, substitutions);
+    }
+
+    /**
      * Create an event with INFO level severity for the current context.
      *
      * @param message an enum representing the message key

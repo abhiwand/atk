@@ -77,17 +77,21 @@ public class SLF4JLogAdapter implements EventLog {
     }
 
     private String getLogMessage(Event e) {
-        String cls = e.getMessage().getClass().getName();
-        StringBuilder builder = new StringBuilder(cls);
-        builder.append('.');
-        builder.append(e.getMessage().toString());
-        for (String sub : e.getSubstitutions()) {
-            builder.append(':');
-            builder.append(sub);
-        }
-        builder.append(' ');
-        builder.append('[');
+        StringBuilder builder = new StringBuilder("|");
+        builder.append(e.getMessage());
+        builder.append('|');
+        builder.append(e.getMessageCode());
+        builder.append("[");
         boolean first = true;
+        for (String sub : e.getSubstitutions()) {
+            if (!first) {
+                builder.append(':');
+            }
+            builder.append(sub);
+            first = false;
+        }
+        builder.append("]:[");
+        first = true;
         for (String marker : e.getMarkers()) {
             if (!first) {
                 builder.append(", ");
