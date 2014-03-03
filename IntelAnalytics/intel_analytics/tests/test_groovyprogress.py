@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 """
-Unit tests for intel_analytics/graph/titan/ml.py  RecommenderProgressReportStrategy
+Unit tests for intel_analytics/graph/titan/ml.py  GroovyProgressReportStrategy
 """
 import unittest
 import os
@@ -32,36 +32,36 @@ _current_dir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
     os.path.join(os.path.join(_current_dir, os.pardir), os.pardir)))
 
-from intel_analytics.graph.titan.ml import RecommenderProgressReportStrategy
+from intel_analytics.graph.titan.ml import GroovyProgressReportStrategy
 
 
-class TestRecommenderProgressReportStrategy(unittest.TestCase):
+class TestGroovyProgressReportStrategy(unittest.TestCase):
     def test_start(self):
-        strategy = RecommenderProgressReportStrategy()
+        strategy = GroovyProgressReportStrategy()
         self.assertEquals("Progress", strategy.progress_bar.name)
         self.assertEquals(100, strategy.progress_bar.value)
         self.assertTrue(strategy.progress_bar.is_in_animation)
 
     def test_complete_message(self):
-        strategy = RecommenderProgressReportStrategy()
+        strategy = GroovyProgressReportStrategy()
         strategy.report("Top 10 recommendations")
         self.assertTrue(strategy.progress_bar.is_in_animation)
-        strategy.report("complete recommend")
+        strategy.report("complete execution")
         self.assertFalse(strategy.progress_bar.is_in_animation)
 
     def test_handle_error(self):
-        strategy = RecommenderProgressReportStrategy()
+        strategy = GroovyProgressReportStrategy()
         strategy.handle_error(1, "javax.script.ScriptException: com.tinkerpop.pipes.util.FastNoSuchElementException")
         self.assertTrue(strategy.progress_bar.is_in_alert)
 
 
     def test_title_update_when_complete(self):
-        strategy = RecommenderProgressReportStrategy()
-        strategy.report("complete recommend")
+        strategy = GroovyProgressReportStrategy()
+        strategy.report("complete execution")
         self.assertEquals("Execution completed", strategy.progress_bar.name)
 
     def test_title_update_when_fail(self):
-        strategy = RecommenderProgressReportStrategy()
+        strategy = GroovyProgressReportStrategy()
         strategy.handle_error(1, "javax.script.ScriptException: com.tinkerpop.pipes.util.FastNoSuchElementException")
         self.assertEquals("Execution failed", strategy.progress_bar.name)
 
