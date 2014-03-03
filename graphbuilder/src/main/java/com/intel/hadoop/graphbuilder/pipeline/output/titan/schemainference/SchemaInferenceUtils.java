@@ -24,29 +24,30 @@ import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.KeyCommandLineParser;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphInitializer;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.*;
 import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
-import com.thinkaurelius.titan.core.TitanGraph;
-import com.thinkaurelius.titan.core.TitanKey;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * nls todo JAVADOC
  */
 public class SchemaInferenceUtils {
 
-    public static ArrayList<EdgeOrPropertySchema> getSchemaInfo(SerializedGraphElementStringTypeVids value) {
+    public static ArrayList<EdgeOrPropertySchema> schemataFromGraphElement(SerializedGraphElementStringTypeVids value) {
         ArrayList<EdgeOrPropertySchema> list = new ArrayList<>();
 
         if (value.graphElement().isEdge()) {
@@ -94,9 +95,12 @@ public class SchemaInferenceUtils {
     public static void writeSchemata(ArrayList<EdgeOrPropertySchema> list, Mapper.Context context)
             throws IOException {
 
+        SerializedEdgeOrPropertySchema serializedOut = new SerializedEdgeOrPropertySchema();
+
         for (EdgeOrPropertySchema schema : list) {
             try {
-                context.write(NullWritable.get(),schema);
+                serializedOut.setSchema(schema);
+                context.write(NullWritable.get(), serializedOut);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -106,22 +110,28 @@ public class SchemaInferenceUtils {
     public static void writeSchemata(ArrayList<EdgeOrPropertySchema> list, Reducer.Context context)
             throws IOException {
 
+        SerializedEdgeOrPropertySchema serializedOut = new SerializedEdgeOrPropertySchema();
+
         for (EdgeOrPropertySchema schema : list) {
             try {
-                context.write(NullWritable.get(),schema);
+                serializedOut.setSchema(schema);
+                context.write(NullWritable.get(), serializedOut);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    public static ArrayList<EdgeOrPropertySchema> combineSchemata(Iterable<EdgeOrPropertySchema> values) {
+    public static ArrayList<EdgeOrPropertySchema> combineSchemata(Iterable<SerializedEdgeOrPropertySchema> values,
+                                                                  Logger LOG) {
 
 
         HashMap<String, EdgeSchema> edgeSchemaHashMap = new HashMap<>();
         HashMap<String, PropertySchema> propertySchemaHashMap = new HashMap<>();
 
-        for (EdgeOrPropertySchema schema : values) {
+        for (SerializedEdgeOrPropertySchema serializedSchema : values) {
+            EdgeOrPropertySchema schema = serializedSchema.getSchema();
+
             if (schema instanceof PropertySchema) {
                 PropertySchema propertySchema = (PropertySchema) schema;
                 String propertyName = propertySchema.getName();
@@ -129,10 +139,16 @@ public class SchemaInferenceUtils {
                 if (propertySchemaHashMap.containsKey(propertyName)) {
                     try {
                         if (!propertySchema.getType().equals(propertySchemaHashMap.get(propertyName).getType())) {
-                            // raise bloody hell
+                            String errorMessage = "Schema Inference error: Conflicting datatypes for property " +
+                                    ((PropertySchema) schema).getName();
+                            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                                    errorMessage, LOG);
                         }
                     } catch (ClassNotFoundException e) {
-                        // raise bloody hell
+                        String errorMessage = "Schema Inference error: Datatype not found for property " +
+                                ((PropertySchema) schema).getName();
+                        GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                                errorMessage, LOG, e);
                     }
                 }  else {
                     propertySchemaHashMap.put(propertyName,propertySchema);
@@ -156,8 +172,7 @@ public class SchemaInferenceUtils {
         return outValues;
     }
 
-    public static void writeSchemaToTitan(ArrayList<EdgeOrPropertySchema> schemas, TitanGraph titanGraph,
-                                          Reducer.Context context) {
+    public static void writeSchemaToTitan(ArrayList<EdgeOrPropertySchema> schemas, Reducer.Context context, Logger LOG) {
 
         PropertyGraphSchema graphSchema = new PropertyGraphSchema();
 
@@ -168,15 +183,20 @@ public class SchemaInferenceUtils {
                 try {
                     graphSchema.addPropertySchema((PropertySchema) schema);
                 } catch (ClassNotFoundException e) {
-                    // raise bloody hell
+                    String errorMessage = "Schema Inference error: Datatype not found for property " +
+                            ((PropertySchema) schema).getName();
+                    GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                            errorMessage, LOG, e);
                 }
             }
         }
 
-        // todo : we need to pass the key argument around through the context or something and then
-        //  stuff it into the context or something like that
+        Configuration conf = context.getConfiguration();
+        String keyCommandLine = conf.get("keyCommandLine");
 
-        ArrayList<GBTitanKey> keyList = new ArrayList<>();
+        KeyCommandLineParser titanKeyParser = new KeyCommandLineParser();
+        List<GBTitanKey> keyList = titanKeyParser.parse(keyCommandLine);
+
         TitanGraphInitializer initializer = new TitanGraphInitializer(context.getConfiguration(), graphSchema, keyList);
         initializer.run();
 

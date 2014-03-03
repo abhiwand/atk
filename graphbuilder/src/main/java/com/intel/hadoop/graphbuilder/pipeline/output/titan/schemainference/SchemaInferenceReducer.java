@@ -20,19 +20,27 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class SchemaInferenceReducer extends Reducer<StringType, EdgeOrPropertySchema,  NullWritable, NullWritable> {
+public class SchemaInferenceReducer extends Reducer<NullWritable, SerializedEdgeOrPropertySchema,
+        NullWritable, SerializedEdgeOrPropertySchema> {
+
+    private static final Logger LOG = Logger.getLogger
+            (SchemaInferenceCombiner.class);
 
     private TitanGraph titanGraph = null;
+
     /**
      * Creates the Titan graph for saving edges and removes the static open
      * method from setup so it can be mocked-up.
@@ -63,13 +71,14 @@ public class SchemaInferenceReducer extends Reducer<StringType, EdgeOrPropertySc
 
 
     @Override
-    public void reduce(StringType key, Iterable<EdgeOrPropertySchema> values,
-                       Reducer<StringType, EdgeOrPropertySchema,  NullWritable, NullWritable>.Context context)
+    public void reduce(NullWritable key, Iterable<SerializedEdgeOrPropertySchema> values,
+                       Reducer<NullWritable, SerializedEdgeOrPropertySchema,  NullWritable,
+                               SerializedEdgeOrPropertySchema>.Context context)
             throws IOException, InterruptedException {
 
-        ArrayList<EdgeOrPropertySchema> schemas = SchemaInferenceUtils.combineSchemata(values);
+        ArrayList<EdgeOrPropertySchema> schemas = SchemaInferenceUtils.combineSchemata(values, LOG);
 
-        SchemaInferenceUtils.writeSchemaToTitan(schemas, titanGraph, context);
+        SchemaInferenceUtils.writeSchemaToTitan(schemas, context, LOG);
 
     }
 

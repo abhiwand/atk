@@ -47,4 +47,6 @@ public abstract class EdgeOrPropertySchema implements Writable {
      * Returns the serialized identifier for this schema object.
      */
     public abstract StringType getID();
+
+
 }

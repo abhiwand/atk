@@ -22,6 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference.SchemaInferenceJob;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
@@ -114,6 +115,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private static final int RANDOM_MAX = 1000000;
     private Configuration    conf;
 
+    private boolean inferSchema = false;
+    private Path inputPath;
+
     private HBaseUtils hbaseUtils = null;
 
     private GraphBuildingRule  graphBuildingRule;
@@ -128,6 +132,13 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     private boolean    cleanBidirectionalEdge;
 
     public TitanWriterMRChain() {
+        this.inferSchema = false;
+        this.inputPath = null;
+    }
+
+    public TitanWriterMRChain(boolean inferSchema, Path inputPath) {
+        this.inferSchema = inferSchema;
+        this.inputPath = inputPath;
     }
 
     /**
@@ -268,95 +279,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /*
-     * This private method does the parsing of the command line -keys option
-     * into a list of GBTitanKey objects.
-     *
-     * The -keys option takes a comma separated list of key rules.
-     *
-     * A key rule is:  <property name>;<option_1>; ... <option_n>
-     * where the options are datatype specifiers, flags to use the key for
-     * indexing edges and vertices, or a uniqueness bit,
-     * per the definitions in TitanCommandLineOptions.
-     *
-     * Example:
-     *    -keys  cf:userId;String;U;V,cf:eventId;E;Long
-     *
-     *    Generates a key for property cf:UserId that is a unique vertex
-     *    index taking string values, and a key for property cf:eventId that
-     *    is an edge index taking Long values.
-     */
-    private List<GBTitanKey> parseKeyCommandLine(String keyCommandLine) {
-
-        ArrayList<GBTitanKey> gbKeyList = new ArrayList<>();
-
-        if (keyCommandLine.length() > 0) {
-
-            String[] keyRules = keyCommandLine.split(",");
-
-            for (String keyRule : keyRules) {
-                String[] ruleProperties = keyRule.split(";");
-
-                if (ruleProperties.length > 0) {
-                    String propertyName = ruleProperties[0];
-
-                    GBTitanKey gbTitanKey = new GBTitanKey(propertyName);
-
-                    for (int i = 1; i < ruleProperties.length; i++) {
-                        String ruleModifier = ruleProperties[i];
-
-                        if (ruleModifier.equals(TitanCommandLineOptions
-                                .STRING_DATATYPE)) {
-                            gbTitanKey.setDataType(String.class);
-                        } else if (ruleModifier.equals
-                                (TitanCommandLineOptions.INT_DATATYPE)) {
-                            gbTitanKey.setDataType(Integer.class);
-                        } else if (ruleModifier.equals
-                                (TitanCommandLineOptions.LONG_DATATYPE)) {
-                            gbTitanKey.setDataType(Long.class);
-                        } else if (ruleModifier.equals
-                                (TitanCommandLineOptions.DOUBLE_DATATYPE)) {
-                            gbTitanKey.setDataType(Double.class);
-                        } else if (ruleModifier.equals
-                                (TitanCommandLineOptions.FLOAT_DATATYPE)) {
-                            gbTitanKey.setDataType(Float.class);
-                        } else if (ruleModifier.equals
-                                (TitanCommandLineOptions.VERTEX_INDEXING)) {
-                            gbTitanKey.setIsVertexIndex(true);
-                        } else if (ruleModifier.equals
-                                (TitanCommandLineOptions.EDGE_INDEXING)) {
-                            gbTitanKey.setIsEdgeIndex(true);
-                        } else if (ruleModifier.equals
-                                (TitanCommandLineOptions.UNIQUE)) {
-                            gbTitanKey.setIsUnique(true);
-                        } else if (ruleModifier.equals
-                                (TitanCommandLineOptions.NOT_UNIQUE)) {
-                            gbTitanKey.setIsUnique(false);
-                        } else {
-                            GraphBuilderExit.graphbuilderFatalExitNoException
-                                    (StatusCode.BAD_COMMAND_LINE,
-                                    "Error declaring keys.  " + ruleModifier
-                                            + " is not a valid option.\n" +
-                                            TitanCommandLineOptions
-                                                    .KEY_DECLARATION_CLI_HELP,
-                                            LOG);
-                        }
-                    }
-
-                    // Titan requires that unique properties be vertex indexed
-
-                    if (gbTitanKey.isUnique()) {
-                        gbTitanKey.setIsVertexIndex(true);
-                    }
-
-                    gbKeyList.add(gbTitanKey);
-                }
-            }
-        }
-
-        return gbKeyList;
-    }
-
-    /*
      * Gets the set of Titan Key definitions from the command line...
      */
 
@@ -378,7 +300,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         keyMap.put(TitanConfig.GB_ID_FOR_TITAN, gbIdKey);
 
-        List<GBTitanKey> declaredKeys = parseKeyCommandLine(keyCommandLine);
+        KeyCommandLineParser titanKeyParser = new KeyCommandLineParser();
+        List<GBTitanKey> declaredKeys = titanKeyParser.parse(keyCommandLine);
 
         for (GBTitanKey gbTitanKey : declaredKeys) {
             KeyMaker keyMaker = graph.makeKey(gbTitanKey.getName());
@@ -533,8 +456,17 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                     .getLongOpt());
         }
 
+        conf.set("keyCommandLine", keyCommandLine);
+
         if (needsInit) {
-            initTitanGraph(keyCommandLine);
+            if (inferSchema)  {
+                SchemaInferenceJob schemaInferenceJob = new SchemaInferenceJob();
+                schemaInferenceJob.run(conf, inputPath);
+            } else {
+                List<GBTitanKey> declaredKeys = new KeyCommandLineParser().parse(keyCommandLine);
+                TitanGraphInitializer initializer = new TitanGraphInitializer(conf,graphSchema,declaredKeys);
+                initializer.run();
+            }
         }
 
         runReadInputLoadVerticesMRJob(intermediateDataFilePath);

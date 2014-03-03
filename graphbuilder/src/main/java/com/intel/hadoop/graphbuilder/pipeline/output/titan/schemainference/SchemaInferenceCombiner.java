@@ -23,23 +23,28 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SchemaInferenceCombiner extends Reducer<NullWritable, EdgeOrPropertySchema,
-        NullWritable, EdgeOrPropertySchema> {
+public class SchemaInferenceCombiner extends Reducer<NullWritable, SerializedEdgeOrPropertySchema,
+        NullWritable, SerializedEdgeOrPropertySchema> {
+
+    private static final Logger LOG = Logger.getLogger
+            (SchemaInferenceCombiner.class);
 
     @Override
-    public void reduce(NullWritable key, Iterable<EdgeOrPropertySchema> values, Context context)
+    public void reduce(NullWritable key, Iterable<SerializedEdgeOrPropertySchema> values, Context context)
             throws IOException, InterruptedException {
 
 
-        ArrayList<EdgeOrPropertySchema>  outValues = SchemaInferenceUtils.combineSchemata(values);
+        ArrayList<EdgeOrPropertySchema>  outValues = SchemaInferenceUtils.combineSchemata(values, LOG);
 
         SchemaInferenceUtils.writeSchemata(outValues, context);
     }

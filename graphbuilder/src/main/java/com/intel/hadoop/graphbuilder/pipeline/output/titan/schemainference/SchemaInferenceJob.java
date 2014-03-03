@@ -20,6 +20,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
@@ -27,6 +28,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -53,7 +55,9 @@ public class SchemaInferenceJob {
     schemaInferenceJob.setReducerClass(SchemaInferenceReducer.class);
 
     schemaInferenceJob.setMapOutputKeyClass(NullWritable.class);
-    schemaInferenceJob.setMapOutputValueClass(EdgeOrPropertySchema.class);
+    schemaInferenceJob.setMapOutputValueClass(SerializedEdgeOrPropertySchema.class);
+
+    schemaInferenceJob.setInputFormatClass(SequenceFileInputFormat.class);
 
     try {
         FileInputFormat.addInputPath(schemaInferenceJob,
@@ -72,11 +76,10 @@ public class SchemaInferenceJob {
 
     schemaInferenceJob.setOutputFormatClass(org.apache.hadoop.mapreduce.lib.output.NullOutputFormat.class);
     schemaInferenceJob.setOutputKeyClass(NullWritable.class);
-    schemaInferenceJob.setOutputValueClass(NullWritable.class);
+    schemaInferenceJob.setOutputValueClass(SerializedEdgeOrPropertySchema.class);
 
 
-    LOG.info("=========== Job 2: Propagate Titan Vertex IDs to Edges " +
-            "  ===========");
+    LOG.info("=========== Inferring Graph Schema ===========");
 
     LOG.info("==================== Start " +
             "====================================");
