@@ -144,7 +144,9 @@ public class EventBuilder {
     public Event build() {
         String[] marks = this.markers.toArray(new String[this.markers.size()]);
         Throwable[] throwables = this.errors.toArray(new Throwable[this.errors.size()]);
-        return new Event(context, instant, new EventData(severity, throwables, data, marks, messageCode, message, substitutions));
+        return new Event(context, instant,
+                new EventData(severity, throwables, data, marks,
+                                messageCode, message, substitutions));
     }
 
     /**
