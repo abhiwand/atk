@@ -34,13 +34,14 @@ import java.util.Map;
  */
 public class EventBuilder {
     private final Severity severity;
-    private final Enum message;
+    private final String message;
     private final String[] substitutions;
     private final EventContext context;
     private final Instant instant;
     private final List<String> markers = new ArrayList<>();
     private final Map<String, String> data = new HashMap<>();
     private final List<Throwable> errors = new ArrayList<>();
+    private final int messageCode;
 
     /**
      * Constructor that takes all the data that are required in order
@@ -65,11 +66,42 @@ public class EventBuilder {
         }
         this.context = context;
         this.severity = severity;
-        this.message = message;
+        this.messageCode = 0;
+        this.message = formatDefaultLogMessage(message);
         this.substitutions = substitutions;
         this.instant = new Instant();
     }
 
+    /**
+     * Constructor that takes all the data that are required in order
+     * to construct a minimal Event.
+     *
+     * @param context the event context
+     * @param severity the severity level
+     * @param messageCode a numeric identifier for the message
+     * @param message the literal message
+     * @param substitutions the string substitutions for the message
+     * @see Event
+     * @throws IllegalArgumentException if severity or message are null
+     */
+    public EventBuilder(EventContext context,
+                        Severity severity,
+                        int messageCode,
+                        String message,
+                        String... substitutions) {
+        if (severity == null) {
+            throw new IllegalArgumentException("Severity cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("Message cannot be null");
+        }
+        this.context = context;
+        this.severity = severity;
+        this.messageCode = messageCode;
+        this.message = message;
+        this.substitutions = substitutions;
+        this.instant = new Instant();
+    }
     /**
      * Add additional data to this event
      *
@@ -112,6 +144,17 @@ public class EventBuilder {
     public Event build() {
         String[] marks = this.markers.toArray(new String[this.markers.size()]);
         Throwable[] throwables = this.errors.toArray(new Throwable[this.errors.size()]);
-        return new Event(context, instant, new EventData(severity, throwables, data, marks, message, substitutions));
+        return new Event(context, instant, new EventData(severity, throwables, data, marks, messageCode, message, substitutions));
+    }
+
+    /**
+     * Generates a log message for the given Enum
+     */
+    static String formatDefaultLogMessage(Enum e) {
+        String cls = e.getClass().getName();
+        StringBuilder builder = new StringBuilder(cls);
+        builder.append('.');
+        builder.append(e.toString());
+        return builder.toString();
     }
 }

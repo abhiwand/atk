@@ -28,20 +28,20 @@ public class EventDataTest {
     @Test(expected = IllegalArgumentException.class)
     public void EventData_requires_severity() {
 
-        new EventData(null, null, null, null, EventLoggerTest.Msg.SOMETHING_HAPPENED);
+        new EventData(null, null, null, null, 0, EventLoggerTest.Msg.SOMETHING_HAPPENED.toString());
 
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void EventData_requires_message() {
 
-        new EventData(Severity.INFO, null, null, null, null, null);
+        new EventData(Severity.INFO, null, null, null, 0, null, null);
 
     }
 
     public void EventData_defaults_empty_array_for_throwable() {
 
-        assertThat(new EventData(Severity.INFO, null, null, null, EventLoggerTest.Msg.SOMETHING_HAPPENED)
+        assertThat(new EventData(Severity.INFO, null, null, null, 0, EventLoggerTest.Msg.SOMETHING_HAPPENED.toString())
                         .getErrors(),
                 not(nullValue()));
 
@@ -49,7 +49,7 @@ public class EventDataTest {
 
     public void EventData_defaults_empty_map_for_data() {
 
-        assertThat(new EventData(Severity.INFO, null, null, null, EventLoggerTest.Msg.SOMETHING_HAPPENED)
+        assertThat(new EventData(Severity.INFO, null, null, null, 0, EventLoggerTest.Msg.SOMETHING_HAPPENED.toString())
                     .getData(),
                 not(nullValue()));
 
@@ -57,7 +57,7 @@ public class EventDataTest {
 
     public void EventData_defaults_empty_array_for_markers() {
 
-        assertThat(new EventData(Severity.INFO, null, null, null, EventLoggerTest.Msg.SOMETHING_HAPPENED)
+        assertThat(new EventData(Severity.INFO, null, null, null, 0, EventLoggerTest.Msg.SOMETHING_HAPPENED.toString())
                         .getMarkers(),
                 not(nullValue()));
 

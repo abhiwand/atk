@@ -103,7 +103,8 @@ public class SLF4JLogAdapterTest {
         }
 
         String pattern = "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2},\\d{3} \\[main\\] "
-                + severityString + " Ctx - data com\\.intel\\.event\\.SLF4JLogAdapterTest\\$Msg\\.SOMETHING_HAPPENED:reasonably good \\[HELLO, WORLD\\]$";
+                + severityString + " Ctx - data \\|com\\.intel\\.event\\.SLF4JLogAdapterTest" +
+                "\\$Msg\\.SOMETHING_HAPPENED\\|0\\[reasonably good\\]:\\[HELLO, WORLD\\]$";
 
         //Trace is lower than DEBUG, so trace messages shouldn't show at all based on the
         //config we used.

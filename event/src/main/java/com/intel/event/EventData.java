@@ -23,6 +23,7 @@
 
 package com.intel.event;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,7 +36,8 @@ class EventData {
     private final Throwable[] errors;
     private final Map<String, String> data;
     private final String[] markers;
-    private final Enum message;
+    private final int messageCode;
+    private final String message;
     private final String[] substitutions;
 
     /**
@@ -44,12 +46,13 @@ class EventData {
      * @see Event
      */
     EventData(
-        Severity severity,
-        Throwable[] errors,
-        Map<String, String> data,
-        String[] markers,
-        Enum message,
-        String... substitutions) {
+            Severity severity,
+            Throwable[] errors,
+            Map<String, String> data,
+            String[] markers,
+            int messageCode,
+            String message,
+            String... substitutions) {
         if (severity == null) {
             throw new IllegalArgumentException("Severity cannot be null");
         }
@@ -60,15 +63,9 @@ class EventData {
         this.errors = errors == null ? new Throwable[0] : errors;
         this.data = data == null ? new HashMap<String, String>() : data;
         this.markers = markers == null ? new String[0] : markers;
-        this.message = message;
+        this.messageCode = messageCode;
+        this.message = MessageFormat.format(message, substitutions);
         this.substitutions = substitutions;
-    }
-
-    /**
-     * Convenience constructor that creates an EventData with INFO severity.
-     */
-    public EventData(Enum message, String... substitutions) {
-        this(Severity.INFO, null, null, null, message, substitutions);
     }
 
     public Severity getSeverity() {
@@ -79,9 +76,11 @@ class EventData {
         return data;
     }
 
-    public Enum getMessage() {
+    public String getMessage() {
         return message;
     }
+
+    public int getMessageCode() { return messageCode; }
 
     public String[] getSubstitutions() {
         return substitutions;
@@ -94,4 +93,7 @@ class EventData {
     public Throwable[] getErrors() {
         return errors;
     }
+
+
+
 }
