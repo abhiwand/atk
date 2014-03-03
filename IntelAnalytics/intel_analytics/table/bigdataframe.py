@@ -27,12 +27,14 @@ import sys
 import abc
 import traceback
 from intel_analytics.config import global_config, dynamic_import
+from interval import Interval
 
 __all__ = ['get_frame_builder',
            'get_frame',
            'get_frame_names',
            'BigDataFrame',
-           'FrameBuilder'
+           'FrameBuilder',
+           'BigColumn'
            ]
 
 
@@ -263,6 +265,34 @@ def _get_frame_builder_factory_class():
         _frame_builder_factory = frame_builder_factory_class.get_instance()
     return _frame_builder_factory
 
+class BigColumn(object):
+    """
+    Creates a BigColumn to be used for BigDataFrame columnar operations
+    Example:
+    >>> # Create a BigColumn object
+    >>> bc = BigColumn('column1')
+    >>> # Create a BigColumn object and specify data intervals for grouping
+    >>> # Data Intervals [1..3] (3..6] (6..8) [8..10] (10...) 
+    >>> # http://pydoc.net/Python/interval/1.0.0/interval/
+    >>> interval_list = [Interval(lower_bound=1, upper_bound=3), 
+                         Interval(lower_bound=3, upper_bound=6,  lower_closed=False),
+                         Interval(lower_bound=6, upper_bound=8,  closed=False),
+                         Interval(lower_bound=8, upper_bound=10),
+                         Interval(lower_bound=10,                lower_closed=False)]
+    >>> bc = BigColumn(column_name='column1', data_intervals=interval_list)
+    """
+    def __init__(self, column_name, **kwargs):
+        self.column_name = column_name
+        self.interval_groups = kwargs.get("data_intervals", [])
+        if self.interval_groups:
+            if not all(isinstance(obj, Interval) for obj in self.interval_groups):
+                raise Exception('Invalid interval group')
+
+    def get_interval_groups_as_str(self):
+        if not self.interval_groups:
+            return ""
+        return ":".join([repr(x) for x in self.interval_groups])
+
 
 class BigDataFrameException(Exception):
     pass
@@ -320,14 +350,14 @@ class BigDataFrame(object):
     # Apply User-Defined Function (canned and UDF)
     #----------------------------------------------------------------------
 
-    def get_column_statistics(self, columns, force_recomputation=False):
+    def get_column_statistics(self, column_list, force_recomputation=False):
         """
         Fetch column statistics
 
         Parameters
         ----------
-        columns : List
-            list of column names in string to compute statistics for
+        column_list : List of BigColumn instance
+            list of BigColumn instances to compute statistics for
         force_recomputation : boolean
             if true: will recompute statistics otherwise
             will check if a cached result is available for each column
@@ -338,9 +368,14 @@ class BigDataFrame(object):
 
         Examples
         --------
-        >>> frame.get_column_statistics(["col1", "col2", "col3"])
+        >>> bc1 = BigColumn('col1')
+        >>> bc2 = BigColumn('col2')
+        >>> bc3 = BigColumn('col3', [Interval(1,2), Interval(3,4)])
+        >>> frame.get_column_statistics([bc1,bc2,bc3])
         """
-        return self._table.get_column_statistics(columns, force_recomputation)
+        if not all(isinstance(c, BigColumn) for c in column_list):
+            raise BigDataFrameException("Some items in column_list are not valid instances of BigColumn")
+        return self._table.get_column_statistics(column_list, force_recomputation)
 
     def transform(self, column_name, new_column_name, transformation, transformation_args=None):
         """
