@@ -26,12 +26,14 @@ import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
 import com.intel.hadoop.graphbuilder.types.IntType;
 import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -40,6 +42,10 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class SchemaInferenceUtilsTest {
 
@@ -64,7 +70,7 @@ public class SchemaInferenceUtilsTest {
 
         SchemaInferenceUtils.writeSchemata(list, mockedContext);
 
-        Mockito.verify(mockedContext).write(NullWritable.get(), propertySchema);
+        Mockito.verify(mockedContext).write(NullWritable.get(), new SerializedEdgeOrPropertySchema(propertySchema));
 
 
         // now lets write an edge schema
@@ -79,7 +85,7 @@ public class SchemaInferenceUtilsTest {
 
         SchemaInferenceUtils.writeSchemata(list, mockedContext);
 
-        Mockito.verify(mockedContext).write(NullWritable.get(), edgeSchema);
+        Mockito.verify(mockedContext).write(NullWritable.get(), new SerializedEdgeOrPropertySchema(edgeSchema));
 
     }
 
@@ -112,7 +118,7 @@ public class SchemaInferenceUtilsTest {
         SerializedGraphElementStringTypeVids sVertex = new SerializedGraphElementStringTypeVids();
         sVertex.init(vertex);
 
-        ArrayList<EdgeOrPropertySchema> vSchemata = SchemaInferenceUtils.getSchemaInfo(sVertex);
+        ArrayList<EdgeOrPropertySchema> vSchemata = SchemaInferenceUtils.schemataFromGraphElement(sVertex);
 
         assert (vSchemata.size() == 3);
         for (EdgeOrPropertySchema schema : vSchemata) {
@@ -130,12 +136,13 @@ public class SchemaInferenceUtilsTest {
             }
         }
 
-        ArrayList<EdgeOrPropertySchema> eSchemata = SchemaInferenceUtils.getSchemaInfo(sEdge);
+        ArrayList<EdgeOrPropertySchema> eSchemata = SchemaInferenceUtils.schemataFromGraphElement(sEdge);
         map0.setProperty("name", new StringType("Alice"));
         map0.setProperty("age", new LongType(36));
         map0.setProperty("dept", new StringType("IntelCorp"));
 
-        assert (eSchemata.size() == 4);
+        assertEquals(eSchemata.size(), 4);
+
         for (EdgeOrPropertySchema schema : eSchemata) {
 
             if (schema instanceof PropertySchema) {
@@ -143,18 +150,19 @@ public class SchemaInferenceUtilsTest {
                 String name = pSchema.getName();
                 Class<?> klass = pSchema.getType();
 
-                assert ((name.equals("name") && klass == String.class)
+                assertTrue((name.equals("name") && klass == String.class)
                         || (name.equals("age") && klass == Long.class)
                         || (name.equals("dept") && klass == String.class));
             } else if (schema instanceof EdgeSchema) {
                 EdgeSchema eSchema = (EdgeSchema) schema;
 
                 String label = eSchema.getLabel();
-                assert (label.equals("isConnected"));
+                assertEquals(label, "isConnected");
 
                 HashSet<PropertySchema> pSchemata = eSchema.getPropertySchemata();
 
-                assert (pSchemata.size() == 3);
+                assertEquals(pSchemata.size(), 3);
+
                 for (EdgeOrPropertySchema nestedSchema : pSchemata) {
 
                     if (nestedSchema instanceof PropertySchema) {
@@ -162,15 +170,15 @@ public class SchemaInferenceUtilsTest {
                         String name = pSchema.getName();
                         Class<?> klass = pSchema.getType();
 
-                        assert ((name.equals("name") && klass.equals(String.class))
+                        assertTrue((name.equals("name") && klass.equals(String.class))
                                 || (name.equals("age") && klass.equals(Long.class))
                                 || (name.equals("dept") && klass.equals(String.class)));
                     } else {
-                        assert (false);
+                        fail("Edge schema contains a non-propertySchema object in its lists of PropertySchema");
                     }
                 }
             } else {
-                assert (false);
+                fail("Non EdgeOrPropertySchema object returned in alleged schema list.");
             }
         }
     }
@@ -198,11 +206,10 @@ public class SchemaInferenceUtilsTest {
 
         // add the roperty schema
 
-        ArrayList<EdgeOrPropertySchema> values = new ArrayList<>();
-        values.add(propertySchemaA);
-        values.add(propertySchemaA2);
-        values.add(propertySchemaD);
-
+        ArrayList<SerializedEdgeOrPropertySchema> values = new ArrayList<>();
+        values.add(new SerializedEdgeOrPropertySchema(propertySchemaA));
+        values.add(new SerializedEdgeOrPropertySchema(propertySchemaA2));
+        values.add(new SerializedEdgeOrPropertySchema(propertySchemaD));
 
         // now combine some edge schema
 
@@ -226,13 +233,15 @@ public class SchemaInferenceUtilsTest {
         edgeSchema3.addPropertySchema(propertySchemaB);
         edgeSchema3.addPropertySchema(propertySchemaC);
 
-        values.add(edgeSchema0);
-        values.add(edgeSchema1);
-        values.add(edgeSchema2);
-        values.add(edgeSchema3);
+        values.add(new SerializedEdgeOrPropertySchema(edgeSchema0));
+        values.add(new SerializedEdgeOrPropertySchema(edgeSchema1));
+        values.add(new SerializedEdgeOrPropertySchema(edgeSchema2));
+        values.add(new SerializedEdgeOrPropertySchema(edgeSchema3));
 
+        Logger LOG =  Logger.getLogger
+                (SchemaInferenceUtils.class);
 
-        ArrayList<EdgeOrPropertySchema> testOut = SchemaInferenceUtils.combineSchemata(values);
+        ArrayList<EdgeOrPropertySchema> testOut = SchemaInferenceUtils.combineSchemata(values, LOG);
 
         // one copy each of THE_EDGE, BONO, propertyA and propertyD
 
@@ -244,10 +253,10 @@ public class SchemaInferenceUtilsTest {
                 String name = propertySchema.getName();
                 try {
                     Class<?> type = propertySchema.getType();
-                    assert ((name.equals(A) && type.equals(dataTypeA)
+                    assertTrue((name.equals(A) && type.equals(dataTypeA)
                             || (propertySchema.getName().equals(D) && type.equals(dataTypeD))));
                 } catch (ClassNotFoundException e) {
-                    assert (false);
+                    fail("Class not found exception.");
                 }
             } else {
                 EdgeSchema edgeSchema = (EdgeSchema) schema;
@@ -262,11 +271,11 @@ public class SchemaInferenceUtilsTest {
 
                     for (PropertySchema pSchema : propertySchemata) {
                         try {
-                            assert ((pSchema.getName().equals(A) && pSchema.getType().equals(dataTypeA))
+                            assertTrue((pSchema.getName().equals(A) && pSchema.getType().equals(dataTypeA))
                                     || (pSchema.getName().equals(B) && pSchema.getType().equals(dataTypeB))
                                     || (pSchema.getName().equals(C) && pSchema.getType().equals(dataTypeC)));
                         } catch (Exception e) {
-                            assert (false);
+                            fail("Class not found exception.");
                         }
                     }
 
@@ -275,10 +284,10 @@ public class SchemaInferenceUtilsTest {
 
                         for (PropertySchema pSchema : propertySchemata) {
                             try {
-                                assert ((pSchema.getName().equals(B) && pSchema.getType().equals(dataTypeB))
+                                assertTrue((pSchema.getName().equals(B) && pSchema.getType().equals(dataTypeB))
                                         || (pSchema.getName().equals(C) && pSchema.getType().equals(dataTypeC)));
                             } catch (Exception e) {
-                                assert (false);
+                                fail("Class not found exception.");
                             }
                         }
                 }

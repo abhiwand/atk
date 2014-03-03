@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.output.OutputConfiguration;
+import org.apache.hadoop.fs.Path;
 
 public class TitanOutputConfiguration implements OutputConfiguration {
     private GraphGenerationMRJob graphGenerationMRJob;
@@ -28,6 +29,11 @@ public class TitanOutputConfiguration implements OutputConfiguration {
 
     public TitanOutputConfiguration() {
         graphGenerationMRJob = new TitanWriterMRChain();
+    }
+
+    public TitanOutputConfiguration(boolean inferSchema, String pathName) {
+        Path path = new Path(pathName);
+        graphGenerationMRJob = new TitanWriterMRChain(inferSchema, path);
     }
 
     public GraphGenerationMRJob getGraphGenerationMRJob() {

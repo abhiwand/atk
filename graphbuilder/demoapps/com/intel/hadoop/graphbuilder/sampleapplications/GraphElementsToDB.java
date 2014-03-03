@@ -97,9 +97,9 @@ public class GraphElementsToDB {
      * Private helper to extract property name to datatype classname from incoming args
      */
     private static HashMap<String, Class<?>> extractPropertyTypeMap(String propNamesString) {
-        HashMap<String, Class<?>> map = new HashMap<String, Class<?>>();
+        HashMap<String, Class<?>> map = new HashMap<>();
 
-        if (!propNamesString.isEmpty()) {
+        if (propNamesString != null && !propNamesString.isEmpty()) {
 
             String[] nameTypePairs = propNamesString.split(",");
 
@@ -144,9 +144,9 @@ public class GraphElementsToDB {
      */
     private static HashMap<String, ArrayList<String>> extractEdgeSignatures(String edgeSignatureString) {
 
-        HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+        HashMap<String, ArrayList<String>> map = new HashMap<>();
 
-        if (!edgeSignatureString.isEmpty()) {
+        if (edgeSignatureString != null && !edgeSignatureString.isEmpty()) {
 
             String[] edgeSignatures = edgeSignatureString.split(";");
 
@@ -188,6 +188,26 @@ public class GraphElementsToDB {
 
         CommandLine cmd = commandLineInterface.checkCli(args);
 
+        boolean inferSchema = cmd.hasOption(BaseCLI.Options.titanInferSchema.getLongOpt());
+        boolean declaredProperties = cmd.hasOption(BaseCLI.Options.titanPropertyTypes.getLongOpt());
+        boolean declaredEdgeSchema = cmd.hasOption(BaseCLI.Options.titanEdgeSignatures.getLongOpt());
+
+        if (inferSchema && declaredProperties) {
+           String badCmdLine = "You cannot simultaneously use the " +
+                   BaseCLI.Options.titanInferSchema.getLongOpt()
+                   + " and " + BaseCLI.Options.titanPropertyTypes.getLongOpt() + " options.";
+           GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE, badCmdLine, LOG);
+
+        }
+
+        if (inferSchema && declaredEdgeSchema) {
+            String badCmdLine = "You cannot simultaneously use the " +
+                    BaseCLI.Options.titanInferSchema.getLongOpt()
+                    + " and " + BaseCLI.Options.titanEdgeSignatures.getLongOpt() + " options.";
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE, badCmdLine, LOG);
+
+        }
+
         HashMap<String, Class<?>> propTypeMap = extractPropertyTypeMap(cmd.getOptionValue(
                 BaseCLI.Options.titanPropertyTypes.getLongOpt()));
 
@@ -208,7 +228,8 @@ public class GraphElementsToDB {
         // BUT... we will need an option to turn off the dedup phase...
         // it doesn't hurt us... it's just a waste of effort...
 
-        TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
+        TitanOutputConfiguration outputConfiguration =
+                new TitanOutputConfiguration(inferSchema, inputPath);
 
         LOG.info("============= Creating graph from feature table ==================");
         timer.start();

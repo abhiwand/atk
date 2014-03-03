@@ -26,12 +26,15 @@ import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringT
 import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
 import com.intel.hadoop.graphbuilder.types.IntType;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -41,6 +44,12 @@ import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 public class SchemaInferenceMapperTest {
@@ -94,9 +103,35 @@ public class SchemaInferenceMapperTest {
         edgeSchema.addPropertySchema(pSchema1);
         edgeSchema.addPropertySchema(pSchema2);
 
-        Mockito.verify(mockedContext).write(NullWritable.get(), edgeSchema);
-        Mockito.verify(mockedContext).write(NullWritable.get(), pSchema1);
-        Mockito.verify(mockedContext).write(NullWritable.get(), pSchema2);
+        ArgumentCaptor<SerializedEdgeOrPropertySchema> seopsCaptor =
+                ArgumentCaptor.forClass(SerializedEdgeOrPropertySchema.class);
 
+        ArgumentCaptor<Writable> keyCaptor =
+                ArgumentCaptor.forClass(Writable.class);
+
+
+        verify(mockedContext, times(3)).write(keyCaptor.capture(), seopsCaptor.capture());
+
+        List<SerializedEdgeOrPropertySchema> capturedSeops = seopsCaptor.getAllValues();
+        List<Writable> capturedKeys = keyCaptor.getAllValues();
+
+        SerializedEdgeOrPropertySchema serializedEdgeSchema = new SerializedEdgeOrPropertySchema(edgeSchema);
+        SerializedEdgeOrPropertySchema serializedPSchema1   = new SerializedEdgeOrPropertySchema(pSchema1);
+        SerializedEdgeOrPropertySchema serializedPSchema2   = new SerializedEdgeOrPropertySchema(pSchema2);
+
+        for (SerializedEdgeOrPropertySchema schema : capturedSeops) {
+
+            if (schema == null) {
+                fail("null graph shema returned from mapper");
+            } else {
+                assertTrue(schema.equals(serializedEdgeSchema)
+                        || schema.equals(serializedPSchema1)
+                        || schema.equals(serializedPSchema2));
+            }
+        }
+
+        for (Writable k : capturedKeys) {
+            assertEquals(k, NullWritable.get());
+        }
     }
 }

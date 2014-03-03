@@ -48,6 +48,13 @@ public class EdgeSchema extends EdgeOrPropertySchema implements Writable {
     private StringType serializedLabel = new StringType();
 
     /**
+     * Constructs the {@code EdgeSchema}.
+     */
+    public EdgeSchema() {
+        this.label = null;
+        propertySchemata = new HashSet<>();
+    }
+    /**
      * Constructs the {@code EdgeSchema} from a given label.
      *
      * @param label Edge label for the new {@code EdgeSchema}.

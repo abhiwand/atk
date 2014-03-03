@@ -22,7 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
-import com.intel.hadoop.graphbuilder.types.StringType;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.io.NullWritable;
@@ -38,13 +38,13 @@ import java.util.ArrayList;
 
 
 public class SchemaInferenceMapper extends Mapper<NullWritable, SerializedGraphElementStringTypeVids,
-        NullWritable, EdgeOrPropertySchema> {
+        NullWritable, SerializedEdgeOrPropertySchema> {
     private static final Logger LOG = Logger.getLogger(SchemaInferenceMapper.class);
 
     @Override
     public void map(NullWritable key, SerializedGraphElementStringTypeVids value, Context context) {
 
-        ArrayList<EdgeOrPropertySchema> list = SchemaInferenceUtils.getSchemaInfo(value);
+        ArrayList<EdgeOrPropertySchema> list = SchemaInferenceUtils.schemataFromGraphElement(value);
 
         try {
             SchemaInferenceUtils.writeSchemata(list, context);
