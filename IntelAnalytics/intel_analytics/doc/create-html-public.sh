@@ -15,6 +15,7 @@ fi
 
 python intel_analytics/doc/efuncgen.py > intel_analytics/doc/source/efunc.rst
 make -B html -C intel_analytics/doc
+tar -zcvf intel_analytics_pydoc.tar.gz intel_analytics/doc/build
 
 # undo if we made any changes above
 if [ "$CLUSTER_HOSTS" == ch ]; then
