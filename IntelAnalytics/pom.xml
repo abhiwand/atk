@@ -63,7 +63,6 @@
               </execution>
           </executions>
       </plugin>
-
       <plugin>
       	<artifactId>exec-maven-plugin</artifactId>
       	<groupId>org.codehaus.mojo</groupId>
@@ -81,7 +80,6 @@
       		</execution>
       	</executions>
       </plugin>
-
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
