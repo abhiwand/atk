@@ -42,10 +42,10 @@ stdout_logger = logging.getLogger(__name__)
 
 
 def get_file_name_from_datetime():
-    return datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f")
+    return ('%s_%s') %('python', datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f"))
 
 
-hdlr = logging.FileHandler(filename=conf['log_dir'] + '/' + get_file_name_from_datetime(), mode='w')
+hdlr = logging.FileHandler(filename=conf['logs_folder'] + '/' + get_file_name_from_datetime(), mode='w')
 stdout_logger.addHandler(hdlr)
 stdout_logger.setLevel(logger_level)
 stdout_logger.propagate = 0
