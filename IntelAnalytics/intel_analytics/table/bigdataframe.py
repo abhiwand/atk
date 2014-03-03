@@ -263,6 +263,21 @@ def _get_frame_builder_factory_class():
     return _frame_builder_factory
 
 
+class BigDataFilter(object):
+    """
+    Create a filter to be applied on a BigDataFrame
+    BigDataFilter(filter)
+	filter: filter condition as a boolean expression
+    BigDataFilter(filter, column)
+	filter: filter condition as a regex string
+	column: name of the column to apply regex
+    """
+
+    def __init__(self, filter, column = ''):
+        self.filter_condition = filter
+        self.column_to_apply = column
+
+
 class BigDataFrameException(Exception):
     pass
 
@@ -347,6 +362,64 @@ class BigDataFrame(object):
             print traceback.format_exc()
             raise BigDataFrameException("transform exception " + str(e))
 
+    def aggregate(self, group_by_column_list, aggregation_list, aggregate_frame_name, overwrite=False):
+
+        """
+        Applies a built-in aggregation function to the given column
+
+        Parameters
+        ----------
+        aggregate_frame_name: String
+            aggregate frame name for the output of the aggregation
+        group_by_column_list: List
+            List of columns to group the data by before applying aggregation to each group
+        aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
+            aggregation functions to apply on each group
+	overwrite: Boolean
+	    whether to overwrite the existing table with the same name
+
+	Returns
+	-------
+	BigDataFrame
+	    Aggregated frame
+        """
+        try:
+            aggregate_table = self._table.aggregate(aggregate_frame_name, group_by_column_list, aggregation_list, overwrite)
+	    return BigDataFrame(aggregate_frame_name, aggregate_table)
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("Error during aggregation " + str(e))
+
+    def aggregate_on_range(self, group_by_column, range, aggregation_list, aggregate_frame_name, overwrite=False):
+
+        """
+        Applies a built-in aggregation function to the given column given a range
+
+        Parameters
+        ----------
+        aggregate_frame_name: String
+            aggregate frame name for the output of the aggregation
+        group_by_column: String
+            Column to group the data by before applying aggregation to each group
+	range: String
+	    range of the group_by_column for applying the group
+	    Supported formats - min:max:stepsize, comma separated values
+        aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
+            aggregation functions to apply on each group
+	overwrite: Boolean
+	    whether to overwrite the existing table with the same name
+
+	Returns
+	-------
+	BigDataFrame
+	    Aggregated frame
+        """
+        try:
+            aggregate_table = self._table.aggregate_on_range(aggregate_frame_name, group_by_column, range, aggregation_list, overwrite)
+	    return BigDataFrame(aggregate_frame_name, aggregate_table)
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("Error during aggregation on range " + str(e))
 
     def inspect(self, n=10):
         """
@@ -372,20 +445,37 @@ class BigDataFrame(object):
     # Cleaning
     #----------------------------------------------------------------------
 
-    def drop(self, column_name, func):
+    def drop(self, filter, frame_name=''):
         """
         Drops rows which meet given criteria
 
         Parameters
         ----------
-        column_name : String
-            name of column for the function
-
-        func : function
-            filter function evaluated at each cell in the given column; if
-            result is true, row is dropped
+        filter: BigDataFilter
+            Filter to be applied to each row, either on specific column or the complete row
+	frame_name: String
+	    create a new frame for the remaining records if not deleting inplace
+	
+	Returns
+	-------
+        frame: BigDataFrame
         """
-        raise BigDataFrameException("Not implemented")
+	
+        try:
+	    inplace = (frame_name.strip() == '')
+	    isregex = (filter.column_to_apply.strip() != '')
+
+            result_table = self._table.drop(filter.filter_condition, filter.column_to_apply, isregex, inplace, frame_name)
+
+	    if inplace:
+		frame = self
+	    else:
+	        frame = BigDataFrame(frame_name, result_table)
+	    return frame
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("Unable to drop rows " + str(e))
+
 
     def dropna(self, how='any', column_name=None):
         """

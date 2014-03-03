@@ -22,58 +22,57 @@ package com.intel.hadoop.graphbuilder.util;
 /**
  * A simple timer class that can be used for benchmarking or timing up to
  * microsecond resolution.
- * 
  */
 public class Timer {
-  private long start;
-  private long current;
+    private long start;
+    private long current;
 
-  /**
-   * Initializes the timer with the current time.
-   */
-  public Timer() {
-    start = System.currentTimeMillis();
-  }
+    /**
+     * Initializes the timer with the current time.
+     */
+    public Timer() {
+        start = System.currentTimeMillis();
+    }
 
-  /**
-   * Resets the timer with current time.
-   */
-  public void start() {
-    current = start = System.currentTimeMillis();
-  }
+    /**
+     * Resets the timer with current time.
+     */
+    public void start() {
+        current = start = System.currentTimeMillis();
+    }
 
-  /**
-   * @return The time in seconds passed since last reset.
-   */
-  public long current_time() {
-    current = System.currentTimeMillis();
-    return (current - start) / 1000;
-  }
+    /**
+     * @return The time in seconds passed since last reset.
+     */
+    public long current_time() {
+        current = System.currentTimeMillis();
+        return (current - start) / 1000;
+    }
 
-  /**
-   * @return The time in milliseconds passed since last reset.
-   */
-  public long current_time_millis() {
-    current = System.currentTimeMillis();
-    return current - start;
-  }
+    /**
+     * @return The time in milliseconds passed since last reset.
+     */
+    public long current_time_millis() {
+        current = System.currentTimeMillis();
+        return current - start;
+    }
 
-  /**
-   * @return The time passed since last read.
-   */
-  public long time_since_last() {
-    long ret = (System.currentTimeMillis() - current) / 1000;
-    current = System.currentTimeMillis();
-    return ret;
-  }
+    /**
+     * @return The time passed since last read.
+     */
+    public long time_since_last() {
+        long ret = (System.currentTimeMillis() - current) / 1000;
+        current = System.currentTimeMillis();
+        return ret;
+    }
 
-  /**
-   * @return The time in milliseconds passed since last read.
-   */
-  public long time_since_last_millis() {
-    long ret = (System.currentTimeMillis() - current);
-    current = System.currentTimeMillis();
-    return ret;
-  }
+    /**
+     * @return The time in milliseconds passed since last read.
+     */
+    public long time_since_last_millis() {
+        long ret = (System.currentTimeMillis() - current);
+        current = System.currentTimeMillis();
+        return ret;
+    }
 
 }

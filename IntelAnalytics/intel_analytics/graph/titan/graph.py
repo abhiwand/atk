@@ -41,11 +41,14 @@ from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import Config as bulbsConfig
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.graph.pig.pig_script_builder import GBPigScriptBuilder
+from xml.etree.ElementTree import tostring
+import xml.etree.cElementTree as ET
+from intel_analytics.report import FaunusProgressReportStrategy
 
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
 except ImportError, e:
-    from intel_analytics.report import PrintReportStrategy as etl_report_strategy
+    from intel_analytics.report import PrintReportStrategy as etl_report_strategy, FaunusProgressReportStrategy
 
 
 #class TitanGraph(object):   # TODO: inherit BigGraph later
@@ -339,6 +342,62 @@ class BulbsGraphWrapper:
 
     def build_proxy(self, element_class, index_class=None):
         self._graph.build_proxy(self, element_class, index_class)
+
+    def export_as_graphml(self, statements, file):
+        """
+        Execute graph queries and output result as a graphml file in the specified file location.
+
+        Parameters
+        ----------
+        statements : Iterable
+           Iterable of query strings. The query returns vertices or edges.
+           For example, g.V('name','user_123').out
+        file: String
+            output file path
+
+        Examples
+        --------
+        >>> statements = []
+        >>> statements.append("g.V('name','user_123').out")
+        >>> graph = get_graph("SampleGraph")
+        >>> graph.export_as_graphml(statements, "example.xml")
+
+        """
+        xml = '\"' + self._get_query_xml(statements) + '\"'
+        temp_output = 'graph_query'
+
+        args = []
+        args += ['hadoop',
+                 'jar',
+                 global_config['intel_analytics_jar'],
+                 global_config['graphml_exporter_class'],
+                 '-f', file,
+                 '-o', temp_output,
+                 '-q', xml,
+                 '-t', self.titan_table_name
+        ]
+
+        return_code = call(args, report_strategy=FaunusProgressReportStrategy())
+        if return_code:
+            raise Exception('Could not export graph')
+
+    def _get_query_xml(self, statements):
+        """
+        Returns a xml containing query statement as individual child node
+
+        Parameters
+        ----------
+        statements : Iterable
+            Iterable of query strings
+        """
+        root = ET.Element("query")
+
+        for statement in statements:
+            statementNode = ET.SubElement(root, "statement")
+            statementNode.text = statement + ".transform('{[it,it.map()]}')"
+
+        return tostring(root)
+
 
     def __raise_(self, ex):
         raise ex

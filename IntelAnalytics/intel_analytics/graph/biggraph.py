@@ -65,7 +65,7 @@ class GraphTypes:
 class GraphBuilderFactory(object):
     """
     An abstract class for the various graph build factories 
-    (for example, one for Titan).
+	(for example, one for Titan).
     """
     __metaclass__ = abc.ABCMeta
 
@@ -558,6 +558,3 @@ def _get_graph_builder_factory_class():
             global_config['py_graph_builder_factory_class'])
         _graph_builder_factory = graph_builder_factory_class.get_instance()
     return _graph_builder_factory
-
-
-
