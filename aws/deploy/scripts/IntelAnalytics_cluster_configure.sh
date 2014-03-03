@@ -80,6 +80,11 @@ if [ -z "${pemfile}" ] || [ ! -f ${pemfile} ]; then
     usage $(basename $0)
 fi
 
+#make sure we can ssh into the instance
+for n in `cat ${nodesfile}`; do
+    ${dryrun} ssh -o ConnectTimeout=10 -o ConnectionAttempts=10 -i ${pemfile} ${n} "ls"
+done
+
 # Update cluster-wide hosts file
 for n in `cat ${nodesfile}`; do
     # update the host file
@@ -112,7 +117,8 @@ for n in `cat ${nodesfile}`; do
 done
 
 # get the master node ip
-m=`sed '1q;d' ${nodesfile}`
+m=`grep "master" ${hostsfile} | awk -F" " '{print $1}'`
+
 # get the actual cluster size
 csize=`cat ${nodesfile} | wc -l`
 
@@ -158,12 +164,12 @@ then
     nodes="master"
     for ((i = 1; i < ${csize}; i++))
     do
-        nodes="${nodes},`printf "%02d" ${i}`"
+        nodes="${nodes},`printf "node%02d" ${i}`"
     done
     ${dryrun} ssh -i ${pemfile} ${IA_USR}@${m} bash -c "'
     pushd ~/IntelAnalytics;
-    echo $nodes | sed 's/,/\n/g' > hadoop/conf/slaves;
-    echo $nodes | sed 's/,/\n/g' > hbase/conf/regionservers;
+    echo $nodes | sed \"s/,/\n/g\" > hadoop/conf/slaves;
+    echo $nodes | sed \"s/,/\n/g\" > hbase/conf/regionservers;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase.properties;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase-es.properties;
     sed -i \"s/<storage.hostname.*storage.hostname>/<storage.hostname>"${nodes}"</storage.hostname>/g\" titan/conf/rexstitan-hbase-es.xml;

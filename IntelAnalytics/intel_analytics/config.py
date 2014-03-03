@@ -31,6 +31,7 @@ import os
 import time
 import datetime
 import platform
+import sys
 
 from pyjavaprops import Properties
 
@@ -68,10 +69,36 @@ if not os.getenv('TITAN_HOME'):
 if not os.getenv('PIG_OPTS'):
     os.environ['PIG_OPTS'] = "-Dpython.verbose=error"#to get rid of Jython logging
 
+if not os.getenv('SPARK_HOME'):
+    os.environ['SPARK_HOME'] = '/home/hadoop/IntelAnalytics/spark'
+
+if not os.getenv('MASTER'):
+    os.environ['MASTER'] = 'spark://master:7077'
+
+os.environ['PYSPARK_PYTHON'] = sys.executable
+
 properties_file = os.path.join(
         os.getenv('INTEL_ANALYTICS_HOME', _here_folder),
         'conf',
         'intel_analytics.properties')
+
+sys.path.append(os.path.join(os.getenv('SPARK_HOME'), 'python'))
+
+def get_spark_context():
+    import pyspark
+    global global_config
+    if pyspark.SparkContext._active_spark_context:
+        sc = pyspark.SparkContext._active_spark_context
+    else:    
+        conf = (pyspark.SparkConf()
+                        .setMaster(global_config["spark_master"])
+                        .setAppName(global_config["spark_app_name"])
+			.setSparkHome(global_config["spark_home"])
+                        .set("spark.executor.memory", global_config["spark_executor_memory"])
+			.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+			.set("spark.logConf", "true"))
+        sc = pyspark.SparkContext(conf = conf)
+    return sc
 
 
 def get_time_str():
@@ -278,6 +305,7 @@ class Config(object):
         lines = []
         #with open(srcfile, 'r') as src: Pig uses jython 2.5, so can't use with
         src = open(srcfile, 'r')
+        line = None
         try:
             while 1:
                 # not the most efficient algo, but need to strip comments first
@@ -287,6 +315,10 @@ class Config(object):
                 line = line.strip()
                 if len(line) > 0 and line[0] != '!' and line[0] != '#':
                     lines.append(line)
+	except Exception, e:
+            if line == None:
+                raise e
+            raise Exception("Exception on line: %s" % line, e)
         finally:
             src.close()
         template = Template(os.linesep.join(lines))
@@ -329,6 +361,7 @@ class Config(object):
 
 # Global Config Singleton
 try:
+    print "Loading from %s" % properties_file
     global_config = Config(properties_file)
 
     os.environ["JYTHONPATH"] = global_config['pig_jython_path']#required to ship jython scripts with pig
@@ -338,7 +371,6 @@ try:
         existing_hadoop_cp = ''
     os.environ['HADOOP_CLASSPATH'] = existing_hadoop_cp + ':' + global_config['graph_builder_jar']#required for Graph Builder
 except Exception, e:
-    import sys
     sys.stderr.write("""
 WARNING - could not load default properties file %s because:
   %s
