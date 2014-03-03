@@ -1,4 +1,7 @@
 #!/bin/bash
+#copies/runs a script to copy data from s3 to hdfs using hadoop distcp2
+#Requirements
+#   aws cli pre configured for s3ToHdfs.sh to work or they have to be passed in.
 
 TEMP=`getopt -o e: --long email:,nodes-file:,hosts-file:,pem-file:,dry-run -n 'IntelAnalytics_copy_s3ToHdfs.sh' -- "$@"`
 

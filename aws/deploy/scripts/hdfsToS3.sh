@@ -1,4 +1,15 @@
 #!/bin/bash
+#copies all the hdfs data into s3. 
+#Requirements:
+#   Aws cli is needed to be pre configured for the script to work or the required access keys will have to passed to the script as command line options
+#the script will stop,start habase has part of the copy process. If hbase is not shutdown nothing will get copied correctly
+#all data is put in a preconfigured s3 bucket partitioned by email. thier is no need to further partition by cluster id since cluster user mapping is one to one.
+#FYI:
+#   two possible s3 formats are available when doing distcp s3n:// and s3://. s3n:// copies the files stored in s3 to hdfs which means MyFile.csv
+#   will look like the original file when it's copied over to s3.
+#   s3:// will copy the hdfs blocks to s3 while still usefull for back up purposes we can't browse the files and see what has been backed up.
+#   if we use s3n the biggest draw back would be our max file size limitation of 5trb if any file in hdfs is larger than 5trb this will not work. 
+#   Since s3:// copies hdfs blocks to s3 we are still bound by the max file size but no single block will should be any near the 5trb size which means we will be able to support larger file sizes. 
 
 TEMP=`getopt -o a:s: --long access:,secret:,bucket:,email: -n 'IntelAnalytics_cluster_backup.sh' -- "$@"`
 

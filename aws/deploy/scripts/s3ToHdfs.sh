@@ -2,8 +2,10 @@
 #This script will copy data from an s3 bucket that is partitioned by email to HDFS on the cluster
 #The data in S3 should will most likely be prevoiusly backed up data from some hdfs cluster
 #
-#-The master node needs to have the aws cli installed an configured for this pull data from s3
-# since the required acces and secret keys get pulled from the aws cli config file under the ec2-user account
+#Requirements
+#   The master node needs to have the aws cli installed and configured for this pull data from s3
+#       since the required access and secret keys get pulled from the aws cli config file under the ec2-user account
+#   
 #
 TEMP=`getopt -o a:s: --long access:,secret:,bucket:,email: -n 'IntelAnalytics_cluster_backup.sh' -- "$@"`
 

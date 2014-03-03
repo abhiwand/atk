@@ -1,4 +1,14 @@
 #!/bin/bash
+#copies and runs a script to back up hdfs data to s3 for back up with the use of hadoop distcp2
+#This script can be run stand alone and will also get picked up by the configure script
+#Step 1
+#   create cron directory under ec2-user home
+#Step 2
+#   copy hdfsToS3.sh file to the created dir
+#step 3   
+#   set up our cron job to run at midnight
+#step 4
+#   run the script if run is set
 
 function usage()
 {
