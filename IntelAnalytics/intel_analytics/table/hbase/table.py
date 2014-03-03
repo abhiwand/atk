@@ -28,7 +28,7 @@ import collections
 from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
 from intel_analytics.pig import get_pig_args, is_local_run
-from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
+from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder, BigColumn
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
 
@@ -42,7 +42,9 @@ from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
 from pydoop.hdfs.path import exists
-import matplotlib.pyplot as plt
+import hashlib
+from intel_analytics.table.hbase import histogram
+
 
 MAX_ROW_KEY = 'max_row_key'
 
@@ -199,88 +201,77 @@ class HBaseTable(object):
         return HBaseTable(new_table_name, self.file_name)
 
 
-    def get_column_statistics(self, columns, force_recomputation):
-
-        hist_file,stat_file = {}, {}
-	for i in columns:
-	    hist_file[i] = '%s_%s_histogram' % (self.table_name, i)
-	    stat_file[i] = '%s_%s_stats' % (self.table_name, i)
-
-        # Check which columns need recomputation
-        recompute_columns = []
-        if (force_recomputation):
-            recompute_columns = columns
+    def __get_column_statistics_filenames(self, column, check_file_existance=True):
+        if not column.interval_groups:
+            column_file_identifier = column.column_name
         else:
-            for i in columns:
-               if not (os.path.isfile(hist_file[i]) and os.path.isfile(stat_file[i])):
-                    recompute_columns.append(i)
+            md5sum = hashlib.md5(column.get_interval_groups_as_str()).hexdigest()
+            column_file_identifier = column.column_name + '_' + md5sum
+        hist_file = '%s_%s_histogram' % (self.table_name, column_file_identifier)
+        stat_file = '%s_%s_stats' % (self.table_name, column.column_name)
+
+        files_exist = False
+        if check_file_existance and \
+           os.path.isfile(hist_file) and os.path.isfile(stat_file):
+             files_exist = True
+        return hist_file, stat_file, files_exist
+
+
+    def get_column_statistics(self, column_list, force_recomputation):
+
+        hist_file, stat_file, needs_recompute = [],[],[]
+        for i in column_list:
+            h,s,r = self.__get_column_statistics_filenames(i, not force_recomputation)
+            hist_file.append(h)
+            stat_file.append(s)
+            needs_recompute.append(not r)
+
+        recompute_columns = [d for (d, e) in zip(column_list, needs_recompute) if e]
 
         # Send to Pig only columns which need recomputation
         if recompute_columns:
 
             etl_schema = ETLSchema()
             etl_schema.load_schema(self.table_name)
-    
-            feature_types = [etl_schema.get_feature_type(f) for f in recompute_columns]
-            feature_names_as_str = ",".join(recompute_columns)
-            feature_types_as_str = ",".join(feature_types)
 
+            recompute_column_names = [f.column_name for f in recompute_columns]
     
+            feature_types = [etl_schema.get_feature_type(f) for f in recompute_column_names]
+            feature_names_as_str = ",".join(recompute_column_names)
+            feature_types_as_str = ",".join(feature_types)
+            # Using # as delimiter as string representation of interval contains commas
+            feature_data_groups_as_str = "#".join([i.get_interval_groups_as_str() for i in recompute_columns])
+
             args = get_pig_args('pig_column_stats.py')
     	    args.extend(['-i', self.table_name, 
                     '-n', feature_names_as_str,
-                    '-t', feature_types_as_str])
+                    '-t', feature_types_as_str,
+                    '-g', feature_data_groups_as_str])
     
             return_code = call(args, report_strategy = etl_report_strategy())
             if return_code:
                 raise HBaseTableException('Could not generate statistics')
 
-
+            # Move files to local filesystem for caching/plotting purposes
             g = lambda x: 'hadoop fs -cat %s/part* > %s' % (x, x)
             for i in recompute_columns:
-                cmd_hist, cmd_stat = g(hist_file[i]), g(stat_file[i])
+                index = column_list.index(i)
+                cmd_hist, cmd_stat = g(hist_file[index]), g(stat_file[index])
 	        call(cmd_hist, shell=True)
                 call(cmd_stat, shell=True)
 
         result = []
 
-        for c in columns:
+        for i in range(len(hist_file)):
+            c = column_list[i].column_name
+            column_stat =  histogram.plot_histogram(hist_file[i],
+                           c, 'frequency',
+                           'Column Statistics - %s' % (c),
+                           stat_file[i])
+            result.append(column_stat)
 
-            with open(hist_file[c]) as h:
-                hlines = [x.strip() for x in h.readlines()]
-                
-            with open(stat_file[c]) as s:
-                slines = [x.strip() for x in s.readlines()]
-                result.append(slines)
-            
-            data_x = []
-            data_y = []
-            for i in range(len(hlines)):
-                t = hlines[i].split()
-                data_x.append(t[0])
-                data_y.append(int(t[1]))
+        return result 
 
-            plt.bar(range(len(data_y)), data_y)
-            plt.xticks(range(len(data_y)), data_x)
-    
-            max_coordinate = 4
-            if any("max" in s for s in slines):
-                max_coordinate = int(float([s.split('=')[1] for s in slines if "max" in s][0]))
-    
-            latex_symbols = {'max' : '$\max$', 'min' : '$\min$', 'avg' : '$\mu$', 'stdev' : '$\sigma$', 'var' : '$\sigma^2$'}
-            for i,j in latex_symbols.iteritems():
-                slines = [w.replace(i, j) for w in slines]
-            
-            stats = "\n".join(sorted(slines))
-            
-            plt.xlabel(c)
-            plt.ylabel('frequency')
-            plt.title('Column Statistics - %s' % (c))
-            plt.text(max_coordinate * 1.25, 0, r'%s' % (stats), fontsize = 18)
-            plt.grid(True)
-            plt.show()
-
-        return result
 
 
     def drop_columns(self, columns):

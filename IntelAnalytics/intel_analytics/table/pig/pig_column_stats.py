@@ -23,6 +23,7 @@
 import os
 import ast
 import sys
+import hashlib
 
 from intel_analytics.table.pig import pig_helpers
 
@@ -33,13 +34,42 @@ except ImportError, e:
 
 from intel_analytics.config import global_config as config
 from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
+from interval import Interval, Smallest, Largest
 
-    
+def generate_interval_check(column_name, interval):
+    """
+    generates a AND separated expression to check an interval
+    for example: interval = [2..3] returns 2 <= column_name AND column_name <= 3
+    """
+    expression = []
+    if interval.lower_bound not in [Smallest(), Largest()]:
+        if interval.lower_closed:
+            expression.append('%s <= %s' % (interval.lower_bound, column_name))
+        else:
+            expression.append('%s < %s' % (interval.lower_bound, column_name))
+
+    if interval.upper_bound not in [Smallest(), Largest()]:
+        if interval.upper_closed:
+            expression.append('%s <= %s' % (column_name, interval.upper_bound))
+        else:
+            expression.append('%s < %s' % (column_name, interval.upper_bound))
+
+
+    return " AND ".join(expression)
+
+def replace_inf(str):
+    """
+    replaces inf from a string appropriately based on bounds
+    """
+    return str.replace('-Inf', 'Smallest()').replace('Inf', 'Largest()')
+
+
 def main(argv):
     parser = ArgumentParser(description='applies feature transformations to features in a big dataset')
     parser.add_argument('-i', '--input', dest='input', help='the input HBase table', required=True)
     parser.add_argument('-n', '--features', dest='feature_names', help='name of the features as a comma separated string')
     parser.add_argument('-t', '--feature_types', dest='feature_types', help='type of the features as a comma separated string')    
+    parser.add_argument('-g', '--feature_data_groups', dest='feature_data_groups', help='feature data groups as a pound(#) separated string')    
 
     cmd_line_args = parser.parse_args()
     
@@ -47,7 +77,8 @@ def main(argv):
     types = [(f.strip()) for f in cmd_line_args.feature_types.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names)
-    
+    feature_data_groups = [(f.strip()) for f in cmd_line_args.feature_data_groups.split('#')]
+
     columns = list(features)
 
     #don't forget to add the key we read from hbase, we read from hbase like .... as (key:chararray, ... remaining_features ...), see below
@@ -70,8 +101,12 @@ def main(argv):
     binding_variables = {}
     for t,c in enumerate(columns): 
         binding_variables['STAT_%s' % (c)] = cmd_line_args.input + '_' + c + '_stats'
-        binding_variables['HIST_%s' % (c)] = cmd_line_args.input + '_' + c + '_histogram'
-   
+        if not feature_data_groups[t]:
+            binding_variables['HIST_%s' % (c)] = cmd_line_args.input + '_' + c + '_histogram'
+        else:
+            md5sum = hashlib.md5(feature_data_groups[t]).hexdigest()
+            binding_variables['HIST_%s' % (c)] = cmd_line_args.input + '_' + c + '_' + md5sum + '_histogram'
+
         is_comparable  = lambda x: True if x in ['int', 'long', 'double', 'float'] else False
 
         if is_comparable(types[t]):
@@ -92,12 +127,26 @@ def main(argv):
             pig_statements.append("result_%s = UNION max_result_%s, min_result_%s, avg_result_%s, var_result_%s, stdev_result_%s, unique_val_count_%s, missing_val_count_%s;" % (c,c,c,c,c,c,c,c))
         else:
             pig_statements.append("result_%s = UNION unique_val_count_%s, missing_val_count_%s;" % (c,c,c))
-    
-        pig_statements.append("grouped_data2_%s = GROUP hbase_data BY %s;" % (c,c))
-        pig_statements.append("histogram_%s = FOREACH grouped_data2_%s GENERATE group, COUNT(hbase_data);" % (c,c))
+
+        if not feature_data_groups[t]:
+            # Column without any grouping
+            pig_statements.append("grouped_data2_%s = GROUP hbase_data BY %s;" % (c,c))
+            pig_statements.append("histogram_%s = FOREACH grouped_data2_%s GENERATE group, COUNT(hbase_data);" % (c,c))
+            pig_statements.append("rmf %s;" % (binding_variables['HIST_%s' % (c)]))
+        else:
+            intervals = [eval(replace_inf(f)) for f in feature_data_groups[t].split(":")]
+            count_variables = []
+            for i,j in enumerate(intervals):
+                k = generate_interval_check(c,j)
+                pig_statements.append("filter_%s_%d = FILTER hbase_data BY %s;" % (c,i,k))
+                pig_statements.append("grouped_data3_%s_%d = GROUP filter_%s_%d ALL;" %(c,i,c,i))
+                pig_statements.append("count_%s_%d = FOREACH grouped_data3_%s_%d GENERATE '%s', COUNT(filter_%s_%d);" % (c,i,c,i,str(j),c,i))
+                count_variables.append("count_%s_%d" % (c,i))
+            pig_statements.append("histogram_%s = UNION %s;" % (c,",".join(count_variables)))
+            pig_statements.append("rmf %s;" % (binding_variables['HIST_%s' % (c)]))
+            
     
         pig_statements.append("rmf %s;" % (binding_variables['STAT_%s' % (c)]))
-        pig_statements.append("rmf %s;" % (binding_variables['HIST_%s' % (c)]))
     
         pig_statements.append("STORE result_%s INTO '$STAT_%s';" % (c, c))
         pig_statements.append("STORE histogram_%s INTO '$HIST_%s';" % (c, c))
