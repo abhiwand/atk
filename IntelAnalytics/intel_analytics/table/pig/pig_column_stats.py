@@ -39,7 +39,7 @@ from interval import Interval, Smallest, Largest
 def generate_interval_check(column_name, interval):
     """
     generates a AND separated expression to check an interval
-    for example: interval = [2..3] returns 2 <= column_name AND column_name <= 3
+    for example: interval = [2..3] returns '2 <= column_name AND column_name <= 3'
     """
     expression = []
     if interval.lower_bound not in [Smallest(), Largest()]:
@@ -99,7 +99,9 @@ def main(argv):
     pig_statements.append("grouped_data1 = GROUP hbase_data ALL;")
 
     binding_variables = {}
+
     for t,c in enumerate(columns): 
+        # Map all the binding variables enlisting output filenames
         binding_variables['STAT_%s' % (c)] = cmd_line_args.input + '_' + c + '_stats'
         if not feature_data_groups[t]:
             binding_variables['HIST_%s' % (c)] = cmd_line_args.input + '_' + c + '_histogram'
@@ -109,6 +111,7 @@ def main(argv):
 
         is_comparable  = lambda x: True if x in ['int', 'long', 'double', 'float'] else False
 
+        # max/min/avg/var/stdev are only valid for comparable datatypes
         if is_comparable(types[t]):
             pig_statements.append("max_result_%s = FOREACH grouped_data1 GENERATE CONCAT('max=', (chararray)MAX(hbase_data.%s));" % (c,c))
             pig_statements.append("min_result_%s = FOREACH grouped_data1 GENERATE CONCAT('min=', (chararray)MIN(hbase_data.%s));" % (c,c))

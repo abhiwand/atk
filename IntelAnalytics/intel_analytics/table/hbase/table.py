@@ -262,7 +262,8 @@ class HBaseTable(object):
 
         result = []
 
-        for i in range(len(hist_file)):
+        # Call plot_histogram for each column
+        for i in range(len(column_list)):
             c = column_list[i].column_name
             column_stat =  histogram.plot_histogram(hist_file[i],
                            c, 'frequency',
