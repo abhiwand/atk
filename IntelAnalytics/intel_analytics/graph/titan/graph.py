@@ -360,6 +360,10 @@ class BulbsGraphWrapper:
         -------
         RexsterResult
 
+        Examples
+        --------
+        >>> graph.load_graphml('file:///home/user/graphml_dir/demo.xml')
+
         """
         return self._graph.load_graphml(uri)
 
