@@ -243,7 +243,7 @@ class HBaseTable(object):
             feature_data_groups_as_str = "#".join([i.get_interval_groups_as_str() for i in recompute_columns])
 
             args = get_pig_args('pig_column_stats.py')
-    	    args.extend(['-i', self.table_name, 
+            args.extend(['-i', self.table_name, 
                     '-n', feature_names_as_str,
                     '-t', feature_types_as_str,
                     '-g', feature_data_groups_as_str])
@@ -257,7 +257,7 @@ class HBaseTable(object):
             for i in recompute_columns:
                 index = column_list.index(i)
                 cmd_hist, cmd_stat = g(hist_file[index]), g(stat_file[index])
-	        call(cmd_hist, shell=True)
+                call(cmd_hist, shell=True)
                 call(cmd_stat, shell=True)
 
         result = []
