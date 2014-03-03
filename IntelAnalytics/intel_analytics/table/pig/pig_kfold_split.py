@@ -1,4 +1,4 @@
-__author__ = 'hadoop'##############################################################################
+##############################################################################
 # INTEL CONFIDENTIAL
 #
 # Copyright 2014 Intel Corporation All Rights Reserved.
@@ -82,12 +82,12 @@ def main(argv):
     #convert the string representation of split_name to a list
     if cmd_line_args.split_name:
         cmd_line_args.split_name = ast.literal_eval(cmd_line_args.split_name)
-    features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
+    features = [f.strip() for f in cmd_line_args.feature_names.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names)
     hbase_store_args = generate_hbase_store_args(features, cmd_line_args)
     features.insert(0, 'key')
-    feature_list = ", ".join([f for f in features])
+    feature_list = ", ".join(features)
     split_statement = generate_split_statement(feature_list, cmd_line_args)
 
     pig_load = [

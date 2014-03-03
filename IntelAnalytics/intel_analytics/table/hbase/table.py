@@ -336,7 +336,7 @@ class HBaseTable(object):
     def _update_schema_for_overwrite(self, etl_schema, output_column):
         idx =  etl_schema.feature_names.index(output_column)
         del etl_schema.feature_types[idx]
-        etl_schema.feature_names.remove(output_column)
+        del etl_schema.feature_names[idx]
 
 
     def kfold_split(self, k, test_fold_id, fold_id_column, split_name, output_column, update, overwrite):
@@ -350,13 +350,17 @@ class HBaseTable(object):
         if update:
             self._update_schema_for_overwrite(etl_schema, randomization_column)
 
-        if fold_id_column[0].isdigit():
+        if not isinstance(fold_id_column, basestring):
+            raise TypeError("fold_id_column should be a string.")
+        elif fold_id_column[0].isdigit():
             raise ValueError("fold_id_column %s starts with number.\n"
-                             "Apache Pig does not support this." % fold_id_column)
+                             "It is not supported." % fold_id_column)
 
-        if output_column[0].isdigit():
+        if not isinstance(output_column, basestring):
+            raise TypeError("output_column should be a string.")
+        elif output_column[0].isdigit():
             raise ValueError("output_column %s starts wSith number.\n"
-                             "Apache Pig does not support this." % output_column)
+                             "It is not supported" % output_column)
 
         if output_column in etl_schema.feature_names:
             if not overwrite:
@@ -368,8 +372,13 @@ class HBaseTable(object):
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
-        if test_fold_id > k or test_fold_id < 1:
+        if not isinstance(test_fold_id, int):
+            raise TypeError("test_fold_id should be an integer.")
+        elif test_fold_id > k or test_fold_id < 1:
             raise ValueError("test_fold_id is %s. It should in the range of [1, %s]" % (test_fold_id, k))
+
+        if not isinstance(split_name, list):
+            raise TypeError("split_name should be a list.")
 
         if len(split_name) != 2:
             raise ValueError("The size of split_name is %s. The supported size is 2." % len(split_name))
@@ -414,13 +423,17 @@ class HBaseTable(object):
         if update:
             self._update_schema_for_overwrite(etl_schema, randomization_column)
 
-        if randomization_column[0].isdigit():
+        if not isinstance(randomization_column, basestring):
+            raise TypeError("randomization_column should be a string.")
+        elif randomization_column[0].isdigit():
             raise ValueError("randomization_column %s starts with number.\n"
-                             "Apache Pig does not support this." % randomization_column)
+                             "It is not supported." % randomization_column)
 
-        if output_column[0].isdigit():
+        if not isinstance(output_column, basestring):
+            raise TypeError("output_column should be a string.")
+        elif output_column[0].isdigit():
             raise ValueError("output_column %s starts with number.\n"
-                             "Apache Pig does not support this." % output_column)
+                             "It is not supported." % output_column)
 
         if output_column in etl_schema.feature_names:
             if not overwrite:
@@ -432,7 +445,11 @@ class HBaseTable(object):
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
-        if len(split_percent) != len(split_name):
+        if not isinstance(split_name, list):
+            raise TypeError("split_name should be a list.")
+        elif not isinstance(split_percent, list):
+            raise TypeError("split_percent should be a list.")
+        elif len(split_percent) != len(split_name):
             raise ValueError("The size of split_percent is %s. The size of split_name is %s. "
                              "Please make sure they are with the same size" %(len(split_percent), len(split_name) ))
 
