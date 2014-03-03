@@ -23,14 +23,16 @@
 
 package com.intel.graph;
 
+import org.apache.hadoop.fs.Path;
+
 /**
- * Factory for generating graph elements
+ * Interface which encapsulates method for collecting path
  */
-public interface IGraphElementFactory {
+public interface IPathCollector {
+
     /**
-     * Create graph element from text content
-     * @param text: Text representation source for the graph element
-     * @return The graph element
+     * Collect path
+     * @param path: The path to be collected
      */
-    IGraphElement makeElement(String text);
+    void collectPath(Path path);
 }

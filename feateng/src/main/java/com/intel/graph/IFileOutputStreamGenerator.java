@@ -23,14 +23,16 @@
 
 package com.intel.graph;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.JobContext;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
- * Factory for generating graph elements
+ * This interface encapsulates the method to get an OutputStream from
+ * job context and path.
  */
-public interface IGraphElementFactory {
-    /**
-     * Create graph element from text content
-     * @param text: Text representation source for the graph element
-     * @return The graph element
-     */
-    IGraphElement makeElement(String text);
+public interface IFileOutputStreamGenerator {
+    OutputStream getOutputStream(JobContext context, Path path) throws IOException;
 }
