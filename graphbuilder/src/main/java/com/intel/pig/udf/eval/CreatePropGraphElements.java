@@ -476,9 +476,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         // check tuple for edges
 
-        StringType srcLabel = new StringType();
-        StringType tgtLabel = new StringType();
-
         for (String eLabel : edgeLabelToEdgeRules.keySet()) {
 
             EdgeRule     edgeRule          = edgeLabelToEdgeRules.get(eLabel);
@@ -495,15 +492,18 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
                 String srcVertexCellString =  srcVertexCell.toString();
                 String tgtVertexCellString =  tgtVertexCell.toString();
-            
+
+                StringType srcLabel = null;
+                StringType tgtLabel = null;
+
                 String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
                 if (srcLabelString != null) {
-                    srcLabel.set(srcLabelString);
+                    srcLabel = new StringType(srcLabelString);
                 }
 
                 String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
                 if (tgtLabelString != null) {
-                    tgtLabel.set(tgtLabelString);
+                    tgtLabel = new StringType(tgtLabelString);
                 }
 
                 processEdges(input, inputSchema, srcVertexCellString, tgtVertexCellString, srcLabel, tgtLabel, eLabel,
