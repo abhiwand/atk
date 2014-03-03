@@ -1,4 +1,4 @@
-Summary: Intel Graph Analytics System development libraries. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
+Summary: Intel Big Data Analytics Toolkit support libraries. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
 Version: 0.8.0
 
@@ -6,7 +6,9 @@ License: Apache
 
 Group: Development
 
-Name: python-intelanalytics-dependencies
+Name: intelanalytics-python-deps-localbuild
+
+Provides: intelanalytics-python-dependencies
 
 Requires: java >= 1.7, blas,  bzip2-devel,  dos2unix,  freetype-devel,  gcc,  gtk2-devel,  libffi-devel,  libpng-devel,  ncurses-devel,  openssl-devel,  pygtk2-devel,  python-devel,  readline-devel,  sqlite-devel,  tk-devel,  tkinter, atlas, atlas-devel, blas-devel, freetype, freetype-devel, gcc-c++, lapack, lapack-devel, libpng-devel, python-devel, python-setuptools, yum-utils, zlib-devel, boost-devel, patch, perl-libwww-perl, intelanalytics, make
 
@@ -14,7 +16,7 @@ Prefix: /usr
 
 Release: %{?BUILD_NUMBER}
 
-Source: python-intelanalytics-dependencies-%{version}.tar.gz
+Source: intelanalytics-python-deps-localbuild-%{version}.tar.gz
 
 URL: <TODO>
 
