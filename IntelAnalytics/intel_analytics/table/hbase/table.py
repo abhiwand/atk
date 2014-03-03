@@ -37,6 +37,7 @@ from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
 import sys
 
 from schema import ETLSchema, merge_schema
+from range import ETLRange
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
@@ -101,6 +102,150 @@ class HBaseTable(object):
         """
         self.table_name = table_name
         self.file_name = file_name
+
+    def __get_aggregation_list_and_schema(self, aggregation_arguments, etl_schema, new_schema_def):
+
+	aggregation_list = []
+	for i in aggregation_arguments:
+	    function_name = column_to_apply = new_column_name = ""
+	    if isinstance(i, tuple):
+		function_name, column_to_apply, new_column_name = i[0], i[1], (i[1] if len(i) == 2 else i[2])
+	    else:
+		function_name = i
+		if (function_name == EvalFunctions.Aggregation.COUNT):
+		    column_to_apply, new_column_name = "*", "count"
+		else:
+                    raise HBaseTableException("Invalid aggregation: " + function_name)
+		
+	    try:
+	        aggregation_list.append(EvalFunctions.to_string(function_name))
+	    except:
+		raise HBaseTableException('The specified aggregation function is invalid: ' + function_name)
+
+
+	    if (column_to_apply != "*" and column_to_apply not in etl_schema.feature_names):
+                raise HBaseTableException("Column %s does not exist" % column_to_apply)
+
+	    aggregation_list.append(column_to_apply);
+	    aggregation_list.append(new_column_name)
+
+
+	    if (function_name in [EvalFunctions.Aggregation.COUNT, EvalFunctions.Aggregation.COUNT_DISTINCT]):
+	        new_schema_def += ",%s:int" % (new_column_name)
+	    elif (function_name in [EvalFunctions.Aggregation.DISTINCT]):
+	        new_schema_def += ",%s:chararray" % (new_column_name)
+	    else:
+	        new_schema_def += ",%s:%s" % (new_column_name, 
+					          etl_schema.get_feature_type(column_to_apply))
+
+	return aggregation_list, new_schema_def
+
+    def aggregate(self,
+		  aggregate_frame_name,
+		  group_by_columns,
+		  aggregation_arguments,
+		  overwrite):
+		
+        #load schema info
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+	# You should check if the group_by_columns are valid or not
+
+	new_schema_def = ""
+	if (len(group_by_columns) == 1) :
+	    new_schema_def += "AggregateGroup:" + etl_schema.get_feature_type(group_by_columns[0])
+	else:
+            new_schema_def += "AggregateGroup:chararray"
+
+	aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
+	
+        args = get_pig_args('pig_aggregation.py')
+
+
+	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
+        hbase_table = HBaseTable(new_table_name, self.file_name)
+
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+
+        args.extend(['-i', self.table_name,
+                 '-o', new_table_name, 
+		 '-a', " ".join(aggregation_list),
+		 '-g', ",".join(group_by_columns),
+                 '-u', feature_names_as_str, '-r', feature_types_as_str,
+                ])
+
+        logger.debug(args)
+
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not apply transformation')
+
+
+	new_etl_schema = ETLSchema()
+	new_etl_schema.populate_schema(new_schema_def)
+        new_etl_schema.save_schema(new_table_name)
+
+	return hbase_table
+
+    def aggregate_on_range(self,
+		  aggregate_frame_name,
+		  group_by_column,
+		  range,
+		  aggregation_arguments,
+		  overwrite):
+		
+        #load schema info
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+	# You should check if the group_by_columns are valid or not
+
+	new_schema_def = "AggregateGroup:chararray"
+
+        aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
+	
+        args = get_pig_args('pig_range_aggregation.py')
+        _range = ETLRange(range).toString()
+
+
+	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
+        hbase_table = HBaseTable(new_table_name, self.file_name)
+
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+
+        args.extend(['-i', self.table_name,
+                 '-o', new_table_name, 
+		 '-a', " ".join(aggregation_list),
+		 '-g', group_by_column,
+		 '-l', _range,
+                 '-u', feature_names_as_str, '-r', feature_types_as_str,
+                ])
+
+        logger.debug(args)
+
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not apply transformation')
+
+
+	new_etl_schema = ETLSchema()
+	new_etl_schema.populate_schema(new_schema_def)
+        new_etl_schema.save_schema(new_table_name)
+
+	return hbase_table
 
     def transform(self,
                   column_name,
@@ -196,6 +341,50 @@ class HBaseTable(object):
             raise HBaseTableException('Could not copy table')
 
         return HBaseTable(new_table_name, self.file_name)
+
+    def drop(self, filter, column, isregex, inplace, new_table_name):
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        args = get_pig_args('pig_filter.py')
+
+	if (inplace):
+	    hbase_table_name = self.table_name
+            hbase_table = HBaseTable(hbase_table_name, self.file_name)
+	else:
+             # need to delete/create output table so that we can write the remaining rows after filtering 
+             hbase_table_name = _create_table_name(new_table_name, True)
+             hbase_table = HBaseTable(hbase_table_name, self.file_name)
+             with ETLHBaseClient() as hbase_client:
+                 hbase_client.drop_create_table(hbase_table_name,
+                                           [config['hbase_column_family']])
+
+        args.extend(['-i', self.table_name,
+                 '-o', hbase_table_name, 
+		 '-n', feature_names_as_str,
+                 '-t', feature_types_as_str,
+		 '-p', 'True' if inplace else 'False',
+		 '-c', column,
+		 '-r', 'True' if isregex else 'False',
+		 '-f', filter])
+
+        logger.debug(args)
+        
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not drop rows using the filter')
+
+	if not inplace:
+	    new_etl_schema = ETLSchema()
+	    new_etl_schema.populate_schema(etl_schema.get_schema_as_str())
+            new_etl_schema.save_schema(hbase_table_name)
+
+	return hbase_table
 
 
     def drop_columns(self, columns):
