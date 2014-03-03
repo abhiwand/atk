@@ -36,6 +36,17 @@ from intel_analytics.config import global_config as config
 from intel_analytics.table.pig.argparse_lib import ArgumentParser# pig supports jython (python 2.5) and so the argparse module is not there, that's why we import this open source module, which is the argparse module itself in the std python lib after v2.7
 from interval import Interval, Smallest, Largest
 
+def add_quotes(val):
+    """
+    Add single quote characters around val
+    """
+    return '\'' + val + '\''
+
+def escape_single_quotes(val):
+    """
+    replace all single quotes with escape character i.e. 'a' becomes \'a\'
+    """
+    return val.replace('\'', '\\\'')
 def generate_interval_check(column_name, interval):
     """
     generates a AND separated expression to check an interval
@@ -43,16 +54,24 @@ def generate_interval_check(column_name, interval):
     """
     expression = []
     if interval.lower_bound not in [Smallest(), Largest()]:
-        if interval.lower_closed:
-            expression.append('%s <= %s' % (interval.lower_bound, column_name))
+        if isinstance(interval.lower_bound, str):
+            bound = add_quotes(interval.lower_bound) 
         else:
-            expression.append('%s < %s' % (interval.lower_bound, column_name))
+            bound = interval.lower_bound
+        if interval.lower_closed:
+            expression.append('%s <= %s' % (bound, column_name))
+        else:
+            expression.append('%s < %s' % (bound, column_name))
 
     if interval.upper_bound not in [Smallest(), Largest()]:
-        if interval.upper_closed:
-            expression.append('%s <= %s' % (column_name, interval.upper_bound))
+        if isinstance(interval.upper_bound, str):
+            bound = add_quotes(interval.upper_bound) 
         else:
-            expression.append('%s < %s' % (column_name, interval.upper_bound))
+            bound = interval.upper_bound
+        if interval.upper_closed:
+            expression.append('%s <= %s' % (column_name, bound))
+        else:
+            expression.append('%s < %s' % (column_name, bound))
 
 
     return " AND ".join(expression)
@@ -141,9 +160,10 @@ def main(argv):
             count_variables = []
             for i,j in enumerate(intervals):
                 k = generate_interval_check(c,j)
+                interval_as_str = escape_single_quotes(str(j))
                 pig_statements.append("filter_%s_%d = FILTER hbase_data BY %s;" % (c,i,k))
                 pig_statements.append("grouped_data3_%s_%d = GROUP filter_%s_%d ALL;" %(c,i,c,i))
-                pig_statements.append("count_%s_%d = FOREACH grouped_data3_%s_%d GENERATE '%s', COUNT(filter_%s_%d);" % (c,i,c,i,str(j),c,i))
+                pig_statements.append("count_%s_%d = FOREACH grouped_data3_%s_%d GENERATE '%s', COUNT(filter_%s_%d);" % (c,i,c,i,interval_as_str,c,i))
                 count_variables.append("count_%s_%d" % (c,i))
             pig_statements.append("histogram_%s = UNION %s;" % (c,",".join(count_variables)))
             pig_statements.append("rmf %s;" % (binding_variables['HIST_%s' % (c)]))
