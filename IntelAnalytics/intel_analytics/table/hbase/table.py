@@ -391,9 +391,11 @@ class HBaseTable(object):
         etl_schema.load_schema(self.table_name)
 
         list_columns_to_drop = columns.split(',')
-        for c in list_columns_to_drop:
-            if c not in etl_schema.feature_names:
-                raise Exception("Column {0} does not exist in frame".format(c))
+        bad_columns = "; ".join(["Column '{0}' not in frame"
+                                 .format(c) for c in list_columns_to_drop
+                                 if c not in etl_schema.feature_names])
+        if len(bad_columns) > 0:
+            raise Exception(bad_columns)
 
         args = []
 
