@@ -1,3 +1,5 @@
+set -e
+
 # Make sure env vars are set: CLUSTER_HOSTS, HADOOP_HOME, TITAN_HOME
 set ch = "bogus CLUSTER_HOSTS var set for doc creation"
 set hh = "bogus HADOOP_HOME var set for doc creation"
