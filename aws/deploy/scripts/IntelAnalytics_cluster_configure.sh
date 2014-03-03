@@ -128,14 +128,7 @@ for n in `cat ${nodesfile}`; do
 done
 
 # get the master node ip
-#m=`grep "master" ${hostsfile} | awk -F" " '{print $1}'`
 m=`sed '1q;d' ${nodesfile}`
-#s3DistcpScript="hdfsToS3.sh"
-#s3DistcpBucket="gao-cluster-hdfs"
-# set up s3Distcp back up on the master
-#${dryrun} ssh -i ${pemfile} ${m} "mkdir -p cron"
-#${dryrun} scp -i ${pemfile} ${s3DistcpScript} ${m}:~/cron/s3Distcp.sh
-#${dryrun} ssh -t -i ${pemfile} ${m} sudo bash -c  "'sudo    echo \"00 00     * * *     root /home/ec2-user/cron/$s3DistcpScript --bucket \\\"$s3DistcpBucket\\\" --email \\\"$email\\\" \" > /etc/cron.d/hdfsToS3'"
 
 # get the actual cluster size
 csize=`cat ${nodesfile} | wc -l`
