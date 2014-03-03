@@ -27,7 +27,7 @@ source IntelAnalytics_cluster_env.sh
 
 function usage()
 {
-    echo "usage: $1 --nodes-file <nodes-list-file> --hosts-file <hosts-file> --pem-file <pem-file> [--dry-run]"
+    echo "usage: $1 --email <cluster-owners-email/other identifier> --nodes-file <nodes-list-file> --hosts-file <hosts-file> --pem-file <pem-file> [--dry-run]"
     exit 1
 }
 
@@ -38,6 +38,10 @@ ganglia="disabled"
 while [ $# -gt 0 ]
 do
     case "$1" in
+    --email)
+        email=$2
+        shift 2
+        ;;
     --nodes-file)
         nodesfile=$2
         shift 2
@@ -66,6 +70,11 @@ do
     esac
 done
 
+if [ "${email}" == "" ]; then
+    echo "no email specified"
+    usage $(basename $0)
+fi
+
 if [ -z "${nodesfile}" ] || [ ! -f ${nodesfile} ]; then
     echo "Could not find the nodes list file \"${nodesfile}\"!"
     usage $(basename $0)
@@ -79,6 +88,13 @@ if [ -z "${pemfile}" ] || [ ! -f ${pemfile} ]; then
     echo "Could not locate the pem file \"${pemfile}\"!"
     usage $(basename $0)
 fi
+
+#make sure we can ssh into the instance
+for n in `cat ${nodesfile}`; do
+    echo "Test ssh access for: ${n}"
+    ${dryrun} ssh -o ConnectTimeout=20 -o ConnectionAttempts=99 -i ${pemfile} ${n} "ls"
+done
+
 
 # Update cluster-wide hosts file
 for n in `cat ${nodesfile}`; do
@@ -112,7 +128,15 @@ for n in `cat ${nodesfile}`; do
 done
 
 # get the master node ip
+#m=`grep "master" ${hostsfile} | awk -F" " '{print $1}'`
 m=`sed '1q;d' ${nodesfile}`
+#s3DistcpScript="hdfsToS3.sh"
+#s3DistcpBucket="gao-cluster-hdfs"
+# set up s3Distcp back up on the master
+#${dryrun} ssh -i ${pemfile} ${m} "mkdir -p cron"
+#${dryrun} scp -i ${pemfile} ${s3DistcpScript} ${m}:~/cron/s3Distcp.sh
+#${dryrun} ssh -t -i ${pemfile} ${m} sudo bash -c  "'sudo    echo \"00 00     * * *     root /home/ec2-user/cron/$s3DistcpScript --bucket \\\"$s3DistcpBucket\\\" --email \\\"$email\\\" \" > /etc/cron.d/hdfsToS3'"
+
 # get the actual cluster size
 csize=`cat ${nodesfile} | wc -l`
 
@@ -131,7 +155,7 @@ for n in `cat ${nodesfile}`; do
     else
         n0=`echo ${n} | awk -F '.' '{print $1}'`
         nn=`grep ${n0} ${hostsfile} | awk '{print $2}'`
-        sed -e 's/host = \"127.0.0.1\"/host = \"master\"/g' -e 's/master@/'${nn}'@/g' _gmond.master > _gmond.${nn}
+        sed -e 's/host = \"127.0.0.1\"/host = \"master\"/g' -e 's/master@/'${n}'@/g' _gmond.master > _gmond.${nn}
         ${dryrun} scp -i ${pemfile} _gmond.${nn} ${n}:/tmp/_gmond.conf
         ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
         echo ${n}:Updating ganglia config file;
@@ -147,23 +171,23 @@ for n in `cat ${nodesfile}`; do
         '"
     fi
 done
+
 rm _gmond.* 2>&1 > /dev/null
 
 # prepare to start the cluster/hadoop: nothing to do, default is configured
 # with 4 nodes, so if that's the case, we don't have to do anything here as 
 # the node AMI is already built w/ the correct hadoop/hbase configs based on
 # 4-nodes master, node01, etc.
-if [ ${csize} -ne 4 ]
-then
+for n in `cat ${nodesfile}`; do
     nodes="master"
     for ((i = 1; i < ${csize}; i++))
     do
-        nodes="${nodes},`printf "%02d" ${i}`"
+        nodes="${nodes},`printf "node%02d" ${i}`"
     done
-    ${dryrun} ssh -i ${pemfile} ${IA_USR}@${m} bash -c "'
+    ${dryrun} ssh -i ${pemfile} ${IA_USR}@${n} bash -c "'
     pushd ~/IntelAnalytics;
-    echo $nodes | sed 's/,/\n/g' > hadoop/conf/slaves;
-    echo $nodes | sed 's/,/\n/g' > hbase/conf/regionservers;
+    echo $nodes | sed \"s/,/\n/g\" > hadoop/conf/slaves;
+    echo $nodes | sed \"s/,/\n/g\" > hbase/conf/regionservers;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase.properties;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase-es.properties;
     sed -i \"s/<storage.hostname.*storage.hostname>/<storage.hostname>"${nodes}"</storage.hostname>/g\" titan/conf/rexstitan-hbase-es.xml;
@@ -172,7 +196,7 @@ then
     sed -i \"s/<base-uri>.*/<base-uri>http:\/\/localhost<\/base-uri>/g\" titan/conf/rexstitan-hbase-es.xml;
     popd
     '"
-fi
+done
 
 # ZY: TRIB-1711 fix:
 # - disable ganglia services on all nodes
@@ -250,3 +274,6 @@ then
     echo "copy s3copier and start service"
     ${dryrun} sh IntelAnalytics_cluster_configure_s3copier.sh -p ${pemfile} -j s3copier.jar -c s3copier.conf -h ${m} -u ${IA_USR}
 fi
+
+
+${dryrun} sh IntelAnalytics_cluster_configure_hdfsToS3.sh --email "$email" --nodes-file ${nodesfile} --hosts-file ${hostsfile} --pem-file ${pemfile} --run "true" 
