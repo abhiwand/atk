@@ -333,17 +333,153 @@ class HBaseTable(object):
             etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
 
+    def _update_schema_for_overwrite(self, etl_schema, output_column):
+        idx =  etl_schema.feature_names.index(output_column)
+        del etl_schema.feature_types[idx]
+        etl_schema.feature_names.remove(output_column)
+
+
+    def kfold_split(self, k, test_fold_id, fold_id_column, split_name, output_column, update, overwrite):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        randomize = False
+        if update or (fold_id_column not in etl_schema.feature_names):
+            randomize = True
+
+        if update:
+            self._update_schema_for_overwrite(etl_schema, randomization_column)
+
+        if fold_id_column[0].isdigit():
+            raise ValueError("fold_id_column %s starts with number.\n"
+                             "Apache Pig does not support this." % fold_id_column)
+
+        if output_column[0].isdigit():
+            raise ValueError("output_column %s starts wSith number.\n"
+                             "Apache Pig does not support this." % output_column)
+
+        if output_column in etl_schema.feature_names:
+            if not overwrite:
+                raise ValueError("Column %s already existed and overwrite is False.\n"
+                                 "please set overwrite=True if you meant to overwrite." % output_column)
+            else:
+                self._update_schema_for_overwrite(etl_schema, output_column)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        if test_fold_id > k or test_fold_id < 1:
+            raise ValueError("test_fold_id is %s. It should in the range of [1, %s]" % (test_fold_id, k))
+
+        if len(split_name) != 2:
+            raise ValueError("The size of split_name is %s. The supported size is 2." % len(split_name))
+
+
+        args = get_pig_args('pig_kfold_split.py')
+
+        args += ['-it', self.table_name,
+                 '-ot', self.table_name,
+                 '-k', str(k),
+                 '-ic', fold_id_column,
+                 '-f', str(test_fold_id),
+                 '-r', str(randomize),
+                 '-n', str(split_name),
+                 '-oc', output_column,
+                 '-fn', feature_names_as_str,
+                 '-ft', feature_types_as_str,]
+
+        #print ' '.join(map(str,args))
+        logger.debug(args)
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Failed to run kfold_split')
+
+        if randomize:
+            etl_schema.feature_names.append(fold_id_column)
+            etl_schema.feature_types.append('float')
+        etl_schema.feature_names.append(output_column)
+        etl_schema.feature_types.append('chararray')
+        etl_schema.save_schema(self.table_name)
+
+
+    def percent_split(self, randomization_column, split_percent, split_name, output_column, update, overwrite):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        randomize = False
+        if update or (randomization_column not in etl_schema.feature_names):
+            randomize = True
+
+        if update:
+            self._update_schema_for_overwrite(etl_schema, randomization_column)
+
+        if randomization_column[0].isdigit():
+            raise ValueError("randomization_column %s starts with number.\n"
+                             "Apache Pig does not support this." % randomization_column)
+
+        if output_column[0].isdigit():
+            raise ValueError("output_column %s starts with number.\n"
+                             "Apache Pig does not support this." % output_column)
+
+        if output_column in etl_schema.feature_names:
+            if not overwrite:
+                raise ValueError("Column %s already existed and overwrite is False.\n"
+                                 "please set overwrite=True if you meant to overwrite." % output_column)
+            else:
+                self._update_schema_for_overwrite(etl_schema, output_column)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        if len(split_percent) != len(split_name):
+            raise ValueError("The size of split_percent is %s. The size of split_name is %s. "
+                             "Please make sure they are with the same size" %(len(split_percent), len(split_name) ))
+
+        percent_sum = sum(split_percent)
+        if sum(split_percent) != 100:
+            raise ValueError("Sum of segement percentages is %s. It should be 100." % percent_sum)
+
+
+        args = get_pig_args('pig_percent_split.py')
+
+        args += ['-it', self.table_name,
+                 '-ot', self.table_name,
+                 '-ic', randomization_column,
+                 '-r', str(randomize),
+                 '-p', str(split_percent),
+                 '-n', str(split_name),
+                 '-oc', output_column,
+                 '-fn', feature_names_as_str,
+                 '-ft', feature_types_as_str,]
+
+        #print ' '.join(map(str,args))
+        logger.debug(args)
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Failed to run percent_split')
+
+        if randomize:
+            etl_schema.feature_names.append(randomization_column)
+            etl_schema.feature_types.append('float')
+        etl_schema.feature_names.append(output_column)
+        etl_schema.feature_types.append('chararray')
+        etl_schema.save_schema(self.table_name)
+
+
+
     def autosplit(self, input_column, test_fold_id, split_percent, split_name, new_column, overwrite):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
 
         if new_column in etl_schema.feature_names:
-            if overwrite is "false":
+            if not overwrite:
                 raise ValueError("Column %s already existed and overwrite is False.\n"
-                                      "please turn overwrite on if you meant to overwrite." % new_column)
+                                 "please set overwrite=True if you meant to overwrite." % new_column)
             else:
                 idx =  etl_schema.feature_names.index(new_column)
-                etl_schema.feature_types.pop(idx)
+                del etl_schema.feature_types[idx]
                 etl_schema.feature_names.remove(new_column)
 
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
@@ -352,12 +488,12 @@ class HBaseTable(object):
         if test_fold_id != 0:
             if len(split_name) != 2:
                 raise ValueError("You want to use this for k-fold cross-validation since test_fold_id is %s.\n"
-                                          "We expect the number of split_name is 2 in this case. You provide %s names."
-                                          % (test_fold_id, len(split_name)))
+                                 "Please make sure the number of split_name is 2 in this case. You provide %s names."
+                                 % (test_fold_id, len(split_name)))
         else:
             if len(split_percent) != len(split_name):
                 raise ValueError("The size of split_percent is %s. The size of split_name is %s. "
-                                           "We expect they are with the same size" %(len(split_percent),len(split_name) ))
+                                 "Please make sure they are with the same size" %(len(split_percent),len(split_name) ))
 
             percent_sum = sum(split_percent)
             if sum(split_percent) != 100:
@@ -366,17 +502,17 @@ class HBaseTable(object):
 
         args = get_pig_args('pig_autosplit.py')
 
-        args += ['-t', self.table_name,
-                 '-o', self.table_name,
-                 '-i', input_column,
+        args += ['-it', self.table_name,
+                 '-ot', self.table_name,
+                 '-ic', input_column,
                  '-f', str(test_fold_id),
                  '-p', str(split_percent),
                  '-n', str(split_name),
-                 '-r', new_column,
+                 '-oc', new_column,
                  '-fn', feature_names_as_str,
                  '-ft', feature_types_as_str,]
 
-        print ' '.join(map(str,args))
+        #print ' '.join(map(str,args))
         logger.debug(args)
         return_code = call(args, report_strategy=etl_report_strategy())
 
