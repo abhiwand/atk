@@ -78,9 +78,10 @@ def plot_histogram(datafile,
     
     stats = "\n".join(sorted(slines))
     
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
+    font_size = 12
+    plt.xlabel(xlabel, fontsize = font_size)
+    plt.ylabel(ylabel, fontsize = font_size)
+    plt.title(title, fontsize = font_size)
     plt.text(max_coordinate * 1.25, 0, r'%s' % (stats), fontsize = 18)
     plt.grid(True)
     plt.show()
