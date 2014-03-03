@@ -335,7 +335,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             posterior properties.
 
         second_property_name : String, optional
-            The posterior property name property names on which users want to get histogram.
+            The property name on which users want to get histogram.
             The default value is empty string.
         enable_roc : String, optional
             "true" means to plot ROC curve on the validation (VA) and test(TE) splits of
@@ -347,7 +347,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The ROC threshold parameters in "min:step:max" format.
             The default value is "0:0.05:1"
         property_type : String, optional
-            The type of the prior_property and posteriror_type.
+            The type of the first and second property.
             Valid values are either VERTEX_PROPERTY or EDGE_PROPERTY.
             The default value is VERTEX_PROPERTY.
         vertex_type_key : String, optional
@@ -385,7 +385,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         time_str = get_time_str()
         start_time = time.time()
         #print hist_cmd
-        call(hist_cmd, shell=True)
+        call(hist_cmd, shell=True, report_strategy=GroovyProgressReportStrategy())
 
         #with open(path) as file:
         #    data = f.read().splitlines()
@@ -474,9 +474,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             "R" stands for right-side vertices of a bipartite graph.
             The default value is "L"
         output_vertex_property_list : String, optional
-            vertex properties which contains output vertex value.
-            if more than one vertex property is used,
-            expect it is a comma separated string list.
+            The vertex properties to store output vertex values.
+            We expect comma-separated list of property names if you use
+            more than one vertex property.
             The default value is the latest vertex_type set by
             algorithm execution.
         vector_value: String, optional
@@ -565,7 +565,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         #out = p.communicate()
         time_str = get_time_str()
         start_time = time.time()
-        out = call(rec_cmd, shell=True, report_strategy=RecommenderProgressReportStrategy(), return_stdout=1)
+        out = call(rec_cmd, shell=True, report_strategy=GroovyProgressReportStrategy(), return_stdout=1)
         exec_time = time.time() - start_time
         recommend_id = []
         recommend_score = []
@@ -626,41 +626,63 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex properties which contain prior vertex values if you
             use more than one vertex property.
         input_edge_property_list : List (comma-separated list of strings)
-            The edge properties which contain the input edge values if you
-            use more than one edge property.
+            The edge properties which contain the input edge values.
+            We expect comma-separated list of property names  if you use
+            more than one edge property.
         input_edge_label : String
-            The edge property which contains the edge label.
+            The name of edge label..
         output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties which contain the output vertex values if
-            you use more than one vertex property.
+            The vertex properties to store output vertex values.
+            We expect comma-separated list of property names if you use
+            more than one vertex property.
         vertex_type : String
             The vertex property which contains vertex type.
 
-        num_mapper: String, optional
-            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+        num_mapper: Integer, optional
+            It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
+            The default value is 4.
         mapper_memory: String, optional
-            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
+            The default value is 12G.
         vector_value: String, optional
             "true" means a vector as vertex value is supported
             "false" means a vector as vertex value is not supported
-        num_worker : String, optional
-            The number of Giraph workers.
-        max_supersteps : String, optional
-            The number of super steps to run in Giraph.
-        smoothing : String, optional
-            The Ising smoothing parameter.
-        convergence_threshold : String, optional
-            The convergence threshold which controls how small the change in
-            validation error must be in order to meet the convergence criteria.
-        bidirectional_check : String, optional
-	    If it is true, Giraph will firstly check whether each edge is bidirectional.
             The default value is false.
-        anchor_threshold : String, optional
-            The anchor threshold [0, 1].
-            Those vertices whose normalized prior values are greater than this
-            threshold will not be updated.
+        num_worker : Integer, optional
+            The number of Giraph workers.
+            The default value is 15.
+        max_supersteps : Integer, optional
+            The maximum number of super steps that the algorithm will execute.
+            The valid value range is all positive integer.
+            The default value is 20.
+        smoothing : Float, optional
+            The Ising smoothing parameter. This parameter adjusts the relative strength
+            of closeness encoded edge weights, similar to the width of Gussian distribution.
+            Larger value implies smoother decay and the edge weight beomes less important.
+            The default value is 2.0.
+        convergence_threshold : Float, optional
+            The amount of change in cost function that will be tolerated at convergence.
+            If the change is less than this threshold, the algorithm exists earlier
+            before it reaches the maximum number of super steps.
+            The valid value range is all Float and zero.
+            The default value is 0.001.
+        bidirectional_check : Boolean, optional
+	        If it is true, Giraph will firstly check whether each edge is bidirectional before
+	        running algorithm. This option is mainly for graph integrity check. Turning it on
+	        only makes sense when all nodes are labeled as "TR", otherwise the algorithm will
+	        terminate, because all edges connected to "VA"/"TE" nodes will be treated internally
+	        as single directional even though they are defined as bi-directional input graph.
+            The default value is false.
+        anchor_threshold : Float, optional
+            The parameter that determines if a node's posterior will be updated or not.
+            If a node's maximum prior value is greater than this threshold, the node
+            will be treated as anchor node, whose posterior will inherit from prior without
+            update. This is for the case where we have confident prior estimation for some nodes
+            and don't want the algorithm updates these nodes.
+            The valid value range is in [0, 1].
+            The default value is 1.0
 
         Returns
         -------
@@ -677,15 +699,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             self._vertex_type,
-            num_mapper,
+            str(num_mapper),
             mapper_memory,
             vector_value,
-            num_worker,
-            max_supersteps,
-            convergence_threshold,
-            smoothing,
-            anchor_threshold,
-            bidirectional_check,
+            str(num_worker),
+            str(max_supersteps),
+            str(convergence_threshold),
+            str(smoothing),
+            str(anchor_threshold),
+            str(bidirectional_check),
             output_path)
         lbp_cmd = ' '.join(map(str, lbp_command))
         #print lbp_cmd
@@ -802,27 +824,37 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Parameters
         ----------
         input_edge_label : String
-            The edge property which contains the edge label.
+            The name of edge label..
         output_vertex_property_list : List (comma-separated list of strings)
-             The vertex properties which contain the output vertex values
-             if you use one vertex property.
-        num_mapper: String, optional
-            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            The vertex properties to store output vertex values.
+            We expect comma-separated list of property names if you use
+            more than one vertex property.
+        num_mapper: Integer, optional
+            It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
+            The default value is 4.
         mapper_memory: String, optional
-            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
-        num_worker : String, optional
+            The default value is 12G.
+        num_worker : Integer, optional
             The number of workers.
-        max_supersteps : String, optional
-            The number of super steps to run in Giraph.
-        convergence_threshold : String, optional
-            The convergence threshold which controls how small the change in
-            belief value must be in order to meet the convergence criteria.
-        reset_probability : String, optional
+            The default value is 15.
+        max_supersteps : Integer, optional
+            The maximum number of super steps that the algorithm will execute.
+            The valid value range is all positive integer.
+            The default value is 20.
+        convergence_threshold : Float, optional
+            The amount of change in cost function that will be tolerated at convergence.
+            If the change is less than this threshold, the algorithm exists earlier
+            before it reaches the maximum number of super steps.
+            The valid value range is all Float and zero.
+            The default value is 0.001.
+        reset_probability : Float, optional
             The probability that the random walk of a page is reset.
-        convergence_output_interval : String, optional
+        convergence_output_interval : Integer, optional
             The convergence progress output interval
+            The valid value range is [1, max_supersteps]
             The default value is 1, which means output every super step.
 
         Returns
@@ -837,13 +869,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self._table_name,
             input_edge_label,
             output_vertex_property_list,
-            num_mapper,
+            str(num_mapper),
             mapper_memory,
-            num_worker,
-            max_supersteps,
-            convergence_threshold,
-            reset_probability,
-            convergence_output_interval,
+            str(num_worker),
+            str(max_supersteps),
+            str(convergence_threshold),
+            str(reset_probability),
+            str(convergence_output_interval),
             output_path
         )
         pr_cmd = ' '.join(map(str, pr_command))
@@ -899,7 +931,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
-                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_number_mapper'] + str(num_mapper),
                 global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
@@ -944,22 +976,26 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Parameters
         ----------
         input_edge_label : String
-            The edge property which contains the edge label.
+            The name of edge label..
         output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties which contain the output vertex values if
-            you use more than one vertex property.
+            The vertex properties to store output vertex values.
+            We expect comma-separated list of property names if you use
+            more than one vertex property.
 
-        num_mapper: String, optional
-            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+        num_mapper: Integer, optional
+            It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
+            The default value is 4.
         mapper_memory: String, optional
-            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
-        convergence_output_interval : String, optional
+            The default value is 12G.
+        convergence_output_interval : Integer, optional
             The convergence progress output interval.
             The default value is 1, which means output every super step.
-        num_worker : String, optional
+        num_worker : Integer, optional
             The number of Giraph workers.
+            The default value is 15.
 
         Returns
         -------
@@ -973,14 +1009,14 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self._table_name,
             input_edge_label,
             output_vertex_property_list,
-            num_mapper,
+            str(num_mapper),
             mapper_memory,
-            convergence_output_interval,
+            str(convergence_output_interval),
             output_path,
-            num_worker
+            str(num_worker)
         )
         apl_cmd = ' '.join(map(str, apl_command))
-        print apl_cmd
+        #print apl_cmd
         #delete old output directory if already there
         self._del_old_output(output_path)
         time_str = get_time_str()
@@ -1029,7 +1065,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
-                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_number_mapper'] + str(num_mapper),
                 global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
@@ -1071,21 +1107,25 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Parameters
         ----------
         input_edge_label : String
-            The edge property which contains the edge label.
+            The name of edge label..
         output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties which contain the output vertex values if
-            you use more than one vertex property.
-        num_mapper: String, optional
-            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            The vertex properties to store output vertex values.
+            We expect comma-separated list of property names if you use
+            more than one vertex property.
+        num_mapper: Integer, optional
+            It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
+            The default value is 4.
         mapper_memory: String, optional
-            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
-        convergence_output_interval : String, optional
+            The default value is 12G.
+        convergence_output_interval : Integer, optional
             The convergence progress output interval.
             The default value is 1, which means output every super step.
-        num_worker : String, optional
+        num_worker : Integer, optional
             The number of Giraph workers.
+            The default value is 15.
 
         Returns
         -------
@@ -1100,10 +1140,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             output_path,
-            num_mapper,
+            str(num_mapper),
             mapper_memory,
-            convergence_output_interval,
-            num_worker
+            str(convergence_output_interval),
+            str(num_worker)
         )
         cc_cmd = ' '.join(map(str, cc_command))
         #print cc_cmd
@@ -1153,7 +1193,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
-                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_number_mapper'] + str(num_mapper),
                 global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
@@ -1208,37 +1248,62 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex properties which contain prior vertex values if you
             use more than one vertex property.
         input_edge_property_list : List (comma-separated list of strings)
-            The edge properties which contain the input edge values if you
-            use more than one edge property.
+            The edge properties which contain the input edge values.
+            We expect comma-separated list of property names  if you use
+            more than one edge property.
         input_edge_label : String
-            The edge property which contains the edge label.
+            The name of edge label..
         output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties which contain the output vertex values if
-            you use more than one vertex property.
+            The vertex properties to store output vertex values.
+            We expect comma-separated list of property names if you use
+            more than one vertex property.
         vertex_type : String
             The vertex property which contains vertex type.
 
-        num_mapper: String, optional
-            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+        num_mapper: Integer, optional
+            It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
+            The default value is 4.
         mapper_memory: String, optional
-            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
-        num_worker : String, optional
+            The default value is 12G.
+        num_worker : Integer, optional
             The number of Giraph workers.
-        max_supersteps : String, optional
-            The number of super steps to run in Giraph.
-        lambda : String, optional
-            The tradeoff parameter: f = (1-lambda)Pf + lambda*h
-        convergence_threshold : String, optional
-            The convergence threshold which controls how small the change in belief value must be
-            in order to meet the convergence criteria.
+            The default value is 15.
+        max_supersteps : Integer, optional
+            The maximum number of super steps that the algorithm will execute.
+            The valid value range is all positive integer.
+            The default value is 10.
+        lambda : Float, optional
+            The tradeoff parameter that controls much influence of external
+            classifier's prediction contribution to the final prediction.
+            This is for the case where an external classifier is available
+            that can produce initial probabilistic classification on unlabled
+            examples, and the option allows incorporating external classifier's
+            prediction into the LP training process
+            The valid value range is [0.0,1.0].
+            The default value is 0.
+        convergence_threshold : Float, optional
+            The amount of change in cost function that will be tolerated at convergence.
+            If the change is less than this threshold, the algorithm exists earlier
+            before it reaches the maximum number of super steps.
+            The valid value range is all Float and zero.
+            The default value is 0.001.
         bidirectional_check : String, optional
-            If it is true, Giraph will firstly check whether each edge is bidirectional.
-        anchor_threshold : String, optional
-            The anchor threshold [0, 1].
-            Those vertices whose normalized prior values are greater than this
-            threshold will not be updated.
+            If it is true, Giraph will firstly check whether each edge is bidirectional
+            before running algorithm. LP expects an undirected input graph and each edge
+            therefore should be bi-directional. This option is mainly for graph integrity
+            check.
+        anchor_threshold : Float, optional
+            The parameter that determines if a node's initial prediction from external
+            classifier will be updated or not. If a node's maximum initial prediction
+            value is greater than this threshold, the node will be treated as anchor
+            node, whose final prediction will inherit from prior without update. This
+            is for the case where we have confident initial predictions on some nodes
+            and don't want the algorithm updates those nodes.
+            The valid value range is [0, 1].
+            The default value is 1.0
 
         Returns
         -------
@@ -1253,14 +1318,14 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            num_mapper,
+            str(num_mapper),
             mapper_memory,
             vector_value,
-            num_worker,
-            max_supersteps,
-            convergence_threshold,
-            lp_lambda,
-            anchor_threshold,
+            str(num_worker),
+            str(max_supersteps),
+            str(convergence_threshold),
+            str(lp_lambda),
+            str(anchor_threshold),
             bidirectional_check,
             output_path
         )
@@ -1323,7 +1388,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
-                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_number_mapper'] + str(num_mapper),
                 global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
@@ -1383,47 +1448,90 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Parameters
         ----------
         input_edge_property_list : List (comma-separated list of strings)
-            The edge properties which contain the input edge values if you use
+            The edge properties which contain the input edge values.
+            We expect comma-separated list of property names  if you use
             more than one edge property.
         input_edge_label : String
-            The edge property which contains the edge label.
+            The name of edge label.
         output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties which contain the output vertex values if
-            you use more than one vertex property.
+            The vertex properties to store output vertex values.
+            We expect comma-separated list of property names if you use
+            more than one vertex property.
         vertex_type : String
-            The vertex property which contains vertex type.
+            The name of vertex property which stores vertex type
 
-        num_mapper: String, optional
-            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+        num_mapper: Integer, optional
+            It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
+            The default value is 4.
         mapper_memory: String, optional
-            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
+            The default value is 12G.
         vector_value: String, optional
             "true" means a vector as vertex value is supported
             "false" means a vector as vertex value is not supported
-        num_worker : String, optional
-            The number of Giraph workers.
-        max_supersteps : String, optional
-            The number of super steps to run in Giraph.
-        alpha : String, optional
-            The document-topic smoothing parameter.
-        beta : String, optional
-            The term-topic smoothing parameter.
-        convergence_threshold : String, optional
-            The convergence threshold which controls how small the change in edge value must be
-            in order to meet the convergence criteria.
+            The default value is false.
+        num_worker : Integer, optional
+            The number of Giraph workers to run the algorihm.
+            The default value is 15.
+        max_supersteps : Integer, optional
+            The maximum number of super steps (iterations) that the algorithm
+            will execute.
+            The valid value range is all positive integer.
+            The default value is 20.
+        alpha : Float, optional
+            The hyper-parameter for document-specific distribution over topics.
+            It's mainly used as a smoothing parameter in Bayesian inference.
+            Larger value implies that documents are assumed to cover all topics
+            more uniformly; smaller value implies that documents are more concentrated
+            on a small subset of topics.
+            Valid value range is all positive Float.
+            The default value is 0.1.
+        beta : Float, optional
+            The hyper-parameter for word-specific distribution over topics.
+            It's mainly used as a smoothing parameter in Bayesian inference.
+            Larger value implies that topics contain all words more uniformly and
+            smaller value implies that topics are more concentrated on a small
+            subset of words.
+            Valid value range is all positive Float.
+            The default value is 0.1.
+        convergence_threshold : Float, optional
+            The amount of change in LDA model parameters that will be tolerated
+            at convergence. If the change is less than this threshold, the algorithm
+            exists earlier before it reaches the maximum number of super steps.
+            Valid value range is all positive Float and zero.
+            The default value is 0.001.
         evaluate_cost : String, optional
-            True means turn on cost evaluation and False means turn off
-            cost evaluation.
-        max_val : String, optional
-            The maximum edge weight value.
+            "True" means turn on cost evaluation and "False" means turn off
+            cost evaluation. It's relatively expensive for LDA to evaluate cost function.
+            For time-critical applications, this option allows user to turn off cost
+            function evaluation.
+            The default value is false.
+        max_val : Float, optional
+            The maximum edge weight value. If an edge weight is larger than this
+            value, the algorithm will throw an exception and terminate. This option
+            is mainly for graph integrity check.
+            Valid value range is all Float.
             The default value is Float.POSITIVE_INFINITY.
-        min_val : String, optional
-            The minimum edge weight value.
+        min_val : Float, optional
+            The minimum edge weight value. If an edge weight is smaller than this
+            value, the algorithm will throw an exception and terminate. This option
+            is mainly for graph integrity check.
+            Valid value range is all Float.
             The default value is Float.NEGATIVE_INFINITY.
-        num_topics : String, optional
-            The number of topics to identify.
+        num_topics : Integer, optional
+            The number of topics to identify in the LDA model. Using fewer
+            topics will speed up the computation, but the extracted topics
+            might be more abstract or less specific; using more topics will
+            result in more computation but lead to more specific topics.
+            Valid value range is all positive integers.
+            The default value is 10.
+        bidirectional_check : String, optional
+            "true" means to turn on bidirectional check. "false" means to turn
+            off bidirectional check. LDA expects a bi-partite input graph and
+            each edge therefore should be bi-directional. This option is mainly
+            for graph integrity check.
 
         Returns
         -------
@@ -1440,18 +1548,18 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_label,
             output_vertex_property_list,
             self._vertex_type,
-            num_mapper,
+            str(num_mapper),
             mapper_memory,
             vector_value,
-            num_worker,
-            max_supersteps,
-            alpha,
-            beta,
-            convergence_threshold,
+            str(num_worker),
+            str(max_supersteps),
+            str(alpha),
+            str(beta),
+            str(convergence_threshold),
             evaluate_cost,
-            max_val,
-            min_val,
-            num_topics,
+            str(max_val),
+            str(min_val),
+            str(num_topics),
             bidirectional_check,
             output_path
         )
@@ -1526,7 +1634,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
-                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_number_mapper'] + str(num_mapper),
                 global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
@@ -1600,53 +1708,83 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Parameters
         ----------
         input_edge_property_list : List (comma-separated list of strings)
-            The edge properties which contain the input edge values if you use
+            The edge properties which contain the input edge values.
+            We expect comma-separated list of property names  if you use
             more than one edge property.
         input_edge_label : String
-            The edge property which contains the edge label.
+            The name of edge label
         output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties which contain the output vertex values if
-            you use more than one vertex property.
+            The vertex properties to store output vertex valuess.
+            We expect comma-separated list of property names  if you use
+            more than one vertex property.
         vertex_type : String
             The vertex property which contains vertex type.
         edge_type : String
-            The edge property which contains edge type.
+            The name of edge property which stores edge type
 
-        num_mapper: String, optional
-            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+        num_mapper: Integer, optional
+            It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
+            The default value is 4.
         mapper_memory: String, optional
-            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
+            The default value is 12G.
         vector_value: String, optional
             "true" means a vector as vertex value is supported
             "false" means a vector as vertex value is not supported
-        num_worker : String, optional
-            The number of Giraph workers.
-        max_supersteps : String, optional
-            The number of super steps to run in Giraph.
-        feature_dimension : String, optional
-            The feature dimension.
-        als_lambda : String, optional
-            The regularization parameter: f = L2_error + lambda*Tikhonov_regularization
-        convergence_threshold : String, optional
-            The convergence threshold which controls how small the change in validation error must be
-            in order to meet the convergence criteria.
-        learning_output_interval : String, optional
+            The default value is false.
+        num_worker : Integer, optional
+            The number of Giraph workers to run the algorithm.
+            The default value is 15.
+        max_supersteps : Integer, optional
+            The maximum number of super steps (iterations) that the algorithm
+            will execute.
+        feature_dimension : Integer, optional
+            The length of feature vector to use in ALS model.
+            Larger value in general results in more accurate parameter estimation,
+            but slows down the computation.
+            The valid value range is all positive integer.
+            The default value is 20.
+        als_lambda : Float, optional
+            The tradeoff parameter that controls the strength of regularization.
+            Larger value implies stronger regularization that helps prevent overfitting
+            but may cause the issue of underfitting if the value is too large.
+            The value is usually determined by cross validation (CV).
+            The valid value range is all positive Float and zero.
+            The default value is 0.
+        convergence_threshold : Float, optional
+            The amount of change in cost function that will be tolerated at convergence.
+            If the change is less than this threshold, the algorithm exists earlier
+            before it reaches the maximum number of super steps.
+            The valid value range is all Float and zero.
+            The default value is 0.001.
+        learning_output_interval : Integer, optional
             The learning curve output interval.
             Since each ALS iteration is composed by 2 super steps,
             the default one iteration means two super steps.
-        max_val : String, optional
-            The maximum edge weight value.
+        max_val : Float, optional
+            The maximum edge weight value. If an edge weight is larger than this
+            value, the algorithm will throw an exception and terminate. This option
+            is mainly for graph integrity check.
+            Valid value range is all Float.
             The default value is Float.POSITIVE_INFINITY.
-        min_val : String, optional
-            The minimum edge weight value.
+        min_val : Float, optional
+            The minimum edge weight value. If an edge weight is smaller than this
+            value, the algorithm will throw an exception and terminate. This option
+            is mainly for graph integrity check.
+            Valid value range is all Float.
             The default value is Float.NEGATIVE_INFINITY.
         bidirectional_check : String, optional
-            If it is "true", Giraph will firstly check whether each edge is bidirectional.
+            If it is "true", Giraph will firstly check whether each edge is bidirectional
+            before executing algorithm. ALS expects a bi-partite input graph and each edge
+            therefore should be bi-directional. This option is mainly for graph integrity check.
         bias_on : String, optional
-            True means turn on bias calculation and False means turn off
-            bias calculation.
+            True means turn on the update for bias term and False means turn off
+            the update for bias term. Turning it on often yields more accurate model with
+            minor performance penalty; turning it off disables term update and leaves the
+            value of bias term to be zero.
+            The default value is false.
 
         Returns
         -------
@@ -1668,17 +1806,17 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             self._vertex_type,
             self._edge_type,
-            num_mapper,
+            str(num_mapper),
             mapper_memory,
             vector_value,
-            num_worker,
-            max_supersteps,
-            feature_dimension,
-            als_lambda,
-            convergence_threshold,
-            learning_output_interval,
-            max_val,
-            min_val,
+            str(num_worker),
+            str(max_supersteps),
+            str(feature_dimension),
+            str(als_lambda),
+            str(convergence_threshold),
+            str(learning_output_interval),
+            str(max_val),
+            str(min_val),
             bias_on,
             bidirectional_check,
             output_path
@@ -1751,7 +1889,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
-                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_number_mapper'] + str(num_mapper),
                 global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
@@ -1826,54 +1964,88 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         Parameters
         ----------
         input_edge_property_list : List (comma-separated list of strings)
-            The edge properties which contain the input edge values if you
-            use more than one edge property.
+            The edge properties which contain the input edge values.
+            We expect comma-separated list of property names  if you use
+            more than one edge property.
         input_edge_label : String
-            The edge property which contains the edge label.
+            The name of edge label.
         output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties which contain the output vertex values if
-            you use more than one vertex property.
+            The vertex properties to store output vertex valuess.
+            We expect comma-separated list of property names  if you use
+            more than one vertex property.
         vertex_type : String
-            The vertex property which contains vertex type.
+            The name of vertex property which stores vertex type.
         edge_type : String
-            The edge property which contains edge type.
-        num_mapper: String, optional
-            It is reconfigure Hadoop parameter mapred.tasktracker.map.tasks.maximum
+            The name of edge property which stores edge type.
+        num_mapper: Integer, optional
+            It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
+            The default value is 4.
         mapper_memory: String, optional
-            It is reconfigure Hadoop parameter mapred.map.child.java.opts
+            It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
+            The default value is 12G.
 
         vector_value: String, optional
             "true" means a vector as vertex value is supported
             "false" means a vector as vertex value is not supported
-        num_worker : String, optional
+            The default value is false.
+        num_worker : Integer, optional
             The number of Giraph workers.
-        max_supersteps : String, optional
-            The number of super steps to run in Giraph.
-        feature_dimension :  String, optional
-            The feature dimension.
-        cgd_lambda : String, optional
-            The regularization parameter: f = L2_error + lambda*Tikhonov_regularization
-        convergence_threshold : String, optional
-            The convergence threshold which controls how small the change in validation error must be
-            in order to meet the convergence criteria.
-        learning_output_interval : String, optional
+            The default value is 15.
+        max_supersteps : Integer, optional
+            The maximum number of super steps that the algorithm will execute.
+            The valid value range is all positive integer.
+            The default value is 20.
+        feature_dimension :  Integer, optional
+            The length of feature vector to use in ALS model.
+            Larger value in general results in more accurate parameter estimation,
+            but slows down the computation.
+            The valid value range is all positive integer.
+            The default value is 20.
+        cgd_lambda : Float, optional
+            The tradeoff parameter that controls the strength of regularization.
+            Larger value implies stronger regularization that helps prevent overfitting
+            but may cause the issue of underfitting if the value is too large.
+            The value is usually determined by cross validation (CV).
+            The valid value range is all positive Float and zero.
+            The default value is 0.
+        convergence_threshold : Float, optional
+            The amount of change in cost function that will be tolerated at convergence.
+            If the change is less than this threshold, the algorithm exists earlier
+            before it reaches the maximum number of super steps.
+            The valid value range is all Float and zero.
+            The default value is 0.001.
+        learning_output_interval : Integer, optional
             The learning curve output interval.
             The default value is 1.
             Since each CGD iteration is composed by 2 super steps,
             the default one iteration means two super steps.
-        max_val : String, optional
-            The maximum edge weight value.
-        min_val : String, optional
-            The minimum edge weight value.
+        max_val : Float, optional
+            The maximum edge weight value. If an edge weight is larger than this
+            value, the algorithm will throw an exception and terminate. This option
+            is mainly for graph integrity check.
+            Valid value range is all Float.
+            The default value is Float.POSITIVE_INFINITY.
+        min_val : Float, optional
+            The minimum edge weight value. If an edge weight is smaller than this
+            value, the algorithm will throw an exception and terminate. This option
+            is mainly for graph integrity check.
+            Valid value range is all Float.
+            The default value is Float.NEGATIVE_INFINITY.
         bias_on : String, optional
-            True means turn on bias calculation and False means turn off
-            bias calculation.
+            True means turn on the update for bias term and False means turn off
+            the update for bias term. Turning it on often yields more accurate model with
+            minor performance penalty; turning it off disables term update and leaves the
+            value of bias term to be zero.
+            The default value is false.
 	    bidirectional_check : String, optional
             If it is true, Giraph will firstly check whether each edge is bidirectional.
-        num_iters : String, optional
-            The number of CGD iterations in each super step.
+        num_iters : Integer, optional
+            The number of CGD iterations in each super step. Larger value results in more
+            accurate parameter estimation, but slows down the computation.
+            The valid value range is all positive Integer.
+            The default value is 5.
 
         Returns
         -------
@@ -1896,19 +2068,19 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             self._vertex_type,
             self._edge_type,
-            num_mapper,
+            str(num_mapper),
             mapper_memory,
             vector_value,
-            num_worker,
-            max_supersteps,
-            feature_dimension,
-            cgd_lambda,
-            convergence_threshold,
-            learning_output_interval,
-            max_val,
-            min_val,
+            str(num_worker),
+            str(max_supersteps),
+            str(feature_dimension),
+            str(cgd_lambda),
+            str(convergence_threshold),
+            str(learning_output_interval),
+            str(max_val),
+            str(min_val),
             bias_on,
-            num_iters,
+            str(num_iters),
             bidirectional_check,
             output_path
         )
@@ -1983,7 +2155,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                 'jar',
                 global_config['giraph_jar'],
                 global_config['giraph_runner'],
-                global_config['giraph_param_number_mapper'] + num_mapper,
+                global_config['giraph_param_number_mapper'] + str(num_mapper),
                 global_config['giraph_param_mapper_memory'] + mapper_memory,
                 global_config['giraph_param_storage_backend'] + global_config['titan_storage_backend'],
                 global_config['giraph_param_storage_hostname'] + global_config['titan_storage_hostname'],
@@ -2083,9 +2255,9 @@ class GiraphProgressReportStrategy(ProgressReportStrategy):
             return False
 
 
-class RecommenderProgressReportStrategy(ReportStrategy):
+class GroovyProgressReportStrategy(ReportStrategy):
     """
-    The progress report strategy for recommender task
+    The progress report strategy for gremlin query related task
     """
     def __init__(self):
         """
@@ -2102,7 +2274,7 @@ class RecommenderProgressReportStrategy(ReportStrategy):
         """
         to report progress of recommender task
         """
-        if re.search(r"complete recommend", line):
+        if re.search(r"complete execution", line):
             self.progress_bar._disable_animation()
 
     def handle_error(self, error_code, error_message):
