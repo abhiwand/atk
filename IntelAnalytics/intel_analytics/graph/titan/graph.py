@@ -311,7 +311,10 @@ Many graph operations will fail.  Two options:
     sys.stderr.flush()
 
 
-class BulbsGraphWrapper:
+class BulbsGraphWrapper(object):
+    """
+    Wrapper instance for bulbsGraph object
+    """
     def __init__(self, graph):
         self._graph = graph
         self._graph.vertices.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
@@ -349,7 +352,7 @@ class BulbsGraphWrapper:
 
     def load_graphml(self,uri):
         """
-        Loads a GraphML file into the database and returns the response.
+        Loads a GraphML file into the graph and returns the response.
 
         Parameters
         ----------
@@ -358,7 +361,8 @@ class BulbsGraphWrapper:
 
         Returns
         -------
-        RexsterResult
+        result : RexsterResult
+            response for executing the command
 
         Examples
         --------
@@ -369,11 +373,12 @@ class BulbsGraphWrapper:
 
     def get_graphml(self):
         """
-        Returns a GraphML file representing the entire database.
+        Returns a GraphML string representing the entire graph.
 
         Returns
         -------
-        RexsterResult
+        result : String
+            graphml of the graph
 
         Examples
         --------
@@ -390,7 +395,8 @@ class BulbsGraphWrapper:
 
         Returns
         -------
-        RexsterResult
+        result : RexsterResult
+            response for executing the command
 
         Examples
         --------
@@ -401,14 +407,14 @@ class BulbsGraphWrapper:
 
     def export_as_graphml(self, statements, file):
         """
-        Execute graph queries and output result as a graphml file in the specified file location.
+        Execute graph queries and output result as a graphml file in the specified HDFS file location.
 
         Parameters
         ----------
         statements : Iterable
            Iterable of query strings. The query returns vertices or edges.
            For example, g.V('name','user_123').out
-        file: String
+        file : String
             output file path
 
         Examples
@@ -448,7 +454,7 @@ class BulbsGraphWrapper:
 
         Returns
         -------
-        query xml string
+        query_xml : String
         """
         root = ET.Element("query")
 
