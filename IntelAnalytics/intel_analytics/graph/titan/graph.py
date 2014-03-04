@@ -357,7 +357,7 @@ class BulbsGraphWrapper(object):
         Parameters
         ----------
         uri : str
-        URI of the GraphML file to load.
+            URI of the GraphML file to load.
 
         Returns
         -------
