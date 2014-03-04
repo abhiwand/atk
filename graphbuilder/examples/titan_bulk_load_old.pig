@@ -55,4 +55,4 @@ STORE final_relation INTO 'hbase://gb_input_table'
 -- -O flag specifies overwriting the input Titan table
 LOAD_TITAN('gb_input_table', '"cf:id=cf:name,cf:age,cf:dept" "cf:manager"',
 			   '--edges "cf:id,cf:manager,worksUnder,cf:underManager"',
-			   'examples/hbase-titan-conf.xml', '-O');
+			   'examples/hbase-titan-conf.xml', '-O -P');

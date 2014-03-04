@@ -54,11 +54,11 @@ import java.util.*;
 
 /**
  * This class handles loading the constructed property graph into Titan.
- *
+ * <p/>
  * <p>There is some configuration of Titan at setup time,
  * followed by  a chain of  two map reduce jobs.
  * </p>
- *
+ * <p/>
  * <p>
  * At setup time, this class makes a connection to Titan,
  * and declares all necessary keys, properties and edge signatures.
@@ -68,32 +68,32 @@ import java.util.*;
  * is determined by the input configuration and the graph building rule.
  * These two objects are parameters to the <code>init</code> method.
  * </p>
- *
+ * <p/>
  * <p>
- * At the first reducer, the vertices are gathered by the hash of their IDs, and 
- * the edges are gathered by the hashes of their source vertex IDs, 
+ * At the first reducer, the vertices are gathered by the hash of their IDs, and
+ * the edges are gathered by the hashes of their source vertex IDs,
  * see <code>SourceVertexKeyFunction</code>.
  * </p>
- *
+ * <p/>
  * The first reducer performs the following tasks:
  * <ul>
- *   <li> Removes any duplicate edges or vertices. 
- *       (By default, the class combines the property maps for duplicates).</li>
- *   <li> Stores the vertices in Titan.</li>
- *   <li> Creates a temporary HDFS file containing the property graph elements 
- *        annotated as follows:
- *   <ul>
- *       <li>Vertices are annotated with their Titan IDs.</li>
- *       <li>Edges are annotated with the Titan IDs of their source vertexes
- *       .</li>
- *       </ul>
- *       </ul>
- *
+ * <li> Removes any duplicate edges or vertices.
+ * (By default, the class combines the property maps for duplicates).</li>
+ * <li> Stores the vertices in Titan.</li>
+ * <li> Creates a temporary HDFS file containing the property graph elements
+ * annotated as follows:
+ * <ul>
+ * <li>Vertices are annotated with their Titan IDs.</li>
+ * <li>Edges are annotated with the Titan IDs of their source vertexes
+ * .</li>
+ * </ul>
+ * </ul>
+ * <p/>
  * <p>
- * At the second reducer, the vertices are gathered by the hashes of their 
- * IDs, and edges are gathered by the hashes of their destination vertex IDs, 
+ * At the second reducer, the vertices are gathered by the hashes of their
+ * IDs, and edges are gathered by the hashes of their destination vertex IDs,
  * see <code>DestinationVertexKeyFunction</code>.
- *  </p>
+ * </p>
  * <p>
  * The second reducer then loads the edges into Titan.
  * </p>
@@ -102,50 +102,44 @@ import java.util.*;
  * @see GraphBuildingRule
  * @see SourceVertexKeyFunction
  * @see com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction
- * .DestinationVertexKeyFunction
+ *      .DestinationVertexKeyFunction
  */
 
-public class TitanWriterMRChain extends GraphGenerationMRJob  {
+public class TitanWriterMRChain extends GraphGenerationMRJob {
 
     private static final Logger LOG =
             Logger.getLogger(TitanWriterMRChain.class);
     private static final int RANDOM_MIN = 1;
     private static final int RANDOM_MAX = 1000000;
-    private Configuration    conf;
-
+    private Configuration conf;
     private HBaseUtils hbaseUtils = null;
-
-    private GraphBuildingRule  graphBuildingRule;
+    private GraphBuildingRule graphBuildingRule;
     private InputConfiguration inputConfiguration;
-
     private SerializedGraphElement mapValueType;
-    private Class                vidClass;
-    private PropertyGraphSchema  graphSchema;
-
+    private Class vidClass;
+    private PropertyGraphSchema graphSchema;
     private Functional vertexReducerFunction;
     private Functional edgeReducerFunction;
-    private boolean    cleanBidirectionalEdge;
-
+    private boolean cleanBidirectionalEdge;
 
     /**
-     * Acquires the set-up time components necessary for creating a graph from  
-	 * the raw data and loading it into Titan.
-     * @param inputConfiguration  The object that handles the creation
-	 *                                     of data records from raw data.
-     * @param graphBuildingRule   The object that handles the creation
-	 *                                     of property graph elements from
-     *                                     data records.
+     * Acquires the set-up time components necessary for creating a graph from
+     * the raw data and loading it into Titan.
      *
-     *
+     * @param inputConfiguration The object that handles the creation
+     *                           of data records from raw data.
+     * @param graphBuildingRule  The object that handles the creation
+     *                           of property graph elements from
+     *                           data records.
      */
 
     @Override
     public void init(InputConfiguration inputConfiguration,
                      GraphBuildingRule graphBuildingRule) {
 
-        this.graphBuildingRule  = graphBuildingRule;
+        this.graphBuildingRule = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
-        this.graphSchema        = graphBuildingRule.getGraphSchema();
+        this.graphSchema = graphBuildingRule.getGraphSchema();
 
         try {
             this.hbaseUtils = HBaseUtils.getInstance();
@@ -162,14 +156,14 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
     /**
      * Sets the user defined functions to reduce duplicate vertices and edges.
+     * <p/>
+     * If the user does not specify these functions, the default method of
+     * merging property lists will be used.
      *
-     * If the user does not specify these functions, the default method of  
-	 * merging property lists will be used.
-     *
-     * @param vertexReducerFunction   The user specified function for
-	 *                                        reducing duplicate vertices.
-     * @param edgeReducerFunction     The user specified function for
-	 *                                        reducing duplicate edges.
+     * @param vertexReducerFunction The user specified function for
+     *                              reducing duplicate vertices.
+     * @param edgeReducerFunction   The user specified function for
+     *                              reducing duplicate edges.
      */
 
     public void setFunctionClass(Class vertexReducerFunction,
@@ -200,8 +194,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     /**
      * Sets the option to clean bidirectional edges.
      *
-     * @param clean  The boolean option value, if true then remove
-	 *                      bidirectional edges.
+     * @param clean The boolean option value, if true then remove
+     *              bidirectional edges.
      */
 
     @Override
@@ -210,17 +204,17 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
     }
 
     /**
-     * Sets the value class for the property graph elements coming from the 
-	 * mapper or tokenizer.
-     *
+     * Sets the value class for the property graph elements coming from the
+     * mapper or tokenizer.
+     * <p/>
      * This type can vary depending on the class used for vertex IDs.
      *
-     * @param valueClass  The class of the SerializedGraphElement value.
+     * @param valueClass The class of the SerializedGraphElement value.
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement
      * @see com.intel.hadoop.graphbuilder.graphelements
-     * .SerializedGraphElementLongTypeVids
+     *      .SerializedGraphElementLongTypeVids
      * @see com.intel.hadoop.graphbuilder.graphelements
-     * .SerializedGraphElementStringTypeVids
+     *      .SerializedGraphElementStringTypeVids
      */
 
     @Override
@@ -244,13 +238,14 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
     /**
      * Sets the vertex id class.
-     *
+     * <p/>
      * Currently long and String are supported.
+     *
      * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement
      * @see com.intel.hadoop.graphbuilder.graphelements
-     * .SerializedGraphElementLongTypeVids
+     *      .SerializedGraphElementLongTypeVids
      * @see com.intel.hadoop.graphbuilder.graphelements
-     * .SerializedGraphElementStringTypeVids
+     *      .SerializedGraphElementStringTypeVids
      */
 
     @Override
@@ -266,8 +261,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         return this.conf;
     }
 
-
-    private Integer random(){
+    private Integer random() {
         Random rand = new Random();
 
         int randomNum = rand.nextInt((RANDOM_MAX - RANDOM_MIN) + 1) +
@@ -287,7 +281,6 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         for (String key : keys)
             conf.set(key, userOpts.get(key.toString()));
     }
-
 
     /**
      * Creates the Titan graph for saving edges and removes the static open
@@ -370,10 +363,10 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                         } else {
                             GraphBuilderExit.graphbuilderFatalExitNoException
                                     (StatusCode.BAD_COMMAND_LINE,
-                                    "Error declaring keys.  " + ruleModifier
-                                            + " is not a valid option.\n" +
-                                            TitanCommandLineOptions
-                                                    .KEY_DECLARATION_CLI_HELP,
+                                            "Error declaring keys.  " + ruleModifier
+                                                    + " is not a valid option.\n" +
+                                                    TitanCommandLineOptions
+                                                            .KEY_DECLARATION_CLI_HELP,
                                             LOG);
                         }
                     }
@@ -397,7 +390,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      */
 
     private HashMap<String, TitanKey>
-        declareAndCollectKeys(TitanGraph graph, String keyCommandLine) {
+    declareAndCollectKeys(TitanGraph graph, String keyCommandLine) {
 
         HashMap<String, TitanKey> keyMap = new HashMap<String, TitanKey>();
 
@@ -441,15 +434,15 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                 .getMapOfPropertyNamesToDataTypes();
 
         for (String property : propertyNameToTypeMap.keySet()) {
-        	Class<?> propertyType = propertyNameToTypeMap.get(property);
+            Class<?> propertyType = propertyNameToTypeMap.get(property);
             if (!keyMap.containsKey(property)) {
                 TitanKey key;
-				try {
-					key = graph.makeKey(property).dataType(propertyType).make();
-					keyMap.put(property, key);
-				} catch (Throwable t) {
-					LOG.error("Could not create Titan type for property " + property + " type " + propertyType, t);
-				}
+                try {
+                    key = graph.makeKey(property).dataType(propertyType).make();
+                    keyMap.put(property, key);
+                } catch (Throwable t) {
+                    LOG.error("Could not create Titan type for property " + property + " type " + propertyType, t);
+                }
             }
         }
 
@@ -460,7 +453,13 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      * Opens the Titan graph database, and make the Titan keys required by
      * the graph schema.
      */
-    private void initTitanGraph (String keyCommandLine) {
+    private void initTitanGraph(CommandLine cmd) {
+
+        String keyCommandLine = "";
+        if (cmd.hasOption(BaseCLI.Options.titanKeyIndex.getLongOpt())) {
+            keyCommandLine = cmd.getOptionValue(BaseCLI.Options.titanKeyIndex.getLongOpt());
+        }
+
         TitanGraph graph = null;
 
         try {
@@ -469,23 +468,34 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode
                     .UNHANDLED_IO_EXCEPTION,
                     "GRAPHBUILDER FAILURE: Unhandled IO exception while " +
-                            "attempting to connect to Titan.",  LOG, e);
+                            "attempting to connect to Titan.", LOG, e);
         }
 
         HashMap<String, TitanKey> propertyNamesToTitanKeysMap =
                 declareAndCollectKeys(graph, keyCommandLine);
 
+        // If the option to add sides for vertices is enabled, add the "side" property as a key to Titan
+        if (cmd.hasOption(BaseCLI.Options.addSideToVertex.getLongOpt())) {
+
+            TitanKey key;
+            try {
+                String sidePropertyName = "side";
+                key = graph.makeKey(sidePropertyName).dataType(String.class).make();
+                propertyNamesToTitanKeysMap.put(sidePropertyName, key);
+            } catch (Throwable t) {
+                LOG.error("Could not create Titan type for property " + "side" + " type " + "String", t);
+            }
+        }
+
         // now we declare the edge labels
         // one of these days we'll probably want to fully expose all the
         // Titan knobs regarding manyToOne, oneToMany, etc
 
-
-
-        for (EdgeSchema edgeSchema : graphSchema.getEdgeSchemata())  {
+        for (EdgeSchema edgeSchema : graphSchema.getEdgeSchemata()) {
             ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
 
             for (PropertySchema propertySchema : edgeSchema
-                    .getPropertySchemata() ) {
+                    .getPropertySchemata()) {
                 titanKeys.add(propertyNamesToTitanKeysMap.get(propertySchema
                         .getName()));
             }
@@ -506,7 +516,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
      * <code>GraphBuildingRule</code>,
      * and loads it into the Titan graph database.
      *
-     * @param cmd  User specified command line.
+     * @param cmd User specified command line.
      * @throws IOException
      * @throws ClassNotFoundException
      * @throws InterruptedException
@@ -527,7 +537,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         if (hbaseUtils.tableExists(titanTableName)) {
             if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
                 LOG.info("WARNING:  hbase table " + titanTableName +
-                         " already exists. Titan will append new graph to " +
+                        " already exists. Titan will append new graph to " +
                         "existing data.");
                 needsInit = false;
             } else if (cmd.hasOption(BaseCLI.Options.titanOverwrite
@@ -542,31 +552,25 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                         "GRAPHBUILDER_FAILURE: hbase table " + titanTableName +
                                 " already exists. Use -a option if you wish " +
                                 "to append new graph to existing data."
-                        + " Use -O option if you wish to overwrite the graph" +
+                                + " Use -O option if you wish to overwrite the graph" +
                                 ".", LOG);
             }
         }
 
         String intermediateDataFileName = "graphElements-" + random()
                 .toString();
-        Path   intermediateDataFilePath =
-                new Path("/tmp/graphbuilder/" +  intermediateDataFileName);
+        Path intermediateDataFilePath =
+                new Path("/tmp/graphbuilder/" + intermediateDataFileName);
 
         String intermediateEdgeFileName = "labeledEdges-" + random().toString();
-        Path   intermediateEdgeFilePath =
+        Path intermediateEdgeFilePath =
                 new Path("/tmp/graphbuilder/" + intermediateEdgeFileName);
-
-        String keyCommandLine = "";
 
         Timer time = new Timer();
         time.start();
-        if (cmd.hasOption(BaseCLI.Options.titanKeyIndex.getLongOpt())) {
-            keyCommandLine = cmd.getOptionValue(BaseCLI.Options.titanKeyIndex
-                    .getLongOpt());
-        }
 
         if (needsInit) {
-            initTitanGraph(keyCommandLine);
+            initTitanGraph(cmd);
         }
 
         runReadInputLoadVerticesMRJob(intermediateDataFilePath);
@@ -577,7 +581,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
 
         Long runtime = time.time_since_last();
         LOG.info("Time taken to load the graph to Titan: "
-                + runtime +  " seconds");
+                + runtime + " seconds");
 
         FileSystem fs = FileSystem.get(getConf());
         fs.delete(intermediateDataFilePath, true);
@@ -650,7 +654,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
                 " elements from raw data, load vertices to Titan ===========");
 
         LOG.info("input: " + inputConfiguration.getDescription());
-        LOG.info("Output is a titan dbase = " +  TitanConfig.config
+        LOG.info("Output is a titan dbase = " + TitanConfig.config
                 .getProperty("TITAN_STORAGE_TABLENAME"));
 
         LOG.info("InputFormat = " + inputConfiguration.getDescription());
@@ -771,12 +775,12 @@ public class TitanWriterMRChain extends GraphGenerationMRJob  {
         addEdgesJob.setOutputFormatClass(org.apache.hadoop.mapreduce.lib
                 .output.NullOutputFormat.class);
 
-		if ("hbase".equals(TitanConfig.config
-				.getProperty("TITAN_STORAGE_BACKEND"))) {
-			// ship hbase jars & its dependencies
-			TableMapReduceUtil.addDependencyJars(addEdgesJob);
-		}
-        
+        if ("hbase".equals(TitanConfig.config
+                .getProperty("TITAN_STORAGE_BACKEND"))) {
+            // ship hbase jars & its dependencies
+            TableMapReduceUtil.addDependencyJars(addEdgesJob);
+        }
+
         LOG.info("=========== Job 3: Add edges to Titan " +
                 "  ===========");
 
