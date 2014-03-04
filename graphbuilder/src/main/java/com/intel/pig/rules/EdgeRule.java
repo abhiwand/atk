@@ -20,10 +20,8 @@ package com.intel.pig.rules;
 
 import com.intel.pig.udf.util.InputTupleInProgress;
 import org.apache.commons.math3.util.Pair;
-import org.jruby.RubyIconv;
 
 import java.io.IOException;
-import java.nio.channels.IllegalChannelGroupException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -63,12 +61,10 @@ import java.util.List;
 public class EdgeRule {
 
     public enum EdgeLabelType {
-        DYNAMIC, RANGE, STATIC
+        DYNAMIC, STATIC
     }
 
     public static final String PREFIX_FOR_DYNAMIC_EDGE_LABEL  = "dynamic:";
-    public static final String PREFIX_FOR_RANGE_EDGE_LABEL    = "range:";
-    public static final String RANGE_SEPARATOR                = "::";
 
     boolean               isBiDirectional;
     private String        srcFieldName;
@@ -78,8 +74,6 @@ public class EdgeRule {
     private EdgeLabelType edgeLabelType;
     private String[]      edgeAttributes;
     private String        edgeLabelFieldName;
-
-    private List<Pair<Integer, Integer>> buckets;
 
     /**
      * Constructor must take source, destination, bi-directionality and edge label type as arguments.
@@ -101,11 +95,7 @@ public class EdgeRule {
         List<String> edgeAttributeList = getPropertyFieldNames();
         this.edgeAttributes = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
 
-        if (this.edgeLabelType == EdgeLabelType.RANGE) {
-            this.buckets = new ArrayList<Pair<Integer, Integer>>();
-        }
-
-        this.edgeLabelFieldName = parseEdgeLabelRule(); // In case of DYNAMIC and RANGE edge labels
+        this.edgeLabelFieldName = parseEdgeLabelRule(); // In case of DYNAMIC edge labels
     }
 
     public String getSrcFieldName() {
@@ -129,12 +119,6 @@ public class EdgeRule {
      * @return
      */
     public EdgeLabelType determineEdgeLabelType(String labelRule) {
-        if (labelRule.contains(EdgeRule.PREFIX_FOR_RANGE_EDGE_LABEL)) {
-            if (labelRule.contains("[") && labelRule.contains("]"))
-                return EdgeLabelType.RANGE;
-            else
-                throw new IllegalArgumentException("Invalid edge rule: " + labelRule);
-        }
 
         if (labelRule.contains(EdgeRule.PREFIX_FOR_DYNAMIC_EDGE_LABEL)) {
             return EdgeLabelType.DYNAMIC;
@@ -156,51 +140,9 @@ public class EdgeRule {
 
             labelFieldName = parseDynamicEdgeRule();
 
-        } else if (this.edgeLabelType == EdgeLabelType.RANGE) {
-
-            labelFieldName = parseRangeEdgeRule();
-
         }
 
         return labelFieldName;
-    }
-
-    /**
-     * The command line format of range dge label rules is "range:[lower1-upper1::mid::lower2-upper2]:fieldName"
-     *
-     * @return
-     * @throws IllegalArgumentException
-     */
-    private String parseRangeEdgeRule() throws IllegalArgumentException {
-
-        String[] splitEdgeLabelRule = labelRule.split(PREFIX_FOR_RANGE_EDGE_LABEL);
-
-        throwEmptyEdgeLabelException(splitEdgeLabelRule[1]);
-
-        String edgeLabelRangesWithSeparator = splitEdgeLabelRule[1].replaceAll("\\[", "");
-        //edgeLabelRangesWithSeparator = edgeLabelRangesWithSeparator.replaceAll("\\]", "");
-        String[] suffixedFieldName = edgeLabelRangesWithSeparator.split("\\]\\:");
-
-        throwEmptyEdgeLabelException(suffixedFieldName[0]);
-
-        String[] ranges = suffixedFieldName[0].split("\\:\\:");
-
-        for(String range : ranges) {
-            if (range.contains("-")) {
-                String[] lowerAndUpper = range.split("\\-");
-                buckets.add(new Pair<Integer, Integer>(Integer.parseInt(lowerAndUpper[0]),
-                        Integer.parseInt(lowerAndUpper[1])));
-            } else {
-                Integer value = Integer.parseInt(range);
-                buckets.add(new Pair<Integer, Integer>(value, value));
-            }
-        }
-
-        String[] splitFieldName = splitEdgeLabelRule[1].split("\\]\\:");
-
-        throwEmptyEdgeLabelException(splitFieldName[1]);
-
-        return splitFieldName[1];
     }
 
     /**
@@ -242,26 +184,12 @@ public class EdgeRule {
 
         if (this.edgeLabelType == EdgeLabelType.STATIC) {
             label = this.getLabelRule();
-        } else if (this.edgeLabelType == EdgeLabelType.RANGE || this.edgeLabelType == EdgeLabelType.DYNAMIC) {
+        } else if (this.edgeLabelType == EdgeLabelType.DYNAMIC) {
             label = (String) inputTupleInProgress.getTupleData(this.edgeLabelFieldName);
-            Integer labelToInt = Integer.parseInt(label);
-            if (!withinRange(labelToInt))
-                throw new IllegalArgumentException("Invalid edge label: " + inputTupleInProgress);
         } else {
             throw new IllegalArgumentException("Invalid edge label type: " + this.edgeLabelType);
         }
 
         return label;
-    }
-
-    private boolean withinRange(int key) {
-        boolean result = false;
-
-        for (Iterator<Pair<Integer, Integer>> iterator = buckets.iterator(); iterator.hasNext(); ) {
-            Pair<Integer, Integer> next = iterator.next();
-            if (key >= next.getFirst() && key < next.getSecond())
-                result = true;
-        }
-        return result;
     }
 }

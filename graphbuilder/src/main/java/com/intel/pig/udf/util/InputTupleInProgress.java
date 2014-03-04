@@ -18,10 +18,11 @@
  */
 package com.intel.pig.udf.util;
 
-import java.io.IOException;
-import java.util.Hashtable;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+
+import java.io.IOException;
+import java.util.Hashtable;
 
 public class InputTupleInProgress {
     private Tuple tuple;
