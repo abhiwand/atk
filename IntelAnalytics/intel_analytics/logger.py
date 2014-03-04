@@ -22,6 +22,7 @@
 ##############################################################################
 #TODO need more functionality like logging to file, setting the log levels, etc.
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import datetime
 
@@ -46,7 +47,7 @@ def get_file_name_from_datetime(now):
     return ('%s_%s') %('python', now.strftime("%Y%m%d-%H%M%S%f"))
 
 
-hdlr = logging.FileHandler(filename=os.path.join(conf['logs_folder'], get_file_name_from_datetime(datetime.datetime.now())), mode='w')
+hdlr = RotatingFileHandler(filename=os.path.join(conf['logs_folder'], get_file_name_from_datetime(datetime.datetime.now())), maxBytes= int(conf['python_log_max_bytes']), backupCount = int(conf['python_log_backup_count']))
 stdout_logger.addHandler(hdlr)
 stdout_logger.setLevel(logger_level)
 stdout_logger.propagate = 0
