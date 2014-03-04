@@ -320,14 +320,64 @@ class HBaseTable(object):
             raise HBaseTableException('Could not apply transformation')
 
         #need to update schema here as it's difficult to pass the updated schema info from jython to python
-        if not keep_source_column:
-            etl_schema.feature_names.remove(column_name)
+        idx =  etl_schema.feature_names.index(column_name)
+        type = etl_schema.feature_types[idx]
+        if (not keep_source_column) or (column_name == new_column_name):
+            del etl_schema.feature_names[idx]
+            del etl_schema.feature_types[idx]
         etl_schema.feature_names.append(new_column_name)
         
-        #for now make the new feature bytearray, because all UDF's have different return types
-        #and we cannot know their return types
-        if transformation == EvalFunctions.Math.RANDOM:
-            etl_schema.feature_types.append('float')
+        #update the data type of return column based on type of transform we have
+        if transformation in [
+                              EvalFunctions.String.ENDS_WITH,
+                              EvalFunctions.String.EQUALS_IGNORE_CASE,
+                              EvalFunctions.String.STARTS_WITH,
+                              ]:
+            etl_schema.feature_types.append('boolean')
+        elif transformation in [
+                                EvalFunctions.String.INDEX_OF,
+                                EvalFunctions.String.LAST_INDEX_OF,
+                                EvalFunctions.String.LENGTH,
+                                EvalFunctions.Math.FLOOR,
+                                EvalFunctions.Math.CEIL,
+                                EvalFunctions.Math.ROUND,
+                                EvalFunctions.Math.MOD,
+                               ]:
+            etl_schema.feature_types.append('long')
+        elif transformation in [
+                                EvalFunctions.String.LOWER,
+                                EvalFunctions.String.LTRIM,
+                                EvalFunctions.String.REGEX_EXTRACT,
+                                EvalFunctions.String.REGEX_EXTRACT_ALL,
+                                EvalFunctions.String.REPLACE,
+                                EvalFunctions.String.RTRIM,
+                                EvalFunctions.String.STRSPLIT,
+                                EvalFunctions.String.SUBSTRING,
+                                EvalFunctions.String.TRIM,
+                                EvalFunctions.String.UPPER,
+                                EvalFunctions.String.CONCAT
+                                ]:
+            print "here"
+            etl_schema.feature_types.append('chararray')
+        elif transformation == EvalFunctions.String.TOKENIZE:
+            etl_schema.feature_types.append('bag')
+        #same as input column
+        elif transformation in [
+                                EvalFunctions.Math.ABS,
+                                EvalFunctions.Math.LOG,
+                                EvalFunctions.Math.LOG10,
+                                EvalFunctions.Math.POW,
+                                EvalFunctions.Math.EXP,
+                                EvalFunctions.Math.STND
+                               ]:
+            etl_schema.feature_types.append(type)
+        elif transformation in [
+                                EvalFunctions.Math.SQRT,
+                                EvalFunctions.Math.DIV,
+                                EvalFunctions.Math.RANDOM,
+                                EvalFunctions.Math.ARITHMETIC
+                               ]:
+            etl_schema.feature_types.append('double')
         else:
             etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
