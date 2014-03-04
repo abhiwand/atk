@@ -378,8 +378,7 @@ class HBaseTable(object):
 
         if not isinstance(split_name, list):
             raise TypeError("split_name should be a list.")
-
-        if len(split_name) != 2:
+        elif len(split_name) != 2:
             raise ValueError("The size of split_name is %s. The supported size is 2." % len(split_name))
 
 

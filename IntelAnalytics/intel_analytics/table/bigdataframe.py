@@ -452,7 +452,7 @@ class BigDataFrame(object):
                         update=False,
                         overwrite=False):
         """
-        Split users' ML data into Train and Test for k-fold cross-validation.
+        Split user's ML data into Train and Test for k-fold cross-validation.
 
         Parameters
         ----------
@@ -487,21 +487,21 @@ class BigDataFrame(object):
         >>> frame.kfold_split(test_fold_id=1, fold_id_column="new_id")
         If there is no existing "new_id" column, this method will firstly generate
         fold id into column "fold_id". And then label the data in the first fold as Test,
-        and the rest as Test, save split label into column "kfold_splits"
+        and the rest as Train, save split labels into column "kfold_splits"
 
-        Then in the x-th iterations, where x is no greater than k, users can cal
+        Then in the x-th iterations, where x is no greater than k, users can call
         >>> frame.kfload_split(test_fold_id=x)
         This method will label the x-th fold as Test, and the rest as Train,
         by using of fold_id_column for the first iteration.
 
         If user has already randomized data by transform function, for example, by
         >>> frame.transform('rating','rand10', EvalFunctions.Math.RANDOM,[1,10])
-        this method can be also used together with existing fold_id_column to
+        this method can be used together with existing fold_id_column to
         split ML data into Test/Train
         >>> frame.kfold_split(fold_id_column='rand10', test_fold_id=3)
-        will label data in the third fold as Test, and the rest as Test.
+        will label data in the third fold as Test, and the rest as Train.
         Save results in a column named "kfold_splits"
-            """
+        """
 
         try:
             self._table.kfold_split(k, test_fold_id, fold_id_column, split_name, output_column, update, overwrite)
@@ -514,12 +514,12 @@ class BigDataFrame(object):
                       randomization_column='rnd_id',
                       split_percent=[70,20,10],
                       split_name=["TR","VA","TE"],
-                      output_column='splits',
+                      output_column='split_label',
                       update=False,
                       overwrite=False):
 
         """
-        Split users' data into different buckets.
+        Split user's data into different buckets based on percentage distribution
         A good usage example is to segment ML data into Train and Test,
         or Train, Validate and Test.
 
@@ -537,7 +537,7 @@ class BigDataFrame(object):
             The default value is ["TR","VA","TE"]
         output_column : string, optional
             The name of the column to store split results.
-            The default value is "splits"
+            The default value is "split_label"
         update : Boolean, optional
             whether to recalculate fold_id_column
             The default value is False
