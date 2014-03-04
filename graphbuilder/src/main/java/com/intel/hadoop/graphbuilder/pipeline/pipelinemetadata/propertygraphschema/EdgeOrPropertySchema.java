@@ -19,12 +19,11 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import com.intel.hadoop.graphbuilder.types.StringType;
 import org.apache.hadoop.io.Writable;
 
 /**
- *  A common super class for {@code EdgeSchema} and {@code Propertyschema}, used for making type
- *  declarations for the graph database.
+ * A common super class for {@code EdgeSchema} and {@code Propertyschema}, used for making type
+ * declarations for the graph database.
  */
 
 /*  If we should ever need to make per-vertex declarations,
@@ -32,21 +31,5 @@ import org.apache.hadoop.io.Writable;
  */
 
 public abstract class EdgeOrPropertySchema implements Writable {
-
-    /**
-     * A tag used for distinguishing {@code EdgeSchema} in serialized representations.
-     */
-    public static final String EDGE_SCHEMA     = "EDGE_SCHEMA";
-
-    /**
-     * A tag used for distinguishing {@code PropertySchema} in serialized representations.
-     */
-    public static final String PROPERTY_SCHEMA = "PROPERTY_SCHEMA";
-
-    /**
-     * Returns the serialized identifier for this schema object.
-     */
-    public abstract StringType getID();
-
 
 }

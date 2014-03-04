@@ -22,9 +22,12 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 
 import org.apache.hadoop.io.ArrayWritable;
 
-
+/**
+ * A wrapper to provide type information for {@code ArrayWritable}.
+ */
 public class PropertySchemaArrayWritable extends ArrayWritable {
 
-    public PropertySchemaArrayWritable() { super(PropertySchema.class);}
-
+    public PropertySchemaArrayWritable() {
+        super(PropertySchema.class);
+    }
 }

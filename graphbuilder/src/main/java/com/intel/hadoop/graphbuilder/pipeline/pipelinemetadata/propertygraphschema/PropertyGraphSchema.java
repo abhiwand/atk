@@ -19,61 +19,47 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
-import org.apache.hadoop.io.Writable;
-import org.apache.log4j.Logger;
+import com.intel.hadoop.graphbuilder.util.HashUtil;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 
 /**
- * The schema or "signature" of a property graph. It contains all the possible 
- * types of edges and vertices that it may contain. (It might contain types for 
+ * The schema or "signature" of a property graph. It contains all the possible
+ * types of edges and vertices that it may contain. (It might contain types for
  * edges or vertices that are not witnessed by any element present in the graph.)
- *
+ * <p/>
  * <p>
- * The expected use of this information is declaring keys for loading the 
+ * The expected use of this information is declaring keys for loading the
  * constructed graph into a graph database. </p>
  */
-public class PropertyGraphSchema implements Writable {
+public class PropertyGraphSchema {
 
-    private static final Logger LOG = Logger.getLogger(PropertyGraphSchema.class);
-
-    private HashSet<VertexSchema> vertexSchemata;
-    private HashSet<EdgeSchema>   edgeSchemata;
-
-    private VertexSchemaArrayWritable serializedVertexSchemata = new VertexSchemaArrayWritable();
-    private EdgeSchemaArrayWritable serializedEdgeSchemata = new EdgeSchemaArrayWritable();
-                                                                        ;
-
-    private HashMap<String, Class<?>> propTypeMap;
-
+    private HashSet<EdgeSchema> edgeSchemata;
+    private HashSet<PropertySchema> propertySchemata;
 
     /**
      * Allocates a new property graph schema.
      */
-
     public PropertyGraphSchema() {
-        vertexSchemata = new HashSet<>();
-        edgeSchemata   = new HashSet<>();
-        this.propTypeMap = new HashMap<>();
+        edgeSchemata = new HashSet<>();
+        propertySchemata = new HashSet<>();
     }
 
     /**
      * Allocate and initialize the property graph schema from property type information and edge signatures.
-     * @param propTypeMap  Map of property names to datatype classes.
-     * @param edgeSignatures  Map of edge labels to lists of property names.
+     *
+     * @param propTypeMap    Map of property names to datatype classes.
+     * @param edgeSignatures Map of edge labels to lists of property names.
      */
     public PropertyGraphSchema(HashMap<String, Class<?>> propTypeMap, HashMap<String, ArrayList<String>> edgeSignatures) {
-        vertexSchemata = new HashSet<>();
-        edgeSchemata   = new HashSet<>();
-        this.propTypeMap = propTypeMap;
+        edgeSchemata = new HashSet<>();
+        propertySchemata = new HashSet<>();
+
+        for (String property : propTypeMap.keySet()) {
+            propertySchemata.add(new PropertySchema(property, propTypeMap.get(property)));
+        }
 
         for (String edgeLabel : edgeSignatures.keySet()) {
 
@@ -88,35 +74,30 @@ public class PropertyGraphSchema implements Writable {
 
             edgeSchemata.add(edgeSchema);
         }
-
     }
 
     /**
-     * Adds a vertex schema to the vertex schemas of a property graph.
-     * @param vertexSchema  The vertex schema to add.
+     * Gets the property schemas of the property graph.
+     *
+     * @return A reference to the property graph's property schemas set.
      */
-    public void addVertexSchema(VertexSchema vertexSchema) {
-        vertexSchemata.add(vertexSchema);
-    }
-
-    /**
-     * Gets the vertex schemas of the property graph.
-     * @return  A reference to the property graph's vertex schemas set.
-     */
-    public HashSet<VertexSchema> getVertexSchemata() {
-        return vertexSchemata;
+    public HashSet<PropertySchema> getPropertySchemata() {
+        return propertySchemata;
     }
 
     /**
      * Adds an edge schema to the edge schemas of a property graph.
-     * @param edgeSchema  The edge schema to add.
+     *
+     * @param edgeSchema The edge schema to add.
      */
     public void addEdgeSchema(EdgeSchema edgeSchema) {
         edgeSchemata.add(edgeSchema);
+        propertySchemata.addAll(edgeSchema.getPropertySchemata());
     }
 
     /**
      * Gets the edge schemas of the property graph.
+     *
      * @return A reference to the property graph's edge schemas set.
      */
     public HashSet<EdgeSchema> getEdgeSchemata() {
@@ -124,106 +105,51 @@ public class PropertyGraphSchema implements Writable {
     }
 
     /**
-     * javadoc todo
-     * @param propertySchema
-     * @return
-     * @throws ClassNotFoundException
+     * Add a property schema to a property graph schema.
+     *
+     * @param propertySchema The property schema to be added to the property graph schema.
      */
-    public void addPropertySchema(PropertySchema propertySchema) throws ClassNotFoundException {
-        propTypeMap.put(propertySchema.getName(), propertySchema.getType());
+    public void addPropertySchema(PropertySchema propertySchema) {
+        propertySchemata.add(propertySchema);
     }
 
     /**
-     * Gets a set of the property names used in the schema of the property graph.
-     * <p>The set is newly allocated and populated with each call.</p>
-     * @return A set of strings containing the names of the properties used by the property graph.
+     * Equality test.
+     *
+     * @param in Object for comparison.
+     * @return {@code true} if and only if the other object is also a {@code PropertyGraphSchema} whose sets of
+     *         {@code PropertySchema}'s and {@code EdgeSchema}'s are set-equal to those of this graph schema.
      */
-    public HashMap<String, Class<?>> getMapOfPropertyNamesToDataTypes() {
+    public boolean equals(Object in) {
+        if (in instanceof PropertyGraphSchema) {
+            PropertyGraphSchema inGraphSchema = (PropertyGraphSchema) in;
 
-        HashMap<String, Class<?>> map = new HashMap<>();
+            return ((inGraphSchema.getPropertySchemata().size() == this.getPropertySchemata().size())
+                    && (inGraphSchema.getEdgeSchemata().size() == this.getEdgeSchemata().size())
+                    && (inGraphSchema.getPropertySchemata().containsAll(this.getPropertySchemata()))
+                    && (inGraphSchema.getEdgeSchemata().containsAll(this.getEdgeSchemata())));
+        } else {
+            return false;
+        }
+    }
 
-        for (String property : propTypeMap.keySet()) {
-            map.put(property, propTypeMap.get(property));
+    /**
+     * The Java hashCode() method.
+     *
+     * @return intger hash
+     * @see {@code equals}
+     */
+    public int hashCode() {
+        int code = 0;
+
+        for (EdgeSchema edgeSchema : this.getEdgeSchemata()) {
+            code = HashUtil.combine(code, edgeSchema.hashCode());
         }
 
-        // nls todo : these aren't really helping... they shouldn't be doing anything, but in the legacy path,
-        // they are being used
-
-
-            for (EdgeSchema edgeSchema : edgeSchemata) {
-                for (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {
-                    if (!map.containsKey(propertySchema.getName())) {
-                        try {
-                            map.put(propertySchema.getName(), propertySchema.getType());
-                        } catch (ClassNotFoundException e) {
-                            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNKNOWN_CLASS_IN_GRAPHSCHEMA,
-                                    "GRAPHBUILDER_ERROR: IO Exception during map-reduce job execution.", LOG, e);
-                        }
-                    }
-                }
-            }
-
-            for (VertexSchema vertexSchema : vertexSchemata) {
-                for (PropertySchema propertySchema : vertexSchema.getPropertySchemata()) {
-                    if (!map.containsKey(propertySchema.getName())) {
-                    try {
-                        map.put(propertySchema.getName(), propertySchema.getType());
-                    } catch (ClassNotFoundException e) {
-                            GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNKNOWN_CLASS_IN_GRAPHSCHEMA,
-                                    "GRAPHBUILDER_ERROR: IO Exception during map-reduce job execution.", LOG, e);
-                    }
-                }
-            }
+        for (PropertySchema propertySchema : this.getPropertySchemata()) {
+            code = HashUtil.combine(code, propertySchema.hashCode());
         }
 
-        return map;
+        return code;
     }
-
-
-    /**
-     * Reads an {@code PropertyGraphSchema} from an input stream.
-     *
-     * @param input The input stream.
-     * @throws java.io.IOException
-     */
-    @Override
-    public void readFields(DataInput input) throws IOException {
-
-        serializedEdgeSchemata.readFields(input);
-        serializedVertexSchemata.readFields(input);
-
-        edgeSchemata.clear();
-        EdgeSchema[] edges = (EdgeSchema[]) serializedEdgeSchemata.toArray();
-        Collections.addAll(edgeSchemata, edges);
-
-        vertexSchemata.clear();
-        VertexSchema[] vertices = (VertexSchema[]) serializedVertexSchemata.toArray();
-        Collections.addAll(vertexSchemata, vertices);
-    }
-
-    /**
-     * Writes an {@code PropertyGraphSchema} to an output stream.
-     *
-     * @param output The output stream.
-     * @throws IOException
-     */
-    @Override
-    public void write(DataOutput output) throws IOException {
-
-        EdgeSchema[] edgeSchemas = new EdgeSchema[edgeSchemata.size()];
-        edgeSchemata.toArray(edgeSchemas);
-
-        serializedEdgeSchemata.set(edgeSchemas);
-
-        serializedEdgeSchemata.write(output);
-
-
-        VertexSchema[] vertexSchemas = new VertexSchema[vertexSchemata.size()];
-        vertexSchemata.toArray(vertexSchemas);
-
-        serializedVertexSchemata.set(vertexSchemas);
-
-        serializedVertexSchemata.write(output);
-    }
-
 }

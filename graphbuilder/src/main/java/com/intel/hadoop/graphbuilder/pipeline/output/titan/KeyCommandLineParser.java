@@ -53,7 +53,7 @@ public class KeyCommandLineParser {
      */
     public List<GBTitanKey> parse(String keyCommandLine) {
 
-        ArrayList<GBTitanKey> gbKeyList = new ArrayList<GBTitanKey>();
+        ArrayList<GBTitanKey> gbKeyList = new ArrayList<>();
 
         if (keyCommandLine != null && keyCommandLine.length() > 0) {
 
