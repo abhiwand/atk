@@ -42,7 +42,6 @@ from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
-from pydoop.hdfs.path import exists
 
 MAX_ROW_KEY = 'max_row_key'
 
@@ -390,6 +389,14 @@ class HBaseTable(object):
     def drop_columns(self, columns):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
+
+        list_columns_to_drop = columns.split(',')
+        bad_columns = "; ".join(["Column '{0}' not in frame"
+                                 .format(c) for c in list_columns_to_drop
+                                 if c not in etl_schema.feature_names])
+        if len(bad_columns) > 0:
+            raise Exception(bad_columns)
+
         args = []
 
         args += ['hadoop',
@@ -408,8 +415,6 @@ class HBaseTable(object):
         # save the schema for the new table
         new_feature_names = []
         new_feature_types = []
-
-        list_columns_to_drop = columns.split(',')
 
         for feature in etl_schema.feature_names:
             if feature not in list_columns_to_drop:
@@ -903,7 +908,7 @@ class HBaseFrameBuilder(FrameBuilder):
         if not is_args_final:
             args += ['-m', original_max_row_key]
 
-        pig_report = PigJobReportStrategy();
+        pig_report = PigJobReportStrategy()
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
         if return_code:
             raise DataAppendException('Failed to append data.')
@@ -920,8 +925,16 @@ class HBaseFrameBuilder(FrameBuilder):
         if is_local_run():
             if not os.path.isfile(file_name):
                 raise Exception('ERROR: File does NOT exist ' + file_name + ' locally')
-        elif not exists(file_name):
+        elif not exists_hdfs(file_name):
             raise Exception('ERROR: File does NOT exist ' + file_name + ' in HDFS')
+
+
+def exists_hdfs(file_name):
+    try:
+        from pydoop.hdfs.path import exists
+        return exists(file_name)
+    except Exception as e:
+        raise Exception('ERROR: Python unable to check HDFS: ' + e.message)
 
 
 class HBaseFrameBuilderFactory(object):
