@@ -62,6 +62,7 @@ class MockFrameJoin(unittest.TestCase):
         return object
 
     def join_test_invalid_right(self, tL, tR, info):
+        msg="Error! Invalid input 'right'"
         try:
             tJ = tL.join(tR,\
                          how='inner', \
@@ -69,11 +70,13 @@ class MockFrameJoin(unittest.TestCase):
                          right_on='rcol1', \
                          suffixes=['_l', '_r'], \
                          join_frame_name='join_frame')
-            self.assertFalse(tJ is not None, "Failed to return None for invalid 'right'")
+            self.fail("Failed to return None for: %s" % msg)
         except HBaseTableException, e:
             print "%s: caught HBaseTableException '%s'" %(info, str(e))
+            self.assertTrue(msg in e.message)
 
     def join_test_invalid_right_on(self, tL, tR, right_on, info):
+        msg="Error! Invalid input 'right_on'"
         try:
             tJ = tL.join([tR],\
                          how='inner', \
@@ -81,11 +84,13 @@ class MockFrameJoin(unittest.TestCase):
                          right_on=right_on, \
                          suffixes=['_l', '_r'], \
                          join_frame_name='join_frame')
-            self.assertFalse(tJ is not None, "Failed to return None for invalid 'right_on'")
+            self.fail("Failed to return None for: %s" % msg)
         except HBaseTableException, e:
             print "%s: caught HBaseTableException '%s'" %(info, str(e))
+            self.assertTrue(msg in e.message)
 
     def join_test_invalid_suffixes(self, tL, tR, suffixes, info):
+        msg="Error! Invalid input 'suffixes'"
         try:
             tJ = tL.join([tR],\
                          how='inner', \
@@ -93,11 +98,13 @@ class MockFrameJoin(unittest.TestCase):
                          right_on=['rcol1'], \
                          suffixes=suffixes, \
                          join_frame_name='join_frame')
-            self.assertFalse(tJ is not None, "Failed to return None for invalid 'suffixes'")
+            self.fail("Failed to return None for: %s" % msg)
         except HBaseTableException, e:
             print "%s: caught HBaseTableException '%s'" %(info, str(e))
+            self.assertTrue(msg in e.message)
 
     def join_test_invalid_columns(self, tL, tR, columns, info):
+        msg="Error! Invalid input 'right_on'"
         try:
             tJ = tL.join([tR],\
                          how='inner', \
@@ -105,11 +112,13 @@ class MockFrameJoin(unittest.TestCase):
                          right_on=columns, \
                          suffixes=['_l', '_r'], \
                          join_frame_name='join_frame')
-            self.assertFalse(tJ is not None, "Failed to return None for invalid 'right_on' columns")
+            self.fail("Failed to return None for: %s for invalid column names" % msg)
         except HBaseTableException, e:
-            print "%s: caught HBaseTableException '%s'" %(info, str(e))
+            print "%s: caught HBaseTableException '%s' for invalid column names" %(info, str(e))
+            self.assertTrue(msg in e.message)
 
     def join_test_invalid_join_type(self, tL, tR, join_type, info):
+        msg="Error! Invalid input 'how'"
         try:
             tJ = tL.join([tR],\
                          how=join_type, \
@@ -117,9 +126,10 @@ class MockFrameJoin(unittest.TestCase):
                          right_on=['rcol1'], \
                          suffixes=['_l', '_r'], \
                          join_frame_name='join_frame')
-            self.assertFalse(tJ is not None, "Failed to return None for invalid 'how' as the join type")
+            self.fail("Failed to return None for: %s" % msg)
         except HBaseTableException, e:
             print "%s: caught HBaseTableException '%s'" %(info, str(e))
+            self.assertTrue(msg in e.message)
 
     def join_test_single_column(self, tL, tR, info, result_holder):
         for how in ['inner', 'outer', 'left', 'right']:
