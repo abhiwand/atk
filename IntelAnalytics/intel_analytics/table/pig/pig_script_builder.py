@@ -69,7 +69,7 @@ class PigScriptBuilder(object):
             raise Exception('Invalid input table list.')
 
         if not how.lower() in ['inner', 'outer', 'left', 'right']:
-            raise Exception("The requestioned join type '%s' is not supported." % how)
+            raise Exception("The requested join type '%s' is not supported." % how)
 
         if (not on) or (len(on) != len(tables)):
             raise Exception('Invalid columns to be joined on.')
