@@ -356,7 +356,7 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        column_list : List of BigColumn instance
+        column_list : List of BigColumn instances
             list of BigColumn instances to compute statistics for
         force_recomputation : boolean
             if true: will recompute statistics otherwise
