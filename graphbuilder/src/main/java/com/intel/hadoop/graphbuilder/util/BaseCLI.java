@@ -65,7 +65,7 @@ public class BaseCLI {
     private static final String CMD_OUTPUT_OPTION_NAME = "out";
     private static final String CMD_INPUT_OPTION_NAME  = "in";
     private static final String CMD_RETAIN_DANGLING_EDGES = "retainDanglingEdges";
-    private static final String CMD_ADD_DIRECTION_TO_VERTEX = "addDirectionPropertyToVertex";
+    private static final String CMD_ADD_SIDE_PROPERTY_TO_VERTEX = "addSidePropertyToVertex";
 
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),
@@ -76,7 +76,7 @@ public class BaseCLI {
         titanStorage(CLI_TITAN_STORAGE_OPTION),
         outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION),
         retainDanglingEdges(CLI_RETAIN_DANGLING_EDGE_OPTION),
-        addDirectionToVertex(CLI_ADD_DIRECTION_TO_VERTEX),
+        addSideToVertex(CLI_ADD_SIDE_PROPERTY_TO_VERTEX),
         titanPropertyTypes(CLI_TITAN_PROPERTY_TYPES),
         titanEdgeSignatures(CLI_TITAN_EDGE_SIGNATURES);
 
@@ -175,8 +175,8 @@ public class BaseCLI {
                     "edges with null source or target vertices")
             .withArgName("Retain-Dangling-Edges")
             .create("x");
-    private static final Option CLI_ADD_DIRECTION_TO_VERTEX = OptionBuilder.withLongOpt
-            (CMD_ADD_DIRECTION_TO_VERTEX)
+    private static final Option CLI_ADD_SIDE_PROPERTY_TO_VERTEX = OptionBuilder.withLongOpt
+            (CMD_ADD_SIDE_PROPERTY_TO_VERTEX)
             .withDescription("Set this option to add \"L\" and \"R\" direction property to vertices")
             .withArgName("Add-direction-to-vertices")
             .create("p");

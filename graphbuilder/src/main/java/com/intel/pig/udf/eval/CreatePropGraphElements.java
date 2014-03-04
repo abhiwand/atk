@@ -58,9 +58,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * CreatePropGraphElements ... converts tuples of scalar data into bag of property graph elements..
  * <p/>
- * <p/>
+ *
  * <b>Example of use in pig script:</b>
- * <p/>
+ *
  * <pre>
  * REGISTER target/graphbuilder-2.0alpha-with-deps.jar;
  * x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id: int, name: chararray, age: int,
@@ -69,7 +69,7 @@ import java.util.concurrent.TimeUnit;
  * dept,worksAt,tenure"');
  * pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
  * </pre>
- * <p/>
+ *
  * The argument to the UDF constructor is a command string interpreted in the following manner:
  * The rules for specifying a graph are, at present, as follows:
  * </p>
@@ -89,15 +89,18 @@ import java.util.concurrent.TimeUnit;
  * <p>or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_fieldname </code>
  * </p>
- * * <p>
- * EXAMPLE:
- * <p>
- * <code>-v "name=age" -e "name,dept,worksAt,seniority"</code>
+ *  * <p>
+ *     EXAMPLE:
+ *     <p>
+ *<code>-v "name=age" -e "name,dept,worksAt,seniority"</code>
+ *     </p>
+ *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
+ *     one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
+ *     seniority in that department.
  * </p>
  * This generates a vertex for each employee annotated by their age, a vertex for each department with at least
  * one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
  * seniority in that department.
- * </p>
  * </p>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
@@ -106,25 +109,25 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     /**
      * Special vertex name used when retaining dangling edges
      */
-    public static final String NULL_VERTEX_NAME = "null";
-    public static final String VERTEX_PROPERTY_SIDE = "side";
-    public static final String LEFT = "L";
-    public static final String RIGHT = "R";
+    public static final String NULL_VERTEX_NAME          = "null";
+    public static final String VERTEX_PROPERTY_SIDE      = "side";
+    public static final String LEFT                      = "L";
+    public static final String RIGHT                     = "R";
 
     final boolean BIDIRECTIONAL = true;
     final boolean DIRECTED = false;
 
     private boolean retainDanglingEdges    = false;
     private boolean flattenLists           = false;
-    private boolean addDirectionToVertices = false;
 
     private BagFactory mBagFactory = BagFactory.getInstance();
 
     private List<String> vertexIdFieldList;
 
     private Hashtable<String, String[]> vertexPropToFieldNamesMap;
-    private Hashtable<String, String>   vertexLabelMap;
-    private Hashtable<String, EdgeRule> edgeLabelToEdgeRules; // Maps edge Labels -> edge rules
+    private Hashtable<String, String> vertexLabelMap;
+    private Hashtable<String, EdgeRule> edgeLabelToEdgeRules;
+    private boolean addSideToVertices = false;
 
     /**
      * Implements the dangling edge counters.
@@ -151,27 +154,27 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         options.addOption(BaseCLI.Options.directedEdge.get());
         options.addOption(BaseCLI.Options.flattenList.get());
         options.addOption(BaseCLI.Options.retainDanglingEdges.get());
-        options.addOption(BaseCLI.Options.addDirectionToVertex.get());
+        options.addOption(BaseCLI.Options.addSideToVertex.get());
 
         commandLineInterface.setOptions(options);
 
         CommandLine cmd = commandLineInterface.checkCli(tokenizationRule.split(" "));
 
-        vertexLabelMap = new Hashtable<String, String>();
+        vertexLabelMap            = new Hashtable<String, String>();
         vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
-        vertexIdFieldList = new ArrayList<String>();
-        edgeLabelToEdgeRules = new Hashtable<String, EdgeRule>();
+        vertexIdFieldList         = new ArrayList<String>();
+        edgeLabelToEdgeRules      = new Hashtable<String, EdgeRule>();
 
-        String[] vertexRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
+        String[] vertexRules  = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
         String[] rawEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
         String[] rawDirectedEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge
                 .getLongOpt()));
 
         flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
         retainDanglingEdges = cmd.hasOption(BaseCLI.Options.retainDanglingEdges.getLongOpt());
-        addDirectionToVertices = cmd.hasOption(BaseCLI.Options.addDirectionToVertex.getLongOpt());
+        addSideToVertices = cmd.hasOption(BaseCLI.Options.addSideToVertex.getLongOpt());
 
-        // Parse the names of vertices and properties from command line prompt
+        // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
 
         for (String vertexRule : vertexRules) {
@@ -198,9 +201,9 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         for (String rawEdgeRule : rawEdgeRules) {
 
-            String srcVertexFieldName = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
-            String tgtVertexFieldName = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
-            String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
+            String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
+            String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
+            String   label                  = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawEdgeRule);
 
@@ -257,6 +260,22 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         }
 
         return outArray;
+    }
+
+    /**
+     * Get an element from a tuple
+     * @param input to get field from
+     * @param inputSchema schema to determine what index to read from tuple
+     * @param fieldName name of field to get from tuple
+     * @return an element from the tuple
+     */
+    private Object getTupleData(Tuple input, Schema inputSchema, String fieldName) throws IOException{
+
+        int fieldPos = inputSchema.getPosition(fieldName);
+        if (fieldPos < 0) {
+            throw new IllegalArgumentException("Did NOT find field named: " + fieldName + " in input schema");
+        }
+        return input.get(fieldPos);
     }
 
     private void addVertexToPropElementBag(DataBag outputBag, Vertex vertex) throws IOException {
@@ -621,7 +640,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         // movie1 "R" user1 "L" rating1
         // This property is not added in the reverse edge when bidirectional edges are enabled
 
-        if (addDirectionToVertices) {
+        if (addSideToVertices) {
             vertex.setProperty(VERTEX_PROPERTY_SIDE, pigTypesToSerializedJavaTypes(direction, DataType.CHARARRAY));
         }
         return vertex;
