@@ -5,6 +5,8 @@
 #
 source IntelAnalytics_common_env.sh
 
+#globals
+ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
 # existing AMI Names (with build version, can override 
 if [ -z "${IA_AMI_BUILD}" ]; then
     IA_AMI_BUILD="Build.14"
@@ -33,7 +35,7 @@ fi
 export IA_CLUSTER_ID_RSV=0
 export IA_CLUSTER_ID_MIN=1
 export IA_CLUSTER_ID_MAX=40
-export IA_CLUSTER_SIZE_MIN=4
+export IA_CLUSTER_SIZE_MIN=2
 export IA_CLUSTER_SIZE_MAX=20
 export IA_CLUSTER_SIZE_INC=4
 
@@ -97,7 +99,7 @@ function IA_check_cluster_id()
 }
 
 # validate the cluster size
-# Supports 4, 8, 12, 16, 20 (5 bit netmask, but we max to 20 for cc2.8xlarge)
+# Supports 2, 4, 8, 12, 16, 20 (5 bit netmask, but we max to 20 for cc2.8xlarge)
 function IA_check_cluster_size()
 {
     local size=$1
@@ -659,12 +661,23 @@ function IA_get_instance_public_dns()
     echo `IA_get_instance_column $1 public-dns-name`
 }
 
-function IA_generate_hosts_file()
+#iterates through a list of networks details from the aws cli api
+#will also mark the first launched instance as the master
+#Params:
+#   cid: cluster id
+#   csize: cluster size
+#   clusterName: the cluster name aka cname
+#   masterGroup: the security group attached to the master to allow https to all ips
+#   outdir: the output directory for the hosts and nodes file
+function IA_generate_hosts_file_auto_scale()
 {
     local cid=$1
     local csize=$2
-    local outdir=$3
-
+    #the name of the auto scaling group
+    local clusterName=$3
+    local masterGroup=$4
+    local outdir=$5
+    
     if [ ! -d ${outdir} ]; then
         IA_logerr "Output director \"${outdir}\" not found!"
         return 1
@@ -680,18 +693,131 @@ function IA_generate_hosts_file()
     outnodes=${outdir}/${cname}.nodes
     rm -f ${outhosts} 2>&1 > /dev/null
     rm -f ${outnodes} 2>&1 > /dev/null
-    
+
     cat ${headers} > ${outhosts}
-    for (( i = 0; i < ${csize}; i++ ))
-    do  
+    #get all the instance ids for the auto scaling group
+    instanceIds=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names $clusterName | jq -r -c '.AutoScalingGroups[0].Instances[].InstanceId' | tr "\\n" " ")
+
+    #get all the network details for all instances
+    instanceDetails=$(aws ec2 describe-instances --instance-ids $instanceIds | jq -c '.Reservations[].Instances[] | {InstanceId,AmiLaunchIndex,SecurityGroups,PrivateDnsName,PrivateIpAddress,PublicDnsName,PublicIpAddress}')
+    IA_loginfo " Getting instance networks details "
+    IA_loginfo " ${instanceDetails}"
+    
+    for details in $instanceDetails
+    do
+        privateDns=$(echo $details | jq -r -c '.PrivateDnsName')
+        privateIp=$(echo $details | jq -r -c '.PrivateIpAddress')
+        securityGroups=$(echo $details | jq  '.SecurityGroups[].GroupId' | tr "\\n" " "  )
+        instanceId=$(echo $details | jq -r -c  '.InstanceId' )
+    
+        i=$(echo $details | jq -r -c '.AmiLaunchIndex')
+        #while i'm deciding the fate of the instances i'm going to set the first launched instance as the master
+        #set the extra security group and update the name tag
+        if [ $i -eq 0  ]; then
+            /usr/local/bin/aws ec2 create-tags --resources $instanceId --tags Key=Name,Value="$clusterName-master"
+            eval " /usr/local/bin/aws ec2 modify-instance-attribute --instance-id $instanceId --groups $securityGroups \"$masterGroup\" "
+        fi
         hosts[$i]=`IA_format_node_name_role $i`
         nname[$i]=`IA_format_node_name ${cname} $i`
-        ip[$i]=`IA_get_instance_private_ip ${nname[$i]}`
-        dnsfull[$i]=`IA_get_instance_private_dns ${nname[$i]}`
+        ip[$i]=$privateIp
+        dnsfull[$i]=$privateDns
         dns[$i]=`echo ${dnsfull[$i]} | awk -F"." '{print $1}'`
         echo "${ip[$i]} ${hosts[$i]} ${dns[$i]}" >> ${outhosts}
         echo "${dnsfull[$i]}" >> ${outnodes}
+        
     done
     IA_loginfo "Generated hosts file ${outhosts}..."
     IA_loginfo "Generated nodes file ${outnodes}..."
 }
+
+#run a health check on cluster, make sure everything is in a healty state and
+#ips have been provisioned
+#Params:
+#   takes the cluster name aka cname
+function IA_health_check_auto_scale()
+{
+
+    local clusterName=$1
+
+    getInstances=$(aws autoscaling describe-auto-scaling-groups --auto-scaling-group-names "${cname}" | jq -c '.AutoScalingGroups[0].Instances[] | {LifecycleState,HealthStatus,InstanceId}')
+    healthPassed=0
+    for instanceDetails in $getInstances
+    do
+        lifeCycleState=$(echo $instanceDetails |  jq  -r -c '.LifecycleState')
+        healthStatus=$(echo $instanceDetails |  jq  -r -c '.HealthStatus')
+        instanceId=$(echo $instanceDetails |  jq  -r -c '.InstanceId')
+        if [ "$lifeCycleState" == "InService" ] && [ "$healthStatus" == "Healthy" ]; then
+            healthPassed=$(($healthPassed + 1))
+            IA_loginfo " Instance id $instanceId passed initial health check reviewing running state"
+            getRunState=$(aws ec2 describe-instances --instance-ids $instanceId  | jq -c '.Reservations[].Instances[] | {AmiLaunchIndex,State,PrivateDnsName,PrivateIpAddress,PublicDnsName,PublicIpAddress}')
+            stateName=$(echo $getRunState | jq -r -c '.State.Name')
+            stateCode=$(echo $getRunState | jq -r -c '.State.Code')
+            privateDns=$(echo $getRunState | jq -r -c '.PrivateDnsName')
+            privateIp=$(echo $getRunState | jq -r -c '.PrivateIpAddress')
+                        
+            if [ "${stateCode}" == "16" ] && [ "${stateName}" == "running" ] && [ $privateDns ] && [ $privateIp ]; then
+                healthPassed=$(($healthPassed +1))
+                IA_loginfo " passed runing state check "
+            fi
+        fi
+    done
+
+    return $healthPassed   
+}
+
+#create a cloud watch alarms and assign notification
+#Params:
+#   name: the alarm name
+#   description: the alarm description
+#   metric: The metric to watch
+#   namespace: the namespace of the metric ie "AWS/EC2
+#   statistic: aggregation of the metric Sum/Count/Samples/Average
+#   period: interval we should run at
+#   threshold: value we check comparision against
+#   comparison: the comparison operator
+#   dimensions: the metrics dimension in our case it's always Name=AutoScalingGroupName,Value=$clusterName
+function IA_add_alarm()
+{
+    #local ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
+    
+    local name=$1
+    local description=$2
+    local metric=$3
+    local namespace=$4
+    local statistic=$5
+    local period=$6
+    local evaluationPeriod=1
+    local threshold=$7
+    local comparision=$8
+    local dimensions=$9
+    
+    aws cloudwatch put-metric-alarm --alarm-name "$name" \
+    --alarm-description "$description" --metric-name "$metric" \
+    --namespace "$namespace" --statistic "$statistic" --period $period --evaluation-periods $evaluationPeriod --threshold $threshold \
+    --comparison-operator $comparision --dimensions  ${dimensions} \
+    --alarm-actions "$ALARM_ARN_NOTIFICATION"
+}
+
+#enable metrics and attach alarms and notifications
+#Params:
+#   clusterName: the cluster name aka cname
+#   clusterSize: the cluster size
+function IA_add_notifications()
+{
+    local clusterName=$1
+    local clusterSize=$2
+    #local ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
+    
+    IA_loginfo "Enable scaling group metrics"
+    aws autoscaling enable-metrics-collection --auto-scaling-group-name "$clusterName" --granularity "1Minute"
+    IA_loginfo "Enable scaling group notifications"
+    aws autoscaling put-notification-configuration --auto-scaling-group-name "$clusterName" \
+    --topic-arn $ALARM_ARN_NOTIFICATION --notification-types "autoscaling:EC2_INSTANCE_TERMINATE" 
+    IA_loginfo "Add alarms"
+    
+    IA_add_alarm "$clusterName-Instance-count" "monitor instance count" "GroupInServiceInstances" "AWS/AutoScaling" "Sum" 60 $(($clusterSize - 1)) "LessThanOrEqualToThreshold" "Name=AutoScalingGroupName,Value=$clusterName"
+    
+    IA_add_alarm "$clusterName-failed-status" "monitor failed state should catch reboots" "StatusCheckFailed" "AWS/EC2" "Sum" 60 0.0  "GreaterThanThreshold" "Name=AutoScalingGroupName,Value=$clusterName"
+
+}
+
