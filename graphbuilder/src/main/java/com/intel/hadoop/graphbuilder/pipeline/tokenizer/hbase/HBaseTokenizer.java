@@ -62,10 +62,18 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     private HashMap<String, EdgeRule> edgeLabelToEdgeRules;
     private ArrayList<String>         edgeLabelList;
     private boolean                   flattenLists;
+    private boolean                   addSideToVertices;
     private boolean                   stripColumnFamilyNames;
 
     private ArrayList<Vertex<StringType>> vertexList;
     private ArrayList<Edge<StringType>>   edgeList;
+
+    private static final String SIDE_PROPERTY = "side";
+    private static final String LEFT  = "L";
+    private static final String RIGHT = "R";
+
+    private StringType leftStringType = null;
+    private StringType rightStringType = null;
 
     /*
      * Encapsulates the rules for creating edges.
@@ -141,6 +149,9 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         edgeLabelToEdgeRules  = new HashMap<String, EdgeRule>();
         edgeLabelList         = new ArrayList<String>();
         edgeList              = new ArrayList<Edge<StringType>>();
+
+        leftStringType = new StringType(LEFT);
+        rightStringType = new StringType(RIGHT);
     }
 
     /**
@@ -157,6 +168,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
         this.flattenLists           = conf.getBoolean("HBASE_TOKENIZER_FLATTEN_LISTS",false);
         this.stripColumnFamilyNames = conf.getBoolean("HBASE_TOKENIZER_STRIP_COLUMNFAMILY_NAMES", false);
+        this.addSideToVertices      = conf.getBoolean("HBASE_TOKENIZER_ADD_SIDE_PROPERTY_TO_VERTICES", false);
 
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
@@ -411,6 +423,10 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
                         Vertex<StringType> srcVertex = new Vertex<StringType>(new StringType(srcVertexName), srcLabel);
                         Vertex<StringType> tgtVertex = new Vertex<StringType>(new StringType(tgtVertexName), tgtLabel);
+                        if (this.addSideToVertices) {
+                            srcVertex.setProperty(SIDE_PROPERTY, leftStringType);
+                            tgtVertex.setProperty(SIDE_PROPERTY, rightStringType);
+                        }
                         writeVertexToContext(srcVertex, context, baseMapper);
                         writeVertexToContext(tgtVertex, context, baseMapper);
                         srcVertex = null;
