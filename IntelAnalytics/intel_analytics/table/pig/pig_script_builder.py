@@ -90,7 +90,7 @@ class PigScriptBuilder(object):
             join_type = ''
 
         # Outer join in pig can only do two tables a time
-        if (not join_type) and len(tables) != 2:
+        if join_type and len(tables) != 2:
            raise Exception('Outer join only works on two tables')
 
         if not join_table_name:

@@ -698,17 +698,21 @@ class HbaseTableTest(unittest.TestCase):
 
     def test_concatentaion_with_random_columns(self):
         test_expression="fakecol1,fakecol2"
+        msg="exception on invalid column inputs for CONCAT:' %s '" % test_expression
         try:
             self.transform_with_multiple_columns(test_expression, "fakeout3", EvalFunctions.String.CONCAT)
-        except:
-            print "Caught exception on invalid column inputs for CONCAT:' %s '" % test_expression
+            self.assertTrue(False, "Failed to catch %s" % msg)
+        except HBaseTableException, e:
+            print "Caught %s" % msg
 
     def test_arithmetics_with_random_columns(self):
         test_expression="fakecol1+fakecol2"
+        msg="exception on invalid column inputs for ARITHMETIC:' %s '" % test_expression
         try:
             self.transform_with_multiple_columns(test_expression, "fakeout3", EvalFunctions.Math.ARITHMETIC)
-        except:
-            print "Caught exception on invalid column inputs for ARITHMETIC:' %s '" % test_expression
+            self.assertTrue(False, "Failed to catch %s" % msg)
+        except HBaseTableException, e:
+            print "Caught %s" % msg
 
     def test_arithmetics_with_random_spaces(self):
         test_expression="long1 + long2 * double1 - double2"
@@ -716,10 +720,12 @@ class HbaseTableTest(unittest.TestCase):
 
     def test_arithmetics_with_random_parentheses(self):
         test_expression="long1((+long2*(double1/)((double4("
+        msg="exception on given ARITHMETIC expression with parentheses:' %s '" % test_expression
         try:
             self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
-        except:
-            print "Caught exception on given ARITHMETIC expression with parentheses:' %s '" % test_expression
+            self.assertTrue(False, "Failed to catch %s" % msg)
+        except HBaseTableException, e:
+            print "Caught %s" % msg
 
     @patch('intel_analytics.graph.titan.graph.call')
     def test_export_as_graphml(self, call_method):
