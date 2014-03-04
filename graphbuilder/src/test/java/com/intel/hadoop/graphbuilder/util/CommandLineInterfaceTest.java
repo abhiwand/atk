@@ -115,6 +115,7 @@ public class CommandLineInterfaceTest {
         cliArgs.put("k", "keys index");
         cliArgs.put("h", "");
         cliArgs.put("s", "");
+        cliArgs.put("p", "");
 
         testDemoApp(TableToGraphDB.class, cliArgs);
     }

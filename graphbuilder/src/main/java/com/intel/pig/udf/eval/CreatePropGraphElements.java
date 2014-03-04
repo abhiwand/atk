@@ -117,7 +117,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     private Hashtable<String, String[]> vertexPropToFieldNamesMap;
     private Hashtable<String, String> vertexLabelMap;
     private Hashtable<String, EdgeRule> edgeLabelToEdgeRules;
-    private boolean addDirectionToVertices = false;
+    private boolean addSideToVertices = false;
 
     /**
      * Implements the dangling edge counters.
@@ -215,7 +215,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         options.addOption(BaseCLI.Options.directedEdge.get());
         options.addOption(BaseCLI.Options.flattenList.get());
         options.addOption(BaseCLI.Options.retainDanglingEdges.get());
-        options.addOption(BaseCLI.Options.addDirectionToVertex.get());
+        options.addOption(BaseCLI.Options.addSideToVertex.get());
 
         commandLineInterface.setOptions(options);
 
@@ -233,7 +233,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
         retainDanglingEdges = cmd.hasOption(BaseCLI.Options.retainDanglingEdges.getLongOpt());
-        addDirectionToVertices = cmd.hasOption(BaseCLI.Options.addDirectionToVertex.getLongOpt());
+        addSideToVertices = cmd.hasOption(BaseCLI.Options.addSideToVertex.getLongOpt());
 
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
@@ -719,7 +719,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         // movie1 "R" user1 "L" rating1
         // This property is not added in the reverse edge when bidirectional edges are enabled
 
-        if (addDirectionToVertices) {
+        if (addSideToVertices) {
             vertex.setProperty(VERTEX_PROPERTY_SIDE, pigTypesToSerializedJavaTypes(direction, DataType.CHARARRAY));
         }
         return vertex;
