@@ -179,5 +179,5 @@ public class BaseCLI {
             (CMD_ADD_SIDE_PROPERTY_TO_VERTEX)
             .withDescription("Set this option to add \"L\" and \"R\" direction property to vertices")
             .withArgName("Add-direction-to-vertices")
-            .create("p");
+            .create("P");
 }

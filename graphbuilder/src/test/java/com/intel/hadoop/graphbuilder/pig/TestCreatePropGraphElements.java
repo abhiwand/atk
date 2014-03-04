@@ -196,7 +196,7 @@ public class TestCreatePropGraphElements
 
         EvalFunc<?> createPropGraphElementsUDF_dvp = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
                 new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
-                        "-v id1=vp1 id2 " + "-e id1,id2,connects -p"));
+                        "-v id1=vp1 id2 " + "-e id1,id2,connects -P"));
 
         Schema.FieldSchema id1         = new Schema.FieldSchema("id1", DataType.CHARARRAY);
         Schema.FieldSchema id2         = new Schema.FieldSchema("id2", DataType.CHARARRAY);
