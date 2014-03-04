@@ -114,6 +114,14 @@ def get_generate_key_statements(in_relation, out_relation, features, offset = 0)
 
     return statements
 
+def generate_hbase_store_args_for_split(features, cmd_line_args):
+    cf = config['hbase_column_family']
+    hbase_store_args =  " ".join([cf+f for f in features])
+    if cmd_line_args.randomize == "True":
+        hbase_store_args += ' ' + (cf+cmd_line_args.input_column)
+    hbase_store_args += ' ' + (cf+cmd_line_args.output_column)
+    return hbase_store_args
+
 
 def report_job_status(status):
     print 'Pig job status report-Start:'
