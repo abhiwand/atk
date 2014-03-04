@@ -422,7 +422,7 @@ class BulbsGraphWrapper(object):
         >>> statements = []
         >>> statements.append("g.V('name','user_123').out")
         >>> graph = get_graph("SampleGraph")
-        >>> graph.export_as_graphml(statements, "example.xml")
+        >>> graph.export_as_graphml(statements, "output/example.xml")
 
         """
         xml = '\"' + self._get_query_xml(statements) + '\"'
