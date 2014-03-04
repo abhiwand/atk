@@ -181,6 +181,7 @@ for n in `cat ${nodesfile}`; do
     pushd ~/IntelAnalytics;
     echo $nodes | sed \"s/,/\n/g\" > hadoop/conf/slaves;
     echo $nodes | sed \"s/,/\n/g\" > hbase/conf/regionservers;
+    echo $nodes | sed \"s/,/\n/g\" > spark/conf/slaves;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase.properties;
     sed -i \"s/storage.hostname=.*/"${nodes}"/g\" titan/conf/titan-hbase-es.properties;
     sed -i \"s/<storage.hostname.*storage.hostname>/<storage.hostname>"${nodes}"</storage.hostname>/g\" titan/conf/rexstitan-hbase-es.xml;
