@@ -427,7 +427,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         }
 
         DataBag outputBag = mBagFactory.newDefaultBag();
-        StringType serializedVertexId = new StringType();
+        
 
         // check tuple for vertices
 
@@ -438,8 +438,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             if (null != vidCell) {
 
                 for (String vertexId : expandString(vidCell.toString())) {
-
-                    serializedVertexId.set(vertexId);
+                	StringType serializedVertexId = new StringType(vertexId);
                     Vertex<StringType> vertex = new Vertex<StringType>(serializedVertexId);
 
                     // add the vertex properties
