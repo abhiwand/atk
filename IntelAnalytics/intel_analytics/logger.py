@@ -22,6 +22,7 @@
 ##############################################################################
 #TODO need more functionality like logging to file, setting the log levels, etc.
 import logging
+import os
 import datetime
 
 levels = {
@@ -41,11 +42,11 @@ logging.basicConfig(level=logger_level)
 stdout_logger = logging.getLogger(__name__)
 
 
-def get_file_name_from_datetime():
-    return ('%s_%s') %('python', datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f"))
+def get_file_name_from_datetime(now):
+    return ('%s_%s') %('python', now.strftime("%Y%m%d-%H%M%S%f"))
 
 
-hdlr = logging.FileHandler(filename=conf['logs_folder'] + '/' + get_file_name_from_datetime(), mode='w')
+hdlr = logging.FileHandler(filename=os.path.join(conf['logs_folder'], get_file_name_from_datetime(datetime.datetime.now())), mode='w')
 stdout_logger.addHandler(hdlr)
 stdout_logger.setLevel(logger_level)
 stdout_logger.propagate = 0
