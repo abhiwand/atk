@@ -313,7 +313,7 @@ Many graph operations will fail.  Two options:
 
 class BulbsGraphWrapper(object):
     """
-    Wrapper instance for bulbsGraph object
+    Wrapper for bulbsGraph object
     """
     def __init__(self, graph):
         self._graph = graph
@@ -352,7 +352,7 @@ class BulbsGraphWrapper(object):
 
     def load_graphml(self,uri):
         """
-        Loads a GraphML file into the graph and returns the response.
+        Loads a GraphML file and append to the graph.
 
         Parameters
         ----------
