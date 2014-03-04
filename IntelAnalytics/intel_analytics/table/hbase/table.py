@@ -43,7 +43,7 @@ from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
 from pydoop.hdfs.path import exists
 import hashlib
-from intel_analytics.table.hbase import histogram
+from intel_analytics.visualization import histogram
 
 
 MAX_ROW_KEY = 'max_row_key'
@@ -226,7 +226,7 @@ class HBaseTable(object):
             stat_file.append(s)
             needs_recompute.append(not r)
 
-        recompute_columns = [d for (d, e) in zip(column_list, needs_recompute) if e]
+        recompute_columns = [first for (first, second) in zip(column_list, needs_recompute) if first]
 
         # Send to Pig only columns which need recomputation
         if recompute_columns:
