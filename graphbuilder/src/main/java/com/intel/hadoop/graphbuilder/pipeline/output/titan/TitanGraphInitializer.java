@@ -22,7 +22,9 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import com.thinkaurelius.titan.core.KeyMaker;
 import com.thinkaurelius.titan.core.TitanGraph;
 import com.thinkaurelius.titan.core.TitanKey;
@@ -31,6 +33,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -47,10 +51,13 @@ public class TitanGraphInitializer {
 
     private TitanGraph graph;
 
+    private static final Logger LOG = Logger.getLogger(TitanGraphInitializer.class);
+
     /**
      * Used for making the Titan keys required by the graph schema
-     * @param conf the Titan configuration
-     * @param graphSchema property datatypes and edge signatures for the graph
+     *
+     * @param conf         the Titan configuration
+     * @param graphSchema  property datatypes and edge signatures for the graph
      * @param declaredKeys the set of Titan Key definitions parsed from the command line...
      */
     public TitanGraphInitializer(Configuration conf, PropertyGraphSchema graphSchema, List<GBTitanKey> declaredKeys) {
@@ -59,43 +66,87 @@ public class TitanGraphInitializer {
         this.declaredKeys = declaredKeys;
     }
 
-    /*
-     * Opens the Titan graph database, and make the Titan keys required by
-     * the graph schema.
+    /**
+     * Used for making the Titan keys required by the graph schema
      */
-    public void run() {
-        initTitanGraphInstance(conf);
+    public TitanGraphInitializer() {
+        this.conf = null;
+        this.graphSchema = null;
+        this.declaredKeys = null;
+    }
 
-        HashMap<String, TitanKey> propertyNamesToTitanKeysMap =
-                declareAndCollectKeys();
+    public void setConf(Configuration conf) {
+        this.conf = conf;
+    }
 
-        // now we declare the edge labels
-        // one of these days we'll probably want to fully expose all the
-        // Titan knobs regarding manyToOne, oneToMany, etc
-
-        for (EdgeSchema edgeSchema : graphSchema.getEdgeSchemata()) {
-            ArrayList<TitanKey> titanKeys = new ArrayList<>();
-
-            for (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {
-                titanKeys.add(propertyNamesToTitanKeysMap.get(propertySchema
-                        .getName()));
-            }
-
-            TitanKey[] titanKeyArray = titanKeys.toArray(new TitanKey[titanKeys.size()]);
-            if (graph.getType(edgeSchema.getLabel()) == null) {
-                graph.makeLabel(edgeSchema.getLabel()).signature(titanKeyArray).make();
-            }
-        }
-
-        graph.commit();
+    public void setGraphSchema(PropertyGraphSchema graphSchema) {
+        this.graphSchema = graphSchema;
     }
 
     /**
-     * Creates the Titan graph for saving edges.
+     * Sets the declared keys that are used during graph initialization. These are keys that may not appear in the
+     * {@code PropertyGraphSchema}. For example, property information that could appear in a key declaration clause of
+     * the command line.
+     *
+     * @param declaredKeys A list of {@code GBTitanKey} objects.
+     */
+    public void setDeclaredKeys(List<GBTitanKey> declaredKeys) {
+        this.declaredKeys = declaredKeys;
+    }
+
+    /**
+     * Opens the Titan graph database, and make the Titan keys required by
+     * the graph schema.
+     */
+    public void run(TitanGraph graph) {
+
+        if (graph == null) {
+            initTitanGraphInstance(conf);
+        } else {
+            initTitanGraphInstance(graph);
+        }
+
+        if (graph != null) {
+            HashMap<String, TitanKey> propertyNamesToTitanKeysMap =
+                    declareAndCollectKeys();
+
+            // now we declare the edge labels
+            // one of these days we'll probably want to fully expose all the
+            // Titan knobs regarding manyToOne, oneToMany, etc
+
+            for (EdgeSchema edgeSchema : graphSchema.getEdgeSchemata()) {
+                ArrayList<TitanKey> titanKeys = new ArrayList<>();
+
+                for (PropertySchema propertySchema : edgeSchema.getPropertySchemata()) {
+                    titanKeys.add(propertyNamesToTitanKeysMap.get(propertySchema
+                            .getName()));
+                }
+
+                TitanKey[] titanKeyArray = titanKeys.toArray(new TitanKey[titanKeys.size()]);
+                if (graph.getType(edgeSchema.getLabel()) == null) {
+                    graph.makeLabel(edgeSchema.getLabel()).signature(titanKeyArray).make();
+                }
+            }
+
+            graph.commit();
+        } else {
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.TITAN_ERROR, "Could not open Titan.", LOG);
+        }
+    }
+
+    /**
+     * Creates the Titan graph s.
      */
     private void initTitanGraphInstance(Configuration configuration) {
         BaseConfiguration titanConfig = new BaseConfiguration();
         graph = GraphDatabaseConnector.open("titan", titanConfig, configuration);
+    }
+
+    /**
+     * Creates the Titan graph.
+     */
+    private void initTitanGraphInstance(TitanGraph graph) {
+        this.graph = graph;
     }
 
     /*
@@ -113,14 +164,23 @@ public class TitanGraphInitializer {
             keyMap.put(titanKey.getName(), titanKey);
         }
 
-        HashMap<String, Class<?>> propertyNameToTypeMap = graphSchema.getMapOfPropertyNamesToDataTypes();
-        for (String property : propertyNameToTypeMap.keySet()) {
+        for (PropertySchema propertySchema : graphSchema.getPropertySchemata()) {
 
-            if (!keyMap.containsKey(property)) {
-                GBTitanKey gbTitanKey = new GBTitanKey(property);
-                gbTitanKey.setDataType(propertyNameToTypeMap.get(property));
+            String name = propertySchema.getName();
+            Class<?> dataType = null;
+
+            try {
+                dataType = propertySchema.getType();
+            } catch (ClassNotFoundException e) {
+                GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
+                        "Cannot instantiate type for property " + name, LOG, e);
+            }
+
+            if (!keyMap.containsKey(name)) {
+                GBTitanKey gbTitanKey = new GBTitanKey(name);
+                gbTitanKey.setDataType(dataType);
                 TitanKey key = getOrCreateTitanKey(gbTitanKey);
-                keyMap.put(property, key);
+                keyMap.put(name, key);
             }
         }
         return keyMap;
@@ -140,6 +200,7 @@ public class TitanGraphInitializer {
 
     /**
      * Get an existing key or create a new one
+     *
      * @param gbTitanKey a bean that describes the key
      * @return the actual key from Titan
      */
@@ -190,9 +251,10 @@ public class TitanGraphInitializer {
         return keyMaker.make();
     }
 
-    /** added for testing purposes */
+    /**
+     * added for testing purposes
+     */
     protected void setGraph(TitanGraph graph) {
         this.graph = graph;
     }
-
 }

@@ -21,7 +21,9 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -32,22 +34,10 @@ public class PropertyGraphSchemaTest {
 
         PropertyGraphSchema graphSchema = new PropertyGraphSchema();
 
-        assertNotNull(graphSchema.getVertexSchemata());
+        assertNotNull(graphSchema.getPropertySchemata());
         assertNotNull(graphSchema.getEdgeSchemata());
 
-        assertNotSame(graphSchema.getEdgeSchemata(), graphSchema.getVertexSchemata());
-    }
-
-    @Test
-    public void testAddVertexSchema() {
-
-        PropertyGraphSchema graphSchema = new PropertyGraphSchema();
-
-        VertexSchema vertexSchema = new VertexSchema();
-
-        graphSchema.addVertexSchema(vertexSchema);
-
-		assertTrue(graphSchema.getVertexSchemata().contains(vertexSchema));
+        assertNotSame(graphSchema.getEdgeSchemata(), graphSchema.getPropertySchemata());
     }
 
     @Test
@@ -59,36 +49,102 @@ public class PropertyGraphSchemaTest {
 
         graphSchema.addEdgeSchema(edgeSchema);
 
-		assertTrue(graphSchema.getEdgeSchemata().contains(edgeSchema));
+        assertTrue(graphSchema.getEdgeSchemata().contains(edgeSchema));
     }
 
     @Test
     public void testGetMapOfPropertyNamesToDataTypes() {
 
         final String PLANET_OF_THE_STRINGS = "planet of the strings";
-        final String PLANET_OF_THE_FLOATS  = "planet of the floags";
-        final String PLANET_OF_THE_LONGS   = "long and strong and down to get some testin on";
+        final String PLANET_OF_THE_FLOATS = "planet of the floags";
 
         PropertySchema planetOfStrings = new PropertySchema(PLANET_OF_THE_STRINGS, String.class);
-        PropertySchema planetOfFloats  = new PropertySchema(PLANET_OF_THE_FLOATS, Float.class);
+        PropertySchema planetOfFloats = new PropertySchema(PLANET_OF_THE_FLOATS, Float.class);
 
         EdgeSchema edgeSchemaZ = new EdgeSchema("dr zaius");
 
         edgeSchemaZ.setLabel("you d--- dirty ape");
         edgeSchemaZ.addPropertySchema(planetOfStrings);
 
-        VertexSchema vertexSchema = new VertexSchema();
-        vertexSchema.getPropertySchemata().add(planetOfFloats);
-
         PropertyGraphSchema graphSchema = new PropertyGraphSchema();
 
-        graphSchema.addVertexSchema(vertexSchema);
+        graphSchema.addPropertySchema(planetOfFloats);
         graphSchema.addEdgeSchema(edgeSchemaZ);
 
-        HashMap map = graphSchema.getMapOfPropertyNamesToDataTypes();
+        Set<PropertySchema> outSchema = graphSchema.getPropertySchemata();
 
-        assertSame(map.get(PLANET_OF_THE_FLOATS), Float.class);
-        assertSame(map.get(PLANET_OF_THE_STRINGS), String.class);
-        assertSame(map.get(PLANET_OF_THE_LONGS), null) ;
+        assertTrue(outSchema.contains(planetOfFloats));
+        assertTrue(outSchema.contains(planetOfStrings));
+        assertEquals(outSchema.size(), 2);
+    }
+
+    @Test
+    public void testEqualsHashCode() {
+        final String PLANET_OF_THE_STRINGS = "planet of the strings";
+        final String PLANET_OF_THE_FLOATS = "planet of the floats";
+
+        PropertySchema planetOfStrings = new PropertySchema(PLANET_OF_THE_STRINGS, String.class);
+        PropertySchema planetOfFloats = new PropertySchema(PLANET_OF_THE_FLOATS, Float.class);
+
+        EdgeSchema edgeSchemaZ = new EdgeSchema("dr zaius");
+
+        edgeSchemaZ.setLabel("you d--- dirty ape");
+        edgeSchemaZ.addPropertySchema(planetOfStrings);
+
+        PropertyGraphSchema graphSchema = new PropertyGraphSchema();
+        graphSchema.addPropertySchema(planetOfFloats);
+        graphSchema.addEdgeSchema(edgeSchemaZ);
+
+        // now a copy of everything
+        final String PLANET_OF_THE_FLOATS2 = "planet of the floats";
+
+        PropertySchema planetOfFloats2 = new PropertySchema(PLANET_OF_THE_FLOATS2, Float.class);
+
+        EdgeSchema edgeSchemaZ2 = new EdgeSchema("dr zaius");
+
+        edgeSchemaZ2.setLabel("you d--- dirty ape");
+        edgeSchemaZ2.addPropertySchema(planetOfStrings);
+
+        PropertyGraphSchema graphSchema2 = new PropertyGraphSchema();
+        graphSchema2.addPropertySchema(planetOfFloats2);
+        graphSchema2.addEdgeSchema(edgeSchemaZ2);
+
+        assertEquals(graphSchema, graphSchema2);
+        assertEquals(graphSchema.hashCode(), graphSchema2.hashCode());
+    }
+
+    @Test
+    public void testTwoDifferentConstructors() {
+        final String PLANET_OF_THE_STRINGS = "planet of the strings";
+        final String PLANET_OF_THE_FLOATS = "planet of the floats";
+
+        final String DR_ZAIUS = "Dr. Zaius";
+        final String D_DIRTY_APE = "you d--- dirty ape";
+
+        PropertySchema planetOfStrings = new PropertySchema(PLANET_OF_THE_STRINGS, String.class);
+        PropertySchema planetOfFloats = new PropertySchema(PLANET_OF_THE_FLOATS, Float.class);
+
+        EdgeSchema edgeSchemaZ = new EdgeSchema(DR_ZAIUS);
+
+        edgeSchemaZ.setLabel(D_DIRTY_APE);
+        edgeSchemaZ.addPropertySchema(planetOfStrings);
+
+        PropertyGraphSchema graphSchema = new PropertyGraphSchema();
+        graphSchema.addPropertySchema(planetOfFloats);
+        graphSchema.addEdgeSchema(edgeSchemaZ);
+
+        HashMap<String, Class<?>> propTypeMap = new HashMap<>();
+        HashMap<String, ArrayList<String>> edgeSignatures = new HashMap<>();
+        propTypeMap.put(PLANET_OF_THE_FLOATS, Float.class);
+        propTypeMap.put(PLANET_OF_THE_STRINGS, String.class);
+
+        ArrayList<String> signature = new ArrayList<>();
+        signature.add(PLANET_OF_THE_STRINGS);
+
+        edgeSignatures.put(D_DIRTY_APE, signature);
+
+        PropertyGraphSchema graphSchema2 = new PropertyGraphSchema(propTypeMap, edgeSignatures);
+
+        assertEquals(graphSchema, graphSchema2);
     }
 }

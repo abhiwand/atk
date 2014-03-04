@@ -34,28 +34,28 @@ public class EdgeSchemaTest {
         final String THE_EDGE = "The Edge";
         EdgeSchema edgeSchema = new EdgeSchema(THE_EDGE);
         assertNotNull(edgeSchema.getPropertySchemata());
-		assertEquals("Should have been 0", 0,
-				edgeSchema.getLabel().compareTo(THE_EDGE));
+        assertEquals("Should have been 0", 0,
+                edgeSchema.getLabel().compareTo(THE_EDGE));
     }
 
     @Test
     public void edgeSchemaSetGetLabelTest() {
 
         final String THE_EDGE = "The Edge";
-        final String BONO     = "Bono";
+        final String BONO = "Bono";
 
         EdgeSchema edgeSchema = new EdgeSchema(THE_EDGE);
 
-		assertEquals("Should have been 0", 0,
-				edgeSchema.getLabel().compareTo(THE_EDGE));
+        assertEquals("Should have been 0", 0,
+                edgeSchema.getLabel().compareTo(THE_EDGE));
 
         edgeSchema.setLabel(BONO);
-		assertEquals("Should have been 0", 0,
-				edgeSchema.getLabel().compareTo(BONO));
+        assertEquals("Should have been 0", 0,
+                edgeSchema.getLabel().compareTo(BONO));
 
         edgeSchema.setLabel(THE_EDGE);
-		assertEquals("Should have been 0", 0,
-				edgeSchema.getLabel().compareTo(THE_EDGE));
+        assertEquals("Should have been 0", 0,
+                edgeSchema.getLabel().compareTo(THE_EDGE));
     }
 
     @Test
@@ -69,14 +69,13 @@ public class EdgeSchemaTest {
         PropertySchema propertySchemaOut = new PropertySchema(B, dataTypeB);
 
         final String THE_EDGE = "The Edge";
-        final String BONO     = "Bono";
+        final String BONO = "Bono";
 
         EdgeSchema edgeSchemaIn = new EdgeSchema(THE_EDGE);
         edgeSchemaIn.addPropertySchema(propertySchemaIn);
 
         EdgeSchema edgeSchemaOut = new EdgeSchema(BONO);
         edgeSchemaOut.addPropertySchema(propertySchemaOut);
-
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
         DataOutputStream dataOutputStream = new DataOutputStream(baos);
@@ -90,7 +89,6 @@ public class EdgeSchemaTest {
         edgeSchemaOut.readFields(dataInputStream);
 
         assertTrue(edgeSchemaIn.getLabel().equals(edgeSchemaOut.getLabel()));
-        assertTrue(edgeSchemaIn.getID().equals(edgeSchemaOut.getID()));
 
         // just using .equals below fails because it checks if the two sets contain the same objects
         // so we go down a level
@@ -100,8 +98,7 @@ public class EdgeSchemaTest {
             for (PropertySchema pSchemaOut : edgeSchemaOut.getPropertySchemata()) {
                 test |= pSchema.equals(pSchemaOut);
             }
-            assert(test);
+            assert (test);
         }
-
     }
 }

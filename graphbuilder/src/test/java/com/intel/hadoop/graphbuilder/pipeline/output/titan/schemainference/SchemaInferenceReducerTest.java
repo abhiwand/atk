@@ -20,31 +20,47 @@
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.KeyCommandLineParser;
+import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphInitializer;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
+import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
+import com.thinkaurelius.titan.core.TitanGraph;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-public class SchemaInferenceCombinerTest {
+@RunWith(PowerMockRunner.class)
+@PrepareForTest({GraphDatabaseConnector.class})
+public class SchemaInferenceReducerTest {
+
+    @Mock
+    TitanGraphInitializer mockedInitializer;
 
     @Mock
     Reducer.Context mockedContext;
+
+    @Mock
+    GraphDatabaseConnector mockedGraphDatabaseConnector;
+
+    @Mock
+    TitanGraph mockedTitanGraph;
 
     @Before
     public void setUp() throws Exception {
@@ -53,6 +69,8 @@ public class SchemaInferenceCombinerTest {
 
     @Test
     public void testReduce() throws Exception {
+
+        String keyCommandLine = "";
 
         final String A = "A";
         final Class<?> dataTypeA = Integer.class;
@@ -105,39 +123,33 @@ public class SchemaInferenceCombinerTest {
         inValues.add(new SerializedEdgeOrPropertySchema(edgeSchema2));
         inValues.add(new SerializedEdgeOrPropertySchema(edgeSchema3));
 
-        // now we set the expected out values
-
+        // now we set up the values expected to be passed to the initializer
         EdgeSchema edgeSchema012 = new EdgeSchema(THE_EDGE);
         edgeSchema012.addPropertySchema(propertySchemaA);
         edgeSchema012.addPropertySchema(propertySchemaB);
         edgeSchema012.addPropertySchema(propertySchemaC);
 
-        HashSet<SerializedEdgeOrPropertySchema> outValues = new HashSet<>();
+        PropertyGraphSchema propertyGraphSchema = new PropertyGraphSchema();
 
-        outValues.add(new SerializedEdgeOrPropertySchema(propertySchemaA));
-        outValues.add(new SerializedEdgeOrPropertySchema(propertySchemaD));
-        outValues.add(new SerializedEdgeOrPropertySchema(edgeSchema012));
-        outValues.add(new SerializedEdgeOrPropertySchema(edgeSchema3));
+        propertyGraphSchema.addPropertySchema(propertySchemaA);
+        propertyGraphSchema.addPropertySchema(propertySchemaD);
+        propertyGraphSchema.addEdgeSchema(edgeSchema012);
+        propertyGraphSchema.addEdgeSchema(edgeSchema3);
 
-        SchemaInferenceCombiner combiner = new SchemaInferenceCombiner();
+        // now those declared keys... oh joy
+        List<GBTitanKey> declaredKeys = new KeyCommandLineParser().parse(keyCommandLine);
 
-        ArgumentCaptor<SerializedEdgeOrPropertySchema> seopsCaptor =
-                ArgumentCaptor.forClass(SerializedEdgeOrPropertySchema.class);
+        SchemaInferenceReducer reducer = new SchemaInferenceReducer();
+        Configuration conf = new Configuration();
+        conf.set("special key-value pair,", "so you can't accept a default value by mistake");
 
-        ArgumentCaptor<Writable> keyCaptor =
-                ArgumentCaptor.forClass(Writable.class);
+        reducer.setInitializer(mockedInitializer);
+        when(mockedContext.getConfiguration()).thenReturn(conf);
 
-        combiner.reduce(NullWritable.get(), inValues, mockedContext);
+        reducer.reduce(NullWritable.get(), inValues, mockedContext);
 
-        verify(mockedContext, times(4)).write(keyCaptor.capture(), seopsCaptor.capture());
-
-        List<SerializedEdgeOrPropertySchema> capturedSeops = seopsCaptor.getAllValues();
-        List<Writable> capturedKeys = keyCaptor.getAllValues();
-
-        assertTrue(outValues.containsAll(capturedSeops));
-
-        for (Writable k : capturedKeys) {
-            assertEquals(k, NullWritable.get());
-        }
+        Mockito.verify(mockedInitializer).setConf(conf);
+        Mockito.verify(mockedInitializer).setGraphSchema(propertyGraphSchema);
+        Mockito.verify(mockedInitializer).setDeclaredKeys(declaredKeys);
     }
 }

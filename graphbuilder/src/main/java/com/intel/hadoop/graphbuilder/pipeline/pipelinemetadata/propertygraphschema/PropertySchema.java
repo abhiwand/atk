@@ -29,7 +29,7 @@ import java.io.IOException;
 
 /**
  * Encapsulates the name and datatype of a property label.
- * <p>The expected use of this information is declaring keys for loading the 
+ * <p>The expected use of this information is declaring keys for loading the
  * constructed graph into a graph database.</p>
  */
 
@@ -39,8 +39,6 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
     private StringType type = new StringType();
 
-    private StringType id = new StringType();
-
     /**
      * Empty constructor for read methods.
      */
@@ -49,6 +47,7 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
     /**
      * Constructor.
+     *
      * @param name The name of the property as a serialized string (@code StringType).
      * @param type The name of the datatype of the property as a serialized string (@code StringType).
      */
@@ -59,6 +58,7 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
     /**
      * Sets the name of the property.
+     *
      * @param name The name of the property.
      */
     public void setName(String name) {
@@ -67,7 +67,8 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
     /**
      * Gets the name of the property.
-     * @return  The name of the property.
+     *
+     * @return The name of the property.
      */
     public String getName() {
         return this.name.get();
@@ -75,10 +76,11 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
     /**
      * Equality test.
+     *
      * @return true if the constituent name and datatype of the two property schemata are equal
      */
     @Override
-    public boolean equals(Object in){
+    public boolean equals(Object in) {
         return ((in instanceof PropertySchema)
                 && (this.name.equals(((PropertySchema) in).name)
                 && (this.type.equals(((PropertySchema) in).type))));
@@ -87,20 +89,18 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
     /**
      * Hash code.
      * Built from the name and type name.
+     *
      * @return an integer.
      */
     @Override
     public int hashCode() {
-         return HashUtil.hashPair(this.name, this.type);
+        return HashUtil.hashPair(this.name, this.type);
     }
 
-    public StringType getID() {
-        id.set(PROPERTY_SCHEMA + "." + name.get());
-        return id;
-    }
     /**
      * Sets the datatype of the property.
-     * @param type  The datatype of the property.
+     *
+     * @param type The datatype of the property.
      */
     public void setType(Class<?> type) {
         this.type.set(type.getName());
@@ -108,6 +108,7 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
     /**
      * Gets the datatype of the property.
+     *
      * @return datatype The datatype of the property.
      */
     public Class<?> getType() throws ClassNotFoundException {
@@ -116,7 +117,8 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
     /**
      * Reads a PropertySchema from an input stream.
-     * @param input  The input stream.
+     *
+     * @param input The input stream.
      * @throws java.io.IOException
      */
     @Override
@@ -127,7 +129,8 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
 
     /**
      * Writes a PropertySchema to an output stream.
-     * @param output  The output stream.
+     *
+     * @param output The output stream.
      * @throws IOException
      */
     @Override
