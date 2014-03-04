@@ -4,7 +4,7 @@ import sys
 
 from intel_analytics.table.bigdataframe import BigDataFrame
 from intel_analytics.table.hbase.schema import ETLSchema
-from intel_analytics.table.hbase.table import MAX_ROW_KEY, HBaseTable
+from intel_analytics.table.hbase.table import MAX_ROW_KEY, HBaseTable, HBaseTableException
 from intel_analytics.config import global_config as config, global_config
 from mock import patch, Mock, MagicMock
 
@@ -63,59 +63,63 @@ class MockFrameJoin(unittest.TestCase):
 
     def join_test_invalid_right(self, tL, tR, info):
         try:
-             tJ = tL.join(tR,\
+            tJ = tL.join(tR,\
                          how='inner', \
                          left_on='lcol1', \
                          right_on='rcol1', \
                          suffixes=['_l', '_r'], \
                          join_frame_name='join_frame')
-        except Exception, e:
-            print "%s: caught exception %s" %(info, str(e))
+            self.assertFalse(tJ is not None, "Failed to return None for invalid 'right'")
+        except HBaseTableException, e:
+            print "%s: caught HBaseTableException '%s'" %(info, str(e))
 
-    def join_test_invalid_right_on(self, tL, tR, rigth_on, info):
+    def join_test_invalid_right_on(self, tL, tR, right_on, info):
         try:
-             tJ = tL.join([tR],\
+            tJ = tL.join([tR],\
                          how='inner', \
                          left_on='lcol1', \
                          right_on=right_on, \
                          suffixes=['_l', '_r'], \
                          join_frame_name='join_frame')
-        except Exception, e:
-            print "%s: caught exception %s" %(info, str(e))
+            self.assertFalse(tJ is not None, "Failed to return None for invalid 'right_on'")
+        except HBaseTableException, e:
+            print "%s: caught HBaseTableException '%s'" %(info, str(e))
 
     def join_test_invalid_suffixes(self, tL, tR, suffixes, info):
         try:
-             tJ = tL.join([tR],\
+            tJ = tL.join([tR],\
                          how='inner', \
                          left_on='lcol1', \
                          right_on=['rcol1'], \
                          suffixes=suffixes, \
                          join_frame_name='join_frame')
-        except Exception, e:
-            print "%s: caught exception %s" %(info, str(e))
+            self.assertFalse(tJ is not None, "Failed to return None for invalid 'suffixes'")
+        except HBaseTableException, e:
+            print "%s: caught HBaseTableException '%s'" %(info, str(e))
 
     def join_test_invalid_columns(self, tL, tR, columns, info):
         try:
-             tJ = tL.join([tR],\
+            tJ = tL.join([tR],\
                          how='inner', \
                          left_on='lcol1', \
                          right_on=columns, \
                          suffixes=['_l', '_r'], \
                          join_frame_name='join_frame')
-        except Exception, e:
-            print "%s: caught exception %s" %(info, str(e))
-
+            self.assertFalse(tJ is not None, "Failed to return None for invalid 'right_on' columns")
+        except HBaseTableException, e:
+            print "%s: caught HBaseTableException '%s'" %(info, str(e))
 
     def join_test_invalid_join_type(self, tL, tR, join_type, info):
         try:
-             tJ = tL.join([tR],\
+            tJ = tL.join([tR],\
                          how=join_type, \
                          left_on='lcol1', \
                          right_on=['rcol1'], \
                          suffixes=['_l', '_r'], \
                          join_frame_name='join_frame')
-        except Exception, e:
-            print "%s: caught exception %s" %(info, str(e))
+            self.assertFalse(tJ is not None, "Failed to return None for invalid 'how' as the join type")
+        except HBaseTableException, e:
+            print "%s: caught HBaseTableException '%s'" %(info, str(e))
 
     def join_test_single_column(self, tL, tR, info, result_holder):
         for how in ['inner', 'outer', 'left', 'right']:
@@ -126,7 +130,7 @@ class MockFrameJoin(unittest.TestCase):
                          right_on=['rcol1'], \
                          suffixes=['_l', '_r'], \
                          join_frame_name=join_name)
-
+            self.assertFalse(tJ is None, "Failed to create joined frame '%s':%s" %(join_name, info))
             args = result_holder["call_args"]
             print "%s: args: d: %s" %(info, '\t'.join(args))
 
@@ -139,7 +143,7 @@ class MockFrameJoin(unittest.TestCase):
                          right_on=['rcol1,rcol2'], \
                          suffixes=['_l', '_r'], \
                          join_frame_name=join_name)
-
+            self.assertFalse(tJ is None, "Failed to create joined frame '%s':%s" %(join_name, info))
             args = result_holder["call_args"]
             print "%s: args: d: %s" %(info, '\t'.join(args))
 
@@ -152,7 +156,7 @@ class MockFrameJoin(unittest.TestCase):
                          right_on=['lcol1,lcol2'], \
                          suffixes=['_1', '_2'], \
                          join_frame_name=join_name)
-
+            self.assertFalse(tJ is None, "Failed to create joined frame '%s':%s" %(join_name, info))
             args = result_holder["call_args"]
             print "%s: args: d: %s" %(info, '\t'.join(args))
 
@@ -165,7 +169,7 @@ class MockFrameJoin(unittest.TestCase):
                          right_on=['r1c1,r1c2', 'r2c1,r2c2'], \
                          suffixes=['_x', '_y1', '_y2'], \
                          join_frame_name=join_name)
-
+            self.assertFalse(tJ is None, "Failed to create joined frame '%s':%s" %(join_name, info))
             args = result_holder["call_args"]
             print "%s: args: d: %s" %(info, '\t'.join(args))
 

@@ -52,7 +52,7 @@ for how in ['outer', 'inner', 'left', 'right']:
     name = 'fJ%d_single_%s' % (i, how)
     print 'Single right join test: output %s'%name
     fJ = fb.join_data_frame(fL, fR1, how=how, left_on='movie', right_on='movie', suffixes=['_l', '_r'], join_frame_name=name)
-    fJ.inspect()
+    assert fJ is not None
     i=i+1
 
 # self
@@ -60,7 +60,7 @@ for how in ['outer', 'inner', 'left', 'right']:
     name = 'fJ%d_self_%s' % (i, how)
     print 'Multiple right join test: output %s'%name
     fJ = fb.join_data_frame(fL, fL, how=how, left_on='movie', right_on='movie', suffixes=['_l', '_r'], join_frame_name=name)
-    fJ.inspect()
+    assert fJ is not None
     i=i+1
 
 # multiple: only supports 2 tables a time for outer
@@ -79,5 +79,5 @@ for how in ['outer', 'left', 'right']:
                             right_on='movie', \
                             suffixes=['_l', '_r'], \
                             join_frame_name=name)
-    fJ.inspect()
+    assert fJ is not None
     i=i+1

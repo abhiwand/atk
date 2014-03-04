@@ -58,7 +58,6 @@ def load_and_build(name, filename, schema):
         print 'Imported %s imported from %s' % (name, filename)
     return mL
 
-
 # load frame
 frame1 = load_and_build('sourceFrame1', sourceFile1, medTermSchema)
 frame2 = load_and_build('sourceFrame2', sourceFile1, medTermSchema)
@@ -77,7 +76,7 @@ mJ1 = fb.join_data_frame(frame1, frame3,        \
                          right_on='term',\
                          suffixes=['_l', '_r'], \
                          join_frame_name='medJoin1')
-mJ1.inspect()
+assert mJ1 is not None
 
 # outer
 how='outer'
@@ -88,7 +87,7 @@ mJ2 = fb.join_data_frame(frame2, frame3, \
                          right_on='term', \
                          suffixes=['_l', '_r'], \
                          join_frame_name='medJoin2')
-mJ2.inspect()
+assert mJ2 is not None
 
 # self
 how='outer'
@@ -99,7 +98,7 @@ mJ3 = fb.join_data_frame(frame1, frame1, \
                          right_on='term', \
                          suffixes=['_1', '_2'], \
                          join_frame_name='medJoin3')
-mJ3.inspect()
+assert mJ3 is not None
 
 # multiple tables, only inner
 how='inner'
@@ -108,7 +107,7 @@ mJ4 = fb.join_data_frame(frame1,    \
                          [frame2, frame3],  \
                          how=how, \
                          left_on='term', \
-                         right_on=['term', 'term'] \
-                         suffixes=['_l', '_r1', '_r2'], \
+                         right_on=['term', 'term'], \
+                         suffixes=['_l', '_r1', '_r2'],
                          join_frame_name='medJoin4')
-mJ4.inspect()
+assert mJ4 is not None
