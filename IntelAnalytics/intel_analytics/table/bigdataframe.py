@@ -213,7 +213,7 @@ class FrameBuilder(object):
         pass
 
     @abc.abstractmethod
-    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name):
+    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name, overwrite=False):
         """
         Perform SQL JOIN like operation on input BigDataFrames
 
@@ -238,6 +238,8 @@ class FrameBuilder(object):
             Note the first one is always for the left
         join_frame_name: String
             Output BigDataFrame name
+        overwrite: Boolean
+            Wether to overwrite the output table if it already exists
 
         Return
         ------
@@ -590,7 +592,8 @@ class BigDataFrame(object):
              left_on=None,
              right_on=None,
              suffixes=None,
-             join_frame_name=''):
+             join_frame_name='',
+             overwrite=False):
 
         """
         Perform SQL JOIN on BigDataFrame
@@ -611,6 +614,8 @@ class BigDataFrame(object):
             Suffixes to apply to columns on the output frame
         join_frame_name: Str
             The name of the BigDataFrame that holds the result of join
+        overwrite: Boolean
+            Wether to overwrite the output table if it already exists
 
         Returns
         -------

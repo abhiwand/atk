@@ -578,7 +578,8 @@ class HBaseTable(object):
              left_on=None,
              right_on=None,
              suffixes=None,
-             join_frame_name=''):
+             join_frame_name='',
+             overwrite=False):
 
         """
         Perform SQL JOIN on the given list of HBaseTable(s), similar to pandas.DataFrame.join
@@ -638,7 +639,7 @@ class HBaseTable(object):
             raise HBaseTableException('In-place join is currently not supported')
 
         # in-place?
-        join_table_name = _create_table_name(join_frame_name, overwrite=False)
+        join_table_name = _create_table_name(join_frame_name, overwrite=overwrite)
         try:
             with ETLHBaseClient() as hbase_client:
                 hbase_client.drop_create_table(join_table_name, [config['hbase_column_family']])
@@ -1044,7 +1045,7 @@ class HBaseFrameBuilder(FrameBuilder):
         elif not exists_hdfs(file_name):
             raise Exception('ERROR: File does NOT exist ' + file_name + ' in HDFS')
 
-    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name):
+    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name, overwrite=False):
         """
         Joins a left BigDataFrame with a list of (right) BigDataFrame(s)
         """
@@ -1053,7 +1054,8 @@ class HBaseFrameBuilder(FrameBuilder):
                          left_on=left_on,   \
                          right_on=right_on, \
                          suffixes=suffixes, \
-                         join_frame_name=join_frame_name);
+                         join_frame_name=join_frame_name, \
+                         overwrite=overwrite);
 
 def exists_hdfs(file_name):
     try:
