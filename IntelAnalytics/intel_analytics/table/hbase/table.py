@@ -315,7 +315,7 @@ class HBaseTable(object):
             args += ['-k']
 
         logger.debug(args)
-
+        #print ' '.join(map(str,args))
 
         return_code = call(args, report_strategy=etl_report_strategy())
 
@@ -329,8 +329,162 @@ class HBaseTable(object):
         
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types
-        etl_schema.feature_types.append('bytearray')
+        if transformation == EvalFunctions.Math.RANDOM:
+            etl_schema.feature_types.append('float')
+        else:
+            etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
+
+    def _update_schema_for_overwrite(self, etl_schema, output_column):
+        idx =  etl_schema.feature_names.index(output_column)
+        del etl_schema.feature_types[idx]
+        del etl_schema.feature_names[idx]
+
+
+    def kfold_split(self, k, test_fold_id, fold_id_column, split_name, output_column, update, overwrite):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        randomize = False
+        if update or (fold_id_column not in etl_schema.feature_names):
+            randomize = True
+
+        if update:
+            self._update_schema_for_overwrite(etl_schema, randomization_column)
+
+        if not isinstance(fold_id_column, basestring):
+            raise TypeError("fold_id_column should be a string.")
+        elif fold_id_column[0].isdigit():
+            raise ValueError("fold_id_column %s starts with number.\n"
+                             "It is not supported." % fold_id_column)
+
+        if not isinstance(output_column, basestring):
+            raise TypeError("output_column should be a string.")
+        elif output_column[0].isdigit():
+            raise ValueError("output_column %s starts with number.\n"
+                             "It is not supported" % output_column)
+
+        if output_column in etl_schema.feature_names:
+            if not overwrite:
+                raise ValueError("Column %s already existed and overwrite is False.\n"
+                                 "please set overwrite=True if you meant to overwrite." % output_column)
+            else:
+                self._update_schema_for_overwrite(etl_schema, output_column)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        if not isinstance(test_fold_id, int):
+            raise TypeError("test_fold_id should be an integer.")
+        elif test_fold_id > k or test_fold_id < 1:
+            raise ValueError("test_fold_id is %s. It should in the range of [1, %s]" % (test_fold_id, k))
+
+        if not isinstance(split_name, list):
+            raise TypeError("split_name should be a list.")
+        elif len(split_name) != 2:
+            raise ValueError("The size of split_name is %s. The supported size is 2." % len(split_name))
+
+
+        args = get_pig_args('pig_kfold_split.py')
+
+        args += ['-it', self.table_name,
+                 '-ot', self.table_name,
+                 '-k', str(k),
+                 '-ic', fold_id_column,
+                 '-f', str(test_fold_id),
+                 '-r', str(randomize),
+                 '-n', str(split_name),
+                 '-oc', output_column,
+                 '-fn', feature_names_as_str,
+                 '-ft', feature_types_as_str,]
+
+        #print ' '.join(map(str,args))
+        logger.debug(args)
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Failed to run kfold_split')
+
+        if randomize:
+            etl_schema.feature_names.append(fold_id_column)
+            etl_schema.feature_types.append('float')
+        etl_schema.feature_names.append(output_column)
+        etl_schema.feature_types.append('chararray')
+        etl_schema.save_schema(self.table_name)
+
+
+    def percent_split(self, randomization_column, split_percent, split_name, output_column, update, overwrite):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        randomize = False
+        if update or (randomization_column not in etl_schema.feature_names):
+            randomize = True
+
+        if update:
+            self._update_schema_for_overwrite(etl_schema, randomization_column)
+
+        if not isinstance(randomization_column, basestring):
+            raise TypeError("randomization_column should be a string.")
+        elif randomization_column[0].isdigit():
+            raise ValueError("randomization_column %s starts with number.\n"
+                             "It is not supported." % randomization_column)
+
+        if not isinstance(output_column, basestring):
+            raise TypeError("output_column should be a string.")
+        elif output_column[0].isdigit():
+            raise ValueError("output_column %s starts with number.\n"
+                             "It is not supported." % output_column)
+
+        if output_column in etl_schema.feature_names:
+            if not overwrite:
+                raise ValueError("Column %s already existed and overwrite is False.\n"
+                                 "please set overwrite=True if you meant to overwrite." % output_column)
+            else:
+                self._update_schema_for_overwrite(etl_schema, output_column)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        if not isinstance(split_name, list):
+            raise TypeError("split_name should be a list.")
+        elif not isinstance(split_percent, list):
+            raise TypeError("split_percent should be a list.")
+        elif len(split_percent) != len(split_name):
+            raise ValueError("The size of split_percent is %s. The size of split_name is %s. "
+                             "Please make sure they are with the same size" %(len(split_percent), len(split_name) ))
+
+        percent_sum = sum(split_percent)
+        if sum(split_percent) != 100:
+            raise ValueError("Sum of segement percentages is %s. It should be 100." % percent_sum)
+
+
+        args = get_pig_args('pig_percent_split.py')
+
+        args += ['-it', self.table_name,
+                 '-ot', self.table_name,
+                 '-ic', randomization_column,
+                 '-r', str(randomize),
+                 '-p', str(split_percent),
+                 '-n', str(split_name),
+                 '-oc', output_column,
+                 '-fn', feature_names_as_str,
+                 '-ft', feature_types_as_str,]
+
+        #print ' '.join(map(str,args))
+        logger.debug(args)
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Failed to run percent_split')
+
+        if randomize:
+            etl_schema.feature_names.append(randomization_column)
+            etl_schema.feature_types.append('float')
+        etl_schema.feature_names.append(output_column)
+        etl_schema.feature_types.append('chararray')
+        etl_schema.save_schema(self.table_name)
+
 
     def copy(self, new_table_name, feature_names, feature_types):
         args = get_pig_args('pig_copy_table.py')

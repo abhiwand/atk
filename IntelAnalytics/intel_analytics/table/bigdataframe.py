@@ -462,7 +462,7 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        n : int
+        n : int, optional
             number of rows
 
         Returns
@@ -476,6 +476,131 @@ class BigDataFrame(object):
         except Exception, e:
             raise BigDataFrameException("head exception " + str(e))
 
+
+    def kfold_split(self,
+                        k=10,
+                        test_fold_id=0,
+                        fold_id_column="fold_id",
+                        split_name=["TE","TR"],
+                        output_column='kfold_splits',
+                        update=False,
+                        overwrite=False):
+        """
+        Split user's ML data into Train and Test for k-fold cross-validation.
+
+        Parameters
+        ----------
+        k : Integer, optional
+            How many folds to split.
+            The default value is 10.
+        test_fold_id : Integer, optional
+            Which fold to use for test.
+            The valid value range is [1,k].
+            The default value is 0.
+        fold_id_column : String, optional
+            The name of the column to store fold_id.
+            The default value is "fold_id"
+        split_name : List, optional
+            Each value is the name for each split.
+            The size of the list is 2.
+            The default value is ["TE", "TR"]
+        output_column : string, optional
+            The name of the column to store split results.
+            The default value is "splits"
+        update : Boolean, optional
+            whether to recalculate fold_id_column
+            The default value is False
+        overwrite : Boolean, optional
+            whether to overwrite if output_column already exists
+            The default value is False
+
+        Examples
+        --------
+        It can be used to split data for K-fold cross validation.
+        In the first iteration of k-fold cross validation, users can call
+        >>> frame.kfold_split(test_fold_id=1, fold_id_column="new_id")
+        If there is no existing "new_id" column, this method will firstly generate
+        fold id into column "fold_id". And then label the data in the first fold as Test,
+        and the rest as Train, save split labels into column "kfold_splits"
+
+        Then in the x-th iterations, where x is no greater than k, users can call
+        >>> frame.kfload_split(test_fold_id=x)
+        This method will label the x-th fold as Test, and the rest as Train,
+        by using of fold_id_column for the first iteration.
+
+        If user has already randomized data by transform function, for example, by
+        >>> frame.transform('rating','rand10', EvalFunctions.Math.RANDOM,[1,10])
+        this method can be used together with existing fold_id_column to
+        split ML data into Test/Train
+        >>> frame.kfold_split(fold_id_column='rand10', test_fold_id=3)
+        will label data in the third fold as Test, and the rest as Train.
+        Save results in a column named "kfold_splits"
+        """
+
+        try:
+            self._table.kfold_split(k, test_fold_id, fold_id_column, split_name, output_column, update, overwrite)
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("kfold_split exception " + str(e))
+
+
+    def percent_split(self,
+                      randomization_column='rnd_id',
+                      split_percent=[70,20,10],
+                      split_name=["TR","VA","TE"],
+                      output_column='split_label',
+                      update=False,
+                      overwrite=False):
+
+        """
+        Split user's data into different buckets based on percentage distribution
+        A good usage example is to segment ML data into Train and Test,
+        or Train, Validate and Test.
+
+        Parameters
+        ----------
+        randomization_column : String, optional
+            Name of input column which contains randomization info.
+            The default value is empty string.
+        split_percent : List, optional
+            Each value is the percentage for each split.
+            The sum of all percentage values should be 100.
+            The default value is [70,20,10]
+        split_name : List, optional
+            Each value is the name for each split.
+            The default value is ["TR","VA","TE"]
+        output_column : string, optional
+            The name of the column to store split results.
+            The default value is "split_label"
+        update : Boolean, optional
+            whether to recalculate fold_id_column
+            The default value is False
+        overwrite : boolean, optional
+            whether to overwrite if output_column already exists
+            The default value is False.
+
+        Examples
+        --------
+        >>> frame.percent_split(randomization_column="new_id", split_percent=[60,30,20], output_column="new_split")
+        If "new_id" does not exist, this method will firstly randomization data into [1,100] folds.
+        Then label 60% of data as Train, 30% as Validate, 20% as Test, and save results in
+        a column named "new_split"
+
+        If user has already randomized data by transform function, for example, by
+        >>> frame.transform('rating','fold_id', EvalFunctions.Math.RANDOM,[1,100])
+        this method can be also used together with existing randomization_column to split data
+        >>> frame.autosplit(randomization_column="fold_id", split_percent=[75,15,10], output_column="splits")
+        will label 75% of data as Train, 15% as Validate, 10% as Test, and save results in
+        a column named "splits"
+        """
+
+        try:
+            self._table.percent_split(randomization_column, split_percent, split_name, output_column, update, overwrite)
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("percent_split exception " + str(e))
+
+
     #----------------------------------------------------------------------
     # Cleaning
     #----------------------------------------------------------------------
@@ -488,7 +613,7 @@ class BigDataFrame(object):
         ----------
         filter: BigDataFilter
             Filter to be applied to each row, either on specific column or the complete row
-	frame_name: String
+	    frame_name: String, optional
 	    create a new frame for the remaining records if not deleting inplace
 	
 	Returns
