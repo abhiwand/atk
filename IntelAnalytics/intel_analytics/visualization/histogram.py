@@ -23,9 +23,8 @@
 
 import matplotlib.pyplot as plt
 
-def plot_histogram(datafile, 
-                             xlabel='', ylabel='', title='',
-                             textfile = ''):
+def plot_histogram(datafile, xlabel='', ylabel='', title='',
+                   textfile = ''):
     """
     Plots a histogram
     Parameters
@@ -56,7 +55,8 @@ def plot_histogram(datafile,
     if textfile:
         with open(textfile) as s:
             slines = [x.strip() for x in s.readlines()]
-            result.append(slines)
+
+    result.extend(slines)
     
     data_x = []
     data_y = []
@@ -69,8 +69,9 @@ def plot_histogram(datafile,
     plt.xticks(range(len(data_y)), data_x)
 
     max_coordinate = 4
-    if any("max" in s for s in slines):
-        max_coordinate = int(float([s.split('=')[1] for s in slines if "max" in s][0]))
+    for s in slines:
+        if "max" in s:
+            max_coordinate = int(float(s.split('=')[1]))
 
     latex_symbols = {'max' : '$\max$', 'min' : '$\min$', 'avg' : '$\mu$', 'stdev' : '$\sigma$', 'var' : '$\sigma^2$'}
     for i,j in latex_symbols.iteritems():

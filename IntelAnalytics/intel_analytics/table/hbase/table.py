@@ -28,7 +28,8 @@ import collections
 from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
 from intel_analytics.pig import get_pig_args, is_local_run
-from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder, BigColumn
+from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
+from intel_analytics.table.bigcolumn import BigColumn
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
 
@@ -42,6 +43,7 @@ from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
 from pydoop.hdfs.path import exists
+import pydoop.hadut as hadooputils
 import hashlib
 from intel_analytics.visualization import histogram
 
@@ -202,11 +204,11 @@ class HBaseTable(object):
 
 
     def __get_column_statistics_filenames(self, column, check_file_existance=True):
-        if not column.interval_groups:
-            column_file_identifier = column.column_name
+        if not column.profile or not column.profile.data_intervals:
+            column_file_identifier = column.name
         else:
-            md5sum = hashlib.md5(column.get_interval_groups_as_str()).hexdigest()
-            column_file_identifier = column.column_name + '_' + md5sum
+            md5sum = hashlib.md5(column.profile.get_interval_groups_as_str()).hexdigest()
+            column_file_identifier = column.name + '_' + md5sum
         hist_file = '%s_%s_histogram' % (self.table_name, column_file_identifier)
         stat_file = '%s_%s_stats' % (self.table_name, column.column_name)
 
@@ -216,31 +218,57 @@ class HBaseTable(object):
              files_exist = True
         return hist_file, stat_file, files_exist
 
+    def __plot_column_distribution(self, column_name, hist_file, text_file):
+
+        return histogram.plot_histogram(hist_file,
+                           column_name, 'frequency',
+                           'Column Statistics - %s' % (column_name),
+                           stat_file)
+ 
+
 
     def get_column_statistics(self, column_list, force_recomputation):
+        """
+        Parameters
+        ----------
+        column_list: List of BigColumn instances
+            BigColumns for which statistics need to be computed
+        force_recomputation: Boolean
+            force recomputation of all statistics - recreate cache
 
-        hist_file, stat_file, needs_recompute = [],[],[]
+        Returns
+        -------
+        result: List
+            list of statistics for each BigColumn
+        """
+
+        result = []
+        ColumnStat = collections.namedtuple('ColumnStat','names types intervals hist_files stat_files')
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        
+        recompute_columns = False
+        
         for i in column_list:
-            h,s,r = self.__get_column_statistics_filenames(i, not force_recomputation)
-            hist_file.append(h)
-            stat_file.append(s)
-            needs_recompute.append(not r)
-
-        recompute_columns = [first for (first, second) in zip(column_list, needs_recompute) if first]
-
+            hfile,sfile,recompute = self.__get_column_statistics_filenames(i, not force_recomputation)
+            if recompute:
+                recompute_columns = ColumnStat([],[],[],[],[]) if not recompute_columns else recompute_columns
+                recompute_columns.names.append(i.name)
+                recompute_columns.types.append(etl_schema.get_feature_type(i.name))
+                recompute_columns.intervals.append(i.profile.get_interval_groups_as_str() if i.profile else "")
+                recompute_columns.hist_files(hfile)
+                recompute_columns.stat_files(sfile)
+            else:
+               result.append(self.__plot_column_distribution(i.name, hfile, sfile))
+            
         # Send to Pig only columns which need recomputation
         if recompute_columns:
 
-            etl_schema = ETLSchema()
-            etl_schema.load_schema(self.table_name)
-
-            recompute_column_names = [f.column_name for f in recompute_columns]
-    
-            feature_types = [etl_schema.get_feature_type(f) for f in recompute_column_names]
-            feature_names_as_str = ",".join(recompute_column_names)
-            feature_types_as_str = ",".join(feature_types)
+            feature_names_as_str = ",".join(recompute_columns.names)
+            feature_types_as_str = ",".join(recompute_columns.types)
             # Using # as delimiter as string representation of interval contains commas
-            feature_data_groups_as_str = "#".join([i.get_interval_groups_as_str() for i in recompute_columns])
+            feature_data_groups_as_str = "#".join(recompute_columns.intervals)
 
             args = get_pig_args('pig_column_stats.py')
             args.extend(['-i', self.table_name, 
@@ -253,26 +281,17 @@ class HBaseTable(object):
                 raise HBaseTableException('Could not generate statistics')
 
             # Move files to local filesystem for caching/plotting purposes
-            g = lambda x: 'hadoop fs -cat %s/part* > %s' % (x, x)
+            g = lambda val: ['-getmerge', '%s' % (val), '%s' % (val)]
             for i in recompute_columns:
-                index = column_list.index(i)
-                cmd_hist, cmd_stat = g(hist_file[index]), g(stat_file[index])
-                call(cmd_hist, shell=True)
-                call(cmd_stat, shell=True)
+                hfile,sfile =  recompute_columns.hist_files[i], recompute_columns.stat_files[i]
+                if exists('%s' % (hfile):
+                    hadooputils.dfs(g(hfile))
+                if exists('%s' % (sfile):
+                    hadooputils.dfs(g(sfile))
+                result.append(self.__plot_column_distribution(i.name, hfile, sfile)
 
-        result = []
-
-        # Call plot_histogram for each column
-        for i in range(len(column_list)):
-            c = column_list[i].column_name
-            column_stat =  histogram.plot_histogram(hist_file[i],
-                           c, 'frequency',
-                           'Column Statistics - %s' % (c),
-                           stat_file[i])
-            result.append(column_stat)
 
         return result 
-
 
 
     def drop_columns(self, columns):
