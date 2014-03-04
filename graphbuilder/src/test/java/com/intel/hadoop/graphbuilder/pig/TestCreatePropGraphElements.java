@@ -20,6 +20,7 @@ package com.intel.hadoop.graphbuilder.pig;
 
 import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.udf.GBUdfException;
 import org.apache.hadoop.io.Writable;
@@ -99,31 +100,31 @@ public class TestCreatePropGraphElements
                         "-e id1,id2,edgeType0,ep0,ep1,ep2 id1,id3,edgeType1 id2,id3,edgeType2 id1,id6,edgeType3 " +
                         "id4,id5,edgeType4,ep3,ep4 id2,id5,edgeType5,ep4 -x"));
 
-        Schema.FieldSchema id1         = new Schema.FieldSchema("id1", DataType.CHARARRAY);
-        Schema.FieldSchema id2         = new Schema.FieldSchema("id2", DataType.CHARARRAY);
-        Schema.FieldSchema id3         = new Schema.FieldSchema("id3", DataType.CHARARRAY);
-        Schema.FieldSchema id4         = new Schema.FieldSchema("id4", DataType.CHARARRAY);
-        Schema.FieldSchema id5         = new Schema.FieldSchema("id5", DataType.CHARARRAY);
-        Schema.FieldSchema id6         = new Schema.FieldSchema("id6", DataType.CHARARRAY);
-        Schema.FieldSchema vp0         = new Schema.FieldSchema("vp0", DataType.CHARARRAY);
-        Schema.FieldSchema vp1         = new Schema.FieldSchema("vp1", DataType.CHARARRAY);
-        Schema.FieldSchema vp2         = new Schema.FieldSchema("vp2", DataType.CHARARRAY);
-        Schema.FieldSchema vp3         = new Schema.FieldSchema("vp3", DataType.CHARARRAY);
-        Schema.FieldSchema vp4         = new Schema.FieldSchema("vp4", DataType.CHARARRAY);
-        Schema.FieldSchema vp5         = new Schema.FieldSchema("vp5", DataType.CHARARRAY);
-        Schema.FieldSchema vp6         = new Schema.FieldSchema("vp6", DataType.CHARARRAY);
-        Schema.FieldSchema vp7         = new Schema.FieldSchema("vp7", DataType.CHARARRAY);
-        Schema.FieldSchema vp8         = new Schema.FieldSchema("vp8", DataType.CHARARRAY);
-        Schema.FieldSchema vp9         = new Schema.FieldSchema("vp9", DataType.CHARARRAY);
-        Schema.FieldSchema vp10        = new Schema.FieldSchema("vp10", DataType.CHARARRAY);
-        Schema.FieldSchema vp11        = new Schema.FieldSchema("vp11", DataType.CHARARRAY);
-        Schema.FieldSchema vp12        = new Schema.FieldSchema("vp12", DataType.CHARARRAY);
-        Schema.FieldSchema vp13        = new Schema.FieldSchema("vp13", DataType.CHARARRAY);
-        Schema.FieldSchema ep0         = new Schema.FieldSchema("ep0", DataType.CHARARRAY);
-        Schema.FieldSchema ep1         = new Schema.FieldSchema("ep1", DataType.CHARARRAY);
-        Schema.FieldSchema ep2         = new Schema.FieldSchema("ep2", DataType.CHARARRAY);
-        Schema.FieldSchema ep3         = new Schema.FieldSchema("ep3", DataType.CHARARRAY);
-        Schema.FieldSchema ep4         = new Schema.FieldSchema("ep4", DataType.CHARARRAY);
+        Schema.FieldSchema id1  = new Schema.FieldSchema("id1", DataType.CHARARRAY);
+        Schema.FieldSchema id2  = new Schema.FieldSchema("id2", DataType.CHARARRAY);
+        Schema.FieldSchema id3  = new Schema.FieldSchema("id3", DataType.CHARARRAY);
+        Schema.FieldSchema id4  = new Schema.FieldSchema("id4", DataType.CHARARRAY);
+        Schema.FieldSchema id5  = new Schema.FieldSchema("id5", DataType.CHARARRAY);
+        Schema.FieldSchema id6  = new Schema.FieldSchema("id6", DataType.CHARARRAY);
+        Schema.FieldSchema vp0  = new Schema.FieldSchema("vp0", DataType.CHARARRAY);
+        Schema.FieldSchema vp1  = new Schema.FieldSchema("vp1", DataType.CHARARRAY);
+        Schema.FieldSchema vp2  = new Schema.FieldSchema("vp2", DataType.CHARARRAY);
+        Schema.FieldSchema vp3  = new Schema.FieldSchema("vp3", DataType.CHARARRAY);
+        Schema.FieldSchema vp4  = new Schema.FieldSchema("vp4", DataType.CHARARRAY);
+        Schema.FieldSchema vp5  = new Schema.FieldSchema("vp5", DataType.CHARARRAY);
+        Schema.FieldSchema vp6  = new Schema.FieldSchema("vp6", DataType.CHARARRAY);
+        Schema.FieldSchema vp7  = new Schema.FieldSchema("vp7", DataType.CHARARRAY);
+        Schema.FieldSchema vp8  = new Schema.FieldSchema("vp8", DataType.CHARARRAY);
+        Schema.FieldSchema vp9  = new Schema.FieldSchema("vp9", DataType.CHARARRAY);
+        Schema.FieldSchema vp10 = new Schema.FieldSchema("vp10", DataType.CHARARRAY);
+        Schema.FieldSchema vp11 = new Schema.FieldSchema("vp11", DataType.CHARARRAY);
+        Schema.FieldSchema vp12 = new Schema.FieldSchema("vp12", DataType.CHARARRAY);
+        Schema.FieldSchema vp13 = new Schema.FieldSchema("vp13", DataType.CHARARRAY);
+        Schema.FieldSchema ep0  = new Schema.FieldSchema("ep0", DataType.CHARARRAY);
+        Schema.FieldSchema ep1  = new Schema.FieldSchema("ep1", DataType.CHARARRAY);
+        Schema.FieldSchema ep2  = new Schema.FieldSchema("ep2", DataType.CHARARRAY);
+        Schema.FieldSchema ep3  = new Schema.FieldSchema("ep3", DataType.CHARARRAY);
+        Schema.FieldSchema ep4  = new Schema.FieldSchema("ep4", DataType.CHARARRAY);
 
         List fsList = asList(id1,id2,id3,id4,id5,id6,vp0,vp1,vp2,vp3,vp4,vp5,vp6,vp7,vp8,vp9,vp10,vp11,vp12,vp13,
                 ep0,ep1,ep2,ep3,ep4);
@@ -192,7 +193,7 @@ public class TestCreatePropGraphElements
     }
 
     @Test
-    public void test_direction_vertex_property() throws IOException, IllegalAccessException, GBUdfException {
+    public void test_side_vertex_property() throws IOException, IllegalAccessException, GBUdfException {
 
         EvalFunc<?> createPropGraphElementsUDF_dvp = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
                 new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
@@ -243,5 +244,189 @@ public class TestCreatePropGraphElements
 
         assertTrue(left_found);
         assertTrue(right_found);
+    }
+
+    @Test
+    public void test_valid_dynamic_edge_label() throws IOException, IllegalArgumentException, GBUdfException {
+
+        EvalFunc<?> createPropGraphElementsUDF_del = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
+                new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
+                        "-v id1=vp1 id2 " + "-e id1,id2,dynamic:el1 -p"));
+
+        Schema.FieldSchema id1 = new Schema.FieldSchema("id1", DataType.CHARARRAY);
+        Schema.FieldSchema id2 = new Schema.FieldSchema("id2", DataType.CHARARRAY);
+        Schema.FieldSchema vp1 = new Schema.FieldSchema("vp1", DataType.CHARARRAY);
+        Schema.FieldSchema el1 = new Schema.FieldSchema("el1", DataType.CHARARRAY);
+
+        List fsList = asList(id1,id2,vp1, el1);
+
+        Schema schema = new Schema(fsList);
+
+        createPropGraphElementsUDF_del.setInputSchema(schema);
+
+        Tuple t = TupleFactory.getInstance().newTuple(5);
+
+        String id1_s  = "vertexId1";
+        String id2_s  = "vertexId2";
+        String vp1_s  = "vertexProperty1";
+        String el1_s  = "edgeLabelFromData";
+
+        t.set(0, id1_s);
+        t.set(1, id2_s);
+        t.set(2, vp1_s);
+        t.set(3, el1_s);
+
+        DataBag result = (DataBag) createPropGraphElementsUDF_del.exec(t);
+
+        Iterator<Tuple> it   = result.iterator();
+
+        while (it.hasNext()) {
+            PropertyGraphElementTuple pge_tuple = (PropertyGraphElementTuple) it.next();
+            SerializedGraphElementStringTypeVids serializedGraphElement =
+                    (SerializedGraphElementStringTypeVids) pge_tuple.get(0);
+            GraphElement graphElement = serializedGraphElement.graphElement();
+            if (graphElement.isEdge()) {
+                StringType edgeLabel = graphElement.getLabel();
+                assertEquals("Incorrect edge label. Must match " + el1_s, edgeLabel.get(), el1_s);
+            }
+        }   // End of while
+    }
+
+    @Test
+    public void test_valid_range_edge_label() throws IOException, IllegalArgumentException, GBUdfException {
+
+        EvalFunc<?> createPropGraphElementsUDF_rel = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
+                new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
+                        "-v id1=vp1 id2 " + "-e id1,id2,range:[0-200]:el1 -p"));
+
+        Schema.FieldSchema id1 = new Schema.FieldSchema("id1", DataType.CHARARRAY);
+        Schema.FieldSchema id2 = new Schema.FieldSchema("id2", DataType.CHARARRAY);
+        Schema.FieldSchema vp1 = new Schema.FieldSchema("vp1", DataType.CHARARRAY);
+        Schema.FieldSchema el1 = new Schema.FieldSchema("el1", DataType.CHARARRAY);
+
+        List fsList = asList(id1,id2,vp1, el1);
+
+        Schema schema = new Schema(fsList);
+
+        createPropGraphElementsUDF_rel.setInputSchema(schema);
+
+        Tuple t = TupleFactory.getInstance().newTuple(5);
+
+        String id1_s  = "vertexId1";
+        String id2_s  = "vertexId2";
+        String vp1_s  = "vertexProperty1";
+        String el1_s  = "140";
+
+        t.set(0, id1_s);
+        t.set(1, id2_s);
+        t.set(2, vp1_s);
+        t.set(3, el1_s);
+
+        DataBag result = (DataBag) createPropGraphElementsUDF_rel.exec(t);
+
+        Iterator<Tuple> it   = result.iterator();
+
+        while (it.hasNext()) {
+            PropertyGraphElementTuple pge_tuple = (PropertyGraphElementTuple) it.next();
+            SerializedGraphElementStringTypeVids serializedGraphElement =
+                    (SerializedGraphElementStringTypeVids) pge_tuple.get(0);
+            GraphElement graphElement = serializedGraphElement.graphElement();
+            if (graphElement.isEdge()) {
+                StringType edgeLabel = graphElement.getLabel();
+                assertEquals("Incorrect edge label. Must match " + el1_s, edgeLabel.get(), el1_s);
+            }
+        }   // End of while
+    }
+
+    @Test(expected = NumberFormatException.class)
+    public void test_invalid_data_in_range_edge_label() throws IOException, IllegalArgumentException, GBUdfException {
+
+        EvalFunc<?> createPropGraphElementsUDF_rel = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
+                new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
+                        "-v id1=vp1 id2 " + "-e id1,id2,range:[0-200::300-600:347-995]:el1 -p"));
+
+        Schema.FieldSchema id1 = new Schema.FieldSchema("id1", DataType.CHARARRAY);
+        Schema.FieldSchema id2 = new Schema.FieldSchema("id2", DataType.CHARARRAY);
+        Schema.FieldSchema vp1 = new Schema.FieldSchema("vp1", DataType.CHARARRAY);
+        Schema.FieldSchema el1 = new Schema.FieldSchema("el1", DataType.CHARARRAY);
+
+        List fsList = asList(id1,id2,vp1, el1);
+
+        Schema schema = new Schema(fsList);
+
+        createPropGraphElementsUDF_rel.setInputSchema(schema);
+
+        Tuple t = TupleFactory.getInstance().newTuple(5);
+
+        String id1_s  = "vertexId1";
+        String id2_s  = "vertexId2";
+        String vp1_s  = "vertexProperty1";
+        String el1_s  = "abracadbra";
+
+        t.set(0, id1_s);
+        t.set(1, id2_s);
+        t.set(2, vp1_s);
+        t.set(3, el1_s);
+
+        DataBag result = (DataBag) createPropGraphElementsUDF_rel.exec(t);
+
+        Iterator<Tuple> it   = result.iterator();
+
+        while (it.hasNext()) {
+            PropertyGraphElementTuple pge_tuple = (PropertyGraphElementTuple) it.next();
+            SerializedGraphElementStringTypeVids serializedGraphElement =
+                    (SerializedGraphElementStringTypeVids) pge_tuple.get(0);
+            GraphElement graphElement = serializedGraphElement.graphElement();
+            if (graphElement.isEdge()) {
+                StringType edgeLabel = graphElement.getLabel();
+                assertEquals("Incorrect edge label. Must match " + el1_s, edgeLabel.get(), el1_s);
+            }
+        }   // End of while
+    }
+
+    @Test
+    public void test_multiple_range_edge_label() throws IOException, IllegalArgumentException,  GBUdfException {
+
+        EvalFunc<?> createPropGraphElementsUDF_rel = (EvalFunc<?>) PigContext.instantiateFuncFromSpec(
+                new FuncSpec("com.intel.pig.udf.eval.CreatePropGraphElements",
+                        "-v id1=vp1 id2 " + "-e id1,id2,range:[0-200::300-600::347-995]:el1 -p"));
+
+        Schema.FieldSchema id1 = new Schema.FieldSchema("id1", DataType.CHARARRAY);
+        Schema.FieldSchema id2 = new Schema.FieldSchema("id2", DataType.CHARARRAY);
+        Schema.FieldSchema vp1 = new Schema.FieldSchema("vp1", DataType.CHARARRAY);
+        Schema.FieldSchema el1 = new Schema.FieldSchema("el1", DataType.CHARARRAY);
+
+        List fsList = asList(id1,id2,vp1, el1);
+
+        Schema schema = new Schema(fsList);
+
+        createPropGraphElementsUDF_rel.setInputSchema(schema);
+
+        Tuple t = TupleFactory.getInstance().newTuple(5);
+
+        String id1_s  = "vertexId1";
+        String id2_s  = "vertexId2";
+        String vp1_s  = "vertexProperty1";
+        String el1_s  = "884";
+
+        t.set(0, id1_s);
+        t.set(1, id2_s);
+        t.set(2, vp1_s);
+        t.set(3, el1_s);
+
+        DataBag result = (DataBag) createPropGraphElementsUDF_rel.exec(t);
+
+        Iterator<Tuple> it   = result.iterator();
+
+        while (it.hasNext()) {
+            PropertyGraphElementTuple pge_tuple = (PropertyGraphElementTuple) it.next();
+            SerializedGraphElementStringTypeVids serializedGraphElement =
+                    (SerializedGraphElementStringTypeVids) pge_tuple.get(0);
+            GraphElement graphElement = serializedGraphElement.graphElement();
+            if (graphElement.isEdge()) {
+                StringType edgeLabel = graphElement.getLabel();
+                assertEquals("Incorrect edge label. Must match " + el1_s, edgeLabel.get(), el1_s);
+            }
+        }   // End of while
     }
 }
