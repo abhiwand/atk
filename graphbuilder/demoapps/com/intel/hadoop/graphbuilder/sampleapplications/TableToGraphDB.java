@@ -145,6 +145,8 @@ public class TableToGraphDB {
 
         options.addOption(BaseCLI.Options.titanKeyIndex.get());
 
+        options.addOption(BaseCLI.Options.addSideToVertex.get());
+
         commandLineInterface.setOptions(options);
     }
 
@@ -164,10 +166,8 @@ public class TableToGraphDB {
 
         CommandLine cmd = commandLineInterface.checkCli(args);
 
-
         GraphConstructionPipeline pipeline = new GraphConstructionPipeline();
         commandLineInterface.getRuntimeConfig().addConfig(pipeline);
-
 
         String srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
@@ -175,6 +175,7 @@ public class TableToGraphDB {
 
         HBaseGraphBuildingRule buildingRule = new HBaseGraphBuildingRule(cmd);
         buildingRule.setFlattenLists(cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt()));
+        buildingRule.setAddSideToVertices(cmd.hasOption(BaseCLI.Options.addSideToVertex.getLongOpt()));
 
         TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
 

@@ -98,6 +98,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     private String[] directedEdgeRules;
     private boolean  flattenLists          = false;
     private boolean  stripColumnFamilyNames = false;
+    private boolean addSideToVertices = false;
 
     private Class vidClass = StringType.class;
     private Class<? extends GraphTokenizer>  tokenizerClass = HBaseTokenizer.class;
@@ -151,6 +152,16 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      */
     public void setFlattenLists(boolean flattenLists) {
         this.flattenLists = flattenLists;
+    }
+
+    /**
+     * Sets the option to add side property to vertices
+     * <p>When this option is set, a property called "side" is added to all vertices.
+     * The value of this property can be L (for left) or R (for right)
+     * @param addSideToVertices Boolean.
+     */
+    public void setAddSideToVertices(boolean addSideToVertices) {
+        this.addSideToVertices = addSideToVertices;
     }
 
     /**
@@ -318,6 +329,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
         packDirectedEdgeRulesIntoConfiguration(configuration, directedEdgeRules);
         configuration.setBoolean("HBASE_TOKENIZER_FLATTEN_LISTS", flattenLists);
         configuration.setBoolean("HBASE_TOKENIZER_STRIP_COLUMNFAMILY_NAMES", stripColumnFamilyNames);
+        configuration.setBoolean("HBASE_TOKENIZER_ADD_SIDE_PROPERTY_TO_VERTICES", addSideToVertices);
     }
 
     /**
