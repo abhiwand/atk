@@ -3,13 +3,13 @@ import unittest
 
 import datetime
 import time
-
+import logging.handlers
 
 class FakeFileHandler:
-    def __init__(self, filename, mode='a', encoding=None, delay=0):
+    def __init__(self, filename, mode='a', maxBytes=0, backupCount=0, encoding=None, delay=0):
         pass
 
-logging.FileHandler = FakeFileHandler
+logging.handlers.RotatingFileHandler = FakeFileHandler
 from intel_analytics.logger import stdout_logger
 
 class LoggingTest(unittest.TestCase):
@@ -19,7 +19,7 @@ class LoggingTest(unittest.TestCase):
 
     def test_only_file_handler(self):
         self.assertEqual(1, len(stdout_logger.handlers))
-        self.assertTrue(isinstance(stdout_logger.handlers[0], logging.FileHandler))
+        self.assertTrue(isinstance(stdout_logger.handlers[0], logging.handlers.RotatingFileHandler))
 
     def test_distinct_file_name(self):
         from intel_analytics.logger import get_file_name_from_datetime
