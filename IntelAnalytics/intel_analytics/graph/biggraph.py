@@ -65,7 +65,7 @@ class GraphTypes:
 class GraphBuilderFactory(object):
     """
     An abstract class for the various graph build factories 
-    (for example, one for Titan).
+	(for example, one for Titan).
     """
     __metaclass__ = abc.ABCMeta
 
@@ -131,7 +131,7 @@ class GraphBuilder(object):
         self._source = source
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite):
+    def build(self, graph_name, overwrite, append, flatten):
         """
         Builds a graph according to the settings in the builder
 
@@ -162,7 +162,7 @@ class BipartiteGraphBuilder(GraphBuilder):
         self._vertex_list = []
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False):
         """
         Builds a bipartite graph according to the settings in the builder
 
@@ -237,7 +237,7 @@ class PropertyGraphBuilder(GraphBuilder):
         self._edge_list = []
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False):
         """
         Builds a property graph according to the settings in the builder
 

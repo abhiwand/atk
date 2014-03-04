@@ -104,6 +104,18 @@ class ProgressReportStrategy(ReportStrategy):
         else:
             self.job_progress_bar_list[-1].alert()
 
+class FaunusProgressReportStrategy(ProgressReportStrategy):
+    def is_job_complete_signaled(self, line):
+        pattern = '.*Job complete.*'
+        matched = re.match(pattern, line) != None
+        return matched
+
+    def report(self, line):
+        if self.is_job_complete_signaled(line) and self.job_progress_bar_list[-1].value < 100:
+            self.job_progress_bar_list[-1].update(100)
+        else:
+            super(FaunusProgressReportStrategy, self).report(line)
+
 
 class MapOnlyProgressReportStrategy(ProgressReportStrategy):
     def report(self, line):
