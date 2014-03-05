@@ -20,9 +20,7 @@
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.*;
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -52,9 +50,7 @@ public class MergeSchemataUtility {
 
     public ArrayList<SchemaElement> merge(Iterable<SchemaElement> values) {
 
-
         HashMap<String, SchemaElement> schemaHashMap = new HashMap<String, SchemaElement>();
-
 
         for (SchemaElement schemaElement : values) {
             String schemaID = schemaElement.getID();

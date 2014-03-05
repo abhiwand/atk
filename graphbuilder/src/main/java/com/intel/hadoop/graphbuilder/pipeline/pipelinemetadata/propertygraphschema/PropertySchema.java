@@ -81,6 +81,7 @@ public class PropertySchema implements Writable {
     public String toString() {
         return "Property: name == " + name.get() + " type == " + type.get();
     }
+
     /**
      * Equality test.
      *

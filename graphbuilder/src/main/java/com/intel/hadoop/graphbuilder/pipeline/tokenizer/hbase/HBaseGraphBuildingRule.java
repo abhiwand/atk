@@ -363,7 +363,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             String label = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
 
-            SchemaElement vertexSchema = new SchemaElement(SchemaElement.Type.VERTEX, label);
+            SchemaElement vertexSchema = SchemaElement.CreateVertexSchemaElement(label);
 
             String[] columnNames = HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
 
@@ -385,7 +385,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             List<String> columnNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
             String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(edgeRule);
 
-            SchemaElement edgeSchema = new SchemaElement(SchemaElement.Type.EDGE, label);
+            SchemaElement edgeSchema = SchemaElement.CreateEdgeSchemaElement(label);
 
             for (String columnName : columnNames) {
                 String edgePropertyName = propertyNameFromColumnName(columnName, stripColumnFamilyNames);
@@ -401,7 +401,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             List<String> columnNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(directedEdgeRule);
             String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(directedEdgeRule);
 
-            SchemaElement edgeSchema = new SchemaElement(SchemaElement.Type.EDGE, label);
+            SchemaElement edgeSchema = SchemaElement.CreateEdgeSchemaElement(label);
 
             for (String columnName : columnNames) {
                 String edgePropertyName = propertyNameFromColumnName(columnName, stripColumnFamilyNames);

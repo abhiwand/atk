@@ -32,23 +32,31 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Set;
 
+/**
+ * A schema element encapsulates the type information associated with vertices or edges of a particular label.
+ * Such information is required when loading Titan.
+ */
 @NotThreadSafe
 public class SchemaElement implements Writable {
 
     private static final String EDGE   = "EDGE";
     private static final String VERTEX = "VERTEX";
 
-    public static enum Type  { EDGE, VERTEX };
-
     private HashSet<PropertySchema> propertySchemata;
 
-    private StringType ID;
-    private StringType label;
-    private boolean    isEdge;
+    private StringType ID = null;
+    private StringType label = null;
+    private boolean    isEdge = false;
 
+    private static enum Type  { EDGE, VERTEX };
 
-    public SchemaElement(Type type, String label) {
+    /*
+     * private constructor for the factories
+     */
+
+    private SchemaElement(String label, Type type) {
         propertySchemata = new HashSet<PropertySchema>();
 
         this.label =  (label == null) ? null : new StringType(label);
@@ -62,6 +70,10 @@ public class SchemaElement implements Writable {
         }
     }
 
+    /**
+     * Takes a property graph element and constructs its schema.
+     * @param graphElement A property graph element.
+     */
     public SchemaElement(GraphElement graphElement) {
 
         propertySchemata = new HashSet<PropertySchema>();
@@ -89,27 +101,67 @@ public class SchemaElement implements Writable {
 
     }
 
+    /**
+     * Factory that creates a new vertex schema from a label.
+     * @param label The label for the new schema.
+     * @return A new <schema>SchemaElement</schema> encapuslating a vertex schema with the given label.
+     */
+    public static SchemaElement CreateVertexSchemaElement(String label) {
+        return new SchemaElement(label, Type.VERTEX);
+    }
+
+    /**
+     * Factory that creates a new edge schema from a label.
+     * @param label The label for the new schema.
+     * @return A new <schema>SchemaElement</schema> encapuslating a vertex schema with the given label.
+     */
+    public static SchemaElement CreateEdgeSchemaElement(String label) {
+        return new SchemaElement(label, Type.EDGE);
+    }
+
+    /**
+     *
+     * @return The label of the <code>SchemaElement</code>
+     */
     public String getLabel() {
         return (label == null) ? null : label.get();
     }
 
+    /**
+     *
+     * @return The ID of the <code>SchemaElement</code>
+     */
     public String getID() {
         return ID.get();
     }
 
+    /**
+     * @return True if the <code>SchemaElement</code> is an edge schema.
+     */
     public boolean isEdge() {
         return isEdge;
     }
 
-
+    /**
+     * Adds a property schema to the <code>SchemaElement</code>
+     * @param schema A <code>PropertySchema</code> to be attached to the <code>SchemaElement</code>.
+     */
     public void addPropertySchema(PropertySchema schema) {
         this.propertySchemata.add(schema);
     }
 
-    public void unionPropertySchemata(HashSet<PropertySchema> propertySchemata) {
+    /**
+     * Takes a set of <code>PropertySchema</code>  and adds them all to the set of <code>PropertySchema</code>'s
+     * attached to this <code>SchemaElement</code>
+     * @param propertySchemata Incoming set of property schemas.
+     */
+    public void unionPropertySchemata(Set<PropertySchema> propertySchemata) {
         this.propertySchemata.addAll(propertySchemata);
     }
 
+    /**
+     * @return  The set of property schemata attached to this <code>SchemaElement</code>
+     */
     public HashSet<PropertySchema> getPropertySchemata() {
         return propertySchemata;
     }
@@ -210,6 +262,9 @@ public class SchemaElement implements Writable {
         return hash;
     }
 
+    /**
+     * @return Same value as <code>getID</code>
+     */
     @Override
     public String toString() {
         return this.getID();
