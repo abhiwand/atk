@@ -74,8 +74,8 @@ class FrameBuilder(object):
         ----------
         frame_name : String
             The name of the new frame
-        file_name : String
-            The path to the source CSV file.
+        file_name : String or iterable of strings
+            The path to the source files
         schema : String
             The schema of the source file.  A comma-separated list of ``key:value``
             pairs, where *key* is the name of the column and *value* is the data
@@ -104,10 +104,12 @@ class FrameBuilder(object):
 
         Parameters
         ----------
-        C{data_frame} : BigDataFrame
+        data_frame : BigDataFrame
             An existing big data frame
-        C{file_name} : String or list of strings
-            File/Files to be imported
+        file_name : String or iterable of strings
+            The path to the source files
+        skip_header : Bool
+            if True, skip the first line of the file
         """
         pass
 
@@ -120,8 +122,8 @@ class FrameBuilder(object):
         ----------
         frame_name : String
             The name of the new frame
-        file_name : String
-            The path to the source CSV file.
+        file_name : String or iterable of strings
+            The path to the source files
 
         Returns
         -------
@@ -137,10 +139,10 @@ class FrameBuilder(object):
 
         Parameters
         ----------
-        C{data_frame} : BigDataFrame
+        data_frame : BigDataFrame
             An existing big data frame
-        C{file_name} : String or list of strings
-            File/Files to be imported:
+        file_name : String or iterable of strings
+            The path to the source files
         """
         pass
 
@@ -153,20 +155,10 @@ class FrameBuilder(object):
         ----------
         frame_name : String
             The name of the new frame
-        file_name : String
-            The path to the source CSV file.
+        file_name : String or iterable of strings
+            The path to the source files
         tag_name : String
             The XML tag name
-        schema : String, optional
-            The schema of the source file
-        C{frame_name} : String
-            The name for the data frame
-        C{filename} : String or list of strings
-            The path to the XML file/files
-        C{tag_name} : String
-            XML tag for record:
-
-        TODO: Other parameters for the parser
 
         Returns
         -------
@@ -182,18 +174,12 @@ class FrameBuilder(object):
 
         Parameters
         ----------
-        C{data_frame} : BigDataFrame
+        data_frame : BigDataFrame
             An existing big data frame.
-        C{filename} : String or list of strings
-            The path to the XML file/files
-        C{tag_name} : String
+        file_name : String or iterable of strings
+            The path to the source files
+        tag_name : String
             XML tag for record.
-
-        TODO: Other parameters for the parser
-
-        Returns
-        -------
-        frame : C{BigDataFrame}
         """
         pass
 
@@ -204,9 +190,9 @@ class FrameBuilder(object):
 
         Parameters
         ----------
-        C{target_data_frame} : BigDataFrame
+        target_data_frame : BigDataFrame
             The data frame to append data to
-        C{source_data_frame} : List
+        source_data_frame : List
             List of data frame which data will be appended to the target data frame
         """
         pass
