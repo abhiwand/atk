@@ -28,9 +28,11 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.passthrough.PassThroughG
 import com.intel.hadoop.graphbuilder.util.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -57,12 +59,12 @@ import java.util.HashMap;
  * <ul>
  * <li>The <code>-p</code> required argument specifies the datatypes for the property names.
  * It is a comma separated list of the form
- * {@code property1:datatype1,property2:datatype2,....} </li>
+ * <code>property1:datatype1,property2:datatype2,....</code> </li>
  * <li>The <code>-E</code> required argument specifies the signatures of the edge labels.
  * It is a semi-colon separated list of comma separated lists. Each comma separated
  * list specifies an edge label followed by the property names that can be associated with
  * an edge of that label. Eg.
- * {@code label1, property11, property12;label2;label3,property31;....}</li>
+ * <code>label1, property11, property12;label2;label3,property31;....</code></li>
  * </ul>
  * </p>
  */
@@ -77,16 +79,12 @@ public class GraphElementsToDB {
         Options options = new Options();
 
         options.addOption(BaseCLI.Options.inputPath.get());
-
         options.addOption(BaseCLI.Options.titanAppend.get());
-
         options.addOption(BaseCLI.Options.titanOverwrite.get());
-
         options.addOption(BaseCLI.Options.titanPropertyTypes.get());
-
         options.addOption(BaseCLI.Options.titanEdgeSignatures.get());
-
         options.addOption(BaseCLI.Options.titanKeyIndex.get());
+        options.addOption(BaseCLI.Options.titanInferSchema.get());
 
         commandLineInterface.setOptions(options);
     }
@@ -97,7 +95,7 @@ public class GraphElementsToDB {
     private static HashMap<String, Class<?>> extractPropertyTypeMap(String propNamesString) {
         HashMap<String, Class<?>> map = new HashMap<String, Class<?>>();
 
-        if (!propNamesString.isEmpty()) {
+        if (StringUtils.isNotEmpty(propNamesString)) {
 
             String[] nameTypePairs = propNamesString.split(",");
 
@@ -144,7 +142,7 @@ public class GraphElementsToDB {
 
         HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
 
-        if (!edgeSignatureString.isEmpty()) {
+        if (StringUtils.isNotEmpty(edgeSignatureString)) {
 
             String[] edgeSignatures = edgeSignatureString.split(";");
 
@@ -156,9 +154,7 @@ public class GraphElementsToDB {
                 ArrayList<String> properties = new ArrayList<String>();
 
                 if (splitSignature.length > 1) {
-                    for (int i = 1; i < splitSignature.length; i++) {
-                        properties.add(splitSignature[i]);
-                    }
+                    properties.addAll(Arrays.asList(splitSignature).subList(1, splitSignature.length));
                 }
 
                 map.put(edgeLabel, properties);
@@ -181,10 +177,31 @@ public class GraphElementsToDB {
         boolean configFilePresent = (args.length > 0 && args[0].equals("-conf"));
 
         if (!configFilePresent) {
-            commandLineInterface.showError("When writing to Titan, the Titan config file must be specified by -conf <config> ");
+            commandLineInterface.showError(
+                    "When writing to Titan, the Titan config file must be specified by -conf <config> ");
         }
 
         CommandLine cmd = commandLineInterface.checkCli(args);
+
+        boolean inferSchema = cmd.hasOption(BaseCLI.Options.titanInferSchema.getLongOpt());
+        boolean declaredProperties = cmd.hasOption(BaseCLI.Options.titanPropertyTypes.getLongOpt());
+        boolean declaredEdgeSchema = cmd.hasOption(BaseCLI.Options.titanEdgeSignatures.getLongOpt());
+
+        if (inferSchema && declaredProperties) {
+           String badCmdLine = "You cannot simultaneously use the " +
+                   BaseCLI.Options.titanInferSchema.getLongOpt()
+                   + " and " + BaseCLI.Options.titanPropertyTypes.getLongOpt() + " options.";
+           GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE, badCmdLine, LOG);
+
+        }
+
+        if (inferSchema && declaredEdgeSchema) {
+            String badCmdLine = "You cannot simultaneously use the " +
+                    BaseCLI.Options.titanInferSchema.getLongOpt()
+                    + " and " + BaseCLI.Options.titanEdgeSignatures.getLongOpt() + " options.";
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE, badCmdLine, LOG);
+
+        }
 
         HashMap<String, Class<?>> propTypeMap = extractPropertyTypeMap(cmd.getOptionValue(
                 BaseCLI.Options.titanPropertyTypes.getLongOpt()));
@@ -206,7 +223,8 @@ public class GraphElementsToDB {
         // BUT... we will need an option to turn off the dedup phase...
         // it doesn't hurt us... it's just a waste of effort...
 
-        TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
+        TitanOutputConfiguration outputConfiguration =
+                new TitanOutputConfiguration(inferSchema, inputPath);
 
         LOG.info("============= Creating graph from feature table ==================");
         timer.start();

@@ -82,14 +82,41 @@ DEFINE STORE_GRAPH(graphelements, config_file, property_types, edge_schemata, ot
 
     stored_graph = MAPREDUCE '$GB_JAR'
                    STORE $graphelements INTO '/tmp/graphdb_storage_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile()
-                   LOAD '/tmp/dummy_location' USING NoOpLoad() AS (line:chararray)
+                   LOAD '/tmp/load_titan_dummy_location1' USING NoOpLoad()
                    `com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB -conf $config_file -i /tmp/graphdb_storage_sequencefile -p $property_types -E $edge_schemata $other_args` ;
 
 
     -- Pig will optimize away the Titan load if we don't "STORE" its dataflow output
-    -- even though its dataflow "output" is an empty text file
 
-    STORE stored_graph INTO '/tmp/dummy_location' USING NoOpStore();
+  	STORE stored_graph INTO '/tmp/load_titan_dummy_location3' USING NoOpStore();
+};
+
+/**
+* STORE_GRAPH macro bulk loads a graph into the Titan graph database and also passes the given
+* arguments to GB for further configuration. This macro is a wrapper for the
+* com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB MapReduce job.
+* For the details of the command line arguments @see com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB.
+*
+* @param graphelements          : the set of property graph elements (as a unary relation) to be stored <br/>
+* @param config_file		    : path to the XML configuration file to be used by GB for bulk loading to Titan <br/>
+* @param other_args				: other command line arguments to
+*                                 \link com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB \endlink <br/>
+*/
+DEFINE STORE_GRAPH_INFER_SCHEMA(graphelements, config_file, other_args) RETURNS void {
+
+	-- the MAPREDUCE operator requires a STORE and then a LOAD operation
+	-- the STORE  dumps the graphelements into a sequence file for the map reduce task to consume
+	-- the LOAD is a dummy operation
+
+    stored_graph = MAPREDUCE '$GB_JAR'
+                   STORE $graphelements INTO '/tmp/graphdb_storage_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile()
+                   LOAD '/tmp/load_titan_dummy_location1' USING NoOpLoad()
+                   `com.intel.hadoop.graphbuilder.sampleapplications.GraphElementsToDB -conf $config_file -i /tmp/graphdb_storage_sequencefile -I $other_args` ;
+
+
+    -- Pig will optimize away the Titan load if we don't "STORE" its dataflow output
+
+  	STORE stored_graph INTO '/tmp/load_titan_dummy_location3' USING NoOpStore();
 };
 
 /**
@@ -162,7 +189,7 @@ DEFINE LOAD_TITAN_NEW(input_hbase_table_name, full_column_names, schema, vertex_
     -- Pig will optimize away the Titan load if we don't "STORE" its dataflow output
     -- even though its dataflow "output" is an empty text file
 
-   STORE stored_graph INTO '/tmp/dummy_location' USING NoOpStore();
+	STORE stored_graph INTO '/tmp/load_titan_dummy_location3' USING NoOpStore();
 };
 
 /**

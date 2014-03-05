@@ -21,73 +21,102 @@ package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphsch
 
 import org.junit.Test;
 
+import java.io.*;
+
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class PropertySchemaTest {
 
-	@Test
-	public void testPropertySchemaConstructorGetters() {
+    @Test
+    public void testPropertySchemaConstructorGetters() throws ClassNotFoundException {
 
-		final String A = new String("A");
-		final Class<?> dataType = Integer.class;
+        final String A = "A";
+        final Class<?> dataType = Integer.class;
 
-		PropertySchema propertySchema = new PropertySchema(A, dataType);
+        PropertySchema propertySchema = new PropertySchema(A, dataType);
 
-		String testName = propertySchema.getName();
-		Class<?> testDataType = propertySchema.getType();
+        String testName = propertySchema.getName();
 
-		assertNotNull(testName);
-		assertEquals("Should have been 0", 0, testName.compareTo(A));
-		assertEquals(dataType, testDataType);
-	}
+        Class<?> testDataType = propertySchema.getType();
+        assertNotNull(testName);
+        assertEquals("Should have been 0", 0, testName.compareTo(A));
+        assertEquals(dataType, testDataType);
+    }
 
-	@Test
-	public void testPropertySchemaSetGet() {
-		final String A = new String("A");
-		final Class<?> dataTypeA = Integer.class;
+    @Test
+    public void testPropertySchemaSetGet() throws ClassNotFoundException {
+        final String A = "A";
+        final Class<?> dataTypeA = Integer.class;
 
-		final String B = new String("A");
-		final Class<?> dataTypeB = Float.class;
+        final String B = "A";
+        final Class<?> dataTypeB = Float.class;
 
-		final String C = new String("C");
-		final Class<?> dataTypeC = String.class;
+        final String C = "C";
+        final Class<?> dataTypeC = String.class;
 
-		PropertySchema propertySchemaA = new PropertySchema(A, dataTypeA);
-		PropertySchema propertySchemaB = new PropertySchema(B, dataTypeB);
+        PropertySchema propertySchemaA = new PropertySchema(A, dataTypeA);
+        PropertySchema propertySchemaB = new PropertySchema(B, dataTypeB);
 
-		propertySchemaA.setName(C);
+        propertySchemaA.setName(C);
 
-		String testName1 = propertySchemaA.getName();
-		Class<?> testType1 = propertySchemaA.getType();
-		assertEquals("Should have been 0", 0, testName1.compareTo(C));
-		assertEquals(dataTypeA, testType1);
+        String testName1 = propertySchemaA.getName();
+        Class<?> testType1 = propertySchemaA.getType();
+        assertEquals("Should have been 0", 0, testName1.compareTo(C));
+        assertEquals(dataTypeA, testType1);
 
-		propertySchemaA.setType(dataTypeC);
+        propertySchemaA.setType(dataTypeC);
 
-		String testName2 = propertySchemaA.getName();
-		Class<?> testType2 = propertySchemaA.getType();
-		assertEquals("Should have been 0", 0, testName2.compareTo(C));
-		assertEquals(dataTypeC, testType2);
+        String testName2 = propertySchemaA.getName();
+        Class<?> testType2 = propertySchemaA.getType();
+        assertEquals("Should have been 0", 0, testName2.compareTo(C));
+        assertEquals(dataTypeC, testType2);
 
-		propertySchemaA.setName(A);
+        propertySchemaA.setName(A);
 
-		String testName3 = propertySchemaA.getName();
-		Class<?> testType3 = propertySchemaA.getType();
-		assertEquals("Should have been 0", 0, testName3.compareTo(A));
-		assertEquals(dataTypeC, testType3);
+        String testName3 = propertySchemaA.getName();
+        Class<?> testType3 = propertySchemaA.getType();
+        assertEquals("Should have been 0", 0, testName3.compareTo(A));
+        assertEquals(dataTypeC, testType3);
 
-		propertySchemaA.setType(dataTypeA);
+        propertySchemaA.setType(dataTypeA);
 
-		String testName4 = propertySchemaA.getName();
-		Class<?> testType4 = propertySchemaA.getType();
-		assertEquals("Should have been 0", 0, testName4.compareTo(A));
-		assertEquals(dataTypeA, testType4);
+        String testName4 = propertySchemaA.getName();
+        Class<?> testType4 = propertySchemaA.getType();
+        assertEquals("Should have been 0", 0, testName4.compareTo(A));
+        assertEquals(dataTypeA, testType4);
 
-		String distinctName = propertySchemaB.getName();
-		Class<?> distinctType = propertySchemaB.getType();
-		assertEquals("Should have been 0", 0, distinctName.compareTo(B));
-		assertEquals(dataTypeB, distinctType);
-	}
+        String distinctName = propertySchemaB.getName();
+        Class<?> distinctType = propertySchemaB.getType();
+        assertEquals("Should have been 0", 0, distinctName.compareTo(B));
+        assertEquals(dataTypeB, distinctType);
+    }
 
+    @Test
+    public final void testWriteRead() throws IOException, ClassNotFoundException {
+        final String A = "A";
+        final Class<?> dataTypeA = Integer.class;
+
+        final String B = "B";
+        final Class<?> dataTypeB = Float.class;
+
+        PropertySchema propertySchemaIn = new PropertySchema(A, dataTypeA);
+        PropertySchema propertySchemaOut = new PropertySchema(B, dataTypeB);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+        DataOutputStream dataOutputStream = new DataOutputStream(baos);
+
+        propertySchemaIn.write(dataOutputStream);
+        dataOutputStream.flush();
+
+        ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+        DataInputStream dataInputStream = new DataInputStream(bais);
+
+        propertySchemaOut.readFields(dataInputStream);
+
+        assertTrue(propertySchemaIn.getName().equals(propertySchemaOut.getName()));
+
+        assertTrue(propertySchemaIn.getType().equals(propertySchemaOut.getType()));
+    }
 }

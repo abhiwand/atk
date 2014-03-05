@@ -30,11 +30,8 @@ import java.io.IOException;
 /**
  * The basic float type in the library.
  */
-public class FloatType implements WritableComparable<FloatType>,
-		Mergeable<FloatType>, JSONAware, EncapsulatedObject {
-
-	public static final FloatType ZERO = new FloatType(0);
-	public static final FloatType ONE = new FloatType(1);
+public class FloatType extends EncapsulatedObject  implements WritableComparable<FloatType>,
+		Mergeable<FloatType>, JSONAware {
 
 	public FloatType() {
 		val = 0;
@@ -78,11 +75,7 @@ public class FloatType implements WritableComparable<FloatType>,
 
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof FloatType) {
-			return ((FloatType) obj).val == val;
-		} else {
-			return false;
-		}
+        return obj instanceof FloatType && ((FloatType) obj).val == val;
 	}
 
 	@Override
