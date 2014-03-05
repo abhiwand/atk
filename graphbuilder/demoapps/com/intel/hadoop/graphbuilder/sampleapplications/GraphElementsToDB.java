@@ -188,11 +188,10 @@ public class GraphElementsToDB {
         boolean declaredEdgeSchema = cmd.hasOption(BaseCLI.Options.titanEdgeSignatures.getLongOpt());
 
         if (inferSchema && declaredProperties) {
-           String badCmdLine = "You cannot simultaneously use the " +
-                   BaseCLI.Options.titanInferSchema.getLongOpt()
-                   + " and " + BaseCLI.Options.titanPropertyTypes.getLongOpt() + " options.";
-           GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE, badCmdLine, LOG);
-
+            String badCmdLine = "You cannot simultaneously use the " +
+                    BaseCLI.Options.titanInferSchema.getLongOpt()
+                    + " and " + BaseCLI.Options.titanPropertyTypes.getLongOpt() + " options.";
+            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE, badCmdLine, LOG);
         }
 
         if (inferSchema && declaredEdgeSchema) {
@@ -200,7 +199,6 @@ public class GraphElementsToDB {
                     BaseCLI.Options.titanInferSchema.getLongOpt()
                     + " and " + BaseCLI.Options.titanEdgeSignatures.getLongOpt() + " options.";
             GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE, badCmdLine, LOG);
-
         }
 
         HashMap<String, Class<?>> propTypeMap = extractPropertyTypeMap(cmd.getOptionValue(
