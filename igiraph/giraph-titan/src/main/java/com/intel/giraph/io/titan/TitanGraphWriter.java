@@ -58,7 +58,7 @@ public class TitanGraphWriter {
         TitanGraph graph = null;
 
         org.apache.commons.configuration.Configuration configuration =
-            GiraphToTitanGraphFactory.generateTitanConfiguration(context.getConfiguration(),
+            GiraphToTitanGraphFactory.generateTitanWriteConfiguration(context.getConfiguration(),
                 GIRAPH_TITAN.get(context.getConfiguration()));
 
         graph = TitanFactory.open(configuration);
