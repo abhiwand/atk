@@ -46,17 +46,20 @@ class GraphQueries(object):
         --------
         >>> q.vertex_lookup(term="Brain Cells")
         """
-        return self.g.vertices.index.lookup(**kwargs).next()
+        try:
+        	return self.g.vertices.index.lookup(**kwargs).next()
+        except AttributeError:
+        	return None
     
     def mutual_edges(self, vid1, vid2):
         """Finds all the mutual edges between 2 vertices.
 
         Parameters
         ----------
-        vid1: String
+        vid1: long
             Titan database vertex id.
 
-        vid2: String
+        vid2: long
             Titan database vertex id.
 
         Returns
@@ -80,7 +83,7 @@ class GraphQueries(object):
         
         Parameters
         ----------
-        vid: String
+        vid: long
             Titan database vertex id.
 
         edge_weight_property: String
@@ -103,7 +106,7 @@ class GraphQueries(object):
              .bothE %(edge_label)s
              .order{it.b['%(edge_weight_property)s'] <=> it.a['%(edge_weight_property)s']}[0..<%(top_n)d]
         """ % {'vid': vid, 
-               'edge_label': "('" + edge_label + "')" if edge_label is not None else '',
+               'edge_label': "('" + edge_label + "')" if edge_label else '',
                'top_n': top_n,
                'edge_weight_property': edge_weight_property} 
         
@@ -116,7 +119,7 @@ class GraphQueries(object):
 
         Parameters
         ----------
-        vid: String
+        vid: long
             Titan database vertex id.
 
         edge_weight_property: String
@@ -141,7 +144,7 @@ class GraphQueries(object):
              .bothV.except('v0')
              .dedup()
         """ % {'vid': vid, 
-               'edge_label': "('" + edge_label + "')" if edge_label is not None else '',
+               'edge_label': "('" + edge_label + "')" if edge_label else '',
                'top_n': top_n,
                'edge_weight_property': edge_weight_property} 
         
@@ -154,7 +157,7 @@ class GraphQueries(object):
 
         Parameters
         ----------
-        vid: String
+        vid: long
             Titan database vertex id.
 
         edge_weight_property: String
@@ -181,7 +184,7 @@ class GraphQueries(object):
                 .bothV.retain('v0')
                 .select(['vertex', 'edge'])
         """ % {'vid': vid, 
-               'edge_label': "('" + edge_label + "')" if edge_label is not None else '',
+               'edge_label': "('" + edge_label + "')" if edge_label else '',
                'top_n': top_n,
                'edge_weight_property': edge_weight_property}
         
@@ -193,7 +196,7 @@ class GraphQueries(object):
 
         Parameters
         ----------
-        vids: list(String)
+        vids: list(long)
             Titan database vertex ids.
 
         edge_label: String
@@ -226,8 +229,8 @@ class GraphQueries(object):
             .inV.retain(v0).as('v2')
             .select(['v1','v2','edge'])   
         """ % {'vids': ', '.join(["g.v(%s)" % (v) for v in vids]),
-               'edge_label': "('" + edge_label + "')" if edge_label is not None else '',
-               'orderedges': ".order{it.b['%(x)s'] <=> it.a['%(x)s']}" % {'x':rank_by_edge_property} if rank_by_edge_property is not None else '',
+               'edge_label': "('" + edge_label + "')" if edge_label else '',
+               'orderedges': ".order{it.b['%(x)s'] <=> it.a['%(x)s']}" % {'x':rank_by_edge_property} if rank_by_edge_property else '',
                'top_n': max_edges}
 
         for e in self.g.gremlin.execute(query).results:
@@ -238,7 +241,7 @@ class GraphQueries(object):
 
         Parameters
         ----------
-        vids: list(String)
+        vids: list(long)
             Titan database vertex ids.
 
         edge_label: String
@@ -270,8 +273,8 @@ class GraphQueries(object):
             .inV.retain(v0)
             .back('e0')%(orderedges)s[0..<%(top_n)d]
         """ % {'vids': ', '.join(["g.v(%s)" % (v) for v in vids]),
-               'edge_label': "('" + edge_label + "')" if edge_label is not None else '',
-               'orderedges': ".order{it.b['%(x)s'] <=> it.a['%(x)s']}" % {'x':rank_by_edge_property} if rank_by_edge_property is not None else '',
+               'edge_label': "('" + edge_label + "')" if edge_label else '',
+               'orderedges': ".order{it.b['%(x)s'] <=> it.a['%(x)s']}" % {'x':rank_by_edge_property} if rank_by_edge_property else '',
                'top_n': max_edges}
 
         for e in self.g.gremlin.execute(query).results:
