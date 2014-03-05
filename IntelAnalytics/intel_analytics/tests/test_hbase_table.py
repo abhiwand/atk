@@ -987,5 +987,32 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         with self.assertRaises(Exception):
             builder._validate_exists('/some/real/path/that/does/not/exist')
 
+    @patch("intel_analytics.table.hbase.table.is_local_run")
+    @patch("intel_analytics.table.hbase.table.exists_hdfs")
+    def test_validate_not_exists_local_multiple(self, exists, is_local_run):
+        exists.return_value = False
+        is_local_run.return_value = True
+
+        builder = HBaseFrameBuilder()
+        try:
+            builder._validate_exists(['not_exists1', 'not_exists2'])
+            self.fail()
+        except Exception as e:
+            self.assertEqual(e.message, "ERROR: File not_exists1 does NOT exist locally\nERROR: File not_exists2 does NOT exist locally")
+
+
+
+    @patch("intel_analytics.table.hbase.table.exists_hdfs")
+    def test_validate_not_exists_hdfs_multiple(self, exists):
+        exists.return_value = False
+
+        builder = HBaseFrameBuilder()
+        try:
+            builder._validate_exists(['not_exists1', 'not_exists2'])
+            self.fail()
+        except Exception as e:
+            self.assertEqual(e.message, "ERROR: File not_exists1 does NOT exist in HDFS\nERROR: File not_exists2 does NOT exist in HDFS")
+
+
 if __name__ == '__main__':
     unittest.main()
