@@ -89,8 +89,8 @@ public class EdgeRule {
         this.dstFieldName       = dstFieldName;
         this.propertyFieldNames = new ArrayList<String>();
         this.isBiDirectional    = biDirectional;
-        this.edgeLabelType      = determineEdgeLabelType(labelRule);
         this.labelRule          = labelRule;
+        this.edgeLabelType      = determineEdgeLabelType(labelRule);
 
         List<String> edgeAttributeList = getPropertyFieldNames();
         this.edgeAttributes = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
@@ -118,7 +118,10 @@ public class EdgeRule {
      * @param labelRule
      * @return
      */
-    public EdgeLabelType determineEdgeLabelType(String labelRule) {
+    public EdgeLabelType determineEdgeLabelType(String labelRule) throws IllegalArgumentException {
+
+        if (labelRule == null)
+            throw new IllegalArgumentException("Invalid edge label: " + labelRule);
 
         if (labelRule.contains(EdgeRule.PREFIX_FOR_DYNAMIC_EDGE_LABEL)) {
             return EdgeLabelType.DYNAMIC;
@@ -154,6 +157,9 @@ public class EdgeRule {
     private String parseDynamicEdgeRule() throws IllegalArgumentException {
         String[] splitEdgeLabelRule = this.labelRule.split(PREFIX_FOR_DYNAMIC_EDGE_LABEL);
 
+        if (splitEdgeLabelRule.length < 2)
+            throw new IllegalArgumentException("Field name is required for dynamic edge labels : " + this.labelRule);
+
         throwEmptyEdgeLabelException(splitEdgeLabelRule[1]);
 
         return splitEdgeLabelRule[1];
@@ -186,10 +192,24 @@ public class EdgeRule {
             label = this.getLabelRule();
         } else if (this.edgeLabelType == EdgeLabelType.DYNAMIC) {
             label = (String) inputTupleInProgress.getTupleData(this.edgeLabelFieldName);
+
+            if (label == null)
+                throw new IllegalArgumentException("Null edge label in tuple : " + inputTupleInProgress);
+
+            if (label.isEmpty())
+                throw new IllegalArgumentException("Empty edge label in tuple : " + inputTupleInProgress);
         } else {
             throw new IllegalArgumentException("Invalid edge label type: " + this.edgeLabelType);
         }
 
         return label;
+    }
+
+    public EdgeLabelType getEdgeLabelType() {
+        return this.edgeLabelType;
+    }
+
+    public String getEdgeLabelFieldName() {
+        return this.edgeLabelFieldName;
     }
 }
