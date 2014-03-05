@@ -61,7 +61,7 @@ class MockFrameJoin(unittest.TestCase):
 
         return object
 
-    def join_test_invalid_right(self, tL, tR, info):
+    def join_mock_invalid_right(self, tL, tR, info):
         msg="Error! Invalid input 'right'"
         try:
             tJ = tL.join(tR,\
@@ -75,7 +75,7 @@ class MockFrameJoin(unittest.TestCase):
             print "%s: caught HBaseTableException '%s'" %(info, str(e))
             self.assertTrue(msg in e.message)
 
-    def join_test_invalid_right_on(self, tL, tR, right_on, info):
+    def join_mock_invalid_right_on(self, tL, tR, right_on, info):
         msg="Error! Invalid input 'right_on'"
         try:
             tJ = tL.join([tR],\
@@ -89,7 +89,7 @@ class MockFrameJoin(unittest.TestCase):
             print "%s: caught HBaseTableException '%s'" %(info, str(e))
             self.assertTrue(msg in e.message)
 
-    def join_test_invalid_suffixes(self, tL, tR, suffixes, info):
+    def join_mock_invalid_suffixes(self, tL, tR, suffixes, info):
         msg="Error! Invalid input 'suffixes'"
         try:
             tJ = tL.join([tR],\
@@ -103,7 +103,7 @@ class MockFrameJoin(unittest.TestCase):
             print "%s: caught HBaseTableException '%s'" %(info, str(e))
             self.assertTrue(msg in e.message)
 
-    def join_test_invalid_columns(self, tL, tR, columns, info):
+    def join_mock_invalid_columns(self, tL, tR, columns, info):
         msg="Error! Invalid input 'right_on'"
         try:
             tJ = tL.join([tR],\
@@ -114,10 +114,10 @@ class MockFrameJoin(unittest.TestCase):
                          join_frame_name='join_frame')
             self.fail("Failed to return None for: %s for invalid column names" % msg)
         except HBaseTableException, e:
-            print "%s: caught HBaseTableException '%s' for invalid column names" %(info, str(e))
+            print "%s: caught HBaseTableException '%s'" %(info, str(e))
             self.assertTrue(msg in e.message)
 
-    def join_test_invalid_join_type(self, tL, tR, join_type, info):
+    def join_mock_invalid_join_type(self, tL, tR, join_type, info):
         msg="Error! Invalid input 'how'"
         try:
             tJ = tL.join([tR],\
@@ -131,7 +131,7 @@ class MockFrameJoin(unittest.TestCase):
             print "%s: caught HBaseTableException '%s'" %(info, str(e))
             self.assertTrue(msg in e.message)
 
-    def join_test_single_column(self, tL, tR, info, result_holder):
+    def join_mock_single_column(self, tL, tR, info, result_holder):
         for how in ['inner', 'outer', 'left', 'right']:
             join_name = 'join_single_' + how
             # mock the joined table
@@ -144,7 +144,7 @@ class MockFrameJoin(unittest.TestCase):
             args = result_holder["call_args"]
             print "%s: args: d: %s" %(info, '\t'.join(args))
 
-    def join_test_multiple_column(self, tL, tR, info, result_holder):
+    def join_mock_multiple_column(self, tL, tR, info, result_holder):
         for how in ['inner', 'outer', 'left', 'right']:
             join_name = 'join_multiple_' + how
             # mock the joined table
@@ -157,7 +157,7 @@ class MockFrameJoin(unittest.TestCase):
             args = result_holder["call_args"]
             print "%s: args: d: %s" %(info, '\t'.join(args))
 
-    def join_test_self(self, tL, info, result_holder):
+    def join_mock_self(self, tL, info, result_holder):
         for how in ['inner', 'outer', 'left', 'right']:
             join_name = 'join_self_' + how
             # mock the joined table
@@ -170,7 +170,7 @@ class MockFrameJoin(unittest.TestCase):
             args = result_holder["call_args"]
             print "%s: args: d: %s" %(info, '\t'.join(args))
 
-    def join_test_multiple_tables(self, tL, tR1, tR2, info, result_holder):
+    def join_mock_multiple_tables(self, tL, tR1, tR2, info, result_holder):
         for how in ['inner', 'outer', 'left', 'right']:
             join_name = 'join_self_' + how
             # mock the joined table
@@ -238,11 +238,11 @@ class MockFrameJoin(unittest.TestCase):
         etl_object.return_value = etl_object
 
         # all negative cases for inputs validation
-        self.join_test_invalid_right(tL, tR, 'Test:right must be a list')
-        self.join_test_invalid_right_on(tL, tR, 'dummy_right_col', 'Test:right_on must be a list')
-        self.join_test_invalid_suffixes(tL, tR, 'dummy_suffixes', 'Test:suffixes must match')
-        self.join_test_invalid_columns(tL, tR, ['col1', 'col2_fake'], 'Test:right_on size must match')
-        self.join_test_invalid_join_type(tL, tR, 'dummy_join_type', 'Test:type unknown')
+        self.join_mock_invalid_right(tL, tR, 'Test:right must be a list')
+        self.join_mock_invalid_right_on(tL, tR, 'dummy_right_col', 'Test:right_on must be a list')
+        self.join_mock_invalid_suffixes(tL, tR, 'dummy_suffixes', 'Test:suffixes must match')
+        self.join_mock_invalid_columns(tL, tR, ['col1', 'col2_fake'], 'Test:right_on size must match')
+        self.join_mock_invalid_join_type(tL, tR, 'dummy_join_type', 'Test:type unknown')
 
         # mock the following for the actual join operations
         etl_base_client_class.return_value = self.create_mock_hbase_client_for_join()
@@ -252,10 +252,10 @@ class MockFrameJoin(unittest.TestCase):
         report_content['input_count'] = '1500'
         pig_report_strategy.content = report_content
         pig_report_strategy_class.return_value = pig_report_strategy
-        self.join_test_single_column(tL, tR, 'Test:single column', result_holder)
-        self.join_test_multiple_column(tL, tR, 'Test:multiple columns', result_holder)
-        self.join_test_self(tL, 'Test:self joihn', result_holder)
-        self.join_test_multiple_tables(tL, tR, tRR, 'Test:multiple table join', result_holder)
+        self.join_mock_single_column(tL, tR, 'Test:single column', result_holder)
+        self.join_mock_multiple_column(tL, tR, 'Test:multiple columns', result_holder)
+        self.join_mock_self(tL, 'Test:self joihn', result_holder)
+        self.join_mock_multiple_tables(tL, tR, tRR, 'Test:multiple table join', result_holder)
 
 if __name__ == '__main__':
     unittest.main()
