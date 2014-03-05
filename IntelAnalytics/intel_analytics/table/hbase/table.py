@@ -837,9 +837,9 @@ class HBaseFrameBuilder(FrameBuilder):
             file_name = ','.join(file_name)
         return file_name
 
-    def build_from_csv(self, frame_name, file_name, schema,
+    def build_from_csv(self, frame_name, file_names, schema,
                        skip_header=False, overwrite=False):
-        self._validate_exists(file_name)
+        self._validate_exists(file_names)
 
         table_name = _create_table_name(frame_name, overwrite)
 
@@ -849,11 +849,11 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.save_schema(table_name)
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
-        file_name = self._get_file_name_string_for_import(file_name)
+        file_names = self._get_file_name_string_for_import(file_names)
 
         args = get_pig_args('pig_import_csv.py')
 
-        args += ['-i', file_name, '-o', table_name,
+        args += ['-i', file_names, '-o', table_name,
                  '-f', feature_names_as_str, '-t', feature_types_as_str]
 
         if skip_header:
@@ -877,11 +877,11 @@ class HBaseFrameBuilder(FrameBuilder):
         properties[MAX_ROW_KEY] = pig_report.content['input_count']
         etl_schema.save_table_properties(table_name, properties)
 
-        hbase_table = HBaseTable(table_name, file_name)
+        hbase_table = HBaseTable(table_name, file_names)
         hbase_registry.register(frame_name, table_name, overwrite)
         return BigDataFrame(frame_name, hbase_table)
 
-    def append_from_csv(self, data_frame, file_name, schema, skip_header=False):
+    def append_from_csv(self, data_frame, file_names, schema, skip_header=False):
         new_data_etl_schema = ETLSchema()
         new_data_etl_schema.populate_schema(schema)
         new_data_feature_names_as_str = new_data_etl_schema.get_feature_names_as_CSV()
@@ -889,10 +889,10 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = get_pig_args('pig_import_csv.py')
 
-        file_name = self._get_file_name_string_for_import(file_name)
+        file_names = self._get_file_name_string_for_import(file_names)
 
         table_name = data_frame._table.table_name
-        args += ['-i', file_name, '-o', table_name,
+        args += ['-i', file_names, '-o', table_name,
                  '-f', new_data_feature_names_as_str, '-t', new_data_feature_types_as_str]
 
         if skip_header:
@@ -912,13 +912,13 @@ class HBaseFrameBuilder(FrameBuilder):
         merged_schema.save_schema(table_name)
 
 
-    def build_from_json(self, frame_name, file_name, overwrite=False):
-        self._validate_exists(file_name)
+    def build_from_json(self, frame_name, file_names, overwrite=False):
+        self._validate_exists(file_names)
 
         #create some random table name
         #we currently don't bother the user to specify table names
         table_name = _create_table_name(frame_name, overwrite)
-        hbase_table = HBaseTable(table_name, file_name)
+        hbase_table = HBaseTable(table_name, file_names)
         new_frame = BigDataFrame(frame_name, hbase_table)
 
         schema='json:chararray'#dump all records as chararray
@@ -928,11 +928,11 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.populate_schema(schema)
         etl_schema.save_schema(table_name)
 
-        file_name = self._get_file_name_string_for_import(file_name)
+        file_names = self._get_file_name_string_for_import(file_names)
 
         args = get_pig_args('pig_import_json.py')
 
-        args += ['-i', file_name, '-o', table_name]
+        args += ['-i', file_names, '-o', table_name]
 
         logger.debug(args)
         
@@ -954,7 +954,7 @@ class HBaseFrameBuilder(FrameBuilder):
         hbase_registry.register(frame_name, table_name, overwrite)
         return new_frame
             
-    def append_from_json(self, data_frame, file_name):
+    def append_from_json(self, data_frame, file_names):
         #create some random table name
         #we currently don't bother the user to specify table names
 
@@ -963,23 +963,23 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = get_pig_args('pig_import_json.py')
 
-        file_name = self._get_file_name_string_for_import(file_name)
+        file_names = self._get_file_name_string_for_import(file_names)
 
         table_name = data_frame._table.table_name
-        args += ['-i', file_name, '-o', table_name]
+        args += ['-i', file_names, '-o', table_name]
         try:
             self._append_data(args, etl_schema, table_name)
         except DataAppendException:
             raise Exception('Could not import JSON file')
 
 
-    def build_from_xml(self, frame_name, file_name, tag_name, overwrite=False):
-        self._validate_exists(file_name)
+    def build_from_xml(self, frame_name, file_names, tag_name, overwrite=False):
+        self._validate_exists(file_names)
 
         #create some random table name
         #we currently don't bother the user to specify table names
         table_name = _create_table_name(frame_name, overwrite)
-        hbase_table = HBaseTable(table_name, file_name)
+        hbase_table = HBaseTable(table_name, file_names)
         new_frame = BigDataFrame(frame_name, hbase_table)
 
         schema='xml:chararray'#dump all records as chararray
@@ -989,11 +989,11 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.populate_schema(schema)
         etl_schema.save_schema(table_name)
 
-        file_name = self._get_file_name_string_for_import(file_name)
+        file_names = self._get_file_name_string_for_import(file_names)
 
         args = get_pig_args('pig_import_xml.py')
 
-        args += ['-i', file_name, '-o', table_name, '-tag', tag_name]
+        args += ['-i', file_names, '-o', table_name, '-tag', tag_name]
 
         logger.debug(args)
         
@@ -1016,14 +1016,14 @@ class HBaseFrameBuilder(FrameBuilder):
         
         return new_frame
 
-    def append_from_xml(self, data_frame, file_name, tag_name):
+    def append_from_xml(self, data_frame, file_names, tag_name):
 
         args = get_pig_args('pig_import_xml.py')
 
-        file_name = self._get_file_name_string_for_import(file_name)
+        file_names = self._get_file_name_string_for_import(file_names)
 
         table_name = data_frame._table.table_name
-        args += ['-i', file_name, '-o', table_name, '-tag', tag_name]
+        args += ['-i', file_names, '-o', table_name, '-tag', tag_name]
 
         logger.debug(args)
         etl_schema = ETLSchema()
@@ -1032,11 +1032,11 @@ class HBaseFrameBuilder(FrameBuilder):
         except DataAppendException:
             raise Exception('Could not import XML file')
 
-    def append_from_data_frame(self, target_data_frame, source_data_frame):
+    def append_from_data_frame(self, target_data_frame, source_data_frames):
 
         source_names = []
         schemas = []
-        for source_frame in source_data_frame:
+        for source_frame in source_data_frames:
             source_schema = ETLSchema()
             source_schema.load_schema(source_frame._table.table_name)
             schemas.append(source_schema)
@@ -1071,17 +1071,17 @@ class HBaseFrameBuilder(FrameBuilder):
         properties[MAX_ROW_KEY] = str(long(original_max_row_key) + long(pig_report.content['input_count']))
         etl_schema.save_table_properties(table_name, properties)
 
-    def _validate_exists(self, file_name):
+    def _validate_exists(self, file_names):
         """
         Check if a file exists either in HDFS, or locally, if is_local_run()
 
         Raise exception if file does NOT exist.
         """
         if is_local_run():
-            if not os.path.isfile(file_name):
-                raise Exception('ERROR: File does NOT exist ' + file_name + ' locally')
-        elif not exists_hdfs(file_name):
-            raise Exception('ERROR: File does NOT exist ' + file_name + ' in HDFS')
+            if not os.path.isfile(file_names):
+                raise Exception('ERROR: File does NOT exist ' + file_names + ' locally')
+        elif not exists_hdfs(file_names):
+            raise Exception('ERROR: File does NOT exist ' + file_names + ' in HDFS')
 
 
 def exists_hdfs(file_name):

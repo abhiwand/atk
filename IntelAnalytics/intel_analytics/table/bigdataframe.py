@@ -66,7 +66,7 @@ class FrameBuilder(object):
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
-    def build_from_csv(self, frame_name, file_name, schema, skip_header=False):
+    def build_from_csv(self, frame_name, file_names, schema, skip_header=False):
         """
         Reads a CSV (comma-separated-value) file and loads it into a frame.
 
@@ -74,7 +74,7 @@ class FrameBuilder(object):
         ----------
         frame_name : String
             The name of the new frame
-        file_name : String or iterable of strings
+        file_names : String or iterable of strings
             The path to the source files
         schema : String
             The schema of the source file.  A comma-separated list of ``key:value``
@@ -98,7 +98,7 @@ class FrameBuilder(object):
         pass
 
     @abc.abstractmethod
-    def append_from_csv(self, data_frame, file_name, skip_header=False):
+    def append_from_csv(self, data_frame, file_names, skip_header=False):
         """
         Reads a CSV (comma-separated-value) file and append it into an existing data frame.
 
@@ -106,7 +106,7 @@ class FrameBuilder(object):
         ----------
         data_frame : BigDataFrame
             An existing big data frame
-        file_name : String or iterable of strings
+        file_names : String or iterable of strings
             The path to the source files
         skip_header : Bool
             if True, skip the first line of the file
@@ -114,15 +114,15 @@ class FrameBuilder(object):
         pass
 
     @abc.abstractmethod
-    def build_from_json(self, frame_name, file_name):
+    def build_from_json(self, frame_name, file_names):
         """
-        Reads a JSON (www.json.org) file and loads it into a frame.
+        Reads an JSON file and loads it into a frame.
 
         Parameters
         ----------
         frame_name : String
             The name of the new frame
-        file_name : String or iterable of strings
+        file_names : String or iterable of strings
             The path to the source files
 
         Returns
@@ -132,22 +132,21 @@ class FrameBuilder(object):
         """
         pass
 
-    def append_from_json(self, data_frame, file_name):
+    def append_from_json(self, data_frame, file_names):
         """
-        Reads an XML file and loads it into a frame.
         Reads an JSON file and append it into an existing data frame
 
         Parameters
         ----------
         data_frame : BigDataFrame
             An existing big data frame
-        file_name : String or iterable of strings
+        file_names : String or iterable of strings
             The path to the source files
         """
         pass
 
     @abc.abstractmethod
-    def build_from_xml(self, frame_name, file_name, tag_name=None):
+    def build_from_xml(self, frame_name, file_names, tag_name=None):
         """
         Reads an XML file and loads it into a table.
 
@@ -155,7 +154,7 @@ class FrameBuilder(object):
         ----------
         frame_name : String
             The name of the new frame
-        file_name : String or iterable of strings
+        file_names : String or iterable of strings
             The path to the source files
         tag_name : String
             The XML tag name
@@ -168,7 +167,7 @@ class FrameBuilder(object):
         pass
 
     @abc.abstractmethod
-    def append_from_xml(self, data_frame, file_name, tag_name):
+    def append_from_xml(self, data_frame, file_names, tag_name):
         """
         Reads an XML file and append it into a existing data frame.
 
@@ -176,7 +175,7 @@ class FrameBuilder(object):
         ----------
         data_frame : BigDataFrame
             An existing big data frame.
-        file_name : String or iterable of strings
+        file_names : String or iterable of strings
             The path to the source files
         tag_name : String
             XML tag for record.
@@ -184,7 +183,7 @@ class FrameBuilder(object):
         pass
 
     @abc.abstractmethod
-    def append_from_data_frame(self, target_data_frame, source_data_frame):
+    def append_from_data_frame(self, target_data_frame, source_data_frames):
         """
         Apped list of source data frames to target data frame.
 
@@ -192,7 +191,7 @@ class FrameBuilder(object):
         ----------
         target_data_frame : BigDataFrame
             The data frame to append data to
-        source_data_frame : List
+        source_data_frames : iterable
             List of data frame which data will be appended to the target data frame
         """
         pass
