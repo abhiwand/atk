@@ -114,7 +114,13 @@ class GBPigScriptBuilder(object):
                 edge_schemata_str += ';'
                 
         return "STORE_GRAPH(%s, '%s', '%s', '%s', '%s');" % (pig_alias, gb_conf_file, type_info, edge_schemata_str, other_args)
-    
+
+    def _build_store_graph_infer_schema_statement(self, gb_conf_file, other_args):
+        #See STORE_GRAPH_INFER_SCHEMA macro in graphbuilder.pig for the macro definition
+        if other_args == None:
+            other_args = ''
+        return "STORE_GRAPH_INFER_SCHEMA('%s', '%s');" % (gb_conf_file, other_args)
+
     def _build_load_titan_statement(self, directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args): 
         if other_args == None:
             other_args = ''
@@ -122,10 +128,10 @@ class GBPigScriptBuilder(object):
         vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v, True) + '"', vertex_list))        
         edge_rule = ('-d ' if directed else '-e ') + edges
         return "LOAD_TITAN('%s', '%s', '%s', '%s', '%s');" % (source_table_name, vertex_rule, edge_rule, gb_conf_file, other_args)
-        
+
     def create_pig_bulk_load_script(self, gb_conf_file, source_frame, vertex_list, edge_list,
                                     registered_vertex_properties, registered_edge_properties, directed, overwrite,
-                                    append, flatten, retainDanglingEdges, withVertexSide):
+                                    append, flatten, retainDanglingEdges, withSideVertexProperty):
         
         source_table_name = source_frame._table.table_name
         
@@ -139,8 +145,8 @@ class GBPigScriptBuilder(object):
             other_args += " -F "
         if retainDanglingEdges:
             other_args += " -x"
-        if withVertexSide:
-            other_args += " -p"
+        if withSideVertexProperty:
+            other_args += " -P"
             
         #start generating pig statements
         statements = []
@@ -153,7 +159,15 @@ class GBPigScriptBuilder(object):
         #no additional vertices/edges registered, use regular LOAD_TITAN
         #@Deprecated: LOAD_TITAN should be removed later, we want to move to a single bulk loading pig macro
         if registered_vertex_properties == None and registered_edge_properties == None:
-            statements.append(self._build_load_titan_statement(directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args)) 
+            edges = ' '.join(map(lambda e: '"' + self.edge_str(e) + '"', edge_list))
+            need_dynamic_edge_label = False
+            for edge_rule in edges.split():
+                need_dynamic_edge_label = (False if edge_rule.find("dynamic:") == -1 else True)
+
+            if need_dynamic_edge_label == False:
+                statements.append(self._build_load_titan_statement(directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args))
+            else:
+                statements.append(self._build_store_graph_infer_schema_statement(gb_conf_file, other_args))
         else:
             edges = ' '.join(map(lambda e: '"' + self.edge_str(e) + '"', edge_list))
             vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v) + '"', vertex_list))        
