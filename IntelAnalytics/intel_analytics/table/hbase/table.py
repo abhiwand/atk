@@ -849,6 +849,7 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.save_schema(table_name)
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+        file_name = self._get_file_name_string_for_import(file_name)
 
         args = get_pig_args('pig_import_csv.py')
 
