@@ -1077,12 +1077,19 @@ class HBaseFrameBuilder(FrameBuilder):
 
         Raise exception if file does NOT exist.
         """
-        if is_local_run():
-            if not os.path.isfile(file_names):
-                raise Exception('ERROR: File does NOT exist ' + file_names + ' locally')
-        elif not exists_hdfs(file_names):
-            raise Exception('ERROR: File does NOT exist ' + file_names + ' in HDFS')
+        if isinstance(file_names, basestring):
+            file_names = [file_names]
 
+        not_found = []
+        for name in file_names:
+            if is_local_run():
+                if not os.path.isfile(name):
+                    not_found.append('ERROR: File ' + name + ' does NOT exist locally')
+            elif not exists_hdfs(name):
+                    not_found.append('ERROR: File ' + name + ' does NOT exist in HDFS')
+
+        if len(not_found) > 0:
+            raise Exception('\n'.join(not_found))
 
 def exists_hdfs(file_name):
     try:
