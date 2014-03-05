@@ -42,6 +42,7 @@ if __name__ != '__main__':
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.path as path
+import pydoop.hdfs as hdfs
 import numpy as np
 import re
 import time
@@ -136,29 +137,31 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                time_str,
                                curve_title,
                                curve_ylabel):
-        report_file = self._get_report(output_path, file_name, time_str)
+        #report_file = self._get_report(output_path, file_name, time_str)
         #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        #with open(report_file) as result:
+        with hdfs.open(output_path + '/' + file_name) as result:
+        #    lines = result.readlines()
 
-        data_x = []
-        data_y = []
-        num_vertices = 0
-        num_edges = 0
-        progress_results = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
+            data_x = []
+            data_y = []
+            num_vertices = 0
+            num_edges = 0
+            progress_results = []
+        #for i in range(len(lines)):
+            for line in result:
+                if re.search(r'superstep', line):
+                    results = line.split()
+                    data_x.append(results[2])
+                    data_y.append(results[5])
 
-            if re.search(r'Number of vertices', lines[i]):
-                results = lines[i].split()
-                num_vertices = results[3]
+                if re.search(r'Number of vertices', line):
+                    results = line.split()
+                    num_vertices = results[3]
 
-            if re.search(r'Number of edges', lines[i]):
-                results = lines[i].split()
-                num_edges = results[3]
+                if re.search(r'Number of edges', line):
+                    results = line.split()
+                    num_edges = results[3]
 
         progress_results.append(data_x)
         progress_results.append(data_y)
@@ -176,33 +179,35 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                curve_ylabel2="RMSE (Validate)",
                                curve_ylabel3="RMSE (Test)"
                                ):
-        report_file = self._get_report(output_path, file_name, time_str)
+        #report_file = self._get_report(output_path, file_name, time_str)
         #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        with hdfs.open(output_path + '/' + file_name) as result:
+        #with open(report_file) as result:
+            #lines = result.readlines()
 
-        data_x = []
-        data_y = []
-        data_v = []
-        data_t = []
-        num_vertices = 0
-        num_edges = 0
-        learning_results = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
-                data_v.append(results[8])
-                data_t.append(results[11])
+            data_x = []
+            data_y = []
+            data_v = []
+            data_t = []
+            num_vertices = 0
+            num_edges = 0
+            learning_results = []
+            #for i in range(len(lines)):
+            for line in result:
+                if re.search(r'superstep', line):
+                    results = line.split()
+                    data_x.append(results[2])
+                    data_y.append(results[5])
+                    data_v.append(results[8])
+                    data_t.append(results[11])
 
-            if re.search(r'Number of vertices', lines[i]):
-                results = lines[i].split()
-                num_vertices = results[3]
+                if re.search(r'Number of vertices', line):
+                    results = line.split()
+                    num_vertices = results[3]
 
-            if re.search(r'Number of edges', lines[i]):
-                results = lines[i].split()
-                num_edges = results[3]
+                if re.search(r'Number of edges', line):
+                    results = line.split()
+                    num_edges = results[3]
 
         learning_results.append(data_x)
         learning_results.append(data_y)
@@ -224,8 +229,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         Deletes the old output directory if it exists.
         """
-        del_cmd = 'if hadoop fs -test -e ' + output_path + \
-                  '; then hadoop fs -rmr -skipTrash ' + output_path + '; fi'
+        del_cmd = 'if ' + global_config['hadoop'] + ' fs -test -e ' + output_path + \
+                  '; then ' + global_config['hadoop'] + ' fs -rmr -skipTrash ' + output_path + '; fi'
         call(del_cmd, shell=True)
 
     def _create_dir(self, path):
@@ -243,7 +248,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._create_dir(global_config['giraph_report_dir'])
         report_file = global_config['giraph_report_dir'] + '/' + \
                       self._table_name + time_str + '_report.txt'
-        cmd = 'hadoop fs -get ' + output_path + '/' + file_name + ' ' + report_file
+        cmd = global_config['hadoop'] + ' fs -get ' + output_path + '/' + file_name + ' ' + report_file
         call(cmd, shell=True)
         return report_file
 
