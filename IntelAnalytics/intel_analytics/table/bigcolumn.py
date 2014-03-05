@@ -41,7 +41,7 @@ class ColumnProfile(object):
     """
     def __init__(self, **kwargs):
         # We intend to add other profile features like pattern, type errors, outlier strategy to this class
-        for key in ('data_intervals') : setattr(self, key, kwargs.get(key))
+        self.data_intervals = kwargs.get('data_intervals', False)
         if self.data_intervals:
             if not all(isinstance(obj, Interval) for obj in self.data_intervals):
                 raise Exception('Invalid interval groups specified')
@@ -70,4 +70,6 @@ class BigColumn(object):
             additional parameters for BigColumn object
         """
         self.name = name
-        for key in ('profile') : setattr(self, key, kwargs.get(key))
+        for key in ['profile'] : setattr(self, key, kwargs.get(key, False))
+        if self.profile and not isinstance(self.profile, ColumnProfile):
+            raise Exception('profile should be an instance of ColumnProfile')
