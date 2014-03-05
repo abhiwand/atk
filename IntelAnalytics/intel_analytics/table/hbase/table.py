@@ -322,10 +322,11 @@ class HBaseTable(object):
         if return_code:
             raise HBaseTableException('Could not apply transformation')
 
+        type = "bytearray"
         #need to update schema here as it's difficult to pass the updated schema info from jython to python
-        idx =  etl_schema.feature_names.index(column_name)
-        type = etl_schema.feature_types[idx]
-        if (not keep_source_column) or (column_name == new_column_name):
+        if (not keep_source_column) or column_name == new_column_name:
+            idx =  etl_schema.feature_names.index(column_name)
+            type = etl_schema.feature_types[idx]
             del etl_schema.feature_names[idx]
             del etl_schema.feature_types[idx]
         etl_schema.feature_names.append(new_column_name)
