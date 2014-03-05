@@ -131,7 +131,7 @@ class GraphBuilder(object):
         self._source = source
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite, append, flatten):
+    def build(self, graph_name, overwrite, append, flatten, retainDanglingEdges, withSideVertexProperty):
         """
         Builds a graph according to the settings in the builder
 
@@ -270,7 +270,8 @@ class PropertyGraphBuilder(GraphBuilder):
         self.registered_edge_properties = None # edge properties registered with register_edge_properties()
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite=False, append=False, flatten=False, withVertexDirection=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False,
+              retainDanglingEdges=False, withVertexDirection=False):
         """
         Builds a property graph according to the settings in the builder
 

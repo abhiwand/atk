@@ -134,7 +134,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
         return s
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False,
-              retainDanglingEdges=False, withVertexSide=False):
+              retainDanglingEdges=False, withSideVertexProperty=False):
         if len(self._vertex_list) != 2:
             raise ValueError("ERROR: bipartite graph construction requires 2 " +
                 "vertex sources; " + str(len(self._vertex_list)) + " detected")
@@ -152,7 +152,7 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
                      append=append,
                      flatten=flatten,
                      retainDanglingEdges=retainDanglingEdges,
-                     withVertexSide=withVertexSide)
+                     withSideVertexProperty=withSideVertexProperty)
 
 
 class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
@@ -175,7 +175,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
         return s
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False,
-              retainDanglingEdges=False, withVertexSide=False):
+              retainDanglingEdges=False, withSideVertexProperty=False):
         return build(graph_name,
                      self._source,
                      self._vertex_list,
@@ -187,12 +187,12 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                      registered_vertex_properties=self.registered_vertex_properties,
                      registered_edge_properties=self.registered_edge_properties,
                      retainDanglingEdges=retainDanglingEdges,
-                     withVertexSide=withVertexSide)
+                     withSideVertexProperty=withSideVertexProperty)
 
 
 def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten, 
-          registered_vertex_properties = None, registered_edge_properties = None, retainDanglingEdges =  False,
-          withVertexSide = False):
+          registered_vertex_properties = None, registered_edge_properties = None, retainDanglingEdges = False,
+          withSideVertexProperty = False):
 
     #overwrite and append are mutually exclusive
     if overwrite and append:
@@ -215,7 +215,7 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
     
     cmd = get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, 
                                registered_edge_properties, is_directed, overwrite, append, flatten,
-                               retainDanglingEdges, withVertexSide)
+                               retainDanglingEdges, withSideVertexProperty)
     
     return_code = call(cmd, report_strategy=etl_report_strategy())
 
@@ -246,7 +246,7 @@ def _get_table_name_from_source(source):
 
 def get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, 
                          registered_edge_properties, is_directed, overwrite, append, flatten,
-                         retainDanglingEdges, withVertexSide):
+                         retainDanglingEdges, withSideVertexProperty):
     """
     Build the Pig command line call to the Jython script
     """
@@ -254,7 +254,7 @@ def get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registere
     script = pig_builder.create_pig_bulk_load_script(gb_conf_file, source, vertex_list, edge_list, 
                                                      registered_vertex_properties, registered_edge_properties, 
                                                      is_directed, overwrite, append, flatten, retainDanglingEdges,
-                                                     withVertexSide)
+                                                     withSideVertexProperty)
     args = get_pig_args_with_gb('pig_execute.py')
     args += ['-s', script]
     return args
