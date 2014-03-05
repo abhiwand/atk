@@ -882,6 +882,7 @@ class HBaseFrameBuilder(FrameBuilder):
         return BigDataFrame(frame_name, hbase_table)
 
     def append_from_csv(self, data_frame, file_names, schema, skip_header=False):
+        self._validate_exists(file_names)
         new_data_etl_schema = ETLSchema()
         new_data_etl_schema.populate_schema(schema)
         new_data_feature_names_as_str = new_data_etl_schema.get_feature_names_as_CSV()
@@ -959,6 +960,7 @@ class HBaseFrameBuilder(FrameBuilder):
         #we currently don't bother the user to specify table names
 
         #save the schema of the dataset to import
+        self._validate_exists(file_names)
         etl_schema = ETLSchema()
 
         args = get_pig_args('pig_import_json.py')
@@ -1017,7 +1019,7 @@ class HBaseFrameBuilder(FrameBuilder):
         return new_frame
 
     def append_from_xml(self, data_frame, file_names, tag_name):
-
+        self._validate_exists(file_names)
         args = get_pig_args('pig_import_xml.py')
 
         file_names = self._get_file_name_string_for_import(file_names)
