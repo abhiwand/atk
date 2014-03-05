@@ -164,10 +164,17 @@ class GBPigScriptBuilder(object):
             for edge_rule in edges.split():
                 need_dynamic_edge_label = (False if edge_rule.find("dynamic:") == -1 else True)
 
-            if need_dynamic_edge_label == False:
-                statements.append(self._build_load_titan_statement(directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args))
-            else:
+            if need_dynamic_edge_label:
+                vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v) + '"', vertex_list))
+                edge_rule = ('-d ' if directed else '-e ') + edges
+
+                statements.append("SET default_parallel %s;" % global_config['pig_parallelism_factor'])
+                statements.append("DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v %s %s');" % (vertex_rule, edge_rule))
+                statements.append(self._build_hbase_table_load_statement(source_table_name, "base_graph"))
+                statements.append("g_0 = FOREACH base_graph GENERATE FLATTEN(CreatePropGraphElements(*));")
                 statements.append(self._build_store_graph_infer_schema_statement(gb_conf_file, other_args))
+            else:
+                statements.append(self._build_load_titan_statement(directed, gb_conf_file, source_table_name, vertex_list, edge_list, other_args))
         else:
             edges = ' '.join(map(lambda e: '"' + self.edge_str(e) + '"', edge_list))
             vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v) + '"', vertex_list))        
