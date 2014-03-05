@@ -30,10 +30,8 @@ import java.io.IOException;
 /**
  * The basic double type in the library.
  */
-public class DoubleType implements WritableComparable<DoubleType>, Mergeable<DoubleType>, JSONAware,
-        EncapsulatedObject{
-    public static final DoubleType ZERO = new DoubleType(0);
-    public static final DoubleType ONE  = new DoubleType(1);
+public class DoubleType extends EncapsulatedObject
+        implements WritableComparable<DoubleType>, Mergeable<DoubleType>, JSONAware {
 
     public DoubleType() {
         val = 0;
@@ -77,11 +75,7 @@ public class DoubleType implements WritableComparable<DoubleType>, Mergeable<Dou
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof DoubleType) {
-            return ((DoubleType) obj).val == val;
-        } else {
-            return false;
-        }
+        return obj instanceof DoubleType && ((DoubleType) obj).val == val;
     }
 
     @Override

@@ -57,4 +57,11 @@ public class DoubleTypeTest {
 		d.readFields(dInput);
 		assertEquals(val, d.get(), EPSILON);
 	}
+
+    @Test
+    public void testGetBaseType() throws Exception {
+        DoubleType d = new DoubleType();
+
+        assertEquals(d.getBaseType(), Double.class);
+    }
 }

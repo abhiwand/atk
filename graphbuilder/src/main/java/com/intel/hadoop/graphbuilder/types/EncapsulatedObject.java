@@ -19,6 +19,10 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
-public interface EncapsulatedObject{
-    public Object getBaseObject();
+public abstract class EncapsulatedObject {
+    public abstract Object getBaseObject();
+
+    public Class<?> getBaseType() {
+        return this.getBaseObject().getClass();
+    }
 }

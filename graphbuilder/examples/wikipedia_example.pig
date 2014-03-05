@@ -27,6 +27,7 @@
  */
  %default GB_HOME '.'
  
+REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
 xml_data = LOAD 'examples/data/wiki_single.txt' using com.intel.pig.load.XMLLoader('page') AS (page: chararray);

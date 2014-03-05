@@ -60,4 +60,11 @@ public class FloatTypeTest {
 		f.readFields(dInput);
 		assertEquals(val, f.get(), EPSILON);
 	}
+
+    @Test
+    public void testGetBaseType() throws Exception {
+        FloatType f = new FloatType();
+
+        assertEquals(f.getBaseType(), Float.class);
+    }
 }

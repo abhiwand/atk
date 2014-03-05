@@ -21,15 +21,40 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.output.OutputConfiguration;
+import org.apache.hadoop.fs.Path;
+
+/**
+ * Encapsulates all state needed to write a property graph into Titan.
+ */
 
 public class TitanOutputConfiguration implements OutputConfiguration {
     private GraphGenerationMRJob graphGenerationMRJob;
 
-
+    /**
+     * No parameter constructor that allocates a pipeline for writing.
+     * Schema will not be inferred dynamically, and the input path will be obtained from the
+     * <code>InputConfiguration</code>
+     */
     public TitanOutputConfiguration() {
         graphGenerationMRJob = new TitanWriterMRChain();
     }
 
+    /**
+     * Constructor that takes a boolean for whether or not to dynamically infer the graph schema with a map-reduce
+     * scan over the data prior to initializing Titan.
+     *
+     * @param inferSchema <code>true</code>  means obtain the graph schema from a scan over the data,<code>false</code>
+     *                    means it was obtained from the commandline.
+     * @param pathName    The input path for a <code>SerializedGraphElementStringTypeVids</code> sequence file on HDFS.
+     */
+    public TitanOutputConfiguration(boolean inferSchema, String pathName) {
+        Path path = new Path(pathName);
+        graphGenerationMRJob = new TitanWriterMRChain(inferSchema, path);
+    }
+
+    /**
+     * @return This output configuration's <code>GraphGenerationMRJob</code>;
+     */
     public GraphGenerationMRJob getGraphGenerationMRJob() {
         return graphGenerationMRJob;
     }
