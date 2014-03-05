@@ -24,7 +24,6 @@ import org.junit.Test;
 
 import java.io.*;
 
-import static junit.framework.Assert.assertSame;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -39,21 +38,17 @@ public class SchemaElementTest {
     final String DR_ZAIUS = "Dr. Zaius";
     final String D_DIRTY_APE = "you d--- dirty ape";
 
-
-
     @Test
     public final void test_write_read() throws IOException {
 
-        SchemaElement inSchema = new SchemaElement(SchemaElement.Type.EDGE, DR_ZAIUS);
+        SchemaElement inSchema = SchemaElement.CreateEdgeSchemaElement(DR_ZAIUS);
         inSchema.addPropertySchema(planetOfStrings);
 
-        SchemaElement outSchema = new SchemaElement(SchemaElement.Type.VERTEX, D_DIRTY_APE);
+        SchemaElement outSchema = SchemaElement.CreateVertexSchemaElement(D_DIRTY_APE);
         outSchema.addPropertySchema(planetOfFloats);
-
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
         DataOutputStream dataOutputStream = new DataOutputStream(baos);
-
 
         inSchema.write(dataOutputStream);
 
@@ -63,13 +58,13 @@ public class SchemaElementTest {
         outSchema.readFields(dataInputStream);
 
         assertTrue(inSchema.equals(outSchema));
-     }
+    }
 
     @Test
     public void test_consistency_of_equals_and_HashCode() throws Exception {
 
-        SchemaElement serializedOne = new SchemaElement(SchemaElement.Type.VERTEX, D_DIRTY_APE);
-        SchemaElement serializedTwo = new SchemaElement(SchemaElement.Type.VERTEX, D_DIRTY_APE);
+        SchemaElement serializedOne = SchemaElement.CreateVertexSchemaElement(D_DIRTY_APE);
+        SchemaElement serializedTwo = SchemaElement.CreateVertexSchemaElement(D_DIRTY_APE);
 
         assertEquals(serializedOne, serializedTwo);
         assertEquals(serializedOne.hashCode(), serializedTwo.hashCode());

@@ -22,7 +22,7 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.KeyCommandLineParser;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphInitializer;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.*;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.commons.configuration.BaseConfiguration;
@@ -32,7 +32,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

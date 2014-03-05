@@ -31,7 +31,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class SchemaInferenceUtilsTest {
 
@@ -57,20 +58,18 @@ public class SchemaInferenceUtilsTest {
     PropertySchema propertySchemaC = new PropertySchema(C, dataTypeC);
     PropertySchema propertySchemaD = new PropertySchema(D, dataTypeD);
 
-    SchemaElement edgeSchema0 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
-    SchemaElement edgeSchema1 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
-    SchemaElement edgeSchema2 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
-    SchemaElement edgeSchema3 = new SchemaElement(SchemaElement.Type.EDGE, BONO);
-    SchemaElement edgeSchema012 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+    SchemaElement edgeSchema0 = SchemaElement.CreateEdgeSchemaElement(THE_EDGE);
+    SchemaElement edgeSchema1 = SchemaElement.CreateEdgeSchemaElement(THE_EDGE);
+    SchemaElement edgeSchema2 = SchemaElement.CreateEdgeSchemaElement(THE_EDGE);
+    SchemaElement edgeSchema3 = SchemaElement.CreateEdgeSchemaElement(BONO);
+    SchemaElement edgeSchema012 = SchemaElement.CreateEdgeSchemaElement(THE_EDGE);
 
-    SchemaElement vertexSchema0 = new SchemaElement(SchemaElement.Type.VERTEX, null);
-    SchemaElement vertexSchema1 = new SchemaElement(SchemaElement.Type.VERTEX, null);
-    SchemaElement vertexSchema2 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
-    SchemaElement vertexSchema3 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
-    SchemaElement vertexSchema01 = new SchemaElement(SchemaElement.Type.VERTEX, null);
-    SchemaElement vertexSchema23 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
-
-
+    SchemaElement vertexSchema0 = SchemaElement.CreateVertexSchemaElement(null);
+    SchemaElement vertexSchema1 = SchemaElement.CreateVertexSchemaElement(null);
+    SchemaElement vertexSchema2 = SchemaElement.CreateVertexSchemaElement(OTHERGUY);
+    SchemaElement vertexSchema3 = SchemaElement.CreateVertexSchemaElement(OTHERGUY);
+    SchemaElement vertexSchema01 = SchemaElement.CreateVertexSchemaElement(null);
+    SchemaElement vertexSchema23 = SchemaElement.CreateVertexSchemaElement(OTHERGUY);
 
     @Mock
     Mapper.Context mockedContext;
@@ -84,10 +83,8 @@ public class SchemaInferenceUtilsTest {
         edgeSchema0.addPropertySchema(propertySchemaA);
         edgeSchema0.addPropertySchema(propertySchemaC);
 
-
         edgeSchema1.addPropertySchema(propertySchemaA);
         edgeSchema1.addPropertySchema(propertySchemaC);
-
 
         edgeSchema2.addPropertySchema(propertySchemaB);
         edgeSchema2.addPropertySchema(propertySchemaC);
@@ -95,11 +92,9 @@ public class SchemaInferenceUtilsTest {
         edgeSchema3.addPropertySchema(propertySchemaB);
         edgeSchema3.addPropertySchema(propertySchemaC);
 
-
         edgeSchema012.addPropertySchema(propertySchemaA);
         edgeSchema012.addPropertySchema(propertySchemaB);
         edgeSchema012.addPropertySchema(propertySchemaC);
-
 
         // set up the vertex schemata
 
@@ -127,8 +122,6 @@ public class SchemaInferenceUtilsTest {
     @Test
     public void testCombineSchemata() throws ClassNotFoundException {
 
-
-
         ArrayList<SchemaElement> inValues = new ArrayList<SchemaElement>();
 
         inValues.add(edgeSchema0);
@@ -148,9 +141,6 @@ public class SchemaInferenceUtilsTest {
         outValues.add(vertexSchema01);
         outValues.add(edgeSchema012);
         outValues.add(edgeSchema3);
-
-
-
 
         MergeSchemataUtility mergeUtil = new MergeSchemataUtility();
         ArrayList<SchemaElement> testOut = mergeUtil.merge(inValues);

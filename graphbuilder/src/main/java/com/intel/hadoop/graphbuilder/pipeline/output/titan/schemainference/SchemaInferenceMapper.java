@@ -21,7 +21,7 @@
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.*;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.io.NullWritable;
@@ -55,7 +55,7 @@ public class SchemaInferenceMapper extends Mapper<NullWritable, SerializedGraphE
     @Override
     public void map(NullWritable key, SerializedGraphElementStringTypeVids value, Context context) {
 
-        SchemaElement schemaElement =  new SchemaElement(value.graphElement());
+        SchemaElement schemaElement = new SchemaElement(value.graphElement());
 
         try {
             writeSchemata(schemaElement, context);
@@ -69,16 +69,16 @@ public class SchemaInferenceMapper extends Mapper<NullWritable, SerializedGraphE
      * Writes a <code>SchemeElement</code> to the context's output.
      *
      * @param schemaElement The input <code>SchemaElement</code>.
-     * @param context The job context.
+     * @param context       The job context.
      * @throws IOException
      */
     public void writeSchemata(SchemaElement schemaElement, Mapper.Context context)
             throws IOException {
 
         try {
-                context.write(NullWritable.get(), schemaElement);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+            context.write(NullWritable.get(), schemaElement);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }

@@ -36,9 +36,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.util.List;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -62,7 +60,7 @@ public class SchemaInferenceMapperTest {
     static final PropertySchema pSchema1 = new PropertySchema();
     static final PropertySchema pSchema2 = new PropertySchema();
 
-    static final SchemaElement edgeSchema = new SchemaElement(SchemaElement.Type.EDGE, label.get());
+    static final SchemaElement edgeSchema = SchemaElement.CreateEdgeSchemaElement(label.get());
 
     @Mock
     Mapper.Context mockedContext;
@@ -81,13 +79,10 @@ public class SchemaInferenceMapperTest {
 
         edgeSchema.addPropertySchema(pSchema1);
         edgeSchema.addPropertySchema(pSchema2);
-
-
     }
 
     @Test
     public void testMap_edge() throws Exception {
-
 
         SerializedGraphElementStringTypeVids inValue = new SerializedGraphElementStringTypeVids();
 
@@ -97,7 +92,7 @@ public class SchemaInferenceMapperTest {
 
         mapper.map(key, inValue, mockedContext);
 
-        SchemaElement edgeSchema = new SchemaElement(SchemaElement.Type.EDGE, label.get());
+        SchemaElement edgeSchema = SchemaElement.CreateEdgeSchemaElement(label.get());
 
         edgeSchema.addPropertySchema(pSchema1);
         edgeSchema.addPropertySchema(pSchema2);
@@ -112,18 +107,15 @@ public class SchemaInferenceMapperTest {
 
         assertEquals(seopsCaptor.getValue(), edgeSchema);
         assertEquals(keyCaptor.getValue(), NullWritable.get());
-      }
+    }
 
     @Test
     public void testWriteSchemata_Edge() throws Exception {
-
 
         SchemaInferenceMapper mapper = new SchemaInferenceMapper();
 
         mapper.writeSchemata(edgeSchema, mockedContext);
 
         Mockito.verify(mockedContext).write(NullWritable.get(), edgeSchema);
-
     }
-
 }
