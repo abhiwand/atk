@@ -23,10 +23,8 @@ package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.GBTitanKey;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.KeyCommandLineParser;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanGraphInitializer;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.hadoop.conf.Configuration;
@@ -35,6 +33,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -42,14 +41,51 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({GraphDatabaseConnector.class})
 public class SchemaInferenceReducerTest {
 
+    final String THE_EDGE = "The Edge";
+    final String BONO = "Bono";
+    final String OTHERGUY = "One of the Other Guys";
+
+    final String A = "A";
+    final Class<?> dataTypeA = Integer.class;
+
+    final String B = "B";
+    final Class<?> dataTypeB = Float.class;
+
+    final String C = "C";
+    final Class<?> dataTypeC = String.class;
+
+    final String D = "D";
+    final Class<?> dataTypeD = Long.class;
+
+    PropertySchema propertySchemaA = new PropertySchema(A, dataTypeA);
+    PropertySchema propertySchemaB = new PropertySchema(B, dataTypeB);
+    PropertySchema propertySchemaA_copy = new PropertySchema(A, dataTypeA);
+    PropertySchema propertySchemaC = new PropertySchema(C, dataTypeC);
+    PropertySchema propertySchemaD = new PropertySchema(D, dataTypeD);
+
+    SchemaElement edgeSchema0 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+    SchemaElement edgeSchema1 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+    SchemaElement edgeSchema2 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+    SchemaElement edgeSchema3 = new SchemaElement(SchemaElement.Type.EDGE, BONO);
+    SchemaElement edgeSchema012 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+
+    SchemaElement vertexSchema0 = new SchemaElement(SchemaElement.Type.VERTEX, null);
+    SchemaElement vertexSchema1 = new SchemaElement(SchemaElement.Type.VERTEX, null);
+    SchemaElement vertexSchema2 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
+    SchemaElement vertexSchema3 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
+    SchemaElement vertexSchema01 = new SchemaElement(SchemaElement.Type.VERTEX, null);
+    SchemaElement vertexSchema23 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
     @Mock
     TitanGraphInitializer mockedInitializer;
 
@@ -65,91 +101,100 @@ public class SchemaInferenceReducerTest {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+
+        // set up the edge schemata
+
+        edgeSchema0.addPropertySchema(propertySchemaA);
+        edgeSchema0.addPropertySchema(propertySchemaC);
+
+
+        edgeSchema1.addPropertySchema(propertySchemaA);
+        edgeSchema1.addPropertySchema(propertySchemaC);
+
+
+        edgeSchema2.addPropertySchema(propertySchemaB);
+        edgeSchema2.addPropertySchema(propertySchemaC);
+
+        edgeSchema3.addPropertySchema(propertySchemaB);
+        edgeSchema3.addPropertySchema(propertySchemaC);
+
+
+        edgeSchema012.addPropertySchema(propertySchemaA);
+        edgeSchema012.addPropertySchema(propertySchemaB);
+        edgeSchema012.addPropertySchema(propertySchemaC);
+
+
+        // set up the vertex schemata
+
+        vertexSchema0.addPropertySchema(propertySchemaA);
+        vertexSchema0.addPropertySchema(propertySchemaB);
+
+        vertexSchema1.addPropertySchema(propertySchemaA_copy);
+        vertexSchema1.addPropertySchema(propertySchemaC);
+
+        vertexSchema2.addPropertySchema(propertySchemaA);
+        vertexSchema2.addPropertySchema(propertySchemaC);
+
+        vertexSchema3.addPropertySchema(propertySchemaA_copy);
+        vertexSchema3.addPropertySchema(propertySchemaD);
+
+        vertexSchema01.addPropertySchema(propertySchemaA);
+        vertexSchema01.addPropertySchema(propertySchemaB);
+        vertexSchema01.addPropertySchema(propertySchemaC);
+
+        vertexSchema23.addPropertySchema(propertySchemaA_copy);
+        vertexSchema23.addPropertySchema(propertySchemaD);
+        vertexSchema23.addPropertySchema(propertySchemaC);
     }
 
     @Test
     public void testReduce() throws Exception {
 
-        String keyCommandLine = "";
 
-        final String A = "A";
-        final Class<?> dataTypeA = Integer.class;
+        // feed the reducer some edge and vertex schemata
 
-        final String B = "B";
-        final Class<?> dataTypeB = Float.class;
+        ArrayList<SchemaElement> inValues = new ArrayList<SchemaElement>();
 
-        final String C = "C";
-        final Class<?> dataTypeC = String.class;
+        inValues.add(edgeSchema0);
+        inValues.add(edgeSchema1);
+        inValues.add(edgeSchema2);
+        inValues.add(edgeSchema3);
 
-        final String D = "D";
-        final Class<?> dataTypeD = Long.class;
+        inValues.add(vertexSchema0);
+        inValues.add(vertexSchema1);
+        inValues.add(vertexSchema2);
+        inValues.add(vertexSchema3);
 
-        PropertySchema propertySchemaA = new PropertySchema(A, dataTypeA);
-        PropertySchema propertySchemaB = new PropertySchema(B, dataTypeB);
-        PropertySchema propertySchemaA2 = new PropertySchema(A, dataTypeA);
-        PropertySchema propertySchemaC = new PropertySchema(C, dataTypeC);
-        PropertySchema propertySchemaD = new PropertySchema(D, dataTypeD);
 
-        // add the roperty schema
+        // now we set the expected out values
 
-        ArrayList<SerializedEdgeOrPropertySchema> inValues = new ArrayList<>();
-        inValues.add(new SerializedEdgeOrPropertySchema(propertySchemaA));
-        inValues.add(new SerializedEdgeOrPropertySchema(propertySchemaA2));
-        inValues.add(new SerializedEdgeOrPropertySchema(propertySchemaD));
+        ArrayList<SchemaElement> outValues = new ArrayList<SchemaElement>();
 
-        // now combine some edge schema
+        outValues.add(vertexSchema23);
+        outValues.add(vertexSchema01);
+        outValues.add(edgeSchema012);
+        outValues.add(edgeSchema3);
 
-        final String THE_EDGE = "The Edge";
-        final String BONO = "Bono";
 
-        EdgeSchema edgeSchema0 = new EdgeSchema(THE_EDGE);
-        edgeSchema0.addPropertySchema(propertySchemaA);
-        edgeSchema0.addPropertySchema(propertySchemaC);
 
-        EdgeSchema edgeSchema1 = new EdgeSchema(THE_EDGE);
-        edgeSchema1.addPropertySchema(propertySchemaA);
-        edgeSchema1.addPropertySchema(propertySchemaC);
 
-        EdgeSchema edgeSchema2 = new EdgeSchema(THE_EDGE);
-        edgeSchema2.addPropertySchema(propertySchemaB);
-        edgeSchema2.addPropertySchema(propertySchemaC);
-
-        EdgeSchema edgeSchema3 = new EdgeSchema(BONO);
-        edgeSchema3.addPropertySchema(propertySchemaB);
-        edgeSchema3.addPropertySchema(propertySchemaC);
-
-        inValues.add(new SerializedEdgeOrPropertySchema(edgeSchema0));
-        inValues.add(new SerializedEdgeOrPropertySchema(edgeSchema1));
-        inValues.add(new SerializedEdgeOrPropertySchema(edgeSchema2));
-        inValues.add(new SerializedEdgeOrPropertySchema(edgeSchema3));
-
-        // now we set up the values expected to be passed to the initializer
-        EdgeSchema edgeSchema012 = new EdgeSchema(THE_EDGE);
-        edgeSchema012.addPropertySchema(propertySchemaA);
-        edgeSchema012.addPropertySchema(propertySchemaB);
-        edgeSchema012.addPropertySchema(propertySchemaC);
-
-        PropertyGraphSchema propertyGraphSchema = new PropertyGraphSchema();
-
-        propertyGraphSchema.addPropertySchema(propertySchemaA);
-        propertyGraphSchema.addPropertySchema(propertySchemaD);
-        propertyGraphSchema.addEdgeSchema(edgeSchema012);
-        propertyGraphSchema.addEdgeSchema(edgeSchema3);
-
-        // now those declared keys... oh joy
-        List<GBTitanKey> declaredKeys = new KeyCommandLineParser().parse(keyCommandLine);
+        List<GBTitanKey> declaredKeys = new KeyCommandLineParser().parse("");
 
         SchemaInferenceReducer reducer = new SchemaInferenceReducer();
         Configuration conf = new Configuration();
-        conf.set("special key-value pair,", "so you can't accept a default value by mistake");
+        conf.set("special key-inValue pair,", "so you can't accept a default inValue by mistake");
 
         reducer.setInitializer(mockedInitializer);
         when(mockedContext.getConfiguration()).thenReturn(conf);
 
+        ArgumentCaptor<List> capturedGraphSchema =
+                ArgumentCaptor.forClass(List.class);
+
         reducer.reduce(NullWritable.get(), inValues, mockedContext);
 
         Mockito.verify(mockedInitializer).setConf(conf);
-        Mockito.verify(mockedInitializer).setGraphSchema(propertyGraphSchema);
+
+        Mockito.verify(mockedInitializer, times(1)).setGraphSchema(capturedGraphSchema.capture());
         Mockito.verify(mockedInitializer).setDeclaredKeys(declaredKeys);
     }
 }

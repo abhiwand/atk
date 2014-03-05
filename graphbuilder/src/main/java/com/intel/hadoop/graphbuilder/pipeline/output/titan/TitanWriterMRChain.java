@@ -24,7 +24,7 @@ import com.intel.hadoop.graphbuilder.pipeline.input.InputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference.SchemaInferenceJob;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.SourceVertexKeyFunction;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.util.*;
 import org.apache.commons.cli.CommandLine;
@@ -121,7 +121,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
 
     private SerializedGraphElement mapValueType;
     private Class vidClass;
-    private PropertyGraphSchema graphSchema;
+    private List<SchemaElement> graphSchema;
 
     private Functional vertexReducerFunction = null;
     private Functional edgeReducerFunction = null;
@@ -318,8 +318,8 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
             }
         }
 
-        String intermediateDataFileName = "graphElements-" + random()
-                .toString();
+        String intermediateDataFileName = "graphElements-" +  System.currentTimeMillis() + random().toString();
+
         Path intermediateDataFilePath =
                 new Path("/tmp/graphbuilder/" + intermediateDataFileName);
 

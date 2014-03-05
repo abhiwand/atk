@@ -62,6 +62,6 @@ public class DoubleTypeTest {
     public void testGetBaseType() throws Exception {
         DoubleType d = new DoubleType();
 
-        assert(d.getBaseType() == Double.class);
+        assertEquals(d.getBaseType(), Double.class);
     }
 }

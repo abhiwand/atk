@@ -19,6 +19,10 @@
 
 /**
  * This script demonstrates one of the many ways to bulk load the Titan graph database.
+ *
+ * This method uses dynamic schema inference: The data types and edge labels used to configure Titan are obtained from
+ * the data. They do not need to be declared from the command line.
+ *
  * <p>
  * This script assumes it is being called from the Graph Builder home directory.
  * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
@@ -27,10 +31,6 @@
 %default GB_HOME '.'
 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
-
-rmf /tmp/empty_file_to_end_pig_action
-rmf /tmp/empty_file_to_start_pig_action
-fs -mkdir /tmp/empty_file_to_start_pig_action
 
 employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS
 		(employee_id:int, name:chararray, age:int, dept:chararray, manager:int, underManager:chararray);
@@ -43,8 +43,10 @@ pge = FOREACH employees GENERATE FLATTEN(CreatePropGraphElements(*)); -- generat
 
 merged = MERGE_DUPLICATE_ELEMENTS(pge); -- merge the duplicate vertices and edges
 
-STORE merged INTO '/tmp/employees_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile();
-
+-- nls test
+                   STORE merged INTO '/tmp/employees_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile();
 -- -O flag specifies overwriting the input Titan table
 STORE_GRAPH_INFER_SCHEMA(merged, '$GB_HOME/examples/hbase-titan-conf.xml', '-O');
+
+
 
