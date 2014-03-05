@@ -31,7 +31,9 @@ public class TitanOutputConfiguration implements OutputConfiguration {
     private GraphGenerationMRJob graphGenerationMRJob;
 
     /**
-     * Consructor.
+     * No parameter constructor that allocates a pipeline for writing.
+     * Schema will not be inferred dynamically, and the input path will be obtained from the
+     * <code>InputConfiguration</code>
      */
     public TitanOutputConfiguration() {
         graphGenerationMRJob = new TitanWriterMRChain();
@@ -41,8 +43,9 @@ public class TitanOutputConfiguration implements OutputConfiguration {
      * Constructor that takes a boolean for whether or not to dynamically infer the graph schema with a map-reduce
      * scan over the data prior to initializing Titan.
      *
-     * @param inferSchema {@code true}  means obtain the graph schema from a scan over the data, {@code false} means it was obtained from the commandline.
-     * @param pathName    The input path for a {@code SerializedGraphElementStringTypeVids} sequence file on HDFS.
+     * @param inferSchema <code>true</code>  means obtain the graph schema from a scan over the data,<code>false</code>
+     *                    means it was obtained from the commandline.
+     * @param pathName    The input path for a <code>SerializedGraphElementStringTypeVids</code> sequence file on HDFS.
      */
     public TitanOutputConfiguration(boolean inferSchema, String pathName) {
         Path path = new Path(pathName);
@@ -50,7 +53,7 @@ public class TitanOutputConfiguration implements OutputConfiguration {
     }
 
     /**
-     * @return This output configuration's {@code GraphGeneration MRJob};
+     * @return This output configuration's <code>GraphGenerationMRJob</code>;
      */
     public GraphGenerationMRJob getGraphGenerationMRJob() {
         return graphGenerationMRJob;

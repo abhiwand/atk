@@ -28,7 +28,7 @@ import static junit.framework.Assert.assertSame;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class SerializedEdgeOrPropertySchemaTest {
+public class SchemaElementTest {
 
     final String PLANET_OF_THE_STRINGS = "planet of the strings";
     final String PLANET_OF_THE_FLOATS = "planet of the floats";
@@ -39,55 +39,37 @@ public class SerializedEdgeOrPropertySchemaTest {
     final String DR_ZAIUS = "Dr. Zaius";
     final String D_DIRTY_APE = "you d--- dirty ape";
 
-    @Test
-    public void testBasicEdgeSchema() throws Exception {
 
-        EdgeSchema edgeSchemaZ = new EdgeSchema(DR_ZAIUS);
-        edgeSchemaZ.addPropertySchema(planetOfStrings);
-
-        EdgeSchema edgeSchemaD = new EdgeSchema(D_DIRTY_APE);
-        edgeSchemaD.addPropertySchema(planetOfFloats);
-
-        SerializedEdgeOrPropertySchema schema = new SerializedEdgeOrPropertySchema();
-        schema.setSchema(edgeSchemaZ);
-
-        assertSame(edgeSchemaZ, schema.getSchema());
-
-        schema.setSchema(edgeSchemaD);
-        assertSame(edgeSchemaD, schema.getSchema());
-    }
 
     @Test
-    public final void testWriteRead() throws IOException {
+    public final void test_write_read() throws IOException {
+
+        SchemaElement inSchema = new SchemaElement(SchemaElement.Type.EDGE, DR_ZAIUS);
+        inSchema.addPropertySchema(planetOfStrings);
+
+        SchemaElement outSchema = new SchemaElement(SchemaElement.Type.VERTEX, D_DIRTY_APE);
+        outSchema.addPropertySchema(planetOfFloats);
+
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
         DataOutputStream dataOutputStream = new DataOutputStream(baos);
 
-        SerializedEdgeOrPropertySchema inSerializedSchema = new SerializedEdgeOrPropertySchema();
-        inSerializedSchema.setSchema(planetOfStrings);
 
-        SerializedEdgeOrPropertySchema outSerializedSchema = new SerializedEdgeOrPropertySchema();
-        outSerializedSchema.setSchema(planetOfFloats);
-
-        inSerializedSchema.write(dataOutputStream);
-        dataOutputStream.flush();
+        inSchema.write(dataOutputStream);
 
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
         DataInputStream dataInputStream = new DataInputStream(bais);
+        dataOutputStream.flush();
+        outSchema.readFields(dataInputStream);
 
-        outSerializedSchema.readFields(dataInputStream);
-
-        assertTrue(inSerializedSchema.getSchema().equals(outSerializedSchema.getSchema()));
-    }
+        assertTrue(inSchema.equals(outSchema));
+     }
 
     @Test
-    public void testEqualsHashCode() throws Exception {
+    public void test_consistency_of_equals_and_HashCode() throws Exception {
 
-        EdgeSchema one = new EdgeSchema("edge");
-        EdgeSchema two = new EdgeSchema("edge");
-
-        SerializedEdgeOrPropertySchema serializedOne = new SerializedEdgeOrPropertySchema(one);
-        SerializedEdgeOrPropertySchema serializedTwo = new SerializedEdgeOrPropertySchema(two);
+        SchemaElement serializedOne = new SchemaElement(SchemaElement.Type.VERTEX, D_DIRTY_APE);
+        SchemaElement serializedTwo = new SchemaElement(SchemaElement.Type.VERTEX, D_DIRTY_APE);
 
         assertEquals(serializedOne, serializedTwo);
         assertEquals(serializedOne.hashCode(), serializedTwo.hashCode());

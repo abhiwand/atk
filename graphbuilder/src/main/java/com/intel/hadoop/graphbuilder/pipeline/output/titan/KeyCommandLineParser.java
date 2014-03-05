@@ -53,11 +53,11 @@ public class KeyCommandLineParser {
      */
     public List<GBTitanKey> parse(String keyCommandLine) {
 
-        ArrayList<GBTitanKey> gbKeyList = new ArrayList<>();
+        ArrayList<GBTitanKey> gbKeyList = new ArrayList<GBTitanKey>();
 
         if (keyCommandLine != null && keyCommandLine.length() > 0) {
 
-            String[] keyRules = keyCommandLine.split("\\,");
+            String[] keyRules = keyCommandLine.split(",");
 
             for (String keyRule : keyRules) {
                 String[] ruleProperties = keyRule.split(";");

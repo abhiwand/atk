@@ -20,10 +20,7 @@
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.*;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.log4j.Logger;
@@ -32,70 +29,45 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * A utility class that takes a multiset of {@code SerializedEdgeOrPropertySchema} objects, and merges so
+ * A utility class that takes a multiset of <code>SchemaElement</code>objects, and merges so
  * into a duplicate-free list.
  * <p> Combination is done with the following semantics:
  * <li>
- * <ul>Two {@code PropertySchema} objects are identified if they have the same name.
- * They "combine" by throwing an exception  when two {@code Propertyschema} of the same name have different dataypes.</ul>
- * <ul>Two {@code EdgeSchema} objects are identified if they have the same label. They combine by merging their sets of
- * {@code PropertySchema}</ul>
+ * <ul>Two <code>PropertySchema</code> objects are identified if they have the same name.
+ * They "combine" by throwing an exception  when two <code>Propertyschema</code> of the same name have different dataypes.</ul>
+ * <ul>Two <code>EdgeSchema</code> objects are identified if they have the same label. They combine by merging their sets of
+ * <code>PropertySchema</code></ul>
  * </li></p>
  */
 public class MergeSchemataUtility {
 
+    private static final Logger LOG = Logger.getLogger(MergeSchemataUtility.class);
+
     /**
-     * Performs the merge of a multiset of {@code SerializedEdgeOrPropertySchema} objects into a duplicate free list.
+     * Performs the merge of a multiset of {@code SchemaElement} objects into a duplicate free list.
      *
-     * @param values The {@code SerializedEdgeOrPropertySchema} objects to be merged.
-     * @param LOG    A logger for reporting errors.
-     * @return Duplicate-free list of {@code SerializedEdgeOrPropertySchema}'s.
+     * @param values The {@code SchemaElement} objects to be merged.
+     * @return Duplicate-free list of {@code SchemaElement}'s.
      */
-    public static ArrayList<EdgeOrPropertySchema> merge(Iterable<SerializedEdgeOrPropertySchema> values,
-                                                        Logger LOG) {
 
-        HashMap<String, EdgeSchema> edgeSchemaHashMap = new HashMap<>();
-        HashMap<String, PropertySchema> propertySchemaHashMap = new HashMap<>();
+    public ArrayList<SchemaElement> merge(Iterable<SchemaElement> values) {
 
-        for (SerializedEdgeOrPropertySchema serializedSchema : values) {
-            EdgeOrPropertySchema schema = serializedSchema.getSchema();
 
-            if (schema instanceof PropertySchema) {
-                PropertySchema propertySchema = (PropertySchema) schema;
-                String propertyName = propertySchema.getName();
+        HashMap<String, SchemaElement> schemaHashMap = new HashMap<String, SchemaElement>();
 
-                if (propertySchemaHashMap.containsKey(propertyName)) {
-                    try {
-                        if (!propertySchema.getType().equals(propertySchemaHashMap.get(propertyName).getType())) {
-                            String errorMessage = "Schema Inference error: Conflicting datatypes for property " +
-                                    ((PropertySchema) schema).getName();
-                            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                                    errorMessage, LOG);
-                        }
-                    } catch (ClassNotFoundException e) {
-                        String errorMessage = "Schema Inference error: Datatype not found for property " +
-                                ((PropertySchema) schema).getName();
-                        GraphBuilderExit.graphbuilderFatalExitException(StatusCode.CLASS_INSTANTIATION_ERROR,
-                                errorMessage, LOG, e);
-                    }
-                } else {
-                    propertySchemaHashMap.put(propertyName, propertySchema);
-                }
+
+        for (SchemaElement schemaElement : values) {
+            String schemaID = schemaElement.getID();
+
+            if (schemaHashMap.containsKey(schemaID)) {
+                schemaHashMap.get(schemaID).unionPropertySchemata(schemaElement.getPropertySchemata());
             } else {
-                EdgeSchema edgeSchema = (EdgeSchema) schema;
-                String label = edgeSchema.getLabel();
-                if (edgeSchemaHashMap.containsKey(label)) {
-                    edgeSchemaHashMap.get(label).getPropertySchemata().addAll(edgeSchema.getPropertySchemata());
-                } else {
-                    edgeSchemaHashMap.put(label, edgeSchema);
-                }
+                schemaHashMap.put(schemaID, schemaElement);
             }
         }
 
-        ArrayList<EdgeOrPropertySchema> outValues = new ArrayList<>();
-
-        outValues.addAll(edgeSchemaHashMap.values());
-        outValues.addAll(propertySchemaHashMap.values());
+        ArrayList<SchemaElement> outValues = new ArrayList<SchemaElement>();
+        outValues.addAll(schemaHashMap.values());
 
         return outValues;
     }

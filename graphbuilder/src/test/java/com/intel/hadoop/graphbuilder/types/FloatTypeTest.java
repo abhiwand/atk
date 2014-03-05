@@ -65,6 +65,6 @@ public class FloatTypeTest {
     public void testGetBaseType() throws Exception {
         FloatType f = new FloatType();
 
-        assert(f.getBaseType() == Float.class);
+        assertEquals(f.getBaseType(), Float.class);
     }
 }

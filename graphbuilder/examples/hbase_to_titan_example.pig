@@ -25,10 +25,6 @@
 REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
 IMPORT 'pig/graphbuilder.pig';
 
-rmf /tmp/empty_file_to_end_pig_action
-rmf /tmp/empty_file_to_start_pig_action
-fs -mkdir /tmp/empty_file_to_start_pig_action
-
 employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS
 		(id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
 employees_with_valid_ids = FILTER employees BY id!='';

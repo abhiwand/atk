@@ -34,9 +34,6 @@ IMPORT '$GB_HOME/pig/graphbuilder.pig';
 --the temp storage is required for doing a dummy LOAD/STORE for the 
 --MAPREDUCE operator use in that macro
 -- This annoying. We should get a Jira ticket to fix this in an upcoming Pig release.
-rmf /tmp/empty_file_to_end_pig_action
-rmf /tmp/empty_file_to_start_pig_action
-fs -mkdir /tmp/empty_file_to_start_pig_action
 
 xml_data = LOAD 'examples/data/wiki_single.txt' using com.intel.pig.load.XMLLoader('page') AS (page: chararray);
 id_extracted = FOREACH xml_data GENERATE REGEX_EXTRACT(page, '<id>(.*?)</id>', 1) AS (doc_id: chararray), page;

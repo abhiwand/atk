@@ -33,7 +33,7 @@ import java.io.IOException;
  * constructed graph into a graph database.</p>
  */
 
-public class PropertySchema extends EdgeOrPropertySchema implements Writable {
+public class PropertySchema implements Writable {
 
     private StringType name = new StringType();
 
@@ -48,8 +48,8 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
     /**
      * Constructor.
      *
-     * @param name The name of the property as a serialized string (@code StringType).
-     * @param type The name of the datatype of the property as a serialized string (@code StringType).
+     * @param name The name of the property as a serialized string (<code>StringType</code>).
+     * @param type The name of the datatype of the property as a serialized string (<code>StringType</code>).
      */
     public PropertySchema(String name, Class<?> type) {
         this.name.set(name);
@@ -74,6 +74,13 @@ public class PropertySchema extends EdgeOrPropertySchema implements Writable {
         return this.name.get();
     }
 
+    /**
+     *
+     */
+    @Override
+    public String toString() {
+        return "Property: name == " + name.get() + " type == " + type.get();
+    }
     /**
      * Equality test.
      *

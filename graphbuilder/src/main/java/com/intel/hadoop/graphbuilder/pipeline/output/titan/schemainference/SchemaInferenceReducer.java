@@ -48,11 +48,10 @@ import java.util.List;
  * @see SchemaInferenceCombiner
  * @see MergeSchemataUtility
  */
-public class SchemaInferenceReducer extends Reducer<NullWritable, SerializedEdgeOrPropertySchema,
-        NullWritable, SerializedEdgeOrPropertySchema> {
+public class SchemaInferenceReducer extends Reducer<NullWritable, SchemaElement,
+        NullWritable, SchemaElement> {
 
-    private static final Logger LOG = Logger.getLogger
-            (SchemaInferenceCombiner.class);
+    private static final Logger LOG = Logger.getLogger(SchemaInferenceReducer.class);
 
     private TitanGraph titanGraph = null;
     private TitanGraphInitializer initializer = null;
@@ -76,12 +75,13 @@ public class SchemaInferenceReducer extends Reducer<NullWritable, SerializedEdge
      * @throws InterruptedException
      */
     @Override
-    public void reduce(NullWritable key, Iterable<SerializedEdgeOrPropertySchema> values,
-                       Reducer<NullWritable, SerializedEdgeOrPropertySchema, NullWritable,
-                               SerializedEdgeOrPropertySchema>.Context context)
+    public void reduce(NullWritable key, Iterable<SchemaElement> values,
+                       Reducer<NullWritable, SchemaElement, NullWritable,
+                               SchemaElement>.Context context)
             throws IOException, InterruptedException {
 
-        writeSchemaToTitan(MergeSchemataUtility.merge(values, LOG), context);
+        MergeSchemataUtility mergeUtility = new MergeSchemataUtility();
+        writeSchemaToTitan(mergeUtility.merge(values), context);
     }
 
     /**
@@ -91,17 +91,7 @@ public class SchemaInferenceReducer extends Reducer<NullWritable, SerializedEdge
      * @param schemas The schemas to be written; presumably obtained by scanning over the data.
      * @param context The job context..
      */
-    public void writeSchemaToTitan(ArrayList<EdgeOrPropertySchema> schemas, Context context) {
-
-        PropertyGraphSchema graphSchema = new PropertyGraphSchema();
-
-        for (EdgeOrPropertySchema schema : schemas) {
-            if (schema instanceof EdgeSchema) {
-                graphSchema.addEdgeSchema((EdgeSchema) schema);
-            } else {
-                graphSchema.addPropertySchema((PropertySchema) schema);
-            }
-        }
+    public void writeSchemaToTitan(List<SchemaElement> schemas, Context context) {
 
         Configuration conf = context.getConfiguration();
         String keyCommandLine = conf.get("keyCommandLine");
@@ -110,7 +100,7 @@ public class SchemaInferenceReducer extends Reducer<NullWritable, SerializedEdge
         List<GBTitanKey> declaredKeyList = titanKeyParser.parse(keyCommandLine);
 
         initializer.setConf(context.getConfiguration());
-        initializer.setGraphSchema(graphSchema);
+        initializer.setGraphSchema(schemas);
         initializer.setDeclaredKeys(declaredKeyList);
         initializer.run(titanGraph);
     }

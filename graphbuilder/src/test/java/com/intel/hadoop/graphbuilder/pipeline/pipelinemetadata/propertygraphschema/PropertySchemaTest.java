@@ -94,7 +94,7 @@ public class PropertySchemaTest {
     }
 
     @Test
-    public final void testWriteRead() throws IOException {
+    public final void testWriteRead() throws IOException, ClassNotFoundException {
         final String A = "A";
         final Class<?> dataTypeA = Integer.class;
 
@@ -117,10 +117,6 @@ public class PropertySchemaTest {
 
         assertTrue(propertySchemaIn.getName().equals(propertySchemaOut.getName()));
 
-        try {
-            assertTrue(propertySchemaIn.getType().equals(propertySchemaOut.getType()));
-        } catch (ClassNotFoundException e) {
-            assertTrue(false);
-        }
+        assertTrue(propertySchemaIn.getType().equals(propertySchemaOut.getType()));
     }
 }

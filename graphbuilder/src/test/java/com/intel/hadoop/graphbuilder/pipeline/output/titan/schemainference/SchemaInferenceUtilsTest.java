@@ -20,12 +20,9 @@
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -38,120 +35,129 @@ import static org.junit.Assert.*;
 
 public class SchemaInferenceUtilsTest {
 
+    final String THE_EDGE = "The Edge";
+    final String BONO = "Bono";
+    final String OTHERGUY = "One of the Other Guys";
+
+    final String A = "A";
+    final Class<?> dataTypeA = Integer.class;
+
+    final String B = "B";
+    final Class<?> dataTypeB = Float.class;
+
+    final String C = "C";
+    final Class<?> dataTypeC = String.class;
+
+    final String D = "D";
+    final Class<?> dataTypeD = Long.class;
+
+    PropertySchema propertySchemaA = new PropertySchema(A, dataTypeA);
+    PropertySchema propertySchemaB = new PropertySchema(B, dataTypeB);
+    PropertySchema propertySchemaA_copy = new PropertySchema(A, dataTypeA);
+    PropertySchema propertySchemaC = new PropertySchema(C, dataTypeC);
+    PropertySchema propertySchemaD = new PropertySchema(D, dataTypeD);
+
+    SchemaElement edgeSchema0 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+    SchemaElement edgeSchema1 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+    SchemaElement edgeSchema2 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+    SchemaElement edgeSchema3 = new SchemaElement(SchemaElement.Type.EDGE, BONO);
+    SchemaElement edgeSchema012 = new SchemaElement(SchemaElement.Type.EDGE, THE_EDGE);
+
+    SchemaElement vertexSchema0 = new SchemaElement(SchemaElement.Type.VERTEX, null);
+    SchemaElement vertexSchema1 = new SchemaElement(SchemaElement.Type.VERTEX, null);
+    SchemaElement vertexSchema2 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
+    SchemaElement vertexSchema3 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
+    SchemaElement vertexSchema01 = new SchemaElement(SchemaElement.Type.VERTEX, null);
+    SchemaElement vertexSchema23 = new SchemaElement(SchemaElement.Type.VERTEX, OTHERGUY);
+
+
+
     @Mock
     Mapper.Context mockedContext;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-    }
 
-    @Test
-    public void testCombineSchemata() {
+        // set up the edge schemata
 
-        final String A = "A";
-        final Class<?> dataTypeA = Integer.class;
-
-        final String B = "B";
-        final Class<?> dataTypeB = Float.class;
-
-        final String C = "C";
-        final Class<?> dataTypeC = String.class;
-
-        final String D = "D";
-        final Class<?> dataTypeD = Long.class;
-
-        PropertySchema propertySchemaA = new PropertySchema(A, dataTypeA);
-        PropertySchema propertySchemaB = new PropertySchema(B, dataTypeB);
-        PropertySchema propertySchemaA2 = new PropertySchema(A, dataTypeA);
-        PropertySchema propertySchemaC = new PropertySchema(C, dataTypeC);
-        PropertySchema propertySchemaD = new PropertySchema(D, dataTypeD);
-
-        // add the property schema
-
-        ArrayList<SerializedEdgeOrPropertySchema> values = new ArrayList<>();
-        values.add(new SerializedEdgeOrPropertySchema(propertySchemaA));
-        values.add(new SerializedEdgeOrPropertySchema(propertySchemaA2));
-        values.add(new SerializedEdgeOrPropertySchema(propertySchemaD));
-
-        // now combine some edge schema
-
-        final String THE_EDGE = "The Edge";
-        final String BONO = "Bono";
-
-        EdgeSchema edgeSchema0 = new EdgeSchema(THE_EDGE);
         edgeSchema0.addPropertySchema(propertySchemaA);
         edgeSchema0.addPropertySchema(propertySchemaC);
 
-        EdgeSchema edgeSchema1 = new EdgeSchema(THE_EDGE);
+
         edgeSchema1.addPropertySchema(propertySchemaA);
         edgeSchema1.addPropertySchema(propertySchemaC);
 
-        EdgeSchema edgeSchema2 = new EdgeSchema(THE_EDGE);
+
         edgeSchema2.addPropertySchema(propertySchemaB);
         edgeSchema2.addPropertySchema(propertySchemaC);
 
-        EdgeSchema edgeSchema3 = new EdgeSchema(BONO);
         edgeSchema3.addPropertySchema(propertySchemaB);
         edgeSchema3.addPropertySchema(propertySchemaC);
 
-        values.add(new SerializedEdgeOrPropertySchema(edgeSchema0));
-        values.add(new SerializedEdgeOrPropertySchema(edgeSchema1));
-        values.add(new SerializedEdgeOrPropertySchema(edgeSchema2));
-        values.add(new SerializedEdgeOrPropertySchema(edgeSchema3));
 
-        Logger LOG = Logger.getLogger
-                (MergeSchemataUtility.class);
+        edgeSchema012.addPropertySchema(propertySchemaA);
+        edgeSchema012.addPropertySchema(propertySchemaB);
+        edgeSchema012.addPropertySchema(propertySchemaC);
 
-        ArrayList<EdgeOrPropertySchema> testOut = MergeSchemataUtility.merge(values, LOG);
+
+        // set up the vertex schemata
+
+        vertexSchema0.addPropertySchema(propertySchemaA);
+        vertexSchema0.addPropertySchema(propertySchemaB);
+
+        vertexSchema1.addPropertySchema(propertySchemaA_copy);
+        vertexSchema1.addPropertySchema(propertySchemaC);
+
+        vertexSchema2.addPropertySchema(propertySchemaA);
+        vertexSchema2.addPropertySchema(propertySchemaC);
+
+        vertexSchema3.addPropertySchema(propertySchemaA_copy);
+        vertexSchema3.addPropertySchema(propertySchemaD);
+
+        vertexSchema01.addPropertySchema(propertySchemaA);
+        vertexSchema01.addPropertySchema(propertySchemaB);
+        vertexSchema01.addPropertySchema(propertySchemaC);
+
+        vertexSchema23.addPropertySchema(propertySchemaA_copy);
+        vertexSchema23.addPropertySchema(propertySchemaD);
+        vertexSchema23.addPropertySchema(propertySchemaC);
+    }
+
+    @Test
+    public void testCombineSchemata() throws ClassNotFoundException {
+
+
+
+        ArrayList<SchemaElement> inValues = new ArrayList<SchemaElement>();
+
+        inValues.add(edgeSchema0);
+        inValues.add(edgeSchema1);
+        inValues.add(edgeSchema2);
+        inValues.add(edgeSchema3);
+        inValues.add(vertexSchema0);
+        inValues.add(vertexSchema1);
+        inValues.add(vertexSchema2);
+        inValues.add(vertexSchema3);
+
+        // now we set the expected out values
+
+        HashSet<SchemaElement> outValues = new HashSet<SchemaElement>();
+
+        outValues.add(vertexSchema23);
+        outValues.add(vertexSchema01);
+        outValues.add(edgeSchema012);
+        outValues.add(edgeSchema3);
+
+
+
+
+        MergeSchemataUtility mergeUtil = new MergeSchemataUtility();
+        ArrayList<SchemaElement> testOut = mergeUtil.merge(inValues);
 
         // one copy each of THE_EDGE, BONO, propertyA and propertyD
 
         assertEquals(testOut.size(), 4);
-
-        for (EdgeOrPropertySchema schema : testOut)
-            if (schema instanceof PropertySchema) {
-                PropertySchema propertySchema = (PropertySchema) schema;
-                String name = propertySchema.getName();
-                try {
-                    Class<?> type = propertySchema.getType();
-                    assertTrue((name.equals(A) && type.equals(dataTypeA)
-                            || (propertySchema.getName().equals(D) && type.equals(dataTypeD))));
-                } catch (ClassNotFoundException e) {
-                    fail("Class not found exception.");
-                }
-            } else {
-                EdgeSchema edgeSchema = (EdgeSchema) schema;
-                String label = edgeSchema.getLabel();
-
-                assertTrue(label.equals(BONO) || label.equals(THE_EDGE));
-
-                HashSet<PropertySchema> propertySchemata = edgeSchema.getPropertySchemata();
-
-                if (label.equals(THE_EDGE)) {
-                    assert (propertySchemata.size() == 3);
-
-                    for (PropertySchema pSchema : propertySchemata) {
-                        try {
-                            assertTrue((pSchema.getName().equals(A) && pSchema.getType().equals(dataTypeA))
-                                    || (pSchema.getName().equals(B) && pSchema.getType().equals(dataTypeB))
-                                    || (pSchema.getName().equals(C) && pSchema.getType().equals(dataTypeC)));
-                        } catch (Exception e) {
-                            fail("Class not found exception.");
-                        }
-                    }
-                } else {
-                    assert (propertySchemata.size() == 2);
-
-                    for (PropertySchema pSchema : propertySchemata) {
-                        try {
-                            assertTrue((pSchema.getName().equals(B) && pSchema.getType().equals(dataTypeB))
-                                    || (pSchema.getName().equals(C) && pSchema.getType().equals(dataTypeC)));
-                        } catch (Exception e) {
-                            fail("Class not found exception.");
-                        }
-                    }
-                }
-            }
+        assertTrue(testOut.containsAll(outValues));
     }
 }

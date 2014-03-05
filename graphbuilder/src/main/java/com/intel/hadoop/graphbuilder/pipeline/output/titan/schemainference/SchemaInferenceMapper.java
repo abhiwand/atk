@@ -20,53 +20,45 @@
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
-import com.intel.hadoop.graphbuilder.types.EncapsulatedObject;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.*;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * The mapper for the schema inference map-reduce job.
  * <p>The mapper inspects each property graph element and determines the property/datatype pairs that it requires,
  * as well as its label, if it is an edge. In the latter case, the edge label is packaged with the property/datatype
  * pairs for the properties that appear on the edge. This information is propagated in the emitted
- * {@code SerializedGraphElementStringTypeVids} objects.</p>
+ * <code>SerializedGraphElementStringTypeVids</code> objects.</p>
  * <p/>
- * <p>The input must be a null-keyed sequence file of {@code SerializedPropertyGraphElements}.</p>
+ * <p>The input must be a null-keyed sequence file of <code>SerializedPropertyGraphElements</code>.</p>
  */
 
 public class SchemaInferenceMapper extends Mapper<NullWritable, SerializedGraphElementStringTypeVids,
-        NullWritable, SerializedEdgeOrPropertySchema> {
+        NullWritable, SchemaElement> {
 
     private static final Logger LOG = Logger.getLogger(SchemaInferenceMapper.class);
 
     /**
      * Perform the map task on the given input.
      *
-     * @param key     The input key; but its just The {@code NullWritable.get()} value.
-     * @param value   The input value, {@code SerializedGraphElementStringTypeVids} object.
+     * @param key     The input key; but its just The <code>NullWritable.get()</code> value.
+     * @param value   The input value, <code>SerializedGraphElementStringTypeVids</code>} object.
      * @param context The job context.
      */
     @Override
     public void map(NullWritable key, SerializedGraphElementStringTypeVids value, Context context) {
 
-        ArrayList<EdgeOrPropertySchema> list = schemataFromGraphElement(value);
+        SchemaElement schemaElement =  new SchemaElement(value.graphElement());
 
         try {
-            writeSchemata(list, context);
+            writeSchemata(schemaElement, context);
         } catch (IOException e) {
             GraphBuilderExit.graphbuilderFatalExitException(StatusCode.UNHANDLED_IO_EXCEPTION,
                     "Graph Builder: IO Exception during schema inference.", LOG, e);
@@ -74,74 +66,19 @@ public class SchemaInferenceMapper extends Mapper<NullWritable, SerializedGraphE
     }
 
     /**
-     * Writes a list of {@code EdgeOrPropertySchema}'s to the context's output.
+     * Writes a <code>SchemeElement</code> to the context's output.
      *
-     * @param list    The input list of  {@code EdgeOrPropertySchema}'s.
+     * @param schemaElement The input <code>SchemaElement</code>.
      * @param context The job context.
      * @throws IOException
      */
-    public void writeSchemata(ArrayList<EdgeOrPropertySchema> list, Mapper.Context context)
+    public void writeSchemata(SchemaElement schemaElement, Mapper.Context context)
             throws IOException {
 
-        SerializedEdgeOrPropertySchema serializedOut = new SerializedEdgeOrPropertySchema();
-
-        for (EdgeOrPropertySchema schema : list) {
-            try {
-                serializedOut.setSchema(schema);
-                context.write(NullWritable.get(), serializedOut);
+        try {
+                context.write(NullWritable.get(), schemaElement);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-            }
         }
-    }
-
-    /**
-     * Scan over a {@code SerializedGraphElementStringTypeVids} and return its schema information in a list.
-     *
-     * @param value A serialized graph element.
-     * @return The schema information of {@code value} in the form of a list of {@code EdgeOrPropertySchema}'s.
-     */
-    public ArrayList<EdgeOrPropertySchema> schemataFromGraphElement(SerializedGraphElementStringTypeVids value) {
-        ArrayList<EdgeOrPropertySchema> list = new ArrayList<>();
-
-        if (value.graphElement().isEdge()) {
-
-            Edge edge = (Edge) value.graphElement().get();
-
-            EdgeSchema edgeSchema = new EdgeSchema(edge.getLabel().get());
-
-            for (Writable key : edge.getProperties().getPropertyKeys()) {
-                PropertySchema propertySchema = new PropertySchema();
-
-                propertySchema.setName(key.toString());
-
-                Object v = edge.getProperty(key.toString());
-                Class<?> dataType = ((EncapsulatedObject) v).getBaseType();
-                propertySchema.setType(dataType);
-
-                edgeSchema.addPropertySchema(propertySchema);
-
-                list.add(propertySchema);
-            }
-
-            list.add(edgeSchema);
-        } else if (value.graphElement().isVertex()) {
-
-            Vertex vertex = (Vertex) value.graphElement().get();
-            value.graphElement().getProperties();
-
-            for (Writable key : vertex.getProperties().getPropertyKeys()) {
-                PropertySchema propertySchema = new PropertySchema();
-
-                propertySchema.setName(key.toString());
-
-                Object v = vertex.getProperty(key.toString());
-                Class<?> dataType = ((EncapsulatedObject) v).getBaseType();
-                propertySchema.setType(dataType);
-
-                list.add(propertySchema);
-            }
-        }
-        return list;
     }
 }

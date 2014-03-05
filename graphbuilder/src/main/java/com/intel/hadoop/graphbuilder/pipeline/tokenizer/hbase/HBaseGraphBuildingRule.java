@@ -20,9 +20,8 @@
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeSchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
@@ -81,7 +80,7 @@ import java.util.List;
  * </p>
  *
  * @see GraphBuildingRule
- * @see PropertyGraphSchema
+ * @see SchemaElement
  * @see HBaseTokenizer
  */
 
@@ -89,7 +88,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
     private static final Logger LOG = Logger.getLogger(HBaseGraphBuildingRule.class);
 
-    private PropertyGraphSchema graphSchema;
+    private List<SchemaElement> graphSchema;
     private HBaseUtils hBaseUtils;
     private String srcTableName;
     private String[] vertexRules;
@@ -111,7 +110,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      */
     public HBaseGraphBuildingRule(CommandLine cmd) {
 
-        this.graphSchema = new PropertyGraphSchema();
+        this.graphSchema = new ArrayList<SchemaElement>();
+
         try {
             this.hBaseUtils = HBaseUtils.getInstance();
         } catch (IOException e) {
@@ -207,15 +207,15 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      */
     private boolean validateVertexRuleColumnFamilies() {
 
-        boolean returnValue = true;
+        boolean isValid = true;
 
         for (String vertexRule : vertexRules) {
 
             String vidColumn = HBaseGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
 
-            returnValue &= hBaseUtils.columnHasValidFamily(vidColumn, srcTableName);
+            isValid &= hBaseUtils.columnHasValidFamily(vidColumn, srcTableName);
 
-            if (!returnValue) {
+            if (!isValid) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "GRAPHBUILDER ERROR: " + vidColumn + " does not belong to a valid column family of table "
                                 + srcTableName, LOG);
@@ -225,8 +225,8 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                     HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
 
             for (String columnName : vertexPropertiesColumnNames) {
-                returnValue &= hBaseUtils.columnHasValidFamily(columnName, srcTableName);
-                if (!returnValue) {
+                isValid &= hBaseUtils.columnHasValidFamily(columnName, srcTableName);
+                if (!isValid) {
                     GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                             "GRAPHBUILDER ERROR: " + columnName + " does not belong to a valid column family of table "
                                     + srcTableName, LOG);
@@ -234,7 +234,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             }
         }
 
-        return returnValue;
+        return isValid;
     }
 
     /*
@@ -250,7 +250,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
     private boolean validateEdgeRuleColumnFamilies() {
 
-        boolean returnValue = true;
+        boolean isValid = true;
 
         for (String edgeRule : edgeRules) {
 
@@ -259,24 +259,24 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
             List<String> propertyColNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
 
-            returnValue &= hBaseUtils.columnHasValidFamily(srcVertexColName, srcTableName);
+            isValid &= hBaseUtils.columnHasValidFamily(srcVertexColName, srcTableName);
 
-            if (!returnValue) {
+            if (!isValid) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "GRAPHBUILDER ERROR: " + srcVertexColName + " does not belong to a valid column family of table "
                                 + srcTableName, LOG);
             }
 
-            returnValue &= hBaseUtils.columnHasValidFamily(tgtVertexColName, srcTableName);
-            if (!returnValue) {
+            isValid &= hBaseUtils.columnHasValidFamily(tgtVertexColName, srcTableName);
+            if (!isValid) {
                 GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                         "GRAPHBUILDER ERROR: " + tgtVertexColName + " does not belong to a valid column family of table "
                                 + srcTableName, LOG);
             }
 
             for (String propertyColName : propertyColNames) {
-                returnValue &= hBaseUtils.columnHasValidFamily(propertyColName, srcTableName);
-                if (!returnValue) {
+                isValid &= hBaseUtils.columnHasValidFamily(propertyColName, srcTableName);
+                if (!isValid) {
                     GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE,
                             "GRAPHBUILDER ERROR: " + propertyColName + " does not belong to a valid column family of table "
                                     + srcTableName, LOG);
@@ -284,7 +284,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             }
         }
 
-        return returnValue;
+        return isValid;
     }
 
     /**
@@ -328,9 +328,9 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      *
      * @return The schema of the property graphs generated by this graph
      *         construction rule.
-     * @see PropertyGraphSchema
+     * @see SchemaElement
      */
-    public PropertyGraphSchema getGraphSchema() {
+    public List<SchemaElement> getGraphSchema() {
         return graphSchema;
     }
 
@@ -349,13 +349,20 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
         for (String vertexRule : vertexRules) {
 
+            String label = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
+
+            SchemaElement vertexSchema = new SchemaElement(SchemaElement.Type.VERTEX, label);
+
             String[] columnNames = HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
+
 
             for (String vertexPropertyColumnName : columnNames) {
                 String propertyName = propertyNameFromColumnName(vertexPropertyColumnName, stripColumnFamilyNames);
                 PropertySchema propertySchema = new PropertySchema(propertyName, String.class);
-                graphSchema.addPropertySchema(propertySchema);
+                vertexSchema.addPropertySchema(propertySchema);
             }
+
+            graphSchema.add(vertexSchema);
         }
     }
 
@@ -366,7 +373,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             List<String> columnNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(edgeRule);
             String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(edgeRule);
 
-            EdgeSchema edgeSchema = new EdgeSchema(label);
+            SchemaElement edgeSchema = new SchemaElement(SchemaElement.Type.EDGE, label);
 
             for (String columnName : columnNames) {
                 String edgePropertyName = propertyNameFromColumnName(columnName, stripColumnFamilyNames);
@@ -374,7 +381,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                 edgeSchema.addPropertySchema(propertySchema);
             }
 
-            graphSchema.addEdgeSchema(edgeSchema);
+            graphSchema.add(edgeSchema);
         }
 
         for (String directedEdgeRule : directedEdgeRules) {
@@ -382,7 +389,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
             List<String> columnNames = HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(directedEdgeRule);
             String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(directedEdgeRule);
 
-            EdgeSchema edgeSchema = new EdgeSchema(label);
+            SchemaElement edgeSchema = new SchemaElement(SchemaElement.Type.EDGE, label);
 
             for (String columnName : columnNames) {
                 String edgePropertyName = propertyNameFromColumnName(columnName, stripColumnFamilyNames);
@@ -390,7 +397,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
                 edgeSchema.addPropertySchema(propertySchema);
             }
 
-            graphSchema.addEdgeSchema(edgeSchema);
+            graphSchema.add(edgeSchema);
         }
     }
 
@@ -658,9 +665,9 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
 
     public static ArrayList<String> getEdgePropertyColumnNamesFromEdgeRule(String edgeRule) {
 
-        String[] columnNames = edgeRule.split("\\,");
+        String[] columnNames = edgeRule.split(",");
 
-        ArrayList<String> edgePropertyColumnNames = new ArrayList<>();
+        ArrayList<String> edgePropertyColumnNames = new ArrayList<String>();
 
         if (columnNames.length >= 3) {
             edgePropertyColumnNames.addAll(Arrays.asList(columnNames).subList(3, columnNames.length));

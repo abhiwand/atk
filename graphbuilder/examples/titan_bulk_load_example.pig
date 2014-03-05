@@ -28,10 +28,6 @@
 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
-rmf /tmp/empty_file_to_end_pig_action
-rmf /tmp/empty_file_to_start_pig_action
-fs -mkdir /tmp/empty_file_to_start_pig_action
-
 employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS
 		(employee_id:int, name:chararray, age:int, dept:chararray, manager:int, underManager:chararray);
 

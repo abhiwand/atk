@@ -19,7 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
@@ -67,12 +67,12 @@ public class SchemaInferenceJobTest {
         verify(mockedJob).setReducerClass(SchemaInferenceReducer.class);
         verify(mockedJob).setMapOutputKeyClass(NullWritable.class);
 
-        verify(mockedJob).setMapOutputValueClass(SerializedEdgeOrPropertySchema.class);
+        verify(mockedJob).setMapOutputValueClass(SchemaElement.class);
 
         verify(mockedJob).setInputFormatClass(SequenceFileInputFormat.class);
 
         verify(mockedJob).setOutputFormatClass(org.apache.hadoop.mapreduce.lib.output.NullOutputFormat.class);
         verify(mockedJob).setOutputKeyClass(NullWritable.class);
-        verify(mockedJob).setOutputValueClass(SerializedEdgeOrPropertySchema.class);
+        verify(mockedJob).setOutputValueClass(SchemaElement.class);
     }
 }

@@ -19,7 +19,8 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.passthrough;
 
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.types.StringType;
@@ -27,6 +28,7 @@ import org.apache.hadoop.conf.Configuration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * This class handles the configuration time aspects of the graph construction
@@ -34,13 +36,12 @@ import java.util.HashMap;
  * to the Titan loader.
  *
  * @see GraphBuildingRule
- * @see PropertyGraphSchema
  * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.passthrough.PassThroughTokenizer
  */
 
 public class PassThroughGraphBuildingRule implements GraphBuildingRule {
 
-    private PropertyGraphSchema graphSchema;
+    private List<SchemaElement> graphSchema = new ArrayList<SchemaElement>();
     private final Class vidClass = StringType.class;
     private final Class<? extends GraphTokenizer> tokenizerClass = PassThroughTokenizer.class;
 
@@ -53,7 +54,33 @@ public class PassThroughGraphBuildingRule implements GraphBuildingRule {
     public PassThroughGraphBuildingRule(HashMap<String, Class<?>> propTypeMap,
                                         HashMap<String, ArrayList<String>> edgeSignatures) {
 
-        graphSchema = new PropertyGraphSchema(propTypeMap, edgeSignatures);
+        // this is a Titan loader and while Titan has a concept of edge signatures, it does not
+        // have a concept of vertex signatures - any vertex of any label can be associated with
+        // any declared property... and the command line and the logic of Titan loading reflect this
+
+        SchemaElement vertexSchema = new SchemaElement(SchemaElement.Type.VERTEX, null);
+
+
+        HashMap<String, PropertySchema> psMap = new HashMap<String, PropertySchema>();
+
+        for (String propertyName : propTypeMap.keySet()) {
+            PropertySchema propertySchema = new PropertySchema(propertyName, propTypeMap.get(propertyName));
+            psMap.put(propertyName, propertySchema);
+            vertexSchema.addPropertySchema(propertySchema);
+        }
+
+        graphSchema.add(vertexSchema);
+
+
+        for (String edgeLabel : edgeSignatures.keySet()) {
+            SchemaElement edgeSchema = new SchemaElement(SchemaElement.Type.EDGE, edgeLabel);
+
+            for (String propertyName : edgeSignatures.get(edgeLabel)) {
+                edgeSchema.addPropertySchema(psMap.get(propertyName));
+            }
+
+            graphSchema.add(edgeSchema);
+        }
     }
 
     /**
@@ -61,7 +88,7 @@ public class PassThroughGraphBuildingRule implements GraphBuildingRule {
      *
      * @return The property graph schema used when loading the sequence file.
      */
-    public PropertyGraphSchema getGraphSchema() {
+    public List<SchemaElement> getGraphSchema() {
         return graphSchema;
     }
 
@@ -74,9 +101,9 @@ public class PassThroughGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Gets the class of the {@code GraphTokenizer} used to construct the  graph.
+     * Gets the class of the <code>GraphTokenizer</code> used to construct the  graph.
      *
-     * @return The class of the {@code GraphTokenizer} used to construct the  graph.
+     * @return The class of the <code>GraphTokenizer</code> used to construct the  graph.
      * @see PassThroughTokenizer
      */
     public Class<? extends GraphTokenizer> getGraphTokenizerClass() {

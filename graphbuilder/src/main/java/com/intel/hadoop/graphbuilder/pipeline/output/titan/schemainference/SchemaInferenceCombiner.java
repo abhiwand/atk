@@ -20,8 +20,7 @@
 
 package com.intel.hadoop.graphbuilder.pipeline.output.titan.schemainference;
 
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.EdgeOrPropertySchema;
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SerializedEdgeOrPropertySchema;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.log4j.Logger;
@@ -30,7 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * This combiner  takes a multiset of {@code SerializedEdgeOrPropertySchema} objects, and merges them
+ * This combiner  takes a multiset of {@code SchemaElement} objects, and merges them
  * into a duplicate-free list which is passed to the reducer.
  * <p/>
  * <p> Combination is done with the following semantics:
@@ -43,11 +42,10 @@ import java.util.ArrayList;
  * <p/>
  * {@see MergeSchemaUtility}
  */
-public class SchemaInferenceCombiner extends Reducer<NullWritable, SerializedEdgeOrPropertySchema,
-        NullWritable, SerializedEdgeOrPropertySchema> {
+public class SchemaInferenceCombiner extends Reducer<NullWritable, SchemaElement,
+        NullWritable, SchemaElement> {
 
-    private static final Logger LOG = Logger.getLogger
-            (SchemaInferenceCombiner.class);
+    private static final Logger LOG = Logger.getLogger(SchemaInferenceCombiner.class);
 
     /**
      * The reduction method of this combiner.
@@ -59,33 +57,31 @@ public class SchemaInferenceCombiner extends Reducer<NullWritable, SerializedEdg
      * @throws InterruptedException
      */
     @Override
-    public void reduce(NullWritable key, Iterable<SerializedEdgeOrPropertySchema> values, Context context)
+    public void reduce(NullWritable key, Iterable<SchemaElement> values, Context context)
             throws IOException, InterruptedException {
 
-        ArrayList<EdgeOrPropertySchema> outValues = MergeSchemataUtility.merge(values, LOG);
+        MergeSchemataUtility mergeUtility = new MergeSchemataUtility();
+        ArrayList<SchemaElement> outValues = mergeUtility.merge(values);
 
         writeSchemata(outValues, context);
     }
 
     /**
-     * Writes a list of {@code EdgeOrPropertySchema}'s to the output.
+     * Writes a list of <code>SchemaElement</code>'s to the output.
      *
-     * @param list    The {@code EdgeOrPropertySchema}'s to be written.
-     * @param context The {@code Reducer.context} that tells Hadoop where and how to write.
+     * @param list    The <code>SchemaElement</code>} to be written.
+     * @param context The <code>Reducer.context</code> that tells Hadoop where and how to write.
      * @throws IOException
      */
-    public void writeSchemata(ArrayList<EdgeOrPropertySchema> list, Reducer.Context context)
+    public void writeSchemata(ArrayList<SchemaElement> list, Reducer.Context context)
             throws IOException {
 
-        SerializedEdgeOrPropertySchema serializedOut = new SerializedEdgeOrPropertySchema();
-
-        for (EdgeOrPropertySchema schema : list) {
-            try {
-                serializedOut.setSchema(schema);
-                context.write(NullWritable.get(), serializedOut);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+        try {
+            for (SchemaElement schema : list) {
+                context.write(NullWritable.get(), schema);
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 }
