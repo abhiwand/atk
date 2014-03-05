@@ -58,7 +58,7 @@ public class PassThroughGraphBuildingRule implements GraphBuildingRule {
         // have a concept of vertex signatures - any vertex of any label can be associated with
         // any declared property... and the command line and the logic of Titan loading reflect this
 
-        SchemaElement vertexSchema = new SchemaElement(SchemaElement.Type.VERTEX, null);
+        SchemaElement vertexSchema = SchemaElement.CreateVertexSchemaElement(null);
 
 
         HashMap<String, PropertySchema> psMap = new HashMap<String, PropertySchema>();
@@ -73,7 +73,7 @@ public class PassThroughGraphBuildingRule implements GraphBuildingRule {
 
 
         for (String edgeLabel : edgeSignatures.keySet()) {
-            SchemaElement edgeSchema = new SchemaElement(SchemaElement.Type.EDGE, edgeLabel);
+            SchemaElement edgeSchema = SchemaElement.CreateEdgeSchemaElement(edgeLabel);
 
             for (String propertyName : edgeSignatures.get(edgeLabel)) {
                 edgeSchema.addPropertySchema(psMap.get(propertyName));
