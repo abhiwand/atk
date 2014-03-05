@@ -61,4 +61,11 @@ public class InputTupleInProgress {
         return this.tuple.get(fieldPos);
     }
 
+    public Tuple getTuple() {
+        return this.tuple;
+    }
+
+    public Schema getInputSchema() {
+        return this.inputSchema;
+    }
 }
