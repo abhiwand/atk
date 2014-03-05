@@ -79,7 +79,8 @@ echo "launch auto scaling group"
 aws autoscaling create-auto-scaling-group --launch-configuration-name "$launchConfigName" \
 	--auto-scaling-group-name "$launchConfigName" --min-size $SCALE_MIN --max-size $SCALE_MAX --desired-capacity $SCALE_MIN \
 	--load-balancer-names "$LOAD_BALANCER" --health-check-type ELB --health-check-grace-period 300 \
-	--vpc-zone-identifier "subnet-b50e36c1,subnet-78060f1a,subnet-881c46ce"
+	--vpc-zone-identifier "subnet-b50e36c1,subnet-78060f1a,subnet-881c46ce" \
+	--tags ResourceId=\"$launchConfigName\",ResourceType=\"auto-scaling-group\",Key=\"Name\",Value=\"$launchConfigName\",PropagateAtLaunch=true ResourceId=\"$launchConfigName\",ResourceType=\"auto-scaling-group\",Key=\"Owner\",Value=\"graphtrial.intel.com\",PropagateAtLaunch=true
 
 echo "create up scaling policy for $launchConfigName"
 UP=$(aws autoscaling put-scaling-policy --auto-scaling-group-name "$launchConfigName" --policy-name "up" --scaling-adjustment 2 --adjustment-type ChangeInCapacity --cooldown 300 | jq '.PolicyARN' )
