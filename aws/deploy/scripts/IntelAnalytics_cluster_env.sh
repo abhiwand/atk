@@ -21,7 +21,8 @@ export IA_AMI_WEBRDS="${IA_NAME}-WebRDS"
 export IA_AMI_NODE="${IA_AMI_MASTER}"
 # instance type is cc2.8xlarge
 export IA_INSTANCE_TYPE=cc2.8xlarge
-
+#s3 dist bucket
+export s3DistcpBucket="gao-cluster-hdfs"
 # Default IAM group and user
 export IA_IAM_GROUP=${IA_NAME}_Public
 if [ -z "${IA_IAM_USER}" ]; then
@@ -719,12 +720,17 @@ function IA_generate_hosts_file_auto_scale()
         fi
         hosts[$i]=`IA_format_node_name_role $i`
         nname[$i]=`IA_format_node_name ${cname} $i`
+        orderHosts[$i]="$privateDns"
         ip[$i]=$privateIp
         dnsfull[$i]=$privateDns
         dns[$i]=`echo ${dnsfull[$i]} | awk -F"." '{print $1}'`
         echo "${ip[$i]} ${hosts[$i]} ${dns[$i]}" >> ${outhosts}
-        echo "${dnsfull[$i]}" >> ${outnodes}
+        #echo "${privateDns}" >> ${outnodes}
         
+    done
+    for host in "${orderHosts[@]}"
+    do
+        echo $host >> ${outnodes}
     done
     IA_loginfo "Generated hosts file ${outhosts}..."
     IA_loginfo "Generated nodes file ${outnodes}..."
