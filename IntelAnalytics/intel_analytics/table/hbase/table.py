@@ -204,13 +204,14 @@ class HBaseTable(object):
 
 
     def __get_column_statistics_filenames(self, column, check_file_existance=True):
-        if not column.profile or not column.profile.data_intervals:
-            column_file_identifier = column.name
-        else:
+        if column.profile and column.profile.data_intervals:
             md5sum = hashlib.md5(column.profile.get_interval_groups_as_str()).hexdigest()
             column_file_identifier = column.name + '_' + md5sum
+        else:
+            column_file_identifier = column.name
+
         hist_file = '%s_%s_histogram' % (self.table_name, column_file_identifier)
-        stat_file = '%s_%s_stats' % (self.table_name, column.column_name)
+        stat_file = '%s_%s_stats' % (self.table_name, column.name)
 
         files_exist = False
         if check_file_existance and \
@@ -223,8 +224,7 @@ class HBaseTable(object):
         return histogram.plot_histogram(hist_file,
                            column_name, 'frequency',
                            'Column Statistics - %s' % (column_name),
-                           stat_file)
- 
+                           text_file)
 
 
     def get_column_statistics(self, column_list, force_recomputation):
@@ -251,14 +251,14 @@ class HBaseTable(object):
         recompute_columns = False
         
         for i in column_list:
-            hfile,sfile,recompute = self.__get_column_statistics_filenames(i, not force_recomputation)
-            if recompute:
+            hfile,sfile,use_cache= self.__get_column_statistics_filenames(i, not force_recomputation)
+            if not use_cache:
                 recompute_columns = ColumnStat([],[],[],[],[]) if not recompute_columns else recompute_columns
                 recompute_columns.names.append(i.name)
                 recompute_columns.types.append(etl_schema.get_feature_type(i.name))
-                recompute_columns.intervals.append(i.profile.get_interval_groups_as_str() if i.profile else "")
-                recompute_columns.hist_files(hfile)
-                recompute_columns.stat_files(sfile)
+                recompute_columns.intervals.append(i.profile.get_interval_groups_as_str() if hasattr(i,'profile') else "")
+                recompute_columns.hist_files.append(hfile)
+                recompute_columns.stat_files.append(sfile)
             else:
                result.append(self.__plot_column_distribution(i.name, hfile, sfile))
             
@@ -281,14 +281,19 @@ class HBaseTable(object):
                 raise HBaseTableException('Could not generate statistics')
 
             # Move files to local filesystem for caching/plotting purposes
-            g = lambda val: ['-getmerge', '%s' % (val), '%s' % (val)]
-            for i in recompute_columns:
+            def update_cached_files(file):
+                g = lambda val: ['-getmerge', '%s' % (val), '%s' % (val)]
+                if (os.path.isfile(file)):
+                    os.remove(file)
+                hadooputils.dfs(g(file))
+                
+            for i in range(len(recompute_columns.hist_files)):
                 hfile,sfile =  recompute_columns.hist_files[i], recompute_columns.stat_files[i]
-                if exists('%s' % (hfile):
-                    hadooputils.dfs(g(hfile))
-                if exists('%s' % (sfile):
-                    hadooputils.dfs(g(sfile))
-                result.append(self.__plot_column_distribution(i.name, hfile, sfile)
+                if exists('%s' % (hfile)):
+                    update_cached_files(hfile)
+                if exists('%s' % (sfile)):
+                    update_cached_files(sfile)
+                result.append(self.__plot_column_distribution(recompute_columns.names[i], hfile, sfile))
 
 
         return result 

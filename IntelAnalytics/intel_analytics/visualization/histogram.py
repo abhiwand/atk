@@ -64,14 +64,11 @@ def plot_histogram(datafile, xlabel='', ylabel='', title='',
         t = hlines[i].split()
         data_x.append(t[0])
         data_y.append(int(t[1]))
+    fig = plt.figure()
+    axes = fig.add_axes([0.1,0.1,0.8,0.8])
 
     plt.bar(range(len(data_y)), data_y, align='center')
     plt.xticks(range(len(data_y)), data_x)
-
-    max_coordinate = 4
-    for s in slines:
-        if "max" in s:
-            max_coordinate = int(float(s.split('=')[1]))
 
     latex_symbols = {'max' : '$\max$', 'min' : '$\min$', 'avg' : '$\mu$', 'stdev' : '$\sigma$', 'var' : '$\sigma^2$'}
     for i,j in latex_symbols.iteritems():
@@ -83,7 +80,7 @@ def plot_histogram(datafile, xlabel='', ylabel='', title='',
     plt.xlabel(xlabel, fontsize = font_size)
     plt.ylabel(ylabel, fontsize = font_size)
     plt.title(title, fontsize = font_size)
-    plt.text(max_coordinate * 1.25, 0, r'%s' % (stats), fontsize = 18)
+    plt.figtext(1.2,0.1, r'%s' % (stats), fontsize = 18)
     plt.grid(True)
     plt.show()
 
