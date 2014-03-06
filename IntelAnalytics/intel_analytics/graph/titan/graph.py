@@ -388,23 +388,6 @@ class BulbsGraphWrapper(object):
         """
         return self._graph.get_graphml()
 
-
-    def clear(self):
-        """
-        Deletes all the elements in the graph.
-
-        Returns
-        -------
-        result : RexsterResult
-            response for executing the command
-
-        Examples
-        --------
-        >>> graph = get_graph("SampleGraph")
-        >>> graph.clear()
-        """
-        return self._graph.clear()
-
     def export_as_graphml(self, statements, file):
         """
         Execute graph queries and output result as a graphml file in the specified HDFS file location.
