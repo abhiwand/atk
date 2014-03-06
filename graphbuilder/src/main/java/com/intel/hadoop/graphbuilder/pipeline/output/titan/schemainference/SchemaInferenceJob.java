@@ -122,6 +122,8 @@ public class SchemaInferenceJob {
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(SchemaElement.class);
 
+        job.setNumReduceTasks(1);
+
         LOG.info("=========== Inferring Graph Schema ===========");
 
         job.waitForCompletion(true);

@@ -57,6 +57,7 @@ public class SchemaInferenceMapper extends Mapper<NullWritable, SerializedGraphE
 
         SchemaElement schemaElement = new SchemaElement(value.graphElement());
 
+
         try {
             writeSchemata(schemaElement, context);
         } catch (IOException e) {
@@ -72,11 +73,11 @@ public class SchemaInferenceMapper extends Mapper<NullWritable, SerializedGraphE
      * @param context       The job context.
      * @throws IOException
      */
-    public void writeSchemata(SchemaElement schemaElement, Mapper.Context context)
-            throws IOException {
+    public void writeSchemata(SchemaElement schemaElement, Mapper.Context context) throws IOException {
 
         try {
             context.write(NullWritable.get(), schemaElement);
+            LOG.info("WROTE SCHEMA :  " + schemaElement);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
