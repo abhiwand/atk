@@ -849,11 +849,11 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.save_schema(table_name)
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
-        file_names = self._get_file_name_string_for_import(file_names)
+        file_names_as_csv = self._get_file_name_string_for_import(file_names)
 
         args = get_pig_args('pig_import_csv.py')
 
-        args += ['-i', file_names, '-o', table_name,
+        args += ['-i', file_names_as_csv, '-o', table_name,
                  '-f', feature_names_as_str, '-t', feature_types_as_str]
 
         if skip_header:
@@ -877,7 +877,7 @@ class HBaseFrameBuilder(FrameBuilder):
         properties[MAX_ROW_KEY] = pig_report.content['input_count']
         etl_schema.save_table_properties(table_name, properties)
 
-        hbase_table = HBaseTable(table_name, file_names)
+        hbase_table = HBaseTable(table_name, file_names_as_csv)
         hbase_registry.register(frame_name, table_name, overwrite)
         return BigDataFrame(frame_name, hbase_table)
 
@@ -890,10 +890,10 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = get_pig_args('pig_import_csv.py')
 
-        file_names = self._get_file_name_string_for_import(file_names)
+        file_names_as_csv = self._get_file_name_string_for_import(file_names)
 
         table_name = data_frame._table.table_name
-        args += ['-i', file_names, '-o', table_name,
+        args += ['-i', file_names_as_csv, '-o', table_name,
                  '-f', new_data_feature_names_as_str, '-t', new_data_feature_types_as_str]
 
         if skip_header:
@@ -929,11 +929,11 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.populate_schema(schema)
         etl_schema.save_schema(table_name)
 
-        file_names = self._get_file_name_string_for_import(file_names)
+        file_names_as_csv = self._get_file_name_string_for_import(file_names)
 
         args = get_pig_args('pig_import_json.py')
 
-        args += ['-i', file_names, '-o', table_name]
+        args += ['-i', file_names_as_csv, '-o', table_name]
 
         logger.debug(args)
         
@@ -965,10 +965,10 @@ class HBaseFrameBuilder(FrameBuilder):
 
         args = get_pig_args('pig_import_json.py')
 
-        file_names = self._get_file_name_string_for_import(file_names)
+        file_names_as_csv = self._get_file_name_string_for_import(file_names)
 
         table_name = data_frame._table.table_name
-        args += ['-i', file_names, '-o', table_name]
+        args += ['-i', file_names_as_csv, '-o', table_name]
         try:
             self._append_data(args, etl_schema, table_name)
         except DataAppendException:
@@ -991,11 +991,11 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.populate_schema(schema)
         etl_schema.save_schema(table_name)
 
-        file_names = self._get_file_name_string_for_import(file_names)
+        file_names_as_csv = self._get_file_name_string_for_import(file_names)
 
         args = get_pig_args('pig_import_xml.py')
 
-        args += ['-i', file_names, '-o', table_name, '-tag', tag_name]
+        args += ['-i', file_names_as_csv, '-o', table_name, '-tag', tag_name]
 
         logger.debug(args)
         
@@ -1022,10 +1022,10 @@ class HBaseFrameBuilder(FrameBuilder):
         self._validate_exists(file_names)
         args = get_pig_args('pig_import_xml.py')
 
-        file_names = self._get_file_name_string_for_import(file_names)
+        file_names_as_csv = self._get_file_name_string_for_import(file_names)
 
         table_name = data_frame._table.table_name
-        args += ['-i', file_names, '-o', table_name, '-tag', tag_name]
+        args += ['-i', file_names_as_csv, '-o', table_name, '-tag', tag_name]
 
         logger.debug(args)
         etl_schema = ETLSchema()
