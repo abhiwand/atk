@@ -41,10 +41,10 @@ public class SchemaElementTest {
     @Test
     public final void test_write_read() throws IOException {
 
-        SchemaElement inSchema = SchemaElement.CreateEdgeSchemaElement(DR_ZAIUS);
+        SchemaElement inSchema = SchemaElement.createEdgeSchemaElement(DR_ZAIUS);
         inSchema.addPropertySchema(planetOfStrings);
 
-        SchemaElement outSchema = SchemaElement.CreateVertexSchemaElement(D_DIRTY_APE);
+        SchemaElement outSchema = SchemaElement.createVertexSchemaElement(D_DIRTY_APE);
         outSchema.addPropertySchema(planetOfFloats);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
@@ -63,8 +63,8 @@ public class SchemaElementTest {
     @Test
     public void test_consistency_of_equals_and_HashCode() throws Exception {
 
-        SchemaElement serializedOne = SchemaElement.CreateVertexSchemaElement(D_DIRTY_APE);
-        SchemaElement serializedTwo = SchemaElement.CreateVertexSchemaElement(D_DIRTY_APE);
+        SchemaElement serializedOne = SchemaElement.createVertexSchemaElement(D_DIRTY_APE);
+        SchemaElement serializedTwo = SchemaElement.createVertexSchemaElement(D_DIRTY_APE);
 
         assertEquals(serializedOne, serializedTwo);
         assertEquals(serializedOne.hashCode(), serializedTwo.hashCode());

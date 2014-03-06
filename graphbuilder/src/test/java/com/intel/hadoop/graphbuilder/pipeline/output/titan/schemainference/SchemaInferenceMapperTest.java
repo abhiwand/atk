@@ -60,7 +60,7 @@ public class SchemaInferenceMapperTest {
     static final PropertySchema pSchema1 = new PropertySchema();
     static final PropertySchema pSchema2 = new PropertySchema();
 
-    static final SchemaElement edgeSchema = SchemaElement.CreateEdgeSchemaElement(label.get());
+    static final SchemaElement edgeSchema = SchemaElement.createEdgeSchemaElement(label.get());
 
     @Mock
     Mapper.Context mockedContext;
@@ -92,7 +92,7 @@ public class SchemaInferenceMapperTest {
 
         mapper.map(key, inValue, mockedContext);
 
-        SchemaElement edgeSchema = SchemaElement.CreateEdgeSchemaElement(label.get());
+        SchemaElement edgeSchema = SchemaElement.createEdgeSchemaElement(label.get());
 
         edgeSchema.addPropertySchema(pSchema1);
         edgeSchema.addPropertySchema(pSchema2);

@@ -28,6 +28,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -117,7 +118,7 @@ public class SchemaInferenceJob {
 
         // the output only goes to Titan, not to HDFS;
 
-        job.setOutputFormatClass(org.apache.hadoop.mapreduce.lib.output.NullOutputFormat.class);
+        job.setOutputFormatClass(NullOutputFormat.class);
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(SchemaElement.class);
 

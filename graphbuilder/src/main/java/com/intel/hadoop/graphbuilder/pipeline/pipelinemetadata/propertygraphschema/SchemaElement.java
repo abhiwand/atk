@@ -50,7 +50,18 @@ public class SchemaElement implements Writable {
     private StringType label = null;
     private boolean    isEdge = false;
 
-    private static enum Type  { EDGE, VERTEX };
+    private static enum Type  { EDGE, VERTEX }
+
+    /**
+     * Default constructor, necessary for Hadoop.
+     */
+
+    public SchemaElement() {
+        ID =  new StringType();
+        label = new StringType();
+
+        propertySchemata = new HashSet<PropertySchema>();
+    }
 
     /*
      * private constructor for the factories
@@ -106,7 +117,7 @@ public class SchemaElement implements Writable {
      * @param label The label for the new schema.
      * @return A new <schema>SchemaElement</schema> encapuslating a vertex schema with the given label.
      */
-    public static SchemaElement CreateVertexSchemaElement(String label) {
+    public static SchemaElement createVertexSchemaElement(String label) {
         return new SchemaElement(label, Type.VERTEX);
     }
 
@@ -115,7 +126,7 @@ public class SchemaElement implements Writable {
      * @param label The label for the new schema.
      * @return A new <schema>SchemaElement</schema> encapuslating a vertex schema with the given label.
      */
-    public static SchemaElement CreateEdgeSchemaElement(String label) {
+    public static SchemaElement createEdgeSchemaElement(String label) {
         return new SchemaElement(label, Type.EDGE);
     }
 
@@ -232,16 +243,20 @@ public class SchemaElement implements Writable {
     @Override
     public boolean equals(Object in) {
 
-        boolean test = in instanceof SchemaElement;
-        SchemaElement inSchemaElement = (SchemaElement) in;
+        if (in instanceof SchemaElement) {
+            SchemaElement inSchemaElement = (SchemaElement) in;
 
-        if (this.getLabel() != null) {
-            return (this.getLabel().equals(inSchemaElement.getLabel())
-                    && this.getPropertySchemata().size() == (inSchemaElement.getPropertySchemata().size())
-                    && (((SchemaElement) in).getPropertySchemata()).containsAll(this.getPropertySchemata()));
+            if (this.getLabel() != null) {
+                return (this.getLabel().equals(inSchemaElement.getLabel())
+                        && this.getPropertySchemata().size() == (inSchemaElement.getPropertySchemata().size())
+                        && (((SchemaElement) in).getPropertySchemata()).containsAll(this.getPropertySchemata()));
+            } else {
+                return (this.getLabel() == null && inSchemaElement.getLabel() == null);
+            }
         } else {
-            return (this.getLabel() == null && inSchemaElement.getLabel() == null);
+            return false;
         }
+
     }
 
     /**
