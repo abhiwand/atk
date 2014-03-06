@@ -24,6 +24,7 @@ import os
 import ast
 import sys
 import hashlib
+from java.util import Properties
 
 from intel_analytics.table.pig import pig_helpers
 
@@ -115,7 +116,7 @@ def main(argv):
     pig_statements.append("hbase_data = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s', '-loadKey true') as (key:chararray, %s);" \
                           % (cmd_line_args.input, hbase_constructor_args, pig_schema_info))
 
-    pig_statements.append("grouped_data1 = GROUP hbase_data ALL;")
+    pig_statements.append("grouped_data1 = GROUP hbase_data ALL PARALLEL 1;")
 
     binding_variables = {}
 
@@ -141,7 +142,7 @@ def main(argv):
         pig_statements.append("unique_val_count_%s = FOREACH grouped_data1 { unique_values = DISTINCT hbase_data.%s; GENERATE CONCAT('unique_values=', (chararray)COUNT(unique_values)); }" % (c,c))
     
         pig_statements.append("filter_data1_%s = FOREACH hbase_data GENERATE (%s is null ? 1 : 0) as null_value:int;" % (c,c))
-        pig_statements.append("grouped_data2_%s = GROUP filter_data1_%s ALL;" % (c,c))
+        pig_statements.append("grouped_data2_%s = GROUP filter_data1_%s ALL PARALLEL 1;" % (c,c))
         pig_statements.append("missing_val_count_%s = FOREACH grouped_data2_%s GENERATE CONCAT('missing_values=', (chararray)SUM(filter_data1_%s.null_value));" % (c,c,c))
     
 
@@ -154,7 +155,6 @@ def main(argv):
             # Column without any grouping
             pig_statements.append("grouped_data2_%s = GROUP hbase_data BY %s;" % (c,c))
             pig_statements.append("histogram_%s = FOREACH grouped_data2_%s GENERATE group, COUNT(hbase_data);" % (c,c))
-            pig_statements.append("rmf %s;" % (binding_variables['HIST_%s' % (c)]))
         else:
             intervals = [eval(replace_inf(f)) for f in feature_data_groups[t].split(":")]
             count_variables = []
@@ -162,14 +162,11 @@ def main(argv):
                 k = generate_interval_check(c,j)
                 interval_as_str = escape_single_quotes(str(j))
                 pig_statements.append("filter_%s_%d = FILTER hbase_data BY %s;" % (c,i,k))
-                pig_statements.append("grouped_data3_%s_%d = GROUP filter_%s_%d ALL;" %(c,i,c,i))
+                pig_statements.append("grouped_data3_%s_%d = GROUP filter_%s_%d ALL PARALLEL 1;" %(c,i,c,i))
                 pig_statements.append("count_%s_%d = FOREACH grouped_data3_%s_%d GENERATE '%s', COUNT(filter_%s_%d);" % (c,i,c,i,interval_as_str,c,i))
                 count_variables.append("count_%s_%d" % (c,i))
             pig_statements.append("histogram_%s = UNION %s;" % (c,",".join(count_variables)))
-            pig_statements.append("rmf %s;" % (binding_variables['HIST_%s' % (c)]))
             
-    
-        pig_statements.append("rmf %s;" % (binding_variables['STAT_%s' % (c)]))
     
         pig_statements.append("STORE result_%s INTO '$STAT_%s';" % (c, c))
         pig_statements.append("STORE histogram_%s INTO '$HIST_%s';" % (c, c))
@@ -178,8 +175,13 @@ def main(argv):
     pig_script = "\n".join(pig_statements)
     compiled = Pig.compile(pig_script)
 
-    status = compiled.bind(binding_variables).runSingle()#without binding anything Pig raises error
-    return 0 if status.isSuccessful() else 1
+    props = Properties()
+    optimization_params = {'pig.exec.mapPartAgg':'true', 'pig.exec.mapPartAgg.minReduction':'3'}
+    for key,value in optimization_params.iteritems():
+        props.setProperty(key,value)
+
+    status_list = compiled.bind(binding_variables).run(props)#without binding anything Pig raises error
+    return 0 if all(status.isSuccessful() for status in status_list) else 1
 
 if __name__ == "__main__":
   try:
