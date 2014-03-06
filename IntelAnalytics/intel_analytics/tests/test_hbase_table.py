@@ -870,16 +870,35 @@ class HbaseTableTest(unittest.TestCase):
         self.transform_with_multiple_columns("str1,str2,\'MyString1\',str3,\'MyString2\'", "strout3", EvalFunctions.String.CONCAT)
 
     def test_concatentaion_with_random_columns(self):
+        test_expression="fakecol1,fakecol2"
+        msg="Column %s in expression %s does not exist" % ("fakecol1", test_expression)
         try:
-            self.transform_with_multiple_columns("fakecol1,fakecol2", "fakeout3", EvalFunctions.String.CONCAT)
-        except:
-            print "Caught exception on invalid column inputs for CONCAT"
+            self.transform_with_multiple_columns(test_expression, "fakeout3", EvalFunctions.String.CONCAT)
+            self.fail("Failed to catch '%s' for expression '%s'" % (msg, test_expression))
+        except HBaseTableException, e:
+            self.assertEqual(e.message, msg)
 
     def test_arithmetics_with_random_columns(self):
+        test_expression="fakecol1+fakecol2"
+        msg="Column %s in expression %s does not exist" % ("fakecol1", test_expression)
         try:
-            self.transform_with_multiple_columns("fakecol1+fakecol2", "fakeout3", EvalFunctions.Math.ARITHMETIC)
-        except:
-            print "Caught exception on invalid column inputs for ARITHMETIC"
+            self.transform_with_multiple_columns(test_expression, "fakeout3", EvalFunctions.Math.ARITHMETIC)
+            self.fail("Failed to catch '%s' for expression '%s'" % (msg, test_expression))
+        except HBaseTableException, e:
+            self.assertEqual(e.message, msg)
+
+    def test_arithmetics_with_random_spaces(self):
+        test_expression="long1 + long2 * double1 - double2"
+        self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
+
+    def test_arithmetics_with_random_parentheses(self):
+        test_expression="long1((+long2*(double1/)((double4("
+        msg="Arithmetic expression syntax error!"
+        try:
+            self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
+            self.fail("Failed to catch '%s' for expression '%s'" % (msg, test_expression))
+        except HBaseTableException, e:
+            self.assertEqual(e.message, msg)
 
     @patch('intel_analytics.graph.titan.graph.call')
     def test_export_as_graphml(self, call_method):
