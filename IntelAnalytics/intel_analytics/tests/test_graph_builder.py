@@ -77,6 +77,7 @@ config['graph_builder_titan_xml'] = \
     os.path.join(config['conf_folder'], "graph_builder_titan.xml")
 config['hbase_names_file'] = \
     os.path.join(config['conf_folder'], "table_name.txt")
+config['graph_builder_config_template'] = os.path.join(_here_folder, "graphbuilder-config-template.xml")
 
 from intel_analytics.graph.biggraph import GraphTypes
 from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory, build, get_gb_build_command
@@ -335,34 +336,19 @@ class TestGraphConfig(unittest.TestCase):
         with open(config['graph_builder_titan_xml']) as f:
             result = f.read()
         expected = """<!-- Auto-generated Graph Builder cfg file -->
-
+<!--
+    The configuration parameters are documented at https://github.com/thinkaurelius/titan/wiki/Using-HBase
+    Currently GB 2.0 (alpha) supports only HBase as the storage backend.
+  -->
 <configuration>
-  <property>
-    <name>graphbuilder.conf_folder</name>
-    <value>%s</value>
-  </property>
-  <property>
-    <name>graphbuilder.titan_storage_backend</name>
-    <value>mocked</value>
-  </property>
-  <property>
-    <name>graphbuilder.titan_storage_connection_timeout</name>
-    <value>mocked</value>
-  </property>
-  <property>
-    <name>graphbuilder.titan_storage_hostname</name>
-    <value>mocked</value>
-  </property>
-  <property>
-    <name>graphbuilder.titan_storage_port</name>
-    <value>mocked</value>
-  </property>
-  <property>
-    <name>graphbuilder.titan_storage_tablename</name>
-    <value>g1_f1_timeA_titan</value>
-  </property>
+    <property>
+        <name>graphbuilder.titan_ids.block-size</name>
+        <value>mocked</value>
+        <description>
+        </description>
+    </property>
 </configuration>
-""" % config['conf_folder']
+"""
         if expected != result:
             msg = get_diff_str(expected, result)
             self.fail(msg)
