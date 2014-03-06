@@ -36,7 +36,14 @@ class TestFrameBuilder(unittest.TestCase):
         object.save_table_properties = save_properties_action
         return object
 
-    def setup_data_import_test(self, call_method, etl_schema_class, etl_schema_class_schema, pig_report_strategy_class):
+    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
+    @patch("intel_analytics.table.hbase.table.hbase_registry")
+    @patch("intel_analytics.table.hbase.table._create_table_name")
+    @patch('intel_analytics.table.hbase.schema.ETLSchema')
+    @patch('intel_analytics.table.hbase.table.PigJobReportStrategy')
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_build_from_csv_multiple_files(self, etl_schema_class, call_method, pig_report_strategy_class, etl_schema_class_schema, create_table_name_func, hbase_registry, etl_base_client_class):
         result_holder = {}
         etl_object = self.create_mock_etl_object(result_holder)
         etl_object.feature_names = []
@@ -54,18 +61,7 @@ class TestFrameBuilder(unittest.TestCase):
 
         call_method.return_value = None
         call_method.side_effect = call_side_effect
-        return result_holder
 
-    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
-    @patch("intel_analytics.table.hbase.table.hbase_registry")
-    @patch("intel_analytics.table.hbase.table._create_table_name")
-    @patch('intel_analytics.table.hbase.schema.ETLSchema')
-    @patch('intel_analytics.table.hbase.table.PigJobReportStrategy')
-    @patch('intel_analytics.table.hbase.table.call')
-    @patch('intel_analytics.table.hbase.table.ETLSchema')
-    def test_build_from_csv_multiple_files(self, etl_schema_class, call_method, pig_report_strategy_class, etl_schema_class_schema, create_table_name_func, hbase_registry, etl_base_client_class):
-        result_holder = self.setup_data_import_test(call_method, etl_schema_class, etl_schema_class_schema,
-                                                    pig_report_strategy_class)
         etl_base_client_class.drop_create_table = MagicMock()
 
         create_table_name_func.return_value = "test_table"
@@ -92,8 +88,23 @@ class TestFrameBuilder(unittest.TestCase):
     @patch('intel_analytics.table.hbase.table.ETLSchema')
     def test_append_from_csv_same_schema_multiple_files(self, etl_schema_class, call_method, pig_report_strategy_class, etl_schema_class_schema):
 
-        result_holder = self.setup_data_import_test(call_method, etl_schema_class, etl_schema_class_schema,
-                                                    pig_report_strategy_class)
+        result_holder = {}
+        etl_object = self.create_mock_etl_object(result_holder)
+        etl_object.feature_names = []
+        etl_object.feature_types = []
+        etl_schema_class.return_value = etl_object
+        etl_schema_class_schema.return_value = MagicMock()
+        pig_report_strategy = MagicMock()
+        report_content = {}
+        report_content['input_count'] = '1500'
+        pig_report_strategy.content = report_content
+        pig_report_strategy_class.return_value = pig_report_strategy
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
 
         table = MagicMock()
         table.table_name = 'test_table'
