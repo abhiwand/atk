@@ -24,20 +24,78 @@
 The Builtin functions that can be applied with the transform method on BigDataFrames.
 """
 class EvalFunctions:
-    """String functions
-    """
+
     class String:
+        """
+        String functions
+        --------------
+
+**CONCAT(string) : string** - returns concatenation with given string
+
+**ENDS_WITH(string) : boolean** - returns whether the string ends with the given argument
+
+>>> # Need example
+
+**EQUALS_IGNORE_CASE(string) : boolean** - returns whether the string equals the given string, case-insensitive
+
+**INDEX_OF('character', startIndex) : integer** - returns the index of the first occurrence of a character in a string, searching forward from a start index
+
+>>> frame.transform("colA", "colContains", EvalFunctions.String.INDEX_OF, ['$', 0])
+
+**LAST_INDEX_OF('character') : integer** - returns the index of the last occurrence of a character in a string, searching backward from the end of the string
+
+**LENGTH() : integer** - returns the length of the string
+
+**LOWER() : string** - converts all characters in a string to lower case
+
+**LTRIM() : string** - returns a copy of a string with only leading white space removed
+
+**REGEX_EXTRACT(regex, index) : string** - performs regular expression matching and extracts the matched group defined by an index parameter
+
+>>> # need example
+
+**REGEX_EXTRACT_ALL(regex) : tuple** - Performs regular expression matching and extracts all matched groups
+
+>>> # need example
+
+**REPLACE(regex, string) : string** - replaces existing characters with new characters
+
+**RTRIM() : string** - returns a copy of a string with only trailing white space removed
+
+**STARTSWITH(string) : boolean** - determine if the first argument starts with the string in the second
+
+**STRSPLIT(regex, limit) : string** - splits a string around matches of a given regular expression;
+If the limit is positive, the pattern (the compiled representation of the regular expression) is
+applied at most limit-1 times, therefore the value of the argument means the maximum length of the
+result tuple. The last element of the result tuple will contain all input after the last match.  If the
+limit is negative, no limit is applied for the length of the result tuple.  If the limit is zero, no
+limit is applied for the length of the result tuple too, and trailing empty strings (if any) will be removed.
+
+**SUBSTRING(startindex, stopIndex) : boolean** - returns a substring from a given string;
+startIndex is first character of the substring, stopIndex is the index of character *following* the last
+character of the substring
+
+**TRIM() : string** - returns a copy of a string with leading and trailing white space removed
+
+**UPPER() : string** - returns a string converted to upper case
+
+**TOKENIZE([, 'field_delimiter']) : tuple** - splits a string and outputs a bag a words
+
+>>> # Need example
+
+
+        """
         ENDS_WITH=1
         EQUALS_IGNORE_CASE=2
         INDEX_OF=3
         LAST_INDEX_OF=4
         LOWER=5
-        LTRIM=6  
-        REGEX_EXTRACT=7  
-        REGEX_EXTRACT_ALL=8 
+        LTRIM=6
+        REGEX_EXTRACT=7
+        REGEX_EXTRACT_ALL=8
         REPLACE=9
         RTRIM=10
-        STARTS_WITH=11 
+        STARTS_WITH=11
         STRSPLIT=12
         SUBSTRING=13
         TRIM=14
@@ -45,10 +103,47 @@ class EvalFunctions:
         TOKENIZE=16
         LENGTH=17
         CONCAT=18   #CONCAT is part of Pig Eval functions
-        
-    """Math functions
-    """        
+
     class Math:
+        """
+        Math functions
+        --------------
+
+**ABS()** - returns the absolute value
+
+**ARITHMETIC()** - performs basic arithmetic operations as specified in source column argument
++, -, *, /, %
+
+>>> frame.transform("colA + colB", "colSum", EvalFunctions.Math.ARITHMETIC)
+>>> frame.transform("colA % 2", "colModulo", EvalFunctions.Math.ARITHMETIC)
+
+**CEIL()** - returns the value rounded up to the nearest integer
+
+**EXP()** - returns e raised to the power of argument
+
+**FLOOR()** - returns the value rounded down to the nearest integer
+
+**LOG()** - returns the natural logarithm (base e)
+
+**LOG10()** - returns the base 10 logarithm
+
+**POW(power)** - returns the  value raised to the power
+
+>>> frame.transform("colA", "col_power2", EvalFunctions.Math.POW, [2])
+
+**RANDOM()** - returns a pseudo random number
+
+**ROUND()** - returns the value rounded to an integer
+
+**SQRT()** -  returns the positive square root
+
+**STND()** - returns standardized value  by subtracting its mean from each
+element and dividing this difference by its standard devation
+(see `Standardization <http://en.wikipedia.org/wiki/Feature_scaling#Standardization>`_).
+
+>>> # Need Example
+
+        """
         ABS=1000
         LOG=1001
         LOG10=1002
@@ -68,22 +163,65 @@ class EvalFunctions:
         RANDOM=1012
         
     class Json:
+        """
+        JSON functions
+        --------------
+
+**EXTRACT_FIELD(??)** -  need text
+
+>>> # Need example
+        """
         EXTRACT_FIELD=2000
 
     class Xml:
-	EXTRACT_FIELD=3000
+        """
+        XML functions
+        --------------
+
+**EXTRACT_FIELD(??)** -  need text
+
+>>> # Need example
+        """
+        EXTRACT_FIELD=3000
 
     class Aggregation:
-	AVG=5000
-	SUM=5001
-	MAX=5002
-	MIN=5003
-	COUNT=5004
-	DISTINCT=5005
-	COUNT_DISTINCT=5006
-	STDEV=5007 #Population standard deviation
-	VAR=5008
-	
+        """
+        Aggregation functions
+        ---------------------
+
+**AVG()** - computes the average of the values
+
+>>> # group by colA and take averages of colB, store in colBavg of aggregate table
+>>> frame.aggregate("colA", [(EvalFunctions.Aggregation.AVG, "colB", "colBavg")])
+
+**SUM()** - computes the sum of the values
+
+**MAX()** - returns the maximum value
+
+**MIN()** - returns the minimum value
+
+**COUNT()** - returns the number of values present
+
+**DISTINCT()** - removes duplicates
+
+>>> # Need an example...
+
+**DISTINCT_COUNT()** - return the number of unique values
+
+**STDEV()** - computes the standard deviation
+
+**VAR()** - computes the variance
+        """
+        AVG=5000
+        SUM=5001
+        MAX=5002
+        MIN=5003
+        COUNT=5004
+        DISTINCT=5005
+        COUNT_DISTINCT=5006
+        STDEV=5007 #Population standard deviation
+        VAR=5008
+
 
     @staticmethod
     def to_string(x):
@@ -126,52 +264,52 @@ class EvalFunctions:
             EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON',
             EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPath',
 
-	    EvalFunctions.Aggregation.AVG: 'AVG',
-	    EvalFunctions.Aggregation.SUM: 'SUM',
-	    EvalFunctions.Aggregation.MAX: 'MAX',
-	    EvalFunctions.Aggregation.MIN: 'MIN',
-	    EvalFunctions.Aggregation.COUNT: 'COUNT',
-	    EvalFunctions.Aggregation.DISTINCT: 'DISTINCT',
-	    EvalFunctions.Aggregation.COUNT_DISTINCT: 'COUNT_DISTINCT',
-	    EvalFunctions.Aggregation.STDEV: 'STDEV',
-	    EvalFunctions.Aggregation.VAR: 'VAR'
-        }
+            EvalFunctions.Aggregation.AVG: 'AVG',
+            EvalFunctions.Aggregation.SUM: 'SUM',
+            EvalFunctions.Aggregation.MAX: 'MAX',
+            EvalFunctions.Aggregation.MIN: 'MIN',
+            EvalFunctions.Aggregation.COUNT: 'COUNT',
+            EvalFunctions.Aggregation.DISTINCT: 'DISTINCT',
+            EvalFunctions.Aggregation.COUNT_DISTINCT: 'COUNT_DISTINCT',
+            EvalFunctions.Aggregation.STDEV: 'STDEV',
+            EvalFunctions.Aggregation.VAR: 'VAR' }
 
         if x in mapping:
             return mapping[x]
         else:
             raise Exception("The function specified is not valid")
 
+
 string_functions = []
-math_functions = []  
+math_functions = []
 json_functions = []
 xml_functions = []
 aggregation_functions= []
-available_builtin_functions = []#used for validation, does the user try to call a valid function? 
+available_builtin_functions = []#used for validation, does the user try to call a valid function?
 for key,val in EvalFunctions.String.__dict__.items():
-    if key == '__module__' or key == '__doc__':
-        continue
-    string_functions.append(EvalFunctions.to_string(val))
-    
+   if key == '__module__' or key == '__doc__':
+       continue
+   string_functions.append(EvalFunctions.to_string(val))
+
 for key,val in EvalFunctions.Math.__dict__.items():
-    if key == '__module__' or key == '__doc__':
-        continue
-    math_functions.append(EvalFunctions.to_string(val))  
-    
+   if key == '__module__' or key == '__doc__':
+       continue
+   math_functions.append(EvalFunctions.to_string(val))
+
 for key,val in EvalFunctions.Json.__dict__.items():
-    if key == '__module__' or key == '__doc__':
-        continue
-    json_functions.append(EvalFunctions.to_string(val)) 
+   if key == '__module__' or key == '__doc__':
+       continue
+   json_functions.append(EvalFunctions.to_string(val))
 
 for key,val in EvalFunctions.Xml.__dict__.items():
-    if key == '__module__' or key == '__doc__':
-        continue
-    xml_functions.append(EvalFunctions.to_string(val))
+   if key == '__module__' or key == '__doc__':
+       continue
+   xml_functions.append(EvalFunctions.to_string(val))
 
 for key,val in EvalFunctions.Aggregation.__dict__.items():
-    if key == '__module__' or key == '__doc__':
-        continue
-    aggregation_functions.append(EvalFunctions.to_string(val))
+   if key == '__module__' or key == '__doc__':
+       continue
+   aggregation_functions.append(EvalFunctions.to_string(val))
 
 available_builtin_functions.extend(string_functions)
 available_builtin_functions.extend(math_functions)

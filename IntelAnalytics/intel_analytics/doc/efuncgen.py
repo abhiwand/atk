@@ -9,9 +9,10 @@ def print_class(name, cls):
     print name
     print "+" * len(name)
     print ""
-    for k in sorted(cls.__dict__.iterkeys()):
-        if not k.startswith('__'):
-            print '| ' + k
+    print cls.__doc__
+    #for k in sorted(cls.__dict__.iterkeys()):
+        #if not k.startswith('__'):
+            #print '| ' + k
 
 print ".. _evalfunctions:\n"
 print "EvalFunctions"
