@@ -834,7 +834,7 @@ class HBaseTable(object):
         join_etl_schema.save_table_properties(join_table_name, join_table_properties)
 
         # save the table name
-        hbase_registry.register(join_frame_name, join_table_name)
+        hbase_registry.register(join_frame_name, join_table_name, overwrite=overwrite)
 
         # file name is fake, for information purpose only
         join_file_name = 'joined from ' + ', '.join(tables)
