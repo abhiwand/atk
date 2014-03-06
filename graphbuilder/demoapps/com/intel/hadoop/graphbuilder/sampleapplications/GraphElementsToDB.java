@@ -26,6 +26,7 @@ import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanCommandLineOptio
 import com.intel.hadoop.graphbuilder.pipeline.output.titan.TitanOutputConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.passthrough.PassThroughGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.util.*;
+import com.intel.pig.rules.EdgeRule;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
@@ -85,6 +86,7 @@ public class GraphElementsToDB {
         options.addOption(BaseCLI.Options.titanEdgeSignatures.get());
         options.addOption(BaseCLI.Options.titanKeyIndex.get());
         options.addOption(BaseCLI.Options.titanInferSchema.get());
+        options.addOption(BaseCLI.Options.addSideToVertex.get());
 
         commandLineInterface.setOptions(options);
     }
@@ -92,7 +94,8 @@ public class GraphElementsToDB {
     /*
      * Private helper to extract property name to datatype classname from incoming args
      */
-    private static HashMap<String, Class<?>> extractPropertyTypeMap(String propNamesString) {
+    private static HashMap<String, Class<?>> extractPropertyTypeMap(String propNamesString,
+                                                                    String addSideVertexProperty) {
         HashMap<String, Class<?>> map = new HashMap<String, Class<?>>();
 
         if (StringUtils.isNotEmpty(propNamesString)) {
@@ -131,6 +134,10 @@ public class GraphElementsToDB {
                     map.put(name, dataType);
                 }
             }
+        }
+
+        if (StringUtils.isNotEmpty(addSideVertexProperty)) {
+            map.put("side", String.class);
         }
         return map;
     }
@@ -201,8 +208,9 @@ public class GraphElementsToDB {
             GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.BAD_COMMAND_LINE, badCmdLine, LOG);
         }
 
-        HashMap<String, Class<?>> propTypeMap = extractPropertyTypeMap(cmd.getOptionValue(
-                BaseCLI.Options.titanPropertyTypes.getLongOpt()));
+        HashMap<String, Class<?>> propTypeMap = extractPropertyTypeMap(
+                cmd.getOptionValue(BaseCLI.Options.titanPropertyTypes.getLongOpt()),
+                cmd.getOptionValue(BaseCLI.Options.addSideToVertex.getLongOpt()));
 
         HashMap<String, ArrayList<String>> edgeSignatures = extractEdgeSignatures(cmd.getOptionValue(
                 BaseCLI.Options.titanEdgeSignatures.getLongOpt()));
