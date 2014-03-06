@@ -827,7 +827,8 @@ class BigDataFrame(object):
                                           left_on=left_on,  \
                                           right_on=right_on,\
                                           suffixes=suffixes,\
-                                          join_frame_name=join_frame_name)
+                                          join_frame_name=join_frame_name, \
+                                          overwrite=overwrite)
 
             join_frame._lineage.append(join_frame._table.table_name)
 
