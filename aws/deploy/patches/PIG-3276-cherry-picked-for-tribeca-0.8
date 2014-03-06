@@ -1,0 +1,94 @@
+commit 272d8689784a83c630000440135e61809c46e293
+Author: Yi Zou <yi.zou@intel.com>
+Date:   Wed Mar 5 17:36:06 2014 -0800
+
+    PIG-3726: Ranking empty records leads to NullPointerException
+    
+    git-svn-id: https://svn.apache.org/repos/asf/pig/trunk@1563200 13f79535-47bb-0310-9956-ffa450edef68
+    
+    Conflicts:
+        CHANGES.txt
+        src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
+    
+    Notes from:    Yi Zou <yi.zou@intel.com>
+    Cherry-picked 5345621 onto branch release-12.0 and fixed conflicts
+    Link: https://issues.apache.org/jira/browse/PIG-3726
+    
+    Changes to be committed:
+    
+        modified:   src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
+        modified:   test/org/apache/pig/test/TestRank3.java
+    
+    Committed-by: Yi Zou <yi.zou@intel.com>
+
+diff --git a/src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java b/src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
+index eed5eac..bd9d3dc 100644
+--- a/src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
++++ b/src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
+@@ -106,6 +106,8 @@ import org.apache.pig.impl.util.Pair;
+ import org.apache.pig.impl.util.UDFContext;
+ import org.apache.pig.impl.util.Utils;
+ import org.apache.pig.tools.pigstats.ScriptState;
++import org.apache.pig.tools.pigstats.mapreduce.MRPigStatsUtil;
++import org.apache.pig.tools.pigstats.mapreduce.MRScriptState;
+ 
+ /**
+  * This is compiler class that takes an MROperPlan and converts
+@@ -357,7 +359,24 @@ public class JobControlCompiler{
+ 
+         try {
+             counters = HadoopShims.getCounters(job);
+-            groupCounters = counters.getGroup(getGroupName(counters.getGroupNames()));
++
++            String groupName = getGroupName(counters.getGroupNames());
++            // In case that the counter group was not find, we need to find
++            // out why. Only acceptable state is that the relation has been
++            // empty.
++            if (groupName == null) {
++                Counter outputRecords =
++                    counters.getGroup(MRPigStatsUtil.TASK_COUNTER_GROUP)
++                    .getCounterForName(MRPigStatsUtil.MAP_OUTPUT_RECORDS);
++
++                if(outputRecords.getCounter() == 0) {
++                    globalCounters.put(operationID, new ArrayList<Pair<String, Long>>());
++                    return;
++                } else {
++                  throw new RuntimeException("Did not found RANK counter group for operationId: " + operationID);
++                }
++            }
++            groupCounters = counters.getGroup(groupName);
+ 
+             Iterator<Counter> it = groupCounters.iterator();
+             HashMap<Integer,Long> counterList = new HashMap<Integer, Long>();
+diff --git a/test/org/apache/pig/test/TestRank3.java b/test/org/apache/pig/test/TestRank3.java
+index 8540016..e73d115 100644
+--- a/test/org/apache/pig/test/TestRank3.java
++++ b/test/org/apache/pig/test/TestRank3.java
+@@ -52,6 +52,7 @@ public class TestRank3 {
+             pigServer = new PigServer("local");
+ 
+             data = resetData(pigServer);
++            data.set("empty");
+             data.set(
+                     "testcascade",
+                     tuple(3,2,3),
+@@ -142,6 +143,19 @@ public class TestRank3 {
+         verifyExpected(data.get("result"), expected);
+     }
+ 
++    // See PIG-3726
++    @Test
++    public void testRankEmptyRelation() throws Exception {
++      String query = "DATA = LOAD 'empty' USING mock.Storage();"
++        + "A = rank DATA;"
++        + "store A into 'empty_result' using mock.Storage();";
++
++      Util.registerMultiLineQuery(pigServer, query);
++
++      Set<Tuple> expected = ImmutableSet.of();
++      verifyExpected(data.get("empty_result"), expected);
++    }
++
+     public void verifyExpected(List<Tuple> out, Set<Tuple> expected) {
+         for (Tuple tup : out) {
+             assertTrue(expected + " contains " + tup, expected.contains(tup));
