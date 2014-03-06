@@ -286,7 +286,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
     public void run(CommandLine cmd)
             throws IOException, ClassNotFoundException, InterruptedException {
 
-        // Warns the user if the Titan table already exists in Hbase.
+        // Warns the user if the Titan table already exists in HBase.
 
         if (cmd.hasOption(BaseCLI.Options.titanAppend.getLongOpt())) {
             conf.setBoolean(TitanConfig.GRAPHBUILDER_TITAN_APPEND, Boolean.TRUE);
@@ -321,8 +321,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
 
         String intermediateDataFileName = "graphElements-" +  System.currentTimeMillis() + random().toString();
 
-        Path intermediateDataFilePath =
-                new Path("/tmp/graphbuilder/" + intermediateDataFileName);
+        Path intermediateDataFilePath = new Path("/tmp/graphbuilder/" + intermediateDataFileName);
 
         String intermediateEdgeFileName = "labeledEdges-" + random().toString();
         Path intermediateEdgeFilePath =
