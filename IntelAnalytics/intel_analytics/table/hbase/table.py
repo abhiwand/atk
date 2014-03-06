@@ -43,6 +43,7 @@ from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
 from pydoop.hdfs.path import exists
+from pydoop.hdfs import rmr
 import pydoop.hadut as hadooputils
 import hashlib
 from intel_analytics.visualization import histogram
@@ -249,6 +250,13 @@ class HBaseTable(object):
         etl_schema.load_schema(self.table_name)
         
         recompute_columns = False
+
+        def erase_cache(files):
+            for file in files:
+                if exists(file):
+                    rmr(file)
+                if os.path.isfile(file):
+                    os.remove(file)
         
         for i in column_list:
             hfile,sfile,use_cache= self.__get_column_statistics_filenames(i, not force_recomputation)
@@ -256,9 +264,10 @@ class HBaseTable(object):
                 recompute_columns = ColumnStat([],[],[],[],[]) if not recompute_columns else recompute_columns
                 recompute_columns.names.append(i.name)
                 recompute_columns.types.append(etl_schema.get_feature_type(i.name))
-                recompute_columns.intervals.append(i.profile.get_interval_groups_as_str() if hasattr(i,'profile') else "")
+                recompute_columns.intervals.append(i.profile.get_interval_groups_as_str() if i.profile else "")
                 recompute_columns.hist_files.append(hfile)
                 recompute_columns.stat_files.append(sfile)
+                erase_cache([hfile,sfile])
             else:
                result.append(self.__plot_column_distribution(i.name, hfile, sfile))
             
@@ -283,8 +292,6 @@ class HBaseTable(object):
             # Move files to local filesystem for caching/plotting purposes
             def update_cached_files(file):
                 g = lambda val: ['-getmerge', '%s' % (val), '%s' % (val)]
-                if (os.path.isfile(file)):
-                    os.remove(file)
                 hadooputils.dfs(g(file))
                 
             for i in range(len(recompute_columns.hist_files)):
