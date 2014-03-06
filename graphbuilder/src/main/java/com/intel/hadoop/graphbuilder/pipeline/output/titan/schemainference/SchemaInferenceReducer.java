@@ -47,8 +47,7 @@ import java.util.List;
  * @see SchemaInferenceCombiner
  * @see MergeSchemataUtility
  */
-public class SchemaInferenceReducer extends Reducer<NullWritable, SchemaElement,
-        NullWritable, SchemaElement> {
+public class SchemaInferenceReducer extends Reducer<NullWritable, SchemaElement, NullWritable, SchemaElement> {
 
     private static final Logger LOG = Logger.getLogger(SchemaInferenceReducer.class);
 
@@ -67,7 +66,7 @@ public class SchemaInferenceReducer extends Reducer<NullWritable, SchemaElement,
     /**
      * The reduce call for the reducer.
      *
-     * @param key     The {@code NullWritable.get()}  value.
+     * @param key The <code>NullWritable.get()</code>   value.
      * @param values  A multi-set of edge and property schemata.
      * @param context The job context.
      * @throws IOException
@@ -75,8 +74,7 @@ public class SchemaInferenceReducer extends Reducer<NullWritable, SchemaElement,
      */
     @Override
     public void reduce(NullWritable key, Iterable<SchemaElement> values,
-                       Reducer<NullWritable, SchemaElement, NullWritable,
-                               SchemaElement>.Context context)
+                       Reducer<NullWritable, SchemaElement, NullWritable, SchemaElement>.Context context)
             throws IOException, InterruptedException {
 
         MergeSchemataUtility mergeUtility = new MergeSchemataUtility();
@@ -98,10 +96,19 @@ public class SchemaInferenceReducer extends Reducer<NullWritable, SchemaElement,
         KeyCommandLineParser titanKeyParser = new KeyCommandLineParser();
         List<GBTitanKey> declaredKeyList = titanKeyParser.parse(keyCommandLine);
 
+        // nls test
+        LOG.info("SCHEMA INFERENCE REDUCER.... RECEIVED THE FOLLOWING SCHEMAS TO DECLARE:");
+        for (SchemaElement schema : schemas) {
+            LOG.info("SCHEMA ELEMENT:  " + schema.toString());
+        }
+
+        LOG.info("\n\n THOSE ARE THE SCHEMAS");
+        // end nls test
+        initializer.setGraph(titanGraph);
         initializer.setConf(context.getConfiguration());
         initializer.setGraphSchema(schemas);
         initializer.setDeclaredKeys(declaredKeyList);
-        initializer.run(titanGraph);
+        initializer.run();
     }
 
     /**

@@ -243,6 +243,7 @@ public class SchemaElement implements Writable {
     @Override
     public boolean equals(Object in) {
 
+
         if (in instanceof SchemaElement) {
             SchemaElement inSchemaElement = (SchemaElement) in;
 
@@ -282,6 +283,14 @@ public class SchemaElement implements Writable {
      */
     @Override
     public String toString() {
-        return this.getID();
+        StringBuffer buffer = new StringBuffer();
+
+        buffer.append("SCHEMA ID = " + this.getID() + " .");
+        buffer.append("Property Schemata: ");
+        for (PropertySchema pSchema : this.propertySchemata) {
+            buffer.append(pSchema.getName());
+            buffer.append(" ");
+        }
+        return buffer.toString();
     }
 }

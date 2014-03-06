@@ -27,6 +27,7 @@ import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.Sourc
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphBuildingRule;
 import com.intel.hadoop.graphbuilder.util.*;
+import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -332,20 +333,22 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
         Timer time = new Timer();
         time.start();
         if (cmd.hasOption(BaseCLI.Options.titanKeyIndex.getLongOpt())) {
-            keyCommandLine = cmd.getOptionValue(BaseCLI.Options.titanKeyIndex
-                    .getLongOpt());
+            keyCommandLine = cmd.getOptionValue(BaseCLI.Options.titanKeyIndex.getLongOpt());
         }
 
         conf.set("keyCommandLine", keyCommandLine);
 
         if (needsInit) {
+            InitTitanGraphInstance graphInitializer = new InitTitanGraphInstance();
+            TitanGraph graph = graphInitializer.initTitanGraphInstance(conf);
+
             if (inferSchema) {
                 SchemaInferenceJob schemaInferenceJob = new SchemaInferenceJob(conf, inputPath);
                 schemaInferenceJob.run();
             } else {
                 List<GBTitanKey> declaredKeys = new KeyCommandLineParser().parse(keyCommandLine);
-                TitanGraphInitializer initializer = new TitanGraphInitializer(conf, graphSchema, declaredKeys);
-                initializer.run(null);
+                TitanGraphInitializer initializer = new TitanGraphInitializer(graph, conf, graphSchema, declaredKeys);
+                initializer.run();
             }
         }
 
@@ -437,20 +440,16 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
                 .getName());
 
         if (vertexReducerFunction != null) {
-            LOG.info("vertexReducerFunction = " + vertexReducerFunction
-                    .getClass().getName());
+            LOG.info("vertexReducerFunction = " + vertexReducerFunction.getClass().getName());
         }
 
         if (edgeReducerFunction != null) {
-            LOG.info("edgeReducerFunction = " + edgeReducerFunction.getClass
-                    ().getName());
+            LOG.info("edgeReducerFunction = " + edgeReducerFunction.getClass().getName());
         }
 
-        LOG.info("==================== Start " +
-                "====================================");
+        LOG.info("==================== Start " + "====================================");
         loadVerticesJob.waitForCompletion(true);
-        LOG.info("=================== Done " +
-                "====================================\n");
+        LOG.info("=================== Done " + "====================================\n");
     }
 
     private void runIntermediateEdgeWriteMRJob(

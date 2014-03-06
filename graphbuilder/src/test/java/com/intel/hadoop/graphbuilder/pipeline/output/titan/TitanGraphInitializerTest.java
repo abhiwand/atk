@@ -36,8 +36,7 @@ public class TitanGraphInitializerTest {
 	public void testCreateGbId() throws Exception {
 
 		// initialize class under test
-		TitanGraphInitializer initializer = new TitanGraphInitializer(null,
-				null, null);
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
 
 		// invoke method under test
 		GBTitanKey key = initializer.createGbId();
@@ -59,8 +58,7 @@ public class TitanGraphInitializerTest {
 		when(graph.getType(name)).thenReturn(titanType);
 
 		// initialize class under test
-		TitanGraphInitializer initializer = new TitanGraphInitializer(null,
-				null, null);
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
 		initializer.setGraph(graph);
 
 		// invoke method under test
@@ -82,8 +80,7 @@ public class TitanGraphInitializerTest {
 		when(graph.makeKey(keyName)).thenReturn(keyMaker);
 
 		// initialize class under test
-		TitanGraphInitializer initializer = new TitanGraphInitializer(null,
-				null, null);
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
 		initializer.setGraph(graph);
 
 		// invoke method under test
@@ -103,8 +100,7 @@ public class TitanGraphInitializerTest {
 		when(graph.getType(name)).thenReturn(titanType);
 
 		// initialize class under test
-		TitanGraphInitializer initializer = new TitanGraphInitializer(null,
-				null, null);
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
 		initializer.setGraph(graph);
 
 		// invoke method under test
@@ -121,8 +117,7 @@ public class TitanGraphInitializerTest {
 		TitanGraph graph = mock(TitanGraph.class);
 
 		// initialize class under test
-		TitanGraphInitializer initializer = new TitanGraphInitializer(null,
-				null, null);
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
 		initializer.setGraph(graph);
 
 		// invoke method under test
@@ -142,8 +137,7 @@ public class TitanGraphInitializerTest {
 		when(graph.makeKey(keyName)).thenReturn(keyMaker);
 
 		// initialize class under test
-		TitanGraphInitializer initializer = new TitanGraphInitializer(null,
-				null, null);
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
 		initializer.setGraph(graph);
 
 		// invoke method under test
@@ -169,8 +163,7 @@ public class TitanGraphInitializerTest {
 		when(graph.makeKey(keyName)).thenReturn(keyMaker);
 
 		// initialize class under test
-		TitanGraphInitializer initializer = new TitanGraphInitializer(null,
-				null, null);
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
 		initializer.setGraph(graph);
 
 		// initialize test data

@@ -46,7 +46,6 @@ public class TitanGraphInitializer {
     private Configuration conf;
     private List<SchemaElement> graphSchema;
     private List<GBTitanKey> declaredKeys;
-
     private TitanGraph graph;
 
     private static final Logger LOG = Logger.getLogger(TitanGraphInitializer.class);
@@ -58,7 +57,8 @@ public class TitanGraphInitializer {
      * @param graphSchema  property datatypes and edge signatures for the graph
      * @param declaredKeys the set of Titan Key definitions parsed from the command line...
      */
-    public TitanGraphInitializer(Configuration conf, List<SchemaElement> graphSchema, List<GBTitanKey> declaredKeys) {
+    public TitanGraphInitializer(TitanGraph graph, Configuration conf, List<SchemaElement> graphSchema, List<GBTitanKey> declaredKeys) {
+        this.graph = graph;
         this.conf = conf;
         this.graphSchema = graphSchema;
         this.declaredKeys = declaredKeys;
@@ -83,8 +83,8 @@ public class TitanGraphInitializer {
 
     /**
      * Sets the declared keys that are used during graph initialization. These are keys that may not appear in the
-     * <code>PropertyGraphSchema</code>. For example, property information that could appear in a key declaration clause of
-     * the command line.
+     * <code>PropertyGraphSchema</code>. For example, property information that could appear in a key declaration
+     * clause of the command line.
      *
      * @param declaredKeys A list of <code>GBTitanKey</code> objects.
      */
@@ -96,58 +96,40 @@ public class TitanGraphInitializer {
      * Opens the Titan graph database, and make the Titan keys required by
      * the graph schema.
      */
-    public void run(TitanGraph inGraph) {
+    public void run() {
 
-        graph = inGraph;
+        HashMap<String, TitanKey> propertyNamesToTitanKeysMap = declareAndCollectKeys();
 
-        if (graph == null) {
-            initTitanGraphInstance(conf);
-        }
+        // now we declare the edge labels
+        // one of these days we'll probably want to fully expose all the
+        // Titan knobs regarding manyToOne, oneToMany, etc
 
-        if (graph != null) {
-            HashMap<String, TitanKey> propertyNamesToTitanKeysMap =
-                    declareAndCollectKeys();
+        for (SchemaElement schema : graphSchema) {
 
-            // now we declare the edge labels
-            // one of these days we'll probably want to fully expose all the
-            // Titan knobs regarding manyToOne, oneToMany, etc
+            if (schema.isEdge()) {
 
-            for (SchemaElement schema : graphSchema) {
+                if (schema.getLabel() == null ) {
+                    GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.TITAN_ERROR,
+                    "Graph Builder Failue: cannot load edges without labels into Titan.", LOG);
+                } else {
+                    ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
 
-                if (schema.isEdge()) {
+                    for (PropertySchema propertySchema : schema.getPropertySchemata()) {
+                        titanKeys.add(propertyNamesToTitanKeysMap.get(propertySchema.getName()));
+                    }
 
-                    if (schema.getLabel() == null ) {
-                        GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.TITAN_ERROR,
-                        "Graph Builder Failue: cannot load edges without labels into Titan.", LOG);
-                    } else {
-                        ArrayList<TitanKey> titanKeys = new ArrayList<TitanKey>();
-
-                        for (PropertySchema propertySchema : schema.getPropertySchemata()) {
-                            titanKeys.add(propertyNamesToTitanKeysMap.get(propertySchema
-                                    .getName()));
-                        }
-
-                        TitanKey[] titanKeyArray = titanKeys.toArray(new TitanKey[titanKeys.size()]);
-                        if (graph.getType(schema.getLabel()) == null) {
-                            graph.makeLabel(schema.getLabel()).signature(titanKeyArray).make();
-                        }
+                    TitanKey[] titanKeyArray = titanKeys.toArray(new TitanKey[titanKeys.size()]);
+                    if (graph.getType(schema.getLabel()) == null) {
+                        graph.makeLabel(schema.getLabel()).signature(titanKeyArray).make();
                     }
                 }
             }
-
-            graph.commit();
-        } else {
-            GraphBuilderExit.graphbuilderFatalExitNoException(StatusCode.TITAN_ERROR, "Could not open Titan.", LOG);
         }
+
+        graph.commit();
     }
 
-    /**
-     * Creates the Titan graph s.
-     */
-    private void initTitanGraphInstance(Configuration configuration) {
-        BaseConfiguration titanConfig = new BaseConfiguration();
-        graph = GraphDatabaseConnector.open("titan", titanConfig, configuration);
-    }
+
 
      /*
      * Gets the set of Titan Key definitions from the command line...
@@ -254,9 +236,9 @@ public class TitanGraphInitializer {
     }
 
     /**
-     * added for testing purposes
+     * Set the graph instance to which the Graph Initializer connects.
      */
-    protected void setGraph(TitanGraph graph) {
+    public void setGraph(TitanGraph graph) {
         this.graph = graph;
     }
 }

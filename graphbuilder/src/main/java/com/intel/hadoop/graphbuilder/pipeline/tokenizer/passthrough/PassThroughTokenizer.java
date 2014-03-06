@@ -64,8 +64,8 @@ public class PassThroughTokenizer implements GraphTokenizer<SerializedGraphEleme
      * The parser simply repacks the graphelements into serialized graphelements... even though
      * they are serialized coming in. Probably goes back to problems with the BaseMapper.
      *
-     * TODO: get rid of this entire framework and have a simple mapper that propagates the graph elements with the keys.
      */
+    // TODO: get rid of this entire framework and have a simple mapper that propagates the graph elements with the keys.
     public void parse(SerializedGraphElement value, Mapper.Context context, BaseMapper baseMapper) {
         vertexList.clear();
         edgeList.clear();
