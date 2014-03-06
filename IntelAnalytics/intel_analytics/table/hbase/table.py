@@ -361,7 +361,7 @@ class HBaseTable(object):
                                 EvalFunctions.String.UPPER,
                                 EvalFunctions.String.CONCAT
                                 ]:
-            print "here"
+            #print "here"
             etl_schema.feature_types.append('chararray')
         elif transformation == EvalFunctions.String.TOKENIZE:
             etl_schema.feature_types.append('bag')
