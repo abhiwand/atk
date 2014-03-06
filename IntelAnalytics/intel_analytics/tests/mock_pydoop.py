@@ -24,5 +24,5 @@ from mock import Mock
 
 hdfs = Mock()
 hdfs.path = Mock()
-hdfs.path.exists = Mock()
+hdfs.path.exists = Mock(return_value=False)
 hdfs.open = Mock()
