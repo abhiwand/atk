@@ -73,7 +73,6 @@ class TestFrameBuilder(unittest.TestCase):
         table = MagicMock()
         table.table_name = 'test_table'
 
-        frame = BigDataFrame('dummy_frame', table)
         fb = get_frame_builder()
         file_name = ['/test/files/dummy.csv', 'file2']
         fb._validate_exists = MagicMock()
@@ -101,6 +100,7 @@ class TestFrameBuilder(unittest.TestCase):
 
         frame = BigDataFrame('dummy_frame', table)
         fb = get_frame_builder()
+        fb._validate_exists = MagicMock()
         file_name = ['/test/files/dummy.csv', 'file1']
         fb.append_from_csv(frame, file_name, 'col1:long,col2:chararray,col3:long')
         properties = result_holder['properties']
@@ -124,6 +124,7 @@ class TestFrameBuilder(unittest.TestCase):
         append_data_mock, result_holder = self.create_append_data_mock()
 
         fb._append_data = MagicMock(side_effect = append_data_mock)
+        fb._validate_exists = MagicMock()
         fb.append_from_json(frame, file_name)
         self.assertEqual(table.table_name, result_holder["table_name"])
         self.assertEqual(','.join(file_name), result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
@@ -152,6 +153,7 @@ class TestFrameBuilder(unittest.TestCase):
         tag_name = "tag"
 
         fb._append_data = append_data_mock
+        fb._validate_exists = MagicMock()
         fb.append_from_xml(frame, file_name, tag_name)
         self.assertEqual(table.table_name, result_holder["table_name"])
         self.assertEqual(','.join(file_name), result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
