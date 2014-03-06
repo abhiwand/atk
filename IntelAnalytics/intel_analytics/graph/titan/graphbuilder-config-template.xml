@@ -1,0 +1,196 @@
+<!--
+    The configuration parameters are documented at https://github.com/thinkaurelius/titan/wiki/Using-HBase
+    Currently GB 2.0 (alpha) supports only HBase as the storage backend.
+  -->
+<configuration>
+
+    <property>
+        <name>graphbuilder.titan_ids.block-size</name>
+        <value>${graphbuilder_titan_ids_block_size}</value>
+        <description>
+            Size of the id block to be acquired for Titan. Larger block sizes require fewer block applications but also
+            leave a larger fraction of the id pool occupied and potentially lost. For write heavy applications, larger
+            block sizes should be chosen.
+
+            10,000 is Titan default.
+            600,000 is better for very large graphs.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_ids.num-partitions</name>
+        <value>${graphbuilder_titan_ids_num_partitions}</value>
+        <description>
+            Number of partitions for Titan ID allocation pool. In HBase, it is typically the number of region servers.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_ids.partition</name>
+        <value>${graphbuilder_titan_ids_partition}</value>
+        <description>
+            Enable ID allocation partitions in Titan.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_ids.renew-timeout</name>
+        <value>${graphbuilder_titan_ids_renew_timeout}</value>
+        <description>
+            Number of milliseconds Titan’s id pool manager will wait while attempting to acquire a new id block before
+            failing.
+
+            60,000 is Titan default.
+            We've used numbers as large as 2,400,000 for very large graphs.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage.attempt-wait</name>
+        <value>${graphbuilder_titan_storage_attempt_wait}</value>
+        <description>
+            Number of milliseconds that Titan will wait before re-attempting a failed backend operation. A higher value
+            can ensure that operation re-tries do not further increase the load on the backend.
+
+            250 milliseconds is Titan default.
+            1000 would be a high value.
+
+            Larger numbers slow down the whole process but this can be good because it gives HBase a chance to keep up.
+
+            Large graphs need a higher value.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage_backend</name>
+        <value>${graphbuilder_titan_storage_backend}</value>
+        <description>
+            storage.backend parameter for Titan. Currently GB 2.0 (alpha) supports only HBase as the storage backend.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage.batch-loading</name>
+        <value>${graphbuilder_titan_storage_batch_loading}</value>
+        <description>
+            Enables batch loading which improves write performance but assumes that only one thread is interacting with
+            the graph and that vertices retrieved by id exist. Under these assumptions locking and some read operations
+            can be avoided. Furthermore, the configured storage backend will make backend specific configurations that
+            facilitate loading performance
+
+            Needs to be true for large graphs.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage_connection_timeout</name>
+        <value>${graphbuilder_titan_storage_connection_timeout}</value>
+        <description>
+            storage.connection.timeout parameter for Titan.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage_hostname</name>
+        <value>${graphbuilder_titan_storage_hostname}</value>
+        <description>
+            storage.hostname parameter for Titan.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage.idauthority-retries</name>
+        <value>${graphbuilder_titan_storage_idauthority_retries}</value>
+        <description>
+            Number of times the system attempts to acquire a unique id block before giving up and throwing an exception.
+
+            20 is Titan default.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage.idauthority-wait-time</name>
+        <value>${graphbuilder_titan_storage_idauthority_wait_time}</value>
+        <description>
+            The number of milliseconds the system waits for an id block application to be acknowledged by the storage
+            backend in Titan.
+
+            300 is Titan default.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage_port</name>
+        <value>${graphbuilder_titan_storage_port}</value>
+        <description>
+            storage.port parameter for Titan.
+
+            2181 is Titan default.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage_tablename</name>
+        <value>${graphbuilder_titan_storage_tablename}</value>
+        <description>
+            storage.tablename parameter for Titan.
+        </description>
+    </property>
+
+    <property>
+        <name>graphbuilder.titan_storage.write-attempts</name>
+        <value>${graphbuilder_titan_storage_write_attempts}</value>
+        <description>
+            How many times Titan will attempt to execute a write operation against the storage backend before giving up.
+            If it is expected that there is a high load on the backend during bulk loading, it is generally advisable to
+            increase these configuration options.
+
+            5 is Titan default.
+        </description>
+    </property>
+
+    <!-- Hadoop MapReduce Parameters needed for Graph building -->
+    <property>
+        <name>mapred.map.tasks.speculative.execution</name>
+        <value>${mapred_map_tasks_speculative_execution}</value>
+        <description>
+            If true, then multiple instances of some map tasks may be executed in parallel. Recommended setting is false
+            because GraphBuilder is a transactional workload.
+        </description>
+    </property>
+    <property>
+        <name>mapred.max.split.size</name>
+        <value>${mapred_max_split_size}</value>
+        <description>
+            The maximum size chunk that map input should be split into. Controls the size of Titan's vertex cache during
+            bulk loads. Recommended settings. HBase (5-10MB), Cassandra (20-30MB)
+        </description>
+    </property>
+    <property>
+        <name>mapred.job.reuse.jvm.num.tasks</name>
+        <value>${mapred_job_reuse_jvm_num_tasks}</value>
+        <description>
+            How many tasks to run per jvm. If set to -1, there is no limit. The recommended setting for Titan is -1 (or
+            a large number like 1000) as transactions are typically small and JVM startup time may be costly.
+        </description>
+    </property>
+    <property>
+        <name>mapred.reduce.tasks</name>
+        <value>${mapred_reduce_tasks}</value>
+        <description>
+            Values greater than 500 should be used for large graphs to work around a bug in Titan vertex cache.
+
+            TODO: we should revisit this in Sprint 10, 2014
+        </description>
+    </property>
+
+    <property>
+        <name>mapred.reduce.tasks.speculative.execution</name>
+        <value>${mapred_reduce_tasks_speculative_execution}</value>
+        <description>
+            If true, then multiple instances of some reduce tasks may be executed in parallel. Recommended setting is
+            false because GraphBuilder is a transactional workload.
+        </description>
+    </property>
+
+</configuration>

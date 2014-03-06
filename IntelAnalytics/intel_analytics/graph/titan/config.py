@@ -52,21 +52,40 @@ class TitanConfig(object):
         """
         if not table_name or not table_name.endswith('_titan'):
             raise Exception("Internal error: bad graph table")
+        # TODO: only one Titan config at a time is currently supported?
         filename = config['graph_builder_titan_xml']
         with open(filename, 'w') as out:
-            params = {k: config[k] for k in gb_keys}
-            params['titan_storage_tablename'] = table_name
-            out.write("<!-- Auto-generated Graph Builder cfg file -->\n\n")
-            out.write("<configuration>\n")
-            keys = sorted(params.keys())
-            for k in keys:
-                out.write("  <property>\n    <name>graphbuilder.")
-                out.write(k)
-                out.write("</name>\n    <value>")
-                out.write(params[k])
-                out.write("</value>\n  </property>\n")
-            out.write("</configuration>\n")
+            out.write("<!-- Auto-generated Graph Builder cfg file -->\n")
+            out.write(self._get_graphbuilder_template().substitute({
+                'graphbuilder_titan_ids_block_size': config['titan_ids_block_size'],
+                'graphbuilder_titan_ids_partition': config['titan_ids_partition'],
+                'graphbuilder_titan_ids_num_partitions': config['titan_ids_num_partitions'],
+                'graphbuilder_titan_ids_renew_timeout': config['titan_ids_renew_timeout'],
+                'graphbuilder_titan_storage_attempt_wait': config['titan_storage_attempt_wait'],
+                'graphbuilder_titan_storage_backend': config['titan_storage_backend'],
+                'graphbuilder_titan_storage_batch_loading': config['titan_storage_batch_loading'],
+                'graphbuilder_titan_storage_connection_timeout': config['titan_storage_connection_timeout'],
+                'graphbuilder_titan_storage_hostname': config['titan_storage_hostname'],
+                'graphbuilder_titan_storage_idauthority_retries': config['titan_storage_idauthority_retries'],
+                'graphbuilder_titan_storage_idauthority_wait_time': config['titan_storage_idauthority_wait_time'],
+                'graphbuilder_titan_storage_port': config['titan_storage_port'],
+                'graphbuilder_titan_storage_tablename': table_name,
+                'graphbuilder_titan_storage_write_attempts': config['titan_storage_write_attempts'],
+                'mapred_job_reuse_jvm_num_tasks': config['graphbuilder_mapred_job_reuse_jvm_num_tasks'],
+                'mapred_map_tasks_speculative_execution': config['graphbuilder_mapred_map_tasks_speculative_execution'],
+                'mapred_max_split_size': config['graphbuilder_mapred_max_split_size'],
+                'mapred_reduce_tasks': config['graphbuilder_mapred_reduce_tasks'],
+                'mapred_reduce_tasks_speculative_execution': config['graphbuilder_mapred_reduce_tasks_speculative_execution']
+            }))
         return filename
+
+    def _get_graphbuilder_template(self):
+        """
+        Get the graphbuilder-config-template.xml as a Template
+        """
+        filename = config['graph_builder_config_template']
+        template_file = open(filename, 'r')
+        return Template(template_file.read())
 
     def get_rexster_server_uri(self, table_name):
         return '{0}:{1}/graphs/{2}'.format(
@@ -178,14 +197,5 @@ Template(rexster_xml_graph_template_str).substitute(d)
 del d['titan_storage_tablename']
 rexster_keys = d.keys()
 rexster_keys.sort()
-
-#--------------------------------------------------------------------------
-# GraphBuilder
-#--------------------------------------------------------------------------
-gb_keys = ['conf_folder']
-for k in ['hostname', 'backend', 'port', 'connection_timeout']:
-    gb_keys.append('titan_storage_' + k)
-gb_keys.sort()
-
 
 titan_config = TitanConfig()
