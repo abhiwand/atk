@@ -86,26 +86,26 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
         else:
             pass
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_page_rank_required_inputs(self, mock_open):
+    def test_page_rank_required_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.page_rank('test_edge_label',
                               'test_output_vertex_properties')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_page_rank_optional_inputs(self, mock_open):
+    def test_page_rank_optional_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.page_rank('test_edge_label',
                               'test_output_vertex_properties',
                               num_worker='3')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_belief_prop_required_inputs(self, mock_open):
+    def test_belief_prop_required_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.belief_prop('test_vertex_properties',
                                 'test_edge_property',
@@ -114,9 +114,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                                 'test_vertex_type')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_belief_prop_optional_inputs(self, mock_open):
+    def test_belief_prop_optional_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.belief_prop('test_vertex_properties',
                                 'test_edge_property',
@@ -126,44 +126,43 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                                 max_supersteps='25')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_apl_required_inputs(self, mock_open):
+    def test_apl_required_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.avg_path_len('test_edge_label',
                                  'test_output_vertex_properties')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_apl_optional_inputs(self, mock_open):
+    def test_apl_optional_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.avg_path_len('test_edge_label',
                                  'test_output_vertex_properties',
                                  num_worker='3')
         self.assertEqual('test_graph', result.graph_name)
 
-
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_cc_required_inputs(self, mock_open):
+    def test_cc_required_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.connected_components('test_edge_label',
                                  'test_output_vertex_properties')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_cc_optional_inputs(self, mock_open):
+    def test_cc_optional_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.connected_components('test_edge_label',
                                  'test_output_vertex_properties',
                                  num_worker='3')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_label_prop_required_inputs(self, mock_open):
+    def test_label_prop_required_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.label_prop('test_vertex_properties',
                                'test_edge_property',
@@ -171,9 +170,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                                'test_output_vertex_properties')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_label_prop_optional_inputs(self, mock_open):
+    def test_label_prop_optional_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.label_prop('test_vertex_properties',
                                'test_edge_property',
@@ -182,9 +181,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                                num_worker='7')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_lda_required_inputs(self, mock_open):
+    def test_lda_required_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.lda('test_edge_property',
                         'test_edge_label',
@@ -192,9 +191,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         'test_vertex_type')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_lda_optional_inputs(self, mock_open):
+    def test_lda_optional_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.lda('test_edge_property',
                         'test_edge_label',
@@ -203,9 +202,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         max_supersteps='30')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_als_required_inputs(self, mock_open):
+    def test_als_required_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.als('test_edge_property',
                         'test_edge_label',
@@ -214,9 +213,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         'test_edge_type')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_als_optional_inputs(self, mock_open):
+    def test_als_optional_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.als('test_edge_property',
                         'test_edge_label',
@@ -226,9 +225,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         max_supersteps='10')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_cgd_required_inputs(self, mock_open):
+    def test_cgd_required_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.cgd('test_edge_property',
                         'test_edge_label',
@@ -237,9 +236,9 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         'test_edge_type')
         self.assertEqual('test_graph', result.graph_name)
 
-    #@patch('__builtin__.open')
+    @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
-    def test_cgd_optional_inputs(self, mock_open):
+    def test_cgd_optional_inputs(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.cgd('test_edge_property',
                         'test_edge_label',

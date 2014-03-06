@@ -44,6 +44,7 @@ def main(argv):
     statements = []
     statements.append("REGISTER %s;" % (config['feat_eng_jar']))
     statements.append("REGISTER %s/contrib/piggybank/java/piggybank.jar; -- POW is in piggybank.jar" % (os.environ.get('PIG_HOME')))#Pig binary sets the PIG_HOME env. variable when we run the script
+    statements.append("SET default_parallel %s;" % (config['pig_parallelism_factor']))
     statements.append(input_script)
     pig_script = "\n".join(statements)
     compiled = Pig.compile(pig_script)
