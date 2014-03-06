@@ -200,7 +200,7 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
     
     # TODO: implement column validation
 
-    dst_hbase_table_name = generate_titan_table_name(graph_name, source)
+    dst_hbase_table_name = generate_titan_table_name(graph_name, source, append)
 
     # TODO: Graph Builder could handle overwrite instead of the registry, not sure if that is better?
 
@@ -232,9 +232,12 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
     return titan_graph_builder_factory.get_graph(graph_name)
 
 
-def generate_titan_table_name(prefix, source):
-    source_table_name = _get_table_name_from_source(source)
-    return '_'.join([prefix, source_table_name, "titan"])
+def generate_titan_table_name(prefix, source, append):
+    if append:#use the old mapping since the table will be appended
+        return hbase_registry[prefix]
+    else:#create a new table name
+        source_table_name = _get_table_name_from_source(source)
+        return '_'.join([prefix, source_table_name, "titan"])
 
 
 def _get_table_name_from_source(source):
