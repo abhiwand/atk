@@ -74,6 +74,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self.report = []
         self._label_font_size = 12
         self._title_font_size = 14
+        self._num_edges = 0
+        self._num_vertices = 0
 
     def _plot_progress_curve(self,
                             data_x,
@@ -133,22 +135,14 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
     def _update_progress_curve(self,
                                output_path,
-                               file_name,
-                               time_str,
                                curve_title,
                                curve_ylabel):
-        #report_file = self._get_report(output_path, file_name, time_str)
-        #find progress info
-        #with open(report_file) as result:
-        with hdfs.open(output_path + '/' + file_name) as result:
-        #    lines = result.readlines()
-
+        with hdfs.open(output_path) as result:
             data_x = []
             data_y = []
             num_vertices = 0
             num_edges = 0
             progress_results = []
-        #for i in range(len(lines)):
             for line in result:
                 if re.search(r'superstep', line):
                     results = line.split()
@@ -167,24 +161,19 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         progress_results.append(data_y)
         progress_results.append(num_vertices)
         progress_results.append(num_edges)
+        self._num_vertices = num_vertices
+        self._num_edges = num_edges
         self._plot_progress_curve(data_x, data_y, curve_title, curve_ylabel)
         return progress_results
 
     def _update_learning_curve(self,
                                output_path,
-                               file_name,
-                               time_str,
                                curve_title,
                                curve_ylabel1="Cost (Train)",
                                curve_ylabel2="RMSE (Validate)",
                                curve_ylabel3="RMSE (Test)"
                                ):
-        #report_file = self._get_report(output_path, file_name, time_str)
-        #find progress info
-        with hdfs.open(output_path + '/' + file_name) as result:
-        #with open(report_file) as result:
-            #lines = result.readlines()
-
+        with hdfs.open(output_path) as result:
             data_x = []
             data_y = []
             data_v = []
@@ -192,7 +181,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_vertices = 0
             num_edges = 0
             learning_results = []
-            #for i in range(len(lines)):
             for line in result:
                 if re.search(r'superstep', line):
                     results = line.split()
@@ -215,6 +203,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         learning_results.append(data_t)
         learning_results.append(num_vertices)
         learning_results.append(num_edges)
+        self._num_vertices = num_vertices
+        self._num_edges = num_edges
         self._plot_learning_curve(data_x,
                                   data_y,
                                   data_v,
@@ -722,13 +712,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(lbp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        lbp_results = self._update_learning_curve(output_path,
-                                                  'lbp-learning-report_0',
-                                                  time_str,
-                                                  'LBP Learning Curve',
-                                                  'Average Train Delta',
-                                                  'Average Validation Delta',
-                                                  'Average Test Delta')
 
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
@@ -741,12 +724,21 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.convergence_threshold = convergence_threshold
         output.smoothing = smoothing
         output.anchor_threshold = anchor_threshold
-        output.super_steps = list(lbp_results[0])
-        output.cost_train = list(lbp_results[1])
-        output.rmse_validate = list(lbp_results[2])
-        output.rmse_test = list(lbp_results[3])
-        output.num_vertices = lbp_results[4]
-        output.num_edges = lbp_results[5]
+        output_path += '/lbp-learning-report_0'
+        if hdfs.path.exists(output_path):
+            lbp_results = self._update_learning_curve(output_path,
+                                                      'LBP Learning Curve',
+                                                      'Average Train Delta',
+                                                      'Average Validation Delta',
+                                                      'Average Test Delta')
+
+
+            output.super_steps = list(lbp_results[0])
+            output.cost_train = list(lbp_results[1])
+            output.rmse_validate = list(lbp_results[2])
+            output.rmse_test = list(lbp_results[3])
+            output.num_vertices = lbp_results[4]
+            output.num_edges = lbp_results[5]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -891,11 +883,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(pr_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        pr_results = self._update_progress_curve(output_path,
-                                                 'pr-convergence-report_0',
-                                                 time_str,
-                                                 'Page Rank Convergence Curve',
-                                                 'Vertex Value Change')
+
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
@@ -906,10 +894,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.convergence_threshold = convergence_threshold
         output.reset_probability = reset_probability
         output.convergence_output_interval = convergence_output_interval
-        output.super_steps = list(pr_results[0])
-        output.convergence_progress = list(pr_results[1])
-        output.num_vertices = pr_results[2]
-        output.num_edges = pr_results[3]
+        output_path += '/pr-convergence-report_0'
+        if hdfs.path.exists(output_path):
+            pr_results = self._update_progress_curve(output_path,
+                                                     'Page Rank Convergence Curve',
+                                                     'Vertex Value Change')
+
+            output.super_steps = list(pr_results[0])
+            output.convergence_progress = list(pr_results[1])
+            output.num_vertices = pr_results[2]
+            output.num_edges = pr_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1028,25 +1022,23 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(apl_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        apl_results = self._update_progress_curve(output_path,
-                                                  'apl-convergence-report_0',
-                                                  time_str,
-                                                  'Avg. Path Length Progress Curve',
-                                                  'Num of Vertex Updates')
-        #apl_hist = self._get_histogram('user', 'movie')
+
         output = AlgorithmReport()
-        #output.x_bins = apl_hist[0]
-        #output.y_count = apl_hist[1]
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
-        output.super_steps = list(apl_results[0])
-        output.convergence_progress = list(apl_results[1])
-        output.num_vertices = apl_results[2]
-        output.num_edges = apl_results[3]
+        output_path += '/apl-convergence-report_0'
+        if hdfs.path.exists(output_path):
+            apl_results = self._update_progress_curve(output_path,
+                                                      'Avg. Path Length Progress Curve',
+                                                      'Num of Vertex Updates')
+            output.super_steps = list(apl_results[0])
+            output.convergence_progress = list(apl_results[1])
+            output.num_vertices = apl_results[2]
+            output.num_edges = apl_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1158,11 +1150,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(cc_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        cc_results = self._update_progress_curve(output_path,
-                                                  'cc-convergence-report_0',
-                                                  time_str,
-                                                  'Connected Components Progress Curve',
-                                                  'Num of Vertex Updates')
 
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
@@ -1171,10 +1158,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
-        output.super_steps = list(cc_results[0])
-        output.convergence_progress = list(cc_results[1])
-        output.num_vertices = cc_results[2]
-        output.num_edges = cc_results[3]
+        output_path += '/cc-convergence-report_0'
+        if hdfs.path.exists(output_path):
+            cc_results = self._update_progress_curve(output_path,
+                                                     'Connected Components Progress Curve',
+                                                     'Num of Vertex Updates')
+            output.super_steps = list(cc_results[0])
+            output.convergence_progress = list(cc_results[1])
+            output.num_vertices = cc_results[2]
+            output.num_edges = cc_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1336,17 +1328,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         )
         lp_cmd = ' '.join(map(str,lp_command))
         #print lp_cmd
-        #delete old output directory if already there
         self._del_old_output(output_path)
         time_str = get_time_str()
         start_time = time.time()
         call(lp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        lp_results = self._update_progress_curve(output_path,
-                                                 'lp-learning-report_0',
-                                                 time_str,
-                                                 'LP Learning Curve',
-                                                 'Cost')
 
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
@@ -1359,10 +1345,17 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.param_lambda = lp_lambda
         output.bidirectional_check = bidirectional_check
         output.anchor_threshold = anchor_threshold
-        output.super_steps = list(lp_results[0])
-        output.cost = list(lp_results[1])
-        output.num_vertices = lp_results[2]
-        output.num_edges = lp_results[3]
+        output_path += '/lp-learning-report_0'
+        if hdfs.path.exists(output_path):
+            lp_results = self._update_progress_curve(output_path,
+                                                     'LP Learning Curve',
+                                                     'Cost')
+
+
+            output.super_steps = list(lp_results[0])
+            output.cost = list(lp_results[1])
+            output.num_vertices = lp_results[2]
+            output.num_edges = lp_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1577,16 +1570,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         call(lda_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
 
-        if evaluate_cost:
-            curve_ylabel = 'Cost'
-        else:
-            curve_ylabel = 'Max Vertex Value Change'
-        lda_results = self._update_progress_curve(output_path,
-                                                  'lda-learning-report_0',
-                                                  time_str,
-                                                  'LDA Learning Curve',
-                                                  curve_ylabel)
-
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
@@ -1601,10 +1584,20 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.max_val = max_val
         output.min_val = min_val
         output.num_topics = num_topics
-        output.super_steps = list(lda_results[0])
-        output.cost = list(lda_results[1])
-        output.num_vertices = lda_results[2]
-        output.num_edges = lda_results[3]
+        output_path += '/lda-learning-report_0'
+        if hdfs.path.exists(output_path):
+            if evaluate_cost:
+                curve_ylabel = 'Cost'
+            else:
+                curve_ylabel = 'Max Vertex Value Change'
+
+            lda_results = self._update_progress_curve(output_path,
+                                                      'LDA Learning Curve',
+                                                      curve_ylabel)
+            output.super_steps = list(lda_results[0])
+            output.cost = list(lda_results[1])
+            output.num_vertices = lda_results[2]
+            output.num_edges = lda_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1834,11 +1827,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(als_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        als_results = self._update_learning_curve(output_path,
-                                                  'als-learning-report_0',
-                                                  time_str,
-                                                  'ALS Learning Curve')
-
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
@@ -1853,12 +1841,18 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.max_val = max_val
         output.min_val = min_val
         output.bias_on = bias_on
-        output.super_steps = list(als_results[0])
-        output.cost_train = list(als_results[1])
-        output.rmse_validate = list(als_results[2])
-        output.rmse_test = list(als_results[3])
-        output.num_vertices = als_results[4]
-        output.num_edges = als_results[5]
+        output_path += '/als-learning-report_0'
+        if hdfs.path.exists(output_path):
+            als_results = self._update_learning_curve(output_path,
+                                                      'ALS Learning Curve')
+
+
+            output.super_steps = list(als_results[0])
+            output.cost_train = list(als_results[1])
+            output.rmse_validate = list(als_results[2])
+            output.rmse_test = list(als_results[3])
+            output.num_vertices = als_results[4]
+            output.num_edges = als_results[5]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -2098,11 +2092,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         call(cgd_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
 
-        cgd_results = self._update_learning_curve(output_path,
-                                                  'cgd-learning-report_0',
-                                                  time_str,
-                                                  'CGD Learning Curve')
-
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
@@ -2118,12 +2107,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.min_val = min_val
         output.bias_on = bias_on
         output.num_iters = num_iters
-        output.super_steps = list(cgd_results[0])
-        output.cost_train = list(cgd_results[1])
-        output.rmse_validate = list(cgd_results[2])
-        output.rmse_test = list(cgd_results[3])
-        output.num_vertices = cgd_results[4]
-        output.num_edges = cgd_results[5]
+        output_path += '/cgd-learning-report_0'
+        if hdfs.path.exists(output_path):
+            cgd_results = self._update_learning_curve(output_path,
+                                                      'CGD Learning Curve')
+            output.super_steps = list(cgd_results[0])
+            output.cost_train = list(cgd_results[1])
+            output.rmse_validate = list(cgd_results[2])
+            output.rmse_test = list(cgd_results[3])
+            output.num_vertices = cgd_results[4]
+            output.num_edges = cgd_results[5]
         output.graph = self._graph
         self.report.append(output)
         return output
