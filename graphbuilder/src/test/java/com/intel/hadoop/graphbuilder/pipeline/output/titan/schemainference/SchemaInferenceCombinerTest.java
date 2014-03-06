@@ -64,18 +64,18 @@ public class SchemaInferenceCombinerTest {
     PropertySchema propertySchemaC = new PropertySchema(C, dataTypeC);
     PropertySchema propertySchemaD = new PropertySchema(D, dataTypeD);
 
-    SchemaElement edgeSchema0 = SchemaElement.CreateEdgeSchemaElement(THE_EDGE);
-    SchemaElement edgeSchema1 = SchemaElement.CreateEdgeSchemaElement(THE_EDGE);
-    SchemaElement edgeSchema2 = SchemaElement.CreateEdgeSchemaElement(THE_EDGE);
-    SchemaElement edgeSchema3 = SchemaElement.CreateEdgeSchemaElement(BONO);
-    SchemaElement edgeSchema012 = SchemaElement.CreateEdgeSchemaElement(THE_EDGE);
+    SchemaElement edgeSchema0 = SchemaElement.createEdgeSchemaElement(THE_EDGE);
+    SchemaElement edgeSchema1 = SchemaElement.createEdgeSchemaElement(THE_EDGE);
+    SchemaElement edgeSchema2 = SchemaElement.createEdgeSchemaElement(THE_EDGE);
+    SchemaElement edgeSchema3 = SchemaElement.createEdgeSchemaElement(BONO);
+    SchemaElement edgeSchema012 = SchemaElement.createEdgeSchemaElement(THE_EDGE);
 
-    SchemaElement vertexSchema0 = SchemaElement.CreateVertexSchemaElement(null);
-    SchemaElement vertexSchema1 = SchemaElement.CreateVertexSchemaElement(null);
-    SchemaElement vertexSchema2 = SchemaElement.CreateVertexSchemaElement(OTHERGUY);
-    SchemaElement vertexSchema3 = SchemaElement.CreateVertexSchemaElement(OTHERGUY);
-    SchemaElement vertexSchema01 = SchemaElement.CreateVertexSchemaElement(null);
-    SchemaElement vertexSchema23 = SchemaElement.CreateVertexSchemaElement(OTHERGUY);
+    SchemaElement vertexSchema0 = SchemaElement.createVertexSchemaElement(null);
+    SchemaElement vertexSchema1 = SchemaElement.createVertexSchemaElement(null);
+    SchemaElement vertexSchema2 = SchemaElement.createVertexSchemaElement(OTHERGUY);
+    SchemaElement vertexSchema3 = SchemaElement.createVertexSchemaElement(OTHERGUY);
+    SchemaElement vertexSchema01 = SchemaElement.createVertexSchemaElement(null);
+    SchemaElement vertexSchema23 = SchemaElement.createVertexSchemaElement(OTHERGUY);
 
     @Mock
     Reducer.Context mockedContext;
