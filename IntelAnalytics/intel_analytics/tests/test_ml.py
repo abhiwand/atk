@@ -37,16 +37,17 @@ if __name__ == '__main__':
     sys.modules['intel_analytics.config'] = __import__('mock_config')
     sys.modules['intel_analytics.subproc'] = __import__('mock_subproc')
     sys.modules['intel_analytics.progress'] = __import__('mock_progress')
+    sys.modules['pydoop'] = __import__('mock_pydoop')
 else:
     #to get coverage on all of our modules we need to execute the unit tests utilizing a test runner
     #this runner executes all of the test files in the same execution space making it so that import from previous
     #files are still in sys.modules we need to do the following to reset the required modules so that imports work as
     #expected
-    import intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc, intel_analytics.tests.mock_progress
+    import intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc, intel_analytics.tests.mock_progress, intel_analytics.tests.mock_pydoop
 
-    print intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc, intel_analytics.tests.mock_progress
+    print intel_analytics.tests.mock_config, intel_analytics.tests.mock_subproc, intel_analytics.tests.mock_progress, intel_analytics.tests.mock_pydoop
 
-    mocked_modules = ['intel_analytics.config', 'intel_analytics.subproc', 'intel_analytics.progress']
+    mocked_modules = ['intel_analytics.config', 'intel_analytics.subproc', 'intel_analytics.progress', 'pydoop']
 
     old_modules = {}
     for module in mocked_modules:
@@ -59,6 +60,7 @@ else:
     sys.modules['intel_analytics.config'] = sys.modules['intel_analytics.tests.mock_config']
     sys.modules['intel_analytics.subproc'] = sys.modules['intel_analytics.tests.mock_subproc']
     sys.modules['intel_analytics.progress'] = sys.modules['intel_analytics.tests.mock_progress']
+    sys.modules['pydoop'] = sys.modules['intel_analytics.tests.mock_pydoop']
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
 
@@ -250,7 +252,7 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
 
     @patch('__builtin__.open')
     @patch('numpy.genfromtxt')
-    def test_get_histogram_required_inputs(self, mock_ny,mock_open):
+    def test_get_histogram_required_inputs(self, mock_ny, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.get_histogram('test_first_property_name')
         self.assertEqual('test_graph', result.graph_name)

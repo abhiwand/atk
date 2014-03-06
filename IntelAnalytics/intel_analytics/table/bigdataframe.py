@@ -482,7 +482,7 @@ class BigDataFrame(object):
                         test_fold_id=0,
                         fold_id_column="fold_id",
                         split_name=["TE","TR"],
-                        output_column='kfold_splits',
+                        output_column='edge_type',
                         update=False,
                         overwrite=False):
         """
@@ -521,7 +521,7 @@ class BigDataFrame(object):
         >>> frame.kfold_split(test_fold_id=1, fold_id_column="new_id")
         If there is no existing "new_id" column, this method will firstly generate
         fold id into column "fold_id". And then label the data in the first fold as Test,
-        and the rest as Train, save split labels into column "kfold_splits"
+        and the rest as Train, save split labels into column "edge_type"
 
         Then in the x-th iterations, where x is no greater than k, users can call
         >>> frame.kfload_split(test_fold_id=x)
@@ -534,7 +534,7 @@ class BigDataFrame(object):
         split ML data into Test/Train
         >>> frame.kfold_split(fold_id_column='rand10', test_fold_id=3)
         will label data in the third fold as Test, and the rest as Train.
-        Save results in a column named "kfold_splits"
+        Save results in a column named "edge_type"
         """
 
         try:
@@ -548,7 +548,7 @@ class BigDataFrame(object):
                       randomization_column='rnd_id',
                       split_percent=[70,20,10],
                       split_name=["TR","VA","TE"],
-                      output_column='split_label',
+                      output_column='edge_type',
                       update=False,
                       overwrite=False):
 
@@ -581,17 +581,17 @@ class BigDataFrame(object):
 
         Examples
         --------
-        >>> frame.percent_split(randomization_column="new_id", split_percent=[60,30,20], output_column="new_split")
+        >>> frame.percent_split(randomization_column="new_id", split_percent=[60,30,20])
         If "new_id" does not exist, this method will firstly randomization data into [1,100] folds.
         Then label 60% of data as Train, 30% as Validate, 20% as Test, and save results in
-        a column named "new_split"
+        a column named "edge_type"
 
         If user has already randomized data by transform function, for example, by
         >>> frame.transform('rating','fold_id', EvalFunctions.Math.RANDOM,[1,100])
         this method can be also used together with existing randomization_column to split data
-        >>> frame.autosplit(randomization_column="fold_id", split_percent=[75,15,10], output_column="splits")
+        >>> frame.autosplit(randomization_column="fold_id", split_percent=[75,15,10])
         will label 75% of data as Train, 15% as Validate, 10% as Test, and save results in
-        a column named "splits"
+        a column named "edge_type"
         """
 
         try:
