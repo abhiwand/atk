@@ -35,16 +35,15 @@ IMPORT '$GB_HOME/pig/graphbuilder.pig';
 employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS
 		(employee_id:int, name:chararray, age:int, dept:chararray, manager:int, underManager:chararray);
 
-
 -- Customize the way property graph elements are created from raw input
 -- and build a undirected graph with the -e argument
-DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v employee_id=name,age,dept manager -d employee_id,manager,worksUnder,underManager"');
+DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v employee_id=name,age,dept manager -d employee_id,manager,worksUnder,underManager" -P');
 pge = FOREACH employees GENERATE FLATTEN(CreatePropGraphElements(*)); -- generate the property graph elements
 
 merged = MERGE_DUPLICATE_ELEMENTS(pge); -- merge the duplicate vertices and edges
 
 -- -O flag specifies overwriting the input Titan table
-STORE_GRAPH_INFER_SCHEMA(merged, '$GB_HOME/examples/hbase-titan-conf.xml', '-O');
+STORE_GRAPH_INFER_SCHEMA(merged, '$GB_HOME/examples/hbase-titan-conf.xml', '-O -P');
 
 
 
