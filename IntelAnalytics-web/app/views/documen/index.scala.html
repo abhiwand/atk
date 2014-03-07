@@ -1,5 +1,7 @@
 @(message: String, user: database.UserRow)
 
+@import controllers.Documentation.pythonPdf
+
 @doc(message, user){
     <div id='main-content'>
         <div class='container'>
@@ -35,7 +37,8 @@
                         </div>
                         
 
-
+                       <a data-toggle="modal" href="@pythonPdf" class="btn btn-primary btn-lg documentation" id='download documenation pdf'>Download Overview Documentation!</a>
+                        <a class="btn btn-primary documentation btn-lg" href="documentation/pythonapi" id='view python api documentation'>View Python API Documentation!</a>
 
                     </div>
                 </div>

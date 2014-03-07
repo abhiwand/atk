@@ -44,7 +44,7 @@ function usage()
 {
     echo "Usage: $(basename $0) 
     --cluster-id <id>       // valid range for id is [1, 40]
-    [--owner "owner" ]      // the owner of the cluster, primary user
+    [--owner <owner> ]      // the owner of the cluster, primary user
     [--cluster-size <n> ]   // default to n=4
     [--build <Build.nn> ]   // build version as "Build.01", "Build.02", etc
     [--version <rev> ]      // rev is the product relsease version, default to 0.5
@@ -154,6 +154,12 @@ done
 
 # Get the env setup and helper funs
 source IntelAnalytics_cluster_env.sh
+
+#check for owner tag
+if [ -z "${owner}" ] || [ "${owner}" == "" ]; then
+   IA_logerr "no owner tag set"
+   usage
+fi
 
 # Input 1 is a unique cluster id from frontend user registration
 IA_check_cluster_id ${cid};

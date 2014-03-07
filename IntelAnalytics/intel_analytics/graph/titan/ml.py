@@ -44,6 +44,7 @@ import time
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.path as path
+import pydoop
 import numpy as np
 
 from intel_analytics.subproc import call
@@ -73,6 +74,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self.report = []
         self._label_font_size = 12
         self._title_font_size = 14
+        self._num_edges = 0
+        self._num_vertices = 0
 
     def _plot_progress_curve(self,
                             data_x,
@@ -132,77 +135,67 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
     def _update_progress_curve(self,
                                output_path,
-                               file_name,
-                               time_str,
                                curve_title,
                                curve_ylabel):
-        report_file = self._get_report(output_path, file_name, time_str)
-        #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        with pydoop.hdfs.open(output_path) as result:
+            data_x = []
+            data_y = []
+            num_vertices = 0
+            num_edges = 0
+            progress_results = []
+            for line in result:
+                if re.search(r'superstep', line):
+                    results = line.split()
+                    data_x.append(results[2])
+                    data_y.append(results[5])
 
-        data_x = []
-        data_y = []
-        num_vertices = 0
-        num_edges = 0
-        progress_results = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
+                if re.search(r'Number of vertices', line):
+                    results = line.split()
+                    num_vertices = results[3]
 
-            if re.search(r'Number of vertices', lines[i]):
-                results = lines[i].split()
-                num_vertices = results[3]
-
-            if re.search(r'Number of edges', lines[i]):
-                results = lines[i].split()
-                num_edges = results[3]
+                if re.search(r'Number of edges', line):
+                    results = line.split()
+                    num_edges = results[3]
 
         progress_results.append(data_x)
         progress_results.append(data_y)
         progress_results.append(num_vertices)
         progress_results.append(num_edges)
+        self._num_vertices = num_vertices
+        self._num_edges = num_edges
         self._plot_progress_curve(data_x, data_y, curve_title, curve_ylabel)
         return progress_results
 
     def _update_learning_curve(self,
                                output_path,
-                               file_name,
-                               time_str,
                                curve_title,
                                curve_ylabel1="Cost (Train)",
                                curve_ylabel2="RMSE (Validate)",
                                curve_ylabel3="RMSE (Test)"
                                ):
-        report_file = self._get_report(output_path, file_name, time_str)
-        #find progress info
-        with open(report_file) as result:
-            lines = result.readlines()
+        with pydoop.hdfs.open(output_path) as result:
+            data_x = []
+            data_y = []
+            data_v = []
+            data_t = []
+            num_vertices = 0
+            num_edges = 0
+            learning_results = []
+            for line in result:
+                if re.search(r'superstep', line):
+                    results = line.split()
+                    data_x.append(results[2])
+                    data_y.append(results[5])
+                    data_v.append(results[8])
+                    data_t.append(results[11])
 
-        data_x = []
-        data_y = []
-        data_v = []
-        data_t = []
-        num_vertices = 0
-        num_edges = 0
-        learning_results = []
-        for i in range(len(lines)):
-            if re.search(r'superstep', lines[i]):
-                results = lines[i].split()
-                data_x.append(results[2])
-                data_y.append(results[5])
-                data_v.append(results[8])
-                data_t.append(results[11])
+                if re.search(r'Number of vertices', line):
+                    results = line.split()
+                    num_vertices = results[3]
 
-            if re.search(r'Number of vertices', lines[i]):
-                results = lines[i].split()
-                num_vertices = results[3]
-
-            if re.search(r'Number of edges', lines[i]):
-                results = lines[i].split()
-                num_edges = results[3]
+                if re.search(r'Number of edges', line):
+                    results = line.split()
+                    num_edges = results[3]
 
         learning_results.append(data_x)
         learning_results.append(data_y)
@@ -210,6 +203,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         learning_results.append(data_t)
         learning_results.append(num_vertices)
         learning_results.append(num_edges)
+        self._num_vertices = num_vertices
+        self._num_edges = num_edges
         self._plot_learning_curve(data_x,
                                   data_y,
                                   data_v,
@@ -224,8 +219,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         Deletes the old output directory if it exists.
         """
-        del_cmd = 'if hadoop fs -test -e ' + output_path + \
-                  '; then hadoop fs -rmr -skipTrash ' + output_path + '; fi'
+        del_cmd = 'if ' + global_config['hadoop'] + ' fs -test -e ' + output_path + \
+                  '; then ' + global_config['hadoop'] + ' fs -rmr -skipTrash ' + output_path + '; fi'
         call(del_cmd, shell=True)
 
     def _create_dir(self, path):
@@ -234,18 +229,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         cmd = 'if [ ! -d ' + path + ' ]; then mkdir ' + path + '; fi'
         call(cmd, shell=True)
-
-
-    def _get_report(self, output_path, file_name, time_str):
-        """
-        Gets the learning curve or convergence progress report.
-        """
-        self._create_dir(global_config['giraph_report_dir'])
-        report_file = global_config['giraph_report_dir'] + '/' + \
-                      self._table_name + time_str + '_report.txt'
-        cmd = 'hadoop fs -get ' + output_path + '/' + file_name + ' ' + report_file
-        call(cmd, shell=True)
-        return report_file
 
     def _plot_roc_curve(self,
                         fig,
@@ -318,7 +301,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                       enable_roc=global_config['giraph_enable_roc'],
                       roc_threshold=global_config['giraph_roc_threshold'],
                       property_type=global_config['giraph_histogram_property_type'],
-                      vertex_type_key=global_config['giraph_histogram_vertex_type_key'],
+                      vertex_type_key=global_config['giraph_vertex_type_key'],
                       split_types=global_config['giraph_roc_split_types'],
                       bin_num=global_config['giraph_histogram_bin_num'],
                       path=global_config['giraph_histogram_dir']):
@@ -338,10 +321,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The property name on which users want to get histogram.
             The default value is empty string.
         enable_roc : String, optional
-            "true" means to plot ROC curve on the validation (VA) and test(TE) splits of
+            True means to plot ROC curve on the validation (VA) and test(TE) splits of
             the prior and posterior values, as well as calculate the AUC value on each
             feature dimension of the prior and posterior values.
-            "false" means not to plot ROC curve.
+            False means not to plot ROC curve.
             The default value is 'false'.
         roc_threshold: String, optional
             The ROC threshold parameters in "min:step:max" format.
@@ -370,7 +353,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         hist_cmd1 = 'gremlin.sh -e ' + global_config['giraph_histogram_script']
         hist_command = [self._table_name,
                         property_type,
-                        enable_roc,
+                        str(enable_roc).lower(),
                         roc_threshold,
                         global_config['hbase_column_family'] + first_property_name,
                         second_property_name,
@@ -416,7 +399,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                                      prefix + str(i),
                                      1)
 
-                if enable_roc == "true":
+                if enable_roc:
                     splits = split_types.split(',')
                     fig2 = plt.figure()
                     for j in range(0, len(splits)):
@@ -443,7 +426,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
-        if enable_roc == "true":
+        if enable_roc:
             output.auc = list(auc)
         self.report.append(output)
         return output
@@ -451,15 +434,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
 
     def recommend(self,
                   vertex_id,
+                  left_vertex_name=global_config['giraph_recommend_left_name'],
+                  right_vertex_name=global_config['giraph_recommend_right_name'],
                   vertex_type=global_config['giraph_left_vertex_type_str'],
                   output_vertex_property_list='',
                   vector_value='',
                   key_4_vertex_type='',
                   key_4_edge_type='',
                   bias_on='',
-                  feature_dimension='',
-                  left_vertex_name=global_config['giraph_recommend_left_name'],
-                  right_vertex_name=global_config['giraph_recommend_right_name']):
+                  feature_dimension=''):
         """
         Make recommendation based on trained model.
 
@@ -468,10 +451,23 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         vertex_id : String
             vertex id to get recommendation for
 
-        vertex_type : String, optional ("L" or "R")
+        left_vertex_name : String, optional
+            The left-side vertex name. For example, if your input data is
+            "user,movie,rating", please input "user" for this parameter.
+            The default value is "user".
+        right_vertex_name : String, optional
+            The right-side vertex name. For example, if your input data is
+            "user,movie,rating", please input "movie" for this parameter.
+            The default value is "movie".
+        vertex_type : String, optional
             vertex type to get recommendation for.
+            The valid value is either "L" or "R".
             "L" stands for left-side vertices of a bipartite graph.
             "R" stands for right-side vertices of a bipartite graph.
+            For example, if your input data is "user,movie,rating" and you
+            want to get recommendation on user, please input "L" because
+            user is your left-side vertex. Similarly, please input "R if you want
+            to get recommendation for movie.
             The default value is "L"
         output_vertex_property_list : String, optional
             The vertex properties to store output vertex values.
@@ -479,20 +475,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             more than one vertex property.
             The default value is the latest vertex_type set by
             algorithm execution.
-        vector_value: String, optional
-            "true" means supporting a vector as vertex property's value.
-            "false" means only support a single value as vertex property's value.
-            The default value is "false".
+        vector_value: Boolean, optional
+            True means supporting a vector as vertex property's value.
+            False means only support a single value as vertex property's value.
+            The default value is False.
         key_4_vertex_type : String, optional
             The property name for vertex type. The default value is the
             latest vertex_type set by algorithm execution.
         key_4_edge_type : String, optional
             The property name for vertex type. The default value is the
             latest vertex_type set by algorithm execution.
-        left_vertex_name : String, optional
-            The left-side vertex name. The default value is "user".
-        right_vertex_name : String, optional
-            The right-side vertex name. The default value is "movie".
         bias_on: String, optional
             Whether to enable bias. The default value is the latest bias_on set by
             algorithm execution
@@ -554,7 +546,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                        key_4_vertex_type,
                        key_4_edge_type,
                        vertex_type,
-                       vector_value,
+                       str(vector_value).lower(),
                        bias_on,
                        feature_dimension]
         rec_cmd2 = '::'.join(map(str, rec_command))
@@ -600,7 +592,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                     input_edge_property_list,
                     input_edge_label,
                     output_vertex_property_list,
-                    vertex_type,
+                    vertex_type=global_config['giraph_vertex_type_key'],
                     num_mapper=global_config['giraph_number_mapper'],
                     mapper_memory=global_config['giraph_mapper_memory'],
                     vector_value=global_config['giraph_vector_value'],
@@ -630,14 +622,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             We expect comma-separated list of property names  if you use
             more than one edge property.
         input_edge_label : String
-            The name of edge label..
+            The name of edge label.
         output_vertex_property_list : List (comma-separated list of strings)
             The vertex properties to store output vertex values.
             We expect comma-separated list of property names if you use
             more than one vertex property.
-        vertex_type : String
-            The vertex property which contains vertex type.
 
+        vertex_type : String, optional
+            The name of vertex property which contains vertex type.
+            The default value is "vertex_type"
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
@@ -646,9 +639,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
             The default value is 12G.
-        vector_value: String, optional
-            "true" means a vector as vertex value is supported
-            "false" means a vector as vertex value is not supported
+        vector_value: Boolean, optional
+            True means a vector as vertex value is supported
+            False means a vector as vertex value is not supported
             The default value is false.
         num_worker : Integer, optional
             The number of Giraph workers.
@@ -691,7 +684,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
-        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lbp'
+        output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lbp')
         lbp_command = self._get_lbp_command(
             self._table_name,
             input_vertex_property_list,
@@ -701,13 +694,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self._vertex_type,
             str(num_mapper),
             mapper_memory,
-            vector_value,
+            str(vector_value).lower(),
             str(num_worker),
             str(max_supersteps),
             str(convergence_threshold),
             str(smoothing),
             str(anchor_threshold),
-            str(bidirectional_check),
+            str(bidirectional_check).lower(),
             output_path)
         lbp_cmd = ' '.join(map(str, lbp_command))
         #print lbp_cmd
@@ -717,13 +710,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(lbp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        lbp_results = self._update_learning_curve(output_path,
-                                                  'lbp-learning-report_0',
-                                                  time_str,
-                                                  'LBP Learning Curve',
-                                                  'Average Train Delta',
-                                                  'Average Validation Delta',
-                                                  'Average Test Delta')
 
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
@@ -736,12 +722,21 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.convergence_threshold = convergence_threshold
         output.smoothing = smoothing
         output.anchor_threshold = anchor_threshold
-        output.super_steps = list(lbp_results[0])
-        output.cost_train = list(lbp_results[1])
-        output.rmse_validate = list(lbp_results[2])
-        output.rmse_test = list(lbp_results[3])
-        output.num_vertices = lbp_results[4]
-        output.num_edges = lbp_results[5]
+        output_path = os.path.join(output_path, 'lbp-learning-report_0')
+        if pydoop.hdfs.path.exists(output_path):
+            lbp_results = self._update_learning_curve(output_path,
+                                                      'LBP Learning Curve',
+                                                      'Average Train Delta',
+                                                      'Average Validation Delta',
+                                                      'Average Test Delta')
+
+
+            output.super_steps = list(lbp_results[0])
+            output.cost_train = list(lbp_results[1])
+            output.rmse_validate = list(lbp_results[2])
+            output.rmse_test = list(lbp_results[3])
+            output.num_vertices = lbp_results[4]
+            output.num_edges = lbp_results[5]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -864,7 +859,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             accessible through the report object.
         """
         self._output_vertex_property_list = output_vertex_property_list
-        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/pr'
+        output_path = os.path.join(global_config['giraph_output_base'],self._table_name,'pr')
         pr_command = self._get_pr_command(
             self._table_name,
             input_edge_label,
@@ -886,11 +881,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(pr_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        pr_results = self._update_progress_curve(output_path,
-                                                 'pr-convergence-report_0',
-                                                 time_str,
-                                                 'Page Rank Convergence Curve',
-                                                 'Vertex Value Change')
+
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
@@ -901,10 +892,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.convergence_threshold = convergence_threshold
         output.reset_probability = reset_probability
         output.convergence_output_interval = convergence_output_interval
-        output.super_steps = list(pr_results[0])
-        output.convergence_progress = list(pr_results[1])
-        output.num_vertices = pr_results[2]
-        output.num_edges = pr_results[3]
+        output_path = os.path.join(output_path, 'pr-convergence-report_0')
+        if pydoop.hdfs.path.exists(output_path):
+            pr_results = self._update_progress_curve(output_path,
+                                                     'Page Rank Convergence Curve',
+                                                     'Vertex Value Change')
+
+            output.super_steps = list(pr_results[0])
+            output.convergence_progress = list(pr_results[1])
+            output.num_vertices = pr_results[2]
+            output.num_edges = pr_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1004,7 +1001,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             accessible through the report object.
         """
         self._output_vertex_property_list = output_vertex_property_list
-        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/apl'
+        output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'apl')
         apl_command = self._get_apl_command(
             self._table_name,
             input_edge_label,
@@ -1023,25 +1020,23 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(apl_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        apl_results = self._update_progress_curve(output_path,
-                                                  'apl-convergence-report_0',
-                                                  time_str,
-                                                  'Avg. Path Length Progress Curve',
-                                                  'Num of Vertex Updates')
-        #apl_hist = self._get_histogram('user', 'movie')
+
         output = AlgorithmReport()
-        #output.x_bins = apl_hist[0]
-        #output.y_count = apl_hist[1]
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
-        output.super_steps = list(apl_results[0])
-        output.convergence_progress = list(apl_results[1])
-        output.num_vertices = apl_results[2]
-        output.num_edges = apl_results[3]
+        output_path = os.path.join(output_path, 'apl-convergence-report_0')
+        if pydoop.hdfs.path.exists(output_path):
+            apl_results = self._update_progress_curve(output_path,
+                                                      'Avg. Path Length Progress Curve',
+                                                      'Num of Vertex Updates')
+            output.super_steps = list(apl_results[0])
+            output.convergence_progress = list(apl_results[1])
+            output.num_vertices = apl_results[2]
+            output.num_edges = apl_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1134,7 +1129,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             accessible through the report object.
         """
         self._output_vertex_property_list = output_vertex_property_list
-        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/cc'
+        output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'cc')
         cc_command = self._get_cc_command(
             self._table_name,
             input_edge_label,
@@ -1153,11 +1148,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(cc_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        cc_results = self._update_progress_curve(output_path,
-                                                  'cc-convergence-report_0',
-                                                  time_str,
-                                                  'Connected Components Progress Curve',
-                                                  'Num of Vertex Updates')
 
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
@@ -1166,10 +1156,15 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
-        output.super_steps = list(cc_results[0])
-        output.convergence_progress = list(cc_results[1])
-        output.num_vertices = cc_results[2]
-        output.num_edges = cc_results[3]
+        output_path = os.path.join(output_path, 'cc-convergence-report_0')
+        if pydoop.hdfs.path.exists(output_path):
+            cc_results = self._update_progress_curve(output_path,
+                                                     'Connected Components Progress Curve',
+                                                     'Num of Vertex Updates')
+            output.super_steps = list(cc_results[0])
+            output.convergence_progress = list(cc_results[1])
+            output.num_vertices = cc_results[2]
+            output.num_edges = cc_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1257,9 +1252,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex properties to store output vertex values.
             We expect comma-separated list of property names if you use
             more than one vertex property.
-        vertex_type : String
-            The vertex property which contains vertex type.
 
+        vertex_type : String, optional
+            The name of vertex property which contains vertex type.
+            The default value is "vertex_type"
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
@@ -1268,6 +1264,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
             The default value is 12G.
+        vector_value: Boolean, optional
+            True means a vector as vertex value is supported
+            False means a vector as vertex value is not supported
+            The default value is false.
         num_worker : Integer, optional
             The number of Giraph workers.
             The default value is 15.
@@ -1290,7 +1290,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             before it reaches the maximum number of super steps.
             The valid value range is all Float and zero.
             The default value is 0.001.
-        bidirectional_check : String, optional
+        bidirectional_check : Boolean, optional
             If it is true, Giraph will firstly check whether each edge is bidirectional
             before running algorithm. LP expects an undirected input graph and each edge
             therefore should be bi-directional. This option is mainly for graph integrity
@@ -1311,7 +1311,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The algorithm's results in database.
         """
         self._output_vertex_property_list = output_vertex_property_list
-        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lp'
+        output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lp')
         lp_command = self._get_lp_command(
             self._table_name,
             input_vertex_property_list,
@@ -1320,28 +1320,22 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             output_vertex_property_list,
             str(num_mapper),
             mapper_memory,
-            vector_value,
+            str(vector_value).lower(),
             str(num_worker),
             str(max_supersteps),
             str(convergence_threshold),
             str(lp_lambda),
             str(anchor_threshold),
-            bidirectional_check,
+            str(bidirectional_check).lower(),
             output_path
         )
         lp_cmd = ' '.join(map(str,lp_command))
         #print lp_cmd
-        #delete old output directory if already there
         self._del_old_output(output_path)
         time_str = get_time_str()
         start_time = time.time()
         call(lp_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        lp_results = self._update_progress_curve(output_path,
-                                                 'lp-learning-report_0',
-                                                 time_str,
-                                                 'LP Learning Curve',
-                                                 'Cost')
 
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
@@ -1354,10 +1348,17 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.param_lambda = lp_lambda
         output.bidirectional_check = bidirectional_check
         output.anchor_threshold = anchor_threshold
-        output.super_steps = list(lp_results[0])
-        output.cost = list(lp_results[1])
-        output.num_vertices = lp_results[2]
-        output.num_edges = lp_results[3]
+        output_path = os.path.join(output_path, 'lp-learning-report_0')
+        if pydoop.hdfs.path.exists(output_path):
+            lp_results = self._update_progress_curve(output_path,
+                                                     'LP Learning Curve',
+                                                     'Cost')
+
+
+            output.super_steps = list(lp_results[0])
+            output.cost = list(lp_results[1])
+            output.num_vertices = lp_results[2]
+            output.num_edges = lp_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1427,7 +1428,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            vertex_type,
+            vertex_type=global_config['giraph_vertex_type_key'],
             num_mapper=global_config['giraph_number_mapper'],
             mapper_memory=global_config['giraph_mapper_memory'],
             vector_value=global_config['giraph_vector_value'],
@@ -1457,9 +1458,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex properties to store output vertex values.
             We expect comma-separated list of property names if you use
             more than one vertex property.
-        vertex_type : String
-            The name of vertex property which stores vertex type
 
+        vertex_type : String, optional
+            The name of vertex property which contains vertex type.
+            The default value is "vertex_type"
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
@@ -1468,9 +1470,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
             The default value is 12G.
-        vector_value: String, optional
-            "true" means a vector as vertex value is supported
-            "false" means a vector as vertex value is not supported
+        vector_value: Boolean, optional
+            True means a vector as vertex value is supported
+            False means a vector as vertex value is not supported
             The default value is false.
         num_worker : Integer, optional
             The number of Giraph workers to run the algorihm.
@@ -1527,8 +1529,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             result in more computation but lead to more specific topics.
             Valid value range is all positive integers.
             The default value is 10.
-        bidirectional_check : String, optional
-            "true" means to turn on bidirectional check. "false" means to turn
+        bidirectional_check : Boolean, optional
+            True means to turn on bidirectional check. False means to turn
             off bidirectional check. LDA expects a bi-partite input graph and
             each edge therefore should be bi-directional. This option is mainly
             for graph integrity check.
@@ -1541,7 +1543,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         """
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
-        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/lda'
+        output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lda')
         lda_command = self._get_lda_command(
             self._table_name,
             input_edge_property_list,
@@ -1550,7 +1552,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self._vertex_type,
             str(num_mapper),
             mapper_memory,
-            vector_value,
+            str(vector_value).lower(),
             str(num_worker),
             str(max_supersteps),
             str(alpha),
@@ -1560,7 +1562,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             str(max_val),
             str(min_val),
             str(num_topics),
-            bidirectional_check,
+            str(bidirectional_check).lower(),
             output_path
         )
         lda_cmd = ' '.join(map(str, lda_command))
@@ -1571,16 +1573,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(lda_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-
-        if evaluate_cost:
-            curve_ylabel = 'Cost'
-        else:
-            curve_ylabel = 'Max Vertex Value Change'
-        lda_results = self._update_progress_curve(output_path,
-                                                  'lda-learning-report_0',
-                                                  time_str,
-                                                  'LDA Learning Curve',
-                                                  curve_ylabel)
 
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
@@ -1596,10 +1588,20 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.max_val = max_val
         output.min_val = min_val
         output.num_topics = num_topics
-        output.super_steps = list(lda_results[0])
-        output.cost = list(lda_results[1])
-        output.num_vertices = lda_results[2]
-        output.num_edges = lda_results[3]
+        output_path = os.path.join(output_path, 'lda-learning-report_0')
+        if pydoop.hdfs.path.exists(output_path):
+            if evaluate_cost:
+                curve_ylabel = 'Cost'
+            else:
+                curve_ylabel = 'Max Vertex Value Change'
+
+            lda_results = self._update_progress_curve(output_path,
+                                                      'LDA Learning Curve',
+                                                      curve_ylabel)
+            output.super_steps = list(lda_results[0])
+            output.cost = list(lda_results[1])
+            output.num_vertices = lda_results[2]
+            output.num_edges = lda_results[3]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1679,8 +1681,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            vertex_type,
-            edge_type,
+            vertex_type=global_config['giraph_vertex_type_key'],
+            edge_type=global_config['giraph_edge_type_key'],
             num_mapper=global_config['giraph_number_mapper'],
             mapper_memory=global_config['giraph_mapper_memory'],
             vector_value=global_config['giraph_vector_value'],
@@ -1717,11 +1719,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex properties to store output vertex valuess.
             We expect comma-separated list of property names  if you use
             more than one vertex property.
-        vertex_type : String
-            The vertex property which contains vertex type.
-        edge_type : String
-            The name of edge property which stores edge type
 
+        vertex_type : String, optional
+            The name of vertex property which contains vertex type.
+            The default value is "vertex_type"
+        edge_type : String, optional
+            The name of edge property which contains edge type.
+            The default value is "edge_type"
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
@@ -1730,9 +1734,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             It reconfigures Hadoop parameter mapred.map.child.java.opts
             on the fly when it is needed for users' data sets.
             The default value is 12G.
-        vector_value: String, optional
-            "true" means a vector as vertex value is supported
-            "false" means a vector as vertex value is not supported
+        vector_value: Boolean, optional
+            True means a vector as vertex value is supported
+            False means a vector as vertex value is not supported
             The default value is false.
         num_worker : Integer, optional
             The number of Giraph workers to run the algorithm.
@@ -1775,11 +1779,11 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             is mainly for graph integrity check.
             Valid value range is all Float.
             The default value is Float.NEGATIVE_INFINITY.
-        bidirectional_check : String, optional
-            If it is "true", Giraph will firstly check whether each edge is bidirectional
+        bidirectional_check : Boolean, optional
+            If it is True, Giraph will firstly check whether each edge is bidirectional
             before executing algorithm. ALS expects a bi-partite input graph and each edge
             therefore should be bi-directional. This option is mainly for graph integrity check.
-        bias_on : String, optional
+        bias_on : Boolean, optional
             True means turn on the update for bias term and False means turn off
             the update for bias term. Turning it on often yields more accurate model with
             minor performance penalty; turning it off disables term update and leaves the
@@ -1798,7 +1802,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._vector_value = vector_value
         self._bias_on = bias_on
         self._feature_dimension = feature_dimension
-        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/als'
+        output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'als')
         als_command = self._get_als_command(
             self._table_name,
             input_edge_property_list,
@@ -1808,7 +1812,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self._edge_type,
             str(num_mapper),
             mapper_memory,
-            vector_value,
+            str(vector_value).lower(),
             str(num_worker),
             str(max_supersteps),
             str(feature_dimension),
@@ -1817,8 +1821,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             str(learning_output_interval),
             str(max_val),
             str(min_val),
-            bias_on,
-            bidirectional_check,
+            str(bias_on).lower(),
+            str(bidirectional_check).lower(),
             output_path
         )
         als_cmd = ' '.join(map(str,als_command))
@@ -1829,11 +1833,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(als_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-        als_results = self._update_learning_curve(output_path,
-                                                  'als-learning-report_0',
-                                                  time_str,
-                                                  'ALS Learning Curve')
-
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
@@ -1848,12 +1847,18 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.max_val = max_val
         output.min_val = min_val
         output.bias_on = bias_on
-        output.super_steps = list(als_results[0])
-        output.cost_train = list(als_results[1])
-        output.rmse_validate = list(als_results[2])
-        output.rmse_test = list(als_results[3])
-        output.num_vertices = als_results[4]
-        output.num_edges = als_results[5]
+        output_path = os.path.join(output_path, 'als-learning-report_0')
+        if pydoop.hdfs.path.exists(output_path):
+            als_results = self._update_learning_curve(output_path,
+                                                      'ALS Learning Curve')
+
+
+            output.super_steps = list(als_results[0])
+            output.cost_train = list(als_results[1])
+            output.rmse_validate = list(als_results[2])
+            output.rmse_test = list(als_results[3])
+            output.num_vertices = als_results[4]
+            output.num_edges = als_results[5]
         output.graph = self._graph
         self.report.append(output)
         return output
@@ -1937,8 +1942,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             input_edge_property_list,
             input_edge_label,
             output_vertex_property_list,
-            vertex_type,
-            edge_type,
+            vertex_type=global_config['giraph_vertex_type_key'],
+            edge_type=global_config['giraph_edge_type_key'],
             num_mapper=global_config['giraph_number_mapper'],
             mapper_memory=global_config['giraph_mapper_memory'],
             vector_value=global_config['giraph_vector_value'],
@@ -1973,10 +1978,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             The vertex properties to store output vertex valuess.
             We expect comma-separated list of property names  if you use
             more than one vertex property.
-        vertex_type : String
-            The name of vertex property which stores vertex type.
-        edge_type : String
-            The name of edge property which stores edge type.
+        vertex_type : String, optional
+            The name of vertex property which contains vertex type.
+            The default value is "vertex_type"
+        edge_type : String, optional
+            The name of edge property which contains edge type.
+            The default value is "edge_type"
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
@@ -1986,9 +1993,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             on the fly when it is needed for users' data sets.
             The default value is 12G.
 
-        vector_value: String, optional
-            "true" means a vector as vertex value is supported
-            "false" means a vector as vertex value is not supported
+        vector_value: Boolean, optional
+            True means a vector as vertex value is supported
+            False means a vector as vertex value is not supported
             The default value is false.
         num_worker : Integer, optional
             The number of Giraph workers.
@@ -2033,13 +2040,13 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             is mainly for graph integrity check.
             Valid value range is all Float.
             The default value is Float.NEGATIVE_INFINITY.
-        bias_on : String, optional
+        bias_on : Boolean, optional
             True means turn on the update for bias term and False means turn off
             the update for bias term. Turning it on often yields more accurate model with
             minor performance penalty; turning it off disables term update and leaves the
             value of bias term to be zero.
             The default value is false.
-	    bidirectional_check : String, optional
+	    bidirectional_check : Boolean, optional
             If it is true, Giraph will firstly check whether each edge is bidirectional.
         num_iters : Integer, optional
             The number of CGD iterations in each super step. Larger value results in more
@@ -2060,7 +2067,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._vector_value = vector_value
         self._bias_on = bias_on
         self._feature_dimension = feature_dimension
-        output_path = global_config['giraph_output_base'] + '/' + self._table_name + '/cgd'
+        output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'cgd')
         cgd_command = self._get_cgd_command(
             self._table_name,
             input_edge_property_list,
@@ -2070,7 +2077,7 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             self._edge_type,
             str(num_mapper),
             mapper_memory,
-            vector_value,
+            str(vector_value).lower(),
             str(num_worker),
             str(max_supersteps),
             str(feature_dimension),
@@ -2079,9 +2086,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             str(learning_output_interval),
             str(max_val),
             str(min_val),
-            bias_on,
+            str(bias_on).lower(),
             str(num_iters),
-            bidirectional_check,
+            str(bidirectional_check).lower(),
             output_path
         )
         cgd_cmd = ' '.join(map(str,cgd_command))
@@ -2092,11 +2099,6 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         start_time = time.time()
         call(cgd_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
-
-        cgd_results = self._update_learning_curve(output_path,
-                                                  'cgd-learning-report_0',
-                                                  time_str,
-                                                  'CGD Learning Curve')
 
         output = AlgorithmReport()
         output.graph_name = self._graph.user_graph_name
@@ -2113,12 +2115,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         output.min_val = min_val
         output.bias_on = bias_on
         output.num_iters = num_iters
-        output.super_steps = list(cgd_results[0])
-        output.cost_train = list(cgd_results[1])
-        output.rmse_validate = list(cgd_results[2])
-        output.rmse_test = list(cgd_results[3])
-        output.num_vertices = cgd_results[4]
-        output.num_edges = cgd_results[5]
+        output_path = os.path.join(output_path, 'cgd-learning-report_0')
+        if pydoop.hdfs.path.exists(output_path):
+            cgd_results = self._update_learning_curve(output_path,
+                                                      'CGD Learning Curve')
+            output.super_steps = list(cgd_results[0])
+            output.cost_train = list(cgd_results[1])
+            output.rmse_validate = list(cgd_results[2])
+            output.rmse_test = list(cgd_results[3])
+            output.num_vertices = cgd_results[4]
+            output.num_edges = cgd_results[5]
         output.graph = self._graph
         self.report.append(output)
         return output

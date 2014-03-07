@@ -1,0 +1,4 @@
+# Exclude the following directories from coverage measurements
+
+intel_analytics/table/hbase/thrift
+intel_analytics/table/hbase/scripts

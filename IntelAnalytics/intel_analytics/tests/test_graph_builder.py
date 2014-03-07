@@ -218,10 +218,10 @@ class TestGraphBuilder(unittest.TestCase):
 
         source = Mock()
         source._table.table_name = "table_name"
-        result = generate_titan_table_name("prefix", source)
+        result = generate_titan_table_name("prefix", source, False)
         self.assertEqual("prefix_table_name_titan", result)
         try:
-            generate_titan_table_name("prefix", "junk")
+            generate_titan_table_name("prefix", "junk", False)
         except Exception as e:
             self.assertEqual("Could not get table name from source", str(e))
         else:
