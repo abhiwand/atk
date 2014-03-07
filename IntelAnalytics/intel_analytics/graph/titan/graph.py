@@ -44,6 +44,7 @@ from intel_analytics.graph.pig.pig_script_builder import GBPigScriptBuilder
 from xml.etree.ElementTree import tostring
 import xml.etree.cElementTree as ET
 from intel_analytics.report import FaunusProgressReportStrategy
+from intel_analytics.table.hbase.schema import ETLSchema
 
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
@@ -189,17 +190,65 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                      retainDanglingEdges=retainDanglingEdges,
                      withVertexSide=withVertexSide)
 
+def _get_available_columns(source_frame):
+    table_name = _get_table_name_from_source(source_frame)
+    schema = ETLSchema()
+    schema.load_schema(table_name)
+    return [feature_name[feature_name.find(':') + 1 :] for feature_name in schema.feature_names]
+    
+def validate_rules(source_frame, vertex_list, edge_list, registered_vertex_properties = None, registered_edge_properties = None):
+    
+    def validate_vertex(v, columns):
+        if v.key not in columns:
+            raise Exception("%s does not exist" % v.key)
+        for p in v.properties:
+            if p not in columns:
+                raise Exception("%s does not exist" % p)
+            
+    def validate_edge(e, columns):
+        edge_validation_failed = False
+        failing_rule = None
+        source, target, label = e.source, e.target, e.label
+        if source not in columns:
+            edge_validation_failed = True
+            failing_rule = source
+        if target not in columns:
+            edge_validation_failed = True
+            failing_rule = target
+        for p in e.properties:
+            if p not in columns:
+                edge_validation_failed = True
+                failing_rule = p          
+        if edge_validation_failed:
+            raise Exception("%s does not exist" % failing_rule)                  
+        
+    columns = _get_available_columns(source_frame)
+    
+    for v in vertex_list:
+        validate_vertex(v, columns)
+            
+    for e in edge_list:
+        validate_edge(e, columns)
+        
+    if registered_vertex_properties != None:
+        columns = _get_available_columns(registered_vertex_properties.source_frame)
+        validate_vertex(registered_vertex_properties.vertex, columns)
+    
+    if registered_edge_properties != None:
+        columns = _get_available_columns(registered_edge_properties.source_frame)
+        validate_edge(registered_edge_properties.edge, columns)
 
 def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten, 
           registered_vertex_properties = None, registered_edge_properties = None, retainDanglingEdges =  False,
           withVertexSide = False):
 
+    #check whether edge/vertex rules and all registered properties are valid
+    validate_rules(source, vertex_list, edge_list, registered_vertex_properties, registered_edge_properties)
+    
     #overwrite and append are mutually exclusive
     if overwrite and append:
         raise Exception("Either overwrite or append can be specified")
     
-    # TODO: implement column validation
-
     dst_hbase_table_name = generate_titan_table_name(graph_name, source, append)
 
     # TODO: Graph Builder could handle overwrite instead of the registry, not sure if that is better?
