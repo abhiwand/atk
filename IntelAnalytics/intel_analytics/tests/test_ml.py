@@ -250,7 +250,7 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
 
     @patch('__builtin__.open')
     @patch('numpy.genfromtxt')
-    def test_get_histogram_required_inputs(self, mock_ny,mock_open):
+    def test_get_histogram_required_inputs(self, mock_ny, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.get_histogram('test_first_property_name')
         self.assertEqual('test_graph', result.graph_name)
