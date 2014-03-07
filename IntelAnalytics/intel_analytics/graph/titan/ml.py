@@ -53,6 +53,13 @@ from intel_analytics.report import ProgressReportStrategy, find_progress, \
     MapReduceProgress, ReportStrategy
 from intel_analytics.progress import Progress
 
+superstep_pattern = re.compile(r'superstep')
+num_vertices_pattern = re.compile(r'Number of vertices')
+num_edges_pattern = re.compile(r'Number of edges')
+output_pattern = re.compile(r'======')
+score_pattern = re.compile(r'score')
+
+
 
 class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
     """
@@ -144,16 +151,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_edges = 0
             progress_results = []
             for line in result:
-                if re.search(r'superstep', line):
+                if re.match(superstep_pattern, line):
                     results = line.split()
                     data_x.append(results[2])
                     data_y.append(results[5])
 
-                if re.search(r'Number of vertices', line):
+                if re.match(num_vertices_pattern, line):
                     results = line.split()
                     num_vertices = results[3]
 
-                if re.search(r'Number of edges', line):
+                if re.match(num_edges_pattern, line):
                     results = line.split()
                     num_edges = results[3]
 
@@ -182,18 +189,18 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_edges = 0
             learning_results = []
             for line in result:
-                if re.search(r'superstep', line):
+                if re.match(superstep_pattern, line):
                     results = line.split()
                     data_x.append(results[2])
                     data_y.append(results[5])
                     data_v.append(results[8])
                     data_t.append(results[11])
 
-                if re.search(r'Number of vertices', line):
+                if re.match(num_vertices_pattern, line):
                     results = line.split()
                     num_vertices = results[3]
 
-                if re.search(r'Number of edges', line):
+                if re.match(num_edges_pattern, line):
                     results = line.split()
                     num_edges = results[3]
 
@@ -320,12 +327,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         second_property_name : String, optional
             The property name on which users want to get histogram.
             The default value is empty string.
-        enable_roc : String, optional
+        enable_roc : Boolean, optional
             True means to plot ROC curve on the validation (VA) and test(TE) splits of
             the prior and posterior values, as well as calculate the AUC value on each
             feature dimension of the prior and posterior values.
             False means not to plot ROC curve.
-            The default value is 'false'.
+            The default value is False.
         roc_threshold: String, optional
             The ROC threshold parameters in "min:step:max" format.
             The default value is "0:0.05:1"
@@ -439,8 +446,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                   vertex_type=global_config['giraph_left_vertex_type_str'],
                   output_vertex_property_list='',
                   vector_value='',
-                  key_4_vertex_type='',
-                  key_4_edge_type='',
+                  vertex_type_key='',
+                  edge_type_key='',
                   bias_on='',
                   feature_dimension=''):
         """
@@ -479,10 +486,10 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             True means supporting a vector as vertex property's value.
             False means only support a single value as vertex property's value.
             The default value is False.
-        key_4_vertex_type : String, optional
+        vertex_type_key : String, optional
             The property name for vertex type. The default value is the
             latest vertex_type set by algorithm execution.
-        key_4_edge_type : String, optional
+        edge_type_key : String, optional
             The property name for vertex type. The default value is the
             latest vertex_type set by algorithm execution.
         bias_on: String, optional
@@ -500,17 +507,17 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             else:
                 output_vertex_property_list = self._output_vertex_property_list
 
-        if key_4_vertex_type == '':
+        if vertex_type_key == '':
             if self._vertex_type == '':
-                raise ValueError("key_4_vertex_type is empty!")
+                raise ValueError("vertex_type_key is empty!")
             else:
-                key_4_vertex_type = self._vertex_type
+                vertex_type_key = self._vertex_type
 
-        if key_4_edge_type == '':
+        if edge_type_key == '':
             if self._edge_type == '':
-                raise ValueError("key_4_edge_type is empty!")
+                raise ValueError("edge_type_key is empty!")
             else:
-                key_4_edge_type = self._edge_type
+                edge_type_key = self._edge_type
 
         if vector_value == '':
             if self._vector_value == '':
@@ -543,8 +550,8 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
                        global_config['giraph_right_vertex_type_str'],
                        global_config['giraph_train_str'],
                        global_config['giraph_vertex_true_name'],
-                       key_4_vertex_type,
-                       key_4_edge_type,
+                       vertex_type_key,
+                       edge_type_key,
                        vertex_type,
                        str(vector_value).lower(),
                        bias_on,
@@ -563,9 +570,9 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         recommend_score = []
         width = 10
         for i in range(len(out)):
-            if re.search(r'======', out[i]):
+            if re.match(output_pattern, out[i]):
                 print out[i]
-            if re.search(r'score', out[i]):
+            if re.match(score_pattern, out[i]):
                 results = out[i].split()
                 recommend_id.append(results[1])
                 recommend_score.append(results[3])
@@ -2216,6 +2223,7 @@ class AlgorithmReport():
 
 
 job_completion_pattern = re.compile(r".*?Giraph Stats")
+groovy_completion_pattern = re.compile(r"complete execution")
 
 
 class GiraphProgressReportStrategy(ProgressReportStrategy):
@@ -2280,7 +2288,7 @@ class GroovyProgressReportStrategy(ReportStrategy):
         """
         to report progress of recommender task
         """
-        if re.search(r"complete execution", line):
+        if re.match(groovy_completion_pattern, line):
             self.progress_bar._disable_animation()
 
     def handle_error(self, error_code, error_message):
