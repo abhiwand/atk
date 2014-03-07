@@ -94,9 +94,9 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
     private String[] vertexRules;
     private String[] edgeRules;
     private String[] directedEdgeRules;
-    private boolean flattenLists           = false;
+    private boolean flattenLists = false;
     private boolean stripColumnFamilyNames = false;
-    private boolean addSideToVertices      = false;
+    private boolean addSideToVertices = false;
 
     private Class vidClass = StringType.class;
     private Class<? extends GraphTokenizer> tokenizerClass = HBaseTokenizer.class;
@@ -121,17 +121,12 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
         }
 
         srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
-
-        vertexRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
-
-        edgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
-
-        directedEdgeRules =
-                nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
-
-        this.stripColumnFamilyNames = cmd.hasOption(BaseCLI.Options.stripColumnFamilyNames.getLongOpt());
+        vertexRules = nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
+        edgeRules = nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
+        stripColumnFamilyNames = cmd.hasOption(BaseCLI.Options.stripColumnFamilyNames.getLongOpt());
+        flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
+        addSideToVertices = cmd.hasOption(BaseCLI.Options.addSideToVertex.getLongOpt());
+        directedEdgeRules = nullsIntoEmptyStringArrays(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
 
         checkSyntaxOfVertexRules();
         checkSyntaxOfEdgeRules();
@@ -158,6 +153,7 @@ public class HBaseGraphBuildingRule implements GraphBuildingRule {
      * Sets the option to add side property to vertices
      * <p>When this option is set, a property called "side" is added to all vertices.
      * The value of this property can be L (for left) or R (for right)
+     *
      * @param addSideToVertices Boolean.
      */
     public void setAddSideToVertices(boolean addSideToVertices) {
