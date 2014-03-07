@@ -170,25 +170,6 @@ class TestGraphBuilder(unittest.TestCase):
         names = factory.get_graph_names()
         self.assertTrue({'g1', 'g2'}, set(names))
 
-
-    def create_mock_etl_object(self, result_holder):
-
-        object = ETLSchema()
-        object.load_schema = MagicMock()
-
-        def etl_effect(arg):
-            result_holder["table_name"] = arg
-            result_holder["feature_names"] = object.feature_names
-            result_holder["feature_types"] = object.feature_types
-
-        save_action = MagicMock()
-        save_action.side_effect = etl_effect
-        object.save_schema = save_action
-        object.feature_names = ["col1", "col2", "col3"]
-        object.feature_types = ["long", "chararray", "long"]
-        return object
-
-
     @patch('intel_analytics.table.hbase.table.hbase_registry',
            new_callable=get_registry_callable('test_build'))
     @patch('intel_analytics.graph.titan.graph.hbase_registry',
