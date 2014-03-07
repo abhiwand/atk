@@ -206,21 +206,16 @@ def validate_rules(source_frame, vertex_list, edge_list, registered_vertex_prope
                 raise Exception("%s does not exist" % p)
             
     def validate_edge(e, columns):
-        edge_validation_failed = False
-        failing_rule = None
         source, target, label = e.source, e.target, e.label
-        if source not in columns:
-            edge_validation_failed = True
-            failing_rule = source
-        if target not in columns:
-            edge_validation_failed = True
-            failing_rule = target
+        failing_rules = []
+        if source not in columns: failing_rules.append(source)
+        if target not in columns: failing_rules.append(target)      
+        
         for p in e.properties:
-            if p not in columns:
-                edge_validation_failed = True
-                failing_rule = p          
-        if edge_validation_failed:
-            raise Exception("%s does not exist" % failing_rule)                  
+            if p not in columns: failing_rules.append(p)
+            
+        if len(failing_rules):
+            raise Exception("Some columns do not exist: %s" % (', '.join(failing_rules)))                  
         
     columns = _get_available_columns(source_frame)
     
