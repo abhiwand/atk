@@ -46,7 +46,7 @@ export HADOOP_LOG_DIR=/mnt/data1/logs/hadoop
 # export HADOOP_SLAVE_SLEEP=0.1
 
 # The directory where pid files are stored. /tmp by default.
-# export HADOOP_PID_DIR=/var/hadoop/pids
+export HADOOP_PID_DIR=/var/run/hadoop/pids
 
 # A string representing this instance of hadoop. $USER by default.
 # export HADOOP_IDENT_STRING=$USER

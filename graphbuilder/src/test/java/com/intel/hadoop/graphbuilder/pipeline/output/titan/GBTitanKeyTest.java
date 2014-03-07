@@ -19,9 +19,10 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import static junit.framework.Assert.assertSame;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 
 public class GBTitanKeyTest {
 
@@ -33,9 +34,9 @@ public class GBTitanKeyTest {
 
         assertSame(key1.getName(), name);
         assertSame(key1.getDataType(), String.class);
-        assert(key1.isEdgeIndex() == false);
-        assert(key1.isVertexIndex() == false);
-        assert(key1.isUnique() == false);
+		assertFalse(key1.isEdgeIndex());
+		assertFalse(key1.isVertexIndex());
+		assertFalse(key1.isUnique());
 
         Class<?> dataType    = Float.class;
         boolean  vertexIndex = false;
@@ -46,9 +47,9 @@ public class GBTitanKeyTest {
 
         assertSame(key2.getName(), name);
         assertSame(key2.getDataType(), dataType);
-        assert(key2.isEdgeIndex() == edgeIndex);
-        assert(key2.isVertexIndex() == vertexIndex);
-        assert(key2.isUnique() == unique);
+		assertSame(key2.isEdgeIndex(), edgeIndex);
+		assertSame(key2.isVertexIndex(), vertexIndex);
+		assertSame(key2.isUnique(), unique);
 
         String   name1        = "name1";
         Class<?> dataType1    = Integer.class;
@@ -59,71 +60,71 @@ public class GBTitanKeyTest {
         key2.setName(name1);
         assertSame(key2.getName(), name1);
         assertSame(key2.getDataType(), dataType);
-        assert(key2.isEdgeIndex() == edgeIndex);
-        assert(key2.isVertexIndex() == vertexIndex);
-        assert(key2.isUnique() == unique);
+		assertSame(key2.isEdgeIndex(), edgeIndex);
+		assertSame(key2.isVertexIndex(), vertexIndex);
+		assertSame(key2.isUnique(), unique);
 
         key2.setDataType(dataType1);
         assertSame(key2.getName(), name1);
         assertSame(key2.getDataType(), dataType1);
-        assert(key2.isEdgeIndex() == edgeIndex);
-        assert(key2.isVertexIndex() == vertexIndex);
-        assert(key2.isUnique() == unique);
+		assertSame(key2.isEdgeIndex(), edgeIndex);
+		assertSame(key2.isVertexIndex(), vertexIndex);
+		assertSame(key2.isUnique(), unique);
 
         key2.setIsEdgeIndex(edgeIndex1);
         assertSame(key2.getName(), name1);
         assertSame(key2.getDataType(), dataType1);
-        assert(key2.isEdgeIndex() == edgeIndex1);
-        assert(key2.isVertexIndex() == vertexIndex);
-        assert(key2.isUnique() == unique);
+		assertSame(key2.isEdgeIndex(), edgeIndex1);
+		assertSame(key2.isVertexIndex(), vertexIndex);
+		assertSame(key2.isUnique(), unique);
 
         key2.setIsVertexIndex(vertexIndex1);
         assertSame(key2.getName(), name1);
         assertSame(key2.getDataType(), dataType1);
-        assert(key2.isEdgeIndex() == edgeIndex1);
-        assert(key2.isVertexIndex() == vertexIndex1);
-        assert(key2.isUnique() == unique);
+		assertSame(key2.isEdgeIndex(), edgeIndex1);
+		assertSame(key2.isVertexIndex(), vertexIndex1);
+		assertSame(key2.isUnique(), unique);
 
         key2.setIsUnique(unique1);
         assertSame(key2.getName(), name1);
         assertSame(key2.getDataType(), dataType1);
-        assert(key2.isEdgeIndex() == edgeIndex1);
-        assert(key2.isVertexIndex() == vertexIndex1);
-        assert(key2.isUnique() == unique1);
+		assertSame(key2.isEdgeIndex(), edgeIndex1);
+		assertSame(key2.isVertexIndex(), vertexIndex1);
+		assertSame(key2.isUnique(), unique1);
 
         key2.setName(name);
         assertSame(key2.getName(), name);
         assertSame(key2.getDataType(), dataType1);
-        assert(key2.isEdgeIndex() == edgeIndex1);
-        assert(key2.isVertexIndex() == vertexIndex1);
-        assert(key2.isUnique() == unique1);
+		assertSame(key2.isEdgeIndex(), edgeIndex1);
+		assertSame(key2.isVertexIndex(), vertexIndex1);
+		assertSame(key2.isUnique(), unique1);
 
         key2.setDataType(dataType);
         assertSame(key2.getName(), name);
         assertSame(key2.getDataType(), dataType);
-        assert(key2.isEdgeIndex() == edgeIndex1);
-        assert(key2.isVertexIndex() == vertexIndex1);
-        assert(key2.isUnique() == unique1);
+		assertSame(key2.isEdgeIndex(), edgeIndex1);
+		assertSame(key2.isVertexIndex(), vertexIndex1);
+		assertSame(key2.isUnique(), unique1);
 
         key2.setIsEdgeIndex(edgeIndex);
         assertSame(key2.getName(), name);
         assertSame(key2.getDataType(), dataType);
-        assert(key2.isEdgeIndex() == edgeIndex);
-        assert(key2.isVertexIndex() == vertexIndex1);
-        assert(key2.isUnique() == unique1);
+		assertSame(key2.isEdgeIndex(), edgeIndex);
+		assertSame(key2.isVertexIndex(), vertexIndex1);
+		assertSame(key2.isUnique(), unique1);
 
         key2.setIsVertexIndex(vertexIndex);
         assertSame(key2.getName(), name);
         assertSame(key2.getDataType(), dataType);
-        assert(key2.isEdgeIndex() == edgeIndex);
-        assert(key2.isVertexIndex() == vertexIndex);
-        assert(key2.isUnique() == unique1);
+		assertSame(key2.isEdgeIndex(), edgeIndex);
+		assertSame(key2.isVertexIndex(), vertexIndex);
+		assertSame(key2.isUnique(), unique1);
 
         key2.setIsUnique(unique);
         assertSame(key2.getName(), name);
         assertSame(key2.getDataType(), dataType);
-        assert(key2.isEdgeIndex() == edgeIndex);
-        assert(key2.isVertexIndex() == vertexIndex);
-        assert(key2.isUnique() == unique);
+		assertSame(key2.isEdgeIndex(), edgeIndex);
+		assertSame(key2.isVertexIndex(), vertexIndex);
+		assertSame(key2.isUnique(), unique);
     }
 }

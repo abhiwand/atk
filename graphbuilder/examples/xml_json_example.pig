@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Intel Corporation.
+/* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,9 +26,8 @@
  * </p>
  */
 %default GB_HOME '.'
-
+ 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
-
 
 json_data = LOAD 'examples/data/tshirts.json' USING TextLoader() AS (json: chararray);
 extracted_first_tshirts_price = FOREACH json_data GENERATE *, ExtractJSONField(json, 'Sizes[0].Price') AS price: double;

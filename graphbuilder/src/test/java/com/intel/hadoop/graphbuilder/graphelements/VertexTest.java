@@ -26,7 +26,7 @@ import org.junit.Test;
 
 import java.io.*;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 public class VertexTest {
 
@@ -48,7 +48,7 @@ public class VertexTest {
         Vertex<StringType> vertex = new Vertex<StringType>(vertexName);
 
         assertNotNull(vertex);
-        assert (vertex.getId().equals(vertexId));
+		assertTrue(vertex.getId().equals(vertexId));
         assertNotNull(vertex.getProperties());
     }
 
@@ -63,7 +63,7 @@ public class VertexTest {
         Vertex<StringType> vertex = new Vertex<StringType>(vertexName, vertexLabel);
 
         assertNotNull(vertex);
-        assert (vertex.getId().equals(vertexId));
+		assertTrue(vertex.getId().equals(vertexId));
         assertNotNull(vertex.getProperties());
 
         PropertyMap pm = vertex.getProperties();
@@ -74,11 +74,11 @@ public class VertexTest {
         VertexID<StringType>  diffNameSameLabel = new VertexID<StringType>(anotherOpinion, vertexLabel);
 
         vertex.configure(diffNameSameLabel, pm2);
-        assert(vertex.getId().equals(diffNameSameLabel));
+		assertTrue(vertex.getId().equals(diffNameSameLabel));
         assertSame(vertex.getProperties(), pm2);
 
         vertex.configure(vertexId, pm);
-        assert (vertex.getId().equals(vertexId));
+		assertTrue(vertex.getId().equals(vertexId));
         assertSame(vertex.getProperties(), pm);
     }
 
@@ -93,7 +93,7 @@ public class VertexTest {
         StringType value1 = new StringType("Outstanding Value");
         StringType value2 = new StringType("Little Value");
 
-        assert (vertex.getProperties().getPropertyKeys().isEmpty());
+		assertTrue(vertex.getProperties().getPropertyKeys().isEmpty());
 
         vertex.setProperty(key1, value1);
         assertSame(vertex.getProperty(key1), value1);
@@ -111,7 +111,7 @@ public class VertexTest {
         assertSame(vertex.getProperty(key1), value2);
         assertSame(vertex.getProperty(key2), value1);
 
-        assert (vertex.getProperties().getPropertyKeys().size() == 2);
+		assertTrue(vertex.getProperties().getPropertyKeys().size() == 2);
     }
 
     @Test
@@ -128,16 +128,16 @@ public class VertexTest {
         assertNotNull(vertex2.toString());
         assertNotNull(vertex3.toString());
 
-        assert (vertex1.toString().compareTo(vertex2.toString()) != 0);
-        assert (vertex1.toString().compareTo(vertex3.toString()) == 0);
+		assertTrue(vertex1.toString().compareTo(vertex2.toString()) != 0);
+		assertTrue(vertex1.toString().compareTo(vertex3.toString()) == 0);
 
         String key = new String("key");
         StringType value = new StringType("bank");
 
         vertex1.setProperty(key, value);
 
-        assert (vertex1.toString().compareTo(vertex2.toString()) != 0);
-        assert (vertex1.toString().compareTo(vertex3.toString()) != 0);
+		assertTrue(vertex1.toString().compareTo(vertex2.toString()) != 0);
+		assertTrue(vertex1.toString().compareTo(vertex3.toString()) != 0);
     }
 
     @Test
@@ -158,8 +158,9 @@ public class VertexTest {
 
         vertexOnTheOtherEnd.readFields(dataInputStream);
 
-        assert (vertex.getId().equals(vertexOnTheOtherEnd.getId()));
-        assert (vertex.getProperties().toString().equals(vertexOnTheOtherEnd.getProperties().toString()));
+		assertTrue(vertex.getId().equals(vertexOnTheOtherEnd.getId()));
+		assertTrue(vertex.getProperties().toString()
+				.equals(vertexOnTheOtherEnd.getProperties().toString()));
 
         // one more time, with a nonempty property list
 
@@ -179,8 +180,9 @@ public class VertexTest {
 
         vertexOnTheOtherEnd.readFields(dataInputStream2);
 
-        assert (vertex.getId().equals(vertexOnTheOtherEnd.getId()));
-        assert (vertex.getProperties().toString().equals(vertexOnTheOtherEnd.getProperties().toString()));
+		assertTrue(vertex.getId().equals(vertexOnTheOtherEnd.getId()));
+		assertTrue(vertex.getProperties().toString()
+				.equals(vertexOnTheOtherEnd.getProperties().toString()));
     }
 
     @Test

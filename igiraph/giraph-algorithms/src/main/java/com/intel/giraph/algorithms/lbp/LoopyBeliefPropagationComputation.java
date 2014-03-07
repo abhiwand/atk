@@ -23,16 +23,9 @@
 
 package com.intel.giraph.algorithms.lbp;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.Mapper.Context;
+import com.intel.giraph.io.VertexData4LBPWritable;
+import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
+import com.intel.mahout.math.IdWithVectorWritable;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
@@ -43,11 +36,19 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.master.DefaultMasterCompute;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.function.Functions;
-import com.intel.giraph.io.VertexData4LBPWritable;
-import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
-import com.intel.mahout.math.IdWithVectorWritable;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 /**
  * Loopy belief propagation on MRF

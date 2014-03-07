@@ -23,22 +23,23 @@
 
 package com.intel.giraph.algorithms.lbp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter;
+import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute;
+import com.intel.giraph.io.formats.JsonPropertyGraph4LBPInputFormat;
+import com.intel.giraph.io.formats.JsonPropertyGraph4LBPOutputFormat;
+import org.apache.giraph.conf.GiraphConfiguration;
+import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.Test;
 
-import org.apache.giraph.conf.GiraphConfiguration;
-import org.apache.giraph.utils.InternalVertexRunner;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationMasterCompute;
-import com.intel.giraph.algorithms.lbp.LoopyBeliefPropagationComputation.LoopyBeliefPropagationAggregatorWriter;
-import com.intel.giraph.io.formats.JsonPropertyGraph4LBPInputFormat;
-import com.intel.giraph.io.formats.JsonPropertyGraph4LBPOutputFormat;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class LoopyBeliefPropagationComputationTest {
 

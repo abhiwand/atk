@@ -23,23 +23,25 @@
 
 package com.intel.giraph.io.formats;
 
-import java.io.IOException;
+import com.intel.giraph.io.VertexData4LPWritable;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.utils.NoOpComputation;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import com.intel.giraph.io.VertexData4LPWritable;
-
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

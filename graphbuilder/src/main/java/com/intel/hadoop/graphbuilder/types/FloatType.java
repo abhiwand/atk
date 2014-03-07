@@ -30,74 +30,68 @@ import java.io.IOException;
 /**
  * The basic float type in the library.
  */
-public class FloatType implements WritableComparable<FloatType>, Mergeable<FloatType>, JSONAware, EncapsulatedObject {
+public class FloatType extends EncapsulatedObject  implements WritableComparable<FloatType>,
+		Mergeable<FloatType>, JSONAware {
 
-    public static final FloatType ZERO = new FloatType(0);
-    public static final FloatType ONE  = new FloatType(1);
+	public FloatType() {
+		val = 0;
+	}
 
-    public FloatType() {
-        val = 0;
-    }
+	public FloatType(float i) {
+		val = i;
+	}
 
-    public FloatType(float i) {
-        val = i;
-    }
+	public float get() {
+		return val;
+	}
 
-    public float get() {
-        return val;
-    }
+	public Object getBaseObject() {
+		return val;
+	}
 
-    public Object getBaseObject() {
-        return val;
-    }
+	public void set(float i) {
+		val = i;
+	}
 
-    public void set(float i) {
-        val = i;
-    }
+	@Override
+	public void readFields(DataInput arg0) throws IOException {
+		val = arg0.readFloat();
+	}
 
-    @Override
-    public void readFields(DataInput arg0) throws IOException {
-        val = arg0.readFloat();
-    }
+	@Override
+	public void write(DataOutput arg0) throws IOException {
+		arg0.writeFloat(val);
+	}
 
-    @Override
-    public void write(DataOutput arg0) throws IOException {
-        arg0.writeFloat(val);
-    }
+	@Override
+	public String toString() {
+		return String.valueOf(val);
+	}
 
-    @Override
-    public String toString() {
-        return String.valueOf(val);
-    }
+	@Override
+	public int compareTo(FloatType arg0) {
+		return ((Float) val).compareTo(arg0.val);
+	}
 
-    @Override
-    public int compareTo(FloatType arg0) {
-        return ((Float) val).compareTo(arg0.val);
-    }
+	@Override
+	public boolean equals(Object obj) {
+        return obj instanceof FloatType && ((FloatType) obj).val == val;
+	}
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof FloatType) {
-            return ((FloatType) obj).val == val;
-        } else {
-            return false;
-        }
-    }
+	@Override
+	public int hashCode() {
+		return ((Float) val).hashCode();
+	}
 
-    @Override
-    public int hashCode() {
-        return ((Float) val).hashCode();
-    }
+	@Override
+	public void add(FloatType other) {
+		val += other.val;
+	}
 
-    @Override
-    public void add(FloatType other) {
-        val += other.val;
-    }
+	private float val;
 
-    private float val;
-
-    @Override
-    public String toJSONString() {
-        return JSONValue.toJSONString(val);
-    }
+	@Override
+	public String toJSONString() {
+		return JSONValue.toJSONString(val);
+	}
 }
