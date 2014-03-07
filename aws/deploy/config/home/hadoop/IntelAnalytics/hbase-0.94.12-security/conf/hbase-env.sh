@@ -110,7 +110,7 @@ export HBASE_LOG_DIR=/mnt/data1/logs/hbase
 # export HBASE_NICENESS=10
 
 # The directory where pid files are stored. /tmp by default.
-# export HBASE_PID_DIR=/var/hadoop/pids
+export HBASE_PID_DIR=/var/run/hadoop/pids
 
 # Seconds to sleep between slave commands.  Unset by default.  This
 # can be useful in large clusters, where, e.g., slave rsyncs can
