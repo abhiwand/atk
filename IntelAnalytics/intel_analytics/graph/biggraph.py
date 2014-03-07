@@ -131,7 +131,7 @@ class GraphBuilder(object):
         self._source = source
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite, append, flatten, retainDanglingEdges, withSideVertexProperty):
+    def build(self, graph_name, overwrite, append, flatten, retainDanglingEdges):
         """
         Builds a graph according to the settings in the builder.
 
@@ -153,7 +153,8 @@ class GraphBuilder(object):
             as a vertex ID, it is to be expanded into one vertex for each
             entry in the list. This applies to the source and destination
             columns for edges as well. It does not apply to properties.
-
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
         Returns
         -------
         graph : Graph
@@ -175,7 +176,7 @@ class BipartiteGraphBuilder(GraphBuilder):
         self.registered_edge_properties = None # edge properties registered with register_edge_properties()
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite=False, append=False, flatten=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False, retainDanglingEdges=False, withSideVertexProperty=False):
         """
         Builds a bipartite graph according to the settings in the builder.
 
@@ -197,6 +198,10 @@ class BipartiteGraphBuilder(GraphBuilder):
             as a vertex ID, it is to be expanded into one vertex for each
             entry in the list. This applies to the source and destination
             columns for edges as well. It does not apply to properties.
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
+        withSideVertexProperty : Bool, optional
+            adds the 'side' property to all vertices in a bipartite-graph            
 
         Returns
         -------
@@ -293,7 +298,7 @@ class PropertyGraphBuilder(GraphBuilder):
 
     @abc.abstractmethod
     def build(self, graph_name, overwrite=False, append=False, flatten=False,
-              retainDanglingEdges=False, withVertexDirection=False):
+              retainDanglingEdges=False):
         """
         Builds a property graph according to the settings in the builder.
 
@@ -315,7 +320,9 @@ class PropertyGraphBuilder(GraphBuilder):
             as a vertex ID, it is to be expanded into one vertex for each
             entry in the list. This applies to the source and destination
             columns for edges as well. It does not apply to properties.
-
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
+            
         Returns
         -------
         graph : Graph
