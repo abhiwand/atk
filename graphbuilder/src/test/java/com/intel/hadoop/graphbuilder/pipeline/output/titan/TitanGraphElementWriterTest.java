@@ -32,95 +32,95 @@ import static org.junit.Assert.*;
 
 public class TitanGraphElementWriterTest {
 
-    TestingGraphProvider provider = new TestingGraphProvider();
-    TitanGraph graph;
+	TestingGraphProvider provider = new TestingGraphProvider();
+	TitanGraph graph;
 
-    @Before
-    public void setup() throws IOException {
-        graph = provider.getTitanGraph();
+	@Before
+	public void setup() throws IOException {
+		graph = provider.getTitanGraph();
 
-        // initialize schema
-        graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(String.class).indexed(Vertex.class).unique().make();
+		// initialize schema
+		graph.makeKey(TitanConfig.GB_ID_FOR_TITAN).dataType(String.class)
+				.indexed(Vertex.class).unique().make();
 
-    }
+	}
 
-    @After
-    public void tearDown()
-    {
-        provider.cleanUp();
-    }
+	@After
+	public void tearDown() {
+		provider.cleanUp();
+	}
 
-    @Test
-    public void testFindOrCreateVertex_Found() throws Exception {
+	@Test
+	public void testFindOrCreateVertex_Found() throws Exception {
 
-        // setup test data
-        String id = "12345";
-        Vertex expectedVertex = addVertex(id);
+		// setup test data
+		String id = "12345";
+		Vertex expectedVertex = addVertex(id);
 
-        // initialize class under test
-        TitanGraphElementWriter writer = new TitanGraphElementWriter();
-        writer.graph = graph;
-        writer.appendToExistingGraph = true;
+		// initialize class under test
+		TitanGraphElementWriter writer = new TitanGraphElementWriter();
+		writer.graph = graph;
+		writer.appendToExistingGraph = true;
 
-        // call method under test
-        Vertex actualVertex = writer.findOrCreateVertex(id);
+		// call method under test
+		Vertex actualVertex = writer.findOrCreateVertex(id);
 
-        assertEquals(expectedVertex, actualVertex);
-    }
+		assertEquals(expectedVertex, actualVertex);
+	}
 
-    @Test
-    public void testFindOrCreateVertex_Create() throws Exception {
-        String id = "67899";
+	@Test
+	public void testFindOrCreateVertex_Create() throws Exception {
+		String id = "67899";
 
-        // initialize class under test
-        TitanGraphElementWriter writer = new TitanGraphElementWriter();
-        writer.graph = graph;
-        writer.appendToExistingGraph = true;
+		// initialize class under test
+		TitanGraphElementWriter writer = new TitanGraphElementWriter();
+		writer.graph = graph;
+		writer.appendToExistingGraph = true;
 
-        // call method under test
-        Vertex createdVertex = writer.findOrCreateVertex(id);
+		// call method under test
+		Vertex createdVertex = writer.findOrCreateVertex(id);
 
-        assertNotNull(createdVertex);
-        assertEquals(id, createdVertex.getProperty(TitanConfig.GB_ID_FOR_TITAN));
-    }
+		assertNotNull(createdVertex);
+		assertEquals(id, createdVertex.getProperty(TitanConfig.GB_ID_FOR_TITAN));
+	}
 
-    @Test
-    public void testFindVertexById_Found() throws Exception {
+	@Test
+	public void testFindVertexById_Found() throws Exception {
 
-        // setup test data
-        String id = "12345";
-        Vertex vertex = addVertex(id);
+		// setup test data
+		String id = "12345";
+		Vertex vertex = addVertex(id);
 
-        // initialize class under test
-        TitanGraphElementWriter writer = new TitanGraphElementWriter();
-        writer.graph = graph;
+		// initialize class under test
+		TitanGraphElementWriter writer = new TitanGraphElementWriter();
+		writer.graph = graph;
 
-        // call method under test
-        Vertex actualVertex = writer.findVertexById(id);
+		// call method under test
+		Vertex actualVertex = writer.findVertexById(id);
 
-        assertEquals(vertex, actualVertex);
-    }
+		assertEquals(vertex, actualVertex);
+	}
 
-    @Test
-    public void testFindVertexById_NotFound() throws Exception {
+	@Test
+	public void testFindVertexById_NotFound() throws Exception {
 
-        // setup test data
-        addVertex("any_id");
+		// setup test data
+		addVertex("any_id");
 
-        // initialize class under test
-        TitanGraphElementWriter writer = new TitanGraphElementWriter();
-        writer.graph = graph;
+		// initialize class under test
+		TitanGraphElementWriter writer = new TitanGraphElementWriter();
+		writer.graph = graph;
 
-        // call method under test
-        Vertex nonExistingVertex = writer.findVertexById("other_id");
+		// call method under test
+		Vertex nonExistingVertex = writer.findVertexById("other_id");
 
-        assertNull(nonExistingVertex);
-    }
+		assertNull(nonExistingVertex);
+	}
 
-    private Vertex addVertex(String graphBuilderId) {
-        Vertex vertex = graph.addVertex(null);
-        vertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, graphBuilderId);
-        return vertex;
-    }
+	private Vertex addVertex(String graphBuilderId) {
+		Vertex vertex = graph.addVertex(null);
+		vertex.setProperty(TitanConfig.GB_ID_FOR_TITAN, graphBuilderId);
+		return vertex;
+	}
 
 }

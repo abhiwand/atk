@@ -39,8 +39,36 @@ while true; do
     esac
 done
 
-runuser -l ec2-user -c "aws s3 rm s3://$BUCKET/$email/logs --recursive "
+function log()
+{
+    echo "##INFO##-$1"
+}
+
+IA_NOTEBOOKS="intelanalytics-notebooks.zip"
+
+log "delete log directory"
+runuser -l ec2-user -c " aws s3 rm s3://$BUCKET/$email/logs --recursive "
+
+log "stop hbase"
 runuser -l hadoop -c " stop-hbase.sh "
-runuser -l hadoop -c "hadoop distcp2 -delete -update -log s3n://$access:$secret@$BUCKET/$email/logs s3n://$access:$secret@$BUCKET/$email/hdfs  hdfs:// "
+
+log "run distcp2 from s3n://$BUCKET/$email/hdfs to hdfs:/"
+runuser -l hadoop -c " hadoop distcp2 -delete -update -log s3n://$access:$secret@$BUCKET/$email/logs s3n://$access:$secret@$BUCKET/$email/hdfs  hdfs:// "
+
+log "distcp2 done start-hbase"
 runuser -l hadoop -c " start-hbase.sh "
+
+log "restart thrift "
 runuser -l hadoop -c " hbase-daemon.sh start thrift -threadpool; sleep 2"
+
+log "remove old notebooks zip"
+runuser -l hadoop -c " rm $IA_NOTEBOOKS "
+
+log "get new notebooks zip"
+runuser -l hadoop -c " hadoop fs -get $IA_NOTEBOOKS . "
+
+log "unzip notebooks"
+runuser -l hadoop -c " unzip -o $IA_NOTEBOOKS "
+
+log "remove notebooks zip"
+runuser -l hadoop -c " rm $IA_NOTEBOOKS "

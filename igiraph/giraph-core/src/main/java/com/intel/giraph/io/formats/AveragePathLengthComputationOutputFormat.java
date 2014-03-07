@@ -22,11 +22,11 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.formats;
 
-import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import com.intel.giraph.io.DistanceMapWritable;
 import org.apache.giraph.graph.Vertex;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 

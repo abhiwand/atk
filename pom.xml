@@ -464,6 +464,6 @@
     <module>igiraph</module> 
     <module>IntelAnalytics</module>
     <module>feateng</module>
-    <module>IntelAnalytics-web</module>
+    <!--module>IntelAnalytics-web</module-->
   </modules>
 </project>

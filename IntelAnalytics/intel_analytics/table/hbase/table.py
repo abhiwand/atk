@@ -22,7 +22,6 @@
 ##############################################################################
 import os
 import re
-import sys #used by unit tests
 import collections
 
 from intel_analytics.config import Registry, \

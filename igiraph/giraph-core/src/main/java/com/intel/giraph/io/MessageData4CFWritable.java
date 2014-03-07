@@ -23,16 +23,15 @@
 
 package com.intel.giraph.io;
 
+import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 import org.apache.hadoop.io.Writable;
-import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
+import org.apache.mahout.math.Vector;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-
-import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
-import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 
 /**
  * Writable to handle serialization of the fields associated with MessageData4CF

@@ -18,22 +18,21 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DefaultBagFactory;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
 
 public class TestFlattenAsGBString {
 	EvalFunc<?> flattenUdf;
@@ -41,10 +40,8 @@ public class TestFlattenAsGBString {
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting FlattenAsGBString tests. ***");
 		flattenUdf = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec(
-                        "com.intel.pig.udf.eval.FlattenAsGBString()");
+				.instantiateFuncFromSpec("com.intel.pig.udf.eval.FlattenAsGBString()");
 	}
 
 	@Test
@@ -87,7 +84,7 @@ public class TestFlattenAsGBString {
 		result = (String) flattenUdf.exec(t);
 		assertEquals("Flatten test failed", result.startsWith("{"), true);
 		assertEquals("Flatten test failed", result.endsWith("}"), true);
-		result = result.substring(1,result.length()-1);
+		result = result.substring(1, result.length() - 1);
 		String[] splits = result.split(",");
 		for (int i = 0; i < nElements; i++) {
 			String split = splits[i];
@@ -95,10 +92,4 @@ public class TestFlattenAsGBString {
 			assertEquals("Flatten test failed", split, testInput);
 		}
 	}
-
-	@After
-	public void done() {
-		System.out.println("*** Done with the FlattenAsGBString tests ***");
-	}
-
 }

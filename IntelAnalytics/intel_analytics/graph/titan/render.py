@@ -21,11 +21,8 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import uuid
-import time
 import json
 from IPython.display import HTML, Javascript, display
-from threading import Thread
-from itertools import islice
 
 
 __all__ = ['render_radial', 'vertex_to_json', 'edge_to_json', 'traverse', 'set_data', 'get_data', 'set_name',

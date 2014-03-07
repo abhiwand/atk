@@ -270,4 +270,4 @@ then
 fi
 
 
-${dryrun} sh IntelAnalytics_cluster_configure_hdfsToS3.sh --email "$email" --nodes-file ${nodesfile} --hosts-file ${hostsfile} --pem-file ${pemfile} --run "true" 
+${dryrun} sh IntelAnalytics_cluster_configure_hdfsToS3.sh --email "$email" --nodes-file ${nodesfile} --hosts-file ${hostsfile} --pem-file ${pemfile} --run "false" 
