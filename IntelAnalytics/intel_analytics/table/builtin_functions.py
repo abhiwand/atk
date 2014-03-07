@@ -30,59 +30,58 @@ class EvalFunctions:
         String functions
         --------------
 
-**CONCAT(string) : string** - returns concatenation with given string
+**CONCAT(string)** - returns concatenation with given string
 
-**ENDS_WITH(string) : boolean** - returns whether the string ends with the given argument
+**ENDS_WITH(string)** - returns whether the string ends with the given argument
 
->>> # Need example
+>>> # create "result_column" which indicates whether "input_column" ends with "suffix"
+>>> frame.transform("input_column", "result_column", EvalFunctions.String.ENDS_WITH, ["suffix"])
 
-**EQUALS_IGNORE_CASE(string) : boolean** - returns whether the string equals the given string, case-insensitive
+**EQUALS_IGNORE_CASE(string)** - returns whether the string equals the given string, case-insensitive
 
-**INDEX_OF('character', startIndex) : integer** - returns the index of the first occurrence of a character in a string, searching forward from a start index
+**INDEX_OF('character', startIndex)** - returns the index of the first occurrence of a character in a string, searching forward from a start index
 
->>> frame.transform("colA", "colContains", EvalFunctions.String.INDEX_OF, ['$', 0])
+>>> # create "result_column" which stores the index of where the character '$' first occurs in the element.
+>>> # (stores -1 if '$' does not appear)
+>>> frame.transform("input_column", "result_column", EvalFunctions.String.INDEX_OF, ['$', 0])
 
-**LAST_INDEX_OF('character') : integer** - returns the index of the last occurrence of a character in a string, searching backward from the end of the string
+**LAST_INDEX_OF('character')** - returns the index of the last occurrence of a character in a string, searching backward from the end of the string
 
-**LENGTH() : integer** - returns the length of the string
+**LENGTH()** - returns the length of the string
 
-**LOWER() : string** - converts all characters in a string to lower case
+**LOWER()** - converts all characters in a string to lower case
 
-**LTRIM() : string** - returns a copy of a string with only leading white space removed
+**LTRIM()** - returns a copy of a string with only leading white space removed
 
-**REGEX_EXTRACT(regex, index) : string** - performs regular expression matching and extracts the matched group defined by an index parameter
+**REGEX_EXTRACT(regex, index)** - performs regular expression matching and extracts the matched group defined by an index parameter
 
->>> # need example
+>>> # Extract the port number from a column of strings like '192.168.0.1:8888'
+>>> frame.transform('column_input', 'column_output', EvalFunctions.REGEX_EXTRACT, ['(.*):(.*)', 1])
 
-**REGEX_EXTRACT_ALL(regex) : tuple** - Performs regular expression matching and extracts all matched groups
+**REGEX_EXTRACT_ALL(regex)** - Performs regular expression matching and extracts all matched groups
 
->>> # need example
+**REPLACE(regex, string)** - replaces existing characters with new characters
 
-**REPLACE(regex, string) : string** - replaces existing characters with new characters
+**RTRIM()** - returns a copy of a string with only trailing white space removed
 
-**RTRIM() : string** - returns a copy of a string with only trailing white space removed
+**STARTSWITH(string)** - determine if the first argument starts with the string in the second
 
-**STARTSWITH(string) : boolean** - determine if the first argument starts with the string in the second
-
-**STRSPLIT(regex, limit) : string** - splits a string around matches of a given regular expression;
+**STRSPLIT(regex, limit)** - splits a string around matches of a given regular expression;
 If the limit is positive, the pattern (the compiled representation of the regular expression) is
 applied at most limit-1 times, therefore the value of the argument means the maximum length of the
 result tuple. The last element of the result tuple will contain all input after the last match.  If the
 limit is negative, no limit is applied for the length of the result tuple.  If the limit is zero, no
 limit is applied for the length of the result tuple too, and trailing empty strings (if any) will be removed.
 
-**SUBSTRING(startindex, stopIndex) : boolean** - returns a substring from a given string;
+**SUBSTRING(startindex, stopIndex)** - returns a substring from a given string;
 startIndex is first character of the substring, stopIndex is the index of character *following* the last
 character of the substring
 
-**TRIM() : string** - returns a copy of a string with leading and trailing white space removed
+**TRIM()** - returns a copy of a string with leading and trailing white space removed
 
-**UPPER() : string** - returns a string converted to upper case
+**UPPER()** - returns a string converted to upper case
 
-**TOKENIZE([, 'field_delimiter']) : tuple** - splits a string and outputs a bag a words
-
->>> # Need example
-
+**TOKENIZE([, 'field_delimiter'])** - splits a string and outputs a bag a words
 
         """
         ENDS_WITH=1
@@ -114,8 +113,8 @@ character of the substring
 **ARITHMETIC()** - performs basic arithmetic operations as specified in source column argument
 +, -, *, /, %
 
->>> frame.transform("colA + colB", "colSum", EvalFunctions.Math.ARITHMETIC)
->>> frame.transform("colA % 2", "colModulo", EvalFunctions.Math.ARITHMETIC)
+>>> frame.transform("column_A + column_B", "column_sum", EvalFunctions.Math.ARITHMETIC)
+>>> frame.transform("column_A % 2", "column_modulo", EvalFunctions.Math.ARITHMETIC)
 
 **CEIL()** - returns the value rounded up to the nearest integer
 
@@ -129,19 +128,25 @@ character of the substring
 
 **POW(power)** - returns the  value raised to the power
 
->>> frame.transform("colA", "col_power2", EvalFunctions.Math.POW, [2])
+>>> # raise the each value in "column_A" to the power of 2, store in "column_power2"
+>>> frame.transform("column_A", "column_power2", EvalFunctions.Math.POW, [2])
 
-**RANDOM()** - returns a pseudo random number
+**RANDOM()** - returns a pseudo random number (input column argument is ignored)
+
+>>> # generate random number in [1,10] range and save results in "result_column"
+>>> frame.transform("input_column", "result_column", EvalFunctions.Math.Random, [1,10])
 
 **ROUND()** - returns the value rounded to an integer
 
 **SQRT()** -  returns the positive square root
 
-**STND()** - returns standardized value  by subtracting its mean from each
-element and dividing this difference by its standard devation
+**STND()** - returns standardized value by subtracting its mean from each element
+and dividing this difference by its standard deviation --i.e. ``(element - AVG("input_column"))/STDEV("input_column")``
+
 (see `Standardization <http://en.wikipedia.org/wiki/Feature_scaling#Standardization>`_).
 
->>> # Need Example
+>>> # calculate standardized value for each element in "input_column" and store in "result_column"
+>>> frame.transform("input_column", "result_column", EvalFunctions.Math.STND)
 
         """
         ABS=1000
@@ -166,10 +171,16 @@ element and dividing this difference by its standard devation
         """
         JSON functions
         --------------
+        Json.EXTRACT_FIELD
 
-**EXTRACT_FIELD(??)** -  need text
+**EXTRACT_FIELD(jsonPath)** -  Extracts a field using JSONPath expression from JSON string which has been imported to a BigDataFrame
 
->>> # Need example
+Json.EXTRACT_FIELD can be used to extract individual fields from within the JSON strings stored in the BigDataFrame.
+The expression syntax follows JSONPath query and needs to return an individual field. Extracing lists are not supported at this time. Extracted fields are stored as strings.
+
+>>> frame = fb.build_from_json('json_column', 'file.json')
+>>> frame.transform('json_column', 'homepage_column', EvalFunctions.Json.EXTRACT_FIELD, ['repository.homepage'])
+>>> frame.transform('json_column', 'title_column', EvalFunctions.Json.EXTRACT_FIELD, ['repository.store.book[0].title'])
         """
         EXTRACT_FIELD=2000
 
@@ -178,9 +189,16 @@ element and dividing this difference by its standard devation
         XML functions
         --------------
 
-**EXTRACT_FIELD(??)** -  need text
+**EXTRACT_FIELD(xpath)** -  Extracts a field using XPath expression from XML which has been imported to a BigDataFrame
 
->>> # Need example
+Xml.EXTRACT_FIELD can be used to extract individual fields from within the XML data stored in the BigDataFrame. Extracted fields are stored as strings.
+The expression syntax follows XPath query and needs to return an individual field.
+
+Extracting lists is not supported at this time.
+
+>>> frame = fb.build_from_xml('xml', 'file.xml', 'repository')
+>>> frame.transform('xml_column', 'homepage_column', EvalFunctions.Xml.EXTRACT_FIELD, ['repository/homepage'])
+>>> frame.transform('xml_column', 'title_column', EvalFunctions.Xml.EXTRACT_FIELD, ['repository/store/book[1]/title'])
         """
         EXTRACT_FIELD=3000
 
@@ -191,8 +209,9 @@ element and dividing this difference by its standard devation
 
 **AVG()** - computes the average of the values
 
->>> # group by colA and take averages of colB, store in colBavg of aggregate table
->>> frame.aggregate("colA", [(EvalFunctions.Aggregation.AVG, "colB", "colBavg")])
+>>> # group by column_A and compute the average of column_B in each group
+>>> # create a new aggregate frame with columns "column_A" and "column_B_avg"
+>>> frame.aggregate("column_A", [(EvalFunctions.Aggregation.AVG, "column_B", "column_B_avg")])
 
 **SUM()** - computes the sum of the values
 
@@ -202,9 +221,12 @@ element and dividing this difference by its standard devation
 
 **COUNT()** - returns the number of values present
 
-**DISTINCT()** - removes duplicates
+**DISTINCT()** - returns the distinct values; EvalFunctions.Aggregation.DISTINCT discovers
+the values which are distinct and belong to the same group after aggregation.
 
->>> # Need an example...
+>>> # group by column_A and collect all the distinct values in column_B per group
+>>> # create a new aggregate frame 'frame_distict' with columns 'column_A' and 'column_B_avg'
+>>> aggregated_frame = frame.aggregate('column_A', [(EvalFunctions.Aggregation.DISTINCT, "column_B", "column_B_distinct")], 'frame_distinct')
 
 **DISTINCT_COUNT()** - return the number of unique values
 
