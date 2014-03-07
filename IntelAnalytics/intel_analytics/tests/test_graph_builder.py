@@ -474,32 +474,52 @@ colD,colB,edgeDB,colU"""
         vertex_list.append(GraphBuilderVertex('col_2', ['col_3']))
         edge_list = []
         edge_list.append(GraphBuilderEdge(('col_1', 'col_2', 'label'), ['col_1', 'col_2', 'col_3']))     
-        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list)
+        try:
+            validate_rules('test_frame', vertex_list, edge_list)
+            self.fail()
+        except Exception as e:
+            self.assertEqual(str(e), "doesnt_exist does not exist")    
         
         vertex_list = []
         vertex_list.append(GraphBuilderVertex('col_2', ['doesnt_exist']))
         vertex_list.append(GraphBuilderVertex('col_2', ['col_3']))
         edge_list = []
         edge_list.append(GraphBuilderEdge(('col_1', 'col_2', 'label'), ['col_1', 'col_2', 'col_3']))  
-        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list)
+        try:
+            validate_rules('test_frame', vertex_list, edge_list)
+            self.fail()
+        except Exception as e:
+            self.assertEqual(str(e), "doesnt_exist does not exist")        
         
         vertex_list = []
         vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
         edge_list = []
         edge_list.append(GraphBuilderEdge(('doesnt_exist', 'col_2', 'label'), ['col_1', 'col_2', 'col_3']))  
-        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list)    
+        try:
+            validate_rules('test_frame', vertex_list, edge_list)
+            self.fail()
+        except Exception as e:
+            self.assertEqual(str(e), "Some columns do not exist: doesnt_exist")  
         
         vertex_list = []
         vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
         edge_list = []
-        edge_list.append(GraphBuilderEdge(('col_2', 'doesnt_exist', 'label'), ['col_1', 'col_2', 'col_3']))  
-        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list) 
+        edge_list.append(GraphBuilderEdge(('col_1', 'doesnt_exist', 'label'), ['col_1', 'col_2', 'col_3']))  
+        try:
+            validate_rules('test_frame', vertex_list, edge_list)
+            self.fail()
+        except Exception as e:
+            self.assertEqual(str(e), "Some columns do not exist: doesnt_exist")          
         
         vertex_list = []
         vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
         edge_list = []
         edge_list.append(GraphBuilderEdge(('col_2', 'col_1', 'label'), ['doesnt_exist', 'col_2', 'col_3']))  
-        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list)                  
+        try:
+            validate_rules('test_frame', vertex_list, edge_list)
+            self.fail()
+        except Exception as e:
+            self.assertEqual(str(e), "Some columns do not exist: doesnt_exist")                         
         
             
 class TestGraphConfig(unittest.TestCase):
