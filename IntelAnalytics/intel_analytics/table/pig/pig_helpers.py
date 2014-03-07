@@ -23,6 +23,22 @@
 from intel_analytics.config import global_config as config
 
 
+def get_pig_schema(feature_names, feature_types):
+    """
+    Enumerate the features and types list to contruct the schema string that
+    is understood by Pig.
+    """
+    pig_schema = ','.join([x + ":" + y for x,y in zip(feature_names, feature_types)])
+    return pig_schema
+
+def get_hbase_storage_schema(feature_names):
+    """
+    Enumerate the features and types list to contruct the schema string that
+    is understood by HBase.
+    """
+    cf = config['hbase_column_family']
+    hbase_schema = ' '.join([cf + x for x in feature_names])
+    return hbase_schema
 
 def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
     """
@@ -31,16 +47,8 @@ def get_pig_schema_string(feature_names_as_str, feature_types_as_str):
     """
     feature_names = feature_names_as_str.split(',')
     feature_types = feature_types_as_str.split(',')
-    
-    pig_schema = ''
-    for i,feature_name in enumerate(feature_names):
-        feature_type = feature_types[i] 
-        pig_schema += feature_name
-        pig_schema += ':'
-        pig_schema += feature_type
-        if i != len(feature_names)-1:
-            pig_schema+=','
-    return pig_schema
+
+    return get_pig_schema(feature_names, feature_types)
 
 def get_hbase_storage_schema_string(feature_names_as_str):
     """
@@ -48,13 +56,7 @@ def get_hbase_storage_schema_string(feature_names_as_str):
     feature names and types string
     """
     feature_names = feature_names_as_str.split(',')
-    hbase_storage_schema = ''
-    for i,feature_name in enumerate(feature_names):
-        hbase_storage_schema += (config['hbase_column_family'] + feature_name)
-        if i != len(feature_names)-1:
-            hbase_storage_schema+=' '
-    return hbase_storage_schema
-
+    return get_hbase_storage_schema(feature_names)
 
 def get_load_statement_list(files, raw_load_statement, out_relation):
     """
@@ -111,6 +113,14 @@ def get_generate_key_statements(in_relation, out_relation, features, offset = 0)
         statements.append('%s = foreach temp generate $0 + %s as key, %s;' %(out_relation, str(offset), features))
 
     return statements
+
+def generate_hbase_store_args_for_split(features, cmd_line_args):
+    cf = config['hbase_column_family']
+    hbase_store_args =  " ".join([cf+f for f in features])
+    if cmd_line_args.randomize == "True":
+        hbase_store_args += ' ' + (cf+cmd_line_args.input_column)
+    hbase_store_args += ' ' + (cf+cmd_line_args.output_column)
+    return hbase_store_args
 
 
 def report_job_status(status):

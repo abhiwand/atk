@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Output format for average path length that supports {@link AveragePathLengthComputation}
+ * Output format for average path length that supports AveragePathLengthComputation
  * First column: source vertex id
  * Second column: the number of destination vertices
  * Third column: sum of hop counts to all destinations
@@ -50,7 +50,7 @@ public class AveragePathLengthComputationOutputFormat extends
     }
 
     /**
-     * Simple VertexWriter that supports {@link AveragePathLengthComputation}
+     * Simple VertexWriter that supports AveragePathLengthComputation
      */
     public class AveragePathLengthComputationWriter extends TextVertexWriter {
         @Override

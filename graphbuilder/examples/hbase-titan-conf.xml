@@ -27,21 +27,21 @@
 	Currently GB 2.0 (alpha) supports only HBase as the storage backend. -->
 
 <configuration>
-	<property>
-		<name>graphbuilder.titan.storage_hostname</name>
-		<value>localhost</value>
-		<description>
-			storage.hostname parameter for Titan.
-		</description>
-	</property>
+    <property>
+        <name>graphbuilder.titan.storage_hostname</name>
+        <value>localhost</value>
+        <description>
+            storage.hostname parameter for Titan.
+        </description>
+    </property>
 
-	<property>
-		<name>graphbuilder.titan.storage_tablename</name>
-		<value>test_graph</value>
-		<description>
-			storage.tablename parameter for Titan.
-		</description>
-	</property>
+    <property>
+        <name>graphbuilder.titan.storage_tablename</name>
+        <value>test_graph</value>
+        <description>
+            storage.tablename parameter for Titan.
+        </description>
+    </property>
 
     <!-- We need a secure RPC client For IDH, so uncomment the property below on IDH-->
 	<!-- property>
@@ -57,13 +57,13 @@
 		</description>
 	</property>
 
-	<property>
-		<name>graphbuilder.titan.storage_port</name>
-		<value>2181</value>
-		<description>
-			storage.port parameter for Titan.
-		</description>
-	</property>
+    <property>
+        <name>graphbuilder.titan.storage_port</name>
+        <value>2181</value>
+        <description>
+            storage.port parameter for Titan.
+        </description>
+    </property>
 
 	<property>
 		<name>graphbuilder.titan.storage_connection_timeout</name>
@@ -72,7 +72,6 @@
 			storage.connection.timeout parameter for Titan.
 		</description>
 	</property>
-
 
     <property>
         <name>mapred.max.split.size</name>
