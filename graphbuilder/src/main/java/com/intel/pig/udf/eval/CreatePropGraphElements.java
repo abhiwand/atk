@@ -207,11 +207,9 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawEdgeRule);
 
-            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, BIDIRECTIONAL, label);
+            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, BIDIRECTIONAL, label,
+                                    edgePropertyFieldNames);
 
-            for (String edgePropertyFieldName : edgePropertyFieldNames) {
-                edgeRule.addPropertyColumnName(edgePropertyFieldName);
-            }
             edgeLabelToEdgeRules.put(label, edgeRule);
         }
 
@@ -223,11 +221,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
 
-            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED, label);
-
-            for (String edgePropertyFieldName : edgePropertyFieldNames) {
-                edgeRule.addPropertyColumnName(edgePropertyFieldName);
-            }
+            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED, label,
+                                    edgePropertyFieldNames);
 
             edgeLabelToEdgeRules.put(label, edgeRule);
         }
@@ -260,22 +255,6 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         }
 
         return outArray;
-    }
-
-    /**
-     * Get an element from a tuple
-     * @param input to get field from
-     * @param inputSchema schema to determine what index to read from tuple
-     * @param fieldName name of field to get from tuple
-     * @return an element from the tuple
-     */
-    private Object getTupleData(Tuple input, Schema inputSchema, String fieldName) throws IOException{
-
-        int fieldPos = inputSchema.getPosition(fieldName);
-        if (fieldPos < 0) {
-            throw new IllegalArgumentException("Did NOT find field named: " + fieldName + " in input schema");
-        }
-        return input.get(fieldPos);
     }
 
     private void addVertexToPropElementBag(DataBag outputBag, Vertex vertex) throws IOException {
@@ -545,12 +524,11 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         Edge<StringType> edge = new Edge<StringType>(srcVertexName, srcLabel, tgtVertexName, tgtLabel,
                 new StringType(edgeRule.getLabel(inputTupleInProgress)));
 
-        for (String edgeAttribute : edgeRule.getEdgeAttributes()) {
+        for (String edgeAttribute : edgeRule.getPropertyFieldNames()) {
             Object propertyValue = inputTupleInProgress.getTupleData(edgeAttribute);
-            String property = edgeAttribute;
 
             if (propertyValue != null) {
-                edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
+                edge.setProperty(edgeAttribute, pigTypesToSerializedJavaTypes(propertyValue,
                         inputTupleInProgress.getType(edgeAttribute)));
             }
         }

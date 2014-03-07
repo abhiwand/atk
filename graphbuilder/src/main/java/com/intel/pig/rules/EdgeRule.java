@@ -19,11 +19,9 @@
 package com.intel.pig.rules;
 
 import com.intel.pig.udf.util.InputTupleInProgress;
-import org.apache.commons.math3.util.Pair;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -72,7 +70,6 @@ public class EdgeRule {
     private String        labelRule;
     private List<String>  propertyFieldNames;
     private EdgeLabelType edgeLabelType;
-    private String[]      edgeAttributes;
     private String        edgeLabelFieldName;
 
     /**
@@ -84,7 +81,9 @@ public class EdgeRule {
      * @param biDirectional is this edge bidirectional or not?
      * @param labelRule     is the raw edge label as entered from command line
      */
-    public EdgeRule(String srcFieldName, String dstFieldName, boolean biDirectional,  String labelRule) {
+    public EdgeRule(String srcFieldName, String dstFieldName, boolean biDirectional,  String labelRule,
+                    List<String> edgePropertyFieldNames) {
+
         this.srcFieldName       = srcFieldName;
         this.dstFieldName       = dstFieldName;
         this.propertyFieldNames = new ArrayList<String>();
@@ -92,8 +91,9 @@ public class EdgeRule {
         this.labelRule          = labelRule;
         this.edgeLabelType      = determineEdgeLabelType(labelRule);
 
-        List<String> edgeAttributeList = getPropertyFieldNames();
-        this.edgeAttributes = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
+        for (String edgePropertyFieldName : edgePropertyFieldNames) {
+                addPropertyColumnName(edgePropertyFieldName);
+        }
 
         this.edgeLabelFieldName = parseEdgeLabelRule(); // In case of DYNAMIC edge labels
     }
@@ -179,10 +179,6 @@ public class EdgeRule {
 
     public List<String> getPropertyFieldNames() {
         return propertyFieldNames;
-    }
-
-    public String[] getEdgeAttributes() {
-        return this.edgeAttributes;
     }
 
     public String getLabel(InputTupleInProgress inputTupleInProgress) throws IOException, NumberFormatException {

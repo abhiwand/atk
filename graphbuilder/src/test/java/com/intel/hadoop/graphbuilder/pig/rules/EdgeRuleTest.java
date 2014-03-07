@@ -21,25 +21,27 @@ package com.intel.hadoop.graphbuilder.pig.rules;
 
 import com.intel.pig.rules.EdgeRule;
 import com.intel.pig.udf.util.InputTupleInProgress;
-import org.apache.pig.backend.executionengine.ExecException;
 import org.apache.pig.data.DataType;
-import org.apache.pig.data.DefaultTuple;
+import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.*;
-import org.apache.pig.data.Tuple;
-
-import java.io.IOException;
-import java.util.List;
 
 public class EdgeRuleTest {
 
     @Test
     public void test_constructor_static_edge_label() {
-        EdgeRule edgeRule = new EdgeRule("source", "destination", false, "KNOWS");
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("source", "destination", false, "KNOWS", edgePropertyList);
 
         assertEquals(edgeRule.getSrcFieldName(), "source");
         assertEquals(edgeRule.getDstFieldName(), "destination");
@@ -50,7 +52,10 @@ public class EdgeRuleTest {
 
     @Test
     public void test_constructor_dynamic_edge_label() {
-        EdgeRule edgeRule = new EdgeRule("source", "destination", false, "dynamic:dynaELType");
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("source", "destination", false, "dynamic:dynaELType", edgePropertyList);
 
         assertEquals(edgeRule.getSrcFieldName(), "source");
         assertEquals(edgeRule.getDstFieldName(), "destination");
@@ -62,7 +67,10 @@ public class EdgeRuleTest {
 
     @Test
     public void test_constructor_bidirectional() {
-        EdgeRule edgeRule = new EdgeRule("source", "destination", true, "dynamic:dynaELType");
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("source", "destination", true, "dynamic:dynaELType", edgePropertyList);
 
         assertTrue(edgeRule.isBiDirectional());
     }
@@ -70,7 +78,10 @@ public class EdgeRuleTest {
     @Test
     public void test_determine_edge_label_type_dynamic() {
         String edgeLabel = "dynamic:dynaELType";
-        EdgeRule edgeRule = new EdgeRule("source", "destination", false, edgeLabel);
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("source", "destination", false, edgeLabel, edgePropertyList);
 
         assertEquals(edgeRule.determineEdgeLabelType(edgeLabel), EdgeRule.EdgeLabelType.DYNAMIC);
     }
@@ -78,7 +89,10 @@ public class EdgeRuleTest {
     @Test
     public void test_determine_edge_label_type_static() {
         String edgeLabel = "staticELType";
-        EdgeRule edgeRule = new EdgeRule("source", "destination", false, edgeLabel);
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("source", "destination", false, edgeLabel, edgePropertyList);
 
         assertEquals(edgeRule.determineEdgeLabelType(edgeLabel), EdgeRule.EdgeLabelType.STATIC);
     }
@@ -86,7 +100,10 @@ public class EdgeRuleTest {
     @Test(expected = IllegalArgumentException.class)
     public void test_parse_null_edge_label_rule() {
         String edgeLabel = null;
-        EdgeRule edgeRule = new EdgeRule("source", "destination", false, edgeLabel);
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("source", "destination", false, edgeLabel, edgePropertyList);
 
         assertNull(edgeRule.getEdgeLabelFieldName());
     }
@@ -94,7 +111,10 @@ public class EdgeRuleTest {
     @Test(expected = IllegalArgumentException.class)
     public void test_edge_label_without_field_name() {
         String edgeLabel = "dynamic:";
-        EdgeRule edgeRule = new EdgeRule("source", "destination", false, edgeLabel);
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("source", "destination", false, edgeLabel, edgePropertyList);
     }
 
     @Test
@@ -120,7 +140,10 @@ public class EdgeRuleTest {
 
         InputTupleInProgress inputTupleInProgress = new InputTupleInProgress(tuple, schema);
 
-        EdgeRule edgeRule = new EdgeRule("userid", "department", false, "dynamic:department");
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("userid", "department", false, "dynamic:department", edgePropertyList);
         assertEquals(edgeRule.getLabel(inputTupleInProgress), department_s);
     }
 
@@ -147,7 +170,10 @@ public class EdgeRuleTest {
 
         InputTupleInProgress inputTupleInProgress = new InputTupleInProgress(tuple, schema);
 
-        EdgeRule edgeRule = new EdgeRule("userid", "department", false, "dynamic:department");
+        List<String> edgePropertyList = new ArrayList<String>();
+        edgePropertyList.add("edgeProperty0");
+        edgePropertyList.add("edgeProperty1");
+        EdgeRule edgeRule = new EdgeRule("userid", "department", false, "dynamic:department", edgePropertyList);
         edgeRule.getLabel(inputTupleInProgress);
     }
 }
