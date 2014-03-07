@@ -53,12 +53,13 @@ public class MergeSchemataUtility {
         HashMap<String, SchemaElement> schemaHashMap = new HashMap<String, SchemaElement>();
 
         for (SchemaElement schemaElement : values) {
+
             String schemaID = schemaElement.getID();
 
             if (schemaHashMap.containsKey(schemaID)) {
                 schemaHashMap.get(schemaID).unionPropertySchemata(schemaElement.getPropertySchemata());
             } else {
-                schemaHashMap.put(schemaID, schemaElement);
+                schemaHashMap.put(schemaID, new SchemaElement(schemaElement));
             }
         }
 

@@ -43,8 +43,6 @@ pge = FOREACH employees GENERATE FLATTEN(CreatePropGraphElements(*)); -- generat
 
 merged = MERGE_DUPLICATE_ELEMENTS(pge); -- merge the duplicate vertices and edges
 
--- nls test
-                   STORE merged INTO '/tmp/employees_sequencefile' USING  com.intel.pig.store.GraphElementSequenceFile();
 -- -O flag specifies overwriting the input Titan table
 STORE_GRAPH_INFER_SCHEMA(merged, '$GB_HOME/examples/hbase-titan-conf.xml', '-O');
 

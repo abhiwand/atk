@@ -120,6 +120,54 @@ public class SchemaInferenceUtilsTest {
     }
 
     @Test
+    public void test_the_employees_signature() throws ClassNotFoundException {
+
+        PropertySchema propAge = new PropertySchema("age", Integer.class);
+        PropertySchema propName = new PropertySchema("name", String.class);
+        PropertySchema propDept = new PropertySchema("dept", String.class);
+
+        PropertySchema propUnderManager = new PropertySchema("underManager", String.class);
+
+        ArrayList<SchemaElement> inValues = new ArrayList<SchemaElement>();
+
+        for (int i = 0; i < 25; i++) {
+            SchemaElement vertexSchema = SchemaElement.createVertexSchemaElement(null);
+            vertexSchema.addPropertySchema(propAge);
+            vertexSchema.addPropertySchema(propName);
+            vertexSchema.addPropertySchema(propDept);
+
+            SchemaElement edgeSchema = SchemaElement.createEdgeSchemaElement("worksUnder");
+            edgeSchema.addPropertySchema(propUnderManager);
+
+            inValues.add(vertexSchema);
+            inValues.add(edgeSchema);
+        }
+
+        // now we set the expected out values
+
+        HashSet<SchemaElement> outValues = new HashSet<SchemaElement>();
+        SchemaElement vertexSchemaExpected = SchemaElement.createVertexSchemaElement(null);
+        vertexSchemaExpected.addPropertySchema(propAge);
+        vertexSchemaExpected.addPropertySchema(propName);
+        vertexSchemaExpected.addPropertySchema(propDept);
+
+        SchemaElement edgeSchemaExpected = SchemaElement.createEdgeSchemaElement("worksUnder");
+        edgeSchemaExpected.addPropertySchema(propUnderManager);
+
+        outValues.add(vertexSchemaExpected);
+        outValues.add(edgeSchemaExpected);
+
+
+        MergeSchemataUtility mergeUtil = new MergeSchemataUtility();
+        ArrayList<SchemaElement> testOut = mergeUtil.merge(inValues);
+
+
+        assertEquals(testOut.size(), 2);
+        assertTrue(testOut.containsAll(outValues));
+    }
+
+
+    @Test
     public void testCombineSchemata() throws ClassNotFoundException {
 
         ArrayList<SchemaElement> inValues = new ArrayList<SchemaElement>();

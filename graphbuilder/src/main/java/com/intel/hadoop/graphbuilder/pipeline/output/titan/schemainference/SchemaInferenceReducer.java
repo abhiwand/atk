@@ -96,14 +96,6 @@ public class SchemaInferenceReducer extends Reducer<NullWritable, SchemaElement,
         KeyCommandLineParser titanKeyParser = new KeyCommandLineParser();
         List<GBTitanKey> declaredKeyList = titanKeyParser.parse(keyCommandLine);
 
-        // nls test
-        LOG.info("SCHEMA INFERENCE REDUCER.... RECEIVED THE FOLLOWING SCHEMAS TO DECLARE:");
-        for (SchemaElement schema : schemas) {
-            LOG.info("SCHEMA ELEMENT:  " + schema.toString());
-        }
-
-        LOG.info("\n\n THOSE ARE THE SCHEMAS");
-        // end nls test
         initializer.setGraph(titanGraph);
         initializer.setConf(context.getConfiguration());
         initializer.setGraphSchema(schemas);
