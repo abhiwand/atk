@@ -274,7 +274,7 @@ def validate_rules(source_frame, vertex_list, edge_list, registered_vertex_prope
             if p not in columns: failing_rules.append(p)
             
         if len(failing_rules):
-            raise Exception("Some columns do not exist: %s" % (', '.join(failing_rules)))                  
+            raise Exception("Some columns specified in the edge rule do not exist: %s" % (', '.join(failing_rules)))                  
         
     columns = _get_available_columns(source_frame)
     
