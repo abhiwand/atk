@@ -34,16 +34,9 @@ class EvalFunctions:
 
 **ENDS_WITH(string)** - returns whether the string ends with the given argument
 
->>> # create "result_column" which indicates whether "input_column" ends with "suffix"
->>> frame.transform("input_column", "result_column", EvalFunctions.String.ENDS_WITH, ["suffix"])
-
 **EQUALS_IGNORE_CASE(string)** - returns whether the string equals the given string, case-insensitive
 
 **INDEX_OF('character', startIndex)** - returns the index of the first occurrence of a character in a string, searching forward from a start index
-
->>> # create "result_column" which stores the index of where the character '$' first occurs in the element.
->>> # (stores -1 if '$' does not appear)
->>> frame.transform("input_column", "result_column", EvalFunctions.String.INDEX_OF, ['$', 0])
 
 **LAST_INDEX_OF('character')** - returns the index of the last occurrence of a character in a string, searching backward from the end of the string
 
@@ -54,9 +47,6 @@ class EvalFunctions:
 **LTRIM()** - returns a copy of a string with only leading white space removed
 
 **REGEX_EXTRACT(regex, index)** - performs regular expression matching and extracts the matched group defined by an index parameter
-
->>> # Extract the port number from a column of strings like '192.168.0.1:8888'
->>> frame.transform('column_input', 'column_output', EvalFunctions.REGEX_EXTRACT, ['(.*):(.*)', 1])
 
 **REGEX_EXTRACT_ALL(regex)** - Performs regular expression matching and extracts all matched groups
 
@@ -83,6 +73,20 @@ character of the substring
 
 **TOKENIZE([, 'field_delimiter'])** - splits a string and outputs a bag a words
 
+Examples
+--------
+
+>>> # create "result_column" which indicates whether "input_column" ends with "suffix"
+>>> frame.transform("input_column", "result_column", EvalFunctions.String.ENDS_WITH, ["suffix"])
+
+
+>>> # create "result_column" which stores the index of where the character '$' first occurs in the element.
+>>> # (stores -1 if '$' does not appear)
+>>> frame.transform("input_column", "result_column", EvalFunctions.String.INDEX_OF, ['$', 0])
+
+
+>>> # Extract the port number from a column of strings like '192.168.0.1:8888'
+>>> frame.transform('column_input', 'column_output', EvalFunctions.REGEX_EXTRACT, ['(.*):(.*)', 1])
         """
         ENDS_WITH=1
         EQUALS_IGNORE_CASE=2
@@ -110,11 +114,7 @@ character of the substring
 
 **ABS()** - returns the absolute value
 
-**ARITHMETIC()** - performs basic arithmetic operations as specified in source column argument
-+, -, *, /, %
-
->>> frame.transform("column_A + column_B", "column_sum", EvalFunctions.Math.ARITHMETIC)
->>> frame.transform("column_A % 2", "column_modulo", EvalFunctions.Math.ARITHMETIC)
+**ARITHMETIC()** - performs basic arithmetic operations as specified in source column argument  +, -, *, /, %
 
 **CEIL()** - returns the value rounded up to the nearest integer
 
@@ -128,26 +128,32 @@ character of the substring
 
 **POW(power)** - returns the  value raised to the power
 
->>> # raise the each value in "column_A" to the power of 2, store in "column_power2"
->>> frame.transform("column_A", "column_power2", EvalFunctions.Math.POW, [2])
-
 **RANDOM()** - returns a pseudo random number (input column argument is ignored)
-
->>> # generate random number in [1,10] range and save results in "result_column"
->>> frame.transform("input_column", "result_column", EvalFunctions.Math.Random, [1,10])
 
 **ROUND()** - returns the value rounded to an integer
 
 **SQRT()** -  returns the positive square root
 
 **STND()** - returns standardized value by subtracting its mean from each element
-and dividing this difference by its standard deviation --i.e. ``(element - AVG("input_column"))/STDEV("input_column")``
+and dividing this difference by its standard deviation --i.e. ``(element - AVG("input_column"))/STDEV("input_column")``  (see `Standardization <http://en.wikipedia.org/wiki/Feature_scaling#Standardization>`_).
 
-(see `Standardization <http://en.wikipedia.org/wiki/Feature_scaling#Standardization>`_).
+Examples
+--------
+
+>>> frame.transform("column_A + column_B", "column_sum", EvalFunctions.Math.ARITHMETIC)
+>>> frame.transform("column_A % 2", "column_modulo", EvalFunctions.Math.ARITHMETIC)
+
+
+>>> # raise the each value in "column_A" to the power of 2, store in "column_power2"
+>>> frame.transform("column_A", "column_power2", EvalFunctions.Math.POW, [2])
+
+
+>>> # generate random number in [1,10] range and save results in "result_column"
+>>> frame.transform("input_column", "result_column", EvalFunctions.Math.Random, [1,10])
+
 
 >>> # calculate standardized value for each element in "input_column" and store in "result_column"
 >>> frame.transform("input_column", "result_column", EvalFunctions.Math.STND)
-
         """
         ABS=1000
         LOG=1001
@@ -178,6 +184,9 @@ and dividing this difference by its standard deviation --i.e. ``(element - AVG("
 Json.EXTRACT_FIELD can be used to extract individual fields from within the JSON strings stored in the BigDataFrame.
 The expression syntax follows JSONPath query and needs to return an individual field. Extracing lists are not supported at this time. Extracted fields are stored as strings.
 
+Examples
+--------
+
 >>> frame = fb.build_from_json('json_column', 'file.json')
 >>> frame.transform('json_column', 'homepage_column', EvalFunctions.Json.EXTRACT_FIELD, ['repository.homepage'])
 >>> frame.transform('json_column', 'title_column', EvalFunctions.Json.EXTRACT_FIELD, ['repository.store.book[0].title'])
@@ -196,6 +205,9 @@ The expression syntax follows XPath query and needs to return an individual fiel
 
 Extracting lists is not supported at this time.
 
+Examples
+--------
+
 >>> frame = fb.build_from_xml('xml', 'file.xml', 'repository')
 >>> frame.transform('xml_column', 'homepage_column', EvalFunctions.Xml.EXTRACT_FIELD, ['repository/homepage'])
 >>> frame.transform('xml_column', 'title_column', EvalFunctions.Xml.EXTRACT_FIELD, ['repository/store/book[1]/title'])
@@ -209,10 +221,6 @@ Extracting lists is not supported at this time.
 
 **AVG()** - computes the average of the values
 
->>> # group by column_A and compute the average of column_B in each group
->>> # create a new aggregate frame with columns "column_A" and "column_B_avg"
->>> frame.aggregate("column_A", [(EvalFunctions.Aggregation.AVG, "column_B", "column_B_avg")])
-
 **SUM()** - computes the sum of the values
 
 **MAX()** - returns the maximum value
@@ -224,16 +232,24 @@ Extracting lists is not supported at this time.
 **DISTINCT()** - returns the distinct values; EvalFunctions.Aggregation.DISTINCT discovers
 the values which are distinct and belong to the same group after aggregation.
 
->>> # group by column_A and collect all the distinct values in column_B per group
->>> # create a new aggregate frame 'frame_distict' with columns 'column_A' and 'column_B_avg'
->>> aggregated_frame = frame.aggregate('column_A', [(EvalFunctions.Aggregation.DISTINCT, "column_B", "column_B_distinct")], 'frame_distinct')
-
 **DISTINCT_COUNT()** - return the number of unique values
 
 **STDEV()** - computes the standard deviation
 
 **VAR()** - computes the variance
-        """
+
+Examples
+--------
+
+>>> # group by column_A and compute the average of column_B in each group
+>>> # create a new aggregate frame with columns "column_A" and "column_B_avg"
+>>> frame.aggregate("column_A", [(EvalFunctions.Aggregation.AVG, "column_B", "column_B_avg")])
+
+
+>>> # group by column_A and collect all the distinct values in column_B per group
+>>> # create a new aggregate frame 'frame_distict' with columns 'column_A' and 'column_B_avg'
+>>> aggregated_frame = frame.aggregate('column_A', [(EvalFunctions.Aggregation.DISTINCT, "column_B", "column_B_distinct")], 'frame_distinct')
+       """
         AVG=5000
         SUM=5001
         MAX=5002
