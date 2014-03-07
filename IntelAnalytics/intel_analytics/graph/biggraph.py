@@ -133,7 +133,10 @@ class GraphBuilder(object):
     @abc.abstractmethod
     def build(self, graph_name, overwrite, append, flatten):
         """
-        Builds a graph according to the settings in the builder
+        Builds a graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
 
         Parameters
         ----------
@@ -142,6 +145,14 @@ class GraphBuilder(object):
         overwrite : Bool, optional
             if the given graph_name already exists, overwrite=True will
             overwrite the existing graph; overwrite=False will raise an Error
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
 
         Returns
         -------
@@ -166,7 +177,10 @@ class BipartiteGraphBuilder(GraphBuilder):
     @abc.abstractmethod
     def build(self, graph_name, overwrite=False, append=False, flatten=False):
         """
-        Builds a bipartite graph according to the settings in the builder
+        Builds a bipartite graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
 
         Parameters
         ----------
@@ -175,6 +189,14 @@ class BipartiteGraphBuilder(GraphBuilder):
         overwrite : Bool, optional
             if the given graph_name already exists, overwrite=True will
             overwrite the existing graph; overwrite=False will raise an Error
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
 
         Returns
         -------
@@ -272,7 +294,10 @@ class PropertyGraphBuilder(GraphBuilder):
     @abc.abstractmethod
     def build(self, graph_name, overwrite=False, append=False, flatten=False, withVertexDirection=False):
         """
-        Builds a property graph according to the settings in the builder
+        Builds a property graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
 
         Parameters
         ----------
@@ -281,6 +306,14 @@ class PropertyGraphBuilder(GraphBuilder):
         overwrite : Bool, optional
             if the given graph_name already exists, overwrite=True will
             overwrite the existing graph; overwrite=False will raise an Error
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
 
         Returns
         -------

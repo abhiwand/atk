@@ -32,3 +32,10 @@ target
 *.tar.gz
 testgraphs
 *.zip
+cscope*
+tags
+*.patch
+*.diff
+patches-*
+*/dependency-reduced-pom.xml
+virtpy
