@@ -1,6 +1,6 @@
-commit 272d8689784a83c630000440135e61809c46e293
+commit 3e84add4b9d052b1bd2c8819fd59dcf13061ded1
 Author: Yi Zou <yi.zou@intel.com>
-Date:   Wed Mar 5 17:36:06 2014 -0800
+Date:   Thu Mar 6 17:01:25 2014 -0800
 
     PIG-3726: Ranking empty records leads to NullPointerException
     
@@ -11,7 +11,10 @@ Date:   Wed Mar 5 17:36:06 2014 -0800
         src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
     
     Notes from:    Yi Zou <yi.zou@intel.com>
-    Cherry-picked 5345621 onto branch release-12.0 and fixed conflicts
+    Cherry-picked 5345621 onto branch release-12.0 and fixed conflicts. The build would fail since
+    Pig 0.12.0 uses PigStatsUtil as there is no MRPigStatsUtil, so replace MRPigStatsUtil w/ the
+    PigStatsUitl.
+    
     Link: https://issues.apache.org/jira/browse/PIG-3726
     
     Changes to be committed:
@@ -22,19 +25,18 @@ Date:   Wed Mar 5 17:36:06 2014 -0800
     Committed-by: Yi Zou <yi.zou@intel.com>
 
 diff --git a/src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java b/src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
-index eed5eac..bd9d3dc 100644
+index eed5eac..ba62020 100644
 --- a/src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
 +++ b/src/org/apache/pig/backend/hadoop/executionengine/mapReduceLayer/JobControlCompiler.java
-@@ -106,6 +106,8 @@ import org.apache.pig.impl.util.Pair;
+@@ -106,6 +106,7 @@ import org.apache.pig.impl.util.Pair;
  import org.apache.pig.impl.util.UDFContext;
  import org.apache.pig.impl.util.Utils;
  import org.apache.pig.tools.pigstats.ScriptState;
-+import org.apache.pig.tools.pigstats.mapreduce.MRPigStatsUtil;
-+import org.apache.pig.tools.pigstats.mapreduce.MRScriptState;
++import org.apache.pig.tools.pigstats.PigStatsUtil;
  
  /**
   * This is compiler class that takes an MROperPlan and converts
-@@ -357,7 +359,24 @@ public class JobControlCompiler{
+@@ -357,7 +358,24 @@ public class JobControlCompiler{
  
          try {
              counters = HadoopShims.getCounters(job);
@@ -46,8 +48,8 @@ index eed5eac..bd9d3dc 100644
 +            // empty.
 +            if (groupName == null) {
 +                Counter outputRecords =
-+                    counters.getGroup(MRPigStatsUtil.TASK_COUNTER_GROUP)
-+                    .getCounterForName(MRPigStatsUtil.MAP_OUTPUT_RECORDS);
++                    counters.getGroup(PigStatsUtil.TASK_COUNTER_GROUP)
++                    .getCounterForName(PigStatsUtil.MAP_OUTPUT_RECORDS);
 +
 +                if(outputRecords.getCounter() == 0) {
 +                    globalCounters.put(operationID, new ArrayList<Pair<String, Long>>());
