@@ -162,9 +162,9 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
     public void init(InputConfiguration inputConfiguration,
                      GraphBuildingRule graphBuildingRule) {
 
-        this.graphBuildingRule  = graphBuildingRule;
+        this.graphBuildingRule = graphBuildingRule;
         this.inputConfiguration = inputConfiguration;
-        this.graphSchema        = graphBuildingRule.getGraphSchema();
+        this.graphSchema = graphBuildingRule.getGraphSchema();
 
         try {
             this.hbaseUtils = HBaseUtils.getInstance();
@@ -320,7 +320,7 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
             }
         }
 
-        String intermediateDataFileName = "graphElements-" +  System.currentTimeMillis() + random().toString();
+        String intermediateDataFileName = "graphElements-" + System.currentTimeMillis() + random().toString();
 
         Path intermediateDataFilePath = new Path("/tmp/graphbuilder/" + intermediateDataFileName);
 
@@ -347,6 +347,11 @@ public class TitanWriterMRChain extends GraphGenerationMRJob {
                 schemaInferenceJob.run();
             } else {
                 List<GBTitanKey> declaredKeys = new KeyCommandLineParser().parse(keyCommandLine);
+                if (cmd.hasOption(BaseCLI.Options.addSideToVertex.getLongOpt())) {
+                    GBTitanKey gbTitanKey = new GBTitanKey("side");
+                    gbTitanKey.setDataType(String.class);
+                    declaredKeys.add(gbTitanKey);
+                }
                 TitanGraphInitializer initializer = new TitanGraphInitializer(graph, conf, graphSchema, declaredKeys);
                 initializer.run();
             }

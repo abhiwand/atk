@@ -33,24 +33,24 @@ import org.apache.log4j.Logger;
 /**
  * Generates a graph from rows of a big table, store in a graph database.
  * <p>
- *    <ul>
- *        <li>We support only Hbase for the big table.</li>
- *        <li>We support only Titan for the graph database.</li>
- *    </ul>
+ * <ul>
+ * <li>We support only Hbase for the big table.</li>
+ * <li>We support only Titan for the graph database.</li>
+ * </ul>
  * </p>
- *
+ * <p/>
  * <p>
- *     Path Arguments:
- *     <ul>
- *         <li>The <code>-t</code> option specifies the HBase table from which to read.</li>
- *         <li>The <code>-conf</code> option specifies configuration file.</li>
- *         <li>The <code>-a</code> option tells Titan it can append the newly generated graph to an existing
- *         one in the same table. The default behavior is to abort if you try to use an existing Titan table name.</li>
- *     </ul>
- *     Specify the Titan table name in the configuration file in the property:
- *     <code>graphbuilder.titan.storage_tablename</code>
+ * Path Arguments:
+ * <ul>
+ * <li>The <code>-t</code> option specifies the HBase table from which to read.</li>
+ * <li>The <code>-conf</code> option specifies configuration file.</li>
+ * <li>The <code>-a</code> option tells Titan it can append the newly generated graph to an existing
+ * one in the same table. The default behavior is to abort if you try to use an existing Titan table name.</li>
+ * </ul>
+ * Specify the Titan table name in the configuration file in the property:
+ * <code>graphbuilder.titan.storage_tablename</code>
  * </p>
- *
+ * <p/>
  * <p>TO SPECIFY EDGES:
  * Specify the edges with a sequence of "edge rules" following the <code>-e</code> flag (for undirected edges) or
  * <code>-d</code> flag (for directed edges). The rules for edge construction are the same for both directed and
@@ -61,61 +61,60 @@ import org.apache.log4j.Logger;
  * </p>
  * <p> <code> -d src_col,dest_col>,label,edge_property_col1,...edge_property_coln </code></p>
  * <p>
- * <p>TO SPECIFY VERTICES: 
+ * <p>TO SPECIFY VERTICES:
  * The first attribute in the string is the vertex ID column. Subsequent attributes
  * denote vertex properties and are separated from the first by an equals sign:</p>
  * <code> -v vertex_id_column=vertex_prop1_column,... vertex_propn_column </code>
  * <p>or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_column </code>
  * <p>
- *     The <code>-F</code> option (for "flatten lists") specifies that when a cell containing a JSon list is read 
- *     as a vertex ID, it is to be expanded into one vertex for each entry in the list. This applies to the source 
- *     and destination columns for edges as well. It does not apply to properties.
+ * The <code>-F</code> option (for "flatten lists") specifies that when a cell containing a JSon list is read
+ * as a vertex ID, it is to be expanded into one vertex for each entry in the list. This applies to the source
+ * and destination columns for edges as well. It does not apply to properties.
  * </p>
  * </p>
- *  Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices.
- *  (The declaration is implicit, but the vertices really end up in the graph database.)
+ * Because the endpoints of an edge must be vertices, all endpoints of edges are declared to be vertices.
+ * (The declaration is implicit, but the vertices really end up in the graph database.)
  * <p>
- *     EXAMPLES:
- *     <p>
- *<code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age"  -d "cf:name,cf:dept,worksAt,
+ * EXAMPLES:
+ * <p>
+ * <code>-conf /home/user/conf.xml -t my_hbase_table -v "cf:name=cf:age"  -d "cf:name,cf:dept,worksAt,
  * cf:seniority"</code>
- *     </p>
- *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
- *     one employee, and a directed edge labeled "worksAt" between each employee and their department, annotated by their
- *     seniority in that department.
  * </p>
- *
+ * This generates a vertex for each employee annotated by their age, a vertex for each department with at least
+ * one employee, and a directed edge labeled "worksAt" between each employee and their department, annotated by their
+ * seniority in that department.
+ * </p>
+ * <p/>
  * <p>
- *  TO SPECIFY KEYS FOR DATABASE INDICES:
- *  <code>-keys <key rule 1>,<key rule 2>, ... <key rule n></code>
- *  where a key rule is a ; separated list beginning with a column name and including the following options:
- *  <ul>
- *    <li><code>String</code> selects the String datatype for the key's values <default value>.</li>
- *    <li><code>Float</code> selects the Float datatype for the key's values.</li>
- *    <li><code>Double</code> selects the Double datatype for the key's values.</li>
- *    <li><code>Integer</code> selects the Integer datatype for the key's values.</li>
- *    <li><code>Long</code> selects the Long datatype for the key's value.</li>
- *    <li><code>E</code> marks the key to be used as an edge index.</li>
- *    <li><code>V</code> marks the key to be used as a vertex index (edge and vertex indexing are not exclusive).</li>
- *     <li><code>U</code> marks the key as taking values unique to each vertex.</li>
- *    <li> <code>NU</code> marks the key as taking values that are not necessarily unique to each vertex.</li>
- *</ul>
+ * TO SPECIFY KEYS FOR DATABASE INDICES:
+ * <code>-keys <key rule 1>,<key rule 2>, ... <key rule n></code>
+ * where a key rule is a ; separated list beginning with a column name and including the following options:
+ * <ul>
+ * <li><code>String</code> selects the String datatype for the key's values <default value>.</li>
+ * <li><code>Float</code> selects the Float datatype for the key's values.</li>
+ * <li><code>Double</code> selects the Double datatype for the key's values.</li>
+ * <li><code>Integer</code> selects the Integer datatype for the key's values.</li>
+ * <li><code>Long</code> selects the Long datatype for the key's value.</li>
+ * <li><code>E</code> marks the key to be used as an edge index.</li>
+ * <li><code>V</code> marks the key to be used as a vertex index (edge and vertex indexing are not exclusive).</li>
+ * <li><code>U</code> marks the key as taking values unique to each vertex.</li>
+ * <li> <code>NU</code> marks the key as taking values that are not necessarily unique to each vertex.</li>
+ * </ul>
  * </p>
- *
+ * <p/>
  * <p>
- *  EXAMPLE:
- *  <code>-keys cf:name;V;U,cf:tenure:E;V;Integer</code>
+ * EXAMPLE:
+ * <code>-keys cf:name;V;U,cf:tenure:E;V;Integer</code>
  * </p>
- *
+ * <p/>
  * <p>
- *     EXAMPLE: Optional arguments
- *     <code>-a</code> : -a means the new graph data will be appended to an existing graph in Titan. The graph
- *                       specified by the storage.tablename in the input configuration file will be appended
- *     <code>-O</code> : -O means the graph specified as storage.tablename in configuration file will be
- *                       overwritten
+ * EXAMPLE: Optional arguments
+ * <code>-a</code> : -a means the new graph data will be appended to an existing graph in Titan. The graph
+ * specified by the storage.tablename in the input configuration file will be appended
+ * <code>-O</code> : -O means the graph specified as storage.tablename in configuration file will be
+ * overwritten
  * </p>
- *
  */
 
 public class TableToGraphDB {
@@ -124,29 +123,20 @@ public class TableToGraphDB {
     private static boolean configFilePresent = false;
 
     private static CommandLineInterface commandLineInterface = new CommandLineInterface();
+
     static {
+
         Options options = new Options();
-
         options.addOption(BaseCLI.Options.titanAppend.get());
-
         options.addOption(BaseCLI.Options.titanOverwrite.get());
-
         options.addOption(BaseCLI.Options.flattenList.get());
-
         options.addOption(BaseCLI.Options.stripColumnFamilyNames.get());
-
         options.addOption(BaseCLI.Options.hbaseTable.get());
-
         options.addOption(BaseCLI.Options.vertex.get());
-
         options.addOption(BaseCLI.Options.edge.get());
-
         options.addOption(BaseCLI.Options.directedEdge.get());
-
         options.addOption(BaseCLI.Options.titanKeyIndex.get());
-
         options.addOption(BaseCLI.Options.addSideToVertex.get());
-
         commandLineInterface.setOptions(options);
     }
 
@@ -156,7 +146,7 @@ public class TableToGraphDB {
      * @param args Command line arguments.
      */
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
 
         Timer timer = new Timer();
         boolean configFilePresent = (args[0].equals("-conf"));
@@ -171,11 +161,9 @@ public class TableToGraphDB {
 
         String srcTableName = cmd.getOptionValue(BaseCLI.Options.hbaseTable.getLongOpt());
 
-        HBaseInputConfiguration  inputConfiguration  = new HBaseInputConfiguration(srcTableName);
+        HBaseInputConfiguration inputConfiguration = new HBaseInputConfiguration(srcTableName);
 
         HBaseGraphBuildingRule buildingRule = new HBaseGraphBuildingRule(cmd);
-        buildingRule.setFlattenLists(cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt()));
-        buildingRule.setAddSideToVertices(cmd.hasOption(BaseCLI.Options.addSideToVertex.getLongOpt()));
 
         TitanOutputConfiguration outputConfiguration = new TitanOutputConfiguration();
 
