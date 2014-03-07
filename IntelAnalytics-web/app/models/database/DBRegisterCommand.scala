@@ -47,7 +47,7 @@ object DBRegisterCommand extends RegisterCommand {
             cStmt.setString("email", user.email)
             cStmt.setString("organization_name", registrationForm.organization_name)
             cStmt.setString("organization_phone", registrationForm.organization_phone)
-            cStmt.setString("organization_email", "")
+            cStmt.setString("organization_email", registrationForm.organization_email)
             cStmt.setInt("experience", registrationForm.experience)
             cStmt.setString("role", registrationForm.role)
             cStmt.setString("why_participate", registrationForm.whyParticipate)
