@@ -93,7 +93,7 @@ public class PassThroughGraphBuildingRule implements GraphBuildingRule {
     }
 
     /**
-     * Updates the Map Reduce configuration for use by the {@code PassThroughTokenizer}.
+     * Updates the Map Reduce configuration for use by the <code>PassThroughTokenizer</code>.
      *
      * @param conf  The hadoop configuration being updated.
      */

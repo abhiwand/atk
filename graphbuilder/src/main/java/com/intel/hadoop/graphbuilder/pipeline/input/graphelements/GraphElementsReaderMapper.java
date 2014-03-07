@@ -57,7 +57,7 @@ public class GraphElementsReaderMapper extends Mapper<NullWritable, SerializedGr
     }
 
     /**
-     * The mapper used by Hadoop to read from a {@code SequenceFile<NullWritable, SerializedGraphElement>} and
+     * The mapper used by Hadoop to read from a <code>SequenceFile<NullWritable, SerializedGraphElement></code> and
      * emit re-keyed serialized graph elements.
      */
 

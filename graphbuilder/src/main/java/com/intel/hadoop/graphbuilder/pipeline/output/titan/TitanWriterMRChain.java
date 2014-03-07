@@ -58,7 +58,7 @@ import java.util.Set;
  * <p>
  * At setup time, this class makes a connection to Titan,
  * and declares all necessary keys, properties and edge signatures.
- * If the {@code inferSchema} bit was enabled and passed to this job, an optional map-reduce
+ * If the <code>inferSchema</code> bit was enabled and passed to this job, an optional map-reduce
  * job to infer all of the schema inforation and declare it ot Titan will be made.
  * </p>
  * <p>

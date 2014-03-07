@@ -33,13 +33,13 @@ import java.io.IOException;
 
 /**
  * This class handles the set-up time configuration when the input is a sequence file with
- * {@code NullWritable} keys and {@code SerializedGraphElement} values.
+ * <code>NullWritable</code> keys and <code>SerializedGraphElement</code> values.
  * <p/>
  * For graph construction tasks that require multiple chained Map Reduce jobs, this class
  * affects only the first Map Reduce job, as that is the first mapper that deals with raw input.
  * <p/>
  * <ul>
- * <li> It provides a handle to the mapper class used to read sequence files ({@code GraphElementsReaderMapper}).</li>
+ * <li> It provides a handle to the mapper class used to read sequence files (<code> GraphElementsReaderMapper</code>).</li>
  * <li> It provides the input path name to the Hadoop job.</li>
  * </ul>
  *

@@ -29,15 +29,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * This combiner  takes a multiset of {@code SchemaElement} objects, and merges them
+ * This combiner  takes a multiset of <code>SchemaElement</code> objects, and merges them
  * into a duplicate-free list which is passed to the reducer.
  * <p/>
  * <p> Combination is done with the following semantics:
  * <li>
- * <ul>Two {@code PropertySchema} objects are identified if they have the same name.
- * They "combine" by throwing an exception  when two {@code Propertyschema} of the same name have different dataypes.</ul>
- * <ul>Two {@code EdgeSchema} objects are identified if they have the same label. They combine by merging their sets of
- * {@code PropertySchema}</ul>
+ * <ul>Two <code>PropertySchema</code> objects are identified if they have the same name.
+ * They "combine" by throwing an exception  when two <code>Propertyschema</code> of the same name have different dataypes.</ul>
+ * <ul>Two <code>EdgeSchema</code> objects are identified if they have the same label. They combine by merging their sets of
+ * <code>PropertySchema</code></ul>
  * </li></p>
  * <p/>
  * {@see MergeSchemaUtility}
