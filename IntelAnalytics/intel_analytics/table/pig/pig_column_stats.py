@@ -48,10 +48,11 @@ def escape_single_quotes(val):
     replace all single quotes with escape character i.e. 'a' becomes \'a\'
     """
     return val.replace('\'', '\\\'')
+
 def generate_interval_check(column_name, interval):
     """
     generates a AND separated expression to check an interval
-    for example: interval = [2..3] returns '2 <= column_name AND column_name <= 3'
+    for example: interval = [2..3] returns '( 2 <= column_name AND column_name <= 3 ? '[2..3]': interval) AS interval:chararray'
     """
     expression = []
     if interval.lower_bound not in [Smallest(), Largest()]:
@@ -74,15 +75,17 @@ def generate_interval_check(column_name, interval):
         else:
             expression.append('%s < %s' % (column_name, bound))
 
-
-    return " AND ".join(expression)
+    condition = " AND ".join(expression)
+    suffix = [' ? \'', escape_single_quotes(str(interval)), '\' : interval) AS interval:chararray']
+    result = ['( ', condition]
+    result.extend(suffix)
+    return "".join(result)
 
 def replace_inf(str):
     """
     replaces inf from a string appropriately based on bounds
     """
     return str.replace('-Inf', 'Smallest()').replace('Inf', 'Largest()')
-
 
 def main(argv):
     parser = ArgumentParser(description='applies feature transformations to features in a big dataset')
@@ -101,9 +104,6 @@ def main(argv):
 
     columns = list(features)
 
-    #don't forget to add the key we read from hbase, we read from hbase like .... as (key:chararray, ... remaining_features ...), see below
-    features.insert(0, 'key')
-
     pig_statements = []
     pig_statements.append("REGISTER %s;" % (config['feat_eng_jar']))
     pig_statements.append("REGISTER %s/contrib/piggybank/java/piggybank.jar; -- POW is in piggybank.jar" % (os.environ.get('PIG_HOME')))#Pig binary sets the PIG_HOME env. variable when we run the script
@@ -113,61 +113,54 @@ def main(argv):
     pig_statements.append("DEFINE VAR datafu.pig.stats.VAR();")
     pig_statements.append("SET default_parallel %s;" % (config['pig_parallelism_factor']))
  
-    pig_statements.append("hbase_data = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s', '-loadKey true') as (key:chararray, %s);" \
+    if len(columns) > 1:
+        pig_statements.append("hbase_data_initial = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s') as (%s);" \
                           % (cmd_line_args.input, hbase_constructor_args, pig_schema_info))
-
-    pig_statements.append("grouped_data1 = GROUP hbase_data ALL PARALLEL 1;")
+    else:
+        pig_statements.append("data_single_column_%s = LOAD 'hbase://%s' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s') as (%s);" \
+                          % (columns[0], cmd_line_args.input, hbase_constructor_args, pig_schema_info))
 
     binding_variables = {}
 
-    for t,c in enumerate(columns): 
-        # Map all the binding variables enlisting output filenames
+    is_comparable  = lambda x: True if x in ['int', 'long', 'double', 'float'] else False
+
+    for t,c in enumerate(columns):
+
         binding_variables['STAT_%s' % (c)] = cmd_line_args.input + '_' + c + '_stats'
         if not feature_data_groups[t]:
             binding_variables['HIST_%s' % (c)] = cmd_line_args.input + '_' + c + '_histogram'
         else:
             md5sum = hashlib.md5(feature_data_groups[t]).hexdigest()
             binding_variables['HIST_%s' % (c)] = cmd_line_args.input + '_' + c + '_' + md5sum + '_histogram'
+        
+        if len(columns) > 1:
+            pig_statements.append("data_single_column_%s = FOREACH hbase_data_initial GENERATE %s;" % (c,c))
 
-        is_comparable  = lambda x: True if x in ['int', 'long', 'double', 'float'] else False
-
-        # max/min/avg/var/stdev are only valid for comparable datatypes
-        if is_comparable(types[t]):
-            pig_statements.append("max_result_%s = FOREACH grouped_data1 GENERATE CONCAT('max=', (chararray)MAX(hbase_data.%s));" % (c,c))
-            pig_statements.append("min_result_%s = FOREACH grouped_data1 GENERATE CONCAT('min=', (chararray)MIN(hbase_data.%s));" % (c,c))
-            pig_statements.append("avg_result_%s = FOREACH grouped_data1 GENERATE CONCAT('avg=', (chararray)AVG(hbase_data.%s));" % (c,c))
-            pig_statements.append("var_result_%s = FOREACH grouped_data1 GENERATE CONCAT('var=', (chararray)VAR(hbase_data.%s));" % (c,c))
-            pig_statements.append("stdev_result_%s = FOREACH grouped_data1 GENERATE CONCAT('stdev=', (chararray)SQRT(VAR(hbase_data.%s)));" % (c,c))
-
-        pig_statements.append("unique_val_count_%s = FOREACH grouped_data1 { unique_values = DISTINCT hbase_data.%s; GENERATE CONCAT('unique_values=', (chararray)COUNT(unique_values)); }" % (c,c))
-    
-        pig_statements.append("filter_data1_%s = FOREACH hbase_data GENERATE (%s is null ? 1 : 0) as null_value:int;" % (c,c))
-        pig_statements.append("grouped_data2_%s = GROUP filter_data1_%s ALL PARALLEL 1;" % (c,c))
-        pig_statements.append("missing_val_count_%s = FOREACH grouped_data2_%s GENERATE CONCAT('missing_values=', (chararray)SUM(filter_data1_%s.null_value));" % (c,c,c))
-    
+        pig_statements.append("group_%s = GROUP data_single_column_%s ALL PARALLEL 1;" % (c,c))
 
         if is_comparable(types[t]):
-            pig_statements.append("result_%s = UNION max_result_%s, min_result_%s, avg_result_%s, var_result_%s, stdev_result_%s, unique_val_count_%s, missing_val_count_%s;" % (c,c,c,c,c,c,c,c))
+            pig_statements.append("result_%s = FOREACH group_%s { unique_values = DISTINCT data_single_column_%s.%s; GENERATE 'max=', MAX(data_single_column_%s.%s), 'min=', MIN(data_single_column_%s.%s), 'avg=', AVG(data_single_column_%s.%s), 'var=', VAR(data_single_column_%s.%s), 'stdev=', SQRT(VAR(data_single_column_%s.%s)), 'unique_values=', COUNT(unique_values);}" % (c,c,c,c,c,c,c,c,c,c,c,c,c,c))
         else:
-            pig_statements.append("result_%s = UNION unique_val_count_%s, missing_val_count_%s;" % (c,c,c))
+            pig_statements.append("result_%s = FOREACH group_%s { unique_values = DISTINCT data_single_column_%s.%s; GENERATE 'unique_values=', COUNT(unique_values); }" % (c,c,c,c))
 
         if not feature_data_groups[t]:
-            # Column without any grouping
-            pig_statements.append("grouped_data2_%s = GROUP hbase_data BY %s;" % (c,c))
-            pig_statements.append("histogram_%s = FOREACH grouped_data2_%s GENERATE group, COUNT(hbase_data);" % (c,c))
+            # Column without any interval specification
+            pig_statements.append("grouped_data2_%s = GROUP data_single_column_%s BY %s;" % (c,c,c))
+            pig_statements.append("histogram_%s = FOREACH grouped_data2_%s GENERATE group, COUNT_STAR(data_single_column_%s);" % (c,c,c))
         else:
             intervals = [eval(replace_inf(f)) for f in feature_data_groups[t].split(":")]
-            count_variables = []
+            if is_comparable(types[t]):
+                pig_statements.append("filter_%s = FOREACH data_single_column_%s GENERATE %s, (%s is null ? '': '[...]') as interval:chararray;" % (c,c,c,c))
+            else:
+                pig_statements.append("filter_%s = FOREACH data_single_column_%s GENERATE %s, (%s == '' ? '': '[...]') as interval:chararray;" % (c,c,c,c))
             for i,j in enumerate(intervals):
                 k = generate_interval_check(c,j)
-                interval_as_str = escape_single_quotes(str(j))
-                pig_statements.append("filter_%s_%d = FILTER hbase_data BY %s;" % (c,i,k))
-                pig_statements.append("grouped_data3_%s_%d = GROUP filter_%s_%d ALL PARALLEL 1;" %(c,i,c,i))
-                pig_statements.append("count_%s_%d = FOREACH grouped_data3_%s_%d GENERATE '%s', COUNT(filter_%s_%d);" % (c,i,c,i,interval_as_str,c,i))
-                count_variables.append("count_%s_%d" % (c,i))
-            pig_statements.append("histogram_%s = UNION %s;" % (c,",".join(count_variables)))
-            
-    
+                pig_statements.append("filter_%s = FOREACH filter_%s GENERATE %s, %s;" % (c,c,c,k))
+
+            pig_statements.append("project_filter_%s = FOREACH filter_%s GENERATE interval;" % (c,c))
+            pig_statements.append("final_group_%s = GROUP project_filter_%s BY interval;" % (c,c))
+            pig_statements.append("histogram_%s = FOREACH final_group_%s GENERATE group, COUNT_STAR(project_filter_%s);" % (c,c,c))
+
         pig_statements.append("STORE result_%s INTO '$STAT_%s';" % (c, c))
         pig_statements.append("STORE histogram_%s INTO '$HIST_%s';" % (c, c))
 

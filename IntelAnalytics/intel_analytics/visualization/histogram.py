@@ -56,14 +56,19 @@ def plot_histogram(datafile, xlabel='', ylabel='', title='',
         with open(textfile) as s:
             slines = [x.strip() for x in s.readlines()]
 
-    result.extend(slines)
     
     data_x = []
     data_y = []
     for i in range(len(hlines)):
         t = hlines[i].split()
-        data_x.append(t[0])
-        data_y.append(int(t[1]))
+        if len(t) == 1:
+            slines.append('missing_values=' + t[0])
+        else:
+            data_x.append(t[0])
+            data_y.append(int(t[1]))
+
+    result.extend(slines)
+
     fig = plt.figure()
     axes = fig.add_axes([0.1,0.1,0.8,0.8])
 
