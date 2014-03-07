@@ -82,7 +82,7 @@ config['hbase_names_file'] = \
     os.path.join(config['conf_folder'], "table_name.txt")
 
 from intel_analytics.graph.biggraph import GraphTypes
-from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory, build
+from intel_analytics.graph.titan.graph import TitanGraphBuilderFactory, build, validate_rules
 from intel_analytics.graph.titan.config import titan_config
 
 # mock HBase Registry
@@ -174,7 +174,8 @@ class TestGraphBuilder(unittest.TestCase):
            new_callable=get_registry_callable('test_build'))
     @patch('intel_analytics.graph.titan.graph.hbase_registry',
            new_callable=get_registry_callable('test_build'))
-    def test_build(self, mock_registry, mr2):
+    @patch('intel_analytics.graph.titan.graph.validate_rules')
+    def test_build(self, mock_validate, mock_registry, mr2):
         self.assertIs(mock_registry, mr2)
         mock_registry.initialize(registry)
         copyfile(os.path.join(_here_folder, 'gold_rexster.xml'),
@@ -183,6 +184,7 @@ class TestGraphBuilder(unittest.TestCase):
         self.assertFalse(graph_name in mock_registry)
         frame = Mock()
         frame._table.table_name = 'f3_time'
+        mock_validate.return_value = True
         g = build(graph_name, frame, [], [], False, overwrite=False, append=False, flatten=False)
         self.assertIsNotNone(g)
         self.assertIsNotNone(mock_registry.get_value(graph_name))
@@ -218,10 +220,10 @@ class TestGraphBuilder(unittest.TestCase):
 
         source = Mock()
         source._table.table_name = "table_name"
-        result = generate_titan_table_name("prefix", source)
+        result = generate_titan_table_name("prefix", source, False)
         self.assertEqual("prefix_table_name_titan", result)
         try:
-            generate_titan_table_name("prefix", "junk")
+            generate_titan_table_name("prefix", "junk", False)
         except Exception as e:
             self.assertEqual("Could not get table name from source", str(e))
         else:
@@ -231,7 +233,8 @@ class TestGraphBuilder(unittest.TestCase):
            new_callable=get_registry_callable('test_builder_bipartite'))
     @patch('intel_analytics.graph.titan.graph.hbase_registry',
            new_callable=get_registry_callable('test_builder_bipartite'))
-    def test_graph_builder_bipartite(self, mock_registry, mr2):
+    @patch('intel_analytics.graph.titan.graph.validate_rules')
+    def test_graph_builder_bipartite(self, mock_validate, mock_registry, mr2):
         self.assertIs(mock_registry, mr2)
         mock_registry.initialize(registry)
         copyfile(os.path.join(_here_folder, 'gold_rexster.xml'),
@@ -249,6 +252,7 @@ colA
 colB=colP,colQ"""
         self.assertEqual(expected, gb.__repr__())
         graph_name = "my_bipartite_graph"
+        mock_validate.return_value = True
         g = gb.build(graph_name)
         self.assertIsNotNone(g)
         self.assertIsNotNone(mock_registry.get_value(graph_name))
@@ -258,7 +262,8 @@ colB=colP,colQ"""
            new_callable=get_registry_callable('test_builder_bipartite'))
     @patch('intel_analytics.graph.titan.graph.hbase_registry',
            new_callable=get_registry_callable('test_builder_bipartite'))
-    def test_graph_builder_property(self, mock_registry, mr2):
+    @patch('intel_analytics.graph.titan.graph.validate_rules')
+    def test_graph_builder_property(self, mock_validate, mock_registry, mr2):
         self.assertIs(mock_registry, mr2)
         mock_registry.initialize(registry)
         copyfile(os.path.join(_here_folder, 'gold_rexster.xml'),
@@ -286,6 +291,7 @@ colC,colB,edgeCB
 colD,colB,edgeDB,colU"""
         self.assertEqual(expected, gb.__repr__())
         graph_name = "my_property_graph"
+        mock_validate.return_value = True
         g = gb.build(graph_name)
         self.assertIsNotNone(g)
         self.assertIsNotNone(mock_registry.get_value(graph_name))
@@ -365,7 +371,6 @@ colD,colB,edgeDB,colU"""
         load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
         expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-e \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-f');"
         self.assertEqual(load_titan, expected)
-        
         
     #STORE_GRAPH macro tests
     def test_gb_store_graph_several_graph_elements(self):
@@ -452,6 +457,50 @@ colD,colB,edgeDB,colU"""
         store_graph = pig_script_builder._build_store_graph_statement('to_store', 'conf.xml', vertex_list, edge_list, schema_dict, other_args)
         expected = "STORE_GRAPH(to_store, 'conf.xml', 'v_prop_6:Double,v_prop_1:String,v_prop_2:String,v_prop_3:Integer,e_prop_2:Long,e_prop_1:Long,e_prop_3:Float,v_prop_5:Double,v_prop_4:Integer', 'label,e_prop_2,e_prop_3,e_prop_1', '-F');"
         self.assertEqual(store_graph, expected)
+    
+    @patch('intel_analytics.graph.titan.graph._get_available_columns')
+    def test_validate_rules(self, mock_columns):
+        mock_columns.return_value = ['col_1', 'col_2', 'col_3']
+        
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
+        vertex_list.append(GraphBuilderVertex('col_2', ['col_3']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('col_1', 'col_2', 'label'), ['col_1', 'col_2', 'col_3']))  
+        validate_rules('test_frame', vertex_list, edge_list)   
+                
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('doesnt_exist', ['col_1']))
+        vertex_list.append(GraphBuilderVertex('col_2', ['col_3']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('col_1', 'col_2', 'label'), ['col_1', 'col_2', 'col_3']))     
+        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list)
+        
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('col_2', ['doesnt_exist']))
+        vertex_list.append(GraphBuilderVertex('col_2', ['col_3']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('col_1', 'col_2', 'label'), ['col_1', 'col_2', 'col_3']))  
+        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list)
+        
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('doesnt_exist', 'col_2', 'label'), ['col_1', 'col_2', 'col_3']))  
+        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list)    
+        
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('col_2', 'doesnt_exist', 'label'), ['col_1', 'col_2', 'col_3']))  
+        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list) 
+        
+        vertex_list = []
+        vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
+        edge_list = []
+        edge_list.append(GraphBuilderEdge(('col_2', 'col_1', 'label'), ['doesnt_exist', 'col_2', 'col_3']))  
+        self.assertRaises(Exception, validate_rules, 'test_frame', vertex_list, edge_list)                  
+        
             
 class TestGraphConfig(unittest.TestCase):
     def test_write_gb_config(self):
