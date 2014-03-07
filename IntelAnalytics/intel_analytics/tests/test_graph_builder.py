@@ -499,7 +499,7 @@ colD,colB,edgeDB,colU"""
             validate_rules('test_frame', vertex_list, edge_list)
             self.fail()
         except Exception as e:
-            self.assertEqual(str(e), "Some columns do not exist: doesnt_exist")  
+            self.assertEqual(str(e), "Some columns specified in the edge rule do not exist: doesnt_exist")  
         
         vertex_list = []
         vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
@@ -509,7 +509,7 @@ colD,colB,edgeDB,colU"""
             validate_rules('test_frame', vertex_list, edge_list)
             self.fail()
         except Exception as e:
-            self.assertEqual(str(e), "Some columns do not exist: doesnt_exist")          
+            self.assertEqual(str(e), "Some columns specified in the edge rule do not exist: doesnt_exist")          
         
         vertex_list = []
         vertex_list.append(GraphBuilderVertex('col_2', ['col_1']))
@@ -519,7 +519,7 @@ colD,colB,edgeDB,colU"""
             validate_rules('test_frame', vertex_list, edge_list)
             self.fail()
         except Exception as e:
-            self.assertEqual(str(e), "Some columns do not exist: doesnt_exist")                         
+            self.assertEqual(str(e), "Some columns specified in the edge rule do not exist: doesnt_exist")                         
         
             
 class TestGraphConfig(unittest.TestCase):
