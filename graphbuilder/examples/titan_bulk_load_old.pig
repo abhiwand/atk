@@ -38,10 +38,11 @@ rmf /tmp/tmp_store_2;
 employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS
 		(id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
 employees_with_valid_ids = FILTER employees BY id!='';
+valid_employes = FILTER employees BY manager!='';
 
 --GB requires the input data to be in HBase so
 --we need to append HBase row keys to the input relation
-final_relation = FOREACH employees_with_valid_ids GENERATE FLATTEN(CreateRowKey(*));
+final_relation = FOREACH valid_employes GENERATE FLATTEN(CreateRowKey(*));
 
 --create GB input table
 sh echo "disable 'gb_input_table'" | hbase shell

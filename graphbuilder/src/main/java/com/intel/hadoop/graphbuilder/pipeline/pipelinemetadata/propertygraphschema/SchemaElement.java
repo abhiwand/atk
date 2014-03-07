@@ -113,6 +113,24 @@ public class SchemaElement implements Writable {
     }
 
     /**
+     * A constructor that performs a copy of another <code>SchemaElement</code>
+     * @param base  <code>SchemaElement</code>  to be copied.
+     */
+    public SchemaElement (SchemaElement base) {
+
+        if (base.getLabel() == null) {
+            this.label = null;
+        } else {
+            label = new StringType(base.getLabel());
+        }
+        this.isEdge = base.isEdge();
+        this.ID = new StringType(base.getID());
+
+        this.propertySchemata = new HashSet<PropertySchema>();
+        this.propertySchemata.addAll(base.getPropertySchemata());
+    }
+
+    /**
      * Factory that creates a new vertex schema from a label.
      * @param label The label for the new schema.
      * @return A new <schema>SchemaElement</schema> encapuslating a vertex schema with the given label.
@@ -249,6 +267,7 @@ public class SchemaElement implements Writable {
 
             if (this.getLabel() != null) {
                 return (this.getLabel().equals(inSchemaElement.getLabel())
+                        && this.isEdge() == inSchemaElement.isEdge()
                         && this.getPropertySchemata().size() == (inSchemaElement.getPropertySchemata().size())
                         && (((SchemaElement) in).getPropertySchemata()).containsAll(this.getPropertySchemata()));
             } else {
@@ -270,6 +289,10 @@ public class SchemaElement implements Writable {
     public int hashCode() {
 
         int hash = (label == null) ? 0xabbadaba : label.hashCode();
+
+        int edgeHash = this.isEdge ? 0xbea87666 : 0xd00bd00b;
+
+        hash = HashUtil.combine(hash, edgeHash);
 
         for (PropertySchema propertySchema : this.getPropertySchemata()) {
             hash = HashUtil.combine(hash, propertySchema);
