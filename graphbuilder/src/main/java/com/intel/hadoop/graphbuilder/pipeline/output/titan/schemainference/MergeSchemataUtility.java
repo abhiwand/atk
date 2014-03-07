@@ -42,10 +42,10 @@ public class MergeSchemataUtility {
     private static final Logger LOG = Logger.getLogger(MergeSchemataUtility.class);
 
     /**
-     * Performs the merge of a multiset of {@code SchemaElement} objects into a duplicate free list.
+     * Performs the merge of a multiset of <code>SchemaElement</code> objects into a duplicate free list.
      *
-     * @param values The {@code SchemaElement} objects to be merged.
-     * @return Duplicate-free list of {@code SchemaElement}'s.
+     * @param values The <code>SchemaElement</code> objects to be merged.
+     * @return Duplicate-free list of <code>SchemaElement</code>'s.
      */
 
     public ArrayList<SchemaElement> merge(Iterable<SchemaElement> values) {

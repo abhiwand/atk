@@ -37,12 +37,12 @@ import java.util.List;
 /**
  * The reducer for the schema inference job. It performs two tasks:
  * <ul>
- * <li>Similar to the {@code SchemaInferenceCombiner} it combines the input graph elements into a duplicate-free list.</li>
+ * <li>Similar to the <code>SchemaInferenceCombiner</code> it combines the input graph elements into a duplicate-free list.</li>
  * <li>It then uses the combined schema to initialize the Titan connection.</li>
  * </ul>
  * <p/>
  * Because the values are all null-keyed, all values will appear at a single reducer. This is on purpose so the
- * call to the {@code TitanGraphInitializer} can have a view of all the information needed to initialize Titan.
+ * call to the <code>TitanGraphInitializer</code> can have a view of all the information needed to initialize Titan.
  *
  * @see SchemaInferenceCombiner
  * @see MergeSchemataUtility
@@ -55,9 +55,9 @@ public class SchemaInferenceReducer extends Reducer<NullWritable, SchemaElement,
     private TitanGraphInitializer initializer = null;
 
     /**
-     * Sets the {@code TitanGraphInitializerObject} used to initialize Titan. Used for testing.
+     * Sets the <code>TitanGraphInitializerObject</code> used to initialize Titan. Used for testing.
      *
-     * @param initializer the incoming  {@code TitanGraphInitializerObject}.
+     * @param initializer the incoming  <code>TitanGraphInitializerObject</code>.
      */
     protected void setInitializer(TitanGraphInitializer initializer) {
         this.initializer = initializer;

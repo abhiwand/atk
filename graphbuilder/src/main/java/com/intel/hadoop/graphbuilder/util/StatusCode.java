@@ -20,7 +20,7 @@
 package com.intel.hadoop.graphbuilder.util;
 
 /**
- * Code numbers with {@code String} messages for reporting abnormal terminations.
+ * Code numbers with <code>String</code> messages for reporting abnormal terminations.
  */
 public enum StatusCode {
     SUCCESS(0, "GRAPHBUILDER_SUCCESS"),
@@ -54,7 +54,7 @@ public enum StatusCode {
     }
 
     /**
-     * Obtain the numerical status code from this {@code StatusCode} object.
+     * Obtain the numerical status code from this <code>StatusCode</code> object.
      *
      * @return integer status code
      */
@@ -63,7 +63,7 @@ public enum StatusCode {
     }
 
     /**
-     * Obtain the human-readable error message from this {@code StatusCode} object.
+     * Obtain the human-readable error message from this <code>StatusCode</code> object.
      *
      * @return A string containing a brief error message.
      */

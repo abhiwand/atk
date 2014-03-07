@@ -197,7 +197,7 @@ public class SchemaElement implements Writable {
 
 
     /**
-     * Reads an {@code EdgeSchema} from an input stream.
+     * Reads an <code>EdgeSchema</code> from an input stream.
      *
      * @param input The input stream.
      * @throws java.io.IOException
@@ -225,7 +225,7 @@ public class SchemaElement implements Writable {
     }
 
     /**
-     * Writes an {@code EdgeSchema} to an output stream.
+     * Writes an <code>EdgeSchema</code> to an output stream.
      *
      * @param output The output stream.
      * @throws IOException
@@ -255,8 +255,8 @@ public class SchemaElement implements Writable {
      * Equality function.
      *
      * @param in Object for comparison.
-     * @return {@code true} if and only if the other object is an {@code EdgeSchema} whose label and set of
-     *         {@code PropertySchema}'s   are all equal to the label and set of {@code PropertySchema}'s of this object.
+     * @return <code>true</code> if and only if the other object is an <code>EdgeSchema</code> whose label and set of
+     *         <code>PropertySchema</code>'s   are all equal to the label and set of <code>PropertySchema</code>'s of this object.
      */
     @Override
     public boolean equals(Object in) {
@@ -283,7 +283,7 @@ public class SchemaElement implements Writable {
      * Hashcode function.
      *
      * @return integer hashcode
-     * @see {@code equals}
+     * @see <code>equals</code>
      */
     @Override
     public int hashCode() {
