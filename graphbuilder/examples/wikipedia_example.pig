@@ -25,9 +25,8 @@
  * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
  * </p>
  */
- %default GB_HOME '.'
+%default GB_HOME '.'
  
-REGISTER target/graphbuilder-2.0-alpha-with-deps.jar;
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
 xml_data = LOAD 'examples/data/wiki_single.txt' using com.intel.pig.load.XMLLoader('page') AS (page: chararray);
