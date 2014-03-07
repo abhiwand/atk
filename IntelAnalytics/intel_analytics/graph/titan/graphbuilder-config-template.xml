@@ -12,6 +12,9 @@
             leave a larger fraction of the id pool occupied and potentially lost. For write heavy applications, larger
             block sizes should be chosen.
 
+            Rule of thumb: Set ids.block-size to the number of vertices you expect to add per Titan instance per hour.
+            https://github.com/thinkaurelius/titan/wiki/Bulk-Loading
+
             10,000 is Titan default.
             600,000 is better for very large graphs.
         </description>
@@ -40,6 +43,10 @@
             Number of milliseconds Titan’s id pool manager will wait while attempting to acquire a new id block before
             failing.
 
+            Rule of thumb: Set this value to be larger than 2 x (storage.idauthority-retries) x
+            (storage.idauthority-wait-time). The only downside of increasing it is that Titan will try for a long time
+            on an unavailable storage backend cluster.
+
             60,000 is Titan default.
             We've used numbers as large as 2,400,000 for very large graphs.
         </description>
@@ -62,7 +69,7 @@
     </property>
 
     <property>
-        <name>graphbuilder.titan_storage_backend</name>
+        <name>graphbuilder.titan_storage.backend</name>
         <value>${titan_storage_backend}</value>
         <description>
             storage.backend parameter for Titan. Currently GB 2.0 (alpha) supports only HBase as the storage backend.
@@ -83,7 +90,7 @@
     </property>
 
     <property>
-        <name>graphbuilder.titan_storage_connection_timeout</name>
+        <name>graphbuilder.titan_storage.connection.timeout</name>
         <value>${titan_storage_connection_timeout}</value>
         <description>
             storage.connection.timeout parameter for Titan.
@@ -91,7 +98,7 @@
     </property>
 
     <property>
-        <name>graphbuilder.titan_storage_hostname</name>
+        <name>graphbuilder.titan_storage.hostname</name>
         <value>${titan_storage_hostname}</value>
         <description>
             storage.hostname parameter for Titan.
@@ -104,6 +111,9 @@
         <description>
             Number of times the system attempts to acquire a unique id block before giving up and throwing an exception.
 
+            Rule of thumb: Increase this value. The only downside of increasing it is that Titan will try for a long
+            time on an unavailable storage backend cluster.
+
             20 is Titan default.
         </description>
     </property>
@@ -113,14 +123,20 @@
         <value>${titan_storage_idauthority_wait_time}</value>
         <description>
             The number of milliseconds the system waits for an id block application to be acknowledged by the storage
-            backend in Titan.
+            backend in Titan.  The shorter this time, the more likely it is that an application will fail on a congested
+            storage cluster.
+
+            Rule of thumb: Set this to the sum of the 95th percentile read and write times measured on the storage
+            backend cluster under load.
+
+            Important: This value should be the same across all Titan instances.
 
             300 is Titan default.
         </description>
     </property>
 
     <property>
-        <name>graphbuilder.titan_storage_port</name>
+        <name>graphbuilder.titan_storage.port</name>
         <value>${titan_storage_port}</value>
         <description>
             storage.port parameter for Titan.
@@ -130,7 +146,7 @@
     </property>
 
     <property>
-        <name>graphbuilder.titan_storage_tablename</name>
+        <name>graphbuilder.titan_storage.tablename</name>
         <value>${titan_storage_tablename}</value>
         <description>
             storage.tablename parameter for Titan.
