@@ -157,6 +157,10 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
             as a vertex ID, it is to be expanded into one vertex for each
             entry in the list. This applies to the source and destination
             columns for edges as well. It does not apply to properties.
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
+        withSideVertexProperty : Bool, optional
+            adds the 'side' property to all vertices in a bipartite-graph
 
         Returns
         -------
@@ -203,7 +207,36 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
         return s
 
     def build(self, graph_name, overwrite=False, append=False, flatten=False,
-              retainDanglingEdges=False, withVertexSide=False):
+              retainDanglingEdges=False):
+        """
+        Builds a property graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
+
+        Parameters
+        ----------
+        graph_name : string
+            name for the new graph
+        overwrite : Bool, optional
+            if the given graph_name already exists, overwrite=True will
+            overwrite the existing graph; overwrite=False will raise an Error
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
+            
+        Returns
+        -------
+        graph : Graph
+            new graph object
+        """        
         return build(graph_name,
                      self._source,
                      self._vertex_list,
@@ -214,8 +247,7 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                      flatten=flatten,
                      registered_vertex_properties=self.registered_vertex_properties,
                      registered_edge_properties=self.registered_edge_properties,
-                     retainDanglingEdges=retainDanglingEdges,
-                     withSideVertexProperty=withSideVertexProperty)
+                     retainDanglingEdges=retainDanglingEdges)
 
 def _get_available_columns(source_frame):
     table_name = _get_table_name_from_source(source_frame)
