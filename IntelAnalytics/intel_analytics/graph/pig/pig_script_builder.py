@@ -145,7 +145,7 @@ class GBPigScriptBuilder(object):
             other_args += " -F "
         if retainDanglingEdges:
             other_args += " -x"
-        if withSideVertexProperty:
+        if withVertexSide:
             other_args += " -P"
             
         #start generating pig statements
