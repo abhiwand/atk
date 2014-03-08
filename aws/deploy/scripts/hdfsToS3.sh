@@ -43,12 +43,38 @@ while true; do
     esac
 done
 
+function log()
+{
+    echo "##INFO##-$1"
+}
+IA_NOTEBOOKS="intelanalytics-notebooks.zip"
+
+log "delete old logs directory"
 runuser -l ec2-user -c "aws s3 rm s3://$BUCKET/$email/logs --recursive"
 
+log "stop hbase"
 runuser -l hadoop -c "stop-hbase.sh"
 
+log "zip .intelanalytics"
+runuser -l hadoop -c " zip -r $IA_NOTEBOOKS .intelanalytics/* "I
+
+log "remove any old $IA_NOTEBOOKS in hdfs"
+runuser -l hadoop -c " hadoop fs -rm $IA_NOTEBOOKS"
+
+log "put new $IA_NOTEBOOKS in hdfs"
+runuser -l hadoop -c " hadoop fs -put $IA_NOTEBOOKS $IA_NOTEBOOKS "
+
+log "delete $IA_NOTEBOOKS on local file system"
+runuser -l hadoop -c " rm $IA_NOTEBOOKS"
+
+log "run distcp from hdfs:/ to s3n://$BUCKET/$email/hdfs"
 runuser -l hadoop -c "hadoop distcp2 -delete -update -log s3n://$access:$secret@$BUCKET/$email/logs hdfs:// s3n://$access:$secret@$BUCKET/$email/hdfs"
 
+log "start hbase"
 runuser -l hadoop -c "start-hbase.sh" 
 
+log "restart thrift"
 runuser -l hadoop -c " hbase-daemon.sh start thrift -threadpool; sleep 2"
+
+log "delete $IA_NOTEBOOKS in hdfs "
+runuser -l hadoop -c " hadoop fs -rm $IA_NOTEBOOKS"
