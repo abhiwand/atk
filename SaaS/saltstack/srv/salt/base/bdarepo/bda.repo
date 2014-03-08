@@ -1,0 +1,10 @@
+[bda]
+name=bda-internal-yum
+baseurl=https://gao-internal-yum.s3-website-us-west-2.amazonaws.com/branches/sprint_9
+gpgcheck=0
+priority=1
+#enabled=0
+s3_enabled=1
+key_id=AKIAJTCQ5BP66IT5BCIA
+secret_key=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
+
