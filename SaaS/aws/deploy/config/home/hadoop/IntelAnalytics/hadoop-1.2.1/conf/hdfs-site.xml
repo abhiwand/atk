@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><configuration>
+
+<property>
+  <name>dfs.name.dir</name>
+  <value>/mnt/data1/name</value>
+</property>
+
+<property>
+<name>dfs.data.dir</name>
+  <value>/mnt/data1/data,/mnt/data2/data,/mnt/data3/data,/mnt/data4/data</value>
+</property>
+<property>
+  <name>dfs.block.size</name>
+  <value>134217728</value>
+  <description>The default block size for new files.</description>
+</property>
+<property>
+  <name>dfs.replication</name>
+  <value>2</value>
+</property>
+<property>
+  <name>dfs.block.local-path-access.user</name>
+  <value>hadoop</value>
+</property>
+<property>
+   <name>dfs.client.read.shortcircuit</name>
+   <value>true</value>
+</property>
+ <property>
+   <name>dfs.client.read.shortcircuit.skip.checksum</name>
+ <value>true</value>
+</property>
+<property>
+   <name>dfs.datanode.hdfs-blocks-metadata.enabled</name>
+   <value>true</value>
+</property>
+<property>
+  <name>dfs.namenode.handler.count</name>
+  <value>40</value>
+  <description>The number of server threads for the namenode.</description>
+</property>
+<property>
+  <name>dfs.permissions.supergroup</name>
+  <value>hadoop</value>
+  <description>The name of the group of super-users.</description>
+</property>
+<property>
+  <name>dfs.http.address</name>
+  <value>master:50070</value>
+  <description>The namenode http address</description>
+</property>
+<property>
+  <name>fs.trash.interval</name>
+  <value>1440</value>
+  <description>Number of minutes between trash checkpoints.
+  If zero, the trash feature is disabled.
+  </description>
+</property>
+
+<property>
+ <name>dfs.datanode.max.xcievers</name>
+ <value>65535</value>
+</property>
+
+<property>
+  <name>dfs.datanode.handler.count</name>
+  <value>8</value>
+</property>
+
+</configuration>
