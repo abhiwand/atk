@@ -25,6 +25,9 @@ import re
 import sys #used by unit tests
 import collections
 
+import numpy
+import math
+
 from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
 from intel_analytics.pig import get_pig_args, is_local_run
@@ -212,13 +215,17 @@ class HBaseTable(object):
             column_file_identifier = column.name
 
         hist_file = '%s_%s_histogram' % (self.table_name, column_file_identifier)
+        hist_all_file = '%s_%s_histogram' % (self.table_name, column.name)
         stat_file = '%s_%s_stats' % (self.table_name, column.name)
 
-        files_exist = False
+        files_exist, can_rebuild_cache = False, False
         if check_file_existance and \
            os.path.isfile(hist_file) and os.path.isfile(stat_file):
              files_exist = True
-        return hist_file, stat_file, files_exist
+        if check_file_existance and \
+           os.path.isfile(hist_all_file):
+             can_rebuild_cache = True
+        return hist_file, stat_file, files_exist, hist_all_file, can_rebuild_cache
 
     def __plot_column_distribution(self, column_name, hist_file, text_file):
 
@@ -227,6 +234,53 @@ class HBaseTable(object):
                            'Column Statistics - %s' % (column_name),
                            text_file)
 
+    def __create_hist_stat_file_from_all_data(self, hist_all_file, hist_file, stat_file, feature_type, intervals):
+        with open(hist_all_file) as h:
+            hlines = [x.strip() for x in h.readlines()]
+        stats,data_x,data_y = [],[],[]
+
+        pig_to_python_type = {"int" : "int", "float" : "float", "long" : "long",
+                              "double" : "float", "chararray" : "str", "bytearray" : "str"}
+        python_feature_type = pig_to_python_type[feature_type]
+
+        for i in range(len(hlines)):
+            t = hlines[i].split()
+            if len(t) == 1:
+                stats.append('missing_values=' + t[0])
+            else:
+                data_x.append(eval(python_feature_type)(t[0]))
+                data_y.append(int(t[1]))
+
+
+        if feature_type in ['int', 'float', 'long', 'double']:
+            stats.append('max=%f' % max(data_x))
+            stats.append('min=%f' % min(data_x))
+            #http://stackoverflow.com/questions/2413522/weighted-standard-deviation-in-numpy
+            average = numpy.average(data_x,weights=data_y)
+            variance = numpy.average((data_x-average)**2, weights=data_y)
+            stdev = math.sqrt(variance) 
+            stats.append('avg=%f' % average)
+            stats.append('var=%f' % variance)
+            stats.append('stdev=%f' % stdev)
+
+        stats.append('unique_values=%d' % len(data_x))
+        with open(stat_file, 'w') as f:
+            f.write("\n".join(stats))
+
+        if intervals:
+            interval_dict = {}
+            for j in intervals:
+                interval_dict[str(j)] = 0
+ 
+            for i,x in enumerate(data_x):
+                for j in intervals:
+                    if x in j:
+                        interval_dict[str(j)] += data_y[i]
+
+            with open(hist_file, 'w') as f:
+                for key,value in interval_dict.iteritems():
+                    f.write("%s %d\n" % (key,value))
+            
 
     def get_column_statistics(self, column_list, force_recomputation):
         """
@@ -244,7 +298,7 @@ class HBaseTable(object):
         """
 
         result = []
-        ColumnStat = collections.namedtuple('ColumnStat','names types intervals hist_files stat_files')
+        ColumnStat = collections.namedtuple('ColumnStat','names types intervals inmemory hist_files stat_files hist_all_files interval_list')
 
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -259,15 +313,24 @@ class HBaseTable(object):
                     os.remove(file)
         
         for i in column_list:
-            hfile,sfile,use_cache= self.__get_column_statistics_filenames(i, not force_recomputation)
+            hfile,sfile,use_cache,hist_all_file,rebuild_cache = self.__get_column_statistics_filenames(i, not force_recomputation)
             if not use_cache:
-                recompute_columns = ColumnStat([],[],[],[],[]) if not recompute_columns else recompute_columns
-                recompute_columns.names.append(i.name)
-                recompute_columns.types.append(etl_schema.get_feature_type(i.name))
-                recompute_columns.intervals.append(i.profile.get_interval_groups_as_str() if i.profile else "")
-                recompute_columns.hist_files.append(hfile)
-                recompute_columns.stat_files.append(sfile)
-                erase_cache([hfile,sfile])
+                if not force_recomputation and rebuild_cache:
+                    erase_cache([sfile])
+                    self.__create_hist_stat_file_from_all_data(hist_all_file, hfile, sfile, 
+                                                               etl_schema.get_feature_type(i.name), i.profile.data_intervals if i.profile else "")
+                    result.append(self.__plot_column_distribution(i.name, hfile, sfile))
+                else:
+                    recompute_columns = ColumnStat([],[],[],[],[],[],[],[]) if not recompute_columns else recompute_columns
+                    recompute_columns.names.append(i.name)
+                    recompute_columns.types.append(etl_schema.get_feature_type(i.name))
+                    recompute_columns.intervals.append(i.profile.get_interval_groups_as_str() if i.profile else "")
+                    recompute_columns.inmemory.append(str(i.profile.in_memory_computation) if i.profile else str(True))
+                    recompute_columns.hist_files.append(hfile)
+                    recompute_columns.stat_files.append(sfile)
+                    recompute_columns.hist_all_files.append(hist_all_file)
+                    recompute_columns.interval_list.append(i.profile.data_intervals if i.profile else False)
+                    erase_cache([hfile,sfile,hist_all_file])
             else:
                result.append(self.__plot_column_distribution(i.name, hfile, sfile))
             
@@ -278,12 +341,14 @@ class HBaseTable(object):
             feature_types_as_str = ",".join(recompute_columns.types)
             # Using # as delimiter as string representation of interval contains commas
             feature_data_groups_as_str = "#".join(recompute_columns.intervals)
+            in_memory_optimization = ",".join(recompute_columns.inmemory)
 
             args = get_pig_args('pig_column_stats.py')
             args.extend(['-i', self.table_name, 
                     '-n', feature_names_as_str,
                     '-t', feature_types_as_str,
-                    '-g', feature_data_groups_as_str])
+                    '-g', feature_data_groups_as_str,
+                    '-o', in_memory_optimization])
     
             return_code = call(args, report_strategy = etl_report_strategy())
             if return_code:
@@ -295,8 +360,18 @@ class HBaseTable(object):
                 hadooputils.dfs(g(file))
                 
             for i in range(len(recompute_columns.hist_files)):
+                all_file = recompute_columns.hist_all_files[i]
                 hfile,sfile =  recompute_columns.hist_files[i], recompute_columns.stat_files[i]
-                if exists('%s' % (hfile)):
+                if recompute_columns.inmemory[i]:
+                    if exists('%s' % (all_file)):
+                        update_cached_files(all_file)
+                    self.__create_hist_stat_file_from_all_data(all_file,
+                                                               hfile,
+                                                               sfile,
+                                                               recompute_columns.types[i],
+                                                               recompute_columns.interval_list[i])
+
+                if recompute_columns.interval_list[i] and exists('%s' % (hfile)):
                     update_cached_files(hfile)
                 if exists('%s' % (sfile)):
                     update_cached_files(sfile)

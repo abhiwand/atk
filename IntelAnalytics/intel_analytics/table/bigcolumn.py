@@ -38,10 +38,17 @@ class ColumnProfile(object):
                          Interval(lower_bound=8, upper_bound=10),
                          Interval(lower_bound=10,                lower_closed=False)]
     >>> bc = ColumnProfile(data_intervals=interval_list)
+    >>> in_memory_computation is True by default - by which we assume
+    >>> that the number of distinct values for a column can fit into the 
+    >>> working memory for in memory computation of statistics.
+    >>> If the column being profiled has too many unique values (such as id's or hash strings or 
+    >>> many doubles with large precision), suppress_unique_value_optimization
+    >>> can be passed as False for all computation to work via disk-based map-reduce
     """
     def __init__(self, **kwargs):
         # We intend to add other profile features like pattern, type errors, outlier strategy to this class
         self.data_intervals = kwargs.get('data_intervals', False)
+        self.in_memory_computation = kwargs.get('suppress_unique_value_optimization', True)
         if self.data_intervals:
             if not all(isinstance(obj, Interval) for obj in self.data_intervals):
                 raise Exception('Invalid interval groups specified')

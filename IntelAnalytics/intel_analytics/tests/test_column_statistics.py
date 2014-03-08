@@ -26,7 +26,7 @@ class TestColumnStatistics(unittest.TestCase):
         interval.lower_closed = True
         interval.upper_closed = True
         result = generate_interval_check(features[0], interval)
-        self.assertEqual(result, '4 <= f1 AND f1 <= 5')
+        self.assertEqual(result, '( 4 <= f1 AND f1 <= 5 ? \'[4..5]\' : interval) AS interval:chararray')
 
     def test_generate_interval_check_num_inclusive(self):
         interval = Mock()
@@ -35,7 +35,7 @@ class TestColumnStatistics(unittest.TestCase):
         interval.upper_bound = 5
         interval.upper_closed = False
         result = generate_interval_check(features[1], interval)
-        self.assertEqual(result, '4 < f1 AND f1 < 5')
+        self.assertEqual(result, '( 4 < f1 AND f1 < 5 ? \'(4..5)\' : interval) AS interval:chararray')
 
     def test_replace_inf(self):
         str = 'Interval(-Inf, Inf, lower_closed=True, upper_closed=False)'
