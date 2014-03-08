@@ -23,6 +23,13 @@
 
 import matplotlib.pyplot as plt
 
+def is_number(val):
+    try:
+        float(val)
+        return True
+    except ValueError:
+        return False 
+
 def plot_histogram(datafile, xlabel='', ylabel='', title='',
                    textfile = ''):
     """
@@ -66,6 +73,11 @@ def plot_histogram(datafile, xlabel='', ylabel='', title='',
         else:
             data_x.append(t[0])
             data_y.append(int(t[1]))
+
+    # Sort and remove any duplicates from text
+    slines = list(set(slines))
+    # Sort the data
+    data_x, data_y = zip(*sorted(zip(data_x,data_y), key=lambda x:eval(x[0]) if is_number(x[0]) else x[0]))
 
     result.extend(slines)
 
