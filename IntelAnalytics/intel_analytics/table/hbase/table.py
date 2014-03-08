@@ -47,7 +47,6 @@ from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
 from pydoop.hdfs.path import exists
 from pydoop.hdfs import rmr
-import pydoop.hadut as hadooputils
 import hashlib
 from intel_analytics.visualization import histogram
 
@@ -354,11 +353,7 @@ class HBaseTable(object):
             if return_code:
                 raise HBaseTableException('Could not generate statistics')
 
-            # Move files to local filesystem for caching/plotting purposes
-            def update_cached_files(file):
-                g = lambda val: ['-getmerge', '%s' % (val), '%s' % (val)]
-                hadooputils.dfs(g(file))
-                
+               
             for i in range(len(recompute_columns.hist_files)):
                 all_file = recompute_columns.hist_all_files[i]
                 hfile,sfile =  recompute_columns.hist_files[i], recompute_columns.stat_files[i]
@@ -917,6 +912,14 @@ class HBaseFrameBuilder(FrameBuilder):
         elif not exists(file_name):
             raise Exception('ERROR: File does NOT exist ' + file_name + ' in HDFS')
 
+# Move files to local filesystem for caching/plotting purposes
+def update_cached_files(file):
+    try:
+        import pydoop.hadut as hadooputils
+        g = lambda val: ['-getmerge', '%s' % (val), '%s' % (val)]
+        hadooputils.dfs(g(file))
+    except Exception as e:
+        raise Exception('Error: pydoop failed to connect to HDFS ' + e.message)
 
 class HBaseFrameBuilderFactory(object):
     def __init__(self):
