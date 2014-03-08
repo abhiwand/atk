@@ -27,7 +27,7 @@ Unit tests for Class TitanGiraphMachineLearning in intel_analytics/graph/titan/m
 import unittest
 import os
 import sys
-from mock import patch, Mock, MagicMock, sentinel
+from mock import patch, Mock
 
 _current_dir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(

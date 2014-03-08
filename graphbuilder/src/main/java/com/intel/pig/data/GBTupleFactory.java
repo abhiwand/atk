@@ -26,6 +26,7 @@ import java.util.List;
 
 /**
  * TupleFactory to create tuples of type
+ *
  * {@link PropertyGraphElementTuple}
  */
 public class GBTupleFactory extends TupleFactory {
@@ -42,7 +43,6 @@ public class GBTupleFactory extends TupleFactory {
 
 	/**
 	 * Creates a new {@link PropertyGraphElementTuple} of size <code>size</code>
-	 *
 	 * @param size of the tuple
 	 * @return a {@link PropertyGraphElementTuple} of the given size
 	 */

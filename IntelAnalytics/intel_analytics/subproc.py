@@ -26,7 +26,6 @@ Invokes subprocess calls with polling to check progress.
 import types
 
 import time
-import re
 
 from threading import Thread
 from subprocess import PIPE, Popen

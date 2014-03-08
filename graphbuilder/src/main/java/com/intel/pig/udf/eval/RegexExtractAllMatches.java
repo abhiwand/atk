@@ -37,27 +37,22 @@
 
 package com.intel.pig.udf.eval;
 
+import com.intel.pig.udf.GBUdfException;
+import com.intel.pig.udf.GBUdfExceptionHandler;
+import org.apache.pig.EvalFunc;
+import org.apache.pig.PigWarning;
+import org.apache.pig.builtin.MonitoredUDF;
+import org.apache.pig.builtin.REGEX_EXTRACT_ALL;
+import org.apache.pig.data.*;
+import org.apache.pig.impl.logicalLayer.FrontendException;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import org.apache.pig.EvalFunc;
-import org.apache.pig.PigWarning;
-import org.apache.pig.builtin.MonitoredUDF;
-import org.apache.pig.builtin.REGEX_EXTRACT_ALL;
-import org.apache.pig.data.DataBag;
-import org.apache.pig.data.DataType;
-import org.apache.pig.data.DefaultBagFactory;
-import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
-import org.apache.pig.impl.logicalLayer.FrontendException;
-import org.apache.pig.impl.logicalLayer.schema.Schema;
-import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
-
-import com.intel.pig.udf.GBUdfException;
-import com.intel.pig.udf.GBUdfExceptionHandler;
 
 /**
  * RegexExtractAllMatches returns a bag of all matched strings given a
@@ -71,9 +66,7 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
 public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 	private static TupleFactory tupleFactory = TupleFactory.getInstance();
 
-	private String regularExpression = null;
-
-	@Override
+    @Override
 	public DataBag exec(Tuple input) throws IOException {
 		Pattern pattern = null;
 		if (input.size() != 2) {
@@ -88,7 +81,7 @@ public class RegexExtractAllMatches extends EvalFunc<DataBag> {
 		Matcher m = null;
 
 		try {
-			regularExpression = (String) input.get(1);
+            String regularExpression = (String) input.get(1);
 			pattern = Pattern.compile(regularExpression);
 			m = pattern.matcher(sourceString);
 		} catch (PatternSyntaxException e) {

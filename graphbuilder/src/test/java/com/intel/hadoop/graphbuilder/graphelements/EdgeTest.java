@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import java.io.*;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 public class EdgeTest {
 
@@ -110,7 +110,7 @@ public class EdgeTest {
 
         Edge<StringType> edge = new Edge<StringType>(srcId, dstId, label);
 
-        assert (edge.getProperties().getPropertyKeys().isEmpty());
+		assertTrue(edge.getProperties().getPropertyKeys().isEmpty());
 
         edge.setProperty(key1, value1);
         edge.setProperty(key2, value2);
@@ -130,7 +130,8 @@ public class EdgeTest {
         assertSame(value1, edge.getProperty(key2));
         assertSame(value1, edge.getProperties().getProperty(key2));
 
-        assert (edge.getProperties().getPropertyKeys().size() == 2);
+		assertEquals("Should be 2", 2, edge.getProperties().getPropertyKeys()
+				.size());
     }
 
     @Test
@@ -147,23 +148,23 @@ public class EdgeTest {
         VertexID<StringType> dstId2 = new VertexID<StringType>(dst2, null);
         StringType label2 = new StringType("label2");
 
-        Edge<StringType> edge1 = new Edge<StringType>(srcId1, dstId1, label1);
-        Edge<StringType> edge2 = new Edge<StringType>(srcId2, dstId2, label2);
-        Edge<StringType> edge3 = new Edge<StringType>(srcId1, dstId1, label1);
+		Edge<StringType> edge1 = new Edge<StringType>(srcId1, dstId1, label1);
+		Edge<StringType> edge2 = new Edge<StringType>(srcId2, dstId2, label2);
+		Edge<StringType> edge3 = new Edge<StringType>(srcId1, dstId1, label1);
 
         assertNotNull(edge1.getId());
         assertNotNull(edge2.getId());
         assertNotNull(edge3.getId());
 
         assertFalse(edge1.getId().equals(edge2.getId()));
-        assert (edge1.getId().equals(edge3.getId()));
+		assertTrue(edge1.getId().equals(edge3.getId()));
 
         String key = new String("key");
         StringType value = new StringType("bank");
 
         edge1.setProperty(key, value);
         assertFalse(edge1.getId().equals(edge2.getId()));
-        assert (edge1.getId().equals(edge3.getId()));
+		assertTrue(edge1.getId().equals(edge3.getId()));
     }
 
     @Test
@@ -180,16 +181,16 @@ public class EdgeTest {
         VertexID<StringType> dstId2 = new VertexID<StringType>(dst2, null);
         StringType label2 = new StringType("label2");
 
-        Edge<StringType> edge1 = new Edge<StringType>(srcId1, dstId1, label1);
-        Edge<StringType> edge2 = new Edge<StringType>(srcId2, dstId2, label2);
-        Edge<StringType> edge3 = new Edge<StringType>(srcId1, dstId1, label1);
+		Edge<StringType> edge1 = new Edge<StringType>(srcId1, dstId1, label1);
+		Edge<StringType> edge2 = new Edge<StringType>(srcId2, dstId2, label2);
+		Edge<StringType> edge3 = new Edge<StringType>(srcId1, dstId1, label1);
 
         assertNotNull(edge1.toString());
         assertNotNull(edge2.toString());
         assertNotNull(edge3.toString());
 
         assertFalse(edge1.toString().equals(edge2.toString()));
-        assert (edge1.toString().equals(edge3.toString()));
+		assertTrue(edge1.toString().equals(edge3.toString()));
 
         String key = new String("key");
         StringType value = new StringType("bank");
@@ -209,7 +210,7 @@ public class EdgeTest {
         Edge<StringType> loop = new Edge<StringType>(src, src, label);
 
         assertFalse(nonLoop.isSelfEdge());
-        assert (loop.isSelfEdge());
+		assertTrue(loop.isSelfEdge());
     }
 
     @Test
@@ -238,8 +239,9 @@ public class EdgeTest {
 
         edgeOnTheOtherEnd.readFields(dataInputStream);
 
-        assert (edgeOnTheOtherEnd.getId().equals(edge.getId()));
-        assert (edgeOnTheOtherEnd.getProperties().toString().equals(edge.getProperties().toString()));
+		assertTrue(edgeOnTheOtherEnd.getId().equals(edge.getId()));
+		assertTrue(edgeOnTheOtherEnd.getProperties().toString()
+				.equals(edge.getProperties().toString()));
 
         // one more time, with a nonempty property list
 
@@ -259,8 +261,9 @@ public class EdgeTest {
 
         edgeOnTheOtherEnd.readFields(dataInputStream2);
 
-        assert (edgeOnTheOtherEnd.getId().equals(edge.getId()));
-        assert (edgeOnTheOtherEnd.getProperties().toString().equals(edge.getProperties().toString()));
+		assertTrue(edgeOnTheOtherEnd.getId().equals(edge.getId()));
+		assertTrue(edgeOnTheOtherEnd.getProperties().toString()
+				.equals(edge.getProperties().toString()));
     }
 
     @Test

@@ -23,11 +23,7 @@
 package com.intel.giraph.algorithms.pr;
 
 import org.apache.giraph.Algorithm;
-import org.apache.giraph.aggregators.AggregatorWriter;
-import org.apache.giraph.aggregators.DoubleMaxAggregator;
-import org.apache.giraph.aggregators.DoubleMinAggregator;
-import org.apache.giraph.aggregators.DoubleSumAggregator;
-import org.apache.giraph.aggregators.LongSumAggregator;
+import org.apache.giraph.aggregators.*;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.graph.BasicComputation;
@@ -38,8 +34,8 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.log4j.Logger;

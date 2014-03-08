@@ -23,17 +23,8 @@
 
 package com.intel.giraph.algorithms.lp;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map.Entry;
-
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapreduce.Mapper.Context;
+import com.intel.giraph.io.VertexData4LPWritable;
+import com.intel.mahout.math.IdWithVectorWritable;
 import org.apache.giraph.Algorithm;
 import org.apache.giraph.aggregators.AggregatorWriter;
 import org.apache.giraph.aggregators.DoubleSumAggregator;
@@ -43,10 +34,18 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.graph.BasicComputation;
 import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.master.DefaultMasterCompute;
+import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.mahout.math.Vector;
 
-import com.intel.giraph.io.VertexData4LPWritable;
-import com.intel.mahout.math.IdWithVectorWritable;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
 /**
  * Label Propagation on Gaussian Random Fields

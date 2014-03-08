@@ -24,9 +24,9 @@
 package com.intel.giraph.aggregators;
 
 import org.apache.giraph.aggregators.BasicAggregator;
-import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
+import org.apache.mahout.math.VectorWritable;
 
 /**
  * Aggregator for summing up vector values.
