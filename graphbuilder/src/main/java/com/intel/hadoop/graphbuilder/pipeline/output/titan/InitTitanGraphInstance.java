@@ -17,18 +17,21 @@
  * For more about this software visit:
  *     http://www.01.org/GraphBuilder
  */
-package com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema;
 
-import static junit.framework.Assert.assertNotNull;
+package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import org.junit.Test;
+import com.intel.hadoop.graphbuilder.util.GraphDatabaseConnector;
+import com.thinkaurelius.titan.core.TitanGraph;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.hadoop.conf.Configuration;
 
+public class InitTitanGraphInstance {
 
-public class VertexSchemaTest {
-
-    @Test
-    public void testGetPropertySchemata() {
-        VertexSchema vertexSchema = new VertexSchema();
-        assertNotNull(vertexSchema.getPropertySchemata());
+    /**
+     * Creates the Titan graph.
+     */
+    public TitanGraph initTitanGraphInstance(Configuration configuration) {
+        BaseConfiguration titanConfig = new BaseConfiguration();
+        return GraphDatabaseConnector.open("titan", titanConfig, configuration);
     }
 }

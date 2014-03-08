@@ -22,10 +22,7 @@ package com.intel.hadoop.graphbuilder.graphelements;
 import com.intel.hadoop.graphbuilder.util.Triple;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.*;
 
 public class EdgeIDTest {
     @Test
@@ -143,7 +140,7 @@ public class EdgeIDTest {
         EdgeID edgeIDDelta2 = new EdgeID(src, badDst, label);
         EdgeID edgeIDDelta3 = new EdgeID(src, dst, badLabel);
 
-        assert (edgeID.equals(edgeIDSame));
+		assertTrue(edgeID.equals(edgeIDSame));
         assertFalse(edgeID.equals(edgeIDDelta1));
         assertFalse(edgeID.equals(edgeIDDelta2));
         assertFalse(edgeID.equals(edgeIDDelta3));
@@ -184,7 +181,7 @@ public class EdgeIDTest {
         assertNotNull(toString1);
         assertFalse(toString1.compareTo("") == 0);
 
-        assert (toString2.compareTo(toString1) == 0);
+		assertEquals("Should be equal", 0, toString2.compareTo(toString1));
 
         // all those wonderful negative tests
 

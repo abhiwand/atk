@@ -23,12 +23,9 @@ import com.intel.hadoop.graphbuilder.graphelements.GraphElement;
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
-import com.intel.pig.udf.GBUdfExceptionHandler;
-
+import org.apache.pig.Algebraic;
 import org.apache.pig.EvalFunc;
-import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
-import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataBag;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
@@ -36,79 +33,132 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 /**
- * MergeDuplicateGraphElements ... combine duplicate property graph elements into a single property graph element.
- *
- * The intended input for this function is a tuple from the output of GROUP operation performed on pairs of the
- *     form (ID, property graph element) where ID is the output of <code>GetPropGraphElementID</code> called on the property graph element.
- *
- * Example:
- * DEFINE getPropGraphEltID com.intel.pig.udf.eval.GetPropGraphElementID;
- * pgeLabeled = FOREACH pge GENERATE (getPropGraphEltID(*)), $0;
- * grouped = GROUP pgeLabeled by $0;
- * DEFINE MergeDuplicateGraphElements com.intel.pig.udf.eval.MergeDuplicateGraphElements;
- * merged = FOREACH grouped GENERATE(MergeDuplicateGraphElements(*));
- *
- * This routine merges properties by simply merging the property lists by brute force.
- *
+ * MergeDuplicateGraphElements combines duplicate property graph
+ * elements into a single property graph element.
+ * 
+ * The intended input for this function is a tuple from the output of GROUP
+ * operation performed on pairs of the form (ID, property graph element) where
+ * ID is the output of <code>GetPropGraphElementID</code> called on the property
+ * graph element.
+ * 
+ * Example: DEFINE getPropGraphEltID
+ * com.intel.pig.udf.eval.GetPropGraphElementID; pgeLabeled = FOREACH pge
+ * GENERATE (getPropGraphEltID(*)), $0; grouped = GROUP pgeLabeled by $0; DEFINE
+ * MergeDuplicateGraphElements
+ * com.intel.pig.udf.eval.MergeDuplicateGraphElements; merged = FOREACH grouped
+ * GENERATE(MergeDuplicateGraphElements(*));
+ * 
+ * This routine merges properties by simply merging the property lists by brute
+ * force.
+ * 
  * @see PropertyGraphElementTuple
  * @see com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement
  */
-@MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
-public class MergeDuplicateGraphElements extends EvalFunc<Tuple>  {
+// @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30,
+// timeUnit = TimeUnit.MINUTES)
+//TODO: weird, the MonitoredUDF annotation causes the job to fail.
+public class MergeDuplicateGraphElements extends EvalFunc<Tuple> implements
+		Algebraic {
 
-    private SerializedGraphElement graphElementFromGroupedBagEntry(Tuple tuple) throws ExecException {
-        return (SerializedGraphElement) tuple.get(1);
-    }
+	/**
+	 * Combine duplicate property graph elements into a single property graph
+	 * element.
+	 * 
+	 * @param input
+	 * @return Tuple containing the single property graph element that contains
+	 *         the merged properties of all copies of this element.
+	 * @throws IOException
+	 */
+	@Override
+	public Tuple exec(Tuple input) throws IOException {
+		return merge(input);
+	}
 
-    /**
-     * Combine duplicate property graph elements into a single property graph element.
-     * @param input
-     * @return   Tuple containing the single property graph element that contains the merged properties of all copies
-     * of this element.
-     * @throws IOException
-     */
-    @Override
-    public Tuple exec(Tuple input) throws IOException {
-        DataBag valueBag = (DataBag) input.get(1);
+	/**
+	 * Provide return type information back to the Pig level.
+	 * 
+	 * @param input
+	 *            ignored
+	 * @return Schema for a property graph element packed into a unary tuple.
+	 */
+	@Override
+	public Schema outputSchema(Schema input) {
+		Schema pgeTuple = new Schema(new Schema.FieldSchema(
+				"property graph element (unary tuple)", DataType.TUPLE));
 
-        PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) new GBTupleFactory()
-                .newTuple(1);
+		return pgeTuple;
+	}
 
-        Iterator it = valueBag.iterator();
+	@Override
+	public String getInitial() {
+		return Initial.class.getName();
+	}
 
-        // the bag contains at least one element
-        SerializedGraphElement serializedGraphElement =
-                graphElementFromGroupedBagEntry((Tuple) it.next());
-        GraphElement graphElement = serializedGraphElement.graphElement();
+	@Override
+	public String getIntermed() {
+		return Intermed.class.getName();
+	}
 
-        if (graphElement == null) {
-            warn("Null property graph element", PigWarning.UDF_WARNING_1);
+	@Override
+	public String getFinal() {
+		return Final.class.getName();
+	}
+
+	static public class Initial extends EvalFunc<Tuple> {
+		public Tuple exec(Tuple input) throws IOException {
+			return merge(input);
+		}
+	}
+
+	static public class Intermed extends EvalFunc<Tuple> {
+		public Tuple exec(Tuple input) throws IOException {
+			return merge(input);
+		}
+	}
+
+	static public class Final extends EvalFunc<Tuple> {
+		public Tuple exec(Tuple input) throws IOException {
+			return merge(input);
+		}
+	}
+
+	static protected Tuple merge(Tuple input) throws ExecException {
+		PropertyGraphElementTuple outTuple = (PropertyGraphElementTuple) new GBTupleFactory()
+				.newTuple(1);
+
+		int size = input.size();
+		DataBag valueBag = null;
+		int elementIndex = size - 1;
+
+		valueBag = (DataBag) input.get(elementIndex);
+
+		Iterator it = valueBag.iterator();
+
+		Tuple firstTuple = (Tuple) it.next();
+		// the bag contains at least one element
+		SerializedGraphElement serializedGraphElement = (SerializedGraphElement) (firstTuple
+				.get(elementIndex));
+
+		GraphElement graphElement = serializedGraphElement.graphElement();
+
+		if (graphElement == null) {
 			return null;
-        }
+		}
 
-        while (it.hasNext()){
-            Tuple t = (Tuple)it.next();
-            GraphElement dupGraphElement = graphElementFromGroupedBagEntry(t).graphElement();
-            graphElement.getProperties().mergeProperties(dupGraphElement.getProperties());
-        }
+		while (it.hasNext()) {
+			Tuple t = (Tuple) it.next();
 
-        outTuple.set(0, serializedGraphElement);
-        return outTuple;
-    }
+			GraphElement dupGraphElement = ((SerializedGraphElement) t
+					.get(elementIndex)).graphElement();
 
-    /**
-     * Provide return type information back to the Pig level.
-     * @param input ignored
-     * @return Schema for a property graph element packed into a unary tuple.
-     */
-    @Override
-    public Schema outputSchema(Schema input) {
-        Schema pgeTuple = new Schema(new Schema.FieldSchema(
-                "property graph element (unary tuple)", DataType.TUPLE));
+			graphElement.getProperties().mergeProperties(
+					dupGraphElement.getProperties());
+		}
 
-        return pgeTuple;
-    }
+		outTuple.set(0, serializedGraphElement);
+		return outTuple;
+	}
 }
+

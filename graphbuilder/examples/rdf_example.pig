@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Intel Corporation.
+/* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,16 +18,15 @@
  */
 
 /**
- * This script demonstrates how to generate RDF triples from property graph elements
- * <p>
- * This script assumes it is being called from the Graph Builder home directory.
- * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
- * </p>
- */
+* <p>
+* This script assumes it is being called from the Graph Builder home directory.
+* You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
+* </p>
+* This script demonstrates how to generate RDF triples from property graph elements
+*/
 %default GB_HOME '.'
 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
-
 
 rmf /tmp/rdf_triples; --delete the output directory
 

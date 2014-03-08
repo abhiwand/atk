@@ -26,6 +26,9 @@ public class TitanCommandLineOptions {
     public static final String APPEND = "append";
     public static final String STORE = "titan";
     public static final String OVERWRITE = "overwrite";
+    public static final String PROPERTY_TYPES = "proptypes";
+    public static final String EDGE_SIGNATURES = "edgesignatures";
+    public static final String INFER_SCHEMA = "inferschema";
 
 
     // The constants for the key/index declarations.

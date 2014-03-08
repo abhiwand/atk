@@ -21,7 +21,6 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import sys
-import os
 
 #Coverage.py will attempt to import every python module to generate coverage statistics.
 #Since Pig is only available to Jython than this will cause the coverage tool to throw errors thus breaking the build.

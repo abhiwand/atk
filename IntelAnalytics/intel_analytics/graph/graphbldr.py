@@ -199,7 +199,7 @@ class GraphBuilderVertex:
         self.properties = properties
 
     def __repr__(self):
-        "'{0}', [{1}]".format(self.key,
+        return "'{0}', [{1}]".format(self.key,
                              ("'" + "', '".join(self.properties) + "'")
                               if len(self.properties) > 0 else "")
 
@@ -231,7 +231,7 @@ class GraphBuilderEdge:
         self.properties = properties
 
     def __repr__(self):
-        "('{0}','{1}','{2}'), [{3}]".format(
+        return "('{0}','{1}','{2}'), [{3}]".format(
                             self.source,
                             self.target,
                             self.label,

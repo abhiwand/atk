@@ -25,8 +25,10 @@ Titan/Rexster-specific configuration
 
 Includes the Rexster XML config file template and Graph Builder XML template
 """
-from intel_analytics.config import global_config as config
 from xml.etree.ElementTree import ElementTree, fromstring
+
+from intel_analytics.config import global_config as config
+
 
 __all__ = ['titan_config']
 

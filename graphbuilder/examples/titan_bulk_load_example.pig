@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Intel Corporation.
+/* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,35 +18,27 @@
  */
 
 /**
- * This script demonstrates how to bulk load the Titan graph database
  * <p>
  * This script assumes it is being called from the Graph Builder home directory.
  * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
  * </p>
+ * This script demonstrates how to bulk load the Titan graph database 
  */
 %default GB_HOME '.'
 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
 
-
 employees = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS
-		(id:chararray, name:chararray, age:chararray, dept:chararray, manager:chararray, underManager:chararray);
-employees_with_valid_ids = FILTER employees BY id!='';
+		(employee_id:int, name:chararray, age:int, dept:chararray, manager:int, underManager:chararray);
 
---GB requires the input data to be in HBase so
---we need to append HBase row keys to the input relation 
-final_relation = FOREACH employees_with_valid_ids GENERATE FLATTEN(CreateRowKey(*));
 
---create GB input table
-sh echo "disable 'gb_input_table'" | hbase shell
-sh echo "drop 'gb_input_table'" | hbase shell
-sh echo "create 'gb_input_table', {NAME=>'cf'}" | hbase shell --cf is the column family
+-- Customize the way property graph elements are created from raw input
+-- and build a undirected graph with the -e argument
+DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v employee_id=name,age,dept manager -d employee_id,manager,worksUnder,underManager"');
+pge = FOREACH employees GENERATE FLATTEN(CreatePropGraphElements(*)); -- generate the property graph elements
 
-STORE final_relation INTO 'hbase://gb_input_table' 
-  		USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('cf:id cf:name cf:age cf:dept cf:manager cf:underManager');
-	  
---build an undirected graph with the --edges argument		
+merged = MERGE_DUPLICATE_ELEMENTS(pge); -- merge the duplicate vertices and edges
+
+
 -- -O flag specifies overwriting the input Titan table
-LOAD_TITAN('gb_input_table', '"cf:id=cf:name,cf:age,cf:dept" "cf:manager"',
-			   '--edges "cf:id,cf:manager,worksUnder,cf:underManager"',
-			   'examples/hbase-titan-conf.xml', '-O'); 
+STORE_GRAPH(merged, '$GB_HOME/examples/hbase-titan-conf.xml', 'name:String,age:Integer,dept:String,underManager:String', 'worksUnder,underManager', '-O');

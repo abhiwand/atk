@@ -19,11 +19,8 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import static junit.framework.Assert.assertSame;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
-
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -34,8 +31,13 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import java.security.Permission;
+
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({HBaseInputConfiguration.class,HBaseUtils.class, GraphBuilderExit.class})
@@ -44,6 +46,24 @@ public class HBaseInputConfigurationTest {
     Logger     loggerMock;
     HBaseUtils hBaseUtilsMock;
     Scan       scanMock;
+
+	private static class ExitTrappedException extends SecurityException {
+	}
+
+	private static void forbidSystemExitCall() {
+		final SecurityManager securityManager = new SecurityManager() {
+			public void checkPermission(Permission permission) {
+				if (permission.getName().startsWith("exitVM")) {
+					throw new ExitTrappedException();
+				}
+			}
+		};
+		System.setSecurityManager(securityManager);
+	}
+
+	private static void enableSystemExitCall() {
+		System.setSecurityManager(null);
+	}
 
     @BeforeClass
     public static final void beforeClass(){
@@ -71,13 +91,29 @@ public class HBaseInputConfigurationTest {
 
         HBaseInputConfiguration hbic = new HBaseInputConfiguration(tableName);
 
-
-        assert(hbic.usesHBase());
+		assertTrue(hbic.usesHBase());
         assertSame(hbic.getMapperClass(), HBaseReaderMapper.class);
 
         // conceivably you could vary this, but you don't want to violate it accidentally
-        assert(hbic.getDescription().contains(tableName));
+		assertTrue(hbic.getDescription().contains(tableName));
+
     }
 
+	@Test
+	public void testFailure() throws Exception {
+		String tableName = "fakeyTable";
+		hBaseUtilsMock = mock(HBaseUtils.class);
+		mockStatic(HBaseUtils.class);
+		when(HBaseUtils.getInstance()).thenReturn(hBaseUtilsMock);
+		when(hBaseUtilsMock.tableExists(tableName)).thenReturn(false);
 
+		forbidSystemExitCall();
+		try {
+			HBaseInputConfiguration hbic = new HBaseInputConfiguration(
+					tableName);
+		} catch (Throwable t) {
+			assertSame(t.getClass(), ExitTrappedException.class);
+		}
+		enableSystemExitCall();
+	}
 }

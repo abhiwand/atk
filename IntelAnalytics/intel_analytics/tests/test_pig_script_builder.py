@@ -1,7 +1,7 @@
 import unittest
 from mock import MagicMock
 from intel_analytics.table.hbase.schema import ETLSchema
-from intel_analytics.table.hbase.table import MAX_ROW_KEY, HBaseTable
+from intel_analytics.table.hbase.table import MAX_ROW_KEY
 from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
 
 
