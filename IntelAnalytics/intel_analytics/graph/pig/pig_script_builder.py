@@ -161,14 +161,14 @@ class GBPigScriptBuilder(object):
         #this to be on the safe side
         statements.append("rmf /tmp/graphdb_storage_sequencefile")
         statements.append("IMPORT '%s';" % global_config['graph_builder_pig_udf'])
+        
+        for e in edge_list:
+            need_dynamic_edge_label = (False if e.label.find("dynamic:") == -1 else True)        
 
         #no additional vertices/edges registered, use regular LOAD_TITAN
         #@Deprecated: LOAD_TITAN should be removed later, we want to move to a single bulk loading pig macro
         if registered_vertex_properties == None and registered_edge_properties == None:
             edges = ' '.join(map(lambda e: '"' + self.edge_str(e) + '"', edge_list))
-            need_dynamic_edge_label = False
-            for edge_rule in edges.split():
-                need_dynamic_edge_label = (False if edge_rule.find("dynamic:") == -1 else True)
 
             if need_dynamic_edge_label:
                 vertex_rule = ' '.join(map(lambda v: '"' + self.vertex_str(v) + '"', vertex_list))
@@ -242,8 +242,12 @@ class GBPigScriptBuilder(object):
                 vertex_list.append(registered_vertex_properties.vertex)
             if registered_edge_properties != None:
                 edge_list.append(registered_edge_properties.edge)
-            statements.append(
-                self._build_store_graph_statement(final_union_alias, gb_conf_file, vertex_list, edge_list, type_table,
+                
+            if need_dynamic_edge_label:
+                statements.append(self._build_store_graph_infer_schema_statement(final_union_alias, gb_conf_file,
+                                                                                 other_args))                
+            else:
+                statements.append(self._build_store_graph_statement(final_union_alias, gb_conf_file, vertex_list, edge_list, type_table,
                                                   other_args.strip()))
 
         return "\n".join(statements)
