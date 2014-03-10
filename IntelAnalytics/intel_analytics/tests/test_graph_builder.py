@@ -31,6 +31,7 @@ from mock import patch, Mock, MagicMock
 from testutils import RegistryCallableFactory, get_diff_str
 from intel_analytics.graph.pig.pig_script_builder import GBPigScriptBuilder
 from intel_analytics.graph.biggraph import GraphBuilderVertex, GraphBuilderEdge
+from intel_analytics.config import global_config
 
 get_registry_callable = RegistryCallableFactory().get_registry_callable
 pig_script_builder = GBPigScriptBuilder()
@@ -39,6 +40,8 @@ _here_folder = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
     os.path.join(os.path.join(_here_folder, os.pardir), os.pardir)))
 
+
+hbase_column_family = global_config['hbase_column_family']
 
 if __name__ == '__main__':
     sys.modules['bulbs.titan'] = __import__('mock_bulbs_titan')
@@ -315,10 +318,10 @@ colD,colB,edgeDB,colU"""
         edge_list.append(GraphBuilderEdge(('v_5', 'v_1', 'label_5'), ['e_prop_1', 'e_prop_2']))
         
         load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
-        expected = "LOAD_TITAN('source_table', '\"etl-cf:v_1=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:v_2=etl-cf:v_prop_1,etl-cf:v_prop_2\" "\
-         "\"etl-cf:v_3=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:v_4=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:v_5=etl-cf:v_prop_1,etl-cf:v_prop_2\"', " \
-         "'-d \"etl-cf:v_1,etl-cf:v_2,label_1,etl-cf:e_prop_1,etl-cf:e_prop_2\" \"etl-cf:v_2,etl-cf:v_3,label_2,etl-cf:e_prop_1,etl-cf:e_prop_2\" \"etl-cf:v_3,etl-cf:v_4,label_3,etl-cf:e_prop_1,etl-cf:e_prop_2\" "\
-         "\"etl-cf:v_4,etl-cf:v_5,label_4,etl-cf:e_prop_1,etl-cf:e_prop_2\" \"etl-cf:v_5,etl-cf:v_1,label_5,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '');"
+        expected = "LOAD_TITAN('source_table', '\"{0}v_1={0}v_prop_1,{0}v_prop_2\" \"{0}v_2={0}v_prop_1,{0}v_prop_2\" "\
+         "\"{0}v_3={0}v_prop_1,{0}v_prop_2\" \"{0}v_4={0}v_prop_1,{0}v_prop_2\" \"{0}v_5={0}v_prop_1,{0}v_prop_2\"', " \
+         "'-d \"{0}v_1,{0}v_2,label_1,{0}e_prop_1,{0}e_prop_2\" \"{0}v_2,{0}v_3,label_2,{0}e_prop_1,{0}e_prop_2\" \"{0}v_3,{0}v_4,label_3,{0}e_prop_1,{0}e_prop_2\" "\
+         "\"{0}v_4,{0}v_5,label_4,{0}e_prop_1,{0}e_prop_2\" \"{0}v_5,{0}v_1,label_5,{0}e_prop_1,{0}e_prop_2\"', 'conf.xml', '');".format(hbase_column_family)
         self.assertEqual(load_titan, expected)
 
     def test_gb_load_titan_overwrite(self):
@@ -330,12 +333,12 @@ colD,colB,edgeDB,colU"""
         edge_list = []
         edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2']))
         load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
-        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-d \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-O');"
+        expected = "LOAD_TITAN('source_table', '\"{0}from_vertex={0}v_prop_1,{0}v_prop_2\" \"{0}to_vertex={0}v_prop_1,{0}v_prop_2\"', '-d \"{0}from_vertex,{0}to_vertex,label,{0}e_prop_1,{0}e_prop_2\"', 'conf.xml', '-O');".format(hbase_column_family)
         self.assertEqual(load_titan, expected)
 
         directed = False
         load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
-        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-e \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-O');"
+        expected = "LOAD_TITAN('source_table', '\"{0}from_vertex={0}v_prop_1,{0}v_prop_2\" \"{0}to_vertex={0}v_prop_1,{0}v_prop_2\"', '-e \"{0}from_vertex,{0}to_vertex,label,{0}e_prop_1,{0}e_prop_2\"', 'conf.xml', '-O');".format(hbase_column_family)
         self.assertEqual(load_titan, expected)
                 
     def test_gb_load_titan_append(self):
@@ -347,12 +350,12 @@ colD,colB,edgeDB,colU"""
         edge_list = []
         edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2']))
         load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
-        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-d \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-a');"
+        expected = "LOAD_TITAN('source_table', '\"{0}from_vertex={0}v_prop_1,{0}v_prop_2\" \"{0}to_vertex={0}v_prop_1,{0}v_prop_2\"', '-d \"{0}from_vertex,{0}to_vertex,label,{0}e_prop_1,{0}e_prop_2\"', 'conf.xml', '-a');".format(hbase_column_family)
         self.assertEqual(load_titan, expected)
 
         directed = False
         load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
-        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-e \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-a');"
+        expected = "LOAD_TITAN('source_table', '\"{0}from_vertex={0}v_prop_1,{0}v_prop_2\" \"{0}to_vertex={0}v_prop_1,{0}v_prop_2\"', '-e \"{0}from_vertex,{0}to_vertex,label,{0}e_prop_1,{0}e_prop_2\"', 'conf.xml', '-a');".format(hbase_column_family)
         self.assertEqual(load_titan, expected)
         
     def test_gb_load_titan_flatten(self):
@@ -364,12 +367,12 @@ colD,colB,edgeDB,colU"""
         edge_list = []
         edge_list.append(GraphBuilderEdge(('from_vertex', 'to_vertex', 'label'), ['e_prop_1', 'e_prop_2']))
         load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
-        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-d \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-f');"
+        expected = "LOAD_TITAN('source_table', '\"{0}from_vertex={0}v_prop_1,{0}v_prop_2\" \"{0}to_vertex={0}v_prop_1,{0}v_prop_2\"', '-d \"{0}from_vertex,{0}to_vertex,label,{0}e_prop_1,{0}e_prop_2\"', 'conf.xml', '-f');".format(hbase_column_family)
         self.assertEqual(load_titan, expected)
 
         directed = False
         load_titan = pig_script_builder._build_load_titan_statement(directed, 'conf.xml', 'source_table', vertex_list, edge_list, other_args)
-        expected = "LOAD_TITAN('source_table', '\"etl-cf:from_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\" \"etl-cf:to_vertex=etl-cf:v_prop_1,etl-cf:v_prop_2\"', '-e \"etl-cf:from_vertex,etl-cf:to_vertex,label,etl-cf:e_prop_1,etl-cf:e_prop_2\"', 'conf.xml', '-f');"
+        expected = "LOAD_TITAN('source_table', '\"{0}from_vertex={0}v_prop_1,{0}v_prop_2\" \"{0}to_vertex={0}v_prop_1,{0}v_prop_2\"', '-e \"{0}from_vertex,{0}to_vertex,label,{0}e_prop_1,{0}e_prop_2\"', 'conf.xml', '-f');".format(hbase_column_family)
         self.assertEqual(load_titan, expected)
         
     #STORE_GRAPH macro tests
