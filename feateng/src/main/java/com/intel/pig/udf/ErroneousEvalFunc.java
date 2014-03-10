@@ -22,13 +22,13 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.pig.udf;
 
-import java.io.IOException;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+
+import java.io.IOException;
 
 /**
  * Demonstrates how to handle errors in UDFs. We need to specify an error handler when we define the UDF.

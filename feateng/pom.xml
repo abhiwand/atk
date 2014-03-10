@@ -99,6 +99,12 @@
 			<version>${dep.hbase.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>11.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>com.jayway.restassured</groupId>
 			<artifactId>rest-assured</artifactId>
 			<version>${json.path.version}</version>
@@ -134,12 +140,6 @@
 			<groupId>jline</groupId>
 			<artifactId>jline</artifactId>
 			<version>0.9.94</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>11.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

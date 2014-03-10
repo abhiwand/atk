@@ -1,9 +1,9 @@
 package  mapreduce;
 
+import org.apache.hadoop.io.Text;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.hadoop.io.Text;
 
 public class Rdf {
 	private Text subject;

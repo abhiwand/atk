@@ -19,11 +19,11 @@
  */
 package com.intel.hadoop.graphbuilder.graphelements;
 
+import com.intel.hadoop.graphbuilder.types.PropertyMap;
+import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.HashUtil;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.types.StringType;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -241,7 +241,10 @@ public class Vertex<VidNameType extends WritableComparable<VidNameType>>
         } else if (vertexId == null && properties != null) {
             return "null vertex with properties (???) " + properties.toString();
         } else {
-            return this.vertexId.toString() +  properties.toString();
+        	if(properties.getPropertyKeys().size() > 0)
+        		return this.vertexId.toString() + "\t" +  properties.toString();
+        	else
+        		return this.vertexId.toString();
         }
     }
 

@@ -20,11 +20,12 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-from intel_analytics.graph.titan import render
-
 import unittest
 import json
+
 from mock import Mock
+
+from intel_analytics.graph.titan import render
 
 
 class TestConversionFunctions(unittest.TestCase):

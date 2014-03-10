@@ -28,19 +28,18 @@ import com.intel.giraph.io.EdgeData4CFWritable;
 import com.intel.giraph.io.EdgeData4CFWritable.EdgeType;
 import com.intel.giraph.io.VertexData4CFWritable;
 import com.intel.giraph.io.VertexData4CFWritable.VertexType;
-
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
+import org.apache.giraph.io.formats.TextVertexInputFormat;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.Vector;
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.apache.mahout.math.Vector;
-import org.apache.mahout.math.DenseVector;
-import org.apache.giraph.io.formats.TextVertexInputFormat;
 
 import java.io.IOException;
 import java.util.List;

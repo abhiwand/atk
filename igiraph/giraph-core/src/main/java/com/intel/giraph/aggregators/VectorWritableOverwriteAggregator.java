@@ -24,8 +24,8 @@
 package com.intel.giraph.aggregators;
 
 import org.apache.giraph.aggregators.BasicAggregator;
-import org.apache.mahout.math.VectorWritable;
 import org.apache.mahout.math.DenseVector;
+import org.apache.mahout.math.VectorWritable;
 
 /**
  * Aggregator for getting max integer value.

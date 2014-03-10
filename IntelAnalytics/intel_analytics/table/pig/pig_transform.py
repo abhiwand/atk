@@ -47,7 +47,7 @@ def generate_hbase_store_args(features, cmd_line_args):
                 hbase_store_args += '%s ' % ((cf+f))
         else:
             hbase_store_args += '%s ' % ((cf+f))
-    
+
     hbase_store_args += (cf+cmd_line_args.new_feature_name)
     return hbase_store_args
 
@@ -132,7 +132,12 @@ def main(argv):
     
     if (cmd_line_args.input == cmd_line_args.output) and (not cmd_line_args.keep_original_feature):#in-place transformation AND don't keep source
         raise Exception("For in-place transformations the source/original feature has to be kept")
-    
+
+    #when input column name is the same as output column name
+    #will store the newly generated output column to replace the input column
+    if cmd_line_args.new_feature_name == cmd_line_args.feature_to_transform:
+        cmd_line_args.keep_original_feature  = False
+
     features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names)

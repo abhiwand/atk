@@ -22,7 +22,6 @@
 ##############################################################################
 import os
 import re
-import sys #used by unit tests
 import collections
 
 from intel_analytics.config import Registry, \
@@ -37,11 +36,11 @@ from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
 import sys
 
 from schema import ETLSchema, merge_schema
+from range import ETLRange
 from intel_analytics.table.hbase.hbase_client import ETLHBaseClient
 from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
-from pydoop.hdfs.path import exists
 
 MAX_ROW_KEY = 'max_row_key'
 
@@ -102,6 +101,150 @@ class HBaseTable(object):
         self.table_name = table_name
         self.file_name = file_name
 
+    def __get_aggregation_list_and_schema(self, aggregation_arguments, etl_schema, new_schema_def):
+
+	aggregation_list = []
+	for i in aggregation_arguments:
+	    function_name = column_to_apply = new_column_name = ""
+	    if isinstance(i, tuple):
+		function_name, column_to_apply, new_column_name = i[0], i[1], (i[1] if len(i) == 2 else i[2])
+	    else:
+		function_name = i
+		if (function_name == EvalFunctions.Aggregation.COUNT):
+		    column_to_apply, new_column_name = "*", "count"
+		else:
+                    raise HBaseTableException("Invalid aggregation: " + function_name)
+		
+	    try:
+	        aggregation_list.append(EvalFunctions.to_string(function_name))
+	    except:
+		raise HBaseTableException('The specified aggregation function is invalid: ' + function_name)
+
+
+	    if (column_to_apply != "*" and column_to_apply not in etl_schema.feature_names):
+                raise HBaseTableException("Column %s does not exist" % column_to_apply)
+
+	    aggregation_list.append(column_to_apply);
+	    aggregation_list.append(new_column_name)
+
+
+	    if (function_name in [EvalFunctions.Aggregation.COUNT, EvalFunctions.Aggregation.COUNT_DISTINCT]):
+	        new_schema_def += ",%s:int" % (new_column_name)
+	    elif (function_name in [EvalFunctions.Aggregation.DISTINCT]):
+	        new_schema_def += ",%s:chararray" % (new_column_name)
+	    else:
+	        new_schema_def += ",%s:%s" % (new_column_name, 
+					          etl_schema.get_feature_type(column_to_apply))
+
+	return aggregation_list, new_schema_def
+
+    def aggregate(self,
+		  aggregate_frame_name,
+		  group_by_columns,
+		  aggregation_arguments,
+		  overwrite):
+		
+        #load schema info
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+	# You should check if the group_by_columns are valid or not
+
+	new_schema_def = ""
+	if (len(group_by_columns) == 1) :
+	    new_schema_def += "AggregateGroup:" + etl_schema.get_feature_type(group_by_columns[0])
+	else:
+            new_schema_def += "AggregateGroup:chararray"
+
+	aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
+	
+        args = get_pig_args('pig_aggregation.py')
+
+
+	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
+        hbase_table = HBaseTable(new_table_name, self.file_name)
+
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+
+        args.extend(['-i', self.table_name,
+                 '-o', new_table_name, 
+		 '-a', " ".join(aggregation_list),
+		 '-g', ",".join(group_by_columns),
+                 '-u', feature_names_as_str, '-r', feature_types_as_str,
+                ])
+
+        logger.debug(args)
+
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not apply transformation')
+
+
+	new_etl_schema = ETLSchema()
+	new_etl_schema.populate_schema(new_schema_def)
+        new_etl_schema.save_schema(new_table_name)
+
+	return hbase_table
+
+    def aggregate_on_range(self,
+		  aggregate_frame_name,
+		  group_by_column,
+		  range,
+		  aggregation_arguments,
+		  overwrite):
+		
+        #load schema info
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+	# You should check if the group_by_columns are valid or not
+
+	new_schema_def = "AggregateGroup:chararray"
+
+        aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
+	
+        args = get_pig_args('pig_range_aggregation.py')
+        _range = ETLRange(range).toString()
+
+
+	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
+        hbase_table = HBaseTable(new_table_name, self.file_name)
+
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+
+        args.extend(['-i', self.table_name,
+                 '-o', new_table_name, 
+		 '-a', " ".join(aggregation_list),
+		 '-g', group_by_column,
+		 '-l', _range,
+                 '-u', feature_names_as_str, '-r', feature_types_as_str,
+                ])
+
+        logger.debug(args)
+
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not apply transformation')
+
+
+	new_etl_schema = ETLSchema()
+	new_etl_schema.populate_schema(new_schema_def)
+        new_etl_schema.save_schema(new_table_name)
+
+	return hbase_table
+
     def transform(self,
                   column_name,
                   new_column_name,
@@ -128,7 +271,10 @@ class HBaseTable(object):
         # check input: can be a single column or an expression of multiple columns
         # accepted format exampe: transform('(a+b*(5+c))-d', ...
         if transformation == EvalFunctions.Math.ARITHMETIC:
-            cols = re.split('\+|-|\*|\/|\%', re.sub('[()]', '', column_name))
+            # basic syntax check of matching parentheses
+            if column_name.count('(') != column_name.count(')'):
+                raise HBaseTableException("Arithmetic expression syntax error!")
+            cols = re.split('\+|-|\*|\/|\%', re.sub('[() ]', '', column_name))
             if len(cols) < 2:
                 raise HBaseTableException("Arithmetic operations need more than 1 input")
             for col in cols:
@@ -168,7 +314,7 @@ class HBaseTable(object):
             args += ['-k']
 
         logger.debug(args)
-
+        #print ' '.join(map(str,args))
 
         return_code = call(args, report_strategy=etl_report_strategy())
 
@@ -182,8 +328,162 @@ class HBaseTable(object):
         
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types
-        etl_schema.feature_types.append('bytearray')
+        if transformation == EvalFunctions.Math.RANDOM:
+            etl_schema.feature_types.append('float')
+        else:
+            etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
+
+    def _update_schema_for_overwrite(self, etl_schema, output_column):
+        idx =  etl_schema.feature_names.index(output_column)
+        del etl_schema.feature_types[idx]
+        del etl_schema.feature_names[idx]
+
+
+    def kfold_split(self, k, test_fold_id, fold_id_column, split_name, output_column, update, overwrite):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        randomize = False
+        if update or (fold_id_column not in etl_schema.feature_names):
+            randomize = True
+
+        if update:
+            self._update_schema_for_overwrite(etl_schema, randomization_column)
+
+        if not isinstance(fold_id_column, basestring):
+            raise TypeError("fold_id_column should be a string.")
+        elif fold_id_column[0].isdigit():
+            raise ValueError("fold_id_column %s starts with number.\n"
+                             "It is not supported." % fold_id_column)
+
+        if not isinstance(output_column, basestring):
+            raise TypeError("output_column should be a string.")
+        elif output_column[0].isdigit():
+            raise ValueError("output_column %s starts with number.\n"
+                             "It is not supported" % output_column)
+
+        if output_column in etl_schema.feature_names:
+            if not overwrite:
+                raise ValueError("Column %s already existed and overwrite is False.\n"
+                                 "please set overwrite=True if you meant to overwrite." % output_column)
+            else:
+                self._update_schema_for_overwrite(etl_schema, output_column)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        if not isinstance(test_fold_id, int):
+            raise TypeError("test_fold_id should be an integer.")
+        elif test_fold_id > k or test_fold_id < 1:
+            raise ValueError("test_fold_id is %s. It should in the range of [1, %s]" % (test_fold_id, k))
+
+        if not isinstance(split_name, list):
+            raise TypeError("split_name should be a list.")
+        elif len(split_name) != 2:
+            raise ValueError("The size of split_name is %s. The supported size is 2." % len(split_name))
+
+
+        args = get_pig_args('pig_kfold_split.py')
+
+        args += ['-it', self.table_name,
+                 '-ot', self.table_name,
+                 '-k', str(k),
+                 '-ic', fold_id_column,
+                 '-f', str(test_fold_id),
+                 '-r', str(randomize),
+                 '-n', str(split_name),
+                 '-oc', output_column,
+                 '-fn', feature_names_as_str,
+                 '-ft', feature_types_as_str,]
+
+        #print ' '.join(map(str,args))
+        logger.debug(args)
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Failed to run kfold_split')
+
+        if randomize:
+            etl_schema.feature_names.append(fold_id_column)
+            etl_schema.feature_types.append('float')
+        etl_schema.feature_names.append(output_column)
+        etl_schema.feature_types.append('chararray')
+        etl_schema.save_schema(self.table_name)
+
+
+    def percent_split(self, randomization_column, split_percent, split_name, output_column, update, overwrite):
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        randomize = False
+        if update or (randomization_column not in etl_schema.feature_names):
+            randomize = True
+
+        if update:
+            self._update_schema_for_overwrite(etl_schema, randomization_column)
+
+        if not isinstance(randomization_column, basestring):
+            raise TypeError("randomization_column should be a string.")
+        elif randomization_column[0].isdigit():
+            raise ValueError("randomization_column %s starts with number.\n"
+                             "It is not supported." % randomization_column)
+
+        if not isinstance(output_column, basestring):
+            raise TypeError("output_column should be a string.")
+        elif output_column[0].isdigit():
+            raise ValueError("output_column %s starts with number.\n"
+                             "It is not supported." % output_column)
+
+        if output_column in etl_schema.feature_names:
+            if not overwrite:
+                raise ValueError("Column %s already existed and overwrite is False.\n"
+                                 "please set overwrite=True if you meant to overwrite." % output_column)
+            else:
+                self._update_schema_for_overwrite(etl_schema, output_column)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        if not isinstance(split_name, list):
+            raise TypeError("split_name should be a list.")
+        elif not isinstance(split_percent, list):
+            raise TypeError("split_percent should be a list.")
+        elif len(split_percent) != len(split_name):
+            raise ValueError("The size of split_percent is %s. The size of split_name is %s. "
+                             "Please make sure they are with the same size" %(len(split_percent), len(split_name) ))
+
+        percent_sum = sum(split_percent)
+        if sum(split_percent) != 100:
+            raise ValueError("Sum of segement percentages is %s. It should be 100." % percent_sum)
+
+
+        args = get_pig_args('pig_percent_split.py')
+
+        args += ['-it', self.table_name,
+                 '-ot', self.table_name,
+                 '-ic', randomization_column,
+                 '-r', str(randomize),
+                 '-p', str(split_percent),
+                 '-n', str(split_name),
+                 '-oc', output_column,
+                 '-fn', feature_names_as_str,
+                 '-ft', feature_types_as_str,]
+
+        #print ' '.join(map(str,args))
+        logger.debug(args)
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Failed to run percent_split')
+
+        if randomize:
+            etl_schema.feature_names.append(randomization_column)
+            etl_schema.feature_types.append('float')
+        etl_schema.feature_names.append(output_column)
+        etl_schema.feature_types.append('chararray')
+        etl_schema.save_schema(self.table_name)
+
 
     def copy(self, new_table_name, feature_names, feature_types):
         args = get_pig_args('pig_copy_table.py')
@@ -197,10 +497,62 @@ class HBaseTable(object):
 
         return HBaseTable(new_table_name, self.file_name)
 
+    def drop(self, filter, column, isregex, inplace, new_table_name):
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        feature_names_as_str = etl_schema.get_feature_names_as_CSV()
+        feature_types_as_str = etl_schema.get_feature_types_as_CSV()
+
+        args = get_pig_args('pig_filter.py')
+
+	if (inplace):
+	    hbase_table_name = self.table_name
+            hbase_table = HBaseTable(hbase_table_name, self.file_name)
+	else:
+             # need to delete/create output table so that we can write the remaining rows after filtering 
+             hbase_table_name = _create_table_name(new_table_name, True)
+             hbase_table = HBaseTable(hbase_table_name, self.file_name)
+             with ETLHBaseClient() as hbase_client:
+                 hbase_client.drop_create_table(hbase_table_name,
+                                           [config['hbase_column_family']])
+
+        args.extend(['-i', self.table_name,
+                 '-o', hbase_table_name, 
+		 '-n', feature_names_as_str,
+                 '-t', feature_types_as_str,
+		 '-p', 'True' if inplace else 'False',
+		 '-c', column,
+		 '-r', 'True' if isregex else 'False',
+		 '-f', filter])
+
+        logger.debug(args)
+        
+        return_code = call(args, report_strategy=etl_report_strategy())
+
+        if return_code:
+            raise HBaseTableException('Could not drop rows using the filter')
+
+	if not inplace:
+	    new_etl_schema = ETLSchema()
+	    new_etl_schema.populate_schema(etl_schema.get_schema_as_str())
+            new_etl_schema.save_schema(hbase_table_name)
+
+	return hbase_table
+
 
     def drop_columns(self, columns):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
+
+        list_columns_to_drop = columns.split(',')
+        bad_columns = "; ".join(["Column '{0}' not in frame"
+                                 .format(c) for c in list_columns_to_drop
+                                 if c not in etl_schema.feature_names])
+        if len(bad_columns) > 0:
+            raise Exception(bad_columns)
+
         args = []
 
         args += ['hadoop',
@@ -219,8 +571,6 @@ class HBaseTable(object):
         # save the schema for the new table
         new_feature_names = []
         new_feature_types = []
-
-        list_columns_to_drop = columns.split(',')
 
         for feature in etl_schema.feature_names:
             if feature not in list_columns_to_drop:
@@ -374,6 +724,120 @@ class HBaseTable(object):
         for i, column_name in enumerate(etl_schema.feature_names):
             columns[column_name] = etl_schema.feature_types[i]
         return columns
+
+    def join(self,
+             right=None,
+             how='left',
+             left_on=None,
+             right_on=None,
+             suffixes=None,
+             join_frame_name='',
+             overwrite=False):
+
+        """
+        Perform SQL JOIN on the given list of HBaseTable(s), similar to pandas.DataFrame.join
+
+        Parameters
+        ----------
+        right: List
+            List of HBaseTable(s) to be joined, can be itself
+        left_on: String
+            String of columnes from left table, space or comma separated
+            e.g., 'c1,c2' or 'b2 b3'
+        right_on: List
+            List of strings, each of which is in comma separated indicating
+            columns to be joined corresponding to the list of tables as 
+            the 'right', e.g., ['c1,c2', 'b2 b3']
+        how: String
+            The type of join, INNER, OUTER, LEFT, RIGHT
+        suffixes: List
+            List of strings, each of which is used as suffix to the column
+            names from left and right of the join, e.g. ['_x', '_y1', '_y2'].
+            Note the first one is always for the left
+        join_frame_name: String
+            Output BigDataFrame name
+
+        Return
+        ------
+        BigDataFrame
+
+        """
+
+        if not (right and isinstance(right, list) and \
+                all(isinstance(ht, HBaseTable) for ht in right)):
+            raise HBaseTableException("Error! Invalid input 'right' %s, type %s!" \
+                                      % (right, type(right)))
+
+        # allowed join types: python outer is actually full
+        if not how.lower() in ['inner', 'outer', 'left', 'right']:
+            raise HBaseTableException("Error! Invalid input 'how' %s, type %s!" \
+                                      % (how, type(how)))
+
+        if not left_on:
+            raise HBaseTableException("Error! Invalid input 'left_on' %s, type %s!" \
+                                      % (left_on, type(left_on)))
+
+        if not (right_on and isinstance(right_on, list) and \
+                (len(right_on) == len(right))):
+            raise HBaseTableException("Error! Invalid input 'right_on' %s, type %s!" \
+                                      % (right_on, type(right_on)))
+
+        if not (suffixes and isinstance(suffixes, list) and \
+                (len(suffixes) == (len(right) + 1))):
+            raise HBaseTableException("Error! Invalid input 'suffixes' %s, type %s!" \
+                                      % (suffixes, type(suffixes)))
+
+        # delete/create output table to write the joined features
+        if not join_frame_name:
+            raise HBaseTableException('In-place join is currently not supported')
+
+        # in-place?
+        join_table_name = _create_table_name(join_frame_name, overwrite=overwrite)
+        try:
+            with ETLHBaseClient() as hbase_client:
+                hbase_client.drop_create_table(join_table_name, [config['hbase_column_family']])
+        except KeyError:
+            raise KeyError("Could not create output table for '" + output + "'")
+
+        # prepare the script
+        tables = [self.table_name]
+        tables.extend([x.table_name for x in right])
+        on = [left_on]
+        on.extend(right_on)
+        pig_builder = PigScriptBuilder()
+        join_pig_script, join_pig_schema = pig_builder.get_join_statement(ETLSchema(),      \
+                                                                          tables=tables,    \
+                                                                          how=how.lower(),  \
+                                                                          on=on,            \
+                                                                          suffixes=suffixes,\
+                                                                          join_table_name=join_table_name)
+
+        # FIXME: move the script name, path to a class container instead of hardcoding it
+        args = get_pig_args('pig_execute.py')
+        args += ['-s', join_pig_script]
+
+        try:
+            join_pig_report = PigJobReportStrategy();
+            return_code = call(args, report_strategy=[etl_report_strategy(), join_pig_report])
+            if return_code:
+                raise HBaseTableException('Failed to join data.')
+        except:
+            raise HBaseTableException('Could not join frame')
+
+        # the schema is populated now
+        join_table_properties = {}
+        join_table_properties[MAX_ROW_KEY] = join_pig_report.content['input_count']
+        join_etl_schema = ETLSchema()
+        join_etl_schema.populate_schema(join_pig_schema)
+        join_etl_schema.save_schema(join_table_name)
+        join_etl_schema.save_table_properties(join_table_name, join_table_properties)
+
+        # save the table name
+        hbase_registry.register(join_frame_name, join_table_name, overwrite=overwrite)
+
+        # file name is fake, for information purpose only
+        join_file_name = 'joined from ' + ', '.join(tables)
+        return BigDataFrame(join_frame_name, HBaseTable(join_table_name, join_file_name))
 
     @classmethod
     def delete_table(cls, victim_table_name):
@@ -714,7 +1178,7 @@ class HBaseFrameBuilder(FrameBuilder):
         if not is_args_final:
             args += ['-m', original_max_row_key]
 
-        pig_report = PigJobReportStrategy();
+        pig_report = PigJobReportStrategy()
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
         if return_code:
             raise DataAppendException('Failed to append data.')
@@ -731,8 +1195,27 @@ class HBaseFrameBuilder(FrameBuilder):
         if is_local_run():
             if not os.path.isfile(file_name):
                 raise Exception('ERROR: File does NOT exist ' + file_name + ' locally')
-        elif not exists(file_name):
+        elif not exists_hdfs(file_name):
             raise Exception('ERROR: File does NOT exist ' + file_name + ' in HDFS')
+
+    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name, overwrite=False):
+        """
+        Joins a left BigDataFrame with a list of (right) BigDataFrame(s)
+        """
+        return left.join(right,     \
+                         how=how,   \
+                         left_on=left_on,   \
+                         right_on=right_on, \
+                         suffixes=suffixes, \
+                         join_frame_name=join_frame_name, \
+                         overwrite=overwrite);
+
+def exists_hdfs(file_name):
+    try:
+        from pydoop.hdfs.path import exists
+        return exists(file_name)
+    except Exception as e:
+        raise Exception('ERROR: Python unable to check HDFS: ' + e.message)
 
 
 class HBaseFrameBuilderFactory(object):
