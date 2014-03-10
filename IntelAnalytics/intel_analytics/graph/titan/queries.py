@@ -225,8 +225,8 @@ class GraphQueries(object):
             v0._().bothE %(edge_label)s %(orderedges)s[0..<%(top_n)d]
             .bothV.dedup.as('v1')
             .outE %(edge_label)s 
-            .as('edge')
-            .inV.retain(v0).as('v2')
+            .as('edge').gather.scatter
+            .inV.retain('v1').as('v2')
             .select(['v1','v2','edge'])   
         """ % {'vids': ', '.join(["g.v(%s)" % (v) for v in vids]),
                'edge_label': "('" + edge_label + "')" if edge_label else '',
