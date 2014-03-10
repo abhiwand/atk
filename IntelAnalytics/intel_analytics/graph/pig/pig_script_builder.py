@@ -162,6 +162,8 @@ class GBPigScriptBuilder(object):
         statements.append("rmf /tmp/graphdb_storage_sequencefile")
         statements.append("IMPORT '%s';" % global_config['graph_builder_pig_udf'])
         
+        need_dynamic_edge_label = None
+        
         for e in edge_list:
             need_dynamic_edge_label = (False if e.label.find("dynamic:") == -1 else True)        
 
