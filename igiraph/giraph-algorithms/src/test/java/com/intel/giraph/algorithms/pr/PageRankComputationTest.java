@@ -28,7 +28,6 @@ import com.google.common.collect.Maps;
 import com.intel.giraph.io.formats.LongNullTextEdgeInputFormat;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.io.formats.IdWithValueTextOutputFormat;
-import org.apache.giraph.io.formats.JsonLongDoubleFloatDoubleVertexInputFormat;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.apache.log4j.Logger;
 import org.junit.After;

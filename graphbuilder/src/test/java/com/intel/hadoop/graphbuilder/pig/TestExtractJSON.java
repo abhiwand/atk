@@ -18,36 +18,31 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.Arrays;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
+
 public class TestExtractJSON {
 	EvalFunc<?> testFn;
-	String testJson = "{ \"Name\": \"T-Shirt 2\"," + "\"Sizes\": [ { \"Size\": \"Large\", \"Price\": 20.00 }, { \"Size\": \"Medium\", \"Price\": 11.00 }, { \"Size\": \"Small\", \"Price\": 5.00 } ], \"Colors\": [ \"Black\", \"White\" ]}";
+	String testJson = "{ \"Name\": \"T-Shirt 2\","
+			+ "\"Sizes\": [ { \"Size\": \"Large\", \"Price\": 20.00 }, { \"Size\": \"Medium\", \"Price\": 11.00 }, { \"Size\": \"Small\", \"Price\": 5.00 } ], \"Colors\": [ \"Black\", \"White\" ]}";
 
 	@Before
 	public void setup() throws Exception {
-		System.out.println("*** Starting ExtractJSONField tests. ***");
 		testFn = (EvalFunc<?>) PigContext
-				.instantiateFuncFromSpec(
-                        "com.intel.pig.udf.eval.ExtractJSONField");
-		System.out.println(testJson);
+				.instantiateFuncFromSpec("com.intel.pig.udf.eval.ExtractJSONField");
 	}
 
 	@Test
 	public void testSuccessCases() throws IOException {
-		System.out.println("Testing success cases");
-
 		String testQuery = "Sizes[0].Price";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
@@ -75,7 +70,7 @@ public class TestExtractJSON {
 		inTuple.set(1, "Sizes.findAll{Sizes -> Sizes.Price>18}.Size[0]");
 		result = (String) testFn.exec(inTuple);
 		assertEquals("Size is not correct!", result, "Large");
-		
+
 		inTuple.set(1, "invalid_json_path_query");
 		result = (String) testFn.exec(inTuple);
 		assertEquals("Null expected!", result, null);
@@ -84,8 +79,6 @@ public class TestExtractJSON {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase1() throws IOException {
-		System.out.println("Testing failure cases");
-
 		String testQuery = "Sizes.Price";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
@@ -95,8 +88,6 @@ public class TestExtractJSON {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase2() throws IOException {
-		System.out.println("Testing failure cases");
-
 		String testQuery = "Colors";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
@@ -106,18 +97,10 @@ public class TestExtractJSON {
 
 	@Test(expected = IOException.class)
 	public void testFailureCase3() throws IOException {
-		System.out.println("Testing failure cases");
-
 		String testQuery = "Sizes.findAll{Sizes -> Sizes.Price>5}";
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
 		testFn.exec(inTuple);
 	}
-
-	@After
-	public void done() {
-		System.out.println("*** Done with the ExtractJSONField tests ***");
-	}
-
 }

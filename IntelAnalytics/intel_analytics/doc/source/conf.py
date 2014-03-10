@@ -44,6 +44,7 @@ import os
 p = os.path.abspath('../../..')
 print "Adding path " + p
 sys.path.insert(0, p)# os.path.abspath('../../..'))
+print "sys.path is now:"
 print "\n".join(sys.path)
 
 

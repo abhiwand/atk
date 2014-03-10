@@ -23,7 +23,6 @@
 import sys
 import subprocess
 import commands
-import math
 import os
 base_script_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(base_script_path, '..//'))

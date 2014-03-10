@@ -45,4 +45,7 @@ object Documentation extends Controller{
       Play.application.configuration.getString("docs.javaPig").getOrElse("")))
   }
 
+  def pythonPdf: String = {
+    Play.application.configuration.getString("docs.pythonPdf").getOrElse("")
+  }
 }

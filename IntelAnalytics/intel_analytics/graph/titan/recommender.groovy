@@ -1,9 +1,6 @@
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
-import org.apache.commons.configuration.BaseConfiguration
 import com.thinkaurelius.titan.core.TitanFactory
 import com.tinkerpop.blueprints.Vertex
-import com.tinkerpop.blueprints.Direction
-import groovy.lang.Binding
+import org.apache.commons.configuration.BaseConfiguration
 
 String[] inputs = args[0].split("\\::")
 String graphDB = inputs[0]
@@ -90,7 +87,7 @@ def recommend(Vertex v,
     }
     sortedlist = list.sort{a,b -> b.rec<=>a.rec}[0..10]
     (0..10).each{ println entities[recommendType] + sortedlist[it].id + "  score " + sortedlist[it].rec }
-    println 'complete recommend'
+    println 'complete execution'
 }
 
 class recommendation {

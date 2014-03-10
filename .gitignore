@@ -32,3 +32,11 @@ target
 *.tar.gz
 testgraphs
 *.zip
+graphbuilder/graphbuilder.iml
+cscope*
+tags
+*.patch
+*.diff
+patches-*
+*/dependency-reduced-pom.xml
+virtpy
