@@ -243,7 +243,7 @@ class HBaseTable(object):
         python_feature_type = pig_to_python_type[feature_type]
 
         for i in range(len(hlines)):
-            t = hlines[i].split()
+            t = hlines[i].split('\t')
             if len(t) == 1:
                 stats.append('missing_values=' + t[0])
             else:
@@ -357,7 +357,7 @@ class HBaseTable(object):
             for i in range(len(recompute_columns.hist_files)):
                 all_file = recompute_columns.hist_all_files[i]
                 hfile,sfile =  recompute_columns.hist_files[i], recompute_columns.stat_files[i]
-                if recompute_columns.inmemory[i]:
+                if eval(recompute_columns.inmemory[i]):
                     if exists('%s' % (all_file)):
                         update_cached_files(all_file)
                     self.__create_hist_stat_file_from_all_data(all_file,
