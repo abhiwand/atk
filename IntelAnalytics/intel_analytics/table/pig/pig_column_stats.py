@@ -154,7 +154,7 @@ def main(argv):
             pig_statements.append("group_%s = GROUP data_single_column_%s ALL PARALLEL 1;" % (c,c))
     
             if is_comparable(types[t]):
-                pig_statements.append("result_%s = FOREACH group_%s { unique_values = DISTINCT data_single_column_%s.%s; GENERATE 'max=', MAX(data_single_column_%s.%s), 'min=', MIN(data_single_column_%s.%s), 'avg=', AVG(data_single_column_%s.%s), 'var=', VAR(data_single_column_%s.%s), 'stdev=', SQRT(VAR(data_single_column_%s.%s)), 'unique_values=', COUNT(unique_values);}" % (c,c,c,c,c,c,c,c,c,c,c,c,c,c))
+                pig_statements.append("result_%s = FOREACH group_%s { unique_values = DISTINCT data_single_column_%s.%s; GENERATE 'max=', MAX(data_single_column_%s.%s), '\\nmin=', MIN(data_single_column_%s.%s), '\\navg=', AVG(data_single_column_%s.%s), '\\nvar=', VAR(data_single_column_%s.%s), '\\nstdev=', SQRT(VAR(data_single_column_%s.%s)), '\\nunique_values=', COUNT(unique_values);}" % (c,c,c,c,c,c,c,c,c,c,c,c,c,c))
             else:
                 pig_statements.append("result_%s = FOREACH group_%s { unique_values = DISTINCT data_single_column_%s.%s; GENERATE 'unique_values=', COUNT(unique_values); }" % (c,c,c,c))
     

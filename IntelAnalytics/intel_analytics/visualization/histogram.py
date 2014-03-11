@@ -89,7 +89,7 @@ def plot_histogram(datafile, xlabel='', ylabel='', title='',
 
     latex_symbols = {'max' : '$\max$', 'min' : '$\min$', 'avg' : '$\mu$', 'stdev' : '$\sigma$', 'var' : '$\sigma^2$'}
     for i,j in latex_symbols.iteritems():
-        slines = [w.replace(i, j) for w in slines]
+        slines = [w.replace(i, j).replace('\t','') for w in slines]
     
     stats = "\n".join(sorted(slines))
     
