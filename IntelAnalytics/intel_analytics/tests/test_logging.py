@@ -9,7 +9,6 @@ class FakeFileHandler:
     def __init__(self, filename, mode='a', maxBytes=0, backupCount=0, encoding=None, delay=0):
         pass
 
-logging.handlers.RotatingFileHandler = FakeFileHandler
 from intel_analytics.logger import stdout_logger
 
 class LoggingTest(unittest.TestCase):
