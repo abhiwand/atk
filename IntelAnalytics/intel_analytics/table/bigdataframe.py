@@ -585,6 +585,27 @@ class BigDataFrame(object):
 	Returns
 	-------
         frame: BigDataFrame
+
+        Examples
+        --------
+        >>> # Drop all record with col1 greater than 30
+        >>> f1 = BigDataFilter("col1 > 30") 
+        >>> frame.drop(f1)                                
+        >>> # Creates a new frame col2_equals_5 which contains all records
+        >>> # which do not satisfy the condition col2 equals 5 in the original frame.
+        >>> # Original frame is not modified in this case.
+        >>> f2 = BigDataFilter("col2 == 5")
+        >>> new_frame = frame.drop(f2, "col2_equals_5")   
+        >>> # Drop records when col3 equals 'custom_string' or col4 when it is null or col5 equals ''
+        >>> # Please note to use single quotes for string comparison and '' in case null strings need to dropped
+        >>> f3 = BigDataFilter("col3 == 'custom_string' or col4 is null or col5 == ''")
+        >>> frame.drop(f3)
+        >>> # Drop records which match a regex pattern a-z occuring twice or more
+        >>> f4 = BigDataFilter('[a-z]{2,}', 'col')
+        >>> frame.drop(f4)
+        >>> # Drop records opening with a curly brace
+        >>> f5 = BigDataFilter('^{', 'col')
+        >>> frame.drop(f5)
         """
 	
         try:
