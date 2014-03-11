@@ -165,6 +165,7 @@
       <profile>
         <id>pydoc-generator</id>
         <activation>
+        <activeByDefault>true</activeByDefault>
 	  <file>
             <exists>/usr/bin/sphinx-build</exists>
           </file>
