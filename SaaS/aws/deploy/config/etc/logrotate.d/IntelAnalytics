@@ -1,0 +1,9 @@
+/mnt/data1/logs/*/*.log /mnt/data1/logs/*/*.out {
+    compress
+    rotate 4 
+    missingok
+    notifempty
+    size 128k
+    daily
+    create 0600 hadoop hadoop
+}
