@@ -266,7 +266,7 @@ class FrameBuilder(object):
 
         Examples
         --------
-        >>>
+        >>>  projected_frame = fb.project(frame, 'projection', ['src', 'vertex_type'], overwrite = True, rename={'src':'source', 'vertex_type':'v_type'})
 
         """
 
