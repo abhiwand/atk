@@ -715,9 +715,10 @@ function IA_generate_hosts_file_auto_scale()
         #while i'm deciding the fate of the instances i'm going to set the first launched instance as the master
         #set the extra security group and update the name tag
         if [ $i -eq 0  ]; then
-            /usr/local/bin/aws ec2 create-tags --resources $instanceId --tags Key=Name,Value="$clusterName-master"
-            eval " /usr/local/bin/aws ec2 modify-instance-attribute --instance-id $instanceId --groups $securityGroups \"$masterGroup\" "
+            aws ec2 create-tags --resources $instanceId --tags Key=Name,Value="$clusterName-master"
+            eval " aws ec2 modify-instance-attribute --instance-id $instanceId --groups $securityGroups \"$masterGroup\" "
         fi
+        aws ec2 create-tags --resources $instanceId --tags Key=minionId,Value="$clusterName-$i"
         hosts[$i]=`IA_format_node_name_role $i`
         nname[$i]=`IA_format_node_name ${cname} $i`
         orderHosts[$i]="$privateDns"
