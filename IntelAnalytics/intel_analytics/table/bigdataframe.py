@@ -32,7 +32,8 @@ __all__ = ['get_frame_builder',
            'get_frame',
            'get_frame_names',
            'BigDataFrame',
-           'FrameBuilder'
+           'FrameBuilder',
+           'BigDataFilter'
            ]
 
 
