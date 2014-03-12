@@ -51,6 +51,12 @@ if [ ! -d /home/hadoop/.intelanalytics/conf ]
 then
     mkdir /home/hadoop/.intelanalytics/conf
 fi
+
+if [ ! -d /home/hadoop/.intelanalytics/logs ]
+then
+    mkdir /home/hadoop/.intelanalytics/logs
+fi
+
 cp /usr/lib/IntelAnalytics/conf/pig_log4j.properties /home/hadoop/.intelanalytics/conf/
 if [ `ls /usr/lib/IntelAnalytics/notebooks/*.ipynb | wc -l` -gt 0 ]
 then
