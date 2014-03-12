@@ -6,8 +6,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -37,7 +35,7 @@ public class BulkLoadXml {
 
     public enum Counters {LINES}
 
-    private static final Log LOG = LogFactory.getLog(BulkLoadXml.class);
+    private static final Logger LOG = Logger.getLogger(BulkLoadXml.class);
     private static final CommandLineOptions commandLineOptions = new CommandLineOptions();
 
     static {

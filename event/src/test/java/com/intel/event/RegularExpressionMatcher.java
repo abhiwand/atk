@@ -1,12 +1,12 @@
 package com.intel.event;
 
 
-import java.util.regex.Pattern;
-
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
+
+import java.util.regex.Pattern;
 
 public class RegularExpressionMatcher extends TypeSafeMatcher {
 

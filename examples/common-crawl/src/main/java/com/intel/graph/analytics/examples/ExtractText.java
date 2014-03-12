@@ -1,21 +1,15 @@
 package com.intel.graph.analytics.examples;
-import java.io.IOException;
-import java.util.ListIterator;
-import java.util.StringTokenizer;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
-import org.apache.pig.data.BagFactory;
-import org.apache.pig.data.DataBag;
-import org.apache.pig.data.DataType;
-import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
+import org.apache.pig.data.*;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 
 

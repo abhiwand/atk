@@ -26,9 +26,13 @@
 #This script executes all of the tests located in this folder through the use of the nosetests api. Coverage is provided by coverage.py
 #This script requires the installation of the install_pyenv.sh script
 
+# '-x' to exclude dirs from coverage, requires nose-exclude to be installed
 
-
-ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
+    ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+else
+    ACTIVATE_FILE=/usr/local/virtpy/bin/activate
+fi
 
 if [[ ! -f $ACTIVATE_FILE ]]; then
     echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
@@ -57,7 +61,7 @@ export INTEL_ANALYTICS_HOME=$INTEL_ANALYTICS_PYTHON
 export SOURCE_CODE=`dirname $INTEL_ANALYTICS_HOME`
 export IN_UNIT_TESTS='true'
 
-pushd $INTEL_ANALYTICS_HOME
+pushd $INTEL_ANALYTICS_HOME > /dev/null
 
 if [[ ! -f $INTEL_ANALYTICS_HOME/conf/intel_analytics.properties ]]; then
     #configuration file does not exist link it to the actual default properties file
@@ -66,31 +70,50 @@ fi
 
 rm -rf $INTEL_ANALYTICS_HOME/cover
 
-nosetests $PYTHON_HOME --with-coverage --cover-package=intel_analytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$INTEL_ANALYTICS_HOME/nosetests.xml
+if [ "$1" = "-x" ] ; then
+  EXCLUDE_DIRS_FILE=$INTEL_ANALYTICS_HOME/intel_analytics/tests/cov_exclude_dirs.txt
+  if [[ ! -f $EXCLUDE_DIRS_FILE ]]; then
+    echo ERROR: -x option: could not find exclusion file $EXCLUDE_DIRS_FILE
+    exit 1
+  fi
+  echo -x option: excluding files from coverage described in $EXCLUDE_DIRS_FILE
+  EXCLUDE_OPTION=--exclude-dir-file=$EXCLUDE_DIRS_FILE
+fi
+
+
+nosetests $PYTHON_HOME --with-coverage --cover-package=intel_analytics --cover-erase --cover-inclusive --cover-html --with-xunit  --xunit-file=$INTEL_ANALYTICS_HOME/nosetests.xml $EXCLUDE_OPTION
+
+success=$?
 
 COVERAGE_ARCHIVE=$SOURCE_CODE/python-coverage.zip
 
-rm *.log
+rm *.log 2> /dev/null
 
-popd
+popd > /dev/null
 
-rm  $COVERAGE_ARCHIVE
+rm -rf $COVERAGE_ARCHIVE 
 
-pushd $INTEL_ANALYTICS_HOME/cover
-zip -r $COVERAGE_ARCHIVE .
-popd
+pushd $INTEL_ANALYTICS_HOME/cover > /dev/null
+zip -rq $COVERAGE_ARCHIVE .
+popd > /dev/null
 
 deactivate
 
 RESULT_FILE=$INTEL_ANALYTICS_HOME/nosetests.xml
+COVERAGE_HTML=$INTEL_ANALYTICS_HOME/cover/index.html
+
+echo 
+echo Output File: $RESULT_FILE
+echo Coverage Archive: $COVERAGE_ARCHIVE
+echo Coverage HTML: file://$COVERAGE_HTML
+echo 
 
 unset IN_UNIT_TESTS
 
-if grep -q 'failures="0"' "$RESULT_FILE" ; then
+if [[ $success == 0 ]] ; then
    echo "Python Tests Successful"
    exit 0
 fi
 echo "Python Tests Unsuccessful"
 exit 1
-
 

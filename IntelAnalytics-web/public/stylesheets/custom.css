@@ -99,6 +99,9 @@
   border-color: #0071c5;
 }
 
+.documentation {
+    font-size: 14px !important;
+}
 .btn-primary:hover, .btn-primary:focus {
     background-color: #00aeef;
     border-color: #00aeef;

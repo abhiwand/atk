@@ -39,17 +39,16 @@
 # set exit script on any error
 set -e
 
-PYTHON_VIRTUALENV='/usr/lib/IntelAnalytics/virtpy'
+
+# Find absolute path of the given (possibly relative) path
+function abs_path {
+  (cd "${1%/*}" &>/dev/null && printf "%s/%s" "$(pwd)" "${1##*/}")
+}
+
+PYTHON_VIRTUALENV=$(abs_path ./virtpy)
 
 me=`basename $0`
 hdr="[$me]>> "
-
-# verify superuser privileges
-if [[ $EUID -ne 0 ]]; then
-   echo "$me must be run as root" 1>&2
-   exit 1
-fi
-
 
 #-----------------------------------------
 # PART I - install python 2.7 virtual env
@@ -208,13 +207,6 @@ function ins_ignore_virt {
 	python_module=$(python_module_version_lookup $1)
         pip install $python_module
         pkgs=${PYTHON_VIRTUALENV}/lib/python2.7/site-packages
-        pushd ${pkgs}
-        for f in /usr/lib/python2.7/site-packages/${1}*
-        do
-            echo $hdr Create symlink to ${f} at ${pkgs}
-            ln -sf ${f}
-        done
-        popd
     fi
 }
 
@@ -248,8 +240,8 @@ ins interval
 
 # load MathJax into IPython's static folder to avoid CDN problems
 ipython profile create
-python -c'from IPython.external.mathjax import install_mathjax;
-install_mathjax(dest="/usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/IPython/html/static/mathjax")'
+python -c"from IPython.external.mathjax import install_mathjax;
+install_mathjax(dest='${PYTHON_VIRTUALENV}/lib/python2.7/site-packages/IPython/html/static/mathjax')"
 
 # add pydoop to do hdfs, or mapred in python directly
 if check pydoop; then

@@ -99,6 +99,8 @@ class ETLSchema:
         Loads schema from HBase for the given table.
         """
         schema_table = config['hbase_schema_table']
+        self.feature_names = []
+        self.feature_types = []
         with ETLHBaseClient() as hbase_client:
             assert hbase_client.table_exists(schema_table), 'Cannot read the schema from %s!' % (schema_table)
             data_dict = hbase_client.get(schema_table,table_name)

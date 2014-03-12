@@ -28,7 +28,7 @@ import services.authorize.{UserInfo, Authorize}
 class RegisterControllerSpec extends Specification with Mockito {
     "Register controller get response" should {
 
-        val registrationData = RegistrationFormMapping("name", "Intel", "503-111-1111",
+        val registrationData = RegistrationFormMapping("name", "Intel", "503-111-1111","email@something.com",
             2, "Software Engineer", "Explore big data solutions",
             "concept 1", "term content", "Auth result content")
 

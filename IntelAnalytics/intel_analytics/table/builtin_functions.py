@@ -73,6 +73,18 @@ class EvalFunctions:
     class Xml:
 	EXTRACT_FIELD=3000
 
+    class Aggregation:
+	AVG=5000
+	SUM=5001
+	MAX=5002
+	MIN=5003
+	COUNT=5004
+	DISTINCT=5005
+	COUNT_DISTINCT=5006
+	STDEV=5007 #Population standard deviation
+	VAR=5008
+	
+
     @staticmethod
     def to_string(x):
         #these strings will be passed to the pig jython scripts
@@ -112,7 +124,17 @@ class EvalFunctions:
             EvalFunctions.Math.ARITHMETIC: 'ARITHMETIC',
 
             EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON',
-            EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPath'
+            EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPath',
+
+	    EvalFunctions.Aggregation.AVG: 'AVG',
+	    EvalFunctions.Aggregation.SUM: 'SUM',
+	    EvalFunctions.Aggregation.MAX: 'MAX',
+	    EvalFunctions.Aggregation.MIN: 'MIN',
+	    EvalFunctions.Aggregation.COUNT: 'COUNT',
+	    EvalFunctions.Aggregation.DISTINCT: 'DISTINCT',
+	    EvalFunctions.Aggregation.COUNT_DISTINCT: 'COUNT_DISTINCT',
+	    EvalFunctions.Aggregation.STDEV: 'STDEV',
+	    EvalFunctions.Aggregation.VAR: 'VAR'
         }
 
         if x in mapping:
@@ -124,6 +146,7 @@ string_functions = []
 math_functions = []  
 json_functions = []
 xml_functions = []
+aggregation_functions= []
 available_builtin_functions = []#used for validation, does the user try to call a valid function? 
 for key,val in EvalFunctions.String.__dict__.items():
     if key == '__module__' or key == '__doc__':
@@ -139,12 +162,19 @@ for key,val in EvalFunctions.Json.__dict__.items():
     if key == '__module__' or key == '__doc__':
         continue
     json_functions.append(EvalFunctions.to_string(val)) 
+
 for key,val in EvalFunctions.Xml.__dict__.items():
     if key == '__module__' or key == '__doc__':
         continue
     xml_functions.append(EvalFunctions.to_string(val))
 
+for key,val in EvalFunctions.Aggregation.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    aggregation_functions.append(EvalFunctions.to_string(val))
+
 available_builtin_functions.extend(string_functions)
 available_builtin_functions.extend(math_functions)
 available_builtin_functions.extend(json_functions)
 available_builtin_functions.extend(xml_functions)
+available_builtin_functions.extend(aggregation_functions)

@@ -20,8 +20,10 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-from intel_analytics.config import global_config as config
 import happybase
+
+from intel_analytics.config import global_config as config
+
 
 class ETLHBaseClient:
     """

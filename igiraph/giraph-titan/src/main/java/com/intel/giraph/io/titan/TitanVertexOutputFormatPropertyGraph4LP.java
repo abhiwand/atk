@@ -22,8 +22,8 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.intel.giraph.io.VertexData4LPWritable;
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
@@ -37,14 +37,7 @@ import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CLOSED_GRAPH;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.CURRENT_VERTEX;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EXPECTED_SIZE_OF_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_GRAPH;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.REAL_SIZE_OF_VERTEX_PROPERTY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_PROPERTY_MISMATCH;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 /**
  * The Vertex Output Format which writes back Giraph LBP algorithm
