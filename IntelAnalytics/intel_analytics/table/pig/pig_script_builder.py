@@ -1,9 +1,94 @@
+import abc
+import string
 from intel_analytics.table.pig import pig_helpers
 from intel_analytics.config import global_config as config
+from intel_analytics.table.pig.pig_helpers import get_hbase_storage_schema
 
 MAX_ROW_KEY = 'max_row_key'
 
+class DataSource(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def get_data_source_as_string(self):
+        pass
+
+class HBaseSource(DataSource):
+
+    def __init__(self, table):
+        self._table = table
+
+    def get_data_source_as_string(self):
+        return 'hbase://%s' %(self._table)
+
+
+class LoadFunction(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def get_loading_function_statement(self):
+        pass
+
+class HBaseLoadFunction(LoadFunction):
+    def __init__(self, feature_name_iterable, load_key):
+        self._feature_name_iterable = feature_name_iterable
+        self._load_key = load_key
+
+    def get_loading_function_statement(self):
+        loading_hbase_constructor_args = get_hbase_storage_schema(self._feature_name_iterable)
+        return "org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s', '-loadKey %s')" %(loading_hbase_constructor_args, string.lower(str(self._load_key)))
+
+
+class StoreFunction(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def get_storing_function_statement(self):
+        pass
+
+class HBaseStoreFunction(StoreFunction):
+    def __init__(self, feature_name_iterable):
+        self._feature_name_iterable = feature_name_iterable
+
+    def get_storing_function_statement(self):
+        loading_hbase_constructor_args = get_hbase_storage_schema(self._feature_name_iterable)
+        return "org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s')" %(loading_hbase_constructor_args)
+
+
+
 class PigScriptBuilder(object):
+
+    def __init__(self):
+        self.statements = []
+
+    def add_load_statement(self, output_relation_name, data_source, load_function, pig_schema):
+        """
+        Add a load statement
+        Parameters
+        ----------
+        output_relation_name : String
+            name the output relation for the load operation
+        source : DataSource
+            DataSource object
+        load_function : LoadFunction
+            LoadFunction instance
+        pig_schema : String
+            pig schema for the data loading. Loader produces types specified by the schema
+
+        Examples
+        --------
+        >>>
+
+        """
+        self.statements.append("%s = LOAD '%s' USING %s as (%s);" %(output_relation_name, data_source.get_data_source_as_string(), load_function.get_loading_function_statement(), pig_schema))
+
+    def add_store_statement(self, relation_to_store, data_source, store_function):
+        self.statements.append("store %s into '%s' using %s;" %(relation_to_store, data_source.get_data_source_as_string(), store_function.get_storing_function_statement()))
+
+    def get_statements(self):
+        return "\n".join(self.statements)
+
+
     def get_append_tables_statement(self, etl_schema, target_table, source_tables):
         statements = []
         properties = etl_schema.get_table_properties(target_table)
