@@ -1006,5 +1006,48 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         with self.assertRaises(Exception):
             builder._validate_exists('/some/real/path/that/does/not/exist')
 
+    @patch('intel_analytics.table.hbase.table.call')
+    def test_project_table_without_rename(self, call_method):
+        result_holder = {}
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        new_table_name = "test_output_table"
+        new_table = table.project(new_table_name, ['f1', 'f2', 'f3'], ['t1', 't2', 't3'])
+        self.assertEqual(new_table.table_name, new_table_name)
+        # make sure the original table is not affected at all
+        self.assertEqual(table_name, table.table_name)
+        expected = "project_relation = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3', '-loadKey false') as (f1:t1,f2:t2,f3:t3);" + '\n' + "store project_relation into 'hbase://test_output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3');"
+        self.assertEqual(expected, result_holder["call_args"][result_holder["call_args"].index('-s') + 1])
+
+    @patch('intel_analytics.table.hbase.table.call')
+    def test_project_table_with_rename(self, call_method):
+        result_holder = {}
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        new_table_name = "test_output_table"
+        new_table = table.project(new_table_name, ['f2', 'f3'], ['t2', 't3'], {'f2':'f2_new'})
+        self.assertEqual(new_table.table_name, new_table_name)
+        # make sure the original table is not affected at all
+        self.assertEqual(table_name, table.table_name)
+        expected = "project_relation = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f2 etl-cf:f3', '-loadKey false') as (f2:t2,f3:t3);" + '\n' + "store project_relation into 'hbase://test_output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f2_new etl-cf:f3');"
+        self.assertEqual(expected, result_holder["call_args"][result_holder["call_args"].index('-s') + 1])
+
+
 if __name__ == '__main__':
     unittest.main()

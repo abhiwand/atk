@@ -247,6 +247,31 @@ class FrameBuilder(object):
         """
         pass
 
+    @abc.abstractmethod
+    def project(self, data_frame, new_frame_name, features_to_project, overwrite, rename):
+        """
+        Project selected features out to new data frame
+        ----------
+        data_frame : BigDataFrame
+            The data frame to extract features from
+        new_frame_name : String
+            name of the new data frame
+        features_to_project : iterable of String
+            features to be projected
+        overwrite : Boolean
+            overwrite existing big data frame
+        rename : dict
+            mapping between feature name and new name
+
+
+        Examples
+        --------
+        >>>
+
+        """
+
+    pass
+
 def get_frame_builder():
     """
     Returns a frame builder object which creates BigDataFrame objects

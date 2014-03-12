@@ -225,7 +225,53 @@ class TestFrameBuilder(unittest.TestCase):
         copy_method.assert_called_with("new_frame_1234", 'f1,f2,f3', 'long,long,chararray')
 
 
+    @patch('intel_analytics.table.hbase.table.hbase_registry')
+    @patch('intel_analytics.table.hbase.table._create_table_name')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
+    def test_project(self, etl_base_client_class, etl_object_class, _create_table_name, hbase_registry):
 
+        hbase_registry.register = MagicMock()
+        frame_builder = HBaseFrameBuilder()
+        table = MagicMock()
+        table.table_name = "test_table"
+        _create_table_name.return_value = "new_frame_1234"
+
+        project_method = MagicMock(return_value = MagicMock())
+        table.project = project_method
+        data_frame = BigDataFrame("frame", table)
+        etl_base_client_class.drop_create_table = MagicMock()
+
+        result_holder = {}
+        etl_object = self.create_mock_etl_object(result_holder)
+        etl_object_class.return_value = etl_object
+        rename={'col1':'col1_new'}
+        frame_builder.project(data_frame, "new_frame", ['col1', 'col3'], rename=rename)
+        project_method.assert_called_with("new_frame_1234", ['col1','col3'], ['long','long'], rename)
+
+        self.assertEqual(result_holder["table_name"], "new_frame_1234")
+        self.assertEqual(result_holder["feature_names"], ['col1','col3'])
+        self.assertEqual(result_holder["feature_types"], ['long','long'])
+        hbase_registry.register.assert_called_once_with("new_frame", "new_frame_1234", False)
+
+
+    @patch('intel_analytics.table.hbase.table.hbase_registry')
+    @patch('intel_analytics.table.hbase.table._create_table_name')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
+    def test_project_invalid_feature_names_to_project(self, etl_base_client_class, etl_object_class, _create_table_name, hbase_registry):
+        result_holder = {}
+        etl_object = self.create_mock_etl_object(result_holder)
+        etl_object_class.return_value = etl_object
+        frame_builder = HBaseFrameBuilder()
+        table = MagicMock()
+        table.table_name = "test_table"
+        data_frame = BigDataFrame("frame", table)
+        etl_base_client_class.drop_create_table = MagicMock()
+        with self.assertRaises(Exception) as cm:
+            frame_builder.project(data_frame, "new_frame", ['wrong_col', 'col3'])
+
+        self.assertEqual(cm.exception.message, 'ERROR: feature wrong_col is invalid')
 
 if __name__ == '__main__':
     unittest.main()
