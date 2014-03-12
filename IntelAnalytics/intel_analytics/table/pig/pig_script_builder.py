@@ -68,21 +68,28 @@ class PigScriptBuilder(object):
         ----------
         output_relation_name : String
             name the output relation for the load operation
-        source : DataSource
+        data_source : DataSource
             DataSource object
         load_function : LoadFunction
             LoadFunction instance
         pig_schema : String
             pig schema for the data loading. Loader produces types specified by the schema
 
-        Examples
-        --------
-        >>>
-
         """
         self.statements.append("%s = LOAD '%s' USING %s as (%s);" %(output_relation_name, data_source.get_data_source_as_string(), load_function.get_loading_function_statement(), pig_schema))
 
     def add_store_statement(self, relation_to_store, data_source, store_function):
+        """
+        Add a store statement
+        Parameters
+        ----------
+        relation_to_store : String
+            name the relation to store
+        data_source : DataSource
+            DataSource object
+        store_function : StoreFunction
+            LoadFunction instance
+        """
         self.statements.append("store %s into '%s' using %s;" %(relation_to_store, data_source.get_data_source_as_string(), store_function.get_storing_function_statement()))
 
     def get_statements(self):
