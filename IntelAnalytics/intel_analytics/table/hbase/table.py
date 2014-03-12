@@ -498,20 +498,14 @@ class HBaseTable(object):
 
         return HBaseTable(new_table_name, self.file_name)
 
-    def project(self, new_table_name, features_to_project_names, features_to_project_types, rename=None):
+    def project(self, new_table_name, features_to_project_names, features_to_project_types, renamed_feature_names):
         builder = PigScriptBuilder()
         relation = "project_relation"
 
         pig_schema = pig_helpers.get_pig_schema_string(','.join(features_to_project_names), ','.join(features_to_project_types))
         builder.add_load_statement(relation, HBaseSource(self.table_name), HBaseLoadFunction(features_to_project_names, False), pig_schema)
 
-        if rename:
-            for i in range(0, len(features_to_project_names)):
-                feature = features_to_project_names[i]
-                if feature in rename:
-                    features_to_project_names[i] = rename[feature]
-
-        builder.add_store_statement(relation, HBaseSource(new_table_name), HBaseStoreFunction(features_to_project_names))
+        builder.add_store_statement(relation, HBaseSource(new_table_name), HBaseStoreFunction(renamed_feature_names))
 
         args = get_pig_args('pig_execute.py')
         args += ['-s', builder.get_statements()]
@@ -996,10 +990,19 @@ class HBaseFrameBuilder(FrameBuilder):
         for i in range(0, len(features_to_project)):
             feature_to_project_types.append(feature_names_types_mapping[features_to_project[i]])
 
-        new_table = data_frame._table.project(new_table_name, features_to_project, feature_to_project_types, rename)
+        renamed_feature_names = []
+        if rename:
+            for i in range(0, len(features_to_project)):
+                feature = features_to_project[i]
+                if feature in rename:
+                    renamed_feature_names.append(rename[feature])
+                else:
+                    renamed_feature_names.append(feature)
+
+        new_table = data_frame._table.project(new_table_name, features_to_project, feature_to_project_types, renamed_feature_names)
 
         new_table_schema = ETLSchema()
-        new_table_schema.feature_names = features_to_project
+        new_table_schema.feature_names = renamed_feature_names
         new_table_schema.feature_types = feature_to_project_types
         new_table_schema.save_schema(new_table_name)
 
