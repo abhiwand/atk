@@ -47,13 +47,13 @@ stdout_logger = logging.getLogger(__name__)
 def get_file_name_from_datetime(now):
     return ('%s_%s') % ('python', now.strftime("%Y%m%d-%H%M%S%f"))
 
+if not os.getenv('IN_UNIT_TESTS'):
+    hdlr = RotatingFileHandler(filename=os.path.join(conf['logs_folder'],
+                                                     get_file_name_from_datetime(datetime.datetime.now())),
+                               maxBytes=int(conf['python_log_max_bytes']),
+                               backupCount=int(conf['python_log_backup_count']))
+    stdout_logger.addHandler(hdlr)
 
-hdlr = RotatingFileHandler(filename=os.path.join(conf['logs_folder'],
-                                                 get_file_name_from_datetime(datetime.datetime.now())),
-                           maxBytes=int(conf['python_log_max_bytes']),
-                           backupCount=int(conf['python_log_backup_count']))
-
-stdout_logger.addHandler(hdlr)
 stdout_logger.setLevel(logger_level)
 stdout_logger.propagate = 0
 
