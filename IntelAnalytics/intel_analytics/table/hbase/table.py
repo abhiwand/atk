@@ -965,7 +965,7 @@ class HBaseFrameBuilder(FrameBuilder):
         return BigDataFrame(new_frame_name, new_table)
 
 
-    def project(self, data_frame, new_frame_name, features_to_project, overwrite=False, rename=None):
+    def project(self, data_frame, new_frame_name, features_to_project, rename=None, overwrite=False):
         new_table_name = _create_table_name(new_frame_name, overwrite)
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(new_table_name,
@@ -978,6 +978,11 @@ class HBaseFrameBuilder(FrameBuilder):
         for target_feature in features_to_project:
             if target_feature not in etl_schema.feature_names:
                 non_found.append('ERROR: feature ' + target_feature + ' is invalid')
+
+        if rename:
+            for target_feature in rename:
+                if target_feature not in etl_schema.feature_names:
+                    non_found.append('ERROR: feature ' + target_feature + ' is invalid')
 
         if len(non_found) > 0:
             raise Exception('\n'.join(non_found))
