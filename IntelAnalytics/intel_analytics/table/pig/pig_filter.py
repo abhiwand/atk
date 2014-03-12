@@ -45,6 +45,13 @@ def generate_hbase_store_args(features):
     
     return hbase_store_args
 
+def outputSchema(schema_str):
+    def wrap(f):
+        def wrapped_f(*args):
+            return f(*args)
+        return wrapped_f
+    return wrap
+
 @outputSchema('pattern_matched:int')
 def regex_search(val, pattern):
     import re
