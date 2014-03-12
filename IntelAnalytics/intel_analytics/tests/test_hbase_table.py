@@ -1020,7 +1020,7 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         new_table_name = "test_output_table"
-        new_table = table.project(new_table_name, ['f1', 'f2', 'f3'], ['t1', 't2', 't3'])
+        new_table = table.project(new_table_name, ['f1', 'f2', 'f3'], ['t1', 't2', 't3'], ['f1', 'f2', 'f3'])
         self.assertEqual(new_table.table_name, new_table_name)
         # make sure the original table is not affected at all
         self.assertEqual(table_name, table.table_name)
@@ -1041,7 +1041,7 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         new_table_name = "test_output_table"
-        new_table = table.project(new_table_name, ['f2', 'f3'], ['t2', 't3'], {'f2':'f2_new'})
+        new_table = table.project(new_table_name, ['f2', 'f3'], ['t2', 't3'], ['f2_new', 'f3'])
         self.assertEqual(new_table.table_name, new_table_name)
         # make sure the original table is not affected at all
         self.assertEqual(table_name, table.table_name)

@@ -247,10 +247,10 @@ class TestFrameBuilder(unittest.TestCase):
         etl_object_class.return_value = etl_object
         rename={'col1':'col1_new'}
         frame_builder.project(data_frame, "new_frame", ['col1', 'col3'], rename=rename)
-        project_method.assert_called_with("new_frame_1234", ['col1','col3'], ['long','long'], rename)
+        project_method.assert_called_with("new_frame_1234", ['col1','col3'], ['long','long'], ['col1_new', 'col3'])
 
         self.assertEqual(result_holder["table_name"], "new_frame_1234")
-        self.assertEqual(result_holder["feature_names"], ['col1','col3'])
+        self.assertEqual(result_holder["feature_names"], ['col1_new','col3'])
         self.assertEqual(result_holder["feature_types"], ['long','long'])
         hbase_registry.register.assert_called_once_with("new_frame", "new_frame_1234", False)
 
