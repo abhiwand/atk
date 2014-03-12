@@ -1,10 +1,6 @@
-import com.thinkaurelius.titan.graphdb.database.StandardTitanGraph
-import org.apache.commons.configuration.BaseConfiguration
 import com.thinkaurelius.titan.core.TitanFactory
 import com.tinkerpop.blueprints.Vertex
-import com.tinkerpop.blueprints.Direction
-import groovy.lang.Binding
-
+import org.apache.commons.configuration.BaseConfiguration
 
 if(args.length < 1){
     println "================================="
@@ -94,6 +90,7 @@ conf.setProperty("storage.backend", backend)
 conf.setProperty("storage.hostname", hostName)
 conf.setProperty("storage.port",port)
 
+//start = System.currentTimeMillis()
 Graph g = TitanFactory.open(conf)
 if (propertyType == 'VERTEX_PROPERTY'){
     tmp = g.V[0]."$priorName".next()
@@ -102,6 +99,7 @@ if (propertyType == 'VERTEX_PROPERTY'){
 } else {
     throw new IllegalArgumentException("Input Property Type is not supported!")
 }
+//println System.currentTimeMillis() - start
 int featureSize = tmp.split(' ').length
 def rocList = new Object[featureSize][splitSize][rocSize+2]
 def sortRocList = new Object[featureSize][splitSize][rocSize+2]
@@ -194,6 +192,7 @@ if(posteriorName == ''){
     writeHistogramFile(priorPath, priorList)
 } else {
     if (propertyType == 'VERTEX_PROPERTY'){
+        //start = System.currentTimeMillis()
         for(Vertex v : g.V){
             for(int j in 0..<splitSize){
                 if (v.filter{it.getProperty(key4Type).toUpperCase() == splitTypes[j]}){
@@ -208,7 +207,10 @@ if(posteriorName == ''){
                 }
             }
         }
+        //println  System.currentTimeMillis() - start
+        //start = System.currentTimeMillis()
         updateRoc(rocUpdates)
+        //println  System.currentTimeMillis() - start
     } else if(propertyType == 'EDGE_PROPERTY') {
         for(Edge e : g.E){
             for(int j in 0..<splitSize){
@@ -238,8 +240,8 @@ if(posteriorName == ''){
             }
         }
     }
-
 }
+println 'complete execution'
 
 
 def calculateRoc(rocCal){

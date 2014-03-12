@@ -40,9 +40,11 @@ from intel_analytics.config import global_config
 from bulbs.titan import Graph as bulbsGraph
 from bulbs.config import Config as bulbsConfig
 from intel_analytics.logger import stdout_logger as logger
+from intel_analytics.graph.pig.pig_script_builder import GBPigScriptBuilder
 from xml.etree.ElementTree import tostring
 import xml.etree.cElementTree as ET
 from intel_analytics.report import FaunusProgressReportStrategy
+from intel_analytics.table.hbase.schema import ETLSchema
 
 try:
     from intel_analytics.pigprogressreportstrategy import PigProgressReportStrategy as etl_report_strategy#depends on ipython
@@ -124,14 +126,47 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
         super(HBase2TitanBipartiteGraphBuilder, self).__init__(source)
 
     def __repr__(self):
+        psb = GBPigScriptBuilder()
         s = "Source: " \
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
             s += '\nVertices:\n' + \
-                '\n'.join(map(lambda x: vertex_str(x, True), self._vertex_list))
+                '\n'.join(map(lambda x: psb.vertex_str(x, False), self._vertex_list))
         return s
 
-    def build(self, graph_name, overwrite=False, append=False, flatten=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False,
+              retainDanglingEdges=False, withSideVertexProperty=False):
+        """
+        Builds a bipartite graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
+
+        Parameters
+        ----------
+        graph_name : string
+            name for the new graph
+        overwrite : Bool, optional
+            if the given graph_name already exists, overwrite=True will
+            overwrite the existing graph; overwrite=False will raise an Error
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
+        withSideVertexProperty : Bool, optional
+            adds the 'side' property to all vertices in a bipartite-graph
+
+        Returns
+        -------
+        graph : Graph
+            new graph object
+        """
         if len(self._vertex_list) != 2:
             raise ValueError("ERROR: bipartite graph construction requires 2 " +
                 "vertex sources; " + str(len(self._vertex_list)) + " detected")
@@ -147,7 +182,9 @@ class HBase2TitanBipartiteGraphBuilder(BipartiteGraphBuilder):
                      is_directed=False,
                      overwrite=overwrite,
                      append=append,
-                     flatten=flatten)
+                     flatten=flatten,
+                     retainDanglingEdges=retainDanglingEdges,
+                     withSideVertexProperty=withSideVertexProperty)
 
 
 class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
@@ -158,17 +195,48 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
         super(HBase2TitanPropertyGraphBuilder, self).__init__(source)
 
     def __repr__(self):
+        psb = GBPigScriptBuilder()
         s = "Source: "\
             + (str(self._source) if self._source is not None else "None")
         if len(self._vertex_list) > 0:
             s += '\nVertices:\n'\
-                + '\n'.join(map(lambda x: vertex_str(x,True),self._vertex_list))
+                + '\n'.join(map(lambda x: psb.vertex_str(x,False),self._vertex_list))
         if len(self._edge_list) > 0:
             s += '\nEdges:\n'\
-                + '\n'.join(map(lambda x: edge_str(x, True), self._edge_list))
+                + '\n'.join(map(lambda x: psb.edge_str(x, False), self._edge_list))
         return s
 
-    def build(self, graph_name, overwrite=False, append=False, flatten=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False,
+              retainDanglingEdges=False):
+        """
+        Builds a property graph according to the settings in the builder.
+
+        Overwrite and append are mutually exclusive (you can't overwrite and
+        append to a graph at the same time).
+
+        Parameters
+        ----------
+        graph_name : string
+            name for the new graph
+        overwrite : Bool, optional
+            if the given graph_name already exists, overwrite=True will
+            overwrite the existing graph; overwrite=False will raise an Error
+        append : Bool, optional
+            if the given graph_name already exists, append=True will update
+            existing graph elements and create ones that do not already exist.
+        flatten : Bool, optional
+            specifies that when a cell containing a JSon list is read
+            as a vertex ID, it is to be expanded into one vertex for each
+            entry in the list. This applies to the source and destination
+            columns for edges as well. It does not apply to properties.
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
+            
+        Returns
+        -------
+        graph : Graph
+            new graph object
+        """        
         return build(graph_name,
                      self._source,
                      self._vertex_list,
@@ -176,15 +244,66 @@ class HBase2TitanPropertyGraphBuilder(PropertyGraphBuilder):
                      is_directed=True,
                      overwrite=overwrite,
                      append=append,
-                     flatten=flatten)
+                     flatten=flatten,
+                     registered_vertex_properties=self.registered_vertex_properties,
+                     registered_edge_properties=self.registered_edge_properties,
+                     retainDanglingEdges=retainDanglingEdges)
 
+def _get_available_columns(source_frame):
+    table_name = _get_table_name_from_source(source_frame)
+    schema = ETLSchema()
+    schema.load_schema(table_name)
+    return [feature_name[feature_name.find(':') + 1 :] for feature_name in schema.feature_names]
+    
+def validate_rules(source_frame, vertex_list, edge_list, registered_vertex_properties = None, registered_edge_properties = None):
+    
+    def validate_vertex(v, columns):
+        if v.key not in columns:
+            raise Exception("%s does not exist" % v.key)
+        for p in v.properties:
+            if p not in columns:
+                raise Exception("%s does not exist" % p)
+            
+    def validate_edge(e, columns):
+        source, target, label = e.source, e.target, e.label
+        failing_rules = []
+        if source not in columns: failing_rules.append(source)
+        if target not in columns: failing_rules.append(target)      
+        
+        for p in e.properties:
+            if p not in columns: failing_rules.append(p)
+            
+        if len(failing_rules):
+            raise Exception("Some columns specified in the edge rule do not exist: %s" % (', '.join(failing_rules)))                  
+        
+    columns = _get_available_columns(source_frame)
+    
+    for v in vertex_list:
+        validate_vertex(v, columns)
+            
+    for e in edge_list:
+        validate_edge(e, columns)
+        
+    if registered_vertex_properties != None:
+        columns = _get_available_columns(registered_vertex_properties.source_frame)
+        validate_vertex(registered_vertex_properties.vertex, columns)
+    
+    if registered_edge_properties != None:
+        columns = _get_available_columns(registered_edge_properties.source_frame)
+        validate_edge(registered_edge_properties.edge, columns)
 
-def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten):
+def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, append, flatten, 
+          registered_vertex_properties = None, registered_edge_properties = None, retainDanglingEdges = False,
+          withSideVertexProperty = False):
 
-    # TODO: implement column validation
-
-    dst_hbase_table_name = generate_titan_table_name(graph_name, source)
-    src_hbase_table_name = _get_table_name_from_source(source)
+    #check whether edge/vertex rules and all registered properties are valid
+    validate_rules(source, vertex_list, edge_list, registered_vertex_properties, registered_edge_properties)
+    
+    #overwrite and append are mutually exclusive
+    if overwrite and append:
+        raise Exception("Either overwrite or append can be specified")
+    
+    dst_hbase_table_name = generate_titan_table_name(graph_name, source, append)
 
     # TODO: Graph Builder could handle overwrite instead of the registry, not sure if that is better?
 
@@ -196,10 +315,11 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
                             delete_table=not append)
 
     gb_conf_file = titan_config.write_gb_cfg(dst_hbase_table_name)
-
-    cmd = get_gb_build_command(gb_conf_file, src_hbase_table_name, vertex_list, edge_list, is_directed, overwrite,
-                               append, flatten)
-
+    
+    cmd = get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, 
+                               registered_edge_properties, is_directed, overwrite, append, flatten,
+                               retainDanglingEdges, withSideVertexProperty)
+    
     return_code = call(cmd, report_strategy=etl_report_strategy())
 
     if return_code:
@@ -209,15 +329,18 @@ def build(graph_name, source, vertex_list, edge_list, is_directed, overwrite, ap
             logger.error("Graph Builder call failed and unable to unregister "
                               + "table for graph " + graph_name)
         raise Exception('Could not load titan')
-
+    
     titan_config.rexster_xml_add_graph(dst_hbase_table_name)
 
     return titan_graph_builder_factory.get_graph(graph_name)
 
 
-def generate_titan_table_name(prefix, source):
-    source_table_name = _get_table_name_from_source(source)
-    return '_'.join([prefix, source_table_name, "titan"])
+def generate_titan_table_name(prefix, source, append):
+    if append:#use the old mapping since the table will be appended
+        return hbase_registry[prefix]
+    else:#create a new table name
+        source_table_name = _get_table_name_from_source(source)
+        return '_'.join([prefix, source_table_name, "titan"])
 
 
 def _get_table_name_from_source(source):
@@ -227,59 +350,20 @@ def _get_table_name_from_source(source):
         # So what did we get?
         raise Exception("Could not get table name from source")
 
-
-def vertex_str(vertex, public=False):
-    """
-    Gets the string for the vertex to use in the command call to graph_builder.
-    """
-    column_family = global_config['hbase_column_family']
-    s = (column_family + vertex.key) if public is False else vertex.key
-    if len(vertex.properties) > 0:
-        s += '=' + ','.join(
-            (map(lambda p: column_family + p, vertex.properties))
-            if public is False else vertex.properties)
-    return s
-
-
-def edge_str(edge, public=False):
-    """
-    Gets the string for the edge to use in the command call to graph_builder.
-    """
-    column_family = global_config['hbase_column_family']
-    s = ("{0}{1},{0}{2},{3}" if public is False else "{1},{2},{3}") \
-        .format(column_family, edge.source, edge.target, edge.label)
-    if len(edge.properties) > 0:
-        s += ',' + ','.join((map(lambda p: column_family + p, edge.properties))
-                            if public is False else edge.properties)
-    return s
-
-
-def get_gb_build_command(gb_conf_file, table_name, vertex_list, edge_list, is_directed, overwrite, append, flatten):
+def get_gb_build_command(gb_conf_file, source, vertex_list, edge_list, registered_vertex_properties, 
+                         registered_edge_properties, is_directed, overwrite, append, flatten,
+                         retainDanglingEdges, withSideVertexProperty):
     """
     Build the Pig command line call to the Jython script
     """
-    args = get_pig_args_with_gb('pig_load_titan.py')
-
-    # These are the command line arguments are for the Jython script.  It is confusing
-    # because they aren't the same as the command line args that GraphBuilder takes
-    args += ['-t', table_name,
-             '-c', gb_conf_file,
-             # edge and vertices lists should be surrounded with double quotes
-             '-e', ' '.join(map(lambda e: '"' + edge_str(e) + '"', edge_list)),
-             '-v', ' '.join(map(lambda v: '"' + vertex_str(v) + '"', vertex_list))]
-
-    # TODO: can we pass argument names without a value? These are all on/off flags only
-    if append:
-        args += ['-a', 'is_append']
-    if overwrite:
-        args += ['-o', 'is_overwrite']
-    if is_directed:
-        args += ['-d', 'is_directed']
-    if flatten:
-        args += ['-f', 'is_flatten']
-
+    pig_builder = GBPigScriptBuilder()
+    script = pig_builder.create_pig_bulk_load_script(gb_conf_file, source, vertex_list, edge_list, 
+                                                     registered_vertex_properties, registered_edge_properties, 
+                                                     is_directed, overwrite, append, flatten, retainDanglingEdges,
+                                                     withSideVertexProperty)
+    args = get_pig_args_with_gb('pig_execute.py')
+    args += ['-s', script]
     return args
-
 
 # validate the config can supply the necessary parameters
 missing = []

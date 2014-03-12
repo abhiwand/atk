@@ -26,12 +26,14 @@ import sys
 from intel_analytics.graph.titan.graph import BulbsGraphWrapper
 from intel_analytics.table.bigcolumn import BigColumn
 
-curdir = os.path.dirname(__file__)
-sys.path.append(os.path.abspath(os.path.join(curdir, os.pardir)))
+_current_dir = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(
+    os.path.join(os.path.join(_current_dir, os.pardir), os.pardir)))
 
 if 'intel_analytics.config' in sys.modules:
     del sys.modules['intel_analytics.config']    #this  is done to verify that the global config is not patched by previous test scripts in the test runner.
 
+from intel_analytics.graph.titan.graph import BulbsGraphWrapper
 from intel_analytics.config import global_config as config, global_config
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.hbase.schema import ETLSchema
@@ -117,6 +119,169 @@ class HbaseTableTest(unittest.TestCase):
 
         drop_action_mock = Mock(side_effect=drop_side_effect)
         return drop_action_mock
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_kfold_split(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        table.kfold_split(
+                          k=10,
+                          test_fold_id=3,
+                          fold_id_column='input',
+                          split_name=['A','B'],
+                          output_column='label',
+                          update=False,
+                          overwrite=False)
+        self.assertEqual("label", result_holder["feature_names"][-1])
+        self.assertEqual("chararray", result_holder["feature_types"][-1])
+
+        # validate call arguments
+        self.assertEqual("pig", result_holder["call_args"][0])
+        self.assertEqual('test_table', result_holder["call_args"][result_holder["call_args"].index('-it') + 1])
+        self.assertEqual('test_table', result_holder["call_args"][result_holder["call_args"].index('-ot') + 1])
+        self.assertEqual('10', result_holder["call_args"][result_holder["call_args"].index('-k') + 1])
+        self.assertEqual('input', result_holder["call_args"][result_holder["call_args"].index('-ic') + 1])
+        self.assertEqual('3', result_holder["call_args"][result_holder["call_args"].index('-f') + 1])
+        self.assertEqual("['A', 'B']", result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
+        self.assertEqual('label', result_holder["call_args"][result_holder["call_args"].index('-oc') + 1])
+        self.assertEqual('col1,col2,col3', result_holder["call_args"][result_holder["call_args"].index('-fn') + 1])
+        self.assertEqual('long,chararray,long', result_holder["call_args"][result_holder["call_args"].index('-ft') + 1])
+
+        script_path = os.path.join(config['pig_py_scripts'], 'pig_kfold_split.py')
+        self.assertTrue(script_path in result_holder["call_args"])
+
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_kfold_split_with_wrong_name(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+
+        self.assertRaises(ValueError,
+                          table.kfold_split,
+                          k=5,
+                          test_fold_id=3,
+                          fold_id_column='input',
+                          split_name=['A','B','C'],
+                          output_column='label',
+                          update=False,
+                          overwrite=False)
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_kfold_split_with_wrong_overwrite(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(ValueError,
+                          table.kfold_split,
+                          k=10,
+                          test_fold_id=3,
+                          fold_id_column='input',
+                          split_name=['A','B'],
+                          output_column='col1',
+                          update=False,
+                          overwrite=False)
+
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_percent_split(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        table.percent_split(
+            randomization_column='input',
+            split_percent=[70,15,15],
+            split_name=['A','B','C'],
+            output_column='label',
+            update=False,
+            overwrite=False)
+        self.assertEqual("label", result_holder["feature_names"][-1])
+        self.assertEqual("chararray", result_holder["feature_types"][-1])
+
+        # validate call arguments
+        self.assertEqual("pig", result_holder["call_args"][0])
+        self.assertEqual('test_table', result_holder["call_args"][result_holder["call_args"].index('-it') + 1])
+        self.assertEqual('test_table', result_holder["call_args"][result_holder["call_args"].index('-ot') + 1])
+        self.assertEqual('input', result_holder["call_args"][result_holder["call_args"].index('-ic') + 1])
+        self.assertEqual("[70, 15, 15]", result_holder["call_args"][result_holder["call_args"].index('-p') + 1])
+        self.assertEqual("['A', 'B', 'C']", result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
+        self.assertEqual('label', result_holder["call_args"][result_holder["call_args"].index('-oc') + 1])
+        self.assertEqual('col1,col2,col3', result_holder["call_args"][result_holder["call_args"].index('-fn') + 1])
+        self.assertEqual('long,chararray,long', result_holder["call_args"][result_holder["call_args"].index('-ft') + 1])
+
+        script_path = os.path.join(config['pig_py_scripts'], 'pig_percent_split.py')
+        self.assertTrue(script_path in result_holder["call_args"])
+
+
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_percent_split_with_wrong_percent(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(ValueError,
+                          table.percent_split,
+                          randomization_column='input',
+                          split_percent=[70,15,5],
+                          split_name=['A','B','C'],
+                          output_column='label',
+                          update=False,
+                          overwrite=False)
+
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_percent_split_with_wrong_size(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(ValueError,
+                          table.percent_split,
+                          randomization_column='input',
+                          split_percent=[70,15,15],
+                          split_name=['A','B'],
+                          output_column='label',
+                          update=False,
+                          overwrite=False)
+
 
     @patch('intel_analytics.table.hbase.table.call')
     @patch('intel_analytics.table.hbase.table.ETLSchema')
@@ -235,6 +400,15 @@ class HbaseTableTest(unittest.TestCase):
         # check column family
         self.assertEqual('etl-cf', call_args[call_args.index('-f') + 1])
 
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_drop_column(self, etl_schema_class):
+        etl_schema_class.return_value = self.create_mock_etl_object({})
+        table = HBaseTable("test_table", "test_file")
+        try:
+            table.drop_columns("bogus,col2,garbage")
+            self.fail()
+        except Exception as e:
+            self.assertEqual("Column 'bogus' not in frame; Column 'garbage' not in frame", e.message)
 
     @patch('intel_analytics.table.hbase.table.ETLHBaseClient')
     def test_get_first_N_same_columns(self, etl_base_client_class):
@@ -698,21 +872,41 @@ class HbaseTableTest(unittest.TestCase):
         self.transform_with_multiple_columns("str1,str2,\'MyString1\',str3,\'MyString2\'", "strout3", EvalFunctions.String.CONCAT)
 
     def test_concatentaion_with_random_columns(self):
+        test_expression="fakecol1,fakecol2"
+        msg="Column %s in expression %s does not exist" % ("fakecol1", test_expression)
         try:
-            self.transform_with_multiple_columns("fakecol1,fakecol2", "fakeout3", EvalFunctions.String.CONCAT)
-        except:
-            print "Caught exception on invalid column inputs for CONCAT"
+            self.transform_with_multiple_columns(test_expression, "fakeout3", EvalFunctions.String.CONCAT)
+            self.fail("Failed to catch '%s' for expression '%s'" % (msg, test_expression))
+        except HBaseTableException, e:
+            self.assertEqual(e.message, msg)
 
     def test_arithmetics_with_random_columns(self):
+        test_expression="fakecol1+fakecol2"
+        msg="Column %s in expression %s does not exist" % ("fakecol1", test_expression)
         try:
-            self.transform_with_multiple_columns("fakecol1+fakecol2", "fakeout3", EvalFunctions.Math.ARITHMETIC)
-        except:
-            print "Caught exception on invalid column inputs for ARITHMETIC"
+            self.transform_with_multiple_columns(test_expression, "fakeout3", EvalFunctions.Math.ARITHMETIC)
+            self.fail("Failed to catch '%s' for expression '%s'" % (msg, test_expression))
+        except HBaseTableException, e:
+            self.assertEqual(e.message, msg)
+
+    def test_arithmetics_with_random_spaces(self):
+        test_expression="long1 + long2 * double1 - double2"
+        self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
+
+    def test_arithmetics_with_random_parentheses(self):
+        test_expression="long1((+long2*(double1/)((double4("
+        msg="Arithmetic expression syntax error!"
+        try:
+            self.transform_with_multiple_columns(test_expression, "fout", EvalFunctions.Math.ARITHMETIC)
+            self.fail("Failed to catch '%s' for expression '%s'" % (msg, test_expression))
+        except HBaseTableException, e:
+            self.assertEqual(e.message, msg)
 
     @patch('intel_analytics.graph.titan.graph.call')
     def test_export_as_graphml(self, call_method):
 
         result_holder = {}
+
         def call_side_effect(arg, report_strategy):
             result_holder["call_args"] = arg
 
@@ -770,16 +964,68 @@ class HbaseTableTest(unittest.TestCase):
 
 
 
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def aggregate(self, groupby, aggregations, etl_schema_class, call_method):
+
+        table_name = "original_table"
+        file_name = "original_file"
+	aggregated_table_name = "aggregated_table"
+        feat_name = ["long1", "long2", "double1", "double2", "str1", "str2", "str3"]
+        feat_type = ["long",  "long", "double",  "double",  "chararray", "chararray", "chararray"]
+        result_holder = {}
+
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+        etl_schema_class.return_value.feature_names = feat_name
+        etl_schema_class.return_value.feature_types = feat_type
+        etl_schema_class.return_value.save_schema(table_name)
+
+        featname = ','.join(feat_name)
+        feattype = ','.join(feat_type)
+
+        table = HBaseTable(table_name, file_name)
+	
+        table.aggregate(aggregated_table_name, groupby, aggregations)
+
+        self.assertEqual('pig', str(result_holder["call_args"][0]))
+        self.assertEqual(",".join(groupby), result_holder["call_args"][result_holder["call_args"].index('-g') + 1])
+        self.assertEqual(featname, result_holder["call_args"][result_holder["call_args"].index('-u') + 1])
+        self.assertEqual(feattype, result_holder["call_args"][result_holder["call_args"].index('-r') + 1])
+        self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
+        self.assertEqual(aggregated_table_name, result_holder["call_args"][result_holder["call_args"].index('-o') + 1])
+
+        script_path = os.path.join(config['pig_py_scripts'], 'pig_aggregation.py')
+        self.assertTrue(script_path in result_holder["call_args"])
+
+
+    def test_aggregate_max(self):
+	try:
+	    self.aggregate("long1", [(EvalFunctions.Aggregation.MAX, "long2", "maxlong2")])
+	except:
+	    print "Caught exception on aggregation"
+
+    def test_aggregate_on_multicolumns(self):
+	try:
+	    self.aggregate("str1,str2", [(EvalFunctions.Aggregation.AVG, "long2", "maxlong2")])
+	except:
+	    print "Caught exception on aggregation multiple columns"
+
+    def test_aggregate_multiple(self):
+	try:
+	    self.aggregate("str1,str2", [(EvalFunctions.Aggregation.AVG, "long2", "maxlong2"), [EvalFunctions.Aggregation.SUM, "double1", "totaldouble1"]])
+	except:
+	    print "Caught exception on aggregation multiple columns"
+
 class HBaseFrameBuilderTest(unittest.TestCase):
 
-    @patch("intel_analytics.table.hbase.table.exists")
+    @patch("intel_analytics.table.hbase.table.exists_hdfs")
     def test_validate_exists_hdfs(self, exists):
         exists.return_value = True
 
         builder = HBaseFrameBuilder()
         builder._validate_exists('/mock/location/that/exists')
 
-    @patch("intel_analytics.table.hbase.table.exists")
+    @patch("intel_analytics.table.hbase.table.exists_hdfs")
     def test_validate_exists_not_found_in_hdfs(self, exists):
         exists.return_value = False
 

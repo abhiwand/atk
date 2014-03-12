@@ -34,8 +34,8 @@ import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.graph.Vertex;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.log4j.Logger;
 import org.apache.mahout.math.DenseVector;
 import org.apache.mahout.math.Vector;
@@ -43,17 +43,7 @@ import org.apache.mahout.math.Vector;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.WRONG_VERTEX_TYPE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 /**
  * Vertex Loader to read vertex from Titan.
  * Features <code>VertexData4LBP</code> vertex value

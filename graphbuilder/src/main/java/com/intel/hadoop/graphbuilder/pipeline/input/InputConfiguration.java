@@ -19,7 +19,6 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 

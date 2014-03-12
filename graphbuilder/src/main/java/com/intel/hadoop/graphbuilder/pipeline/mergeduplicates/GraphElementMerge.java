@@ -128,7 +128,7 @@ public class GraphElementMerge implements GraphElementTypeCallback {
         // track the RDF labels of vertices
         if (graphElement.getLabel() != null && vertexLabelMap != null) {
             if (!vertexLabelMap.containsKey(graphElement.getId())) {
-                vertexLabelMap.put(graphElement.getId(), (StringType) graphElement.getLabel());
+                vertexLabelMap.put(graphElement.getId(), graphElement.getLabel());
             }
         }
 

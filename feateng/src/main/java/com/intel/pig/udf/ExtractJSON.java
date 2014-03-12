@@ -23,18 +23,18 @@
 
 package com.intel.pig.udf;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.List;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.DataByteArray;
 import org.apache.pig.data.Tuple;
 
-import static com.jayway.restassured.path.json.JsonPath.*;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.List;
+
+import static com.jayway.restassured.path.json.JsonPath.with;
 
 /**
  * UDF for extracting fields from (potentially complex & nested) JSON documents

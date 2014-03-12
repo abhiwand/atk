@@ -33,6 +33,7 @@ import org.apache.pig.data.*;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+
 import java.io.IOException;
 
 /**
@@ -62,6 +63,10 @@ public class RDF extends EvalFunc<DataBag> {
 
 	public RDF(String rdfNamespace) {
 		this.rdfNamespace = rdfNamespace;
+
+        if (!RDFUtils.RDFNamespaceMap.containsKey(this.rdfNamespace)) {
+            throw new IllegalArgumentException("Invalid RDF namespace: " + this.rdfNamespace);
+        }
 	}
 
 	@Override
@@ -104,8 +109,9 @@ public class RDF extends EvalFunc<DataBag> {
 			Property predicate = stmt.getPredicate();
 			RDFNode object = stmt.getObject();
 			Tuple rdfTuple = TupleFactory.getInstance().newTuple(1);
-			String rdfTripleAsString = subject.toString() + " "
-					+ predicate.toString() + " " + object.toString() + " .";
+			//Faunus n-triple format requires <..>
+			String rdfTripleAsString = "<"+subject.toString() + "> <"
+					+ predicate.toString() + "> <" + object.toString() + "> .";
 
 			rdfTuple.set(0, rdfTripleAsString);
 			rdfBag.add(rdfTuple);

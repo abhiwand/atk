@@ -14,15 +14,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OUTPUT_VERTEX_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 

@@ -23,17 +23,18 @@
 
 package com.intel.giraph.io.formats;
 
-import org.apache.giraph.graph.Vertex;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
-import org.apache.mahout.math.Vector;
-import org.apache.giraph.io.formats.TextVertexOutputFormat;
-import org.json.JSONArray;
-import org.json.JSONException;
 import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.VertexData4LBPWritable.VertexType;
+import org.apache.giraph.graph.Vertex;
+import org.apache.giraph.io.formats.TextVertexOutputFormat;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.mahout.math.Vector;
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.io.IOException;
 
 /**

@@ -19,13 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer;
 
-import java.util.Iterator;
-
+import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.WritableComparable;
-
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import org.apache.hadoop.mapreduce.Mapper;
 
 /**
@@ -52,16 +48,5 @@ public interface GraphTokenizer<RecordType, VidType extends WritableComparable<V
      * @param record   The record type.
      * @param context  The mapper context.
      */
-    void parse(RecordType record, Mapper.Context context);
-
-    /**
-     * @return A list of vertices extracted from the input.
-     */
-    Iterator<Vertex<VidType>> getVertices();
-
-    /**
-     * @return A list of edges extracted from the input.
-     */
-    Iterator<Edge<VidType>> getEdges();
-
+    void parse(RecordType record, Mapper.Context context, BaseMapper baseMapper);
 }

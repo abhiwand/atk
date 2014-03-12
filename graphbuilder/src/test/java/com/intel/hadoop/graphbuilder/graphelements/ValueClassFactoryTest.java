@@ -23,7 +23,7 @@ import com.intel.hadoop.graphbuilder.types.LongType;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
 public class ValueClassFactoryTest {

@@ -22,18 +22,13 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.pig.gb;
 
-import java.io.IOException;
-
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.JobContext;
-import org.apache.hadoop.mapreduce.OutputCommitter;
-import org.apache.hadoop.mapreduce.OutputFormat;
-import org.apache.hadoop.mapreduce.RecordWriter;
-import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.*;
 import org.apache.pig.ResourceSchema;
 import org.apache.pig.StoreFunc;
 import org.apache.pig.data.Tuple;
+
+import java.io.IOException;
 
 /**
  * A dummy store function. In practice this should write to some graph DB

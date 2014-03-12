@@ -27,162 +27,160 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Test;
 
-import java.util.List;
-
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-
 public class TitanGraphInitializerTest {
 
-    @Test
-    public void testCreateGbId() throws Exception {
+	@Test
+	public void testCreateGbId() throws Exception {
 
-        // initialize class under test
-        TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null);
+		// initialize class under test
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
 
-        // invoke method under test
-        GBTitanKey key = initializer.createGbId();
+		// invoke method under test
+		GBTitanKey key = initializer.createGbId();
 
-        // assertions
-        assertEquals(TitanConfig.GB_ID_FOR_TITAN, key.getName());
-        assertTrue(key.isVertexIndex());
-        assertTrue(key.isUnique());
-        assertFalse(key.isEdgeIndex());
-    }
+		// assertions
+		assertEquals(TitanConfig.GB_ID_FOR_TITAN, key.getName());
+		assertTrue(key.isVertexIndex());
+		assertTrue(key.isUnique());
+		assertFalse(key.isEdgeIndex());
+	}
 
-    @Test
-    public void testGetOrCreateTitanKey_TypeFound() throws Exception {
-        String name = "someName";
+	@Test
+	public void testGetOrCreateTitanKey_TypeFound() throws Exception {
+		String name = "someName";
 
-        // setup mocks
-        TitanType titanType = mock(TitanKey.class);
-        TitanGraph graph = mock(TitanGraph.class);
-        when(graph.getType(name)).thenReturn(titanType);
+		// setup mocks
+		TitanType titanType = mock(TitanKey.class);
+		TitanGraph graph = mock(TitanGraph.class);
+		when(graph.getType(name)).thenReturn(titanType);
 
-        // initialize class under test
-        TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null);
-        initializer.setGraph(graph);
+		// initialize class under test
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
+		initializer.setGraph(graph);
 
-        // invoke method under test
-        TitanKey titanKey = initializer.getOrCreateTitanKey(new GBTitanKey(name));
+		// invoke method under test
+		TitanKey titanKey = initializer
+				.getOrCreateTitanKey(new GBTitanKey(name));
 
-        assertEquals(titanType, titanKey);
-    }
+		assertEquals(titanType, titanKey);
+	}
 
-    @Test
-    public void testGetOrCreateTitanKey_Create() throws Exception {
-        String keyName = "myname";
+	@Test
+	public void testGetOrCreateTitanKey_Create() throws Exception {
+		String keyName = "myname";
 
-        // setup mocks
-        TitanKey expectedTitanKey = mock(TitanKey.class);
-        KeyMaker keyMaker = mock(KeyMaker.class);
-        when(keyMaker.make()).thenReturn(expectedTitanKey);
-        TitanGraph graph = mock(TitanGraph.class);
-        when(graph.makeKey(keyName)).thenReturn(keyMaker);
+		// setup mocks
+		TitanKey expectedTitanKey = mock(TitanKey.class);
+		KeyMaker keyMaker = mock(KeyMaker.class);
+		when(keyMaker.make()).thenReturn(expectedTitanKey);
+		TitanGraph graph = mock(TitanGraph.class);
+		when(graph.makeKey(keyName)).thenReturn(keyMaker);
 
-        // initialize class under test
-        TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null);
-        initializer.setGraph(graph);
+		// initialize class under test
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
+		initializer.setGraph(graph);
 
-        // invoke method under test
-        TitanKey actualTitanKey = initializer.getOrCreateTitanKey(new GBTitanKey(keyName));
+		// invoke method under test
+		TitanKey actualTitanKey = initializer
+				.getOrCreateTitanKey(new GBTitanKey(keyName));
 
-        assertEquals(expectedTitanKey, actualTitanKey);
-    }
+		assertEquals(expectedTitanKey, actualTitanKey);
+	}
 
-    @Test
-    public void testGetTitanKey_TypeFound() throws Exception {
-        String name = "someName";
+	@Test
+	public void testGetTitanKey_TypeFound() throws Exception {
+		String name = "someName";
 
-        // setup mocks
-        TitanType titanType = mock(TitanKey.class);
-        TitanGraph graph = mock(TitanGraph.class);
-        when(graph.getType(name)).thenReturn(titanType);
+		// setup mocks
+		TitanType titanType = mock(TitanKey.class);
+		TitanGraph graph = mock(TitanGraph.class);
+		when(graph.getType(name)).thenReturn(titanType);
 
-        // initialize class under test
-        TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null);
-        initializer.setGraph(graph);
+		// initialize class under test
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
+		initializer.setGraph(graph);
 
-        // invoke method under test
-        TitanKey titanKey = initializer.getTitanKey(name);
+		// invoke method under test
+		TitanKey titanKey = initializer.getTitanKey(name);
 
-        assertEquals(titanType, titanKey);
-    }
+		assertEquals(titanType, titanKey);
+	}
 
-    @Test
-    public void testGetTitanKey_TypeNotFound() throws Exception {
-        String name = "someName";
+	@Test
+	public void testGetTitanKey_TypeNotFound() throws Exception {
+		String name = "someName";
 
-        // setup mocks
-        TitanGraph graph = mock(TitanGraph.class);
+		// setup mocks
+		TitanGraph graph = mock(TitanGraph.class);
 
-        // initialize class under test
-        TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null);
-        initializer.setGraph(graph);
+		// initialize class under test
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
+		initializer.setGraph(graph);
 
-        // invoke method under test
-        TitanKey titanKey = initializer.getTitanKey(name);
+		// invoke method under test
+		TitanKey titanKey = initializer.getTitanKey(name);
 
-        assertNull(titanKey);
-    }
+		assertNull(titanKey);
+	}
 
-    @Test
-    public void testCreateTitanKey_Simple() throws Exception {
+	@Test
+	public void testCreateTitanKey_Simple() throws Exception {
 
-        String keyName = "myname";
+		String keyName = "myname";
 
-        // setup mocks
-        KeyMaker keyMaker = mock(KeyMaker.class);
-        TitanGraph graph = mock(TitanGraph.class);
-        when(graph.makeKey(keyName)).thenReturn(keyMaker);
+		// setup mocks
+		KeyMaker keyMaker = mock(KeyMaker.class);
+		TitanGraph graph = mock(TitanGraph.class);
+		when(graph.makeKey(keyName)).thenReturn(keyMaker);
 
-        // initialize class under test
-        TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null);
-        initializer.setGraph(graph);
+		// initialize class under test
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
+		initializer.setGraph(graph);
 
-        // invoke method under test
-        initializer.createTitanKey(new GBTitanKey(keyName));
+		// invoke method under test
+		initializer.createTitanKey(new GBTitanKey(keyName));
 
-        // verify
-        verify(keyMaker, times(1)).dataType(String.class);
-        verify(keyMaker, times(0)).indexed(Vertex.class);
-        verify(keyMaker, times(0)).indexed(Edge.class);
-        verify(keyMaker, times(0)).unique();
-        verify(keyMaker, times(1)).make();
-        verifyNoMoreInteractions(keyMaker);
-    }
+		// verify
+		verify(keyMaker, times(1)).dataType(String.class);
+		verify(keyMaker, times(0)).indexed(Vertex.class);
+		verify(keyMaker, times(0)).indexed(Edge.class);
+		verify(keyMaker, times(0)).unique();
+		verify(keyMaker, times(1)).make();
+		verifyNoMoreInteractions(keyMaker);
+	}
 
-    @Test
-    public void testCreateTitanKey_UniqueVertex() throws Exception {
+	@Test
+	public void testCreateTitanKey_UniqueVertex() throws Exception {
 
-        String keyName = "myname";
+		String keyName = "myname";
 
-        // setup mocks
-        KeyMaker keyMaker = mock(KeyMaker.class);
-        TitanGraph graph = mock(TitanGraph.class);
-        when(graph.makeKey(keyName)).thenReturn(keyMaker);
+		// setup mocks
+		KeyMaker keyMaker = mock(KeyMaker.class);
+		TitanGraph graph = mock(TitanGraph.class);
+		when(graph.makeKey(keyName)).thenReturn(keyMaker);
 
-        // initialize class under test
-        TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null);
-        initializer.setGraph(graph);
+		// initialize class under test
+		TitanGraphInitializer initializer = new TitanGraphInitializer(null, null, null, null);
+		initializer.setGraph(graph);
 
-        // initialize test data
-        GBTitanKey gbTitanKey = new GBTitanKey(keyName);
-        gbTitanKey.setDataType(Integer.class);
-        gbTitanKey.setIsVertexIndex(true);
-        gbTitanKey.setIsUnique(true);
+		// initialize test data
+		GBTitanKey gbTitanKey = new GBTitanKey(keyName);
+		gbTitanKey.setDataType(Integer.class);
+		gbTitanKey.setIsVertexIndex(true);
+		gbTitanKey.setIsUnique(true);
 
+		// invoke method under test
+		initializer.createTitanKey(gbTitanKey);
 
-        // invoke method under test
-        initializer.createTitanKey(gbTitanKey);
-
-        // verify
-        verify(keyMaker, times(1)).dataType(Integer.class);
-        verify(keyMaker, times(1)).indexed(Vertex.class);
-        verify(keyMaker, times(0)).indexed(Edge.class);
-        verify(keyMaker, times(1)).unique();
-        verify(keyMaker, times(1)).make();
-        verifyNoMoreInteractions(keyMaker);
-    }
+		// verify
+		verify(keyMaker, times(1)).dataType(Integer.class);
+		verify(keyMaker, times(1)).indexed(Vertex.class);
+		verify(keyMaker, times(0)).indexed(Edge.class);
+		verify(keyMaker, times(1)).unique();
+		verify(keyMaker, times(1)).make();
+		verifyNoMoreInteractions(keyMaker);
+	}
 }
