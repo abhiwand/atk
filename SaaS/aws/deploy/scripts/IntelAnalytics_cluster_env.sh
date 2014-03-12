@@ -718,6 +718,7 @@ function IA_generate_hosts_file_auto_scale()
             aws ec2 create-tags --resources $instanceId --tags Key=Name,Value="$clusterName-master"
             eval " aws ec2 modify-instance-attribute --instance-id $instanceId --groups $securityGroups \"$masterGroup\" "
         fi
+        #add minionId tag for salt stack minion to pick up
         aws ec2 create-tags --resources $instanceId --tags Key=minionId,Value="$clusterName-$i"
         hosts[$i]=`IA_format_node_name_role $i`
         nname[$i]=`IA_format_node_name ${cname} $i`
