@@ -53,15 +53,8 @@ from intel_analytics.report import ProgressReportStrategy, find_progress, \
     MapReduceProgress, ReportStrategy
 from intel_analytics.progress import Progress
 
-superstep_pattern = re.compile(r'superstep')
-num_vertices_pattern = re.compile(r'Number of vertices')
-num_edges_pattern = re.compile(r'Number of edges')
-output_pattern = re.compile(r'======')
-score_pattern = re.compile(r'score')
 
-
-
-class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
+class TitanGiraphMachineLearning(object):
     """
     Titan-based Giraph Machine Learning instance for a graph
     """
@@ -83,6 +76,14 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         self._title_font_size = 14
         self._num_edges = 0
         self._num_vertices = 0
+        self._superstep_pattern = re.compile(r'superstep')
+        self._num_vertices_pattern = re.compile(r'Number of vertices')
+        self._num_edges_pattern = re.compile(r'Number of edges')
+        self._output_pattern = re.compile(r'======')
+        self._score_pattern = re.compile(r'score')
+
+
+
 
     def _plot_progress_curve(self,
                             data_x,
@@ -151,16 +152,14 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_edges = 0
             progress_results = []
             for line in result:
-                if re.match(superstep_pattern, line):
+                if re.match(self._superstep_pattern, line):
                     results = line.split()
                     data_x.append(results[2])
                     data_y.append(results[5])
-
-                if re.match(num_vertices_pattern, line):
+                elif re.match(self._num_vertices_pattern, line):
                     results = line.split()
                     num_vertices = results[3]
-
-                if re.match(num_edges_pattern, line):
+                elif re.match(self._num_edges_pattern, line):
                     results = line.split()
                     num_edges = results[3]
 
@@ -189,18 +188,16 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
             num_edges = 0
             learning_results = []
             for line in result:
-                if re.match(superstep_pattern, line):
+                if re.match(self._superstep_pattern, line):
                     results = line.split()
                     data_x.append(results[2])
                     data_y.append(results[5])
                     data_v.append(results[8])
                     data_t.append(results[11])
-
-                if re.match(num_vertices_pattern, line):
+                elif re.match(self._num_vertices_pattern, line):
                     results = line.split()
                     num_vertices = results[3]
-
-                if re.match(num_edges_pattern, line):
+                elif re.match(self._num_edges_pattern, line):
                     results = line.split()
                     num_edges = results[3]
 
@@ -569,11 +566,12 @@ class TitanGiraphMachineLearning(object): # TODO: >0.5, inherit MachineLearning
         recommend_id = []
         recommend_score = []
         width = 10
-        for i in range(len(out)):
-            if re.match(output_pattern, out[i]):
-                print out[i]
-            if re.match(score_pattern, out[i]):
-                results = out[i].split()
+        for line in out:
+        #for i in range(len(out)):
+            if re.match(self._output_pattern, line):
+                print line
+            elif re.search(r'score', line):
+                results = line.split()
                 recommend_id.append(results[1])
                 recommend_score.append(results[3])
                 print '{0:{width}}'.format(results[0], width=width),
