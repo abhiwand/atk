@@ -51,6 +51,12 @@ public class StringSplitterTest {
     }
 
     @Test
+    public void split_can_handle_whitespace_in_parts() throws Exception {
+        StringSplitter splitter = new StringSplitter(new StringSplitOptions(",", "(", ")", true));
+        assertArrayEquals(new String[]{"le gateau", "le pain"}, splitter.split("( le gateau, le pain )"));
+    }
+
+    @Test
     public void split_can_handle_null() throws Exception {
         StringSplitter splitter = new StringSplitter(new StringSplitOptions(",", "(", ")", true));
         assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, splitter.split(null));
