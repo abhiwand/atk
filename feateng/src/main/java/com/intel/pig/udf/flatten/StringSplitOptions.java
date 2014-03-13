@@ -9,15 +9,10 @@ import org.apache.commons.lang.StringUtils;
  */
 public class StringSplitOptions {
 
-    private static final String WHITESPACE_CHARS = " \t\n\\x0B\f\r";
-
     private final String delimiter;
     private final String trimStart;
     private final String trimEnd;
     private final boolean trimWhitespace;
-
-    // calculated values
-    private final String splitChars;
 
     /**
      * Options for splitting a String
@@ -35,9 +30,6 @@ public class StringSplitOptions {
         this.trimStart = trimStart;
         this.trimEnd = trimEnd;
         this.trimWhitespace = trimWhitespace;
-
-        // calculated values
-        this.splitChars = trimWhitespace ? delimiter + WHITESPACE_CHARS : delimiter;
     }
 
     public String getDelimiter() {
@@ -61,12 +53,5 @@ public class StringSplitOptions {
 
     public boolean isTrimWhitespace() {
         return trimWhitespace;
-    }
-
-    /**
-     * Characters to split on (delimiter plus possibly whitespace chars)
-     */
-    public String getSplitChars() {
-        return splitChars;
     }
 }
