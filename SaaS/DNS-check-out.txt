@@ -6,7 +6,7 @@ Domain: y6vxnrvagg.graphtrial.intel.com CNAME y6vxnrvagg.graphtrial.infra-host.c
 Domain: yccc3662w2.graphtrial.intel.com CNAME yccc3662w2.graphtrial.infra-host.com 	abolfazl	shahbazi, ebi
 Domain: yhrfhdjdcv.graphtrial.intel.com CNAME yhrfhdjdcv.graphtrial.infra-host.com 	soila GAODev-6-4, i-3aba2c33
 Domain: cbjalnicx4.graphtrial.intel.com CNAME cbjalnicx4.graphtrial.infra-host.com
-Domain: 7ae862ce3i.graphtrial.intel.com CNAME 7ae862ce3i.graphtrial.infra-host.com	'Lakshmanan', 'Letchumanan',  IntelAnalytics-4-4 i-e9a5b4e0
+Domain: 7ae862ce3i.graphtrial.intel.com CNAME 7ae862ce3i.graphtrial.infra-host.com
 Domain: ktrkyaob46.graphtrial.intel.com CNAME ktrkyaob46.graphtrial.infra-host.com	'Grant', 'Babb', 	IntelAnalytics-5-4	i-46d9424f
 Domain: qiqwtjizki.graphtrial.intel.com CNAME qiqwtjizki.graphtrial.infra-host.com	'Paul', 'Crawford', 	IntelAnalytics-6-4	i-d2d843db
 Domain: 86ic2zvsac.graphtrial.intel.com CNAME 86ic2zvsac.graphtrial.infra-host.com	'Eugene', 'Dedits',  IntelAnalytics-7-4	i-50a8b959
