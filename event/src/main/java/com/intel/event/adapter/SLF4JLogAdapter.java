@@ -26,7 +26,11 @@ package com.intel.event.adapter;
 import com.intel.event.Event;
 import com.intel.event.EventLog;
 import org.apache.hadoop.util.StringUtils;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.slf4j.Marker;
+import org.slf4j.MarkerFactory;
 
 /**
  * EventLog implementation that sends events through SLF4J.
