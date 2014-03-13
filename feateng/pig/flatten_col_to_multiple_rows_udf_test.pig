@@ -9,7 +9,7 @@
 
 REGISTER target/feature-engineering-0.8-SNAPSHOT-jar-with-dependencies.jar;
 
-DEFINE FlattenPipedAbcs com.intel.pig.udf.flatten.FlattenUDF('2', '|', '', '', 'true');
+DEFINE FlattenPipedAbcs com.intel.pig.udf.flatten.FlattenColumnToMultipleRowsUDF('2', '|', '', '', 'true');
 
 inpt = LOAD 'test-data/flatten-test.csv' USING PigStorage(',') AS (id:int, name:chararray, abcs:chararray);
 

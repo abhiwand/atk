@@ -7,7 +7,7 @@ import org.apache.pig.data.DataBag;
 import org.apache.pig.data.Tuple;
 import org.junit.Test;
 
-public class FlattenUDFTest {
+public class FlattenColumnToMultipleRowsUDFTest {
 
     @Test
     public void flatten_should_handle_empty() throws Exception {
@@ -16,7 +16,7 @@ public class FlattenUDFTest {
         Tuple input = createTuple("1", "foo", "");
 
         // instantiate class under test
-        FlattenUDF udf = new FlattenUDF("2", ",", "(", ")", "false");
+        FlattenColumnToMultipleRowsUDF udf = new FlattenColumnToMultipleRowsUDF("2", ",", "(", ")", "false");
 
         // invoke method under test
         DataBag bag = udf.exec(input);
@@ -35,7 +35,7 @@ public class FlattenUDFTest {
         Tuple input = createTuple("1", "foo", "c");
 
         // instantiate class under test
-        FlattenUDF udf = new FlattenUDF("2", ",", "(", ")", "false");
+        FlattenColumnToMultipleRowsUDF udf = new FlattenColumnToMultipleRowsUDF("2", ",", "(", ")", "false");
 
         // invoke method under test
         DataBag bag = udf.exec(input);
@@ -54,7 +54,7 @@ public class FlattenUDFTest {
         Tuple input = createTuple("1", "foo", "(c)");
 
         // instantiate class under test
-        FlattenUDF udf = new FlattenUDF("2", ",", "(", ")", "false");
+        FlattenColumnToMultipleRowsUDF udf = new FlattenColumnToMultipleRowsUDF("2", ",", "(", ")", "false");
 
         // invoke method under test
         DataBag bag = udf.exec(input);
@@ -73,7 +73,7 @@ public class FlattenUDFTest {
         Tuple input = createTuple("1", "foo", "a,b,c");
 
         // instantiate class under test
-        FlattenUDF udf = new FlattenUDF("2", ",", "(", ")", "false");
+        FlattenColumnToMultipleRowsUDF udf = new FlattenColumnToMultipleRowsUDF("2", ",", "(", ")", "false");
 
         // invoke method under test
         DataBag bag = udf.exec(input);
@@ -93,7 +93,7 @@ public class FlattenUDFTest {
         Tuple input = createTuple("1", "foo", "(a,b,c)");
 
         // instantiate class under test
-        FlattenUDF udf = new FlattenUDF("2", ",", "(", ")", "false");
+        FlattenColumnToMultipleRowsUDF udf = new FlattenColumnToMultipleRowsUDF("2", ",", "(", ")", "false");
 
         // invoke method under test
         DataBag bag = udf.exec(input);

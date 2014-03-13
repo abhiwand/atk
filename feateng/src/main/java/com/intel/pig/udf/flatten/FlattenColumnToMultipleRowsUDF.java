@@ -31,7 +31,7 @@ import org.apache.pig.data.TupleFactory;
  * flatten here because that is what the Python operation will be called.
  * </p>
  */
-public class FlattenUDF extends EvalFunc<DataBag> {
+public class FlattenColumnToMultipleRowsUDF extends EvalFunc<DataBag> {
 
     private static final TupleFactory TUPLE_FACTORY = TupleFactory.getInstance();
     private static final BagFactory BAG_FACTORY = BagFactory.getInstance();
@@ -49,7 +49,7 @@ public class FlattenUDF extends EvalFunc<DataBag> {
      * @param trimEnd (String) string to trim from end (optional: can be null or empty)
      * @param trimWhitespace (boolean) should whitespace be trimmed when splitting the cell value
      */
-    public FlattenUDF(String columnToFlatten, String delimiter, String trimStart, String trimEnd, String trimWhitespace) {
+    public FlattenColumnToMultipleRowsUDF(String columnToFlatten, String delimiter, String trimStart, String trimEnd, String trimWhitespace) {
         // We're parsing here because Pig requires all constructor args to be Strings
         this.columnToFlatten = Integer.parseInt(columnToFlatten);
         this.splitter = new StringSplitter(new StringSplitOptions(delimiter, trimStart, trimEnd,
