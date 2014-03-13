@@ -25,10 +25,10 @@ import org.apache.pig.data.TupleFactory;
  * 2 c
  * 3 b
  * </pre>
- *
+ * 
  * <p>
- * This UDF is confusingly named from a Pig perspective because Pig has a built-in called FLATTEN.
- * We're calling it flatten here because that is what the Python operation will be called.
+ * This UDF is confusingly named from a Pig perspective because Pig has a built-in called FLATTEN. We're calling it
+ * flatten here because that is what the Python operation will be called.
  * </p>
  */
 public class FlattenUDF extends EvalFunc<DataBag> {
@@ -42,6 +42,7 @@ public class FlattenUDF extends EvalFunc<DataBag> {
 
     /**
      * Convert a tuple to a dataBag of one or more tuples depending on the value in the columnToFlatten.
+     * 
      * @param columnToFlatten (int) index of column to flatten (zero based)
      * @param delimiter (String) to split the column value on (required)
      * @param trimStart (String) string to trim from the start (optional: can be null or empty)
@@ -51,7 +52,8 @@ public class FlattenUDF extends EvalFunc<DataBag> {
     public FlattenUDF(String columnToFlatten, String delimiter, String trimStart, String trimEnd, String trimWhitespace) {
         // We're parsing here because Pig requires all constructor args to be Strings
         this.columnToFlatten = Integer.parseInt(columnToFlatten);
-        this.splitter = new StringSplitter(new StringSplitOptions(delimiter, trimStart, trimEnd, Boolean.parseBoolean(trimWhitespace)));
+        this.splitter = new StringSplitter(new StringSplitOptions(delimiter, trimStart, trimEnd,
+                Boolean.parseBoolean(trimWhitespace)));
     }
 
     /**

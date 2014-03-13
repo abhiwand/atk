@@ -17,8 +17,6 @@ public class StringSplitOptions {
     private final boolean trimWhitespace;
 
     // calculated values
-    private final boolean hasTrimStart;
-    private final boolean hasTrimEnd;
     private final String splitChars;
 
     /**
@@ -39,8 +37,6 @@ public class StringSplitOptions {
         this.trimWhitespace = trimWhitespace;
 
         // calculated values
-        this.hasTrimStart = StringUtils.isNotEmpty(trimStart);
-        this.hasTrimEnd = StringUtils.isNotEmpty(trimEnd);
         this.splitChars = trimWhitespace ? delimiter + WHITESPACE_CHARS : delimiter;
     }
 
@@ -65,20 +61,6 @@ public class StringSplitOptions {
 
     public boolean isTrimWhitespace() {
         return trimWhitespace;
-    }
-
-    /**
-     * true if this trimStart is non-empty
-     */
-    public boolean hasTrimStart() {
-        return hasTrimStart;
-    }
-
-    /**
-     * true if this trimEnd is non-empty
-     */
-    public boolean hasTrimEnd() {
-        return hasTrimEnd;
     }
 
     /**

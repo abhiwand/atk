@@ -25,31 +25,9 @@ public class StringSplitter {
             return ArrayUtils.EMPTY_STRING_ARRAY;
         }
 
-        String trimmed = trimStart(trimEnd(s));
+        String trimmed = StringUtils.removeStart(s, options.getTrimStart());
+        trimmed = StringUtils.removeEnd(trimmed, options.getTrimEnd());
         return StringUtils.split(trimmed, options.getSplitChars());
     }
 
-    private String trimStart(String s) {
-        if (needsTrimStart(s)) {
-            return s.substring(options.getTrimStart().length());
-        }
-        return s;
-    }
-
-    private String trimEnd(String s) {
-        if (needsTrimEnd(s)) {
-            return s.substring(0, s.length() - options.getTrimStart().length());
-        }
-        return s;
-    }
-
-    private boolean needsTrimStart(String s) {
-        return options.hasTrimStart()
-                && StringUtils.startsWith(s, options.getTrimStart());
-    }
-
-    private boolean needsTrimEnd(String s) {
-        return options.hasTrimEnd()
-                && StringUtils.endsWith(s, options.getTrimEnd());
-    }
 }

@@ -27,8 +27,6 @@ public class StringSplitOptionsTest {
         assertEquals(delimiter, options.getDelimiter());
         assertEquals(start, options.getTrimStart());
         assertNull(options.getTrimEnd());
-        assertTrue(options.hasTrimStart());
-        assertFalse(options.hasTrimEnd());
         assertTrue(options.isTrimWhitespace());
     }
 
@@ -42,8 +40,6 @@ public class StringSplitOptionsTest {
         assertEquals(delimiter, options.getDelimiter());
         assertNull(options.getTrimStart());
         assertEquals(end, options.getTrimEnd());
-        assertFalse(options.hasTrimStart());
-        assertTrue(options.hasTrimEnd());
         assertFalse(options.isTrimWhitespace());
     }
 
