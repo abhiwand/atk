@@ -1,6 +1,6 @@
 
 /**
-* This script is for manually testing the FlattenUDF
+* This script is for manually testing the FlattenColumnToMultipleRowsUDF
 *
 * This UDF is confusingly named from a Pig perspective because Pig has a built-in called FLATTEN.
 * We're calling it flatten here because that is what the Python operation is going to be called.
