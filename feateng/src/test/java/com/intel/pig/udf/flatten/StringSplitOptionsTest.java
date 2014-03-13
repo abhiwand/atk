@@ -1,9 +1,8 @@
 package com.intel.pig.udf.flatten;
 
-import org.junit.Test;
-
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
 
 public class StringSplitOptionsTest {
 
@@ -11,8 +10,9 @@ public class StringSplitOptionsTest {
     public void StringSplitOptions_requires_delimiter() throws Exception {
         try {
             new StringSplitOptions(null, null, null, false);
-        }
-        catch(IllegalArgumentException e) {
+
+            fail("Expected exception not thrown");
+        } catch (IllegalArgumentException e) {
             assertEquals("delimiter can't be empty", e.getMessage());
         }
     }
