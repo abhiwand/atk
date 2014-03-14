@@ -82,7 +82,7 @@ class TitanGiraphMachineLearning(object):
         self._num_vertices_pattern = re.compile(r'Number of vertices')
         self._num_edges_pattern = re.compile(r'Number of edges')
         self._output_pattern = re.compile(r'======')
-        self._score_pattern = re.compile(r'  score ')
+        self._score_pattern = re.compile(r'.*?score')
         self._result = {'als':[],
                            'avg_path_len':[],
                            'belief_prop':[],
@@ -171,7 +171,7 @@ class TitanGiraphMachineLearning(object):
                     num_vertices = results[3]
                 elif re.match(self._num_edges_pattern, line):
                     results = line.split()
-                    num_edges = results[3]
+                    num_edges = long(results[3])
 
         progress_results.append(data_x)
         progress_results.append(data_y)
@@ -206,10 +206,10 @@ class TitanGiraphMachineLearning(object):
                     data_t.append(results[11])
                 elif re.match(self._num_vertices_pattern, line):
                     results = line.split()
-                    num_vertices = results[3]
+                    num_vertices = long(results[3])
                 elif re.match(self._num_edges_pattern, line):
                     results = line.split()
-                    num_edges = results[3]
+                    num_edges = long(results[3])
 
         learning_results.append(data_x)
         learning_results.append(data_y)
@@ -364,7 +364,10 @@ class TitanGiraphMachineLearning(object):
         """
 
         self._create_dir(path)
-        hist_cmd1 = 'gremlin.sh -e ' + global_config['giraph_histogram_script']
+        hist_cmd1 = [global_config['titan_gremlin'],
+                     '-e',
+                     global_config['giraph_histogram_script']]
+        hist_cmd1 = ' '.join(hist_cmd1)
         hist_command = [self._table_name,
                         property_type,
                         str(enable_roc).lower(),
@@ -542,7 +545,11 @@ class TitanGiraphMachineLearning(object):
             else:
                 feature_dimension = self._feature_dimension
 
-        rec_cmd1 = 'gremlin.sh -e ' + global_config['giraph_recommend_script']
+        rec_cmd1 = [ global_config['titan_gremlin'],
+                     '-e',
+                     global_config['giraph_recommend_script']
+                     ]
+        rec_cmd1 = ' '.join(rec_cmd1)
         rec_command = [self._table_name,
                        vertex_id,
                        output_vertex_property_list,
@@ -559,11 +566,11 @@ class TitanGiraphMachineLearning(object):
                        edge_type_key,
                        vertex_type,
                        str(vector_value).lower(),
-                       bias_on,
+                       str(bias_on).lower(),
                        feature_dimension]
         rec_cmd2 = '::'.join(map(str, rec_command))
         rec_cmd = rec_cmd1 + ' ' + rec_cmd2
-        #print rec_cmd
+        print rec_cmd
         #if want to directly use subprocess without progress bar, it is like this:
         #p = subprocess.Popen(rec_cmd, shell=True, stdout=subprocess.PIPE)
         #out = p.communicate()
@@ -578,7 +585,7 @@ class TitanGiraphMachineLearning(object):
         #for i in range(len(out)):
             if re.match(self._output_pattern, line):
                 print line
-            elif re.search(r'score', line):
+            elif re.match(self._score_pattern, line):
                 results = line.split()
                 recommend_id.append(results[1])
                 recommend_score.append(results[3])
@@ -649,11 +656,24 @@ class TitanGiraphMachineLearning(object):
         #sanity check on parameters
         if not isinstance(combined_result_property_key, list):
             raise TypeError("combined_result_property_key should be a list.")
-        elif bias_on and len(combined_result_property_key) < 2:
-            raise ValueError("bias_on then at least two keys are expected for combined_result_property_key.");
+        else:
+            combined_size = len(combined_result_property_key)
+            if bias_on and combined_size < 2:
+                raise ValueError("bias_on then at least two keys are expected for combined_result_property_key.");
 
-        if not isinstance(k, int):
+        #update graph to record this latest combined results for future functions like "recommend"
+        self._output_vertex_property_list = ','.join(combined_result_property_key)
+        if (bias_on and combined_size > 2) or (not bias_on and combined_size > 1):
+           self._vector_value = False
+        else:
+           self._vector_value = True
+
+        self._bias_on = bias_on
+
+        if not isinstance(k, (int, long)):
             raise TypeError("k should be an integer.")
+        elif k < 1:
+            raise ValueError("k should be positive integer")
 
         if algorithm == '':
             if self._latest_algorithm == '':
@@ -711,6 +731,11 @@ class TitanGiraphMachineLearning(object):
         for key in input_result_property_key:
             input_property_key.append(key.replace(",",";"))
 
+        if std_property_key is None:
+            output_std_property_key = std_property_key
+        else:
+            output_std_property_key = ';'.join(std_property_key)
+
         cmd = [self._table_name,
                global_config['titan_storage_backend'],
                global_config['titan_storage_hostname'],
@@ -721,10 +746,10 @@ class TitanGiraphMachineLearning(object):
                ';'.join(combined_result_property_key),
                str(bias_on).lower(),
                str(enable_std).lower(),
-               std_property_key]
+               output_std_property_key]
         combine_cmd1 = '::'.join(map(str, cmd))
 
-        if self._num_edges > global_config['medium_graph_threshold']:
+        if self._num_edges >= long(global_config['medium_graph_threshold']):
             # run by faunus
             if not hdfs.path.exists('faunus_combine.groovy'):
                 hdfs.put(global_config['giraph_faunus_combine_script'], 'faunus_combine.groovy')
@@ -739,10 +764,10 @@ class TitanGiraphMachineLearning(object):
             combine_cmd2 = [global_config['titan_gremlin'],
                             ' -e ',
                             global_config['giraph_titan_combine_script'],
-                            combine_cmd1]
+                            "'" + combine_cmd1 + "'"]
 
         combine_cmd = ' '.join(map(str, combine_cmd2))
-        #print   combine_cmd
+        print   combine_cmd
 
         time_str = get_time_str()
         start_time = time.time()
@@ -2403,7 +2428,7 @@ class AlgorithmReport():
 
 job_completion_pattern = re.compile(r".*?Giraph Stats")
 groovy_completion_pattern = re.compile(r"complete execution")
-groovy_completion_pattern2 = re.compile(r"Job complete")
+groovy_completion_pattern2 = re.compile(r".*?Job complete:")
 
 class GiraphProgressReportStrategy(ProgressReportStrategy):
     """

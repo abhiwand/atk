@@ -26,13 +26,11 @@ def map(v,args){
     combinedResultPropertyKey = inputs[7].split("\\;")
     biasOn = inputs[8].toBoolean()
     enableStd = inputs[9].toBoolean()
-    stdPropertyKey = inputs[10].split("\\,")
+    stdPropertyKey = inputs[10].split("\\;")
     def biasList = []
     def inputResultKeys = []
     def combinedResultKeys = []
     def stdKeys = []
-    def avgResults = []
-    def results = [][]
     String avgBiasKeys
     String stdBiasKeys
 
@@ -75,6 +73,8 @@ def map(v,args){
 
     u = g.v(v.id)
     vectorSize = 0
+    def avgResults = []
+    def results = [][]
     (0..<numInputResults).each{ i->
         //check if vector_value is used
         elementSize =  inputResultKeys[i].size()
@@ -176,6 +176,7 @@ def map(v,args){
 
 def calStd(valueList, avgValue){
     stdValue = 0
+    println valueList.size()
     (0..<valueList.size()).each{
         stdValue += (valueList[it] - avgValue)**2
     }
@@ -185,6 +186,7 @@ def calStd(valueList, avgValue){
 
 def calAvg(valueList){
     listSize = valueList.size()
+    println listSize
     sumValue = 0
     (0..<listSize).each{
         sumValue += valueList[it]
