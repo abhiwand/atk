@@ -18,14 +18,12 @@ def combine(args){
     combinedResultPropertyKey = inputs[7].split("\\;")
     biasOn = inputs[8].toBoolean()
     enableStd = inputs[9].toBoolean()
-    stdPropertyKey = inputs[10].split("\\,")
+    stdPropertyKey = inputs[10].split("\\;")
 
     def biasList = []
     def inputResultKeys = []
     def combinedResultKeys = []
     def stdKeys = []
-    def avgResults = []
-    def results = [][]
     String avgBiasKeys
     String stdBiasKeys
 
@@ -66,6 +64,8 @@ def combine(args){
     }
 
     for(Vertex v : g.V){
+        def avgResults = []
+        def results = [][]
         vectorSize = 0
         (0..<numInputResults).each{ i->
             //check if vector_value is used
