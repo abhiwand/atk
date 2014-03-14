@@ -30,7 +30,17 @@ import org.joda.time.DateTime;
 
 import java.io.IOException;
 
+/**
+ * UDF for determining if the first date is before the second date
+ */
 public class BeforeDate extends FilterFunc {
+
+    /**
+     * Determine if the first date is before the second date
+     * @param objects input tuple
+     * @return whether the first date is before the second date
+     * @throws IOException
+     */
     @Override
     public Boolean exec(Tuple objects) throws IOException {
 
