@@ -44,7 +44,7 @@ import time
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.path as path
-import pydoop
+import pydoop.hdfs as hdfs
 import numpy as np
 
 from intel_analytics.subproc import call
@@ -52,6 +52,7 @@ from intel_analytics.config import global_config, get_time_str
 from intel_analytics.report import ProgressReportStrategy, find_progress, \
     MapReduceProgress, ReportStrategy
 from intel_analytics.progress import Progress
+from intel_analytics.graph.titan.config import titan_config
 
 
 class TitanGiraphMachineLearning(object):
@@ -65,6 +66,7 @@ class TitanGiraphMachineLearning(object):
         """
         self._graph = graph
         self._table_name = graph.titan_table_name
+        self._latest_algorithm = ''
         self._output_vertex_property_list = ''
         self._vertex_type = ''
         self._edge_type = ''
@@ -80,7 +82,15 @@ class TitanGiraphMachineLearning(object):
         self._num_vertices_pattern = re.compile(r'Number of vertices')
         self._num_edges_pattern = re.compile(r'Number of edges')
         self._output_pattern = re.compile(r'======')
-        self._score_pattern = re.compile(r'score')
+        self._score_pattern = re.compile(r'  score ')
+        self._result = {'als':[],
+                           'avg_path_len':[],
+                           'belief_prop':[],
+                           'cgd':[],
+                           'connected_components':[],
+                           'label_prop':[],
+                           'lda':[],
+                           'page_rank':[]}
 
 
 
@@ -145,7 +155,7 @@ class TitanGiraphMachineLearning(object):
                                output_path,
                                curve_title,
                                curve_ylabel):
-        with pydoop.hdfs.open(output_path) as result:
+        with hdfs.open(output_path) as result:
             data_x = []
             data_y = []
             num_vertices = 0
@@ -179,7 +189,7 @@ class TitanGiraphMachineLearning(object):
                                curve_ylabel2="RMSE (Validate)",
                                curve_ylabel3="RMSE (Test)"
                                ):
-        with pydoop.hdfs.open(output_path) as result:
+        with hdfs.open(output_path) as result:
             data_x = []
             data_y = []
             data_v = []
@@ -413,8 +423,6 @@ class TitanGiraphMachineLearning(object):
 
                         normalized_fp = roc_data[:,0]
                         normalized_tp = roc_data[:,1]
-                        #print min(normalized_fp), max(normalized_fp)
-                        #print min(normalized_tp), max(normalized_tp)
 
                         title = "ROC Curve (" + splits[j] + ")\n(Prior: " + first_property_name +\
                                 ", Posterior: " + second_property_name + ")\n" + "(Feature" + str(i)
@@ -591,6 +599,163 @@ class TitanGiraphMachineLearning(object):
         return output
 
 
+    def kfold_combine(self,
+                      combined_result_property_key,
+                      k=10,
+                      algorithm='',
+                      type='AVG',
+                      input_result_property_key=None,
+                      bias_on=False,
+                      std_property_key=None
+                      ):
+        """
+        Combine results from k iterations as the final k-fold cross validation result
+
+        Parameters
+        ----------
+        combined_result_property_key : String List
+            The list of the result properties on which to save final results.
+            When bias_on is True, the last element is the key for combined bias.
+
+        k: Integer, optional
+            The number of folds for k-fold cross validation.
+            The valid value range is positive integer larger than 1.
+            The default value is 10.
+        algorithm: String, optional
+            The name of algorithm to combine results.
+            The valid value range is ['als', 'avg_path_len', 'belief_prop','cgd',
+                    'connected_components', 'label_prop', 'lda', 'page_rank']
+            The default value is the most recent run algorithm
+        type: String, optional
+            The type of combine function to run.
+            The valid value is in ['AVG'] range.
+            The default value is 'AVG'
+        input_result_property_key: String List, optional
+            The list of results to combine.
+            Expect each element is the output_vertex_property for a run in k-fold iteration.
+            The default value is the latest k runs of the algorithm configured above
+        bias_on: Boolean, optional
+            True means the update for bias term was turned on for all results which need to be combined
+            False means the update for bias term was turned off for all results which need to be combined
+            Please note, bias_on must be consistent for all results which need to be combined
+            The default value is false
+        std_property_key : String List, optional
+            The list of property keys to store the standard deviation of the k results.
+            When bias_on is True, the last element is the key for standard deviation of bias.
+            When it is None, no standard deviation will be calculated.
+            The default value is None.
+        """
+
+        #sanity check on parameters
+        if not isinstance(combined_result_property_key, list):
+            raise TypeError("combined_result_property_key should be a list.")
+        elif bias_on and len(combined_result_property_key) < 2:
+            raise ValueError("bias_on then at least two keys are expected for combined_result_property_key.");
+
+        if not isinstance(k, int):
+            raise TypeError("k should be an integer.")
+
+        if algorithm == '':
+            if self._latest_algorithm == '':
+                raise ValueError("algorithm is empty!")
+            else:
+                algorithm = self._latest_algorithm
+        elif not isinstance(algorithm, basestring):
+            raise TypeError("algorithm should be a string.")
+        elif not algorithm in ['als', 'avg_path_len', 'belief_prop','cgd','connected_components', 'label_prop', 'lda', 'page_rank']:
+            raise ValueError("algorithm " + algorithm + " is not supported!")
+
+        if not isinstance(type, basestring):
+            raise TypeError("type should be a string.")
+
+        if input_result_property_key is None:
+            num_runs = len(self._result[algorithm])
+            if num_runs < k:
+                raise ValueError("only " + str(num_runs) + " results are available. "
+                                 "Please configure k correctly.");
+            else:
+                input_result_property_key = self._result[algorithm][-k:]
+        elif not isinstance(input_result_property_key, list):
+            raise TypeError("input_result_property_key should be a list.")
+        elif len(input_result_property_key) != k:
+                raise ValueError(str(len(input_result_property_key)) + " results are configured. It mismatches k (=",
+                                 + str(k) + "). Please configure k correctly.");
+        pre_size = 1
+        for result in input_result_property_key:
+            size = len(result.split(","))
+            if bias_on:
+                size -= 1
+            #when vector_value was enabled when running algorithm, the length of output_vertex_property
+            # is 1. When vector_value was not enabled, the length of output_vertex_property should be the
+            # feature size, and it should be the same across k runs
+            if pre_size != 1 and size != 1 and size != pre_size:
+                raise ValueError("The vector size of different results do not match!")
+            pre_size = size
+
+        if bias_on and len(combined_result_property_key) < 2:
+            raise ValueError("bias_on then at least two keys expected for combined_result_property_key.");
+
+        if std_property_key is None:
+            enable_std = False
+        else:
+            enable_std = True
+
+        if (std_property_key is not None) and not isinstance(std_property_key, list):
+            raise TypeError("std_property_key should be a list.")
+        elif bias_on and enable_std and len(std_property_key) < 2:
+            raise ValueError("bias_on then at least two keys are expected for std_property_key.");
+
+        #faunus gremlin does not work with "," in command line args, so convert comma separated input_result_property_key
+        #into semicolon separated string. Also concatenate several old results with ":"
+        input_property_key = []
+        for key in input_result_property_key:
+            input_property_key.append(key.replace(",",";"))
+
+        cmd = [self._table_name,
+               global_config['titan_storage_backend'],
+               global_config['titan_storage_hostname'],
+               global_config['titan_storage_port'],
+               global_config['titan_storage_connection_timeout'],
+               ':'.join(input_property_key),
+               type,
+               ';'.join(combined_result_property_key),
+               str(bias_on).lower(),
+               str(enable_std).lower(),
+               std_property_key]
+        combine_cmd1 = '::'.join(map(str, cmd))
+
+        if self._num_edges > global_config['medium_graph_threshold']:
+            # run by faunus
+            if not hdfs.path.exists('faunus_combine.groovy'):
+                hdfs.put(global_config['giraph_faunus_combine_script'], 'faunus_combine.groovy')
+            faunus_config_file = titan_config.write_faunus_cfg(self._table_name)
+            combine_cmd2 = [global_config['faunus_gremlin'],
+                            ' -i ',
+                            faunus_config_file,
+                            "\"g.V.script('faunus_combine.groovy', '" + combine_cmd1 + "')\""
+                            ]
+        else:
+            # run by titan gremlin
+            combine_cmd2 = [global_config['titan_gremlin'],
+                            ' -e ',
+                            global_config['giraph_titan_combine_script'],
+                            combine_cmd1]
+
+        combine_cmd = ' '.join(map(str, combine_cmd2))
+        #print   combine_cmd
+
+        time_str = get_time_str()
+        start_time = time.time()
+        call(combine_cmd, shell=True, report_strategy=GroovyProgressReportStrategy())
+        exec_time = time.time() - start_time
+        output = AlgorithmReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.k = k
+        self.report.append(output)
+        return output
+
 
     def belief_prop(self,
                     input_vertex_property_list,
@@ -687,6 +852,8 @@ class TitanGiraphMachineLearning(object):
         output : AlgorithmReport
             The algorithm's results in database.
         """
+        self._result['belief_prop'].append(output_vertex_property_list)
+        self._latest_algorithm = 'belief_prop'
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lbp')
@@ -728,7 +895,7 @@ class TitanGiraphMachineLearning(object):
         output.smoothing = smoothing
         output.anchor_threshold = anchor_threshold
         output_path = os.path.join(output_path, 'lbp-learning-report_0')
-        if pydoop.hdfs.path.exists(output_path):
+        if hdfs.path.exists(output_path):
             lbp_results = self._update_learning_curve(output_path,
                                                       'LBP Learning Curve',
                                                       'Average Train Delta',
@@ -863,6 +1030,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
+        self._result['page_rank'].append(output_vertex_property_list)
+        self._latest_algorithm = 'page_rank'
         self._output_vertex_property_list = output_vertex_property_list
         output_path = os.path.join(global_config['giraph_output_base'],self._table_name,'pr')
         pr_command = self._get_pr_command(
@@ -898,7 +1067,7 @@ class TitanGiraphMachineLearning(object):
         output.reset_probability = reset_probability
         output.convergence_output_interval = convergence_output_interval
         output_path = os.path.join(output_path, 'pr-convergence-report_0')
-        if pydoop.hdfs.path.exists(output_path):
+        if hdfs.path.exists(output_path):
             pr_results = self._update_progress_curve(output_path,
                                                      'Page Rank Convergence Curve',
                                                      'Vertex Value Change')
@@ -1005,6 +1174,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
+        self._result['avg_path_len'].append(output_vertex_property_list)
+        self._latest_algorithm = 'avg_path_len'
         self._output_vertex_property_list = output_vertex_property_list
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'apl')
         apl_command = self._get_apl_command(
@@ -1034,7 +1205,7 @@ class TitanGiraphMachineLearning(object):
         output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
         output_path = os.path.join(output_path, 'apl-convergence-report_0')
-        if pydoop.hdfs.path.exists(output_path):
+        if hdfs.path.exists(output_path):
             apl_results = self._update_progress_curve(output_path,
                                                       'Avg. Path Length Progress Curve',
                                                       'Num of Vertex Updates')
@@ -1133,6 +1304,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
+        self._result['connected_components'].append(output_vertex_property_list)
+        self._latest_algorithm = 'connected_components'
         self._output_vertex_property_list = output_vertex_property_list
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'cc')
         cc_command = self._get_cc_command(
@@ -1162,7 +1335,7 @@ class TitanGiraphMachineLearning(object):
         output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
         output_path = os.path.join(output_path, 'cc-convergence-report_0')
-        if pydoop.hdfs.path.exists(output_path):
+        if hdfs.path.exists(output_path):
             cc_results = self._update_progress_curve(output_path,
                                                      'Connected Components Progress Curve',
                                                      'Num of Vertex Updates')
@@ -1315,6 +1488,8 @@ class TitanGiraphMachineLearning(object):
         output : AlgorithmReport
             The algorithm's results in database.
         """
+        self._result['label_prop'].append(output_vertex_property_list)
+        self._latest_algorithm = 'label_prop'
         self._output_vertex_property_list = output_vertex_property_list
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lp')
         lp_command = self._get_lp_command(
@@ -1354,7 +1529,7 @@ class TitanGiraphMachineLearning(object):
         output.bidirectional_check = bidirectional_check
         output.anchor_threshold = anchor_threshold
         output_path = os.path.join(output_path, 'lp-learning-report_0')
-        if pydoop.hdfs.path.exists(output_path):
+        if hdfs.path.exists(output_path):
             lp_results = self._update_progress_curve(output_path,
                                                      'LP Learning Curve',
                                                      'Cost')
@@ -1546,6 +1721,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The convergence curve is
             accessible through the report object.
         """
+        self._result['lda'].append(output_vertex_property_list)
+        self._latest_algorithm = 'lda'
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lda')
@@ -1594,7 +1771,7 @@ class TitanGiraphMachineLearning(object):
         output.min_val = min_val
         output.num_topics = num_topics
         output_path = os.path.join(output_path, 'lda-learning-report_0')
-        if pydoop.hdfs.path.exists(output_path):
+        if hdfs.path.exists(output_path):
             if evaluate_cost:
                 curve_ylabel = 'Cost'
             else:
@@ -1801,6 +1978,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The convergence curve is
             accessible through the report object.
         """
+        self._result['als'].append(output_vertex_property_list)
+        self._latest_algorithm = 'als'
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
         self._edge_type = global_config['hbase_column_family'] + edge_type
@@ -1853,7 +2032,7 @@ class TitanGiraphMachineLearning(object):
         output.min_val = min_val
         output.bias_on = bias_on
         output_path = os.path.join(output_path, 'als-learning-report_0')
-        if pydoop.hdfs.path.exists(output_path):
+        if hdfs.path.exists(output_path):
             als_results = self._update_learning_curve(output_path,
                                                       'ALS Learning Curve')
 
@@ -2066,6 +2245,8 @@ class TitanGiraphMachineLearning(object):
             accessible through the report object.
 
         """
+        self._result['cgd'].append(output_vertex_property_list)
+        self._latest_algorithm = 'cgd'
         self._output_vertex_property_list = output_vertex_property_list
         self._vertex_type = global_config['hbase_column_family'] + vertex_type
         self._edge_type = global_config['hbase_column_family'] + edge_type
@@ -2121,7 +2302,7 @@ class TitanGiraphMachineLearning(object):
         output.bias_on = bias_on
         output.num_iters = num_iters
         output_path = os.path.join(output_path, 'cgd-learning-report_0')
-        if pydoop.hdfs.path.exists(output_path):
+        if hdfs.path.exists(output_path):
             cgd_results = self._update_learning_curve(output_path,
                                                       'CGD Learning Curve')
             output.super_steps = list(cgd_results[0])
@@ -2222,7 +2403,7 @@ class AlgorithmReport():
 
 job_completion_pattern = re.compile(r".*?Giraph Stats")
 groovy_completion_pattern = re.compile(r"complete execution")
-
+groovy_completion_pattern2 = re.compile(r"Job complete")
 
 class GiraphProgressReportStrategy(ProgressReportStrategy):
     """
@@ -2286,7 +2467,7 @@ class GroovyProgressReportStrategy(ReportStrategy):
         """
         to report progress of recommender task
         """
-        if re.match(groovy_completion_pattern, line):
+        if re.match(groovy_completion_pattern, line) or re.match(groovy_completion_pattern2, line):
             self.progress_bar._disable_animation()
 
     def handle_error(self, error_code, error_message):
