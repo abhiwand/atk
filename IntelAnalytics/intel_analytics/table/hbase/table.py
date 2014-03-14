@@ -23,13 +23,14 @@
 import os
 import re
 import collections
+from intel_analytics.table.pig import pig_helpers
 
 from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
 from intel_analytics.pig import get_pig_args, is_local_run
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
-from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
+from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder, HBaseSource, HBaseLoadFunction, HBaseStoreFunction
 
 # import sys is needed here because test_hbase_table module relies
 # on it to patch sys.stdout
@@ -497,6 +498,24 @@ class HBaseTable(object):
 
         return HBaseTable(new_table_name, self.file_name)
 
+    def project(self, new_table_name, features_to_project_names, features_to_project_types, renamed_feature_names):
+        builder = PigScriptBuilder()
+        relation = "project_relation"
+
+        pig_schema = pig_helpers.get_pig_schema_string(','.join(features_to_project_names), ','.join(features_to_project_types))
+        builder.add_load_statement(relation, HBaseSource(self.table_name), HBaseLoadFunction(features_to_project_names, False), pig_schema)
+
+        builder.add_store_statement(relation, HBaseSource(new_table_name), HBaseStoreFunction(renamed_feature_names))
+
+        args = get_pig_args('pig_execute.py')
+        args += ['-s', builder.get_statements()]
+
+        return_code = call(args, report_strategy = etl_report_strategy())
+        if return_code:
+            raise HBaseTableException('Could not project table')
+
+        return HBaseTable(new_table_name, self.file_name)
+
     def drop(self, filter, column, isregex, inplace, new_table_name):
 
         etl_schema = ETLSchema()
@@ -944,6 +963,59 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.save_schema(new_table_name)
         hbase_registry.register(new_frame_name, new_table_name, overwrite)
         return BigDataFrame(new_frame_name, new_table)
+
+
+    def project(self, data_frame, new_frame_name, features_to_project, rename=None, overwrite=False):
+        new_table_name = _create_table_name(new_frame_name, overwrite)
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(new_table_name,
+                                           [config['hbase_column_family']])
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(data_frame._table.table_name)
+
+        non_found = []
+        for target_feature in features_to_project:
+            if target_feature not in etl_schema.feature_names:
+                non_found.append('ERROR: feature ' + target_feature + ' is invalid')
+
+        if rename:
+            for target_feature in rename:
+                if target_feature not in etl_schema.feature_names:
+                    non_found.append('ERROR: feature ' + target_feature + ' is invalid')
+
+        if len(non_found) > 0:
+            raise Exception('\n'.join(non_found))
+
+        feature_names_types_mapping = {}
+        for i in range(0, len(etl_schema.feature_names)):
+            feature_names_types_mapping[etl_schema.feature_names[i]] = etl_schema.feature_types[i]
+
+        feature_to_project_types = []
+        for i in range(0, len(features_to_project)):
+            feature_to_project_types.append(feature_names_types_mapping[features_to_project[i]])
+
+        renamed_feature_names = []
+        if rename:
+            for i in range(0, len(features_to_project)):
+                feature = features_to_project[i]
+                if feature in rename:
+                    renamed_feature_names.append(rename[feature])
+                else:
+                    renamed_feature_names.append(feature)
+
+        new_table = data_frame._table.project(new_table_name, features_to_project, feature_to_project_types, renamed_feature_names)
+
+        new_table_schema = ETLSchema()
+        new_table_schema.feature_names = renamed_feature_names
+        new_table_schema.feature_types = feature_to_project_types
+        new_table_schema.save_schema(new_table_name)
+
+        hbase_registry.register(new_frame_name, new_table_name, overwrite)
+        return BigDataFrame(new_frame_name, new_table)
+
+
+
 
     #-------------------------------------------------------------------------
     # Create BigDataFrames
