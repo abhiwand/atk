@@ -248,6 +248,24 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         max_supersteps='10')
         self.assertEqual('test_graph', result.graph_name)
 
+    @patch('pydoop.hdfs.path.exists')
+    @patch('pydoop.hdfs.open')
+    def test_combine_required_inputs(self, mock_open, mock_exists):
+        ml = TitanGiraphMachineLearning(self.graph)
+        ml._latest_algorithm = 'als'
+        ml._result['als'] = ['test1','test2','test3']
+        with self.assertRaises(ValueError):
+            ml.kfold_combine(['test_combine_result'])
+
+    @patch('pydoop.hdfs.path.exists')
+    @patch('pydoop.hdfs.open')
+    def test_combine_optional_inputs(self, mock_open, mock_exists):
+        ml = TitanGiraphMachineLearning(self.graph)
+        ml._latest_algorithm = 'als'
+        ml._result['als'] = ['test1','test2','test3']
+        result = ml.kfold_combine(['test_combine_result'], k=3)
+        self.assertEqual('test_graph', result.graph_name)
+
     @patch('__builtin__.open')
     @patch('numpy.genfromtxt')
     def test_get_histogram_required_inputs(self, mock_ny, mock_open):
