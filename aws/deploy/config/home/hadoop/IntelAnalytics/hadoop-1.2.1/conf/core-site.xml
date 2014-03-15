@@ -5,49 +5,50 @@
 
 <configuration>
 
-<property>
-  <name>fs.default.name</name>
-<value>hdfs://master:9000</value>
-</property>
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://master:9000</value>
+    </property>
 
-<property>
-  <name>hadoop.tmp.dir</name>
-  <value>/mnt/data1/tmp/hadoop</value>
-</property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/mnt/data1/tmp/hadoop</value>
+    </property>
 
-<property>
-  <name>ipc.server.tcpnodelay</name>
-  <value>true</value>
-  <description>Turn on/off Nagle's algorithm for the TCP socket connection on
-  the server. Setting to true disables the algorithm and may decrease latency
-  with a cost of more/smaller packets.
-  </description>
-</property>
-<property>
-  <name>ipc.client.tcpnodelay</name>
-  <value>true</value>
-  <description>Turn on/off Nagle's algorithm for the TCP socket connection on
-  the client. Setting to true disables the algorithm and may decrease latency
-  with a cost of more/smaller packets.
-  </description>
-</property>
+    <property>
+        <name>ipc.server.tcpnodelay</name>
+        <value>false</value>
+        <description>Turn on/off Nagle's algorithm for the TCP socket connection on
+            the server. Setting to true disables the algorithm and may decrease latency
+            with a cost of more/smaller packets.
+        </description>
+    </property>
+    <property>
+        <name>ipc.client.tcpnodelay</name>
+        <value>false</value>
+        <description>Turn on/off Nagle's algorithm for the TCP socket connection on
+            the client. Setting to true disables the algorithm and may decrease latency
+            with a cost of more/smaller packets.
+        </description>
+    </property>
 
-<property>
-  <name>fs.trash.interval</name>
-  <value>1440</value>
-  <description>Number of minutes between trash checkpoints.
-  If zero, the trash feature is disabled.
-  </description>
-</property>
+    <property>
+        <name>fs.trash.interval</name>
+        <value>1440</value>
+        <description>Number of minutes between trash checkpoints.
+            If zero, the trash feature is disabled.
+        </description>
+    </property>
 
-<property>
-  <name>io.file.buffer.size</name>
-  <value>32768</value>
-  <description>The size of buffer for use in sequence files.
-  The size of this buffer should probably be a multiple of hardware
-  page size (4096 on Intel x86), and it determines how much data is
-  buffered during read and write operations.</description>
-</property>
+    <property>
+        <name>io.file.buffer.size</name>
+        <value>4096</value>
+        <description>The size of buffer for use in sequence files.
+            The size of this buffer should probably be a multiple of hardware
+            page size (4096 on Intel x86), and it determines how much data is
+            buffered during read and write operations.
+        </description>
+    </property>
 
 </configuration>
 
