@@ -81,6 +81,7 @@ class TitanGiraphMachineLearning(object):
         self._superstep_pattern = re.compile(r'superstep')
         self._num_vertices_pattern = re.compile(r'Number of vertices')
         self._num_edges_pattern = re.compile(r'Number of edges')
+        self._validate_pattern = re.compile(r'.*?validate: 0')
         self._output_pattern = re.compile(r'======')
         self._score_pattern = re.compile(r'.*?score')
         self._result = {'als':[],
@@ -119,7 +120,8 @@ class TitanGiraphMachineLearning(object):
                             curve_title,
                             curve_ylabel1,
                             curve_ylabel2,
-                            curve_ylabel3
+                            curve_ylabel3,
+                            with_validate
                             ):
         """
         Plots learning curves for algorithms.
@@ -133,15 +135,19 @@ class TitanGiraphMachineLearning(object):
         axes1.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
         axes1.grid(True, linestyle='-', color='0.75')
 
-        axes2 = fig.add_axes([1.1, 0.1, 0.8, 0.8])
-        axes2.plot(data_x, data_v, 'g')
-        axes2.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
-        axes2.set_ylabel(curve_ylabel2, fontsize=self._label_font_size)
-        title_str = [curve_title, " (Validate)"]
-        axes2.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
-        axes2.grid(True, linestyle='-', color='0.75')
 
-        axes3 = fig.add_axes([2.1, 0.1, 0.8, 0.8])
+        if with_validate:
+            axes2 = fig.add_axes([1.1, 0.1, 0.8, 0.8])
+            axes2.plot(data_x, data_v, 'g')
+            axes2.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
+            axes2.set_ylabel(curve_ylabel2, fontsize=self._label_font_size)
+            title_str = [curve_title, " (Validate)"]
+            axes2.set_title(' '.join(map(str, title_str)), fontsize=self._title_font_size)
+            axes2.grid(True, linestyle='-', color='0.75')
+
+            axes3 = fig.add_axes([2.1, 0.1, 0.8, 0.8])
+        else:
+            axes3 = fig.add_axes([1.1, 0.1, 0.8, 0.8])
         axes3.plot(data_x, data_t, 'y')
         axes3.set_xlabel("Number of SuperStep", fontsize=self._label_font_size)
         axes3.set_ylabel(curve_ylabel3, fontsize=self._label_font_size)
@@ -197,6 +203,7 @@ class TitanGiraphMachineLearning(object):
             num_vertices = 0
             num_edges = 0
             learning_results = []
+            with_validate = True
             for line in result:
                 if re.match(self._superstep_pattern, line):
                     results = line.split()
@@ -205,9 +212,13 @@ class TitanGiraphMachineLearning(object):
                     data_v.append(results[8])
                     data_t.append(results[11])
                 elif re.match(self._num_vertices_pattern, line):
+                    if re.match(self._validate_pattern, line):
+                        with_validate = False
                     results = line.split()
                     num_vertices = long(results[3])
                 elif re.match(self._num_edges_pattern, line):
+                    if re.match(self._validate_pattern, line):
+                        with_validate = False
                     results = line.split()
                     num_edges = long(results[3])
 
@@ -226,7 +237,8 @@ class TitanGiraphMachineLearning(object):
                                   curve_title,
                                   curve_ylabel1,
                                   curve_ylabel2,
-                                  curve_ylabel3)
+                                  curve_ylabel3,
+                                  with_validate)
         return learning_results
 
     def _del_old_output(self, output_path):
@@ -570,7 +582,7 @@ class TitanGiraphMachineLearning(object):
                        feature_dimension]
         rec_cmd2 = '::'.join(map(str, rec_command))
         rec_cmd = rec_cmd1 + ' ' + rec_cmd2
-        print rec_cmd
+        #print rec_cmd
         #if want to directly use subprocess without progress bar, it is like this:
         #p = subprocess.Popen(rec_cmd, shell=True, stdout=subprocess.PIPE)
         #out = p.communicate()
@@ -604,6 +616,124 @@ class TitanGiraphMachineLearning(object):
         output.recommend_score = list(recommend_score)
         self.report.append(output)
         return output
+
+    def _update_hdfs_file(self,
+                     path_name,
+                     file_name):
+        """
+        update hdfs file if it already exists
+        """
+        if hdfs.path.exists(file_name):
+            hdfs.rmr(file_name)
+        input_path = os.path.join(path_name, file_name)
+        hdfs.put(input_path, file_name)
+
+
+    def kfold_split_update(self,
+                    test_fold_id=2,
+                    fold_id_property_key="fold_id",
+                    split_name=["TE","TR"],
+                    split_property_key='edge_type',
+                    type='EDGE'):
+        """
+        Split user's ML data into Train and Test for k-fold cross-validation.
+
+        Parameters
+        ----------
+        test_fold_id : Integer, optional
+            Which fold to use for test.
+            Usually this method is a follow-up of kfold_split method in bigdataframe.
+            The valid value range is [1,k], where k is the number of fold configured in kfold_split
+            method in bigdataframe.
+            The default value is 2.
+        fold_id_property_key : String, optional
+            The key/name of the property which contains fold_id.
+            The default value is "fold_id"
+        split_name : List, optional
+            Each value is the name for each split.
+            The size of the list is 2.
+            The default value is ["TE", "TR"]
+        split_property_key : string, optional
+            The key/name of the property which stores split results.
+            The default value is "splits"
+        type : string, optional
+            To split on edges or on vertices.
+            The valid value range is either "EDGE" or "VERTEX".
+            The default value is "EDGE"
+        """
+
+        #sanity check on parameters
+        if not isinstance(test_fold_id, (int, long)):
+            raise TypeError("test_fold_id should be an integer.")
+        elif test_fold_id < 1:
+            raise ValueError("test_fold_id should be positive integer")
+
+        if not isinstance(fold_id_property_key, basestring):
+            raise TypeError("fold_id_property_key should be a string.")
+
+        if not isinstance(split_name, list):
+            raise TypeError("split_name should be a list.")
+        else:
+            num_split = len(split_name)
+            if num_split != 2:
+                raise ValueError("The number of split should be two.");
+
+        if not isinstance(split_property_key, basestring):
+            raise TypeError("split_property_key should be a string.")
+
+        if not isinstance(type, basestring):
+            raise TypeError("type should be a string.")
+        elif type != 'EDGE' and type != 'VERTEX':
+            raise ValueError("type should be either 'EDGE' or 'VERTEX'")
+
+        cmd = [self._table_name,
+               global_config['titan_storage_backend'],
+               global_config['titan_storage_hostname'],
+               global_config['titan_storage_port'],
+               global_config['titan_storage_connection_timeout'],
+               test_fold_id,
+               global_config['hbase_column_family'] + fold_id_property_key,
+               ';'.join(split_name),
+               global_config['hbase_column_family'] + split_property_key,
+               type]
+
+        split_cmd1 = '::'.join(map(str, cmd))
+
+        if self._num_edges >= long(global_config['medium_graph_threshold']):
+            # run by faunus
+            self._update_hdfs_file(global_config['giraph_faunus_script_path'],
+                                    global_config['giraph_faunus_split_script_name'])
+            faunus_config_file = titan_config.write_faunus_cfg(self._table_name)
+            split_cmd2 = [global_config['faunus_gremlin'],
+                          ' -i ',
+                          faunus_config_file,
+                          "\"g.V.script('" + global_config['giraph_faunus_split_script_name'] + "', '" + split_cmd1 + "')\""
+                          ]
+        else:
+            # run by titan gremlin
+            split_cmd2 = [global_config['titan_gremlin'],
+                            ' -e ',
+                            global_config['giraph_titan_split_script'],
+                            "'" + split_cmd1 + "'"]
+
+        split_cmd = ' '.join(map(str, split_cmd2))
+        #print   split_cmd
+
+        time_str = get_time_str()
+        start_time = time.time()
+        call(split_cmd, shell=True, report_strategy=GroovyProgressReportStrategy())
+        exec_time = time.time() - start_time
+        output = AlgorithmReport()
+        output.graph_name = self._graph.user_graph_name
+        output.start_time = time_str
+        output.exec_time = str(exec_time) + ' seconds'
+        output.test_fold_id = test_fold_id
+        output.fold_id_property_key = fold_id_property_key
+        output.split_name = split_name
+        output.split_property_key = split_property_key
+        self.report.append(output)
+        return output
+
 
 
     def kfold_combine(self,
@@ -751,13 +881,13 @@ class TitanGiraphMachineLearning(object):
 
         if self._num_edges >= long(global_config['medium_graph_threshold']):
             # run by faunus
-            if not hdfs.path.exists('faunus_combine.groovy'):
-                hdfs.put(global_config['giraph_faunus_combine_script'], 'faunus_combine.groovy')
+            self._update_hdfs_file(global_config['giraph_faunus_script_path'],
+                                   global_config['giraph_faunus_combine_script_name'])
             faunus_config_file = titan_config.write_faunus_cfg(self._table_name)
             combine_cmd2 = [global_config['faunus_gremlin'],
                             ' -i ',
                             faunus_config_file,
-                            "\"g.V.script('faunus_combine.groovy', '" + combine_cmd1 + "')\""
+                            "\"g.V.script('" + global_config['giraph_faunus_combine_script_name'] + "', '" + combine_cmd1 + "')\""
                             ]
         else:
             # run by titan gremlin
@@ -767,7 +897,7 @@ class TitanGiraphMachineLearning(object):
                             "'" + combine_cmd1 + "'"]
 
         combine_cmd = ' '.join(map(str, combine_cmd2))
-        print   combine_cmd
+        #print   combine_cmd
 
         time_str = get_time_str()
         start_time = time.time()

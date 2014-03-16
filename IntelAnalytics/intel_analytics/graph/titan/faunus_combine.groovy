@@ -6,7 +6,6 @@ import org.apache.commons.configuration.BaseConfiguration
 def g
 
 def setup(args){
-    println "start setup"
     String[] inputs = args[0].split("\\::")
     conf = new BaseConfiguration()
     conf.setProperty("storage.tablename", inputs[0])
@@ -15,11 +14,9 @@ def setup(args){
     conf.setProperty("storage.port", inputs[3])
     conf.setProperty("storage.connection_timeout", inputs[4])
     g = TitanFactory.open(conf)
-    println "open graph"
 }
 
 def map(v,args){
-    println "start map"
     String[] inputs = args[0].split("\\::")
     inputResultPropertyKey = inputs[5].split("\\:")
     type = inputs[6]
@@ -176,7 +173,6 @@ def map(v,args){
 
 def calStd(valueList, avgValue){
     stdValue = 0
-    println valueList.size()
     (0..<valueList.size()).each{
         stdValue += (valueList[it] - avgValue)**2
     }
@@ -186,7 +182,6 @@ def calStd(valueList, avgValue){
 
 def calAvg(valueList){
     listSize = valueList.size()
-    println listSize
     sumValue = 0
     (0..<listSize).each{
         sumValue += valueList[it]
@@ -197,5 +192,4 @@ def calAvg(valueList){
 
 def cleanup(args){
     g.shutdown()
-    println 'complete execution'
 }
