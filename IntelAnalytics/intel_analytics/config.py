@@ -66,6 +66,10 @@ if not os.getenv('TITAN_HOME'):
     if os.path.exists('/home/hadoop/IntelAnalytics/titan-server'):
         os.environ['TITAN_HOME'] = '/home/hadoop/IntelAnalytics/titan-server'
 
+if not os.getenv('FAUNUS_HOME'):
+    if os.path.exists('/home/hadoop/IntelAnalytics/faunus'):
+        os.environ['FAUNUS_HOME'] = '/home/hadoop/IntelAnalytics/faunus'
+
 if not os.getenv('PIG_OPTS'):
     os.environ['PIG_OPTS'] = "-Dpython.verbose=error"#to get rid of Jython logging
 
