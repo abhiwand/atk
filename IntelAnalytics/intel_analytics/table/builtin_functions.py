@@ -70,19 +70,43 @@ class EvalFunctions:
     class Json:
         EXTRACT_FIELD=2000
 
+
+    class DateTime:
+        ADDDURATION = 4000
+        CURRENTTIME = 4001
+
+        GETDAY = 4003
+        GETHOUR = 4004
+        GETMILLISECOND = 4005
+        GETMINUTE = 4006
+        GETMONTH = 4007
+        GETSECOND = 4008
+        GETWEEK = 4009
+        GETWEEKYEAR = 4010
+        GETYEAR = 4011
+
+
+        SUBTRACTDURATION = 4017
+        TODATE = 4018
+        TOMILLISECONDS = 4019
+        TOSTRING = 4020
+        TOUNIXTIME = 4021
+        BEFOREDATE = 4022
+        AFTERDATE = 4023
+
     class Xml:
-	EXTRACT_FIELD=3000
+	    EXTRACT_FIELD=3000
 
     class Aggregation:
-	AVG=5000
-	SUM=5001
-	MAX=5002
-	MIN=5003
-	COUNT=5004
-	DISTINCT=5005
-	COUNT_DISTINCT=5006
-	STDEV=5007 #Population standard deviation
-	VAR=5008
+        AVG=5000
+        SUM=5001
+        MAX=5002
+        MIN=5003
+        COUNT=5004
+        DISTINCT=5005
+        COUNT_DISTINCT=5006
+        STDEV=5007 #Population standard deviation
+        VAR=5008
 	
 
     @staticmethod
@@ -126,15 +150,34 @@ class EvalFunctions:
             EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON',
             EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPath',
 
-	    EvalFunctions.Aggregation.AVG: 'AVG',
-	    EvalFunctions.Aggregation.SUM: 'SUM',
-	    EvalFunctions.Aggregation.MAX: 'MAX',
-	    EvalFunctions.Aggregation.MIN: 'MIN',
-	    EvalFunctions.Aggregation.COUNT: 'COUNT',
-	    EvalFunctions.Aggregation.DISTINCT: 'DISTINCT',
-	    EvalFunctions.Aggregation.COUNT_DISTINCT: 'COUNT_DISTINCT',
-	    EvalFunctions.Aggregation.STDEV: 'STDEV',
-	    EvalFunctions.Aggregation.VAR: 'VAR'
+            EvalFunctions.Aggregation.AVG: 'AVG',
+            EvalFunctions.Aggregation.SUM: 'SUM',
+            EvalFunctions.Aggregation.MAX: 'MAX',
+            EvalFunctions.Aggregation.MIN: 'MIN',
+            EvalFunctions.Aggregation.COUNT: 'COUNT',
+            EvalFunctions.Aggregation.DISTINCT: 'DISTINCT',
+            EvalFunctions.Aggregation.COUNT_DISTINCT: 'COUNT_DISTINCT',
+            EvalFunctions.Aggregation.STDEV: 'STDEV',
+            EvalFunctions.Aggregation.VAR: 'VAR',
+
+            EvalFunctions.DateTime.ADDDURATION: 'AddDuration',
+            EvalFunctions.DateTime.CURRENTTIME: 'CurrentTime',
+            EvalFunctions.DateTime.GETDAY: 'GetDay',
+            EvalFunctions.DateTime.GETHOUR: 'GetHour',
+            EvalFunctions.DateTime.GETMILLISECOND: 'GetMilliSecond',
+            EvalFunctions.DateTime.GETMINUTE: 'GetMinute',
+            EvalFunctions.DateTime.GETMONTH: 'GetMonth',
+            EvalFunctions.DateTime.GETSECOND: 'GetSecond',
+            EvalFunctions.DateTime.GETWEEK: 'GetWeek',
+            EvalFunctions.DateTime.GETWEEKYEAR: 'GetWeekYear',
+            EvalFunctions.DateTime.GETYEAR: 'GetYear',
+            EvalFunctions.DateTime.SUBTRACTDURATION: 'SubtractDuration',
+            EvalFunctions.DateTime.TODATE: 'ToDate',
+            EvalFunctions.DateTime.TOMILLISECONDS: 'ToMilliSeconds',
+            EvalFunctions.DateTime.TOSTRING: 'ToString',
+            EvalFunctions.DateTime.TOUNIXTIME: 'ToUnixTime',
+            EvalFunctions.DateTime.BEFOREDATE: 'com.intel.pig.udf.BeforeDate',
+            EvalFunctions.DateTime.AFTERDATE: 'com.intel.pig.udf.AfterDate'
         }
 
         if x in mapping:
@@ -147,7 +190,9 @@ math_functions = []
 json_functions = []
 xml_functions = []
 aggregation_functions= []
-available_builtin_functions = []#used for validation, does the user try to call a valid function? 
+available_builtin_functions = []#used for validation, does the user try to call a valid function?
+datetime_functions = []
+
 for key,val in EvalFunctions.String.__dict__.items():
     if key == '__module__' or key == '__doc__':
         continue
@@ -161,7 +206,12 @@ for key,val in EvalFunctions.Math.__dict__.items():
 for key,val in EvalFunctions.Json.__dict__.items():
     if key == '__module__' or key == '__doc__':
         continue
-    json_functions.append(EvalFunctions.to_string(val)) 
+    json_functions.append(EvalFunctions.to_string(val))
+
+for key,val in EvalFunctions.DateTime.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    datetime_functions.append(EvalFunctions.to_string(val))
 
 for key,val in EvalFunctions.Xml.__dict__.items():
     if key == '__module__' or key == '__doc__':
@@ -178,3 +228,4 @@ available_builtin_functions.extend(math_functions)
 available_builtin_functions.extend(json_functions)
 available_builtin_functions.extend(xml_functions)
 available_builtin_functions.extend(aggregation_functions)
+available_builtin_functions.extend(datetime_functions)
