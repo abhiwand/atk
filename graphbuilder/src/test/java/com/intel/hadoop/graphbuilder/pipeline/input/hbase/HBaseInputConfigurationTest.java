@@ -23,6 +23,7 @@ import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.taskdefs.Exit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -111,9 +112,11 @@ public class HBaseInputConfigurationTest {
 		try {
 			HBaseInputConfiguration hbic = new HBaseInputConfiguration(
 					tableName);
-		} catch (Throwable t) {
-			assertSame(t.getClass(), ExitTrappedException.class);
-		}
-		enableSystemExitCall();
+            assert(false); //should've thrown an exception
+		} catch (ExitTrappedException e) {
+			//expected
+		} finally {
+		    enableSystemExitCall();
+        }
 	}
 }
