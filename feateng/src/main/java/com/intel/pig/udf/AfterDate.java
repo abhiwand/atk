@@ -44,7 +44,7 @@ public class AfterDate extends FilterFunc {
     public Boolean exec(Tuple objects) throws IOException {
 
         if(objects == null || objects.size() != 2 || objects.get(0) == null || objects.get(1) == null)
-            throw new IOException("Have to pass two DateTime objects");
+            throw new IllegalArgumentException("Have to pass two DateTime objects");
 
         DateTime first = (DateTime) objects.get(0);
         DateTime second = (DateTime) objects.get(1);
