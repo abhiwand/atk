@@ -22,7 +22,7 @@ public class AfterDateTest {
                 .instantiateFuncFromSpec("com.intel.pig.udf.AfterDate");
     }
 
-    @Test(expected=IOException.class)
+    @Test(expected=IllegalArgumentException.class)
     public void invalid_input() throws IOException {
         DateTime d1 = new DateTime(2014, 3, 13, 11, 50, 0, 0);
         List<DateTime> list = new ArrayList<DateTime>();
