@@ -10,7 +10,7 @@
 %define tribeca_version %{?TRIBECA_VERSION}%{!?TRIBECA_VERSION:0.8.0}
 %define titan_sourcepkg %{titan_name}-%{titan_version}_%{tribeca_version}.tar.gz
 # replace w/ gaomaven as permanant location
-%define titan_sourceurl "http://zydevhf.hf.intel.com/public"
+%define titan_sourceurl "http://gaomaven.jf.intel.com/packages"
 %define titan_instdir   %{_prefix}/%{titan_name}
 %define titan_logsdir   %{_localstatedir}/log/titan
 %define titan_pidsdir   %{_localstatedir}/run/titan
