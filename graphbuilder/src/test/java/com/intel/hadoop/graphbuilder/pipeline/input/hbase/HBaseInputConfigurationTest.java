@@ -19,43 +19,26 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
-import com.intel.hadoop.graphbuilder.util.HBaseUtils;
-import com.intel.hadoop.graphbuilder.util.StatusCode;
-import org.apache.hadoop.hbase.client.Scan;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.*;
+
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.taskdefs.Exit;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import java.security.Permission;
-
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.powermock.api.mockito.PowerMockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
+import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({HBaseInputConfiguration.class,HBaseUtils.class, GraphBuilderExit.class})
 public class HBaseInputConfigurationTest {
-
-    Logger     loggerMock;
-    HBaseUtils hBaseUtilsMock;
-
-	private static class ExitTrappedException extends SecurityException {
-	}
 
     @BeforeClass
     public static final void beforeClass(){
@@ -66,7 +49,7 @@ public class HBaseInputConfigurationTest {
 
     @Before
     public final void setupHBaseForTest() throws Exception {
-        loggerMock = mock(Logger.class);
+        Logger loggerMock = mock(Logger.class);
         Whitebox.setInternalState(HBaseInputConfiguration.class, "LOG", loggerMock);
     }
 
@@ -74,7 +57,7 @@ public class HBaseInputConfigurationTest {
     public void testSimpleUseCase() throws Exception {
 
         String tableName = "fakeyTable";
-        hBaseUtilsMock = mock(HBaseUtils.class);
+        HBaseUtils hBaseUtilsMock = mock(HBaseUtils.class);
 
         mockStatic(HBaseUtils.class);
 
@@ -93,23 +76,26 @@ public class HBaseInputConfigurationTest {
 
 	@Test
 	public void HBaseInputConfiguration_table_does_not_exist_is_a_fatal_exit() throws Exception {
+        String expectedMessage = "expected exception message from mock";
 		String tableName = "fakeyTable";
-		hBaseUtilsMock = mock(HBaseUtils.class);
-		mockStatic(HBaseUtils.class);
+
+        HBaseUtils hBaseUtilsMock = mock(HBaseUtils.class);
+        when(hBaseUtilsMock.tableExists(tableName)).thenReturn(false);
+
+        mockStatic(HBaseUtils.class);
 		when(HBaseUtils.getInstance()).thenReturn(hBaseUtilsMock);
-		when(hBaseUtilsMock.tableExists(tableName)).thenReturn(false);
 
         mockStatic(GraphBuilderExit.class);
-        doThrow(new ExitTrappedException()).when(GraphBuilderExit.class, "graphbuilderFatalExitNoException", any(), any(), any());
+        doThrow(new RuntimeException(expectedMessage)).when(GraphBuilderExit.class, "graphbuilderFatalExitNoException",
+                any(), any(), any());
 
 		try {
             // invoke method under test
-			HBaseInputConfiguration hbic = new HBaseInputConfiguration(
-					tableName);
+			new HBaseInputConfiguration(tableName);
 
             fail("Expected exception did not occur");
-		} catch (ExitTrappedException e) {
-			//expected
+		} catch (Exception e) {
+            assertEquals(expectedMessage, e.getMessage());
 		}
 	}
 }
