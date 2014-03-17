@@ -21,6 +21,7 @@ package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
+import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.taskdefs.Exit;
@@ -28,6 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
@@ -36,6 +38,11 @@ import java.security.Permission;
 
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
+import static org.powermock.api.mockito.PowerMockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
 import static org.powermock.api.mockito.PowerMockito.mockStatic;
@@ -46,24 +53,8 @@ public class HBaseInputConfigurationTest {
 
     Logger     loggerMock;
     HBaseUtils hBaseUtilsMock;
-    Scan       scanMock;
 
 	private static class ExitTrappedException extends SecurityException {
-	}
-
-	private static void forbidSystemExitCall() {
-		final SecurityManager securityManager = new SecurityManager() {
-			public void checkPermission(Permission permission) {
-				if (permission.getName().startsWith("exitVM")) {
-					throw new ExitTrappedException();
-				}
-			}
-		};
-		System.setSecurityManager(securityManager);
-	}
-
-	private static void enableSystemExitCall() {
-		System.setSecurityManager(null);
 	}
 
     @BeforeClass
@@ -101,22 +92,24 @@ public class HBaseInputConfigurationTest {
     }
 
 	@Test
-	public void testFailure() throws Exception {
+	public void HBaseInputConfiguration_table_does_not_exist_is_a_fatal_exit() throws Exception {
 		String tableName = "fakeyTable";
 		hBaseUtilsMock = mock(HBaseUtils.class);
 		mockStatic(HBaseUtils.class);
 		when(HBaseUtils.getInstance()).thenReturn(hBaseUtilsMock);
 		when(hBaseUtilsMock.tableExists(tableName)).thenReturn(false);
 
-		forbidSystemExitCall();
+        mockStatic(GraphBuilderExit.class);
+        doThrow(new ExitTrappedException()).when(GraphBuilderExit.class, "graphbuilderFatalExitNoException", any(), any(), any());
+
 		try {
+            // invoke method under test
 			HBaseInputConfiguration hbic = new HBaseInputConfiguration(
 					tableName);
-            assert(false); //should've thrown an exception
+
+            fail("Expected exception did not occur");
 		} catch (ExitTrappedException e) {
 			//expected
-		} finally {
-		    enableSystemExitCall();
-        }
+		}
 	}
 }
