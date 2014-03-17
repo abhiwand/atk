@@ -206,6 +206,9 @@
 				<version>2.12</version>
 				<configuration>
 					<forkMode>always</forkMode>
+					<argLine>-Xms512m -Xmx512m</argLine>
+					<parallel>classes</parallel>
+					<threadCount>4</threadCount>
 				</configuration>
 			</plugin>
 			<plugin>
