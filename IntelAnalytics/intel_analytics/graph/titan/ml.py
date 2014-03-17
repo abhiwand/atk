@@ -717,7 +717,7 @@ class TitanGiraphMachineLearning(object):
                             "'" + split_cmd1 + "'"]
 
         split_cmd = ' '.join(map(str, split_cmd2))
-        #print   split_cmd
+        print   split_cmd
 
         time_str = get_time_str()
         start_time = time.time()
@@ -897,7 +897,7 @@ class TitanGiraphMachineLearning(object):
                             "'" + combine_cmd1 + "'"]
 
         combine_cmd = ' '.join(map(str, combine_cmd2))
-        #print   combine_cmd
+        print   combine_cmd
 
         time_str = get_time_str()
         start_time = time.time()
@@ -1007,6 +1007,8 @@ class TitanGiraphMachineLearning(object):
         output : AlgorithmReport
             The algorithm's results in database.
         """
+        if output_vertex_property_list in self._result['belief_prop']:
+            self._result['belief_prop'].remove(output_vertex_property_list)
         self._result['belief_prop'].append(output_vertex_property_list)
         self._latest_algorithm = 'belief_prop'
         self._output_vertex_property_list = output_vertex_property_list
@@ -1185,6 +1187,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
+        if output_vertex_property_list in self._result['page_rank']:
+            self._result['page_rank'].remove(output_vertex_property_list)
         self._result['page_rank'].append(output_vertex_property_list)
         self._latest_algorithm = 'page_rank'
         self._output_vertex_property_list = output_vertex_property_list
@@ -1329,6 +1333,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
+        if output_vertex_property_list in self._result['avg_path_len']:
+            self._result['avg_path_len'].remove(output_vertex_property_list)
         self._result['avg_path_len'].append(output_vertex_property_list)
         self._latest_algorithm = 'avg_path_len'
         self._output_vertex_property_list = output_vertex_property_list
@@ -1459,6 +1465,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
+        if output_vertex_property_list in self._result['connected_components']:
+            self._result['connected_components'].remove(output_vertex_property_list)
         self._result['connected_components'].append(output_vertex_property_list)
         self._latest_algorithm = 'connected_components'
         self._output_vertex_property_list = output_vertex_property_list
@@ -1643,6 +1651,8 @@ class TitanGiraphMachineLearning(object):
         output : AlgorithmReport
             The algorithm's results in database.
         """
+        if output_vertex_property_list in self._result['label_prop']:
+            self._result['label_prop'].remove(output_vertex_property_list)
         self._result['label_prop'].append(output_vertex_property_list)
         self._latest_algorithm = 'label_prop'
         self._output_vertex_property_list = output_vertex_property_list
@@ -1876,6 +1886,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The convergence curve is
             accessible through the report object.
         """
+        if output_vertex_property_list in self._result['lda']:
+            self._result['lda'].remove(output_vertex_property_list)
         self._result['lda'].append(output_vertex_property_list)
         self._latest_algorithm = 'lda'
         self._output_vertex_property_list = output_vertex_property_list
@@ -2133,6 +2145,8 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The convergence curve is
             accessible through the report object.
         """
+        if output_vertex_property_list in self._result['als']:
+            self._result['als'].remove(output_vertex_property_list)
         self._result['als'].append(output_vertex_property_list)
         self._latest_algorithm = 'als'
         self._output_vertex_property_list = output_vertex_property_list
@@ -2400,6 +2414,8 @@ class TitanGiraphMachineLearning(object):
             accessible through the report object.
 
         """
+        if output_vertex_property_list in self._result['cgd']:
+            self._result['cgd'].remove(output_vertex_property_list)
         self._result['cgd'].append(output_vertex_property_list)
         self._latest_algorithm = 'cgd'
         self._output_vertex_property_list = output_vertex_property_list
