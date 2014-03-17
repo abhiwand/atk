@@ -66,13 +66,6 @@ class TitanGiraphMachineLearning(object):
         """
         self._graph = graph
         self._table_name = graph.titan_table_name
-        self._latest_algorithm = None
-        self._output_vertex_property_list = ''
-        self._vertex_type = ''
-        self._edge_type = ''
-        self._vector_value=''
-        self._bias_on = ''
-        self._feature_dimension = ''
         self.report = []
         self._label_font_size = 12
         self._title_font_size = 14
@@ -85,15 +78,13 @@ class TitanGiraphMachineLearning(object):
         self._output_pattern = re.compile(r'======')
         self._score_pattern = re.compile(r'.*?score')
         self._result = {'als':[],
-                           'avg_path_len':[],
-                           'belief_prop':[],
-                           'cgd':[],
-                           'connected_components':[],
-                           'label_prop':[],
-                           'lda':[],
-                           'page_rank':[]}
-
-
+                        'avg_path_len':[],
+                        'belief_prop':[],
+                        'cgd':[],
+                        'connected_components':[],
+                        'label_prop':[],
+                        'lda':[],
+                        'page_rank':[]}
 
 
     def _plot_progress_curve(self,
@@ -450,6 +441,7 @@ class TitanGiraphMachineLearning(object):
 
         exec_time = time.time() - start_time
         output = AlgorithmReport()
+        output.method = 'get_histogram'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -464,12 +456,7 @@ class TitanGiraphMachineLearning(object):
                   left_vertex_name=global_config['giraph_recommend_left_name'],
                   right_vertex_name=global_config['giraph_recommend_right_name'],
                   vertex_type=global_config['giraph_left_vertex_type_str'],
-                  output_vertex_property_list='',
-                  vector_value='',
-                  vertex_type_key='',
-                  edge_type_key='',
-                  bias_on='',
-                  feature_dimension=''):
+                  input_report=None):
         """
         Make recommendation based on trained model.
 
@@ -496,66 +483,32 @@ class TitanGiraphMachineLearning(object):
             user is your left-side vertex. Similarly, please input "R if you want
             to get recommendation for movie.
             The default value is "L"
-        output_vertex_property_list : String, optional
-            The vertex properties to store output vertex values.
-            We expect comma-separated list of property names if you use
-            more than one vertex property.
-            The default value is the latest vertex_type set by
-            algorithm execution.
-        vector_value: Boolean, optional
-            True means supporting a vector as vertex property's value.
-            False means only support a single value as vertex property's value.
-            The default value is False.
-        vertex_type_key : String, optional
-            The property name for vertex type. The default value is the
-            latest vertex_type set by algorithm execution.
-        edge_type_key : String, optional
-            The property name for vertex type. The default value is the
-            latest vertex_type set by algorithm execution.
-        bias_on: String, optional
-            Whether to enable bias. The default value is the latest bias_on set by
-            algorithm execution
+        input_report : AlgorithmReport Object, optional
+            The AlgorithmReport object to use for calculating recommendation.
+            The default value is the latest algorithm report.
 
         Returns
         -------
         output : AlgorithmReport
             Top 10 recommendations for the input vertex id
         """
-        if output_vertex_property_list == '':
-            if self._output_vertex_property_list == '':
-                raise ValueError("output_vertex_property_list is empty!")
+        if input_report is None:
+            if len(self.report) < 1:
+                raise ValueError("There is no AlgorithmReport to get recommendation for!")
             else:
-                output_vertex_property_list = self._output_vertex_property_list
-
-        if vertex_type_key == '':
-            if self._vertex_type == '':
-                raise ValueError("vertex_type_key is empty!")
-            else:
-                vertex_type_key = self._vertex_type
-
-        if edge_type_key == '':
-            if self._edge_type == '':
-                raise ValueError("edge_type_key is empty!")
-            else:
-                edge_type_key = self._edge_type
-
-        if vector_value == '':
-            if self._vector_value == '':
-                raise ValueError("vector_value is empty!")
-            else:
-                vector_value = self._vector_value
-
-        if bias_on == '':
-            if self._bias_on == '':
-                raise ValueError("bias_on is empty!")
-            else:
-                bias_on = self._bias_on
-
-        if feature_dimension == '':
-            if self._feature_dimension == '':
-                raise ValueError("feature_dimension is empty!")
-            else:
-                feature_dimension = self._feature_dimension
+                output_vertex_property_list = ','.join(self.report[-1].output_vertex_property_list)
+                vertex_type_key = self.report[-1].vertex_type
+                edge_type_key = self.report[-1].edge_type
+                vector_value = self.report[-1].vector_value
+                bias_on = self.report[-1].bias_on
+                feature_dimension = self.report[-1].feature_dimension
+        else:
+            output_vertex_property_list = ','.join(input_report.output_vertex_property_list)
+            vertex_type_key = input_report.vertex_type
+            edge_type_key = input_report.edge_type
+            vector_value = input_report.vector_value
+            bias_on = input_report.bias_on
+            feature_dimension = input_report.feature_dimension
 
         rec_cmd1 = [ global_config['titan_gremlin'],
                      '-e',
@@ -574,8 +527,8 @@ class TitanGiraphMachineLearning(object):
                        global_config['giraph_right_vertex_type_str'],
                        global_config['giraph_train_str'],
                        global_config['giraph_vertex_true_name'],
-                       vertex_type_key,
-                       edge_type_key,
+                       global_config['hbase_column_family'] + vertex_type_key,
+                       global_config['hbase_column_family'] + edge_type_key,
                        vertex_type,
                        str(vector_value).lower(),
                        str(bias_on).lower(),
@@ -609,6 +562,7 @@ class TitanGiraphMachineLearning(object):
                 print
 
         output = AlgorithmReport()
+        output.method = 'recommend'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -717,13 +671,14 @@ class TitanGiraphMachineLearning(object):
                             "'" + split_cmd1 + "'"]
 
         split_cmd = ' '.join(map(str, split_cmd2))
-        print   split_cmd
+        #print   split_cmd
 
         time_str = get_time_str()
         start_time = time.time()
         call(split_cmd, shell=True, report_strategy=GroovyProgressReportStrategy())
         exec_time = time.time() - start_time
         output = AlgorithmReport()
+        output.method = 'kfold_split_update'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
@@ -735,136 +690,141 @@ class TitanGiraphMachineLearning(object):
         return output
 
 
-
     def kfold_combine(self,
-                      combined_result_property_key,
+                      output_vertex_property_list,
                       k=10,
-                      algorithm=None,
                       type='AVG',
-                      input_result_property_key=None,
-                      bias_on=False,
-                      std_property_key=None
+                      input_result_list=None,
+                      enable_standard_deviation=False
                       ):
         """
         Combine results from k iterations as the final k-fold cross validation result
 
         Parameters
         ----------
-        combined_result_property_key : String List
+        output_vertex_property_list : String List
             The list of the result properties on which to save final results.
-            When bias_on is True, the last element is the key for combined bias.
+            When bias_on was True when running algorithms, the last element is the key for combined bias.
 
         k: Integer, optional
             The number of folds for k-fold cross validation.
             The valid value range is positive integer larger than 1.
             The default value is 10.
-        algorithm: String, optional
-            The name of algorithm to combine results.
-            The valid value range is ['als', 'avg_path_len', 'belief_prop','cgd',
-                    'connected_components', 'label_prop', 'lda', 'page_rank']
-            The default value is the most recent run algorithm
         type: String, optional
             The type of combine function to run.
             The valid value is in ['AVG'] range.
             The default value is 'AVG'
-        input_result_property_key: String List, optional
-            The list of results to combine.
-            Expect each element is the output_vertex_property for a run in k-fold iteration.
-            The default value is the latest k runs of the algorithm configured above
-        bias_on: Boolean, optional
-            True means the update for bias term was turned on for all results which need to be combined
-            False means the update for bias term was turned off for all results which need to be combined
-            Please note, bias_on must be consistent for all results which need to be combined
-            The default value is false
-        std_property_key : String List, optional
-            The list of property keys to store the standard deviation of the k results.
-            When bias_on is True, the last element is the key for standard deviation of bias.
-            When it is None, no standard deviation will be calculated.
-            The default value is None.
+        input_result_list: List of AlgorithmReport objects, optional
+            The list of AlgorithmReports to combine.
+            Expect each element is the name of AlgorithmReport for a run in k-fold iteration.
+            Please note, bias_on must be consistent for all results which need to be combined.
+            The default value is the latest k AlgorithmReports which from the same algorithm as the latest run algorithm
+        enable_standard_deviation : Boolean, optional
+            True means to calculate standard deviation across k runs of algorithms.
+            False means not to calculate standard deviation across k runs of algorithms.
+            When it is enabled, the standard deviaion will be stored at ${output_vertex_property_list}_std
+            The default value is False.
         """
-
         #sanity check on parameters
-        if not isinstance(combined_result_property_key, list):
-            raise TypeError("combined_result_property_key should be a list.")
-        else:
-            combined_size = len(combined_result_property_key)
-            if bias_on and combined_size < 2:
-                raise ValueError("bias_on then at least two keys are expected for combined_result_property_key.");
-
-        #update graph to record this latest combined results for future functions like "recommend"
-        self._output_vertex_property_list = ','.join(combined_result_property_key)
-        if (bias_on and combined_size > 2) or (not bias_on and combined_size > 1):
-           self._vector_value = False
-        else:
-           self._vector_value = True
-
-        self._bias_on = bias_on
+        if not isinstance(output_vertex_property_list, list):
+            raise TypeError("output_vertex_property_list should be a list.")
 
         if not isinstance(k, (int, long)):
             raise TypeError("k should be an integer.")
         elif k < 1:
             raise ValueError("k should be positive integer")
 
-        if algorithm is None:
-            if self._latest_algorithm is None:
-                raise ValueError("algorithm is empty!")
-            else:
-                algorithm = self._latest_algorithm
-        elif not isinstance(algorithm, basestring):
-            raise TypeError("algorithm should be a string.")
-        elif not algorithm in ['als', 'avg_path_len', 'belief_prop','cgd','connected_components', 'label_prop', 'lda', 'page_rank']:
-            raise ValueError("algorithm " + algorithm + " is not supported!")
-
         if not isinstance(type, basestring):
             raise TypeError("type should be a string.")
+        elif type not in global_config['giraph_combine_functions'].split(','):
+            raise ValueError("combine type " + type + " is not supported!")
 
-        if input_result_property_key is None:
-            num_runs = len(self._result[algorithm])
+        bias_on = False
+        input_result_keys = []
+        vertex_type = None
+        edge_type = None
+        feature_dimension = None
+        supported_list = global_config['giraph_supported_algorithms'].split(',')
+        if input_result_list is None:
+            num_runs = len(self.report)
             if num_runs < k:
                 raise ValueError("only " + str(num_runs) + " results are available. "
-                                 "Please configure k correctly.");
+                                                           "Please configure k correctly.")
             else:
-                input_result_property_key = self._result[algorithm][-k:]
-        elif not isinstance(input_result_property_key, list):
-            raise TypeError("input_result_property_key should be a list.")
-        elif len(input_result_property_key) != k:
-                raise ValueError(str(len(input_result_property_key)) + " results are configured. It mismatches k (=",
-                                 + str(k) + "). Please configure k correctly.");
+                num_runs = 0
+                algorithm = None
+                for result in reversed(self.report):
+                    # get the latest run algorithm
+                    if algorithm is None and (result.method in supported_list):
+                        algorithm = result.method
+                        if algorithm in ['als', 'cgd']:
+                            bias_on = result.bias_on
+                            vertex_type = result.vertex_type
+                            edge_type = result.edge_type
+                            feature_dimension = result.feature_dimension
+                    # get the latest k runs of the last run algorithm
+                    if algorithm == result.method:
+                        input_result_keys.append(result.output_vertex_property_list)
+                        num_runs += 1
+                        if num_runs == k:
+                            break
+                if num_runs < k:
+                    raise ValueError("only " + str(num_runs) + " results are available for " + algorithm)
+
+        elif not isinstance(input_result_list, list):
+            raise TypeError("input_result_list should be a list.")
+        elif len(input_result_list) != k:
+            raise ValueError(str(len(input_result_list)) + " results are configured. It mismatches k (=",
+                             + str(k) + "). Please configure k correctly.")
+        else:
+            algorithm = input_result_list[0].method
+            for idx, result in enumerate(input_result_list):
+                if not result.method in supported_list:
+                    raise ValueError("AlgorithmReport should from supported algorithm!")
+                elif result.method != algorithm:
+                    raise ValueError("AlgorithmReports should from the same algorithm!")
+                elif algorithm in ['als', 'cgd'] and (idx == 0):
+                    bias_on = result.bias_on
+                    vertex_type = result.vertex_type
+                    edge_type = result.edge_type
+                    feature_dimension = result.feature_dimension
+                if result.bias_on != bias_on:
+                    raise ValueError("bias_on should be the same across k runs!")
+                input_result_keys.append(result.output_vertex_property_list)
+
+        vector_value = True
+        combined_size = len(output_vertex_property_list)
+        if bias_on:
+            if combined_size < 2:
+                raise ValueError("bias_on then at least two keys are expected for output_vertex_property_list.")
+            elif combined_size > 2:
+                vector_value = False
+
+        #faunus gremlin does not work with "," in command line args, so concatenate result keys with semicolon
+        # And concatenate several old results with ":"
+        input_property_key = []
         pre_size = 1
-        for result in input_result_property_key:
-            size = len(result.split(","))
+        for result in input_result_keys:
+            size = len(result)
             if bias_on:
                 size -= 1
-            #when vector_value was enabled when running algorithm, the length of output_vertex_property
+                #when vector_value was enabled when running algorithm, the length of output_vertex_property
             # is 1. When vector_value was not enabled, the length of output_vertex_property should be the
             # feature size, and it should be the same across k runs
             if pre_size != 1 and size != 1 and size != pre_size:
                 raise ValueError("The vector size of different results do not match!")
-            pre_size = size
+            else:
+                pre_size = size
+                input_property_key.append(';'.join(result))
 
-        if bias_on and len(combined_result_property_key) < 2:
-            raise ValueError("bias_on then at least two keys expected for combined_result_property_key.");
 
-        if std_property_key is None:
-            enable_std = False
+        if enable_standard_deviation:
+            output_std_property_key = []
+            for name in output_vertex_property_list:
+                output_std_property_key.append(name + '_std')
+            output_std_property_key = ';'.join(output_std_property_key)
         else:
-            enable_std = True
-
-        if (std_property_key is not None) and not isinstance(std_property_key, list):
-            raise TypeError("std_property_key should be a list.")
-        elif bias_on and enable_std and len(std_property_key) < 2:
-            raise ValueError("bias_on then at least two keys are expected for std_property_key.");
-
-        #faunus gremlin does not work with "," in command line args, so convert comma separated input_result_property_key
-        #into semicolon separated string. Also concatenate several old results with ":"
-        input_property_key = []
-        for key in input_result_property_key:
-            input_property_key.append(key.replace(",",";"))
-
-        if std_property_key is None:
-            output_std_property_key = std_property_key
-        else:
-            output_std_property_key = ';'.join(std_property_key)
+            output_std_property_key = None
 
         cmd = [self._table_name,
                global_config['titan_storage_backend'],
@@ -873,9 +833,9 @@ class TitanGiraphMachineLearning(object):
                global_config['titan_storage_connection_timeout'],
                ':'.join(input_property_key),
                type,
-               ';'.join(combined_result_property_key),
+               ';'.join(output_vertex_property_list),
                str(bias_on).lower(),
-               str(enable_std).lower(),
+               str(enable_standard_deviation).lower(),
                output_std_property_key]
         combine_cmd1 = '::'.join(map(str, cmd))
 
@@ -897,17 +857,28 @@ class TitanGiraphMachineLearning(object):
                             "'" + combine_cmd1 + "'"]
 
         combine_cmd = ' '.join(map(str, combine_cmd2))
-        print   combine_cmd
+        #print   combine_cmd
 
         time_str = get_time_str()
         start_time = time.time()
         call(combine_cmd, shell=True, report_strategy=GroovyProgressReportStrategy())
         exec_time = time.time() - start_time
         output = AlgorithmReport()
+        output.method = 'kfold_combine'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.output_vertex_property_list = output_vertex_property_list
         output.k = k
+        output.type = type
+        output.input_result_list = input_result_keys
+        output.enable_standard_deviation = enable_standard_deviation
+        if bias_on:
+            output.vertex_type = vertex_type
+            output.edge_type = edge_type
+            output.feature_dimension = feature_dimension
+            output.bias_on = bias_on
+            output.vector_value = vector_value
         self.report.append(output)
         return output
 
@@ -948,10 +919,8 @@ class TitanGiraphMachineLearning(object):
             more than one edge property.
         input_edge_label : String
             The name of edge label.
-        output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties to store output vertex values.
-            We expect comma-separated list of property names if you use
-            more than one vertex property.
+        output_vertex_property_list : String List
+            The list of vertex properties to store output vertex values.
 
         vertex_type : String, optional
             The name of vertex property which contains vertex type.
@@ -1007,20 +976,14 @@ class TitanGiraphMachineLearning(object):
         output : AlgorithmReport
             The algorithm's results in database.
         """
-        if output_vertex_property_list in self._result['belief_prop']:
-            self._result['belief_prop'].remove(output_vertex_property_list)
-        self._result['belief_prop'].append(output_vertex_property_list)
-        self._latest_algorithm = 'belief_prop'
-        self._output_vertex_property_list = output_vertex_property_list
-        self._vertex_type = global_config['hbase_column_family'] + vertex_type
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lbp')
         lbp_command = self._get_lbp_command(
             self._table_name,
             input_vertex_property_list,
             input_edge_property_list,
             input_edge_label,
-            output_vertex_property_list,
-            self._vertex_type,
+            ','.join(output_vertex_property_list),
+            global_config['hbase_column_family'] + vertex_type,
             str(num_mapper),
             mapper_memory,
             str(vector_value).lower(),
@@ -1041,15 +1004,23 @@ class TitanGiraphMachineLearning(object):
         exec_time = time.time() - start_time
 
         output = AlgorithmReport()
+        output.method = 'belief_prop'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.input_vertex_property_list = input_vertex_property_list
+        output.input_edge_property_list = input_edge_property_list
+        output.input_edge_label = input_edge_label
+        output.output_vertex_property_list = output_vertex_property_list
+        output.vertex_type = vertex_type
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
-        output.max_superstep = max_supersteps
-        output.bidirectional_check = bidirectional_check
+        output.vector_value = vector_value
+        output.num_worker = num_worker
+        output.max_supersteps = max_supersteps
         output.convergence_threshold = convergence_threshold
         output.smoothing = smoothing
+        output.bidirectional_check = bidirectional_check
         output.anchor_threshold = anchor_threshold
         output_path = os.path.join(output_path, 'lbp-learning-report_0')
         if hdfs.path.exists(output_path):
@@ -1148,11 +1119,9 @@ class TitanGiraphMachineLearning(object):
         Parameters
         ----------
         input_edge_label : String
-            The name of edge label..
-        output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties to store output vertex values.
-            We expect comma-separated list of property names if you use
-            more than one vertex property.
+            The name of edge label.
+        output_vertex_property_list : String List
+            The list of vertex properties to store output vertex values.
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
@@ -1187,16 +1156,11 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
-        if output_vertex_property_list in self._result['page_rank']:
-            self._result['page_rank'].remove(output_vertex_property_list)
-        self._result['page_rank'].append(output_vertex_property_list)
-        self._latest_algorithm = 'page_rank'
-        self._output_vertex_property_list = output_vertex_property_list
         output_path = os.path.join(global_config['giraph_output_base'],self._table_name,'pr')
         pr_command = self._get_pr_command(
             self._table_name,
             input_edge_label,
-            output_vertex_property_list,
+            ','.join(output_vertex_property_list),
             str(num_mapper),
             mapper_memory,
             str(num_worker),
@@ -1216,12 +1180,16 @@ class TitanGiraphMachineLearning(object):
         exec_time = time.time() - start_time
 
         output = AlgorithmReport()
+        output.method = 'page_rank'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.input_edge_label = input_edge_label
+        output.output_vertex_property_list = output_vertex_property_list
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
-        output.max_superstep = max_supersteps
+        output.num_worker = num_worker
+        output.max_supersteps = max_supersteps
         output.convergence_threshold = convergence_threshold
         output.reset_probability = reset_probability
         output.convergence_output_interval = convergence_output_interval
@@ -1307,10 +1275,8 @@ class TitanGiraphMachineLearning(object):
         ----------
         input_edge_label : String
             The name of edge label..
-        output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties to store output vertex values.
-            We expect comma-separated list of property names if you use
-            more than one vertex property.
+        output_vertex_property_list : String List
+            The list of vertex properties to store output vertex values.
 
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
@@ -1333,16 +1299,11 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
-        if output_vertex_property_list in self._result['avg_path_len']:
-            self._result['avg_path_len'].remove(output_vertex_property_list)
-        self._result['avg_path_len'].append(output_vertex_property_list)
-        self._latest_algorithm = 'avg_path_len'
-        self._output_vertex_property_list = output_vertex_property_list
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'apl')
         apl_command = self._get_apl_command(
             self._table_name,
             input_edge_label,
-            output_vertex_property_list,
+            ','.join(output_vertex_property_list),
             str(num_mapper),
             mapper_memory,
             str(convergence_output_interval),
@@ -1359,12 +1320,16 @@ class TitanGiraphMachineLearning(object):
         exec_time = time.time() - start_time
 
         output = AlgorithmReport()
+        output.method = 'avg_path_len'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.input_edge_label = input_edge_label
+        output.output_vertex_property_list = output_vertex_property_list
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
+        output.num_worker = num_worker
         output_path = os.path.join(output_path, 'apl-convergence-report_0')
         if hdfs.path.exists(output_path):
             apl_results = self._update_progress_curve(output_path,
@@ -1440,10 +1405,8 @@ class TitanGiraphMachineLearning(object):
         ----------
         input_edge_label : String
             The name of edge label..
-        output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties to store output vertex values.
-            We expect comma-separated list of property names if you use
-            more than one vertex property.
+        output_vertex_property_list : String List
+            The list of vertex properties to store output vertex values.
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
@@ -1465,16 +1428,11 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The progress curve is
             accessible through the report object.
         """
-        if output_vertex_property_list in self._result['connected_components']:
-            self._result['connected_components'].remove(output_vertex_property_list)
-        self._result['connected_components'].append(output_vertex_property_list)
-        self._latest_algorithm = 'connected_components'
-        self._output_vertex_property_list = output_vertex_property_list
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'cc')
         cc_command = self._get_cc_command(
             self._table_name,
             input_edge_label,
-            output_vertex_property_list,
+            ','.join(output_vertex_property_list),
             output_path,
             str(num_mapper),
             mapper_memory,
@@ -1491,12 +1449,16 @@ class TitanGiraphMachineLearning(object):
         exec_time = time.time() - start_time
 
         output = AlgorithmReport()
+        output.method = 'connected_components'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.input_edge_label = input_edge_label
+        output.output_vertex_property_list = output_vertex_property_list
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
         output.convergence_output_interval = convergence_output_interval
+        output.num_worker = num_worker
         output_path = os.path.join(output_path, 'cc-convergence-report_0')
         if hdfs.path.exists(output_path):
             cc_results = self._update_progress_curve(output_path,
@@ -1589,14 +1551,9 @@ class TitanGiraphMachineLearning(object):
             more than one edge property.
         input_edge_label : String
             The name of edge label..
-        output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties to store output vertex values.
-            We expect comma-separated list of property names if you use
-            more than one vertex property.
+        output_vertex_property_list : String List
+            The list of vertex properties to store output vertex values.
 
-        vertex_type : String, optional
-            The name of vertex property which contains vertex type.
-            The default value is "vertex_type"
         num_mapper: Integer, optional
             It reconfigures Hadoop parameter mapred.tasktracker.map.tasks.maximum
             on the fly when it is needed for users' data sets.
@@ -1651,18 +1608,13 @@ class TitanGiraphMachineLearning(object):
         output : AlgorithmReport
             The algorithm's results in database.
         """
-        if output_vertex_property_list in self._result['label_prop']:
-            self._result['label_prop'].remove(output_vertex_property_list)
-        self._result['label_prop'].append(output_vertex_property_list)
-        self._latest_algorithm = 'label_prop'
-        self._output_vertex_property_list = output_vertex_property_list
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lp')
         lp_command = self._get_lp_command(
             self._table_name,
             input_vertex_property_list,
             input_edge_property_list,
             input_edge_label,
-            output_vertex_property_list,
+            ','.join(output_vertex_property_list),
             str(num_mapper),
             mapper_memory,
             str(vector_value).lower(),
@@ -1683,14 +1635,21 @@ class TitanGiraphMachineLearning(object):
         exec_time = time.time() - start_time
 
         output = AlgorithmReport()
+        output.method = 'label_prop'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.input_vertex_property_list = input_vertex_property_list
+        output.input_edge_property_list = input_edge_property_list
+        output.input_edge_label = input_edge_label
+        output.output_vertex_property_list = output_vertex_property_list
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
-        output.max_superstep = max_supersteps
+        output.vector_value = vector_value
+        output.num_worker = num_worker
+        output.max_supersteps = max_supersteps
         output.convergence_threshold = convergence_threshold
-        output.param_lambda = lp_lambda
+        output.lp_lambda = lp_lambda
         output.bidirectional_check = bidirectional_check
         output.anchor_threshold = anchor_threshold
         output_path = os.path.join(output_path, 'lp-learning-report_0')
@@ -1799,10 +1758,8 @@ class TitanGiraphMachineLearning(object):
             more than one edge property.
         input_edge_label : String
             The name of edge label.
-        output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties to store output vertex values.
-            We expect comma-separated list of property names if you use
-            more than one vertex property.
+        output_vertex_property_list : String List
+            The list of vertex properties to store output vertex values.
 
         vertex_type : String, optional
             The name of vertex property which contains vertex type.
@@ -1886,19 +1843,13 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The convergence curve is
             accessible through the report object.
         """
-        if output_vertex_property_list in self._result['lda']:
-            self._result['lda'].remove(output_vertex_property_list)
-        self._result['lda'].append(output_vertex_property_list)
-        self._latest_algorithm = 'lda'
-        self._output_vertex_property_list = output_vertex_property_list
-        self._vertex_type = global_config['hbase_column_family'] + vertex_type
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'lda')
         lda_command = self._get_lda_command(
             self._table_name,
             input_edge_property_list,
             input_edge_label,
-            output_vertex_property_list,
-            self._vertex_type,
+            ','.join(output_vertex_property_list),
+            global_config['hbase_column_family'] + vertex_type,
             str(num_mapper),
             mapper_memory,
             str(vector_value).lower(),
@@ -1924,18 +1875,26 @@ class TitanGiraphMachineLearning(object):
         exec_time = time.time() - start_time
 
         output = AlgorithmReport()
+        output.method = 'lda'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.input_edge_property_list = input_edge_property_list
+        output.input_edge_label = input_edge_label
+        output.output_vertex_property_list = output_vertex_property_list
+        output.vertex_type = vertex_type
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
-        output.max_superstep = max_supersteps
-        output.convergence_threshold = convergence_threshold
+        output.vector_value = vector_value
+        output.num_worker = num_worker
+        output.max_supersteps = max_supersteps
         output.alpha = alpha
         output.beta = beta
+        output.convergence_threshold = convergence_threshold
         output.evaluate_cost = evaluate_cost
         output.max_val = max_val
         output.min_val = min_val
+        output.bidirectional_check = bidirectional_check
         output.num_topics = num_topics
         output_path = os.path.join(output_path, 'lda-learning-report_0')
         if hdfs.path.exists(output_path):
@@ -2064,10 +2023,8 @@ class TitanGiraphMachineLearning(object):
             more than one edge property.
         input_edge_label : String
             The name of edge label
-        output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties to store output vertex valuess.
-            We expect comma-separated list of property names  if you use
-            more than one vertex property.
+        output_vertex_property_list : String List
+            The list of vertex properties to store output vertex values.
 
         vertex_type : String, optional
             The name of vertex property which contains vertex type.
@@ -2145,24 +2102,14 @@ class TitanGiraphMachineLearning(object):
             The algorithm's results in database.  The convergence curve is
             accessible through the report object.
         """
-        if output_vertex_property_list in self._result['als']:
-            self._result['als'].remove(output_vertex_property_list)
-        self._result['als'].append(output_vertex_property_list)
-        self._latest_algorithm = 'als'
-        self._output_vertex_property_list = output_vertex_property_list
-        self._vertex_type = global_config['hbase_column_family'] + vertex_type
-        self._edge_type = global_config['hbase_column_family'] + edge_type
-        self._vector_value = vector_value
-        self._bias_on = bias_on
-        self._feature_dimension = feature_dimension
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'als')
         als_command = self._get_als_command(
             self._table_name,
             input_edge_property_list,
             input_edge_label,
-            output_vertex_property_list,
-            self._vertex_type,
-            self._edge_type,
+            ','.join(output_vertex_property_list),
+            global_config['hbase_column_family'] + vertex_type,
+            global_config['hbase_column_family'] + edge_type,
             str(num_mapper),
             mapper_memory,
             str(vector_value).lower(),
@@ -2187,18 +2134,27 @@ class TitanGiraphMachineLearning(object):
         call(als_cmd, shell=True, report_strategy=GiraphProgressReportStrategy())
         exec_time = time.time() - start_time
         output = AlgorithmReport()
+        output.method = 'als'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.input_edge_property_list = input_edge_property_list
+        output.input_edge_label = input_edge_label
+        output.output_vertex_property_list = output_vertex_property_list
+        output.vertex_type = vertex_type
+        output.edge_type = edge_type
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
-        output.max_superstep = max_supersteps
-        output.convergence_threshold = convergence_threshold
+        output.vector_value = vector_value
+        output.num_worker = num_worker
+        output.max_supersteps = max_supersteps
         output.feature_dimension = feature_dimension
-        output.param_lambda = als_lambda
+        output.als_lambda = als_lambda
+        output.convergence_threshold = convergence_threshold
         output.learning_output_interval = learning_output_interval
         output.max_val = max_val
         output.min_val = min_val
+        output.bidirectional_check = bidirectional_check
         output.bias_on = bias_on
         output_path = os.path.join(output_path, 'als-learning-report_0')
         if hdfs.path.exists(output_path):
@@ -2327,10 +2283,8 @@ class TitanGiraphMachineLearning(object):
             more than one edge property.
         input_edge_label : String
             The name of edge label.
-        output_vertex_property_list : List (comma-separated list of strings)
-            The vertex properties to store output vertex valuess.
-            We expect comma-separated list of property names  if you use
-            more than one vertex property.
+        output_vertex_property_list : String List
+            The list of vertex properties to store output vertex values.
         vertex_type : String, optional
             The name of vertex property which contains vertex type.
             The default value is "vertex_type"
@@ -2414,24 +2368,14 @@ class TitanGiraphMachineLearning(object):
             accessible through the report object.
 
         """
-        if output_vertex_property_list in self._result['cgd']:
-            self._result['cgd'].remove(output_vertex_property_list)
-        self._result['cgd'].append(output_vertex_property_list)
-        self._latest_algorithm = 'cgd'
-        self._output_vertex_property_list = output_vertex_property_list
-        self._vertex_type = global_config['hbase_column_family'] + vertex_type
-        self._edge_type = global_config['hbase_column_family'] + edge_type
-        self._vector_value = vector_value
-        self._bias_on = bias_on
-        self._feature_dimension = feature_dimension
         output_path = os.path.join(global_config['giraph_output_base'], self._table_name, 'cgd')
         cgd_command = self._get_cgd_command(
             self._table_name,
             input_edge_property_list,
             input_edge_label,
-            output_vertex_property_list,
-            self._vertex_type,
-            self._edge_type,
+            ','.join(output_vertex_property_list),
+            global_config['hbase_column_family'] + vertex_type,
+            global_config['hbase_column_family'] + edge_type,
             str(num_mapper),
             mapper_memory,
             str(vector_value).lower(),
@@ -2458,19 +2402,28 @@ class TitanGiraphMachineLearning(object):
         exec_time = time.time() - start_time
 
         output = AlgorithmReport()
+        output.method = 'cgd'
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        output.input_edge_property_list = input_edge_property_list
+        output.input_edge_label = input_edge_label
+        output.output_vertex_property_list = output_vertex_property_list
+        output.vertex_type = vertex_type
+        output.edge_type = edge_type
         output.num_mapper = num_mapper
         output.mapper_memory = mapper_memory
-        output.max_superstep = max_supersteps
-        output.convergence_threshold = convergence_threshold
+        output.vector_value = vector_value
+        output.num_worker = num_worker
+        output.max_supersteps = max_supersteps
         output.feature_dimension = feature_dimension
-        output.param_lambda = cgd_lambda
+        output.cgd_lambda = cgd_lambda
+        output.convergence_threshold = convergence_threshold
         output.learning_output_interval = learning_output_interval
         output.max_val = max_val
         output.min_val = min_val
         output.bias_on = bias_on
+        output.bidirectional_check = bidirectional_check
         output.num_iters = num_iters
         output_path = os.path.join(output_path, 'cgd-learning-report_0')
         if hdfs.path.exists(output_path):
