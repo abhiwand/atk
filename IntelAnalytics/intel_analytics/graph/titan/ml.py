@@ -66,7 +66,7 @@ class TitanGiraphMachineLearning(object):
         """
         self._graph = graph
         self._table_name = graph.titan_table_name
-        self._latest_algorithm = ''
+        self._latest_algorithm = None
         self._output_vertex_property_list = ''
         self._vertex_type = ''
         self._edge_type = ''
@@ -739,7 +739,7 @@ class TitanGiraphMachineLearning(object):
     def kfold_combine(self,
                       combined_result_property_key,
                       k=10,
-                      algorithm='',
+                      algorithm=None,
                       type='AVG',
                       input_result_property_key=None,
                       bias_on=False,
@@ -805,8 +805,8 @@ class TitanGiraphMachineLearning(object):
         elif k < 1:
             raise ValueError("k should be positive integer")
 
-        if algorithm == '':
-            if self._latest_algorithm == '':
+        if algorithm is None:
+            if self._latest_algorithm is None:
                 raise ValueError("algorithm is empty!")
             else:
                 algorithm = self._latest_algorithm
