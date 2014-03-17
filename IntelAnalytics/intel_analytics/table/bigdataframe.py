@@ -315,6 +315,29 @@ class BigDataFilter(object):
 class BigDataFrameException(Exception):
     pass
 
+class StringSplitOptions():
+    """
+    Options for how to split a string
+
+    delimiter:String
+        the delimiter between the parts
+    trim_start: String
+        a string to remove from the start of the value
+    trim_end: String
+        a string to remove from the end of the value
+    trim_whitespace: Boolean
+        true if whitespace should be trimmed from each part
+
+    For example, to split "(1, 2, 3)" into ["1", "2", "3"] you would use the options:
+        delimiter = ','
+        trim_start = '('
+        trim_end = '('
+        trim_whitespace = True
+    """
+    delimiter = ','
+    trim_start = None
+    trim_end = None
+    trim_whitespace = True
 
 class BigDataFrame(object):
     """
@@ -836,3 +859,43 @@ class BigDataFrame(object):
             raise BigDataFrameException("join exception "+ str(e))
 
         return join_frame
+
+    def flatten(self, column_name, new_frame_name, string_split_options=StringSplitOptions()):
+        """
+        Flatten a column with a list of values into multiple rows
+
+        For example,
+
+        Input:
+            1 a,b,c
+            2 b
+            3 c
+
+        "Flattened" Output:
+            1 a
+            1 b
+            1 c
+            2 b
+            3 c
+
+
+        Parameters
+        ----------
+        column_name: String
+            the column containing delimited values
+        new_frame_name: String
+            the name of the new frame to be created
+        string_split_options: StringSplitOptions (optional)
+            the options for how to split the delimited values
+
+        Return
+        ------
+        BigDataFrame
+        """
+        try:
+            frame = self._table.flatten(column_name, new_frame_name, string_split_options)
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("flatten exception " + str(e))
+
+        return frame
