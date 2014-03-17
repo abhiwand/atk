@@ -40,7 +40,7 @@ export HBASE_HEAPSIZE=1000
 # Below are what we set by default.  May only work with SUN JVM.
 # For more on why as well as other possible settings,
 # see http://wiki.apache.org/hadoop/PerformanceTuning
-export HBASE_OPTS="-XX:+UseConcMarkSweepGC"
+export HBASE_OPTS="-XX:+UseParNewGC -XX:+UseConcMarkSweepGC -Djava.net.preferIPv4Stack=true -XX:CMSInitiatingOccupancyFraction=75"
 export HBASE_REGIONSERVER_OPTS="-XX:+UseThreadPriorities -XX:ThreadPriorityPolicy=42 -Xms8192M -Xmx8192M -Xmn2048M -XX:+HeapDumpOnOutOfMemoryError -Xss256k -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled -XX:SurvivorRatio=8 -XX:MaxTenuringThreshold=1 -XX:CMSInitiatingOccupancyFraction=75 -XX:+UseCMSInitiatingOccupancyOnly -XX:+UseCondCardMark -Djava.net.preferIPv4Stack=true"
 
 # Uncomment one of the below three options to enable java garbage collection logging for the server-side processes.

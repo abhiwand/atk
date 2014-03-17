@@ -54,21 +54,21 @@ class TitanConfig(object):
         """
         if not table_name or not table_name.endswith('_titan'):
             raise Exception("Internal error: bad graph table")
+        # TODO: only one Titan config at a time is currently supported?
+        config['titan_storage_tablename'] = table_name
         filename = config['graph_builder_titan_xml']
         with open(filename, 'w') as out:
-            params = {k: config[k] for k in gb_keys}
-            params['titan_storage_tablename'] = table_name
-            out.write("<!-- Auto-generated Graph Builder cfg file -->\n\n")
-            out.write("<configuration>\n")
-            keys = sorted(params.keys())
-            for k in keys:
-                out.write("  <property>\n    <name>graphbuilder.")
-                out.write(k)
-                out.write("</name>\n    <value>")
-                out.write(params[k])
-                out.write("</value>\n  </property>\n")
-            out.write("</configuration>\n")
+            out.write("<!-- Auto-generated Graph Builder cfg file -->\n")
+            out.write(self._get_graphbuilder_template().substitute(config))
         return filename
+
+    def _get_graphbuilder_template(self):
+        """
+        Get the graphbuilder-config-template.xml as a Template
+        """
+        filename = config['graph_builder_config_template']
+        with open(filename, 'r') as template_file:
+            return Template(template_file.read())
 
     def write_faunus_cfg(self, table_name):
         """
@@ -241,6 +241,5 @@ for k in ['input.format', 'output.format']:
 for k in ['sideeffect.output.format', 'output.location', 'output.location.overwrite']:
     faunus_keys.append('faunus.' + k)
 faunus_keys.sort()
-
 
 titan_config = TitanConfig()
