@@ -218,30 +218,30 @@ class FrameBuilder(object):
 
         Parameters
         ----------
-        left: BigDataFrame
+        left : BigDataFrame
             Left side of the join
-        right: List
+        right : List
             List of BigDataFrame(s) on the right side of the join
-        left_on: String
+        left_on : String
             String of columnes from left table, space or comma separated
             e.g., 'c1,c2' or 'b2 b3'
-        right_on: List
+        right_on : List
             List of strings, each of which is in comma separated indicating
             columns to be joined corresponding to the list of tables as 
             the 'right', e.g., ['c1,c2', 'b2 b3']
-        how: String
+        how : String
             The type of join, INNER, OUTER, LEFT, RIGHT
-        suffixes: List
+        suffixes : List
             List of strings, each of which is used as suffix to the column
             names from left and right of the join, e.g. ['_x', '_y1', '_y2'].
             Note the first one is always for the left
-        join_frame_name: String
+        join_frame_name : String
             Output BigDataFrame name
-        overwrite: Boolean
+        overwrite : Boolean
             Wether to overwrite the output table if it already exists
 
-        Return
-        ------
+        Returns
+        -------
         BigDataFrame
 
         """
@@ -319,20 +319,26 @@ class StringSplitOptions():
     """
     Options for how to split a string
 
-    delimiter:String
-        the delimiter between the parts
-    trim_start: String
-        a string to remove from the start of the value
-    trim_end: String
-        a string to remove from the end of the value
-    trim_whitespace: Boolean
-        true if whitespace should be trimmed from each part
+    delimiter : String
+        The delimiter between the parts. Comma is default value.
+    trim_start : String
+        A string to remove from the start of the value.
+    trim_end : String
+        A string to remove from the end of the value.
+    trim_whitespace : Boolean
+        True if whitespace should be trimmed from each part. True is default value.
 
     For example, to split "(1, 2, 3)" into ["1", "2", "3"] you would use the options:
         delimiter = ','
         trim_start = '('
         trim_end = '('
         trim_whitespace = True
+
+    Examples
+    --------
+    >>> options = StringSplitOptions()
+    >>> options.delimiter = '|'
+    >>> options.trim_whitespace = False
     """
     delimiter = ','
     trim_start = None
@@ -426,19 +432,19 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        aggregate_frame_name: String
+        aggregate_frame_name : String
             aggregate frame name for the output of the aggregation
-        group_by_column_list: List
+        group_by_column_list : List
             List of columns to group the data by before applying aggregation to each group
-        aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
+        aggregation_list : List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
             aggregation functions to apply on each group
-	overwrite: Boolean
-	    whether to overwrite the existing table with the same name
+        overwrite : Boolean
+	        whether to overwrite the existing table with the same name
 
-	Returns
-	-------
-	BigDataFrame
-	    Aggregated frame
+        Returns
+	    -------
+	    BigDataFrame
+	        Aggregated frame
         """
         try:
             aggregate_table = self._table.aggregate(aggregate_frame_name, group_by_column_list, aggregation_list, overwrite)
@@ -454,22 +460,22 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        aggregate_frame_name: String
+        aggregate_frame_name : String
             aggregate frame name for the output of the aggregation
-        group_by_column: String
+        group_by_column : String
             Column to group the data by before applying aggregation to each group
-	range: String
-	    range of the group_by_column for applying the group
-	    Supported formats - min:max:stepsize, comma separated values
-        aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
+        range : String
+            range of the group_by_column for applying the group
+	        Supported formats - min:max:stepsize, comma separated values
+        aggregation_list : List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
             aggregation functions to apply on each group
-	overwrite: Boolean
-	    whether to overwrite the existing table with the same name
+        overwrite : Boolean
+	        whether to overwrite the existing table with the same name
 
-	Returns
-	-------
-	BigDataFrame
-	    Aggregated frame
+        Returns
+        -------
+        BigDataFrame
+            Aggregated frame
         """
         try:
             aggregate_table = self._table.aggregate_on_range(aggregate_frame_name, group_by_column, range, aggregation_list, overwrite)
@@ -635,14 +641,14 @@ class BigDataFrame(object):
         ----------
         filter: BigDataFilter
             Filter to be applied to each row, either on specific column or the complete row
-	    frame_name: String, optional
+	    frame_name : String, optional
 	    create a new frame for the remaining records if not deleting inplace
 	
-	Returns
-	-------
-        frame: BigDataFrame
+        Returns
+        -------
+        frame : BigDataFrame
         """
-	
+
         try:
 	    inplace = (frame_name.strip() == '')
 	    isregex = (filter.column_to_apply.strip() != '')
@@ -755,13 +761,13 @@ class BigDataFrame(object):
             {'left', 'right', 'outer', 'inner'}, default 'inner'
         left_on : Str
             Columns selected to bed joined on from left frame
-        right_on: Str or list/tuple of Str
+        right_on : Str or list/tuple of Str
             Columns selected to bed joined on from right frame(s)
-        suffixes: tuple of Str
+        suffixes : tuple of Str
             Suffixes to apply to columns on the output frame
-        join_frame_name: Str
+        join_frame_name : Str
             The name of the BigDataFrame that holds the result of join
-        overwrite: Boolean
+        overwrite : Boolean
             Wether to overwrite the output table if it already exists
 
         Returns
@@ -866,31 +872,40 @@ class BigDataFrame(object):
 
         For example,
 
-        Input:
-            1 a,b,c
-            2 b
-            3 c
-
-        "Flattened" Output:
-            1 a
-            1 b
-            1 c
-            2 b
-            3 c
+          | Input:
+          |    1 a,b,c
+          |    2 b
+          |    3 c
+          |
+          | "Flattened" Output:
+          |    1 a
+          |    1 b
+          |    1 c
+          |    2 b
+          |    3 c
 
 
         Parameters
         ----------
-        column_name: String
-            the column containing delimited values
-        new_frame_name: String
-            the name of the new frame to be created
-        string_split_options: StringSplitOptions (optional)
-            the options for how to split the delimited values
+        column_name : String
+            The column containing delimited values.
+        new_frame_name : String
+            The name of the new frame to be created. If this frame already exists, it will be overwritten.
+        string_split_options : StringSplitOptions, optional
+            The options for how to split the delimited values.  Default is comma delimited and trim whitespace.
 
-        Return
-        ------
+        Returns
+        -------
         BigDataFrame
+            The newly created frame.
+
+        Examples
+        --------
+        >>> string_split_options = StringSplitOptions()
+        >>> string_split_options.delimiter = '|'
+        >>> string_split_options.trim_whitespace = True
+        >>>
+        >>> flattened_frame = frame.flatten('column_to_flatten', 'new_frame_name', string_split_options)
         """
         try:
             frame = self._table.flatten(column_name, new_frame_name, string_split_options)
