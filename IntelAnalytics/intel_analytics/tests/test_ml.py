@@ -286,12 +286,13 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
     def test_split_wrong_name(self, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         with self.assertRaises(ValueError):
-            ml.kfold_split_update(split_name=["test1","test2"])
+            ml.kfold_split_update(split_name=["test1","test2","test3"])
 
     @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
     @patch('__builtin__.long')
-    def test_split_optional_inputs(self, mock_long, mock_open, mock_exists):
+    @patch('uuid.uuid4')
+    def test_split_optional_inputs(self, mock_id, mock_long, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         result = ml.kfold_split_update(test_fold_id=2,
                                        fold_id_property_key="test_id",

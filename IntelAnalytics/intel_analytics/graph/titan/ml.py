@@ -630,7 +630,7 @@ class TitanGiraphMachineLearning(object):
         else:
             num_split = len(split_name)
             if num_split != 2:
-                raise ValueError("The number of split should be two.");
+                raise ValueError("The number of split should be two.")
 
         if not isinstance(split_property_key, basestring):
             raise TypeError("split_property_key should be a string.")
@@ -734,6 +734,7 @@ class TitanGiraphMachineLearning(object):
         elif k < 1:
             raise ValueError("k should be positive integer")
 
+        print global_config['giraph_combine_functions']
         if not isinstance(type, basestring):
             raise TypeError("type should be a string.")
         elif type not in global_config['giraph_combine_functions'].split(','):
@@ -768,7 +769,7 @@ class TitanGiraphMachineLearning(object):
                         num_runs += 1
                         if num_runs == k:
                             break
-                if num_runs < k:
+                if algorithm is not None and num_runs < k:
                     raise ValueError("only " + str(num_runs) + " results are available for " + algorithm)
 
         elif not isinstance(input_result_list, list):
