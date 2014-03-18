@@ -740,26 +740,26 @@ class HBaseTable(object):
 
         Parameters
         ----------
-        right: List
+        right : List
             List of HBaseTable(s) to be joined, can be itself
-        left_on: String
+        left_on : String
             String of columnes from left table, space or comma separated
             e.g., 'c1,c2' or 'b2 b3'
-        right_on: List
+        right_on : List
             List of strings, each of which is in comma separated indicating
             columns to be joined corresponding to the list of tables as 
             the 'right', e.g., ['c1,c2', 'b2 b3']
-        how: String
+        how : String
             The type of join, INNER, OUTER, LEFT, RIGHT
-        suffixes: List
+        suffixes : List
             List of strings, each of which is used as suffix to the column
             names from left and right of the join, e.g. ['_x', '_y1', '_y2'].
             Note the first one is always for the left
-        join_frame_name: String
+        join_frame_name : String
             Output BigDataFrame name
 
-        Return
-        ------
+        Returns
+        -------
         BigDataFrame
 
         """
@@ -846,31 +846,40 @@ class HBaseTable(object):
 
         For example,
 
-        Input:
-            1 a,b,c
-            2 b
-            3 c
-
-        "Flattened" Output:
-            1 a
-            1 b
-            1 c
-            2 b
-            3 c
+          | Input:
+          |    1 a,b,c
+          |    2 b
+          |    3 c
+          |
+          | "Flattened" Output:
+          |    1 a
+          |    1 b
+          |    1 c
+          |    2 b
+          |    3 c
 
 
         Parameters
         ----------
-        column_name: String
-            the column containing delimited values
-        new_frame_name: String
-            the name of the new frame to be created
-        string_split_options: StringSplitOptions (optional)
-            the options for how to split the delimited values
+        column_name : String
+            The column containing delimited values.
+        new_frame_name : String
+            The name of the new frame to be created. If this frame already exists, it will be overwritten.
+        string_split_options : StringSplitOptions, optional
+            The options for how to split the delimited values.  Default is comma delimited and trim whitespace.
 
-        Return
-        ------
+        Returns
+        -------
         BigDataFrame
+            The newly created frame.
+
+        Examples
+        --------
+        >>> string_split_options = StringSplitOptions()
+        >>> string_split_options.delimiter = '|'
+        >>> string_split_options.trim_whitespace = False
+        >>>
+        >>> flattened_frame = frame.flatten('column_to_flatten', 'new_frame_name', string_split_options)
         """
         if not column_name:
             raise HBaseTableException("column_name can't be empty")
