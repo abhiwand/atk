@@ -30,7 +30,7 @@ from intel_analytics.config import Registry, \
 from intel_analytics.pig import get_pig_args, is_local_run
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
-from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder, HBaseSource, HBaseLoadFunction, HBaseStoreFunction
+from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder, HBaseSource, HBaseLoadFunction, HBaseStoreFunction, PigExpression
 
 # import sys is needed here because test_hbase_table module relies
 # on it to patch sys.stdout
@@ -63,7 +63,7 @@ class Imputation:
     Currently the only supported imputation method is mean imputation, which replaces all missing values with
     the mean.
     """
-    
+
     MEAN = 1
 
     @staticmethod
@@ -115,7 +115,7 @@ class HBaseTable(object):
 		    column_to_apply, new_column_name = "*", "count"
 		else:
                     raise HBaseTableException("Invalid aggregation: " + function_name)
-		
+
 	    try:
 	        aggregation_list.append(EvalFunctions.to_string(function_name))
 	    except:
@@ -134,7 +134,7 @@ class HBaseTable(object):
 	    elif (function_name in [EvalFunctions.Aggregation.DISTINCT]):
 	        new_schema_def += ",%s:chararray" % (new_column_name)
 	    else:
-	        new_schema_def += ",%s:%s" % (new_column_name, 
+	        new_schema_def += ",%s:%s" % (new_column_name,
 					          etl_schema.get_feature_type(column_to_apply))
 
 	return aggregation_list, new_schema_def
@@ -144,7 +144,7 @@ class HBaseTable(object):
 		  group_by_columns,
 		  aggregation_arguments,
 		  overwrite):
-		
+
         #load schema info
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -160,7 +160,7 @@ class HBaseTable(object):
             new_schema_def += "AggregateGroup:chararray"
 
 	aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
-	
+
         args = get_pig_args('pig_aggregation.py')
 
 
@@ -173,7 +173,7 @@ class HBaseTable(object):
 
 
         args.extend(['-i', self.table_name,
-                 '-o', new_table_name, 
+                 '-o', new_table_name,
 		 '-a', " ".join(aggregation_list),
 		 '-g', ",".join(group_by_columns),
                  '-u', feature_names_as_str, '-r', feature_types_as_str,
@@ -199,7 +199,7 @@ class HBaseTable(object):
 		  range,
 		  aggregation_arguments,
 		  overwrite):
-		
+
         #load schema info
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -211,7 +211,7 @@ class HBaseTable(object):
 	new_schema_def = "AggregateGroup:chararray"
 
         aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
-	
+
         args = get_pig_args('pig_range_aggregation.py')
         _range = ETLRange(range).toString()
 
@@ -225,7 +225,7 @@ class HBaseTable(object):
 
 
         args.extend(['-i', self.table_name,
-                 '-o', new_table_name, 
+                 '-o', new_table_name,
 		 '-a', " ".join(aggregation_list),
 		 '-g', group_by_column,
 		 '-l', _range,
@@ -256,7 +256,7 @@ class HBaseTable(object):
             transformation_to_apply = EvalFunctions.to_string(transformation)
         except:
             raise HBaseTableException('The specified transformation function is invalid')
-        
+
         #by default all transforms are now in-place
         keep_source_column=True#For in-place transformations the source/original feature has to be kept
         #load schema info
@@ -326,7 +326,7 @@ class HBaseTable(object):
         if not keep_source_column:
             etl_schema.feature_names.remove(column_name)
         etl_schema.feature_names.append(new_column_name)
-        
+
         #for now make the new feature bytearray, because all UDF's have different return types
         #and we cannot know their return types
         if transformation == EvalFunctions.Math.RANDOM:
@@ -503,8 +503,11 @@ class HBaseTable(object):
         relation = "project_relation"
 
         pig_schema = pig_helpers.get_pig_schema_string(','.join(features_to_project_names), ','.join(features_to_project_types))
-        builder.add_load_statement(relation, HBaseSource(self.table_name), HBaseLoadFunction(features_to_project_names, False), pig_schema)
-
+        builder.add_load_statement(relation, HBaseSource(self.table_name), HBaseLoadFunction(features_to_project_names, True), 'key:chararray,' + pig_schema)
+        builder.add_foreach_statement(relation, relation, features_to_project_names, [])
+        rank_statement_gen = PigExpression()
+        rank_statement_gen.get_statement = lambda : '%s = rank %s;' %(relation, relation)
+        builder.add_statement(rank_statement_gen)
         builder.add_store_statement(relation, HBaseSource(new_table_name), HBaseStoreFunction(renamed_feature_names))
 
         args = get_pig_args('pig_execute.py')
@@ -530,7 +533,7 @@ class HBaseTable(object):
 	    hbase_table_name = self.table_name
             hbase_table = HBaseTable(hbase_table_name, self.file_name)
 	else:
-             # need to delete/create output table so that we can write the remaining rows after filtering 
+             # need to delete/create output table so that we can write the remaining rows after filtering
              hbase_table_name = _create_table_name(new_table_name, True)
              hbase_table = HBaseTable(hbase_table_name, self.file_name)
              with ETLHBaseClient() as hbase_client:
@@ -538,7 +541,7 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
         args.extend(['-i', self.table_name,
-                 '-o', hbase_table_name, 
+                 '-o', hbase_table_name,
 		 '-n', feature_names_as_str,
                  '-t', feature_types_as_str,
 		 '-p', 'True' if inplace else 'False',
@@ -547,7 +550,7 @@ class HBaseTable(object):
 		 '-f', filter])
 
         logger.debug(args)
-        
+
         return_code = call(args, report_strategy=etl_report_strategy())
 
         if return_code:
@@ -599,7 +602,7 @@ class HBaseTable(object):
         etl_schema.feature_names = new_feature_names
         etl_schema.feature_types = new_feature_types
         etl_schema.save_schema(self.table_name)
-        
+
     def _peek(self, n):
 
         if n < 0:
@@ -620,7 +623,7 @@ class HBaseTable(object):
                if nrows_read >= n:
                    break
         return first_N_rows
-    
+
     def inspect(self, n=10):
 
         first_N_rows = self._peek(n)
@@ -645,7 +648,7 @@ class HBaseTable(object):
                    data.append("NA")
 
            print "  |  ".join(data)
-               
+
     def inspect_as_html(self, nRows=10):
         first_N_rows = self._peek(nRows)
         html_table='<table border="1">'
@@ -673,7 +676,7 @@ class HBaseTable(object):
 
         html_table+='</table>'
         return html_table
-    
+
     def __drop(self, output_table, column_name=None, how=None, replace_with=None):
         etl_schema = ETLSchema()
         etl_schema.load_schema(self.table_name)
@@ -705,7 +708,7 @@ class HBaseTable(object):
                                            [config['hbase_column_family']])
 
         logger.debug(args)
-        
+
         return_code = call(args, report_strategy=etl_report_strategy())
 
         if return_code:
@@ -965,7 +968,7 @@ class HBaseFrameBuilder(FrameBuilder):
         return BigDataFrame(new_frame_name, new_table)
 
 
-    def project(self, data_frame, new_frame_name, features_to_project, rename=None, overwrite=False):
+    def project(self, data_frame, new_frame_name, features_to_project, rename={}, overwrite=False):
         new_table_name = _create_table_name(new_frame_name, overwrite)
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(new_table_name,
@@ -995,14 +998,7 @@ class HBaseFrameBuilder(FrameBuilder):
         for i in range(0, len(features_to_project)):
             feature_to_project_types.append(feature_names_types_mapping[features_to_project[i]])
 
-        renamed_feature_names = []
-        if rename:
-            for i in range(0, len(features_to_project)):
-                feature = features_to_project[i]
-                if feature in rename:
-                    renamed_feature_names.append(rename[feature])
-                else:
-                    renamed_feature_names.append(feature)
+        renamed_feature_names = [rename.get(name) or name for name in features_to_project]
 
         new_table = data_frame._table.project(new_table_name, features_to_project, feature_to_project_types, renamed_feature_names)
 
@@ -1056,7 +1052,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-        
+
         if return_code:
             raise Exception('Could not import CSV file')
 
@@ -1109,7 +1105,7 @@ class HBaseFrameBuilder(FrameBuilder):
         new_frame = BigDataFrame(frame_name, hbase_table)
 
         schema='json:chararray'#dump all records as chararray
-        
+
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
         etl_schema.populate_schema(schema)
@@ -1122,15 +1118,15 @@ class HBaseFrameBuilder(FrameBuilder):
         args += ['-i', file_name, '-o', table_name]
 
         logger.debug(args)
-        
+
 #         need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-            
+
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-        
+
         if return_code:
             raise Exception('Could not import JSON file')
 
@@ -1140,7 +1136,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         hbase_registry.register(frame_name, table_name, overwrite)
         return new_frame
-            
+
     def append_from_json(self, data_frame, file_name):
         #create some random table name
         #we currently don't bother the user to specify table names
@@ -1170,7 +1166,7 @@ class HBaseFrameBuilder(FrameBuilder):
         new_frame = BigDataFrame(frame_name, hbase_table)
 
         schema='xml:chararray'#dump all records as chararray
-        
+
         #save the schema of the dataset to import
         etl_schema = ETLSchema()
         etl_schema.populate_schema(schema)
@@ -1183,15 +1179,15 @@ class HBaseFrameBuilder(FrameBuilder):
         args += ['-i', file_name, '-o', table_name, '-tag', tag_name]
 
         logger.debug(args)
-        
+
 #         need to delete/create output table to write the transformed features
         with ETLHBaseClient() as hbase_client:
             hbase_client.drop_create_table(table_name,
                                            [config['hbase_column_family']])
-            
+
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
-        
+
         if return_code:
             raise Exception('Could not import XML file')
 
@@ -1200,7 +1196,7 @@ class HBaseFrameBuilder(FrameBuilder):
         etl_schema.save_table_properties(table_name, properties)
 
         hbase_registry.register(frame_name, table_name, overwrite)
-        
+
         return new_frame
 
     def append_from_xml(self, data_frame, file_name, tag_name):
