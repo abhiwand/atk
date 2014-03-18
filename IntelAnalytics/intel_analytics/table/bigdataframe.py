@@ -410,7 +410,7 @@ class BigDataFrame(object):
             name for the new column that will be created as a result of applying the transformation
         transformation : :ref:`EvalFunctions <evalfunctions>` enumeration
             function to apply
-        transformation_args: List
+        transformation_args : List
             arguments for the function
 
         Examples
