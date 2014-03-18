@@ -61,6 +61,7 @@ else:
     sys.modules['intel_analytics.progress'] = sys.modules['intel_analytics.tests.mock_progress']
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
+from intel_analytics.graph.titan.ml import AlgorithmReport
 
 
 class TestsTitanGiraphMachineLearning(unittest.TestCase):
@@ -262,9 +263,13 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
     @patch('__builtin__.long')
     def test_combine_optional_inputs(self, mock_long, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
-        ml._latest_algorithm = 'als'
-        ml._result['als'] = ['test1','test2','test3']
-        result = ml.kfold_combine(['test_combine_result'], k=3)
+        report = AlgorithmReport()
+        report.method  = 'lda'
+        ml.report.append(report)
+        report = AlgorithmReport()
+        report.method  = 'lda'
+        ml.report.append(report)
+        result = ml.kfold_combine(['test_combine_result'], k=2, type='mocked')
         self.assertEqual('test_graph', result.graph_name)
 
 
@@ -319,12 +324,14 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
 
     def test_recommend_normal(self):
         ml = TitanGiraphMachineLearning(self.graph)
-        ml._output_vertex_property_list = 'test_vertex_properties'
-        ml._vertex_type = 'test_vertex_type'
-        ml._edge_type = 'test_edge_type'
-        ml._vector_value = 'test_vector_value'
-        ml._feature_dimension = 'test_dimension'
-        ml._bias_on =  'test_bias_on'
+        report = AlgorithmReport()
+        report.output_vertex_property_list = ['test_vertex_properties']
+        report.vertex_type = 'test_vertex_type'
+        report.edge_type = 'test_edge_type'
+        report.vector_value = 'test_vector_value'
+        report.feature_dimension = 'test_dimension'
+        report.bias_on =  'test_bias_on'
+        ml.report.append(report)
         result = ml.recommend('101010')
         self.assertEqual('test_graph', result.graph_name)
         self.assertEqual([], result.recommend_id)
