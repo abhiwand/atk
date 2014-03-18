@@ -26,6 +26,7 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuilding
 import com.intel.hadoop.graphbuilder.types.*;
 import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
+import com.intel.hadoop.graphbuilder.util.MultiValuedMap;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.rules.EdgeRule;
@@ -53,14 +54,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
  * CreatePropGraphElements ... converts tuples of scalar data into bag of property graph elements..
  * <p/>
- *
+ * <p/>
  * <b>Example of use in pig script:</b>
- *
+ * <p/>
  * <pre>
  * REGISTER target/graphbuilder-2.0alpha-with-deps.jar;
  * x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id: int, name: chararray, age: int,
@@ -69,7 +71,7 @@ import java.util.concurrent.TimeUnit;
  * dept,worksAt,tenure"');
  * pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
  * </pre>
- *
+ * <p/>
  * The argument to the UDF constructor is a command string interpreted in the following manner:
  * The rules for specifying a graph are, at present, as follows:
  * </p>
@@ -89,14 +91,14 @@ import java.util.concurrent.TimeUnit;
  * <p>or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_fieldname </code>
  * </p>
- *  * <p>
- *     EXAMPLE:
- *     <p>
- *<code>-v "name=age" -e "name,dept,worksAt,seniority"</code>
- *     </p>
- *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
- *     one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
- *     seniority in that department.
+ * * <p>
+ * EXAMPLE:
+ * <p>
+ * <code>-v "name=age" -e "name,dept,worksAt,seniority"</code>
+ * </p>
+ * This generates a vertex for each employee annotated by their age, a vertex for each department with at least
+ * one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
+ * seniority in that department.
  * </p>
  * This generates a vertex for each employee annotated by their age, a vertex for each department with at least
  * one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
@@ -109,16 +111,16 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     /**
      * Special vertex name used when retaining dangling edges
      */
-    public static final String NULL_VERTEX_NAME          = "null";
-    public static final String VERTEX_PROPERTY_SIDE      = "side";
-    public static final String LEFT                      = "L";
-    public static final String RIGHT                     = "R";
+    public static final String NULL_VERTEX_NAME = "null";
+    public static final String VERTEX_PROPERTY_SIDE = "side";
+    public static final String LEFT = "L";
+    public static final String RIGHT = "R";
 
     final boolean BIDIRECTIONAL = true;
     final boolean DIRECTED = false;
 
-    private boolean retainDanglingEdges    = false;
-    private boolean flattenLists           = false;
+    private boolean retainDanglingEdges = false;
+    private boolean flattenLists = false;
 
     private BagFactory mBagFactory = BagFactory.getInstance();
 
@@ -126,7 +128,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     private Hashtable<String, String[]> vertexPropToFieldNamesMap;
     private Hashtable<String, String> vertexLabelMap;
-    private Hashtable<String, EdgeRule> edgeLabelToEdgeRules;
+    private MultiValuedMap<String, EdgeRule> edgeLabelToEdgeRules;
     private boolean addSideToVertices = false;
 
     /**
@@ -160,12 +162,12 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         CommandLine cmd = commandLineInterface.checkCli(tokenizationRule.split(" "));
 
-        vertexLabelMap            = new Hashtable<String, String>();
+        vertexLabelMap = new Hashtable<String, String>();
         vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
-        vertexIdFieldList         = new ArrayList<String>();
-        edgeLabelToEdgeRules      = new Hashtable<String, EdgeRule>();
+        vertexIdFieldList = new ArrayList<String>();
+        edgeLabelToEdgeRules = new MultiValuedMap<String, EdgeRule>();
 
-        String[] vertexRules  = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
+        String[] vertexRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
         String[] rawEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
         String[] rawDirectedEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge
                 .getLongOpt()));
@@ -201,16 +203,16 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         for (String rawEdgeRule : rawEdgeRules) {
 
-            String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
-            String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
-            String   label                  = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
+            String srcVertexFieldName = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
+            String tgtVertexFieldName = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
+            String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
             List<String> edgePropertyFieldNames =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawEdgeRule);
 
             EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, BIDIRECTIONAL, label,
-                                    edgePropertyFieldNames);
+                    edgePropertyFieldNames);
 
-            edgeLabelToEdgeRules.put(label, edgeRule);
+            edgeLabelToEdgeRules.add(label, edgeRule);
         }
 
         for (String rawDirectedEdgeRule : rawDirectedEdgeRules) {
@@ -222,9 +224,9 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
 
             EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED, label,
-                                    edgePropertyFieldNames);
+                    edgePropertyFieldNames);
 
-            edgeLabelToEdgeRules.put(label, edgeRule);
+            edgeLabelToEdgeRules.add(label, edgeRule);
         }
     }
 
@@ -425,44 +427,46 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
         for (String edgeLabel : this.edgeLabelToEdgeRules.keySet()) {
 
-            EdgeRule edgeRule = this.edgeLabelToEdgeRules.get(edgeLabel);
+            Set<EdgeRule> edgeRules = this.edgeLabelToEdgeRules.getValues(edgeLabel);
 
-            String srcVertexFieldName = edgeRule.getSrcFieldName();
-            String tgtVertexFieldName = edgeRule.getDstFieldName();
+            for (EdgeRule edgeRule : edgeRules) {
+                String srcVertexFieldName = edgeRule.getSrcFieldName();
+                String tgtVertexFieldName = edgeRule.getDstFieldName();
 
-            Object srcVertexCell = inputTupleInProgress.getTupleData(srcVertexFieldName);
-            Object tgtVertexCell = inputTupleInProgress.getTupleData(tgtVertexFieldName);
+                Object srcVertexCell = inputTupleInProgress.getTupleData(srcVertexFieldName);
+                Object tgtVertexCell = inputTupleInProgress.getTupleData(tgtVertexFieldName);
 
-            if (srcVertexCell != null && tgtVertexCell != null) {
+                if (srcVertexCell != null && tgtVertexCell != null) {
 
-                String srcVertexCellString = srcVertexCell.toString();
-                String tgtVertexCellString = tgtVertexCell.toString();
+                    String srcVertexCellString = srcVertexCell.toString();
+                    String tgtVertexCellString = tgtVertexCell.toString();
 
-                StringType srcLabel = null;
-                StringType tgtLabel = null;
+                    StringType srcLabel = null;
+                    StringType tgtLabel = null;
 
-                String srcLabelString = this.vertexLabelMap.get(srcVertexFieldName);
-                if (srcLabelString != null) {
-                    srcLabel = new StringType(srcLabelString);
-                }
+                    String srcLabelString = this.vertexLabelMap.get(srcVertexFieldName);
+                    if (srcLabelString != null) {
+                        srcLabel = new StringType(srcLabelString);
+                    }
 
-                String tgtLabelString = this.vertexLabelMap.get(tgtVertexFieldName);
-                if (tgtLabelString != null) {
-                    tgtLabel = new StringType(tgtLabelString);
-                }
+                    String tgtLabelString = this.vertexLabelMap.get(tgtVertexFieldName);
+                    if (tgtLabelString != null) {
+                        tgtLabel = new StringType(tgtLabelString);
+                    }
 
-                List<String> srcVertexList = parseCommaSeparatedVertexList(srcVertexCellString);
-                List<String> tgtVertexList = parseCommaSeparatedVertexList(tgtVertexCellString);
+                    List<String> srcVertexList = parseCommaSeparatedVertexList(srcVertexCellString);
+                    List<String> tgtVertexList = parseCommaSeparatedVertexList(tgtVertexCellString);
 
-                for (String srcVertex : srcVertexList) {
-                    for (String tgtVertex : tgtVertexList) {
+                    for (String srcVertex : srcVertexList) {
+                        for (String tgtVertex : tgtVertexList) {
 
-                        // skip case where both are null
-                        if (srcVertex.equals(NULL_VERTEX_NAME) && tgtVertex.equals(NULL_VERTEX_NAME)) {
-                            continue;
+                            // skip case where both are null
+                            if (srcVertex.equals(NULL_VERTEX_NAME) && tgtVertex.equals(NULL_VERTEX_NAME)) {
+                                continue;
+                            }
+
+                            createEdge(inputTupleInProgress, srcVertex, tgtVertex, srcLabel, tgtLabel, edgeRule, outputBag);
                         }
-
-                        createEdge(inputTupleInProgress, srcVertex, tgtVertex, srcLabel, tgtLabel, edgeRule, outputBag);
                     }
                 }
             }
