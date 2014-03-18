@@ -349,7 +349,7 @@ class HBaseTable(object):
             randomize = True
 
         if update:
-            self._update_schema_for_overwrite(etl_schema, randomization_column)
+            self._update_schema_for_overwrite(etl_schema, fold_id_column)
 
         if not isinstance(fold_id_column, basestring):
             raise TypeError("fold_id_column should be a string.")
