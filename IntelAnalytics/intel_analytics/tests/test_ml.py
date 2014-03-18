@@ -269,7 +269,7 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
         report = AlgorithmReport()
         report.method  = 'lda'
         ml.report.append(report)
-        result = ml.kfold_combine(['test_combine_result'], k=2, type='mocked')
+        result = ml.kfold_combine(['test_combine_result'], k=2, type='AVG')
         self.assertEqual('test_graph', result.graph_name)
 
 
