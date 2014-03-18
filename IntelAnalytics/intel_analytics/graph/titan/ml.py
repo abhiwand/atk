@@ -734,7 +734,6 @@ class TitanGiraphMachineLearning(object):
         elif k < 1:
             raise ValueError("k should be positive integer")
 
-        print global_config['giraph_combine_functions']
         if not isinstance(type, basestring):
             raise TypeError("type should be a string.")
         elif type not in global_config['giraph_combine_functions'].split(','):
