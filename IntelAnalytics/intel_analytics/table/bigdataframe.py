@@ -643,7 +643,7 @@ class BigDataFrame(object):
             Filter to be applied to each row, either on specific column or the complete row
 	    frame_name : String, optional
 	    create a new frame for the remaining records if not deleting inplace
-	
+
         Returns
         -------
         frame : BigDataFrame
@@ -768,7 +768,7 @@ class BigDataFrame(object):
         join_frame_name : Str
             The name of the BigDataFrame that holds the result of join
         overwrite : Boolean
-            Wether to overwrite the output table if it already exists
+            True will overwrite the output table if it already exists
 
         Returns
         -------
