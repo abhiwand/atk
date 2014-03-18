@@ -504,10 +504,6 @@ class HBaseTable(object):
 
         pig_schema = pig_helpers.get_pig_schema_string(','.join(features_to_project_names), ','.join(features_to_project_types))
         builder.add_load_statement(relation, HBaseSource(self.table_name), HBaseLoadFunction(features_to_project_names, True), 'key:chararray,' + pig_schema)
-        builder.add_foreach_statement(relation, relation, features_to_project_names, [])
-        rank_statement_gen = PigExpression()
-        rank_statement_gen.get_statement = lambda : '%s = rank %s;' %(relation, relation)
-        builder.add_statement(rank_statement_gen)
         builder.add_store_statement(relation, HBaseSource(new_table_name), HBaseStoreFunction(renamed_feature_names))
 
         args = get_pig_args('pig_execute.py')
