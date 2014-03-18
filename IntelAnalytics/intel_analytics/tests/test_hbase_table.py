@@ -1024,7 +1024,7 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         self.assertEqual(new_table.table_name, new_table_name)
         # make sure the original table is not affected at all
         self.assertEqual(table_name, table.table_name)
-        expected = "project_relation = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3', '-loadKey false') as (f1:t1,f2:t2,f3:t3);" + '\n' + "store project_relation into 'hbase://test_output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3');"
+        expected = "project_relation = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3', '-loadKey true') as (key:chararray,f1:t1,f2:t2,f3:t3);" + '\n' + "project_relation = foreach project_relation generate f1,f2,f3;" + '\n' + "project_relation = rank project_relation;" + '\n' + "store project_relation into 'hbase://test_output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3');"
         self.assertEqual(expected, result_holder["call_args"][result_holder["call_args"].index('-s') + 1])
 
     @patch('intel_analytics.table.hbase.table.call')
@@ -1045,7 +1045,8 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         self.assertEqual(new_table.table_name, new_table_name)
         # make sure the original table is not affected at all
         self.assertEqual(table_name, table.table_name)
-        expected = "project_relation = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f2 etl-cf:f3', '-loadKey false') as (f2:t2,f3:t3);" + '\n' + "store project_relation into 'hbase://test_output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f2_new etl-cf:f3');"
+        expected = "project_relation = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f2 etl-cf:f3', '-loadKey true') as (key:chararray,f2:t2,f3:t3);" + '\n' + "project_relation = foreach project_relation generate f2,f3;"+ \
+                   '\n' + "project_relation = rank project_relation;"+ '\n' + "store project_relation into 'hbase://test_output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f2_new etl-cf:f3');"
         self.assertEqual(expected, result_holder["call_args"][result_holder["call_args"].index('-s') + 1])
 
 
