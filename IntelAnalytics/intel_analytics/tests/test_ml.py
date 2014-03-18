@@ -261,12 +261,15 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
     @patch('pydoop.hdfs.path.exists')
     @patch('pydoop.hdfs.open')
     @patch('__builtin__.long')
-    def test_combine_optional_inputs(self, mock_long, mock_open, mock_exists):
+    @patch('uuid.uuid4')
+    def test_combine_optional_inputs(self, mock_id, mock_long, mock_open, mock_exists):
         ml = TitanGiraphMachineLearning(self.graph)
         report = AlgorithmReport()
+        report.output_vertex_property_list = ['test1']
         report.method  = 'lda'
         ml.report.append(report)
         report = AlgorithmReport()
+        report.output_vertex_property_list = ['test2']
         report.method  = 'lda'
         ml.report.append(report)
         result = ml.kfold_combine(['test_combine_result'], k=2, type='AVG')
