@@ -215,7 +215,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             for (String edgePropertyColumn : edgePropertyCols) {
                 edgeRule.addPropertyColumnName(edgePropertyColumn);
             }
-            edgeLabelToEdgeRules.add(label, edgeRule);
+            edgeLabelToEdgeRules.addKeyValue(label, edgeRule);
             edgeLabelList.add(label);
         }
 
@@ -233,7 +233,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 edgeRule.addPropertyColumnName(edgePropertyColumn);
             }
 
-            edgeLabelToEdgeRules.add(label, edgeRule);
+            edgeLabelToEdgeRules.addKeyValue(label, edgeRule);
             edgeLabelList.add(label);
 
         }

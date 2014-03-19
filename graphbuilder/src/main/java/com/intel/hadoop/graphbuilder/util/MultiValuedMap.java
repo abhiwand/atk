@@ -66,7 +66,7 @@ public class MultiValuedMap<Key, Value> {
      * @param value The value being added to the set.
      * @return <code>true</code> if <code>value</code> was successfully added to the set.
      */
-    public boolean add(Key key, Value value) {
+    public boolean addKeyValue(Key key, Value value) {
 
         if (!map.containsKey(key)) {
             this.addKey(key);

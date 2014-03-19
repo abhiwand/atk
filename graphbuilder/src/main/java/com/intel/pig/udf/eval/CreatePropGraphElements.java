@@ -212,7 +212,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, BIDIRECTIONAL, label,
                     edgePropertyFieldNames);
 
-            edgeLabelToEdgeRules.add(label, edgeRule);
+            edgeLabelToEdgeRules.addKeyValue(label, edgeRule);
         }
 
         for (String rawDirectedEdgeRule : rawDirectedEdgeRules) {
@@ -226,7 +226,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED, label,
                     edgePropertyFieldNames);
 
-            edgeLabelToEdgeRules.add(label, edgeRule);
+            edgeLabelToEdgeRules.addKeyValue(label, edgeRule);
         }
     }
 
