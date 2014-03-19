@@ -93,6 +93,8 @@ class EvalFunctions:
         TOUNIXTIME = 4021
         BEFOREDATE = 4022
         AFTERDATE = 4023
+        DAYOFTHEYEAR = 4024
+        ORDINALDATE = 4025
 
     class Xml:
 	    EXTRACT_FIELD=3000
@@ -177,7 +179,9 @@ class EvalFunctions:
             EvalFunctions.DateTime.TOSTRING: 'ToString',
             EvalFunctions.DateTime.TOUNIXTIME: 'ToUnixTime',
             EvalFunctions.DateTime.BEFOREDATE: 'com.intel.pig.udf.BeforeDate',
-            EvalFunctions.DateTime.AFTERDATE: 'com.intel.pig.udf.AfterDate'
+            EvalFunctions.DateTime.AFTERDATE: 'com.intel.pig.udf.AfterDate',
+            EvalFunctions.DateTime.DAYOFTHEYEAR: 'com.intel.pig.udf.DayOfTheYear',
+            EvalFunctions.DateTime.ORDINALDATE: 'com.intel.pig.udf.OrdinalDate'
         }
 
         if x in mapping:
