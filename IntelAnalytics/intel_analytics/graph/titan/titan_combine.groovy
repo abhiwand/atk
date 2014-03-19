@@ -9,7 +9,7 @@ def combine(args){
     conf = new BaseConfiguration()
     conf.setProperty("storage.tablename", inputs[0])
     conf.setProperty("storage.backend", inputs[1])
-    conf.setProperty("storage.hostname", inputs[2])
+    conf.setProperty("storage.hostname", inputs[2].replaceAll('\\;',','))
     conf.setProperty("storage.port", inputs[3])
     conf.setProperty("storage.connection_timeout", inputs[4])
     g = TitanFactory.open(conf)
