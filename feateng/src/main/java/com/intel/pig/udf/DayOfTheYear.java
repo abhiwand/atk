@@ -46,8 +46,8 @@ public class DayOfTheYear extends EvalFunc<Integer> {
      */
     @Override
     public Integer exec(Tuple objects) throws IOException {
-        if(objects == null || objects.size() != 1 || objects.get(0) == null)
-            throw new IOException("Have to pass a single valid DateTime object");
+        if(objects == null)
+            throw new IllegalArgumentException("Have to pass a single valid DateTime object");
 
         DateTime date = DateTimeUtils.getDateTime(objects.get(0));
         return date.dayOfYear().get();
