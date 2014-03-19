@@ -26,7 +26,6 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuilding
 import com.intel.hadoop.graphbuilder.types.*;
 import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
-import com.intel.hadoop.graphbuilder.util.MultiValuedMap;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
 import com.intel.pig.rules.EdgeRule;
@@ -35,6 +34,7 @@ import com.intel.pig.udf.GBUdfExceptionHandler;
 import com.intel.pig.udf.util.InputTupleInProgress;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Counter;
@@ -52,9 +52,9 @@ import org.apache.pig.tools.pigstats.PigStatusReporter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -128,7 +128,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     private Hashtable<String, String[]> vertexPropToFieldNamesMap;
     private Hashtable<String, String> vertexLabelMap;
-    private MultiValuedMap<String, EdgeRule> edgeLabelToEdgeRules;
+    private MultiValueMap edgeLabelToEdgeRules;
     private boolean addSideToVertices = false;
 
     /**
@@ -165,7 +165,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         vertexLabelMap = new Hashtable<String, String>();
         vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
         vertexIdFieldList = new ArrayList<String>();
-        edgeLabelToEdgeRules = new MultiValuedMap<String, EdgeRule>();
+        edgeLabelToEdgeRules = new MultiValueMap();
 
         String[] vertexRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
         String[] rawEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
@@ -212,7 +212,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, BIDIRECTIONAL, label,
                     edgePropertyFieldNames);
 
-            edgeLabelToEdgeRules.addKeyValue(label, edgeRule);
+            edgeLabelToEdgeRules.put(label, edgeRule);
         }
 
         for (String rawDirectedEdgeRule : rawDirectedEdgeRules) {
@@ -226,7 +226,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED, label,
                     edgePropertyFieldNames);
 
-            edgeLabelToEdgeRules.addKeyValue(label, edgeRule);
+            edgeLabelToEdgeRules.put(label, edgeRule);
         }
     }
 
@@ -425,9 +425,9 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
      */
     private void extractEdges(InputTupleInProgress inputTupleInProgress, DataBag outputBag) throws IOException {
 
-        for (String edgeLabel : this.edgeLabelToEdgeRules.keySet()) {
+        for (Object edgeLabel : this.edgeLabelToEdgeRules.keySet()) {
 
-            Set<EdgeRule> edgeRules = this.edgeLabelToEdgeRules.getValues(edgeLabel);
+            Collection<EdgeRule> edgeRules = this.edgeLabelToEdgeRules.getCollection(edgeLabel);
 
             for (EdgeRule edgeRule : edgeRules) {
                 String srcVertexFieldName = edgeRule.getSrcFieldName();
