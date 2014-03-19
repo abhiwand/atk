@@ -124,7 +124,7 @@ class EvalFunctions:
             EvalFunctions.Math.ARITHMETIC: 'ARITHMETIC',
 
             EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON',
-            EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPath',
+            EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPathWithType',
 
 	    EvalFunctions.Aggregation.AVG: 'AVG',
 	    EvalFunctions.Aggregation.SUM: 'SUM',
