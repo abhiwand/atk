@@ -828,7 +828,7 @@ class TitanGiraphMachineLearning(object):
 
         cmd = [self._table_name,
                global_config['titan_storage_backend'],
-               global_config['titan_storage_hostname'],
+               global_config['titan_storage_hostname'].replace(',',';'),
                global_config['titan_storage_port'],
                global_config['titan_storage_connection_timeout'],
                ':'.join(input_property_key),
