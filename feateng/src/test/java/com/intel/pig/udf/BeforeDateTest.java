@@ -2,19 +2,21 @@ package com.intel.pig.udf;
 
 
 import org.apache.pig.EvalFunc;
+import org.apache.pig.FuncSpec;
 import org.apache.pig.data.DataByteArray;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
 import org.apache.pig.impl.PigContext;
+import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -28,12 +30,24 @@ public class BeforeDateTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void invalid_input() throws IOException {
-        DateTime d1 = new DateTime(2014, 3, 13, 11, 50, 0, 0);
-        List<DateTime> list = new ArrayList<DateTime>();
-        list.add(d1);
+        testFn.exec(null);
+    }
 
-        Tuple inTuple = TupleFactory.getInstance().newTuple(list);
-        testFn.exec(inTuple);
+    @Test
+    public void getArgToFuncMapping() throws FrontendException {
+        List<FuncSpec> funcList = testFn.getArgToFuncMapping();
+        assertEquals(2, funcList.size());
+
+        Set<String> expectedSchema = new HashSet<String>();
+        expectedSchema.add("{datetime,datetime}");
+        expectedSchema.add("{bytearray,bytearray}");
+
+        FuncSpec f1 = funcList.get(0);
+        FuncSpec f2 = funcList.get(1);
+
+        expectedSchema.remove(f1.getInputArgsSchema().toString());
+        expectedSchema.remove(f2.getInputArgsSchema().toString());
+        assertEquals(0, expectedSchema.size());
     }
 
     @Test
@@ -75,18 +89,10 @@ public class BeforeDateTest {
     @Test
     public void receiveByteArray() throws IOException {
         DataByteArray test1 = new DataByteArray();
-        DateTime d1 = new DateTime(2014, 3, 13, 11, 50, 0, 0);
-        ByteArrayOutputStream b = new ByteArrayOutputStream();
-        ObjectOutputStream o = new ObjectOutputStream(b);
-        o.writeObject(d1);
-        test1.append(b.toByteArray());
+        test1.append("2015-01-30T04:54:10-08:00".getBytes());
 
         DataByteArray test2 = new DataByteArray();
-        DateTime d2 = new DateTime(2014, 3, 13, 11, 50, 0, 0);
-        ByteArrayOutputStream b2 = new ByteArrayOutputStream();
-        ObjectOutputStream o2 = new ObjectOutputStream(b2);
-        o2.writeObject(d2);
-        test2.append(b2.toByteArray());
+        test2.append("2012-01-30T04:54:10-08:00".getBytes());
 
         List<DataByteArray> list = new ArrayList<DataByteArray>();
         list.add(test1);

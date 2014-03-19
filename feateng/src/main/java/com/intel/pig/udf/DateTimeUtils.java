@@ -23,30 +23,27 @@
 
 package com.intel.pig.udf;
 
-
-import org.apache.pig.data.Tuple;
+import org.apache.pig.data.DataByteArray;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
 
 /**
- * UDF for determining if the first date is after the second date
+ * Utility class for DateTime functionalities
  */
-public class AfterDate  extends DateTimeCompare {
+public class DateTimeUtils {
+
     /**
-     * Determine if the first date is after the second date
-     * @param objects input tuple
-     * @return whether the first date is after the second date
+     * Get DateTime object from either DateTime object or DataByteArray
+     * @param obj Input from Pig, it can be either DateTime object or DataByteArray
+     * @return DateTime object
      * @throws IOException
      */
-    @Override
-    public Boolean exec(Tuple objects) throws IOException {
-
-        if(objects == null)
-            throw new IllegalArgumentException("Have to pass two DateTime objects");
-
-        DateTime first = DateTimeUtils.getDateTime(objects.get(0));
-        DateTime second = DateTimeUtils.getDateTime(objects.get(1));
-        return first.isAfter(second);
+    public static DateTime getDateTime(Object obj) throws IOException {
+        if (obj instanceof DataByteArray) {
+            String dateStr = new String(((DataByteArray) obj).get());
+            return new DateTime(dateStr);
+        } else
+            return (DateTime) obj;
     }
 }

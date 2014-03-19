@@ -23,30 +23,36 @@
 
 package com.intel.pig.udf;
 
+import org.apache.pig.FilterFunc;
+import org.apache.pig.FuncSpec;
+import org.apache.pig.data.DataType;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
 
-import org.apache.pig.data.Tuple;
-import org.joda.time.DateTime;
-
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * UDF for determining if the first date is after the second date
+ * DateTime comparison base class
  */
-public class AfterDate  extends DateTimeCompare {
+public abstract class DateTimeCompare extends FilterFunc {
+
     /**
-     * Determine if the first date is after the second date
-     * @param objects input tuple
-     * @return whether the first date is after the second date
-     * @throws IOException
+     * Define input schema for binary DateTime comparison
+     * @return list of specifications
      */
-    @Override
-    public Boolean exec(Tuple objects) throws IOException {
+    public List<FuncSpec> getArgToFuncMapping() {
+        List<FuncSpec> funcList = new ArrayList<FuncSpec>();
+        List<Schema.FieldSchema> dateTimefields = new ArrayList<Schema.FieldSchema>();
+        dateTimefields.add(new Schema.FieldSchema(null, DataType.DATETIME));
+        dateTimefields.add(new Schema.FieldSchema(null, DataType.DATETIME));
+        Schema twoDateTimeArgs = new Schema(dateTimefields);
+        funcList.add(new FuncSpec(this.getClass().getName(), twoDateTimeArgs));
 
-        if(objects == null)
-            throw new IllegalArgumentException("Have to pass two DateTime objects");
-
-        DateTime first = DateTimeUtils.getDateTime(objects.get(0));
-        DateTime second = DateTimeUtils.getDateTime(objects.get(1));
-        return first.isAfter(second);
+        List<Schema.FieldSchema> byteArrayfields = new ArrayList<Schema.FieldSchema>();
+        byteArrayfields.add(new Schema.FieldSchema(null, DataType.BYTEARRAY));
+        byteArrayfields.add(new Schema.FieldSchema(null, DataType.BYTEARRAY));
+        Schema twoByteArrayArgs = new Schema(byteArrayfields);
+        funcList.add(new FuncSpec(this.getClass().getName(), twoByteArrayArgs));
+        return funcList;
     }
 }
