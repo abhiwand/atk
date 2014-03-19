@@ -29,8 +29,8 @@ import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
-import com.intel.hadoop.graphbuilder.util.MultiValuedMap;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -57,7 +57,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     private List<String> vertexIdColumnList;
     private HashMap<String, String[]> vertexPropColMap;
     private HashMap<String, String> vertexRDFLabelMap;
-    private MultiValuedMap<String, EdgeRule> edgeLabelToEdgeRules;
+    private MultiValueMap edgeLabelToEdgeRules;
     private ArrayList<String> edgeLabelList;
     private boolean flattenLists;
     private boolean addSideToVertices;
@@ -145,7 +145,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         vertexIdColumnList = new ArrayList<String>();
         vertexList = new ArrayList<Vertex<StringType>>();
 
-        edgeLabelToEdgeRules = new MultiValuedMap<String, EdgeRule>();
+        edgeLabelToEdgeRules = new MultiValueMap();
         edgeLabelList = new ArrayList<String>();
         edgeList = new ArrayList<Edge<StringType>>();
 
@@ -215,7 +215,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             for (String edgePropertyColumn : edgePropertyCols) {
                 edgeRule.addPropertyColumnName(edgePropertyColumn);
             }
-            edgeLabelToEdgeRules.addKeyValue(label, edgeRule);
+            edgeLabelToEdgeRules.put(label, edgeRule);
             edgeLabelList.add(label);
         }
 
@@ -233,7 +233,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 edgeRule.addPropertyColumnName(edgePropertyColumn);
             }
 
-            edgeLabelToEdgeRules.addKeyValue(label, edgeRule);
+            edgeLabelToEdgeRules.put(label, edgeRule);
             edgeLabelList.add(label);
 
         }
@@ -372,7 +372,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         for (String eLabel : edgeLabelList) {
 
             int countEdgeAttr = 0;
-            Set<EdgeRule> edgeRules = edgeLabelToEdgeRules.getValues(eLabel);
+            Collection<EdgeRule> edgeRules = edgeLabelToEdgeRules.getCollection(eLabel);
 
             for (EdgeRule edgeRule : edgeRules) {
 
