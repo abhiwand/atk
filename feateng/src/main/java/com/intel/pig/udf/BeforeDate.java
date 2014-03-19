@@ -24,55 +24,29 @@
 package com.intel.pig.udf;
 
 
-import org.apache.pig.FilterFunc;
-import org.apache.pig.data.DataByteArray;
 import org.apache.pig.data.Tuple;
 import org.joda.time.DateTime;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 
 /**
  * UDF for determining if the first date is before the second date
  */
-public class BeforeDate extends FilterFunc {
-
+public class BeforeDate extends DateTimeCompare {
     /**
      * Determine if the first date is before the second date
      * @param objects input tuple
      * @return whether the first date is before the second date
-     * @throws IOException
+     * @throws java.io.IOException
      */
     @Override
     public Boolean exec(Tuple objects) throws IOException {
 
-        if(objects == null || objects.size() != 2 || objects.get(0) == null || objects.get(1) == null)
+        if(objects == null)
             throw new IllegalArgumentException("Have to pass two DateTime objects");
 
-
-        DateTime first = getDateTime(objects.get(0));
-        DateTime second = getDateTime(objects.get(1));
+        DateTime first = DateTimeUtils.getDateTime(objects.get(0));
+        DateTime second = DateTimeUtils.getDateTime(objects.get(1));
         return first.isBefore(second);
-    }
-
-    private Object getObject(DataByteArray db) throws IOException {
-        System.out.println(new String(db.get()));
-        ByteArrayInputStream b = new ByteArrayInputStream(db.get());
-
-        ObjectInputStream o = new ObjectInputStream(b);
-        try {
-            return o.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private DateTime getDateTime(Object obj) throws IOException {
-        if(obj instanceof DataByteArray)
-            return (DateTime)getObject(((DataByteArray) obj));
-        else
-            return (DateTime)obj;
     }
 }
