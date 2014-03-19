@@ -350,44 +350,6 @@ class BulbsGraphWrapper(object):
     def scripts(self):
         return self._graph.scripts
 
-    def load_graphml(self,uri):
-        """
-        Loads a GraphML file and append to the graph.
-
-        Parameters
-        ----------
-        uri : str
-            URI of the GraphML file to load.
-
-        Returns
-        -------
-        result : RexsterResult
-            response for executing the command
-
-        Examples
-        --------
-        >>> graph.load_graphml('file:///home/user/graphml_dir/demo.xml')
-
-        """
-        return self._graph.load_graphml(uri)
-
-    def get_graphml(self):
-        """
-        Returns a GraphML string representing the entire graph.
-
-        Returns
-        -------
-        result : String
-            graphml of the graph
-
-        Examples
-        --------
-        >>> graph = get_graph("SampleGraph")
-        >>> result = graph.get_graphml()
-
-        """
-        return self._graph.get_graphml()
-
     def export_as_graphml(self, statements, file):
         """
         Execute graph queries and output result as a graphml file in the specified HDFS file location.
