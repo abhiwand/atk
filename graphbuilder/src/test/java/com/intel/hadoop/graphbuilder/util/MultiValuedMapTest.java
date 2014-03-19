@@ -22,7 +22,6 @@ package com.intel.hadoop.graphbuilder.util;
 
 import org.junit.Test;
 
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.*;
@@ -44,7 +43,7 @@ public class MultiValuedMapTest {
 
         MultiValuedMap map = new MultiValuedMap();
 
-        map.add(KEY1,value1);
+        map.addKeyValue(KEY1, value1);
 
         Set<String> values = map.getValues(KEY1);
 
@@ -65,8 +64,8 @@ public class MultiValuedMapTest {
 
         MultiValuedMap map = new MultiValuedMap();
 
-        map.add(KEY1,value1);
-        map.add(KEY1, value2);
+        map.addKeyValue(KEY1, value1);
+        map.addKeyValue(KEY1, value2);
 
         Set<String> values = map.getValues(KEY1);
 
@@ -103,8 +102,8 @@ public class MultiValuedMapTest {
 
         MultiValuedMap map = new MultiValuedMap();
 
-        map.add(KEY1, value1);
-        map.add(KEY2, value2);
+        map.addKeyValue(KEY1, value1);
+        map.addKeyValue(KEY2, value2);
 
         Set<String> values1 = map.getValues(KEY1);
         Set<String> values2 = map.getValues(KEY2);
@@ -151,7 +150,7 @@ public class MultiValuedMapTest {
     public void test_addKeyWontWipeOutYourSet() {
         MultiValuedMap map = new MultiValuedMap();
 
-        map.add(KEY1, value1);
+        map.addKeyValue(KEY1, value1);
         boolean test = map.addKey(KEY1);
 
         assertFalse(test);
