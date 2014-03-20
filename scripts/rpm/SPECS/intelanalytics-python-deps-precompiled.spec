@@ -25,6 +25,13 @@ Buildroot: /tmp/intelanalytics_deps_rpm
 %description
 Install IPython and other dependencies for the Intel Analytics Toolkit. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
 
+%define __os_install_post    \
+    /usr/lib/rpm/redhat/brp-compress \
+    %{!?__debug_package:/usr/lib/rpm/redhat/brp-strip %{__strip}} \
+    /usr/lib/rpm/redhat/brp-strip-static-archive %{__strip} \
+    /usr/lib/rpm/redhat/brp-strip-comment-note %{__strip} %{__objdump} \
+%{nil}
+
 %define TIMESTAMP %(echo $TIMESTAMP)
 
 %prep
