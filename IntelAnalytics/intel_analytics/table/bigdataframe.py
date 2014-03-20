@@ -326,10 +326,10 @@ class BigDataFilter(object):
     """
     Create a filter to be applied on a BigDataFrame
     BigDataFilter(filter)
-	filter: filter condition as a boolean expression
+    filter: filter condition as a boolean expression
     BigDataFilter(filter, column)
-	filter: filter condition as a regex string
-	column: name of the column to apply regex
+    filter: filter condition as a regex string
+    column: name of the column to apply regex
     """
 
     def __init__(self, filter, column = ''):
@@ -422,7 +422,6 @@ class BigDataFrame(object):
             raise BigDataFrameException("transform exception " + str(e))
 
     def aggregate(self, group_by_column_list, aggregation_list, aggregate_frame_name, overwrite=False):
-
         """
         Applies a built-in aggregation function to the given column
 
@@ -434,23 +433,22 @@ class BigDataFrame(object):
             List of columns to group the data by before applying aggregation to each group
         aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
             aggregation functions to apply on each group
-	overwrite: Boolean
-	    whether to overwrite the existing table with the same name
+        overwrite: Boolean
+            whether to overwrite the existing table with the same name
 
-	Returns
-	-------
-	BigDataFrame
-	    Aggregated frame
+        Returns
+        -------
+        frame : BigDataFrame
+            Aggregated frame
         """
         try:
             aggregate_table = self._table.aggregate(aggregate_frame_name, group_by_column_list, aggregation_list, overwrite)
-	    return BigDataFrame(aggregate_frame_name, aggregate_table)
+            return BigDataFrame(aggregate_frame_name, aggregate_table)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("Error during aggregation " + str(e))
 
     def aggregate_on_range(self, group_by_column, range, aggregation_list, aggregate_frame_name, overwrite=False):
-
         """
         Applies a built-in aggregation function to the given column given a range
 
@@ -460,22 +458,22 @@ class BigDataFrame(object):
             aggregate frame name for the output of the aggregation
         group_by_column: String
             Column to group the data by before applying aggregation to each group
-	range: String
-	    range of the group_by_column for applying the group
-	    Supported formats - min:max:stepsize, comma separated values
+        range: String
+            range of the group_by_column for applying the group
+            Supported formats - min:max:stepsize, comma separated values
         aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
             aggregation functions to apply on each group
-	overwrite: Boolean
-	    whether to overwrite the existing table with the same name
+        overwrite: Boolean
+            whether to overwrite the existing table with the same name
 
-	Returns
-	-------
-	BigDataFrame
-	    Aggregated frame
+        Returns
+        -------
+        frame : BigDataFrame
+            Aggregated frame
         """
         try:
             aggregate_table = self._table.aggregate_on_range(aggregate_frame_name, group_by_column, range, aggregation_list, overwrite)
-	    return BigDataFrame(aggregate_frame_name, aggregate_table)
+            return BigDataFrame(aggregate_frame_name, aggregate_table)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("Error during aggregation on range " + str(e))
@@ -542,21 +540,29 @@ class BigDataFrame(object):
         --------
         It can be used to split data for K-fold cross validation.
         In the first iteration of k-fold cross validation, users can call
+
         >>> frame.kfold_split(test_fold_id=1, fold_id_column="new_id")
+
         If there is no existing "new_id" column, this method will firstly generate
         fold id into column "fold_id". And then label the data in the first fold as Test,
         and the rest as Train, save split labels into column "edge_type"
 
         Then in the x-th iterations, where x is no greater than k, users can call
+
         >>> frame.kfload_split(test_fold_id=x)
+
         This method will label the x-th fold as Test, and the rest as Train,
         by using of fold_id_column for the first iteration.
 
         If user has already randomized data by transform function, for example, by
+
         >>> frame.transform('rating','rand10', EvalFunctions.Math.RANDOM,[1,10])
+
         this method can be used together with existing fold_id_column to
         split ML data into Test/Train
+
         >>> frame.kfold_split(fold_id_column='rand10', test_fold_id=3)
+
         will label data in the third fold as Test, and the rest as Train.
         Save results in a column named "edge_type"
         """
@@ -611,7 +617,9 @@ class BigDataFrame(object):
         a column named "edge_type"
 
         If user has already randomized data by transform function, for example, by
+
         >>> frame.transform('rating','fold_id', EvalFunctions.Math.RANDOM,[1,100])
+
         this method can be also used together with existing randomization_column to split data
         >>> frame.autosplit(randomization_column="fold_id", split_percent=[75,15,10])
         will label 75% of data as Train, 15% as Validate, 10% as Test, and save results in
@@ -637,25 +645,23 @@ class BigDataFrame(object):
         ----------
         filter: BigDataFilter
             Filter to be applied to each row, either on specific column or the complete row
-	    frame_name: String, optional
-	    create a new frame for the remaining records if not deleting inplace
-	
-	Returns
-	-------
-        frame: BigDataFrame
+        frame_name: String, optional
+        create a new frame for the remaining records if not deleting inplace
+
+        Returns
+        -------
+        frame : BigDataFrame
         """
-	
+
         try:
-	    inplace = (frame_name.strip() == '')
-	    isregex = (filter.column_to_apply.strip() != '')
-
+            inplace = (frame_name.strip() == '')
+            isregex = (filter.column_to_apply.strip() != '')
             result_table = self._table.drop(filter.filter_condition, filter.column_to_apply, isregex, inplace, frame_name)
-
-	    if inplace:
-		frame = self
-	    else:
-	        frame = BigDataFrame(frame_name, result_table)
-	    return frame
+            if inplace:
+                frame = self
+            else:
+                frame = BigDataFrame(frame_name, result_table)
+                return frame
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("Unable to drop rows " + str(e))
