@@ -9,3 +9,6 @@ set -u
 # is a customer for whom the precompiled one doesn't work
 # for some reason.
 #./build_localbuild_deps.sh
+
+# Include build titan rpm if needed
+#./build_ia_titan.sh
