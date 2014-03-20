@@ -91,20 +91,12 @@ class TitanConfig(object):
         filename = config['faunus_config_file']
         with open(filename, 'w') as out:
             faunus_params = {k: config[k] for k in faunus_keys}
+            faunus_params['faunus.graph.input.titan.storage.tablename'] = table_name
             keys = sorted(faunus_params.keys())
             for k in keys:
                 out.write(k)
                 out.write("=")
                 out.write(faunus_params[k])
-                out.write("\n")
-
-            titan_params = {k: config[config[k]] for k in titan_keys}
-            titan_params['faunus.graph.input.titan.storage.tablename'] = table_name
-            keys = sorted(titan_params.keys())
-            for k in keys:
-                out.write(k)
-                out.write("=")
-                out.write(titan_params[k])
                 out.write("\n")
         return filename
 
@@ -228,14 +220,11 @@ for k in ['hostname', 'backend', 'port', 'connection_timeout']:
 gb_keys.sort()
 
 #--------------------------------------------------------------------------
-# Faunus & Titan keys
+# Faunus keys
 #--------------------------------------------------------------------------
-titan_keys = []
-for k in ['hostname', 'backend', 'port', 'connection_timeout']:
-    titan_keys.append('faunus.graph.input.titan.storage.' + k)
-titan_keys.sort()
-
 faunus_keys = []
+for k in ['hostname', 'backend', 'port', 'connection_timeout']:
+    faunus_keys.append('faunus.graph.input.titan.storage.' + k)
 for k in ['input.format', 'output.format']:
     faunus_keys.append('faunus.graph.' + k)
 for k in ['sideeffect.output.format', 'output.location', 'output.location.overwrite']:
