@@ -41,7 +41,9 @@ import org.apache.mahout.math.Vector;
 
 import java.io.IOException;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_DATA_ERROR;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LP;
 
 /**
  * TitanHBaseVertexInputFormatPropertyGraph4LP loads vertex
