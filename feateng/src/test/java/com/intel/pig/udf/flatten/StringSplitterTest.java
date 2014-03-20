@@ -80,4 +80,9 @@ public class StringSplitterTest {
         assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, splitter.split("(  )"));
     }
 
+    @Test
+    public void split_can_strip_double_quotes_using_multiple_delimiters() throws Exception {
+        StringSplitter splitter = new StringSplitter(new StringSplitOptions(",\"", "[", "]", true));
+        assertArrayEquals(new String[]{"192.168.1.1", "192.168.1.2"}, splitter.split("[\"192.168.1.1\",\"192.168.1.2\"]"));
+    }
 }
