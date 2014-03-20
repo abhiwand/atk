@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Intel Corporation.
+/* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,7 +28,6 @@
 %default GB_HOME '.'
 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
-
 
 rmf /tmp/edgelist; --delete the output directory containing edges
 rmf /tmp/vertexlist; --delete the output directory containing vertices

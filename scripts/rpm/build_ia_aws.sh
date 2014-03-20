@@ -9,7 +9,7 @@ rm -f $source_folder.tar.gz
 
 mkdir -p $source_folder
 
-src=$(abspath `dirname $0`/../../aws/deploy)
+src=$(abspath `dirname $0`/../../SaaS/aws/deploy)
 
 shopt -s extglob
 

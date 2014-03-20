@@ -19,11 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-
-import com.intel.hadoop.graphbuilder.pipeline.output.GraphGenerationMRJob;
 import org.junit.Test;
+
+import static junit.framework.Assert.assertNotNull;
 
 public class TitanOutputConfigurationTest {
     @Test

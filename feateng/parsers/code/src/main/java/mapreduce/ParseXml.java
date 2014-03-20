@@ -28,7 +28,6 @@ import util.CommandLineOptions;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.List;
 
 /**
  * Parse Xml MapReduce job that parses the raw data into separate columns (map phase only). uses jdom2 to parse
@@ -154,7 +153,7 @@ public class ParseXml {
      * @param args command line arguments from the user
      * @return hadoop config ready to give to the job
      */
-    protected static Configuration setConfig(String[] args) {
+    protected static Configuration setConfig(String[] args) throws IOException {
         Configuration conf = HBaseConfiguration.create();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
         parseArgs(otherArgs);

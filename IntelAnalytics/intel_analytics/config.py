@@ -25,7 +25,6 @@
 Provides the 'global_config' singleton.
 """
 
-from pyjavaprops import Properties
 from StringIO import StringIO
 from string import Template
 import os
@@ -33,6 +32,9 @@ import time
 import datetime
 import platform
 import sys
+
+from pyjavaprops import Properties
+
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -363,6 +365,11 @@ try:
     global_config = Config(properties_file)
 
     os.environ["JYTHONPATH"] = global_config['pig_jython_path']#required to ship jython scripts with pig
+    try:
+        existing_hadoop_cp = os.environ['HADOOP_CLASSPATH']
+    except:
+        existing_hadoop_cp = ''
+    os.environ['HADOOP_CLASSPATH'] = existing_hadoop_cp + ':' + global_config['graph_builder_jar']#required for Graph Builder
 except Exception, e:
     sys.stderr.write("""
 WARNING - could not load default properties file %s because:

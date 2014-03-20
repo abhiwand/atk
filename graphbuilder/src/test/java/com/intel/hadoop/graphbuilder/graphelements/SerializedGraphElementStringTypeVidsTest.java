@@ -23,7 +23,7 @@ import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 public class SerializedGraphElementStringTypeVidsTest {
     @Test
@@ -56,8 +56,7 @@ public class SerializedGraphElementStringTypeVidsTest {
 
         vertexElement.init(vertex);
 
-        assert(vertexElement.graphElement().toString().contains(name));
-
+		assertTrue(vertexElement.graphElement().toString().contains(name));
 
         StringType srcName =  new StringType("The Source");
         StringType srcLabel = null;
@@ -77,17 +76,20 @@ public class SerializedGraphElementStringTypeVidsTest {
 
         edgeElement.init(edge);
 
-        assert(edgeElement.graphElement().toString().contains(srcName.toString()));
-        assert(edgeElement.graphElement().toString().contains(dstName.toString()));
-        assert(edgeElement.graphElement().toString().contains(dstLabel.toString()));
-        assert(edgeElement.graphElement().toString().contains(label));
+		assertTrue(edgeElement.graphElement().toString()
+				.contains(srcName.toString()));
+		assertTrue(edgeElement.graphElement().toString()
+				.contains(dstName.toString()));
+		assertTrue(edgeElement.graphElement().toString()
+				.contains(dstLabel.toString()));
+		assertTrue(edgeElement.graphElement().toString().contains(label));
 
         // as for the null graph element...
         // well, I don't care what you call it, but it needs to have nonzero length string
 
         SerializedGraphElementStringTypeVids nullElement = new SerializedGraphElementStringTypeVids();
 
-        assert(nullElement.toString().length() > 0);
+		assertTrue(nullElement.toString().length() > 0);
     }
 
     @Test
@@ -116,8 +118,9 @@ public class SerializedGraphElementStringTypeVidsTest {
         SerializedGraphElementStringTypeVids element1 = new SerializedGraphElementStringTypeVids();
         element1.init(vertex1);
 
-        assert(element0.compareTo(element1) != 0);
-        assert(element0.compareTo(element1) == (-1) * element1.compareTo(element0));
+		assertTrue(element0.compareTo(element1) != 0);
+		assertTrue(element0.compareTo(element1) == (-1)
+				* element1.compareTo(element0));
 
         // Check the true case for Vertex class
         Vertex<StringType> vertex2 = new Vertex<StringType>(new StringType("Employee001"),
@@ -148,8 +151,9 @@ public class SerializedGraphElementStringTypeVidsTest {
         SerializedGraphElementStringTypeVids element5 = new SerializedGraphElementStringTypeVids();
         element5.init(edge1);
 
-        assert(element4.compareTo(element5) != 0);
-        assert(element4.compareTo(element5) ==  (-1) * element5.compareTo(element4));
+		assertTrue(element4.compareTo(element5) != 0);
+		assertTrue(element4.compareTo(element5) == (-1)
+				* element5.compareTo(element4));
 
         // Check the true Edge class
         Edge<StringType> edge2 = new Edge<StringType>(
