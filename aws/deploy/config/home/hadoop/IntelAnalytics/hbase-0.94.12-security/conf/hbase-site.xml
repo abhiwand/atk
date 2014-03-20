@@ -206,33 +206,33 @@
     </property>
 
     <!-- Increased this property due to timeouts when scanning large number of rows-->
-    <!--    <property>
-            <name>hbase.regionserver.lease.period</name>
-            <value>600000</value>
-            <description>HRegion server lease period in milliseconds. Default is
-                60 seconds. Clients must report in within this period else they are
-                considered dead.
-            </description>
-        </property>
-        <property>
-            <name>hbase.rpc.timeout</name>
-            <value>600000</value>
-            <description>This is for the RPC layer to define how long HBase client applications
-                take for a remote call to time out. It uses pings to check connections
-                but will eventually throw a TimeoutException.
-            </description>
-        </property>
-        <property>
-            <name>zookeeper.session.timeout</name>
-            <value>600000</value>
-            <description>ZooKeeper session timeout.
-                HBase passes this to the zk quorum as suggested maximum time for a
-                session (This setting becomes zookeeper's 'maxSessionTimeout'). See
-                http://hadoop.apache.org/zookeeper/docs/current/zookeeperProgrammers.html#ch_zkSessions
-                "The client sends a requested timeout, the server responds with the
-                timeout that it can give the client. " In milliseconds.
-            </description>
-        </property>
-    -->
+    <property>
+        <name>hbase.regionserver.lease.period</name>
+        <value>600000</value>
+        <description>HRegion server lease period in milliseconds. Default is
+            60 seconds. Clients must report in within this period else they are
+            considered dead.
+        </description>
+    </property>
+    <property>
+        <name>hbase.rpc.timeout</name>
+        <value>600000</value>
+        <description>This is for the RPC layer to define how long HBase client applications
+            take for a remote call to time out. It uses pings to check connections
+            but will eventually throw a TimeoutException.
+        </description>
+    </property>
+    <property>
+        <name>zookeeper.session.timeout</name>
+        <value>600000</value>
+        <description>ZooKeeper session timeout.
+            HBase passes this to the zk quorum as suggested maximum time for a
+            session (This setting becomes zookeeper's 'maxSessionTimeout'). See
+            http://hadoop.apache.org/zookeeper/docs/current/zookeeperProgrammers.html#ch_zkSessions
+            "The client sends a requested timeout, the server responds with the
+            timeout that it can give the client. " In milliseconds.
+        </description>
+    </property>
+
 
 </configuration>
