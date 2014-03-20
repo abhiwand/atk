@@ -476,7 +476,7 @@ class BigDataFrame(object):
 
     def kfold_split(self,
                         k=10,
-                        test_fold_id=0,
+                        test_fold_id=1,
                         fold_id_column="fold_id",
                         split_name=["TE","TR"],
                         output_column='edge_type',
@@ -489,11 +489,12 @@ class BigDataFrame(object):
         ----------
         k : Integer, optional
             How many folds to split.
+            The valid Value range is positive integer.
             The default value is 10.
         test_fold_id : Integer, optional
             Which fold to use for test.
             The valid value range is [1,k].
-            The default value is 0.
+            The default value is 1.
         fold_id_column : String, optional
             The name of the column to store fold_id.
             The default value is "fold_id"
