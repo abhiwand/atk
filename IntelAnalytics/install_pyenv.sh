@@ -166,6 +166,8 @@ function python_module_version_lookup() {
 		;;
 	"pydoop")		echo "pydoop==0.11.1"
 		;;
+	"interval")		echo "interval==1.0.0"
+		;;
 	*)			echo "$1"
 		;;
 	esac
@@ -233,6 +235,7 @@ ins mock
 #nose haas a pip error that ignores the virtenv
 ins_ignore_virt nose
 ins coverage
+ins interval
 
 
 # load MathJax into IPython's static folder to avoid CDN problems

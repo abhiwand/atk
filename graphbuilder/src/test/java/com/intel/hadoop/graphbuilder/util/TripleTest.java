@@ -19,11 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.util;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class TripleTest {
     @Test
@@ -125,7 +123,7 @@ public class TripleTest {
         Triple<Object, Object, Object> tripNulls2 =
                 new Triple(null, null, null);
 
-        assert(tripNulls1.equals(tripNulls2));
+		assertTrue(tripNulls1.equals(tripNulls2));
 
         Integer intObj1      = new Integer(0);
         Integer intObj2      = new Integer(0);
@@ -142,7 +140,7 @@ public class TripleTest {
         Triple<Integer, Integer, Integer> tripInts3  =
                 new Triple(intObj1, intObj1, intDifferent);
 
-        assert(tripInts0.equals(tripInts0a));
+		assertTrue(tripInts0.equals(tripInts0a));
         assertFalse(tripInts0.equals((tripInts1)));
         assertFalse(tripInts0.equals((tripInts2)));
         assertFalse(tripInts0.equals((tripInts3)));
@@ -150,7 +148,7 @@ public class TripleTest {
         assertFalse(tripInts0.equals(null));
 
         assertNotNull(tripInts0.hashCode());
-        assert(tripInts0.hashCode() == tripInts0a.hashCode());
+		assertTrue(tripInts0.hashCode() == tripInts0a.hashCode());
     }
 
     @Test
@@ -158,8 +156,7 @@ public class TripleTest {
         Triple<Integer,Integer,Integer> t      = new Triple(7, 8, 9);
         Triple<Object, Object, Object>  tNulls = new Triple(null, null, null);
 
-        assert(t.toString().compareTo(new String("(7, 8, 9)")) == 0);
-        assert(tNulls.toString().compareTo(new String("(null, null, null)"))
-                == 0);
+        assertEquals("Should have been 0", 0, t.toString().compareTo(new String("(7, 8, 9)")));
+        assertEquals("Should have been 0", 0, tNulls.toString().compareTo(new String("(null, null, null)")));
     }
 }

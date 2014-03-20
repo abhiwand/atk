@@ -23,10 +23,10 @@
 """
 The common methods and class for buiding and operating with big data frames
 """
-import sys
 import abc
 import traceback
-from intel_analytics.config import global_config, dynamic_import
+import collections
+from intel_analytics.config import global_config, dynamic_import, get_time_str
 
 __all__ = ['get_frame_builder',
            'get_frame',
@@ -211,8 +211,41 @@ class FrameBuilder(object):
         """
         pass
 
+    @abc.abstractmethod
+    def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name, overwrite=False):
+        """
+        Perform SQL JOIN like operation on input BigDataFrames
 
+        Parameters
+        ----------
+        left: BigDataFrame
+            Left side of the join
+        right: List
+            List of BigDataFrame(s) on the right side of the join
+        left_on: String
+            String of columnes from left table, space or comma separated
+            e.g., 'c1,c2' or 'b2 b3'
+        right_on: List
+            List of strings, each of which is in comma separated indicating
+            columns to be joined corresponding to the list of tables as 
+            the 'right', e.g., ['c1,c2', 'b2 b3']
+        how: String
+            The type of join, INNER, OUTER, LEFT, RIGHT
+        suffixes: List
+            List of strings, each of which is used as suffix to the column
+            names from left and right of the join, e.g. ['_x', '_y1', '_y2'].
+            Note the first one is always for the left
+        join_frame_name: String
+            Output BigDataFrame name
+        overwrite: Boolean
+            Wether to overwrite the output table if it already exists
 
+        Return
+        ------
+        BigDataFrame
+
+        """
+        pass
 
 def get_frame_builder():
     """
@@ -446,7 +479,7 @@ class BigDataFrame(object):
                         test_fold_id=0,
                         fold_id_column="fold_id",
                         split_name=["TE","TR"],
-                        output_column='kfold_splits',
+                        output_column='edge_type',
                         update=False,
                         overwrite=False):
         """
@@ -487,7 +520,7 @@ class BigDataFrame(object):
 
         If there is no existing "new_id" column, this method will firstly generate
         fold id into column "fold_id". And then label the data in the first fold as Test,
-        and the rest as Train, save split labels into column "kfold_splits"
+        and the rest as Train, save split labels into column "edge_type"
 
         Then in the x-th iterations, where x is no greater than k, users can call
 
@@ -506,7 +539,7 @@ class BigDataFrame(object):
         >>> frame.kfold_split(fold_id_column='rand10', test_fold_id=3)
 
         will label data in the third fold as Test, and the rest as Train.
-        Save results in a column named "kfold_splits"
+        Save results in a column named "edge_type"
         """
 
         try:
@@ -520,7 +553,7 @@ class BigDataFrame(object):
                       randomization_column='rnd_id',
                       split_percent=[70,20,10],
                       split_name=["TR","VA","TE"],
-                      output_column='split_label',
+                      output_column='edge_type',
                       update=False,
                       overwrite=False):
 
@@ -553,22 +586,19 @@ class BigDataFrame(object):
 
         Examples
         --------
-        >>> frame.percent_split(randomization_column="new_id", split_percent=[60,30,20], output_column="new_split")
-
+        >>> frame.percent_split(randomization_column="new_id", split_percent=[60,30,20])
         If "new_id" does not exist, this method will firstly randomization data into [1,100] folds.
         Then label 60% of data as Train, 30% as Validate, 20% as Test, and save results in
-        a column named "new_split"
+        a column named "edge_type"
 
         If user has already randomized data by transform function, for example, by
 
         >>> frame.transform('rating','fold_id', EvalFunctions.Math.RANDOM,[1,100])
 
         this method can be also used together with existing randomization_column to split data
-
-        >>> frame.autosplit(randomization_column="fold_id", split_percent=[75,15,10], output_column="splits")
-
+        >>> frame.autosplit(randomization_column="fold_id", split_percent=[75,15,10])
         will label 75% of data as Train, 15% as Validate, 10% as Test, and save results in
-        a column named "splits"
+        a column named "edge_type"
         """
 
         try:
@@ -685,3 +715,130 @@ class BigDataFrame(object):
             comma separated column names such as f1,f2,f3
         """
         self._table.drop_columns(column_names)
+
+    def join(self,
+             right=None,
+             how='left',
+             left_on=None,
+             right_on=None,
+             suffixes=None,
+             join_frame_name='',
+             overwrite=False):
+
+        """
+        Perform SQL JOIN on BigDataFrame
+
+        Syntax is similar to pandas DataFrame.join.
+
+        Parameters
+        ----------
+        right   : BigDataFrame or list/tuple of BigDataFrame
+            Frames to be joined with
+        how     : Str
+            {'left', 'right', 'outer', 'inner'}, default 'inner'
+        left_on : Str
+            Columns selected to bed joined on from left frame
+        right_on: Str or list/tuple of Str
+            Columns selected to bed joined on from right frame(s)
+        suffixes: tuple of Str
+            Suffixes to apply to columns on the output frame
+        join_frame_name: Str
+            The name of the BigDataFrame that holds the result of join
+        overwrite: Boolean
+            Wether to overwrite the output table if it already exists
+
+        Returns
+        -------
+        joined : BigDataFrame
+        """
+
+        def __tolist(v, v_type, v_default):
+            """
+            check if input is a v_type, or a list/tuple of v_type object
+            and return a list of v_type
+            """
+            if not v:
+                return v_default
+            if isinstance(v, v_type):
+                return [v]
+            if isinstance(v, collections.Iterable) and all(isinstance(vv, v_type) for vv in v):
+                return [x for x in v]
+            return None
+
+        def __iscolumn(frame, column):
+            if not column:
+                return False
+            return column in frame.get_schema().keys()
+
+        def __check_left(left, left_on):
+            if not left_on:
+                return ','.join(left.get_schema().keys())
+            if not all(__iscolumn(left, x) for x in left_on.split(',')):
+                return None
+            return left_on
+
+        def __check_right(right, rigth_on):
+            right_on_default = [ ','.join(r.get_schema().keys()) for r in right ]
+            ron = __tolist(right_on, str, right_on_default)
+            if not all(all(__iscolumn(r, x) for x in c.split(',')) for r,c in zip(right, ron)):
+                return None
+            if len(right) != len(ron):
+                return None
+            return ron
+
+        def __check_suffixes(suffixes, right):
+            if not suffixes:
+                suffixes = ['_x']
+                suffixes.extend(['_y' + str(x) for x in range(1, len(right) + 1)])
+
+            if len(suffixes) != (len(right) + 1):
+                return None
+            return suffixes
+
+        # check input
+        right = __tolist(right, BigDataFrame, [self])
+        if not right:
+            raise BigDataFrameException("Error! Input frame must be '%s'" \
+                                        % self.__class__.__name__)
+        if not how.lower() in ['inner', 'outer', 'left', 'right'] :
+            raise BigDataFrameException("Error! Unsupported join type '%s'!" % how)
+
+        left_on = __check_left(self, left_on)
+        if not left_on:
+            raise BigDataFrameException('Error! Invalid column names from left side.')
+
+        right_on = __check_right(right, right_on)
+        if not right_on:
+            raise BigDataFrameException('Error! Invalid column names from right side.')
+
+        if not all(len(left_on.split(',')) == len(r.split(',')) for r in right_on):
+            raise BigDataFrameException("Error! The number of columns selected from left " \
+                                        "does not match!")
+        # left: _x, right: _y1, _y2, ...
+        suffixes = __check_suffixes(suffixes, right)
+        if not suffixes:
+           raise BigDataFrameException("Error! The number of suffixes does not match "
+                                        "total number of frames from left and right!")
+
+        if not join_frame_name:
+            join_frame_name = self.name + '_join' + get_time_str()
+
+        if join_frame_name == self.name:
+            raise BigDataFrameException('TODO: in-place join')
+
+        try:
+            join_frame = self._table.join(right=[x._table for x in right], \
+                                          how=how.lower(),  \
+                                          left_on=left_on,  \
+                                          right_on=right_on,\
+                                          suffixes=suffixes,\
+                                          join_frame_name=join_frame_name, \
+                                          overwrite=overwrite)
+
+            join_frame._lineage.append(join_frame._table.table_name)
+
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("join exception "+ str(e))
+
+        return join_frame

@@ -44,19 +44,7 @@ import org.apache.mahout.math.Vector;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.EDGE_TYPE_PROPERTY_KEY;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TEST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_TRAIN;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TYPE_VALIDATE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_LEFT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_RIGHT;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
 
 /**
  * Vertex Loader to read vertex from Titan.

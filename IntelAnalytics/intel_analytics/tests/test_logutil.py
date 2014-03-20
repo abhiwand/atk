@@ -20,7 +20,9 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-import unittest, os
+import unittest
+import os
+
 from intel_analytics.report import find_progress
 
 

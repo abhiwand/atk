@@ -15,7 +15,7 @@ export HADOOP_CLASSPATH=/home/hadoop/IntelAnalytics/pig/conf:/home/hadoop/IntelA
 # export HADOOP_HEAPSIZE=2000
 
 # Extra Java runtime options.  Empty by default.
-export HADOOP_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC"
+export HADOOP_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -Djava.net.preferIPv4Stack=true"
 
 # Command specific options appended to HADOOP_OPTS when specified
 export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"
@@ -46,7 +46,7 @@ export HADOOP_LOG_DIR=/mnt/data1/logs/hadoop
 # export HADOOP_SLAVE_SLEEP=0.1
 
 # The directory where pid files are stored. /tmp by default.
-# export HADOOP_PID_DIR=/var/hadoop/pids
+export HADOOP_PID_DIR=/var/run/hadoop/pids
 
 # A string representing this instance of hadoop. $USER by default.
 # export HADOOP_IDENT_STRING=$USER

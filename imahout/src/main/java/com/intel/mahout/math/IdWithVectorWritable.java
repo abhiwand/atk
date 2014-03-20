@@ -23,8 +23,8 @@
 
 package com.intel.mahout.math;
 
-import org.apache.mahout.math.Vector;
 import org.apache.mahout.math.SequentialAccessSparseVector;
+import org.apache.mahout.math.Vector;
 
 import java.io.DataInput;
 import java.io.DataOutput;
