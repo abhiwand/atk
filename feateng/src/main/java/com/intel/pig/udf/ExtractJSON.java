@@ -33,18 +33,8 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
-import java.lang.StringBuilder;
 
-
-import com.facebook.presto.operator.scalar.JsonExtract;
-import io.airlift.slice.Slices;
-import io.airlift.slice.Slice;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.lang3.BooleanUtils;
-
-
+import com.jayway.jsonpath.JsonPath;
 /**
  * UDF for extracting fields from (potentially complex & nested) JSON documents
  * with JSONPath expressions See <a
@@ -70,80 +60,63 @@ public class ExtractJSON extends EvalFunc<DataByteArray> {
 			inString = (String) in;
 
 		String query = (String) input.get(1);
-                String type  = "String"; /* default type */
-                if (input.size() > 2)
-                    type = (String) input.get(2);
-
-		String queryResult = null;
-
-                Slice squery = Slices.copiedBuffer(query, UTF_8);
-                Slice sinString = Slices.copiedBuffer(inString, UTF_8);
+		Object queryResult = null;
 
 		try {
-			if (type.equals("List") || type.equals("JSON")) {
-				queryResult = JsonExtract.extractJson(sinString, squery).toString(UTF_8);
-				warn("JoyeshCalling List or JSON: Result " + queryResult,PigWarning.UDF_WARNING_1);
-			} else {
-				queryResult = JsonExtract.extractScalar(sinString, squery).toString(UTF_8);
-				warn("JoyeshCalling remaining: Result " + queryResult,PigWarning.UDF_WARNING_1);
-			}
+			queryResult = JsonPath.read(inString, query);
 		} catch (IllegalArgumentException e) {
-			warn("JoyeshCalling IAE",PigWarning.UDF_WARNING_1);
-			warn("Failed to process input; error - " + e.getMessage(),
-					PigWarning.UDF_WARNING_1);
-			return new DataByteArray("");
-		} catch (IOException e) {
-			warn("JoyeshCalling IOE",PigWarning.UDF_WARNING_1);
 			warn("Failed to process input; error - " + e.getMessage(),
 					PigWarning.UDF_WARNING_1);
 			return new DataByteArray("");
 		} catch (Exception e) {
-			warn("JoyeshCalling E",PigWarning.UDF_WARNING_1);
 			warn("Failed to process input; error - " + e.getMessage(),
 					PigWarning.UDF_WARNING_1);
 			return new DataByteArray("");
-		}
+		} 
 
-		/* At this point, we have a queryResult */
+		try {
 
-		/* null fields are supported in json */	/* HOW WILL THIS WORK -- Will this ever be null */
-		if (queryResult == null)
-			return new DataByteArray("");
-		System.out.println("Result is " + queryResult);
-
-                try {
-
-			if (type.equals("Integer")) {
-				Integer result = NumberUtils.createInteger(queryResult);
-				return new DataByteArray(String.valueOf(result));
-			} else if (type.equals("Boolean")) {
-				Boolean result = BooleanUtils.toBooleanObject(queryResult);
-				return new DataByteArray(String.valueOf(result));
-			} else if (type.equals("Double")) {
-				Double result = NumberUtils.createDouble(queryResult);
-				return new DataByteArray(String.valueOf(result));
-			} else if (type.equals("Float")) {
-				Float result = NumberUtils.createFloat(queryResult);
-				return new DataByteArray(String.valueOf(result));
-			} else if (type.equals("Long")) {
-				Long result = NumberUtils.createLong(queryResult);
-				return new DataByteArray(String.valueOf(result));
-			} else if (type.equals("BigInteger")) {
-				BigInteger result = NumberUtils.createBigInteger(queryResult);
-				return new DataByteArray(result.toString());
-			} else if (type.equals("BigDecimal")) {
-				BigDecimal result = NumberUtils.createBigDecimal(queryResult);
-				return new DataByteArray(result.toString());
-			} else {
+			/* null fields are supported in json */
+			if (queryResult == null) {
+				return new DataByteArray("");
+			} else if (queryResult instanceof String) {
 				String result = (String) queryResult;
 				return new DataByteArray(result);
+			} else if (queryResult instanceof Boolean) {
+				Boolean result = (Boolean) queryResult;
+				return new DataByteArray(String.valueOf(result));
+			} else if (queryResult instanceof Double) {
+				Double result = (Double) queryResult;
+				return new DataByteArray(String.valueOf(result));
+			} else if (queryResult instanceof Float) {
+				Float result = (Float) queryResult;
+				return new DataByteArray(String.valueOf(result));
+			} else if (queryResult instanceof Integer) {
+				Integer result = (Integer) queryResult;
+				return new DataByteArray(String.valueOf(result));
+			} else if (queryResult instanceof Long) {
+				Long result = (Long) queryResult;
+				return new DataByteArray(String.valueOf(result));
+			} else if (queryResult instanceof BigInteger) {
+				BigInteger result = (BigInteger) queryResult;
+				return new DataByteArray(result.toString());
+			} else if (queryResult instanceof BigDecimal) {
+				BigDecimal result = (BigDecimal) queryResult;
+				return new DataByteArray(result.toString());
+			} else if (queryResult instanceof List) {
+				List result = (List) queryResult;
+				return new DataByteArray(result.toString());
+			} else {
+				warn("The query returned a type that is not supported: "
+						+ queryResult.getClass(), PigWarning.UDF_WARNING_1);
+				return new DataByteArray("");
 			}
 
 		} catch (Exception e) {
-			warn("JoyeshCalling Catching Final Exception",PigWarning.UDF_WARNING_1);
 			warn("Failed to process input; error - " + e.getMessage(),
 					PigWarning.UDF_WARNING_1);
 			return new DataByteArray("");
 		}
 	}
 }
+
