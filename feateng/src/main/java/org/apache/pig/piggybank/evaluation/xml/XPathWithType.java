@@ -128,17 +128,16 @@ public class XPathWithType extends EvalFunc<String> {
             final String xpathString = (String) input.get(1);
 
             String value = null;
-//	    if (!type.equals("List")) 
-//		    value = xpath.evaluate(xpathString, document);
-//	    else {
-		    NodeList nodeList = (NodeList) xpath.compile(xpathString).evaluate(document, XPathConstants.NODESET);
-		    final ArrayList<String> array_values = new ArrayList<String>();
-		    for (int i = 0; i < nodeList.getLength(); i++) {
-			    array_values.add(nodeList.item(i).getFirstChild().getNodeValue()); 
-		    }
-		    value = StringUtils.join(array_values, ",");
-//		    value = array_values.toString();
-//	    }
+	    NodeList nodeList = (NodeList) xpath.compile(xpathString).evaluate(document, XPathConstants.NODESET);
+	    final ArrayList<String> array_values = new ArrayList<String>();
+	    for (int i = 0; i < nodeList.getLength(); i++) {
+		    array_values.add(nodeList.item(i).getFirstChild().getNodeValue()); 
+	    }
+
+	    if (array_values.size() == 1)
+		value = array_values.get(0);
+	    else if (array_values.size() > 1)
+		value = array_values.toString();
 
 	    try {
 		    if (type.equals("Integer")) {
