@@ -37,10 +37,11 @@ fi
 
 source $ACTIVATE_FILE
 
-# Make sure env vars are set: CLUSTER_HOSTS, HADOOP_HOME, TITAN_HOME
+# Make sure env vars are set: CLUSTER_HOSTS, HADOOP_HOME, TITAN_HOME, FAUNUS_HOME
 set ch = "bogus CLUSTER_HOSTS var set for doc creation"
 set hh = "bogus HADOOP_HOME var set for doc creation"
 set th = "bogus TITAN_HOME var set for doc creation"
+set fh = "bogus FAUNUS_HOME var set for doc creation"
 
 if [ -z "$CLUSTER_HOSTS" ]; then
     export CLUSTER_HOSTS=ch
@@ -50,6 +51,9 @@ if [ -z "$HADOOP_HOME" ]; then
 fi
 if [ -z "$TITAN_HOME" ]; then
     export TITAN_HOME=th
+fi
+if [ -z "$FAUNUS_HOME" ]; then
+    export FAUNUS_HOME=fh
 fi
 
 DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
@@ -71,4 +75,7 @@ if [ "$HADOOP_HOME" == hh ]; then
 fi
 if [ "$TITAN_HOME" == th ]; then
     unset TITAN_HOME
+fi
+if [ "$FAUNUS_HOME" == th ]; then
+    unset FAUNUS_HOME
 fi

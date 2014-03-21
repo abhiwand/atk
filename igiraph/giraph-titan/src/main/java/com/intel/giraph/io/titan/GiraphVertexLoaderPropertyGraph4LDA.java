@@ -43,7 +43,15 @@ import org.apache.mahout.math.Vector;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_LABEL_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_EDGE_VALUE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INPUT_VERTEX_VALUE_PROPERTY_KEY_LIST;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_EDGE_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.INVALID_VERTEX_ID;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VECTOR_VALUE;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_LEFT;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_PROPERTY_KEY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.VERTEX_TYPE_RIGHT;
 
 /**
  * GiraphVertexLoaderPropertyGraph4LDA loads vertex from Titan.

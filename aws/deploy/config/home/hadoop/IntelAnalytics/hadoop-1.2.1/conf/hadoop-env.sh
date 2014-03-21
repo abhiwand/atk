@@ -15,7 +15,7 @@ export HADOOP_CLASSPATH=/home/hadoop/IntelAnalytics/pig/conf:/home/hadoop/IntelA
 # export HADOOP_HEAPSIZE=2000
 
 # Extra Java runtime options.  Empty by default.
-export HADOOP_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC"
+export HADOOP_OPTS="-server -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:CMSInitiatingOccupancyFraction=75 -Djava.net.preferIPv4Stack=true"
 
 # Command specific options appended to HADOOP_OPTS when specified
 export HADOOP_NAMENODE_OPTS="-Dcom.sun.management.jmxremote $HADOOP_NAMENODE_OPTS"
