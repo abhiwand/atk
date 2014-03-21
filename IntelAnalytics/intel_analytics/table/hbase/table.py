@@ -30,7 +30,7 @@ from intel_analytics.config import Registry, \
 from intel_analytics.pig import get_pig_args, is_local_run
 from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
 from intel_analytics.table.builtin_functions import EvalFunctions
-from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder, HBaseSource, HBaseLoadFunction, HBaseStoreFunction, PigExpression
+from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder, HBaseSource, HBaseLoadFunction, HBaseStoreFunction
 
 # import sys is needed here because test_hbase_table module relies
 # on it to patch sys.stdout
