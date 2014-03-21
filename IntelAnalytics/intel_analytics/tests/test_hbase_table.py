@@ -951,7 +951,7 @@ class HbaseTableTest(unittest.TestCase):
                        BigColumn(feat_name[1]),
                        BigColumn(feat_name[2])]
 	
-        table.get_column_statistics(column_list)
+        table.get_column_statistics(column_list, False)
 
         self.assertEqual('pig', str(result_holder["call_args"][0]))
         self.assertEqual(feature_data_groups_as_str, result_holder["call_args"][result_holder["call_args"].index('-g') + 1])
