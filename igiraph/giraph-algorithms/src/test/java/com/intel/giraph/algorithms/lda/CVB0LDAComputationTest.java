@@ -23,20 +23,21 @@
 
 package com.intel.giraph.algorithms.lda;
 
-import java.util.Map;
-import java.util.HashMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAMasterCompute;
 import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAAggregatorWriter;
+import com.intel.giraph.algorithms.lda.CVB0LDAComputation.CVB0LDAMasterCompute;
 import com.intel.giraph.io.formats.JsonPropertyGraph4LDAInputFormat;
 import com.intel.giraph.io.formats.JsonPropertyGraph4LDAOutputFormat;
-
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

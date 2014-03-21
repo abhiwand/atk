@@ -23,29 +23,29 @@
 
 package com.intel.giraph.algorithms.apl;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.io.IOException;
-
-import org.apache.giraph.graph.BasicComputation;
-import org.apache.giraph.aggregators.AggregatorWriter;
-import org.apache.giraph.aggregators.DoubleSumAggregator;
-import org.apache.giraph.edge.Edge;
-import org.apache.giraph.graph.Vertex;
-import org.apache.giraph.master.DefaultMasterCompute;
-import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
-import org.apache.giraph.counters.GiraphStats;
 import com.intel.giraph.io.DistanceMapWritable;
 import com.intel.giraph.io.HopCountWritable;
 import org.apache.giraph.Algorithm;
+import org.apache.giraph.aggregators.AggregatorWriter;
+import org.apache.giraph.aggregators.DoubleSumAggregator;
+import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
+import org.apache.giraph.counters.GiraphStats;
+import org.apache.giraph.edge.Edge;
+import org.apache.giraph.graph.BasicComputation;
+import org.apache.giraph.graph.Vertex;
+import org.apache.giraph.master.DefaultMasterCompute;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Mapper.Context;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Average path length calculation.

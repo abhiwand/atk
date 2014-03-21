@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?><configuration>
+
+<property>
+  	<name>mapred.job.tracker</name>
+	<value>master:9001</value>
+</property>
+
+<property>
+	<name>mapred.local.dir</name>
+	<value>/mnt/data1/mapred</value>
+</property>
+
+<property>
+  	<name>mapred.map.tasks.speculative.execution</name>
+  	<value>true</value>
+  	<description>If true, then multiple instances of some map tasks
+               may be executed in parallel.</description>
+</property>
+
+<property>
+  	<name>mapred.reduce.tasks.speculative.execution</name>
+  	<value>true</value>
+  	<description>If true, then multiple instances of some reduce tasks
+               may be executed in parallel.</description>
+</property>
+
+<property>
+	<name>mapred.reduce.parallel.copies</name>
+	<value>8</value>
+</property>
+
+<property>
+	<name>io.sort.factor</name>
+	<value>20</value>
+</property>
+
+<property>
+	<name>io.sort.mb</name>
+	<value>256</value>
+</property> 
+
+<!--property>
+  	<name>mapred.reduce.child.java.opts</name>
+  	<value>-XX:ParallelGCThreads=1 -XX:ParallelCMSThreads=1 -Djava.net.preferIPv4Stack=true -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=85 -XX:+UseConcMarkSweepGC -Xms512m -Xmx512m</value>
+</property-->
+<!--property>
+  	<name>mapred.map.child.java.opts</name>
+  	<value>-Xprof -XX:ParallelGCThreads=1 -XX:ParallelCMSThreads=1 -Djava.net.preferIPv4Stack=true -XX:+UseCMSInitiatingOccupancyOnly -XX:CMSInitiatingOccupancyFraction=85 -XX:+UseConcMarkSweepGC -Xms4096m -Xmx4096m </value>
+</property-->
+
+<!--property>
+  	<name>mapred.reduce.child.java.opts</name>
+  	<value>-Djava.net.preferIPv4Stack=true -Xmx512m</value>
+</property-->
+<!--property>
+  	<name>mapred.map.child.java.opts</name>
+  	<value>-Djava.net.preferIPv4Stack=true -Xmx4096m </value>
+</property-->
+
+<!--property>
+  	<name>mapred.child.java.opts</name>
+  	<value>${mapred.child.java.memory.limit} -Djava.net.preferIPv4Stack=true</value>
+  	<description>Java opts for the task tracker child processes.  
+  The following symbol, if present, will be interpolated: @taskid@ is replaced 
+  by current TaskID. Any other occurrences of '@' will go unchanged.
+  For example, to enable verbose gc logging to a file named for the taskid in
+  /tmp and to set the heap maximum to be a gigabyte, pass a 'value' of:
+        -Xmx3072m -verbose:gc -Xloggc:/tmp/@taskid@.gc
+  
+  The configuration variable mapred.child.ulimit can be used to control the
+  maximum virtual memory of the child processes. 
+  	</description>
+</property-->
+
+<property>
+  <name>mapred.reduce.copy.backoff</name>
+  <value>5</value>
+  <description>The maximum amount of time (in seconds) a reducer spends on 
+  fetching one map output before declaring it as failed.
+  </description>
+</property>
+
+<property> 
+  <name>mapred.job.reuse.jvm.num.tasks</name>
+  <value>1</value>
+</property>
+
+<property>
+ <name>mapred.job.shuffle.merge.percent</name>
+ <value>0.66</value>
+</property>
+
+<property>
+<name>mapred.job.shuffle.input.buffer.percent</name>
+<value>0.9</value>
+</property>
+
+<property>
+ <name>mapred.job.reduce.input.buffer.percent</name>
+ <value>0.9</value>
+</property>
+
+<!--property>
+ <name>mapred.job.tracker.history.completed.location</name>
+ <value>${hadoop.job.history.location}</value>
+</property-->
+
+<property>
+ <name>mapred.tasktracker.map.tasks.maximum</name>
+ <value>12</value>
+</property>
+
+<property>
+ <name>mapred.tasktracker.reduce.tasks.maximum</name>
+ <value>4</value>
+</property>
+
+<property>
+ <name>mapred.reduce.tasks</name>
+ <value>4</value>
+</property>
+
+<property>
+ <name>mapred.child.java.opts</name>
+ <value>-Xmx8000m</value>
+</property>
+
+<property>
+ <name>mapreduce.job.counters.limit</name>
+ <value>12000</value>
+ <description>Limit on the number of counters allowed per job.</description>
+</property>
+
+
+</configuration>

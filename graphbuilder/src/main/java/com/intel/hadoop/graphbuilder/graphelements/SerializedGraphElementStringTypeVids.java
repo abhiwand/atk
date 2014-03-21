@@ -20,7 +20,6 @@
 package com.intel.hadoop.graphbuilder.graphelements;
 
 import com.intel.hadoop.graphbuilder.types.StringType;
-import org.apache.hadoop.io.WritableComparable;
 
 /**
  * Serialized form of GraphElement class that uses <code>StringType</code> vertex names in its vertex IDs.
