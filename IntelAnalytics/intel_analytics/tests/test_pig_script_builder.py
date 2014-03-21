@@ -2,7 +2,7 @@ import unittest
 from mock import MagicMock
 from intel_analytics.table.hbase.schema import ETLSchema
 from intel_analytics.table.hbase.table import MAX_ROW_KEY
-from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder
+from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder, HBaseSource, HBaseLoadFunction, HBaseStoreFunction
 
 
 class TestPigScriptBuilder(unittest.TestCase):
@@ -163,6 +163,30 @@ class TestPigScriptBuilder(unittest.TestCase):
                             join_table_name='jointable', \
                             expected=expected_statements,\
                             info="RIGHT JOIN on multiple columns" )
+
+    def test_HBaseSource(self):
+        source = HBaseSource('test_table')
+        self.assertEqual('hbase://test_table', source.get_data_source_as_string())
+
+    def test_HBaseLoadFunction_load_key(self):
+        func = HBaseLoadFunction(['f1', 'f2', 'f3'], True)
+        self.assertEqual("org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3', '-loadKey true')", func.get_loading_function_statement())
+
+    def test_HBaseLoadFunction_not_load_key(self):
+        func = HBaseLoadFunction(['f1', 'f2', 'f3'], False)
+        self.assertEqual("org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3', '-loadKey false')", func.get_loading_function_statement())
+
+
+    def test_add_load_statement(self):
+        pig_builder = PigScriptBuilder()
+        pig_schema = 'key:chararray,f1:chararray,f2:chararray,f3:chararray'
+        pig_builder.add_load_statement("original_data", HBaseSource('test_table'), HBaseLoadFunction(['f1', 'f2', 'f3'], True), pig_schema)
+        self.assertEqual("original_data = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3', '-loadKey true') as (key:chararray,f1:chararray,f2:chararray,f3:chararray);", pig_builder.get_statements())
+
+    def test_add_store_statement(self):
+        pig_builder = PigScriptBuilder()
+        pig_builder.add_store_statement("final_relation", HBaseSource('output_table'), HBaseStoreFunction(['f1', 'f2', 'f3']))
+        self.assertEqual("store final_relation into 'hbase://output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3');", pig_builder.get_statements())
 
 if __name__ == '__main__':
     unittest.main()
