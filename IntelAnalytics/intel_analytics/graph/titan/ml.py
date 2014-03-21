@@ -244,6 +244,8 @@ class TitanGiraphMachineLearning(object):
         """
         Create the specified directory if it does not exist
         """
+        cmd = 'if [ ! -d ' + global_config['giraph_report_dir'] + ' ]; then mkdir ' + global_config['giraph_report_dir'] + '; fi'
+        call(cmd, shell=True)
         cmd = 'if [ ! -d ' + path + ' ]; then mkdir ' + path + '; fi'
         call(cmd, shell=True)
 
