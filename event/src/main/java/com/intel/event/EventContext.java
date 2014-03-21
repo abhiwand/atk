@@ -27,7 +27,12 @@ import com.google.common.base.Strings;
 import org.apache.tools.ant.filters.StringInputStream;
 import org.json.simple.JSONObject;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;

@@ -37,7 +37,18 @@ import org.apache.log4j.Logger;
 
 import java.nio.ByteBuffer;
 
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DISTANCE_MAP_NULL;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_DOUBLE_NULL;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.LONG_LONG_NULL;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LBP;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LP;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.NO_VALID_PROPERTY;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.OPENED_TITAN_TX;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_CF_CGD;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.PROPERTY_GRAPH_4_LDA;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_ID_OFFSET;
+import static com.intel.giraph.io.titan.common.GiraphTitanConstants.TITAN_TX_NOT_OPEN;
 
 /**
  * The backend agnostic Titan graph reader for pulling a graph of Titan and into
