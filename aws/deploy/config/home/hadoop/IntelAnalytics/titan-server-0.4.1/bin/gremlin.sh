@@ -20,9 +20,11 @@ else
     JAVA="$JAVA_HOME/bin/java -server"
 fi
 
+# Increased the maximum heap size for Gremlin shell to support large graphs
+# TODO: Reduce this setting once we support distributed queries in Faunus/Giraph
 # Set Java options
 if [ "$JAVA_OPTIONS" = "" ] ; then
-    JAVA_OPTIONS="-Xms32m -Xmx512m"
+    JAVA_OPTIONS="-Xms32m -Xmx16g"
 fi
 
 # Launch the application

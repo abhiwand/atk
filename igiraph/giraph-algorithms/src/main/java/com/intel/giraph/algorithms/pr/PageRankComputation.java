@@ -23,7 +23,11 @@
 package com.intel.giraph.algorithms.pr;
 
 import org.apache.giraph.Algorithm;
-import org.apache.giraph.aggregators.*;
+import org.apache.giraph.aggregators.AggregatorWriter;
+import org.apache.giraph.aggregators.DoubleMaxAggregator;
+import org.apache.giraph.aggregators.DoubleMinAggregator;
+import org.apache.giraph.aggregators.DoubleSumAggregator;
+import org.apache.giraph.aggregators.LongSumAggregator;
 import org.apache.giraph.conf.DefaultImmutableClassesGiraphConfigurable;
 import org.apache.giraph.counters.GiraphStats;
 import org.apache.giraph.graph.BasicComputation;
