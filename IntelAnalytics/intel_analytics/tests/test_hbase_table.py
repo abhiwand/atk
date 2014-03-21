@@ -923,6 +923,9 @@ class HbaseTableTest(unittest.TestCase):
 
     @patch('intel_analytics.table.hbase.table.call')
     @patch('intel_analytics.table.hbase.table.ETLSchema')
+    @patch('intel_analytics.table.hbase.table.__get_column_statistics_filenames')
+    @patch('intel_analytics.table.hbase.table.__plot_column_distribution')
+    @patch('intel_analytics.table.hbase.table.__create_hist_stat_file_from_all_data')
     def test_column_statistics(self, etl_schema_class, call_method):
 
         table_name = "original_table"
