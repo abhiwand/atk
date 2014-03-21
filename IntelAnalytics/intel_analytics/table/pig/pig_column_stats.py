@@ -24,7 +24,7 @@ import os
 import ast
 import sys
 import hashlib
-from java.util import Properties
+#from java.util import Properties
 
 from intel_analytics.table.pig import pig_helpers
 
@@ -183,12 +183,14 @@ def main(argv):
     pig_script = "\n".join(pig_statements)
     compiled = Pig.compile(pig_script)
 
-    props = Properties()
-    optimization_params = {'pig.exec.mapPartAgg':'true', 'pig.exec.mapPartAgg.minReduction':'3'}
-    for key,value in optimization_params.iteritems():
-        props.setProperty(key,value)
+#   The following optimization is commented out till we start compiling the pig files using jython
+#   props = Properties()
+#   optimization_params = {'pig.exec.mapPartAgg':'true', 'pig.exec.mapPartAgg.minReduction':'3'}
+#   for key,value in optimization_params.iteritems():
+#       props.setProperty(key,value)
 
-    status_list = compiled.bind(binding_variables).run(props)#without binding anything Pig raises error
+#   status_list = compiled.bind(binding_variables).run(props)#without binding anything Pig raises error
+    status_list = compiled.bind(binding_variables).run()#without binding anything Pig raises error
     return 0 if all(status.isSuccessful() for status in status_list) else 1
 
 if __name__ == "__main__":
