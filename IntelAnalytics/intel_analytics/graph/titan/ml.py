@@ -365,7 +365,7 @@ class TitanGiraphMachineLearning(object):
         output : AlgorithmReport
             Execution time, and AUC values on each feature if ROC is enabled.
         """
-
+        enable_roc = str(enable_roc).lower()
         self._create_dir(path)
         hist_cmd1 = [global_config['titan_gremlin'],
                      '-e',
@@ -373,7 +373,7 @@ class TitanGiraphMachineLearning(object):
         hist_cmd1 = ' '.join(hist_cmd1)
         hist_command = [self._table_name,
                         property_type,
-                        str(enable_roc).lower(),
+                        enable_roc,
                         roc_threshold,
                         global_config['hbase_column_family'] + first_property_name,
                         second_property_name,
@@ -419,7 +419,7 @@ class TitanGiraphMachineLearning(object):
                                      prefix + str(i),
                                      1)
 
-                if enable_roc:
+                if enable_roc == 'true':
                     splits = split_types.split(',')
                     fig2 = plt.figure()
                     for j in range(0, len(splits)):
@@ -445,7 +445,7 @@ class TitanGiraphMachineLearning(object):
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
-        if enable_roc:
+        if enable_roc == 'true':
             output.auc = list(auc)
         self.report.append(output)
         return output
