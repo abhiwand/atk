@@ -2,7 +2,7 @@ Intel(R) Graph Builder 2.0 (alpha)
 ----------------------------------
 
 Intel Graph Builder 2.0 (alpha) is a library of user defined functions (UDFs) and
-macros in Pig Latin used to construct graphs in Hadoop&trade;. The 2.0 (alpha) version
+macros in Pig Latin used to construct graphs in Hadoop™;. The 2.0 (alpha) version
 supports multi-relational graphs, or property graphs, in which both objects
 and relationships may be labeled with multiple properties and property values.
 Graphs can be constructed from structured, semi-structured,
@@ -31,7 +31,8 @@ the edge list exports.
 How to compile the Graph Builder Library?
 -------------------------------
 Intel Graph Builder uses Apache Maven v3.1.1 as the build manager. Please
-ensure Maven3 is installed in your system.
+ensure Maven3 is installed in your system. Graph Builder currently
+supports Apache Hadoop 1.2.1 and Intel Distribution for Hadooop (IDH) 3.0.2.
 To build the library without running the unit tests:
 
 `mvn clean package -DskipTests`
@@ -43,6 +44,11 @@ To build the library and run the unit tests:
 To install Graph Builder:
 
 `mvn clean install`
+
+To build the library for IDH 3.0.2 you can use the idh_3 profile
+
+`mvn -P idh_3 initialize`	 
+`mvn -P idh_3 clean package -DskipTests`
 
 How to use the Graph Builder Library?
 -------------------------------------
@@ -95,19 +101,25 @@ Added the following UDFs and macros:
 Configuration & Tuning
 ------------------------
 
-##### Setting the Hadoop classpath 
+##### Configuration
 
-To use the Intel Graph Builder library,
-please set the $HADOOP_CLASSPATH as follows:
+To use the Intel Graph Builder library, first set the GB_HOME environment variable:
 
-`export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GRAPHBUILDER_HOME/target/graphbuilder-2.0-alpha-with-deps.jar`
+`export GB_HOME=/usr/local/graphbuilder`
+
+then set the HADOOP_CLASSPATH environment variable:
+
+`export HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$GB_HOME/target/graphbuilder-2.0-alpha-with-deps.jar:$GB_HOME/target/lib/*`
 
 ##### Tuning
 
 Hadoop, HBase, and Titan must be tuned carefully to successfully create large
-graphs (in the order of hundreds of million vertices/edges such as the Wikipedia dataset). Please refer to
-[https://github.com/thinkaurelius/titan/wiki/Bulk-Loading] (https://github.com/thinkaurelius/titan/wiki/Bulk-Loading) for tuning Titan. In particular,
-we recommend tuning the following parameters:
+graphs (in the order of hundreds of million vertices/edges such as the Wikipedia dataset). For the list of HBase parameters
+please refer to [http://hbase.apache.org/book/config.files.html] (http://hbase.apache.org/book/config.files.html), and for guidance
+on how to tune them please refer to [http://hbase.apache.org/book/performance.html] (http://hbase.apache.org/book/performance.html). For 
+Hadoop parameters and tuning please refer to the documentation of your Hadoop version at [http://hadoop.apache.org/] (http://hadoop.apache.org/).
+Finally, for tuning Titan  please refer to [https://github.com/thinkaurelius/titan/wiki/Bulk-Loading] (https://github.com/thinkaurelius/titan/wiki/Bulk-Loading).
+In particular, we recommend tuning the following parameters:
 
 - graphbuilder.titan.ids.block-size
 - graphbuilder.titan.ids.partition
@@ -132,9 +144,9 @@ For the HBase configuration, we recommend tuning the following parameters:
 - hbase.rpc.timeout
 - hbase.client.write.buffer
 
-Dependencies
+ Dependencies
 ------------
-GB 2.0 (alpha) has been tested against:
+Graph Builder 2.0 (alpha) has been tested against:
 - Java 1.6+
 - Apache Hadoop 1.2.1
 - IDH 3.0.2 (Hadoop-2.0.4-alpha, Pig 0.11.1, HBase-0.94.7-security)

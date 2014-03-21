@@ -19,11 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase;
 
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.pipeline.input.BaseMapper;
 import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.RecordTypeHBaseRow;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.HBaseUtils;
@@ -32,6 +34,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
@@ -53,19 +56,24 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
     private static final Logger LOG = Logger.getLogger(HBaseTokenizer.class);
 
-    private List<String>                  vertexIdColumnList;
-    private HashMap<String, String[]>     vertexPropColMap;
-    private HashMap<String, String>       vertexRDFLabelMap;
-    private ArrayList<Vertex<StringType>> vertexList;
+    private List<String>              vertexIdColumnList;
+    private HashMap<String, String[]> vertexPropColMap;
+    private HashMap<String, String>   vertexRDFLabelMap;
+    private HashMap<String, EdgeRule> edgeLabelToEdgeRules;
+    private ArrayList<String>         edgeLabelList;
+    private boolean                   flattenLists;
+    private boolean                   addSideToVertices;
+    private boolean                   stripColumnFamilyNames;
 
-    private HashMap<String, EdgeRule>     edgeLabelToEdgeRules;
-    private ArrayList<String>             edgeLabelList;
+    private ArrayList<Vertex<StringType>> vertexList;
     private ArrayList<Edge<StringType>>   edgeList;
 
-    private boolean                       flattenLists;
-    private boolean stripColumnFamilyNames;
+    private static final String SIDE_PROPERTY = "side";
+    private static final String LEFT  = "L";
+    private static final String RIGHT = "R";
 
-
+    private StringType leftStringType = null;
+    private StringType rightStringType = null;
 
     /*
      * Encapsulates the rules for creating edges.
@@ -85,12 +93,12 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         private List<String> propertyColumnNames;
         boolean              isBiDirectional;
 
-        private EdgeRule() {
+        protected EdgeRule() {
 
-        };
+        }
 
         /**
-         * This constructor must take source, destination, and bidirectionality 
+         * This constructor must take source, destination, and bidirectionality
 		 * as arguments.
          * <p>There is no public default constructor.</p>
          * @param srcColumnName  The column name from which to get the
@@ -125,9 +133,6 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         List<String> getPropertyColumnNames() {
             return propertyColumnNames;
         }
-
-
-
     }
 
     /**
@@ -144,15 +149,18 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
         edgeLabelToEdgeRules  = new HashMap<String, EdgeRule>();
         edgeLabelList         = new ArrayList<String>();
         edgeList              = new ArrayList<Edge<StringType>>();
+
+        leftStringType = new StringType(LEFT);
+        rightStringType = new StringType(RIGHT);
     }
 
     /**
      * Extracts the vertex and edge generation rules from the configuration.
      *
-     * The edge and vertex rules are placed in the configuration by 
+     * The edge and vertex rules are placed in the configuration by
 	 * the <code>HBaseGraphBuildingRule</code>.
      *
-     * @param conf  The jobc configuration, provided by Hadoop.
+     * @param conf The job configuration, provided by Hadoop.
      * @see com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule
      */
     @Override
@@ -160,6 +168,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
 
         this.flattenLists           = conf.getBoolean("HBASE_TOKENIZER_FLATTEN_LISTS",false);
         this.stripColumnFamilyNames = conf.getBoolean("HBASE_TOKENIZER_STRIP_COLUMNFAMILY_NAMES", false);
+        this.addSideToVertices      = conf.getBoolean("HBASE_TOKENIZER_ADD_SIDE_PROPERTY_TO_VERTICES", false);
 
         // Parse the column names of vertices and properties from command line prompt
         // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
@@ -186,7 +195,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                 }
         }
 
-        LOG.info("GRAPHBUILDER_INFO: Number of vertice rules to be read from HBase = " + vertexIdColumnList.size());
+        LOG.info("GRAPHBUILDER_INFO: Number of vertex rules to be read from HBase = " + vertexIdColumnList.size());
 
         String[] rawEdgeRules         = HBaseGraphBuildingRule.unpackEdgeRulesFromConfiguration(conf);
         String[] rawDirectedEdgeRules = HBaseGraphBuildingRule.unpackDirectedEdgeRulesFromConfiguration(conf);
@@ -219,7 +228,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             List<String> edgePropertyCols =
                     HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
 
-            EdgeRule edgeRule         = new EdgeRule(srcVertexColName, tgtVertexColName, DIRECTED);
+            EdgeRule edgeRule = new EdgeRule(srcVertexColName, tgtVertexColName, DIRECTED);
 
             for (String edgePropertyColumn : edgePropertyCols) {
                 edgeRule.addPropertyColumnName(edgePropertyColumn);
@@ -229,7 +238,6 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
             edgeLabelList.add(label);
 
         }
-
     }
 
 
@@ -239,8 +247,7 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
      * Leading and trailing whitespace is trimmed from all entries.
      *
      * @param columns         The HTable columns for the current row.
-     * @param fullColumnName  The Name of the HTABLE column -
-	 *                                <code>column_family:column_qualifier</code>.
+     * @param fullColumnName  The Name of the HTABLE column -<code>column_family:column_qualifier</code>.
      * @param context         Hadoop's mapper context. Used for error logging.
      */
     private String getColumnData(Result columns, String fullColumnName, Mapper.Context context) {
@@ -291,14 +298,14 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     }
 
     /**
-     * Reads an hbase record, and generate vertices and edges according to the 
+     * Reads an hbase record, and generate vertices and edges according to the
      * generation rules previously extracted from the configuration.
      *
      * @param record   An hbase row.
      * @param context  The mapper's context. Used for error logging.
      */
 
-    public void parse(RecordTypeHBaseRow record, Mapper.Context context) {
+    public void parse(RecordTypeHBaseRow record, Mapper.Context context, BaseMapper baseMapper) {
 
         ImmutableBytesWritable row     = record.getRow();
         Result                 columns = record.getColumns();
@@ -346,7 +353,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                     if (rdfLabel != null) {
                         vertex.setLabel(new StringType(rdfLabel));
                     }
-                    vertexList.add(vertex);
+                    writeVertexToContext(vertex, context, baseMapper);
+                    vertex = null;
                 }
             } else {
 
@@ -407,14 +415,21 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                             }
                         }
 
-                        edgeList.add(edge);
+                        writeEdgeToContext(edge, context, baseMapper);
+                        edge = null;
 
                         // need to make sure both ends of the edge are proper vertices!
 
                         Vertex<StringType> srcVertex = new Vertex<StringType>(new StringType(srcVertexName), srcLabel);
                         Vertex<StringType> tgtVertex = new Vertex<StringType>(new StringType(tgtVertexName), tgtLabel);
-                        vertexList.add(srcVertex);
-                        vertexList.add(tgtVertex);
+                        if (this.addSideToVertices) {
+                            srcVertex.setProperty(SIDE_PROPERTY, leftStringType);
+                            tgtVertex.setProperty(SIDE_PROPERTY, rightStringType);
+                        }
+                        writeVertexToContext(srcVertex, context, baseMapper);
+                        writeVertexToContext(tgtVertex, context, baseMapper);
+                        srcVertex = null;
+                        tgtVertex = null;
 
                         if (edgeRule.isBiDirectional()) {
                             Edge<StringType> opposingEdge = new Edge<StringType>(new StringType(tgtVertexName),tgtLabel ,
@@ -435,7 +450,8 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
                                     opposingEdge.setProperty(property, new StringType(propertyValue));
                                 }
                             }
-                            edgeList.add(opposingEdge);
+                            writeEdgeToContext(opposingEdge, context, baseMapper);
+                            opposingEdge = null;
                         }
                     }
                 }
@@ -460,6 +476,46 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
     }
 
     /**
+     * This method is used to emit edges from the HBaseReaderMapper
+     * @param edge
+     * @param baseMapper
+     */
+    public void writeEdgeToContext(Edge<StringType> edge, Mapper.Context context, BaseMapper baseMapper) {
+
+        try {
+            IntWritable mapKey = baseMapper.getMapKey();
+            mapKey.set(baseMapper.getKeyFunction().getEdgeKey(edge));
+            SerializedGraphElement mapVal = baseMapper.getMapVal();
+            mapVal.init(edge);
+
+            baseMapper.contextWrite(context, mapKey, mapVal);
+        } catch (Exception e) {
+            context.getCounter(baseMapper.getEdgeWriteErrorCounter()).increment(1);
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * This method is used to emit vertices from the HBaseReaderMapper
+     * @param vertex
+     * @param baseMapper
+     */
+    public void writeVertexToContext(Vertex<StringType> vertex, Mapper.Context context, BaseMapper baseMapper) {
+
+        try {
+            IntWritable mapKey = baseMapper.getMapKey();
+            mapKey.set(baseMapper.getKeyFunction().getVertexKey(vertex));
+            SerializedGraphElement mapVal = baseMapper.getMapVal();
+            mapVal.init(vertex);
+
+            baseMapper.contextWrite(context, mapKey, mapVal);
+        } catch (NullPointerException e) {
+            context.getCounter(baseMapper.getVertexWriteErrorCounter()).increment(1);
+            LOG.error(e.getMessage(), e);
+        }
+    }
+
+    /**
      * Obtains the iterator over the vertex list.
      * @return  Iterator over the vertex list.
      */
@@ -471,7 +527,6 @@ public class HBaseTokenizer implements GraphTokenizer<RecordTypeHBaseRow, String
      * Obtains the iterator over the edge list.
      * @return Iterator over the edge list.
      */
-    @Override
     public Iterator<Edge<StringType>> getEdges() {
         return edgeList.iterator();
     }

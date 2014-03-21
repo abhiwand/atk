@@ -93,7 +93,7 @@ def main(argv):
     if cmd_line_args.randomize == "True":
         pig_compute = [
                         "randomization = FOREACH hbase_data GENERATE " + feature_list +
-                        ", FLOOR( 1 + (" + cmd_line_args.num_fold + " - 1)*RANDOM()) AS " +
+                        ", CEIL( " + cmd_line_args.num_fold + "  * RANDOM()) AS " +
                         cmd_line_args.input_column + ";",
                         "split_result = FOREACH randomization GENERATE " + split_statement +
                         " AS " + cmd_line_args.output_column + ";",

@@ -19,15 +19,15 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
-
-import java.io.DataInput;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
+
+import java.io.DataInput;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.powermock.api.mockito.PowerMockito.mock;
 
 @RunWith(PowerMockRunner.class)
 public class FloatTypeTest {
@@ -51,7 +51,8 @@ public class FloatTypeTest {
 
 		f.add(new FloatType(1.0f));
 		assertEquals(124.0f, f.get(), EPSILON);
-		assertEquals("compareTo mismatch", f.compareTo(new FloatType(124.0f)), 0);
+		assertEquals("compareTo mismatch", f.compareTo(new FloatType(124.0f)),
+				0);
 
 		val = 500.0f;
 		DataInput dInput = mock(DataInput.class);
@@ -59,4 +60,11 @@ public class FloatTypeTest {
 		f.readFields(dInput);
 		assertEquals(val, f.get(), EPSILON);
 	}
+
+    @Test
+    public void testGetBaseType() throws Exception {
+        FloatType f = new FloatType();
+
+        assertEquals(f.getBaseType(), Float.class);
+    }
 }

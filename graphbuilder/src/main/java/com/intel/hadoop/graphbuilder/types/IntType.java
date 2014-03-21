@@ -30,15 +30,14 @@ import java.io.IOException;
 /**
  * The basic int type in the library.
  */
-public class IntType implements WritableComparable<IntType>, Mergeable<IntType>, JSONAware, EncapsulatedObject {
+public class IntType extends EncapsulatedObject
+        implements WritableComparable<IntType>, Mergeable<IntType>, JSONAware {
 
-    public static final IntType ZERO = new IntType(0);
-    public static final IntType ONE  = new IntType(1);
+    private int val;
 
     public IntType() {
         val = 0;
     }
-
     public IntType(int i) {
         val = i;
     }
@@ -65,11 +64,7 @@ public class IntType implements WritableComparable<IntType>, Mergeable<IntType>,
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof IntType) {
-            return ((IntType) obj).val == val;
-        } else {
-            return false;
-        }
+        return obj instanceof IntType && ((IntType) obj).val == val;
     }
 
     @Override
@@ -88,8 +83,6 @@ public class IntType implements WritableComparable<IntType>, Mergeable<IntType>,
     public void set(int i) {
         val = i;
     }
-
-    private int val;
 
     @Override
     public void add(IntType other) {

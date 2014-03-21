@@ -22,185 +22,217 @@
  */
 -->
 <configuration>
-  <property>
-    <name>hbase.master</name>
-    <value>master:60000</value>
-  </property>
-  <property>
-    <name>hbase.rootdir</name>
-    <value>hdfs://master:9000/hbase</value>
-    <description>The directory shared by RegionServers.
-    </description>
-  </property>
-  <property>
-    <name>hbase.tmp.dir</name>
-    <value>/mnt/data1/tmp/hbase</value>
-    <description>The directory shared by RegionServers.
-    </description>
-  </property>
-  <property>
-    <name>hbase.cluster.distributed</name>
-    <value>true</value>
-    <description>The mode the cluster will be in. Possible values are
-      false: standalone and pseudo-distributed setups with managed Zookeeper
-      true: fully-distributed with unmanaged Zookeeper Quorum (see hbase-env.sh)
-    </description>
-  </property>
-  <property>
-    <name>hbase.snapshot.enabled</name>
-    <value>true</value>
-  </property>
-  <property>
-    <name>dfs.client.read.shortcircuit</name>
-    <value>true</value>
-  </property>
-  <property>
-    <name>hbase.zookeeper.quorum</name>
-    <value>master</value>
-    <description>The directory shared by RegionServers.
-    </description>
-  </property>
-  <property>
-    <name>hbase.zookeeper.property.dataDir</name>
-    <value>/mnt/data1/zookeeper</value>
-    <description>Property from ZooKeeper's config zoo.cfg.
-    The directory where the snapshot is stored.
-    </description>
-  </property>
- <property>
-    <name>hbase.hregion.memstore.mslab.enabled</name>
-    <value>true</value>
- </property>
- <property>
-    <name>hbase.regionserver.checksum.verify</name>
-    <value>true</value>
- </property>
- 
+    <property>
+        <name>hbase.master</name>
+        <value>master:60000</value>
+    </property>
+    <property>
+        <name>hbase.rootdir</name>
+        <value>hdfs://master:9000/hbase</value>
+        <description>The directory shared by RegionServers.
+        </description>
+    </property>
+    <property>
+        <name>hbase.tmp.dir</name>
+        <value>/mnt/data1/tmp/hbase</value>
+        <description>The directory shared by RegionServers.
+        </description>
+    </property>
+    <property>
+        <name>hbase.cluster.distributed</name>
+        <value>true</value>
+        <description>The mode the cluster will be in. Possible values are
+            false: standalone and pseudo-distributed setups with managed Zookeeper
+            true: fully-distributed with unmanaged Zookeeper Quorum (see hbase-env.sh)
+        </description>
+    </property>
+    <property>
+        <name>hbase.snapshot.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>dfs.client.read.shortcircuit</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>master,node01,node02</value>
+        <description>The directory shared by RegionServers.
+        </description>
+    </property>
+    <property>
+        <name>hbase.zookeeper.property.dataDir</name>
+        <value>/mnt/data1/zookeeper</value>
+        <description>Property from ZooKeeper's config zoo.cfg.
+            The directory where the snapshot is stored.
+        </description>
+    </property>
+    <property>
+        <name>hbase.hregion.memstore.mslab.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hbase.regionserver.checksum.verify</name>
+        <value>true</value>
+    </property>
 
- <property>
-     <name>hbase.zookeeper.property.maxClientCnxns</name>
-     <value>128</value>
- </property>
 
- <property>
-     <name>hbase.regionserver.handler.count</name>
-     <value>100</value>
-     <description>Count of RPC Listener instances spun up on RegionServers.
-     Same property is used by the Master for count of master handlers.
-     Default is 10.
-     </description>
- </property>
- 
- <!-- Bigger regions: http://hbase.apache.org/book/important_configurations.html -->
- <!--
- Consider going to larger regions to cut down on the total number of regions on your cluster. 
- Generally less Regions to manage makes for a smoother running cluster (You can always later 
- manually split the big Regions should one prove hot and you want to spread the request load 
- over the cluster). A lower number of regions is preferred, generally in the range of 20 to 
- low-hundreds per RegionServer. Adjust the regionsize as appropriate to achieve this number.
- -->
- 
-  <property>
-    <name>hbase.hregion.max.filesize</name>
-    <value>10737418240</value>
-    <description>
-    Maximum HStoreFile size. If any one of a column families' HStoreFiles has
-    grown to exceed this value, the hosting HRegion is split in two.
-    Default: 10G.
-    </description>
-  </property>
+    <property>
+        <name>hbase.zookeeper.property.maxClientCnxns</name>
+        <value>1024</value>
+    </property>
 
- <!--Write-heavy clusters: The HBase administration cookbook, Yifeng Jiang, 2012 -->
- <!--
- If the cluster has enough memory, increase hbase.hregion.memstore.block.multiplier, 
- hbase.hregion.memstore.flush.size,  and hbase.hstore.blockingStoreFiles 
- to avoid blocking in write-heavy workloads. These setting needs to be tuned carefully 
- because it increases the number of files to compact.
- -->
- <!-- default is 2 -->
- <property>
-    <name>hbase.hregion.memstore.block.multiplier</name>
-    <value>8</value>
-    <description>
-    Block updates if memstore has hbase.hregion.block.memstore
-    time hbase.hregion.flush.size bytes.  Useful preventing
-    runaway memstore during spikes in update traffic.  Without an
-    upper-bound, memstore fills such that when it flushes the
-    resultant flush files take a long time to compact or split, or
-    worse, we OOME.
-    </description>
- </property>
+    <property>
+        <name>hbase.regionserver.handler.count</name>
+        <value>100</value>
+        <description>Count of RPC Listener instances spun up on RegionServers.
+            Same property is used by the Master for count of master handlers.
+            Default is 10.
+        </description>
+    </property>
 
- <!-- default is 64MB 67108864 -->
- <property>
-    <name>hbase.hregion.memstore.flush.size</name>
-    <value>134217728</value>
-    <description>
-    Memstore will be flushed to disk if size of the memstore
-    exceeds this number of bytes.  Value is checked by a thread that runs
-    every hbase.server.thread.wakefrequency.
-    </description>
- </property>
+    <!-- Bigger regions: http://hbase.apache.org/book/important_configurations.html -->
+    <!--
+    Consider going to larger regions to cut down on the total number of regions on your cluster.
+    Generally less Regions to manage makes for a smoother running cluster (You can always later
+    manually split the big Regions should one prove hot and you want to spread the request load
+    over the cluster). A lower number of regions is preferred, generally in the range of 20 to
+    low-hundreds per RegionServer. Adjust the regionsize as appropriate to achieve this number.
+    -->
+    <!-- Reducing to 1G to increase concurrency for graph builder -->
+    <property>
+        <name>hbase.hregion.max.filesize</name>
+        <value>1073741824</value>
+        <description>
+            Maximum HStoreFile size. If any one of a column families' HStoreFiles has
+            grown to exceed this value, the hosting HRegion is split in two.
+            Default: 10G.
+        </description>
+    </property>
 
- <!-- default is 7, should be at least 2x compactionThreshold -->
- <property>
-    <name>hbase.hstore.blockingStoreFiles</name>
-    <value>50</value>
-    <description>
-    If more than this number of StoreFiles in any one Store
-    (one StoreFile is written per flush of MemStore) then updates are
-    blocked for this HRegion until a compaction is completed, or
-    until hbase.hstore.blockingWaitTime has been exceeded.
-    </description>
- </property>
+    <!--Write-heavy clusters: The HBase administration cookbook, Yifeng Jiang, 2012 -->
+    <!--
+    If the cluster has enough memory, increase hbase.hregion.memstore.block.multiplier,
+    hbase.hregion.memstore.flush.size,  and hbase.hstore.blockingStoreFiles
+    to avoid blocking in write-heavy workloads. These setting needs to be tuned carefully
+    because it increases the number of files to compact.
+    -->
+    <!-- default is 2 -->
+    <property>
+        <name>hbase.hregion.memstore.block.multiplier</name>
+        <value>8</value>
+        <description>
+            Block updates if memstore has hbase.hregion.block.memstore
+            time hbase.hregion.flush.size bytes. Useful preventing
+            runaway memstore during spikes in update traffic. Without an
+            upper-bound, memstore fills such that when it flushes the
+            resultant flush files take a long time to compact or split, or
+            worse, we OOME.
+        </description>
+    </property>
 
- <!--Write-heavy clusters: The HBase administration cookbook, Yifeng Jiang, 2012 -->
- <!--
- On write-heavy clusters, increasing hbase.regionserver.global.memstore.upperLimit,
- hbase.regionserver.global.memstore.lowerLimit helps reduce the chances that updates 
- are blocked due to MemStore size limiting.
- -->
-  <property>
-    <name>hbase.regionserver.global.memstore.upperLimit</name>
-    <value>0.40</value>
-    <description>Maximum size of all memstores in a region server before new
-      updates are blocked and flushes are forced. Defaults to 40% of heap
-    </description>
-  </property>
-  <property>
-    <name>hbase.regionserver.global.memstore.lowerLimit</name>
-    <value>0.35</value>
-    <description>When memstores are being forced to flush to make room in
-      memory, keep flushing until we hit this mark. Defaults to 35% of heap.
-      This value equal to hbase.regionserver.global.memstore.upperLimit causes
-      the minimum possible flushing to occur when updates are blocked due to
-      memstore limiting.
-    </description>
-  </property>
-  
-  <!--Tuning reads: The HBase administration cookbook, Yifeng Jiang, 2012 -->
-  <!-- On read-heavy clusters, it is recommended to reduce the space for MemStores 
-       and allocate more memory to block cache. MemStores and block cache normally 
-       consume approximately 60%~70% of the maximum region server -->`
-  <property>
-    <name>hfile.block.cache.size</name>
-    <value>0.3</value>
-    <description>
-        Percentage of maximum heap (-Xmx setting) to allocate to block cache
-        used by HFile/StoreFile. Default of 0.25 means allocate 25%.
-        Set to 0 to disable but it's not recommended.
-    </description>
-  </property>
+    <!-- default is 64MB 67108864 -->
+    <property>
+        <name>hbase.hregion.memstore.flush.size</name>
+        <value>134217728</value>
+        <description>
+            Memstore will be flushed to disk if size of the memstore
+            exceeds this number of bytes. Value is checked by a thread that runs
+            every hbase.server.thread.wakefrequency.
+        </description>
+    </property>
 
-  <property>
-    <name>hbase.client.scanner.caching</name>
-    <value>50</value>
-    <description>Number of rows that will be fetched when calling next
-    on a scanner if it is not served from (local, client) memory. Higher
-    caching values will enable faster scanners but will eat up more memory
-    and some calls of next may take longer and longer times when the cache is empty.
-    Do not set this value such that the time between invocations is greater
-    than the scanner timeout; i.e. hbase.regionserver.lease.period
-    </description>
-  </property>
+    <!-- default is 7, should be at least 2x compactionThreshold -->
+    <property>
+        <name>hbase.hstore.blockingStoreFiles</name>
+        <value>200</value>
+        <description>
+            If more than this number of StoreFiles in any one Store
+            (one StoreFile is written per flush of MemStore) then updates are
+            blocked for this HRegion until a compaction is completed, or
+            until hbase.hstore.blockingWaitTime has been exceeded.
+        </description>
+    </property>
+
+    <!--Write-heavy clusters: The HBase administration cookbook, Yifeng Jiang, 2012 -->
+    <!--
+    On write-heavy clusters, increasing hbase.regionserver.global.memstore.upperLimit,
+    hbase.regionserver.global.memstore.lowerLimit helps reduce the chances that updates
+    are blocked due to MemStore size limiting.
+    -->
+    <property>
+        <name>hbase.regionserver.global.memstore.upperLimit</name>
+        <value>0.45</value>
+        <description>Maximum size of all memstores in a region server before new
+            updates are blocked and flushes are forced. Defaults to 40% of heap
+        </description>
+    </property>
+    <property>
+        <name>hbase.regionserver.global.memstore.lowerLimit</name>
+        <value>0.40</value>
+        <description>When memstores are being forced to flush to make room in
+            memory, keep flushing until we hit this mark. Defaults to 35% of heap.
+            This value equal to hbase.regionserver.global.memstore.upperLimit causes
+            the minimum possible flushing to occur when updates are blocked due to
+            memstore limiting.
+        </description>
+    </property>
+
+    <!--Tuning reads: The HBase administration cookbook, Yifeng Jiang, 2012 -->
+    <!-- On read-heavy clusters, it is recommended to reduce the space for MemStores
+         and allocate more memory to block cache. MemStores and block cache normally
+         consume approximately 60%~70% of the maximum region server -->
+    <!-- Read performance is good. Writes are bottleneck so reducing to 0.25 -->
+    <property>
+        <name>hfile.block.cache.size</name>
+        <value>0.25</value>
+        <description>
+            Percentage of maximum heap (-Xmx setting) to allocate to block cache
+            used by HFile/StoreFile. Default of 0.25 means allocate 25%.
+            Set to 0 to disable but it's not recommended.
+        </description>
+    </property>
+
+    <property>
+        <name>hbase.client.scanner.caching</name>
+        <value>100</value>
+        <description>Number of rows that will be fetched when calling next
+            on a scanner if it is not served from (local, client) memory. Higher
+            caching values will enable faster scanners but will eat up more memory
+            and some calls of next may take longer and longer times when the cache is empty.
+            Do not set this value such that the time between invocations is greater
+            than the scanner timeout; i.e. hbase.regionserver.lease.period
+        </description>
+    </property>
+
+    <!-- Increased this property due to timeouts when scanning large number of rows-->
+    <property>
+        <name>hbase.regionserver.lease.period</name>
+        <value>600000</value>
+        <description>HRegion server lease period in milliseconds. Default is
+            60 seconds. Clients must report in within this period else they are
+            considered dead.
+        </description>
+    </property>
+    <property>
+        <name>hbase.rpc.timeout</name>
+        <value>600000</value>
+        <description>This is for the RPC layer to define how long HBase client applications
+            take for a remote call to time out. It uses pings to check connections
+            but will eventually throw a TimeoutException.
+        </description>
+    </property>
+    <property>
+        <name>zookeeper.session.timeout</name>
+        <value>600000</value>
+        <description>ZooKeeper session timeout.
+            HBase passes this to the zk quorum as suggested maximum time for a
+            session (This setting becomes zookeeper's 'maxSessionTimeout'). See
+            http://hadoop.apache.org/zookeeper/docs/current/zookeeperProgrammers.html#ch_zkSessions
+            "The client sends a requested timeout, the server responds with the
+            timeout that it can give the client. " In milliseconds.
+        </description>
+    </property>
+
+
 </configuration>

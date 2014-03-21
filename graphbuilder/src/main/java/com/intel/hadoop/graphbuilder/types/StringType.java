@@ -31,7 +31,7 @@ import java.io.IOException;
 /**
  * The basic string type in the library.
  */
-public class StringType implements WritableComparable<StringType>, EncapsulatedObject, JSONAware {
+public class StringType extends EncapsulatedObject  implements WritableComparable<StringType>, JSONAware {
 
     private String str;
 

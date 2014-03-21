@@ -1,4 +1,4 @@
-/* Copyright (C) 2013 Intel Corporation.
+/* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,17 +16,15 @@
  * For more about this software visit:
  *      http://www.01.org/GraphBuilder
  */
-
 /**
  * <p>
  * This script assumes it is being called from the Graph Builder home directory.
  * You can override at the command line with "pig -param GB_HOME=/path/to/graphbuilder"
  * </p>
  */
-%default GB_HOME '.'
-
+ %default GB_HOME '.'
+ 
 IMPORT '$GB_HOME/pig/graphbuilder.pig';
-
 
 xml_data = LOAD 'examples/data/wiki_single.txt' using com.intel.pig.load.XMLLoader('page') AS (page: chararray);
 id_extracted = FOREACH xml_data GENERATE REGEX_EXTRACT(page, '<id>(.*?)</id>', 1) AS (id: chararray), page;

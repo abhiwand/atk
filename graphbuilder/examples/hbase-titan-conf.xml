@@ -2,7 +2,7 @@
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 
 <!--
-/* Copyright (C) 2013 Intel Corporation.
+/* Copyright (C) 2014 Intel Corporation.
  *     All rights reserved.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,14 +43,19 @@
         </description>
     </property>
 
-    <property>
-        <name>graphbuilder.titan.storage_backend</name>
-        <value>hbase</value>
-        <description>
-            storage.backend parameter for Titan. Currently GB 2.0
-            (alpha) supports only HBase as the storage backend.
-        </description>
-    </property>
+    <!-- We need a secure RPC client For IDH, so uncomment the property below on IDH-->
+	<!-- property>
+		<name>graphbuilder.titan.storage.hbase-config.hbase.rpc.engine</name>
+		<value>org.apache.hadoop.hbase.ipc.SecureRpcEngine</value>
+	</property-->
+        
+	<property>
+		<name>graphbuilder.titan.storage_backend</name>
+		<value>hbase</value>
+		<description>
+			storage.backend parameter for Titan.
+		</description>
+	</property>
 
     <property>
         <name>graphbuilder.titan.storage_port</name>
@@ -60,13 +65,14 @@
         </description>
     </property>
 
-    <property>
-        <name>graphbuilder.titan.storage_connection_timeout</name>
-        <value>10001</value>
-        <description>
-            storage.connection.timeout parameter for Titan.
-        </description>
-    </property>
+	<property>
+		<name>graphbuilder.titan.storage_connection_timeout</name>
+		<value>10001</value>
+		<description>
+			storage.connection.timeout parameter for Titan.
+		</description>
+	</property>
+
     <property>
         <name>mapred.max.split.size</name>
         <value>10485760</value>

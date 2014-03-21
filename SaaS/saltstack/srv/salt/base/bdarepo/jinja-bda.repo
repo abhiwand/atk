@@ -1,0 +1,10 @@
+[bda]
+name=bda-internal-yum
+baseurl={{ baseUrl }}/{{ repoType  }}/{{ sprint }}
+gpgcheck=0
+priority=1
+#enabled=0
+s3_enabled=1
+key_id={{ keyId }}
+secret_key={{ secretKey }}
+
