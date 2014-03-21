@@ -25,8 +25,12 @@ class TestColumnStatistics(unittest.TestCase):
         interval.upper_bound = 5
         interval.lower_closed = True
         interval.upper_closed = True
+
+        interval.__str__ = Mock()
+        interval.__str__.return_value = '[4..5]'
+
         result = pig_column_stats.generate_interval_check(features[0], interval)
-        self.assertEqual(result, '( 4 <= f1 AND f1 <= 5 ? \'[4..5]\' : interval) AS interval:chararray')
+        self.assertEqual(result, "( 4 <= f1 AND f1 <= 5 ? '[4..5]' : interval) AS interval:chararray")
 
     def test_generate_interval_check_num_inclusive(self):
         interval = Mock()
@@ -34,8 +38,12 @@ class TestColumnStatistics(unittest.TestCase):
         interval.lower_closed = False
         interval.upper_bound = 5
         interval.upper_closed = False
+
+        interval.__str__ = Mock()
+        interval.__str__.return_value = '(4..5)'
+
         result = pig_column_stats.generate_interval_check(features[1], interval)
-        self.assertEqual(result, '( 4 < f1 AND f1 < 5 ? \'(4..5)\' : interval) AS interval:chararray')
+        self.assertEqual(result, "( 4 < f2 AND f2 < 5 ? '(4..5)' : interval) AS interval:chararray")
 
     def test_replace_inf(self):
         str = 'Interval(-Inf, Inf, lower_closed=True, upper_closed=False)'
