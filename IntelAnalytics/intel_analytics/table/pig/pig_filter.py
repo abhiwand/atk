@@ -44,7 +44,20 @@ def generate_hbase_store_args(features):
         hbase_store_args += '%s ' % ((cf+f))
     
     return hbase_store_args
-    
+
+def outputSchema(schema_str):
+    def wrap(f):
+        def wrapped_f(*args):
+            return f(*args)
+        return wrapped_f
+    return wrap
+
+@outputSchema('pattern_matched:int')
+def regex_search(val, pattern):
+    import re
+    prog = re.compile(pattern)
+    return 1 if prog.search(val) else 0
+
 def main(argv):
     parser = ArgumentParser(description='applies feature transformations to features in a big dataset')
     parser.add_argument('-i', '--input', dest='input', help='the input HBase table', required=True)
@@ -65,6 +78,7 @@ def main(argv):
 
     #don't forget to add the key we read from hbase, we read from hbase like .... as (key:chararray, ... remaining_features ...), see below
     features.insert(0, 'key')
+    filter_string = cmd_line_args.filter
 
     pig_statements = []
     pig_statements.append("REGISTER %s;" % (config['feat_eng_jar']))
@@ -75,14 +89,14 @@ def main(argv):
 
     if (cmd_line_args.isregex and cmd_line_args.isregex == 'True'):
 	if (cmd_line_args.inplace == 'False'):
-            pig_statements.append("filter_data = FILTER hbase_data BY (org.apache.pig.piggybank.evaluation.string.RegexMatch((chararray)%s, '%s') == 0);" % (cmd_line_args.column, cmd_line_args.filter))
+            pig_statements.append("filter_data = FILTER hbase_data BY (regex_search((chararray)%s, '%s') == 0);" % (cmd_line_args.column, filter_string))
 	else:
-            pig_statements.append("filter_data = FILTER hbase_data BY (org.apache.pig.piggybank.evaluation.string.RegexMatch((chararray)%s, '%s') == 1);" % (cmd_line_args.column, cmd_line_args.filter))
+            pig_statements.append("filter_data = FILTER hbase_data BY (regex_search((chararray)%s, '%s') == 1);" % (cmd_line_args.column, filter_string))
     else:
 	if (cmd_line_args.inplace == 'False'):
-            pig_statements.append("filter_data = FILTER hbase_data BY NOT(%s);" % (cmd_line_args.filter))
+            pig_statements.append("filter_data = FILTER hbase_data BY NOT(%s);" % (filter_string))
 	else:
-            pig_statements.append("filter_data = FILTER hbase_data BY (%s);" % (cmd_line_args.filter))
+            pig_statements.append("filter_data = FILTER hbase_data BY (%s);" % (filter_string))
 
     if (cmd_line_args.inplace == 'False'):	# Write into new table
         pig_statements.append("store filter_data into 'hbase://$OUTPUT' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (hbase_store_args))
