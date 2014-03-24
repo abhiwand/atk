@@ -52,6 +52,9 @@ IA_NOTEBOOKS="intelanalytics-notebooks.zip"
 log "delete old logs directory"
 runuser -l ec2-user -c "aws s3 rm s3://$BUCKET/$email/logs --recursive"
 
+log "stop s3copier"
+sudo initctl stop s3copier
+
 log "stop hbase"
 runuser -l hadoop -c "stop-hbase.sh"
 
@@ -69,6 +72,9 @@ runuser -l hadoop -c " rm $IA_NOTEBOOKS"
 
 log "run distcp from hdfs:/ to s3n://$BUCKET/$email/hdfs"
 runuser -l hadoop -c "hadoop distcp2 -delete -update -log s3n://$access:$secret@$BUCKET/$email/logs hdfs:// s3n://$access:$secret@$BUCKET/$email/hdfs"
+
+log "stop s3copier"
+sudo initctl start s3copier
 
 log "start hbase"
 runuser -l hadoop -c "start-hbase.sh" 
