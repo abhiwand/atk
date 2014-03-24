@@ -28,9 +28,10 @@ from intel_analytics.table.pig import pig_helpers
 from intel_analytics.config import Registry, \
     global_config as config, get_time_str, global_config
 from intel_analytics.pig import get_pig_args, is_local_run
-from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder
+from intel_analytics.table.bigdataframe import BigDataFrame, FrameBuilder, StringSplitOptions
 from intel_analytics.table.builtin_functions import EvalFunctions
 from intel_analytics.table.pig.pig_script_builder import PigScriptBuilder, HBaseSource, HBaseLoadFunction, HBaseStoreFunction
+from intel_analytics.table.pig.pig_flatten_script_builder import FlattenScriptBuilder
 
 # import sys is needed here because test_hbase_table module relies
 # on it to patch sys.stdout
@@ -757,27 +758,27 @@ class HBaseTable(object):
 
         Parameters
         ----------
-        right: List
+        right : List
             List of HBaseTable(s) to be joined, can be itself
-        left_on: String
+        left_on : String
             String of columnes from left table, space or comma separated
             e.g., 'c1,c2' or 'b2 b3'
-        right_on: List
+        right_on : List
             List of strings, each of which is in comma separated indicating
             columns to be joined corresponding to the list of tables as 
             the 'right', e.g., ['c1,c2', 'b2 b3']
-        how: String
+        how : String
             The type of join, INNER, OUTER, LEFT, RIGHT
-        suffixes: List
+        suffixes : List
             List of strings, each of which is used as suffix to the column
             names from left and right of the join, e.g. ['_x', '_y1', '_y2'].
             Note the first one is always for the left
-        join_frame_name: String
+        join_frame_name : String
             Output BigDataFrame name
 
-        Return
-        ------
-        BigDataFrame
+        Returns
+        -------
+        frame : BigDataFrame
 
         """
 
@@ -857,6 +858,88 @@ class HBaseTable(object):
         join_file_name = 'joined from ' + ', '.join(tables)
         return BigDataFrame(join_frame_name, HBaseTable(join_table_name, join_file_name))
 
+    def flatten(self, column_name, new_frame_name, string_split_options=StringSplitOptions()):
+        """
+        Flatten a column with a list of values into multiple rows
+
+        For example,
+
+          | Input:
+          |    1 a,b,c
+          |    2 b
+          |    3 c
+          |
+          | "Flattened" Output:
+          |    1 a
+          |    1 b
+          |    1 c
+          |    2 b
+          |    3 c
+
+
+        Parameters
+        ----------
+        column_name : String
+            The column containing delimited values.
+        new_frame_name : String
+            The name of the new frame to be created. If this frame already exists, it will be overwritten.
+        string_split_options : StringSplitOptions, optional
+            The options for how to split the delimited values.  Default is comma delimited and trim whitespace.
+
+        Returns
+        -------
+        BigDataFrame
+            The newly created frame.
+
+        Examples
+        --------
+        >>> string_split_options = StringSplitOptions()
+        >>> string_split_options.delimiter = '|'
+        >>> string_split_options.trim_whitespace = False
+        >>>
+        >>> flattened_frame = frame.flatten('column_to_flatten', 'new_frame_name', string_split_options)
+        """
+        if not column_name:
+            raise HBaseTableException("column_name can't be empty")
+        if not new_frame_name:
+            raise HBaseTableException("new_frame_name can't be empty")
+
+        etl_schema = ETLSchema()
+        etl_schema.load_schema(self.table_name)
+
+        if not column_name in etl_schema.feature_names:
+            raise HBaseTableException("column name was not found: " + column_name)
+
+        frame_name = hbase_registry.get_key(self.table_name)
+        output_table = _create_table_name(frame_name, True)
+
+        with ETLHBaseClient() as hbase_client:
+            hbase_client.drop_create_table(output_table,
+                                           [config['hbase_column_family']])
+
+        etl_schema.save_schema(output_table)
+
+        pig_builder = FlattenScriptBuilder()
+        script = pig_builder.build_script(self.table_name, output_table, etl_schema, column_name, string_split_options)
+
+        cmd = get_pig_args('pig_execute.py')
+        cmd += ['-s', script]
+
+        return_code = call(cmd, report_strategy=etl_report_strategy())
+
+        if return_code:
+            try:
+                with ETLHBaseClient() as hbase_client:
+                    hbase_client.delete_table(output_table)
+            except:
+                logger.error("Could not delete table: " + output_table)
+            raise Exception('Could not flatten frame ' + return_code)
+
+        hbase_registry.register(new_frame_name, output_table, True)
+
+        return BigDataFrame(new_frame_name, HBaseTable(output_table, self.file_name))
+
+
     @classmethod
     def delete_table(cls, victim_table_name):
         with ETLHBaseClient() as hbase_client:
@@ -866,7 +949,6 @@ class HBaseTable(object):
             row = hbase_client.get(schema_table, victim_table_name)
             if len(row) > 0:
                 hbase_client.delete(schema_table, victim_table_name)
-
 
 class HBaseRegistry(Registry):
     """
