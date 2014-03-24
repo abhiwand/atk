@@ -668,7 +668,7 @@ class BigDataFrame(object):
             raise BigDataFrameException("Unable to drop rows " + str(e))
 
 
-    def dropna(self, how='any', column_name=None):
+    def dropna(self, how='any', column_name=None, inplace=True):
         """
         Drops all rows which have NA values
 
@@ -677,6 +677,11 @@ class BigDataFrame(object):
         how : { 'any', 'all' }
             any : if any column has an NA value, drop row
             all : if all the columns have an NA value, drop row
+        column_name : String
+            name of column which has an NA value, drop row
+            Optional. If column name is passed, only that column is checked for NA values
+        inplace : Boolean
+            True if dropping inplace else create a new HBase storage table for the frame and append lineage 
         """
         # Currently we don't support threshold or subset so leave them out for the 0.5 release
         #         thresh : int
@@ -684,8 +689,9 @@ class BigDataFrame(object):
         #         subset : array-like
         #             considers only the given columns in the check, None means all
         try:
-            self._table.dropna(how, column_name)
-            self._lineage.append(self._table.table_name)
+            self._table.dropna(how, column_name, inplace)
+            if not inplace:
+                self._lineage.append(self._table.table_name)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("dropna exception " + str(e))

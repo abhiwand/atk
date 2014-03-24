@@ -715,10 +715,31 @@ class HBaseTable(object):
         self.table_name = output_table  # update table_name
         etl_schema.save_schema(self.table_name)  # save schema for new table
 
-    def dropna(self, how='any', column_name=None):
-        frame_name = hbase_registry.get_key(self.table_name)
-        output_table = _create_table_name(frame_name, True)
-        self.__drop(output_table, column_name=column_name, how=how, replace_with=None)
+    def dropna(self, how='any', column_name=None, inplace=True):
+        if inplace:
+            columns = []
+            etl_schema = ETLSchema()
+            etl_schema.load_schema(self.table_name)
+
+            def get_drop_stmt_for_column(col):
+                return "%s == ''" % (col) if etl_schema.get_feature_type(col) == "chararray" else "%s is null" % (col)
+            if column_name:
+                columns.append(column_name)
+            else:
+                columns.extend(etl_schema.get_feature_names_as_CSV().split(','))
+
+            drop_stmts = [get_drop_stmt_for_column(x) for x in columns]
+            drop_statement = ''
+            if how == 'all':
+                drop_statement= " AND ".join(drop_stmts)
+            else:
+                drop_statement = " OR ".join(drop_stmts)
+
+            self.drop(drop_statement, '', False, True, '')
+        else:
+            frame_name = hbase_registry.get_key(self.table_name)
+            output_table = _create_table_name(frame_name, True)
+            self.__drop(output_table, column_name=column_name, how=how, replace_with=None)
 
     def fillna(self, column_name, value):
         frame_name = hbase_registry.get_key(self.table_name)
