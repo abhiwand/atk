@@ -3,10 +3,8 @@ package com.intel.pig.udf.flatten;
 import java.io.IOException;
 
 import org.apache.pig.EvalFunc;
-import org.apache.pig.data.BagFactory;
-import org.apache.pig.data.DataBag;
-import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
+import org.apache.pig.data.*;
+import org.apache.pig.impl.logicalLayer.FrontendException;
 
 /**
  * Convert a table with multiple values in a cell into multiple rows each with a single value.
@@ -29,6 +27,9 @@ import org.apache.pig.data.TupleFactory;
  * <p>
  * This UDF is confusingly named from a Pig perspective because Pig has a built-in called FLATTEN. We're calling it
  * flatten here because that is what the Python operation will be called.
+ * </p>
+ * <p>
+ * UTF-8 is assumed for DataType.BYTEARRAY's.
  * </p>
  */
 public class FlattenColumnToMultipleRowsUDF extends EvalFunc<DataBag> {
@@ -54,6 +55,7 @@ public class FlattenColumnToMultipleRowsUDF extends EvalFunc<DataBag> {
         this.columnToFlatten = Integer.parseInt(columnToFlatten);
         this.splitter = new StringSplitter(new StringSplitOptions(delimiter, trimStart, trimEnd,
                 Boolean.parseBoolean(trimWhitespace)));
+
     }
 
     /**
@@ -66,11 +68,11 @@ public class FlattenColumnToMultipleRowsUDF extends EvalFunc<DataBag> {
     public DataBag exec(Tuple input) throws IOException {
         DataBag dataBag = BAG_FACTORY.newDefaultBag();
 
-        String cellValue = input.get(columnToFlatten).toString();
+        String cellValue = DataType.toString(input.get(columnToFlatten));
 
         for (String flattenedValue : flatten(cellValue)) {
             Tuple tuple = TUPLE_FACTORY.newTuple(input.getAll());
-            tuple.set(columnToFlatten, flattenedValue);
+            tuple.set(columnToFlatten, toOutputType(flattenedValue));
             dataBag.add(tuple);
         }
 
@@ -87,5 +89,28 @@ public class FlattenColumnToMultipleRowsUDF extends EvalFunc<DataBag> {
             parts = STRING_ARRAY_WITH_ONE_EMPTY_STRING;
         }
         return parts;
+    }
+
+    /**
+     * Convert String back to DataType.BYTEARRAY or other appropriate DataType as needed
+     * @param flattenedValue a part of the original value
+     * @return the appropriate output type based on the InputSchema
+     */
+    private Object toOutputType(String flattenedValue) throws FrontendException {
+        if (getInputSchema() == null || getInputSchema().getField(columnToFlatten) == null) {
+            return flattenedValue;
+        }
+        byte type = getInputSchema().getField(columnToFlatten).type;
+        if (type == DataType.CHARARRAY || type == DataType.BIGCHARARRAY) {
+            return flattenedValue;
+        }
+        else if (type == DataType.BYTEARRAY) {
+            return new DataByteArray(flattenedValue);
+        }
+        else {
+            throw new RuntimeException("Flatten only supports CHARARRAY's and BYTEARRAY's as input column. "
+                    + " Input was :" + DataType.findTypeName(type));
+        }
+
     }
 }
