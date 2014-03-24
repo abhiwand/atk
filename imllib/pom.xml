@@ -80,7 +80,7 @@
   	      <configuration>
 	        <executable>sbt</executable>
 	        <arguments>
-		  <argument>dist</argument>
+		  <argument>package</argument>
 	        </arguments>
 	      </configuration>
             </execution>
