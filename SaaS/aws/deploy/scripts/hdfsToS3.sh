@@ -73,7 +73,7 @@ runuser -l hadoop -c " rm $IA_NOTEBOOKS"
 log "run distcp from hdfs:/ to s3n://$BUCKET/$email/hdfs"
 runuser -l hadoop -c "hadoop distcp2 -delete -update -log s3n://$access:$secret@$BUCKET/$email/logs hdfs:// s3n://$access:$secret@$BUCKET/$email/hdfs"
 
-log "stop s3copier"
+log "start s3copier"
 sudo initctl start s3copier
 
 log "start hbase"
