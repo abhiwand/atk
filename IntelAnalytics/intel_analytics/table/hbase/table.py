@@ -153,10 +153,7 @@ class HBaseTable(object):
 
         # You should check if the group_by_columns are valid or not
 
-        new_schema_def_list = []
-        for col in group_by_columns:
-            new_schema_def_list.append("%s:%s" % (col, etl_schema.get_feature_type(col)))
-        new_schema_def = ",".join(new_schema_def_list)
+        new_schema_def = ",".join(["%s:%s" % (col, etl_schema.get_feature_type(col)) for col in group_by_columns])
 
 	aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
 	
