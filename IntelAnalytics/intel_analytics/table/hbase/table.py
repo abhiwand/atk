@@ -152,20 +152,15 @@ class HBaseTable(object):
         feature_names_as_str = etl_schema.get_feature_names_as_CSV()
         feature_types_as_str = etl_schema.get_feature_types_as_CSV()
 
-	# You should check if the group_by_columns are valid or not
+        # You should check if the group_by_columns are valid or not
 
-	new_schema_def = ""
-	if (len(group_by_columns) == 1) :
-	    new_schema_def += "AggregateGroup:" + etl_schema.get_feature_type(group_by_columns[0])
-	else:
-            new_schema_def += "AggregateGroup:chararray"
+        new_schema_def = ",".join(["%s:%s" % (col, etl_schema.get_feature_type(col)) for col in group_by_columns])
 
-	aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
+        aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
 
         args = get_pig_args('pig_aggregation.py')
 
-
-	new_table_name = _create_table_name(aggregate_frame_name, overwrite)
+        new_table_name = _create_table_name(aggregate_frame_name, overwrite)
         hbase_table = HBaseTable(new_table_name, self.file_name)
 
         with ETLHBaseClient() as hbase_client:
