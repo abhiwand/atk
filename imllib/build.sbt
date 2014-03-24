@@ -1,6 +1,6 @@
 name := "imllib"
 
-version := "0.0"
+version := "0.8"
 
 scalaVersion := "2.10.3"
 
