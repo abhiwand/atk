@@ -942,11 +942,6 @@ class HbaseTableTest(unittest.TestCase):
         call_method.return_value = None
         call_method.side_effect = call_side_effect
 
-        table.__create_hist_stat_file_from_all_data = Mock()
-        table.__get_column_statistics_filenames = Mock(return_value = ("","",False,"",False)
-        table.hbase.table.__plot_column_distribution = Mock()
-
-
         featname = ','.join(feat_name)
         feattype = ','.join(feat_type)
         feature_data_groups_as_str = ''
@@ -958,7 +953,6 @@ class HbaseTableTest(unittest.TestCase):
 
         table._HBaseTable__create_hist_stat_file_from_all_data = lambda x1,x2,x3,x4,x5: None 
         table._HBaseTable__plot_column_distribution = lambda x1,x2,x3: ''
-
 	
         table.get_column_statistics(column_list, False)
 
