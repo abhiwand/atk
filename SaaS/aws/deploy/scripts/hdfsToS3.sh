@@ -55,6 +55,9 @@ runuser -l ec2-user -c "aws s3 rm s3://$BUCKET/$email/logs --recursive"
 log "stop s3copier"
 sudo initctl stop s3copier
 
+log "empty trash"
+runuser -l hadoop -c "hadoop fs -expunge"
+
 log "stop hbase"
 runuser -l hadoop -c "stop-hbase.sh"
 
