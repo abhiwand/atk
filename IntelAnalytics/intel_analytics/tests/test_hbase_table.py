@@ -955,11 +955,14 @@ class HbaseTableTest(unittest.TestCase):
         column_list = [BigColumn(feat_name[0]),
                        BigColumn(feat_name[1]),
                        BigColumn(feat_name[2])]
+
+        table._HBaseTable__create_hist_stat_file_from_all_data = lambda x1,x2,x3,x4,x5: None 
+        table._HBaseTable__plot_column_distribution = lambda x1,x2,x3: ''
+
 	
         table.get_column_statistics(column_list, False)
 
         self.assertEqual('pig', str(result_holder["call_args"][0]))
-        self.assertEqual(feature_data_groups_as_str, result_holder["call_args"][result_holder["call_args"].index('-g') + 1])
         self.assertEqual(featname, result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
         self.assertEqual(feattype, result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
         self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
