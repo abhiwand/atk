@@ -2,7 +2,8 @@ import unittest
 
 import datetime
 import time
-
+import os
+os.environ['IN_UNIT_TESTS'] = 'true'
 
 
 from intel_analytics.logger import stdout_logger
