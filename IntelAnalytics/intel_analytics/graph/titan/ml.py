@@ -706,7 +706,7 @@ class TitanGiraphMachineLearning(object):
         ----------
         output_vertex_property_list : String List
             The list of the result properties on which to save final results.
-            When bias_on was True when running algorithms, the last element is the key for combined bias.
+            When bias_on was True when running algorithms, the last element is the key for the combined bias.
 
         k: Integer, optional
             The number of folds for k-fold cross validation.
