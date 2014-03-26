@@ -183,11 +183,12 @@ class HBaseTable(object):
             raise HBaseTableException('Could not apply transformation')
 
 
-	new_etl_schema = ETLSchema()
-	new_etl_schema.populate_schema(new_schema_def)
+        new_etl_schema = ETLSchema()
+        new_etl_schema.populate_schema(new_schema_def)
         new_etl_schema.save_schema(new_table_name)
 
-	return hbase_table
+        hbase_registry.register(aggregate_frame_name, new_table_name, overwrite)
+        return hbase_table
 
     def aggregate_on_range(self,
 		  aggregate_frame_name,
@@ -236,11 +237,12 @@ class HBaseTable(object):
             raise HBaseTableException('Could not apply transformation')
 
 
-	new_etl_schema = ETLSchema()
-	new_etl_schema.populate_schema(new_schema_def)
+        new_etl_schema = ETLSchema()
+        new_etl_schema.populate_schema(new_schema_def)
         new_etl_schema.save_schema(new_table_name)
 
-	return hbase_table
+        hbase_registry.register(aggregate_frame_name, new_table_name, overwrite)
+        return hbase_table
 
     def transform(self,
                   column_name,
@@ -548,12 +550,13 @@ class HBaseTable(object):
         if return_code:
             raise HBaseTableException('Could not drop rows using the filter')
 
-	if not inplace:
-	    new_etl_schema = ETLSchema()
-	    new_etl_schema.populate_schema(etl_schema.get_schema_as_str())
+        if not inplace:
+            new_etl_schema = ETLSchema()
+            new_etl_schema.populate_schema(etl_schema.get_schema_as_str())
             new_etl_schema.save_schema(hbase_table_name)
+            hbase_registry.register(new_table_name, hbase_table_name, True)
 
-	return hbase_table
+        return hbase_table
 
 
     def drop_columns(self, columns):
