@@ -447,12 +447,19 @@ class TitanGiraphMachineLearning(object):
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
-        output.output_vertex_property_list = self.report[-1].output_vertex_property_list
-        output.vertex_type_key = self.report[-1].vertex_type
-        output.edge_type_key = self.report[-1].edge_type
-        output.vector_value = self.report[-1].vector_value
-        output.bias_on = self.report[-1].bias_on
-        output.feature_dimension = self.report[-1].feature_dimension
+        if len(self.report) > 0:
+            if hasattr(self.report[-1], 'output_vertex_property_list'):
+                output.output_vertex_property_list = self.report[-1].output_vertex_property_list
+            if hasattr(self.report[-1], 'vertex_type'):
+                output.vertex_type_key = self.report[-1].vertex_type
+            if hasattr(self.report[-1], 'edge_type_key'):
+                output.edge_type_key = self.report[-1].edge_type
+            if hasattr(self.report[-1], 'vector_value'):
+                output.vector_value = self.report[-1].vector_value
+            if hasattr(self.report[-1], 'bias_on'):
+                output.bias_on = self.report[-1].bias_on
+            if hasattr(self.report[-1], 'feature_dimension'):
+                output.feature_dimension = self.report[-1].feature_dimension
         if enable_roc == 'true':
             output.auc = list(auc)
         self.report.append(output)
@@ -576,12 +583,18 @@ class TitanGiraphMachineLearning(object):
         output.exec_time = str(exec_time) + ' seconds'
         output.recommend_id = list(recommend_id)
         output.recommend_score = list(recommend_score)
-        output.output_vertex_property_list = self.report[-1].output_vertex_property_list
-        output.vertex_type_key = self.report[-1].vertex_type
-        output.edge_type_key = self.report[-1].edge_type
-        output.vector_value = self.report[-1].vector_value
-        output.bias_on = self.report[-1].bias_on
-        output.feature_dimension = self.report[-1].feature_dimension
+        if hasattr(self.report[-1], 'output_vertex_property_list'):
+            output.output_vertex_property_list = self.report[-1].output_vertex_property_list
+        if hasattr(self.report[-1], 'vertex_type'):
+            output.vertex_type_key = self.report[-1].vertex_type
+        if hasattr(self.report[-1], 'edge_type_key'):
+            output.edge_type_key = self.report[-1].edge_type
+        if hasattr(self.report[-1], 'vector_value'):
+            output.vector_value = self.report[-1].vector_value
+        if hasattr(self.report[-1], 'bias_on'):
+            output.bias_on = self.report[-1].bias_on
+        if hasattr(self.report[-1], 'feature_dimension'):
+            output.feature_dimension = self.report[-1].feature_dimension
         self.report.append(output)
         return output
 
@@ -2533,16 +2546,7 @@ class AlgorithmReport():
     """
     Algorithm execution report object, tailored to each algorithm
     """
-    def __init__(self):
-        """
-        initialize the report object
-        """
-        self.output_vertex_property_list = []
-        self.vertex_type_key = None
-        self.edge_type_key = None
-        self.vector_value = False
-        self.bias_on = False
-        self.feature_dimension = 0
+    pass
 
 
 job_completion_pattern = re.compile(r".*?Giraph Stats")
