@@ -112,7 +112,7 @@
           </plugins>
         </build>
        </profile>
-      <profile>
+      <!--<profile>
           <id>pydoc-generator</id>
           <activation>
               <activeByDefault>true</activeByDefault>
@@ -141,19 +141,16 @@
                   </plugin>
               </plugins>
           </build>
-      </profile>
+      </profile>-->
       <profile>
         <id>rpm-builder</id>
         <activation>
             <file>
-                <exists>intel_analytics/doc/intel_analytics_pydoc.zip</exists>
+                <exists>/usr/bin/sphinx-build</exists>
             </file>
-            <!--<property>
-                <name>env.PYTHON_DOCUMENTATION</name>
-            </property>-->
-	        <!--<property>
+	        <property>
                 <name>env.BUILD_NUMBER</name>
-            </property>-->
+            </property>
         </activation>
         <build>
           <plugins>
@@ -162,6 +159,16 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <version>1.2.1</version>
                 <executions>
+                    <execution>
+                        <id>python-documentation</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${basedir}/intel_analytics/doc/create-html-public.sh</executable>
+                        </configuration>
+                    </execution>
                   <execution>
                     <id>chmod-shellscripts</id>
                     <phase>package</phase>
