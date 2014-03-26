@@ -43,6 +43,7 @@ from intel_analytics.logger import stdout_logger as logger
 from intel_analytics.subproc import call
 from intel_analytics.report import MapOnlyProgressReportStrategy, PigJobReportStrategy
 
+
 MAX_ROW_KEY = 'max_row_key'
 
 try:
@@ -1020,6 +1021,10 @@ class HBaseFrameBuilder(FrameBuilder):
             file_name = ','.join(file_name)
         return file_name
 
+    def check_error_info(self, pig_report):
+        if '2118' in pig_report.error_codes:
+            raise Exception('ERROR: Some of the specified file expressions have no matching files')
+
     def build_from_csv(self, frame_name, file_names, schema,
                        skip_header=False, overwrite=False):
         self._validate_exists(file_names)
@@ -1052,6 +1057,8 @@ class HBaseFrameBuilder(FrameBuilder):
 
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+
+        self.check_error_info(pig_report)
         
         if return_code:
             raise Exception('Could not import CSV file')
@@ -1127,6 +1134,7 @@ class HBaseFrameBuilder(FrameBuilder):
             
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+        self.check_error_info(pig_report)
         
         if return_code:
             raise Exception('Could not import JSON file')
@@ -1189,6 +1197,7 @@ class HBaseFrameBuilder(FrameBuilder):
             
         pig_report = PigJobReportStrategy();
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+        self.check_error_info(pig_report)
         
         if return_code:
             raise Exception('Could not import XML file')
@@ -1250,6 +1259,8 @@ class HBaseFrameBuilder(FrameBuilder):
 
         pig_report = PigJobReportStrategy()
         return_code = call(args, report_strategy=[etl_report_strategy(), pig_report])
+        self.check_error_info(pig_report)
+
         if return_code:
             raise DataAppendException('Failed to append data.')
 
@@ -1275,6 +1286,7 @@ class HBaseFrameBuilder(FrameBuilder):
 
         if len(not_found) > 0:
             raise Exception('\n'.join(not_found))
+
     def join_data_frame(self, left, right, how, left_on, right_on, suffixes, join_frame_name, overwrite=False):
         """
         Joins a left BigDataFrame with a list of (right) BigDataFrame(s)
@@ -1289,6 +1301,9 @@ class HBaseFrameBuilder(FrameBuilder):
 
 def exists_hdfs(file_name):
     try:
+        if '*' in file_name:
+            return True
+
         from pydoop.hdfs.path import exists
         return exists(file_name)
     except Exception as e:

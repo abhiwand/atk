@@ -1,4 +1,9 @@
+import os
 import unittest
+
+
+os.environ['IN_UNIT_TESTS'] = 'true'
+
 from intel_analytics.report import PigJobReportStrategy
 from intel_analytics.table.pig.pig_helpers import get_generate_key_statements
 
@@ -63,6 +68,18 @@ class TestPigDataImport(unittest.TestCase):
         strategy = PigJobReportStrategy()
         log_file = strategy.get_log_file(line)
         self.assertEqual(log_file, None)
+
+    def test_get_error_code(self):
+        line = 'org.apache.pig.backend.executionengine.ExecException: ERROR 2118: Input Pattern hdfs://localhost:19010/user/hadoop/worldban111k* matches 0 files'
+        strategy = PigJobReportStrategy()
+        error_code = strategy.get_error_code(line)
+        self.assertEqual('2118', error_code)
+
+    def test_get_error_code_none(self):
+        line = 'Details at logfile: /user/lib/IntelAnalytics/pig_1395809054698.log'
+        strategy = PigJobReportStrategy()
+        error_code = strategy.get_error_code(line)
+        self.assertEqual(None, error_code)
 
 
 
