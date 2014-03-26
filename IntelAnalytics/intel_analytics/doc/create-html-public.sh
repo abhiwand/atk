@@ -69,7 +69,8 @@ mkdir -p ../../ipython/TemplateOverrides/html/static/docs
 echo "copy built html to Template Overrides"
 pwd
 
-cp -r build/html/* ../../ipython/TemplateOverrides/html/static/docs
+cp -rv build/html/* ../../ipython/TemplateOverrides/html/static/docs
+echo "done copying files "
 popd
 
 # undo if we made any changes above
