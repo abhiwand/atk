@@ -133,18 +133,25 @@ class MapOnlyProgressReportStrategy(ProgressReportStrategy):
             self.progress_list[-1] = progress
 
 log_pattern = 'Details at logfile: (.*)'
+error_code_pattern = '.*ERROR ([0-9]*)'
 class PigJobReportStrategy(ReportStrategy):
 
     def __init__(self):
         self.content = {}
         self.is_during_recording = False
+        self.error_codes = []
 
     def report(self, line):
 
         log_file = self.get_log_file(line)
         if log_file:
             file = open(log_file, "r")
-            stdout_logger.debug(file.read())
+            lines = file.readlines()
+            for log_line in lines:
+                stdout_logger.debug(log_line)
+                error_code = self.get_error_code(log_line)
+                if error_code:
+                    self.error_codes.append(error_code)
 
         line = line.strip()
         if line == 'Pig job status report-Start:':
@@ -167,6 +174,14 @@ class PigJobReportStrategy(ReportStrategy):
             return None
         else:
             return match.group(1)
+
+    def get_error_code(self, line):
+        match = re.match(error_code_pattern, line)
+        if not match:
+            return None
+        else:
+            return match.group(1)
+
 
 
 
