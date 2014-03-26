@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2013 Intel Corporation All Rights Reserved.
+# Copyright 2014 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -729,17 +729,23 @@ class HbaseTableTest(unittest.TestCase):
         self.assertRaises(HBaseTableException, table._HBaseTable__drop, output_table, 'random_col')
 
     @patch('intel_analytics.table.hbase.table.hbase_registry')
-    def test_dropna(self, hbase_registry):
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_dropna(self, hbase_registry, etl_schema_class):
 
         result_holder = {}
+        etl_schema_result_holder = {}
         table_name = "test_table"
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         hbase_registry.get_key = Mock(return_value = "test_frame")
 
         column_to_clean = "col1"
+        etl_schema_class.return_value = self.create_mock_etl_object(etl_schema_result_holder)
+        etl_schema_class.return_value.get_feature_type = "int"
+        etl_schema_class.return_value.get_feature_names_as_CSV = "col1"
         table._HBaseTable__drop = self.create_mock_drop_action(result_holder)
-        table.dropna(column_name = column_to_clean)
+        table.drop = Mock()
+        table.dropna(column_name = column_to_clean, inplace = False)
         self.assertEqual(column_to_clean, result_holder["column_name"])
         self.assertEqual("any", result_holder["how"])
 
