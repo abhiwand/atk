@@ -39,6 +39,8 @@ mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
 
 cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
 
+
+
 %clean
 
 %post
@@ -63,6 +65,8 @@ then
     mv /usr/lib/IntelAnalytics/notebooks/*.ipynb  /home/hadoop/.intelanalytics/
 fi
 chown hadoop:hadoop -R /home/hadoop/.intelanalytics
+
+cp  /usr/lib/IntelAnalytics/conf/ipython.conf /etc/init/
 
 %postun
 
