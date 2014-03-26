@@ -71,6 +71,9 @@ pwd
 
 cp -rv build/html/* ../../ipython/TemplateOverrides/html/static/docs
 echo "done copying files "
+
+echo "export PYTHON_DOCUMENTATION=true"
+export PYTHON_DOCUMENTATION=true
 popd
 
 # undo if we made any changes above
@@ -86,5 +89,3 @@ fi
 if [ "$FAUNUS_HOME" == th ]; then
     unset FAUNUS_HOME
 fi
-
-export PYTHON_DOCUMENTATION=true
