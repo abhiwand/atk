@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2013 Intel Corporation All Rights Reserved.
+# Copyright 2014 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,6 +25,7 @@ The common methods and class for buiding and operating with big data frames
 """
 import abc
 import traceback
+from intel_analytics.table.bigcolumn import BigColumn
 import collections
 from intel_analytics.config import global_config, dynamic_import, get_time_str
 
@@ -423,6 +424,33 @@ class BigDataFrame(object):
     # Apply User-Defined Function (canned and UDF)
     #----------------------------------------------------------------------
 
+    def get_column_statistics(self, column_list, force_recomputation=False):
+        """
+        Fetch column statistics
+
+        Parameters
+        ----------
+        column_list : List of BigColumn instances
+            list of BigColumn instances to compute statistics for
+        force_recomputation : boolean
+            if true: will recompute statistics otherwise
+            will check if a cached result is available for each column
+
+        Returns
+        -------
+        List: List of statistics for each column
+
+        Examples
+        --------
+        >>> bc1 = BigColumn('col1')
+        >>> bc2 = BigColumn('col2')
+        >>> column_profile = ColumnProfile(data_intervals=[Interval(1,2), Interval(3,4)])
+        >>> bc3 = BigColumn('col3', profile=column_profile)
+        >>> frame.get_column_statistics([bc1,bc2,bc3])
+        """
+        if not all(isinstance(c, BigColumn) for c in column_list):
+            raise BigDataFrameException("Some items in column_list are not valid instances of BigColumn")
+        return self._table.get_column_statistics(column_list, force_recomputation)
 
     def transform(self, column_name, new_column_name, transformation, transformation_args=None):
         """
