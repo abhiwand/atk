@@ -511,12 +511,37 @@ class TitanGiraphMachineLearning(object):
             if len(self.report) < 1:
                 raise ValueError("There is no AlgorithmReport to get recommendation for!")
             else:
-                output_vertex_property_list = ','.join(self.report[-1].output_vertex_property_list)
-                vertex_type_key = self.report[-1].vertex_type
-                edge_type_key = self.report[-1].edge_type
-                vector_value = self.report[-1].vector_value
-                bias_on = self.report[-1].bias_on
-                feature_dimension = self.report[-1].feature_dimension
+                if hasattr(self.report[-1], 'output_vertex_property_list'):
+                    output_vertex_property_list = self.report[-1].output_vertex_property_list
+                else:
+                    raise ValueError("There is no output_vertex_property_list attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'vertex_type'):
+                    vertex_type_key = self.report[-1].vertex_type
+                else:
+                    raise ValueError("There is no vertex_type attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'edge_type'):
+                    edge_type_key = self.report[-1].edge_type
+                else:
+                    raise ValueError("There is no edge_type attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'vector_value'):
+                    vector_value = self.report[-1].vector_value
+                else:
+                    raise ValueError("There is no vector_value attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'bias_on'):
+                    bias_on = self.report[-1].bias_on
+                else:
+                    raise ValueError("There is no bias_on attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'feature_dimension'):
+                    feature_dimension = self.report[-1].feature_dimension
+                else:
+                    raise ValueError("There is no feature_dimension attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+
         else:
             output_vertex_property_list = ','.join(input_report.output_vertex_property_list)
             vertex_type_key = input_report.vertex_type
@@ -583,18 +608,12 @@ class TitanGiraphMachineLearning(object):
         output.exec_time = str(exec_time) + ' seconds'
         output.recommend_id = list(recommend_id)
         output.recommend_score = list(recommend_score)
-        if hasattr(self.report[-1], 'output_vertex_property_list'):
-            output.output_vertex_property_list = self.report[-1].output_vertex_property_list
-        if hasattr(self.report[-1], 'vertex_type'):
-            output.vertex_type = self.report[-1].vertex_type
-        if hasattr(self.report[-1], 'edge_type'):
-            output.edge_type = self.report[-1].edge_type
-        if hasattr(self.report[-1], 'vector_value'):
-            output.vector_value = self.report[-1].vector_value
-        if hasattr(self.report[-1], 'bias_on'):
-            output.bias_on = self.report[-1].bias_on
-        if hasattr(self.report[-1], 'feature_dimension'):
-            output.feature_dimension = self.report[-1].feature_dimension
+        output.output_vertex_property_list = output_vertex_property_list
+        output.vertex_type = vertex_type_key
+        output.edge_type = edge_type_key
+        output.vector_value = vector_value
+        output.bias_on = bias_on
+        output.feature_dimension = feature_dimension
         self.report.append(output)
         return output
 
