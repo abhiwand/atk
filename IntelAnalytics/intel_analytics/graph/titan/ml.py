@@ -452,7 +452,7 @@ class TitanGiraphMachineLearning(object):
                 output.output_vertex_property_list = self.report[-1].output_vertex_property_list
             if hasattr(self.report[-1], 'vertex_type'):
                 output.vertex_type = self.report[-1].vertex_type
-            if hasattr(self.report[-1], 'edge_type_key'):
+            if hasattr(self.report[-1], 'edge_type'):
                 output.edge_type = self.report[-1].edge_type
             if hasattr(self.report[-1], 'vector_value'):
                 output.vector_value = self.report[-1].vector_value
@@ -587,7 +587,7 @@ class TitanGiraphMachineLearning(object):
             output.output_vertex_property_list = self.report[-1].output_vertex_property_list
         if hasattr(self.report[-1], 'vertex_type'):
             output.vertex_type = self.report[-1].vertex_type
-        if hasattr(self.report[-1], 'edge_type_key'):
+        if hasattr(self.report[-1], 'edge_type'):
             output.edge_type = self.report[-1].edge_type
         if hasattr(self.report[-1], 'vector_value'):
             output.vector_value = self.report[-1].vector_value
