@@ -145,9 +145,13 @@
       <profile>
         <id>rpm-builder</id>
         <activation>
-	  <property>
-            <name>env.BUILD_NUMBER</name>
-          </property>
+
+            <property>
+                <name>env.PYTHON_DOCUMENTATION</name>
+            </property>
+	        <!--<property>
+                <name>env.BUILD_NUMBER</name>
+            </property>-->
         </activation>
         <build>
           <plugins>
