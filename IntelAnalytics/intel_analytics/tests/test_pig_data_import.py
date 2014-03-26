@@ -52,6 +52,19 @@ class TestPigDataImport(unittest.TestCase):
         self.assertEqual('temp = rank in;', statements[0])
         self.assertEqual('out = foreach temp generate $0 + 1000 as key, f1, f2, f3;', statements[1])
 
+    def test_get_log_file_location(self):
+        line = 'Details at logfile: /user/lib/IntelAnalytics/pig_1395809054698.log'
+        strategy = PigJobReportStrategy()
+        log_file = strategy.get_log_file(line)
+        self.assertEqual(log_file, '/user/lib/IntelAnalytics/pig_1395809054698.log')
+
+    def test_get_log_file_none(self):
+        line = 'ERROR org.apache.pig.Main  - ERROR 1121: Python Error. Traceback (most recent call last):'
+        strategy = PigJobReportStrategy()
+        log_file = strategy.get_log_file(line)
+        self.assertEqual(log_file, None)
+
+
 
 
 

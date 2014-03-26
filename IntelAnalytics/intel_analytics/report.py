@@ -21,6 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import re
+from intel_analytics.logger import stdout_logger
 from progress import Progress
 
 
@@ -131,6 +132,7 @@ class MapOnlyProgressReportStrategy(ProgressReportStrategy):
             self.job_progress_bar_list[-1].update(progress.mapper_progress)
             self.progress_list[-1] = progress
 
+log_pattern = 'Details at logfile: (.*)'
 class PigJobReportStrategy(ReportStrategy):
 
     def __init__(self):
@@ -138,6 +140,12 @@ class PigJobReportStrategy(ReportStrategy):
         self.is_during_recording = False
 
     def report(self, line):
+
+        log_file = self.get_log_file(line)
+        if log_file:
+            file = open(log_file, "r")
+            stdout_logger.debug(file.read())
+
         line = line.strip()
         if line == 'Pig job status report-Start:':
             self.is_during_recording = True
@@ -150,7 +158,16 @@ class PigJobReportStrategy(ReportStrategy):
             return
 
         splits = line.split(':')
-        self.content[splits[0]] = splits[1]
+        if len(splits) == 2:
+            self.content[splits[0]] = splits[1]
+
+    def get_log_file(self, line):
+        match = re.match(log_pattern, line)
+        if not match:
+            return None
+        else:
+            return match.group(1)
+
 
 
 
