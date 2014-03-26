@@ -64,7 +64,11 @@ pushd $DIR
 python efuncgen.py > source/efunc.rst
 make -B html 2>&1 | grep -v 'WARNING: toctree contains reference to nonexisting document'
 zip -rq intel_analytics_pydoc.zip build
+echo "make docs directory"
 mkdir -p ../../ipython/TemplateOverrides/html/static/docs
+echo "copy built html to Template Overrides"
+pwd
+
 cp -r build/html/* ../../ipython/TemplateOverrides/html/static/docs
 popd
 
