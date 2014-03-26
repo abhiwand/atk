@@ -1278,6 +1278,9 @@ class HBaseFrameBuilder(FrameBuilder):
 
         not_found = []
         for name in file_names:
+            if '*' in name:
+                continue
+
             if is_local_run():
                 if not os.path.isfile(name):
                     not_found.append('ERROR: File ' + name + ' does NOT exist locally')
@@ -1301,9 +1304,6 @@ class HBaseFrameBuilder(FrameBuilder):
 
 def exists_hdfs(file_name):
     try:
-        if '*' in file_name:
-            return True
-
         from pydoop.hdfs.path import exists
         return exists(file_name)
     except Exception as e:
