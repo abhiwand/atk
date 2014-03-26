@@ -104,13 +104,11 @@ public class FlattenColumnToMultipleRowsUDF extends EvalFunc<DataBag> {
         if (type == DataType.CHARARRAY || type == DataType.BIGCHARARRAY) {
             return flattenedValue;
         }
-        else if (type == DataType.BYTEARRAY) {
+        if (type == DataType.BYTEARRAY) {
             return new DataByteArray(flattenedValue);
         }
-        else {
-            throw new RuntimeException("Flatten only supports CHARARRAY's and BYTEARRAY's as input column. "
-                    + " Input was :" + DataType.findTypeName(type));
-        }
 
+        throw new RuntimeException("Flatten only supports CHARARRAY's and BYTEARRAY's as input column. "
+                    + " Input was :" + DataType.findTypeName(type));
     }
 }
