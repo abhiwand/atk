@@ -86,3 +86,5 @@ fi
 if [ "$FAUNUS_HOME" == th ]; then
     unset FAUNUS_HOME
 fi
+
+export PYTHON_DOCUMENTATION=true
