@@ -145,10 +145,12 @@
       <profile>
         <id>rpm-builder</id>
         <activation>
-
-            <property>
+            <file>
+                <exists>intel_analytics/doc/intel_analytics_pydoc.zip</exists>
+            </file>
+            <!--<property>
                 <name>env.PYTHON_DOCUMENTATION</name>
-            </property>
+            </property>-->
 	        <!--<property>
                 <name>env.BUILD_NUMBER</name>
             </property>-->
