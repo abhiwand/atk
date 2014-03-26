@@ -23,6 +23,8 @@
 import os
 import unittest
 import sys
+from intel_analytics.graph.titan.graph import BulbsGraphWrapper
+from intel_analytics.table.bigcolumn import BigColumn
 
 _current_dir = os.path.dirname(__file__)
 sys.path.append(os.path.abspath(
@@ -924,6 +926,50 @@ class HbaseTableTest(unittest.TestCase):
         statements = ["g.V('_gb_ID','11').out"]
         wrapper.export_as_graphml(statements, "output.xml")
         self.assertEqual("\"<query><statement>g.V('_gb_ID','11').out.transform('{[it,it.map()]}')</statement></query>\"", result_holder["call_args"][result_holder["call_args"].index('-q') + 1])
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_column_statistics(self, etl_schema_class, call_method):
+
+        table_name = "original_table"
+        file_name = "original_file"
+        feat_name = ["long1", "double1", "str1"]
+        feat_type = ["long", "double", "chararray"]
+        result_holder = {}
+
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+        etl_schema_class.return_value.feature_names = feat_name
+        etl_schema_class.return_value.feature_types = feat_type
+        etl_schema_class.return_value.save_schema(table_name)
+
+        def call_side_effect(arg, report_strategy):
+            result_holder["call_args"] = arg
+
+        call_method.return_value = None
+        call_method.side_effect = call_side_effect
+
+        featname = ','.join(feat_name)
+        feattype = ','.join(feat_type)
+        feature_data_groups_as_str = ''
+
+        table = HBaseTable(table_name, file_name)
+        column_list = [BigColumn(feat_name[0]),
+                       BigColumn(feat_name[1]),
+                       BigColumn(feat_name[2])]
+
+        table._HBaseTable__create_hist_stat_file_from_all_data = lambda x1,x2,x3,x4,x5: None 
+        table._HBaseTable__plot_column_distribution = lambda x1,x2,x3: ''
+	
+        table.get_column_statistics(column_list, False)
+
+        self.assertEqual('pig', str(result_holder["call_args"][0]))
+        self.assertEqual(featname, result_holder["call_args"][result_holder["call_args"].index('-n') + 1])
+        self.assertEqual(feattype, result_holder["call_args"][result_holder["call_args"].index('-t') + 1])
+        self.assertEqual(table_name, result_holder["call_args"][result_holder["call_args"].index('-i') + 1])
+
+        script_path = os.path.join(config['pig_py_scripts'], 'pig_column_stats.py')
+        self.assertTrue(script_path in result_holder["call_args"])
+
 
 
     @patch('intel_analytics.table.hbase.table.call')
