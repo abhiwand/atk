@@ -38,7 +38,9 @@ from intel_analytics.table.builtin_functions import EvalFunctions
 
 
 def generate_hbase_store_args(cmd_line_args):
-    hbase_store_args = config['hbase_column_family'] + "AggregateGroup "
+    hbase_store_args = ''
+    for col in cmd_line_args.group_by_columns.split(","):
+        hbase_store_args += config['hbase_column_family'] + "%s " % (col)
     arg_list = cmd_line_args.aggregation_function_list.split(" ")
     for i in range(0,len(arg_list), 3):
     	hbase_store_args += config['hbase_column_family']  + "%s " % (arg_list[i+2])
@@ -46,7 +48,13 @@ def generate_hbase_store_args(cmd_line_args):
     return hbase_store_args
 
 def generate_aggregation_statement(cmd_line_args):
-    aggregation_statement = 'GENERATE group, group as AggregateGroup'
+    aggregation_statement = 'GENERATE group'
+    group_by_columns = cmd_line_args.group_by_columns.split(",")
+    if len(group_by_columns) == 1:
+        aggregation_statement += ", group AS %s" % (group_by_columns[0])
+    else:
+        for col in group_by_columns:
+            aggregation_statement += ', group.%s' % (col)
     arg_list = cmd_line_args.aggregation_function_list.split(" ")
     for i in range(0,len(arg_list), 3):
 	if (arg_list[i] == EvalFunctions.to_string(EvalFunctions.Aggregation.DISTINCT) or

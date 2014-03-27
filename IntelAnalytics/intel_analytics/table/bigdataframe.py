@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2013 Intel Corporation All Rights Reserved.
+# Copyright 2014 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,6 +25,7 @@ The common methods and class for buiding and operating with big data frames
 """
 import abc
 import traceback
+from intel_analytics.table.bigcolumn import BigColumn
 import collections
 from intel_analytics.config import global_config, dynamic_import, get_time_str
 
@@ -32,7 +33,8 @@ __all__ = ['get_frame_builder',
            'get_frame',
            'get_frame_names',
            'BigDataFrame',
-           'FrameBuilder'
+           'FrameBuilder',
+           'BigDataFilter'
            ]
 
 
@@ -422,6 +424,33 @@ class BigDataFrame(object):
     # Apply User-Defined Function (canned and UDF)
     #----------------------------------------------------------------------
 
+    def get_column_statistics(self, column_list, force_recomputation=False):
+        """
+        Fetch column statistics
+
+        Parameters
+        ----------
+        column_list : List of BigColumn instances
+            list of BigColumn instances to compute statistics for
+        force_recomputation : boolean
+            if true: will recompute statistics otherwise
+            will check if a cached result is available for each column
+
+        Returns
+        -------
+        List: List of statistics for each column
+
+        Examples
+        --------
+        >>> bc1 = BigColumn('col1')
+        >>> bc2 = BigColumn('col2')
+        >>> column_profile = ColumnProfile(data_intervals=[Interval(1,2), Interval(3,4)])
+        >>> bc3 = BigColumn('col3', profile=column_profile)
+        >>> frame.get_column_statistics([bc1,bc2,bc3])
+        """
+        if not all(isinstance(c, BigColumn) for c in column_list):
+            raise BigDataFrameException("Some items in column_list are not valid instances of BigColumn")
+        return self._table.get_column_statistics(column_list, force_recomputation)
 
     def transform(self, column_name, new_column_name, transformation, transformation_args=None):
         """
@@ -681,7 +710,28 @@ class BigDataFrame(object):
 
         Returns
         -------
-        frame : BigDataFrame
+        frame: BigDataFrame
+
+        Examples
+        --------
+        >>> # Drop all record with col1 greater than 30
+        >>> f1 = BigDataFilter("col1 > 30") 
+        >>> frame.drop(f1)                                
+        >>> # Creates a new frame col2_equals_5 which contains all records
+        >>> # which do not satisfy the condition col2 equals 5 in the original frame.
+        >>> # Original frame is not modified in this case.
+        >>> f2 = BigDataFilter("col2 == 5")
+        >>> new_frame = frame.drop(f2, "col2_equals_5")   
+        >>> # Drop records when col3 equals 'custom_string' or col4 when it is null or col5 equals ''
+        >>> # Please note to use single quotes for string comparison and '' in case null strings need to dropped
+        >>> f3 = BigDataFilter("col3 == 'custom_string' or col4 is null or col5 == ''")
+        >>> frame.drop(f3)
+        >>> # Drop records which match a regex pattern a-z occuring twice or more
+        >>> f4 = BigDataFilter('[a-z]{2,}', 'col')
+        >>> frame.drop(f4)
+        >>> # Drop records opening with a curly brace
+        >>> f5 = BigDataFilter('^{', 'col')
+        >>> frame.drop(f5)
         """
 
         try:
@@ -698,7 +748,7 @@ class BigDataFrame(object):
             raise BigDataFrameException("Unable to drop rows " + str(e))
 
 
-    def dropna(self, how='any', column_name=None):
+    def dropna(self, how='any', column_name=None, inplace=True):
         """
         Drops all rows which have NA values
 
@@ -707,6 +757,11 @@ class BigDataFrame(object):
         how : { 'any', 'all' }
             any : if any column has an NA value, drop row
             all : if all the columns have an NA value, drop row
+        column_name : String
+            name of column which has an NA value, drop row
+            Optional. If column name is passed, only that column is checked for NA values
+        inplace : Boolean
+            True if dropping inplace else create a new HBase storage table for the frame and append lineage 
         """
         # Currently we don't support threshold or subset so leave them out for the 0.5 release
         #         thresh : int
@@ -714,8 +769,9 @@ class BigDataFrame(object):
         #         subset : array-like
         #             considers only the given columns in the check, None means all
         try:
-            self._table.dropna(how, column_name)
-            self._lineage.append(self._table.table_name)
+            self._table.dropna(how, column_name, inplace)
+            if not inplace:
+                self._lineage.append(self._table.table_name)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("dropna exception " + str(e))
