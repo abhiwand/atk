@@ -512,7 +512,7 @@ class TitanGiraphMachineLearning(object):
                 raise ValueError("There is no AlgorithmReport to get recommendation for!")
             else:
                 if hasattr(self.report[-1], 'output_vertex_property_list'):
-                    output_vertex_property_list = ','.join(self.report[-1].output_vertex_property_list)
+                    output_list = self.report[-1].output_vertex_property_list
                 else:
                     raise ValueError("There is no output_vertex_property_list attribute in AlgorithmReport!"
                                      "Recommend method needs this attribute.")
@@ -543,13 +543,14 @@ class TitanGiraphMachineLearning(object):
                                      "Recommend method needs this attribute.")
 
         else:
-            output_vertex_property_list = ','.join(input_report.output_vertex_property_list)
+            output_list = input_report.output_vertex_property_list
             vertex_type_key = input_report.vertex_type
             edge_type_key = input_report.edge_type
             vector_value = input_report.vector_value
             bias_on = input_report.bias_on
             feature_dimension = input_report.feature_dimension
 
+        output_vertex_property_list = ','.join(output_list)
         rec_cmd1 = [ global_config['titan_gremlin'],
                      '-e',
                      global_config['giraph_recommend_script']
@@ -608,8 +609,7 @@ class TitanGiraphMachineLearning(object):
         output.exec_time = str(exec_time) + ' seconds'
         output.recommend_id = list(recommend_id)
         output.recommend_score = list(recommend_score)
-        if hasattr(self.report[-1], 'output_vertex_property_list'):
-            output.output_vertex_property_list = self.report[-1].output_vertex_property_list
+        output.output_vertex_property_list = output_list
         output.vertex_type = vertex_type_key
         output.edge_type = edge_type_key
         output.vector_value = vector_value
