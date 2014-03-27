@@ -75,7 +75,11 @@ chown hadoop:hadoop -R /home/hadoop/.intelanalytics
 
 cp  /usr/lib/IntelAnalytics/conf/ipython.conf /etc/init/
 
+chmod +x /usr/lib/IntelAnalytics/bin/set_ipython_password.sh
+sh /usr/lib/IntelAnalytics/bin/set_ipython_password.sh
+
 %postun
+rm /etc/init/ipython.conf
 
 %files
 %{_exec_prefix}/lib/IntelAnalytics
