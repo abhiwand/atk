@@ -2,13 +2,13 @@ package com.intel.pig.udf;
 
 import static org.junit.Assert.assertTrue;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.pig.backend.executionengine.ExecException;
-import org.apache.pig.data.DataBag;
-import org.apache.pig.data.Tuple;
-import org.apache.pig.data.TupleFactory;
+import org.apache.pig.data.*;
+import org.apache.pig.impl.logicalLayer.schema.Schema;
 
 /**
  * Utility methods for writing tests related to Pig code
@@ -88,6 +88,35 @@ public class PigTestUtils {
             fieldNum++;
         }
         return tuple;
+    }
+
+    /**
+     * Helper method for creating tuples with all DataByteArray values
+     * @param values
+     */
+    public static Tuple createTupleOfDataByteArrays(String... values) throws Exception {
+        Tuple tuple = TupleFactory.getInstance().newTuple(values.length);
+        int fieldNum = 0;
+        for (String value : values) {
+            tuple.set(fieldNum, new DataByteArray(value));
+            fieldNum++;
+        }
+        return tuple;
+    }
+
+    /**
+     * Helper method for defining simple schemas.
+     *
+     * For example, createSchema( DataType.BYTEARRAY, DataType.CHARARRAY );
+     *
+     * @param dataTypes the dataTypes in the order they appear (see org.apache.pig.data.DataType)
+     */
+    public static Schema createSchema(byte... dataTypes) {
+        Schema schema = new Schema();
+        for (byte dataType : dataTypes) {
+            schema.add(new Schema.FieldSchema(null, dataType));
+        }
+        return schema;
     }
 
     /**
