@@ -512,7 +512,7 @@ class TitanGiraphMachineLearning(object):
                 raise ValueError("There is no AlgorithmReport to get recommendation for!")
             else:
                 if hasattr(self.report[-1], 'output_vertex_property_list'):
-                    output_vertex_property_list = ','.self.report[-1].output_vertex_property_list
+                    output_vertex_property_list = ','.join(self.report[-1].output_vertex_property_list)
                 else:
                     raise ValueError("There is no output_vertex_property_list attribute in AlgorithmReport!"
                                      "Recommend method needs this attribute.")
