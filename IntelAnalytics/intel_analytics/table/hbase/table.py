@@ -509,8 +509,11 @@ class HBaseTable(object):
 
         args = get_pig_args('pig_execute.py')
         args += ['-s', builder.get_statements()]
+        pig_report = PigJobReportStrategy()
+        return_code = call(args, report_strategy = [etl_report_strategy(), pig_report])
 
-        return_code = call(args, report_strategy = etl_report_strategy())
+        save_table_properties_from_pig_report(ETLSchema(),  pig_report, new_table_name)
+
         if return_code:
             raise HBaseTableException('Could not project table')
 
@@ -844,12 +847,12 @@ class HBaseTable(object):
             raise HBaseTableException('Could not join frame')
 
         # the schema is populated now
-        join_table_properties = {}
-        join_table_properties[MAX_ROW_KEY] = join_pig_report.content['input_count']
+
         join_etl_schema = ETLSchema()
         join_etl_schema.populate_schema(join_pig_schema)
         join_etl_schema.save_schema(join_table_name)
-        join_etl_schema.save_table_properties(join_table_name, join_table_properties)
+        save_table_properties_from_pig_report(join_etl_schema, join_pig_report, join_table_name)
+
 
         # save the table name
         hbase_registry.register(join_frame_name, join_table_name, overwrite=overwrite)
@@ -1025,6 +1028,8 @@ class HBaseFrameBuilder(FrameBuilder):
         if '2118' in pig_report.error_codes:
             raise Exception('ERROR: Some of the specified file expressions have no matching files')
 
+
+
     def build_from_csv(self, frame_name, file_names, schema,
                        skip_header=False, overwrite=False):
         self._validate_exists(file_names)
@@ -1063,9 +1068,7 @@ class HBaseFrameBuilder(FrameBuilder):
         if return_code:
             raise Exception('Could not import CSV file')
 
-        properties = {};
-        properties[MAX_ROW_KEY] = pig_report.content['input_count']
-        etl_schema.save_table_properties(table_name, properties)
+        save_table_properties_from_pig_report(etl_schema, pig_report, table_name)
 
         hbase_table = HBaseTable(table_name, file_names_as_csv)
         hbase_registry.register(frame_name, table_name, overwrite)
@@ -1139,9 +1142,7 @@ class HBaseFrameBuilder(FrameBuilder):
         if return_code:
             raise Exception('Could not import JSON file')
 
-        properties = {};
-        properties[MAX_ROW_KEY] = pig_report.content['input_count']
-        etl_schema.save_table_properties(table_name, properties)
+        save_table_properties_from_pig_report(etl_schema, pig_report, table_name)
 
         hbase_registry.register(frame_name, table_name, overwrite)
         return new_frame
@@ -1202,9 +1203,7 @@ class HBaseFrameBuilder(FrameBuilder):
         if return_code:
             raise Exception('Could not import XML file')
 
-        properties = {};
-        properties[MAX_ROW_KEY] = pig_report.content['input_count']
-        etl_schema.save_table_properties(table_name, properties)
+        save_table_properties_from_pig_report(etl_schema, pig_report, table_name)
 
         hbase_registry.register(frame_name, table_name, overwrite)
         
@@ -1353,3 +1352,8 @@ def _create_table_name(name, overwrite):
         if not overwrite:
             raise Exception("Big item '" + name  + "' already exists.")
     return name + get_time_str()
+
+def save_table_properties_from_pig_report(etl_schema, pig_report, table_name):
+    properties = {};
+    properties[MAX_ROW_KEY] = pig_report.content['input_count']
+    etl_schema.save_table_properties(table_name, properties)
