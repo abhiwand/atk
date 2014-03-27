@@ -608,7 +608,8 @@ class TitanGiraphMachineLearning(object):
         output.exec_time = str(exec_time) + ' seconds'
         output.recommend_id = list(recommend_id)
         output.recommend_score = list(recommend_score)
-        output.output_vertex_property_list = output_vertex_property_list
+        if hasattr(self.report[-1], 'output_vertex_property_list'):
+            output.output_vertex_property_list = self.report[-1].output_vertex_property_list
         output.vertex_type = vertex_type_key
         output.edge_type = edge_type_key
         output.vector_value = vector_value
