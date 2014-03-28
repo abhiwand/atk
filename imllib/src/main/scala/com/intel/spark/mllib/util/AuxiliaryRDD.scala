@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -34,7 +34,7 @@ class AuxiliaryRDDPartition(val prev: Partition, val seed: Int) extends Partitio
 }
 
 /**
- * Class to generate auxilary RDD from an input RDD. The generated RDD has the same
+ * Class to generate auxiliary RDD from an input RDD. The generated RDD has the same
  * number of partitions as the input RDD, and each partition has the same number of entries
  * as the corresponding partition of input RDD. The entry values in auxilary RDD are random
  * samples from a uniform distribution on [0, 1]. 
