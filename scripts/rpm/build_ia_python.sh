@@ -19,9 +19,9 @@ mkdir -p $source_folder/conf
 
 cp $src/bin/*python* $source_folder/bin
 cp -R $src/conf/*python* $source_folder/conf
-#cp $src/conf/intel_analytics.properties $source_folder/conf
-#cp $src/conf/pig_log4j.properties $source_folder/conf
-#cp $src/conf/ipython_notebook_config.py $source_folder/conf
+cp $src/conf/intel_analytics.properties $source_folder/conf
+cp $src/conf/pig_log4j.properties $source_folder/conf
+cp $src/conf/ipython_notebook_config.py $source_folder/conf
 cp -R $src/notebooks $source_folder/
 
 (cd SOURCES && tar czf $package-$TRIBECA_VERSION.tar.gz $package-$TRIBECA_VERSION)
