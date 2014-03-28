@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -40,50 +40,47 @@ class MLDataSplitterSuite extends FunSuite with BeforeAndAfterAll with ShouldMat
     sc = new SparkContext("local", "test")
   }
 
-
   override def afterAll() {
     sc.stop()
     System.clearProperty("spark.driver.port")
   }
 
-  // Test if we can randomly split a RDD according to a percentage distribution
+  // test if we can randomly split a RDD according to a percentage distribution
   test("MLDataSplitter") {
         
     val nPoints = 10000
-    val percentageStr = "tr:0.7,va:0.1,te:0.2"
-    val percentages = percentageStr.split(',').map(_.split(':'))
+    val percentages = Array(0.7, 0.1, 0.2)
 
-    val partitionPercentages = percentages.map(_(1).toDouble)    
-    val splitter = new MLDataSplitter(partitionPercentages, 41)
-
-    val rnd = new Random(42)
-    val testData = Array.fill[String](nPoints)(rnd.nextGaussian().toString())
+    // generate testRDD
+    val rnd = new Random(41)
+    val testData = Array.fill[Double](nPoints)(rnd.nextGaussian())
     val testRDD = sc.parallelize(testData, 2)
     testRDD.cache()
     
-    // Test the size of generated RDD
+    // test the size of generated RDD
     val nTotal = testRDD.count
-    assert(nTotal == nPoints, "#data points generated isn't equal to specified.")
+    assert(nTotal == nPoints, "# data points generated isn't equal to specified.")
     
-    // Split the RDD with labels
+    // split the RDD by labelling
+    val splitter = new MLDataSplitter(percentages, 42)
     val labeledRDD = splitter.randomlyLabelRDD(testRDD)
     
-    // Collect the size of each partition
-    val partitionSizes = new Array[Double](percentages.size)
+    // collect the size of each partition
+    val partitionSizes = new Array[Long](percentages.size)
     (0 until percentages.size).foreach { i =>
       val partitionRDD = labeledRDD.filter(p => p.label == i).map(_.entry)
       partitionSizes(i) = partitionRDD.count
     }
 
-    // Test the total samples size
-    val nTotalSamples = partitionSizes.reduceLeft(_ + _)
-    assert(nTotalSamples == nPoints, "#data points sampled isn't equal to specified.")
+    // test the total #samples
+    val nTotalSamples = partitionSizes.sum
+    assert(nTotalSamples == nPoints, "# data points sampled isn't equal to specified.")
     
-    // Check if partition percentages are as expected 
+    // check if partition percentages are expected 
     (0 until percentages.size).foreach { i =>
-      val realPercentages = partitionSizes(i).toDouble / nTotalSamples 
-      assert( realPercentages >= partitionPercentages(i) - 0.05 && realPercentages <= partitionPercentages(i) + 0.05,
-        "percentage isn't in [%f, %f].".format(partitionPercentages(i) - 0.05, partitionPercentages(i) + 0.05))    
+      val realPercentage = partitionSizes(i).toDouble / nTotalSamples 
+      assert( Math.abs(realPercentage - percentages(i)) < 0.05,
+        "partition percentage isn't in [%f, %f].".format(percentages(i) - 0.05, percentages(i) + 0.05))    
     }
   }
 
