@@ -4,13 +4,13 @@ Version: 0.8.0
 
 License: Apache
 
-Group: Development
+Group: Intel Analytics
 
 Name: intelanalytics-python
 
 Requires: intelanalytics-python-dependencies
 
-Prefix: /usr
+Prefix: /usr/lib/IntelAnalytics
 
 Release: %{?BUILD_NUMBER}
 
@@ -21,16 +21,19 @@ URL: <TODO>
 Buildroot: /tmp/intelanalyticsrpm
 
 %description
-The Intel Big Data Analytics Tookit libraries for Python. Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
+The Intel Big Data Analytics Tookit libraries for Python. Build number: %{BUILD_NUMBER}. Time %{TIMESTAMP}.
 
 %define __os_install_post    \
-    /usr/lib/rpm/redhat/brp-compress \
-    %{!?__debug_package:/usr/lib/rpm/redhat/brp-strip %{__strip}} \
-    /usr/lib/rpm/redhat/brp-strip-static-archive %{__strip} \
-    /usr/lib/rpm/redhat/brp-strip-comment-note %{__strip} %{__objdump} \
+    /usr/lib/rpm/brp-compress \
+    %{!?__debug_package:/usr/lib/rpm/brp-strip %{__strip}} \
+    /usr/lib/rpm/brp-strip-static-archive %{__strip} \
+    /usr/lib/rpm/brp-strip-comment-note %{__strip} %{__objdump} \
 %{nil}
 
+
 %define TIMESTAMP %(echo $TIMESTAMP)
+
+%define IAUSER %(echo $IAUSER)
 
 %prep
 
@@ -40,47 +43,49 @@ The Intel Big Data Analytics Tookit libraries for Python. Build number: %{?BUILD
 
 %install
 
-rm -fr $RPM_BUILD_ROOT
+rm -fr %{buildroot}
 
-mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
+mkdir -p %{buildroot}%{prefix}
 
-cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/
-
-
+cp -R * %{buildroot}%{prefix}
 
 %clean
 
 %post
-ln -sf /usr/lib/IntelAnalytics/intel_analytics /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages
-if [ ! -d /home/hadoop/.intelanalytics ]
-then
-    mkdir /home/hadoop/.intelanalytics
-fi
-if [ ! -d /home/hadoop/.intelanalytics/conf ]
-then
-    mkdir /home/hadoop/.intelanalytics/conf
-fi
 
-if [ ! -d /home/hadoop/.intelanalytics/logs ]
+installDir="/home/%{IAUSER}/"
+
+ln -sf %{prefix}/intel_analytics %{prefix}/virtpy/lib/python2.7/site-packages
+if [ ! -d ${installDir}.intelanalytics ]
 then
-    mkdir /home/hadoop/.intelanalytics/logs
+    mkdir ${installDir}.intelanalytics
+fi
+if [ ! -d ${installDir}.intelanalytics/conf ]
+then
+    mkdir ${installDir}.intelanalytics/conf
 fi
 
-cp /usr/lib/IntelAnalytics/conf/pig_log4j.properties /home/hadoop/.intelanalytics/conf/
-if [ `ls /usr/lib/IntelAnalytics/notebooks/*.ipynb | wc -l` -gt 0 ]
+if [ ! -d ${installDir}.intelanalytics/logs ]
 then
-    mv /usr/lib/IntelAnalytics/notebooks/*.ipynb  /home/hadoop/.intelanalytics/
+    mkdir ${installDir}.intelanalytics/logs
 fi
-chown hadoop:hadoop -R /home/hadoop/.intelanalytics
 
-cp  /usr/lib/IntelAnalytics/conf/ipython.conf /etc/init/
+cp %{prefix}/conf/pig_log4j.properties /home/%{IAUSER}/.intelanalytics/conf/
+if [ `ls %{prefix}/notebooks/*.ipynb | wc -l` -gt 0 ]
+then
+    mv %{prefix}/notebooks/*.ipynb  /home/%{IAUSER}/.intelanalytics/
+fi
+chown %{IAUSER}:%{IAUSER} -R /home/%{IAUSER}/.intelanalytics
 
-chmod +x /usr/lib/IntelAnalytics/bin/set_ipython_password.sh
-sh /usr/lib/IntelAnalytics/bin/set_ipython_password.sh
+cp  %{prefix}/conf/ipython.conf %{_sysconfdir}/init/
+
+chmod +x %{prefix}/bin/set_ipython_password.sh
+#echo "administrator" | %{prefix}/IntelAnalytics/bin/set_ipython_password.sh
 
 %postun
-rm /etc/init/ipython.conf
+rm %{_sysconfdir}/init/ipython.conf
 
 %files
-%{_exec_prefix}/lib/IntelAnalytics
+%{prefix}
+#%{_exec_prefix}/lib/IntelAnalytics
 
