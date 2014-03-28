@@ -337,6 +337,11 @@ class HBaseTable(object):
         #and we cannot know their return types
         if transformation == EvalFunctions.Math.RANDOM:
             etl_schema.feature_types.append('float')
+        elif transformation in [EvalFunctions.Json.EXTRACT_FIELD, EvalFunctions.Xml.EXTRACT_FIELD]:
+            if len(transformation_args) > 1:
+                etl_schema.feature_types.append(get_pig_type(transformation_args[1]))
+            else:
+                etl_schema.feature_types.append('chararray')
         else:
             etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
@@ -1572,6 +1577,20 @@ def exists_hdfs(file_name):
         return exists(file_name)
     except Exception as e:
         raise Exception('ERROR: Python unable to check HDFS: ' + e.message)
+
+def get_pig_type(type):
+    if type == "Integer":
+        return "int"
+    elif type == "Float":
+        return "float"
+    elif type == "Double":
+        return "double"
+    elif type == "Boolean":
+        return "boolean"
+    elif type == "Long":
+        return "long"
+    else:
+        return "chararray"
 
 
 class HBaseFrameBuilderFactory(object):
