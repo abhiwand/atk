@@ -43,7 +43,7 @@ Install IPython and other dependencies for the Intel Analytics Toolkit. Build nu
 
 %install
 
-rm -fr $RPM_BUILD_ROOT
+rm -fr %{buildroot}
 
 mkdir -p %{buildroot}%{prefix}
 
@@ -55,7 +55,7 @@ cp -R * %{buildroot}%{prefix}
 
 %post
 ln -sf %{prefix}/virtpy/bin/activate %{_bindir}/virtpy
-tar xvf %{buildroot}%{prefix}/template_overrides.tar.gz -C %{prefix}/virtpy/lib/python2.7/site-packages/IPython
+tar xvf %{prefix}/template_overrides.tar.gz -C %{prefix}/virtpy/lib/python2.7/site-packages/IPython
 
 %postun
 rm %{_bindir}/virtpy
