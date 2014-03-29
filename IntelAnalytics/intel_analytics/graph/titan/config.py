@@ -70,6 +70,36 @@ class TitanConfig(object):
         with open(filename, 'r') as template_file:
             return Template(template_file.read())
 
+    def write_faunus_cfg(self, table_name):
+        """
+        Writes a Faunus config file for distributed query.
+
+        Parameters
+        ----------
+        table_name : string
+            Then name of the destination table in Titan
+
+        Returns
+        -------
+        filename : String
+            The full path of the config file created by this method.
+        """
+
+        if not table_name or not table_name.endswith('_titan'):
+            raise Exception("Internal error: bad graph table")
+
+        filename = config['faunus_config_file']
+        with open(filename, 'w') as out:
+            faunus_params = {k: config[k] for k in faunus_keys}
+            faunus_params['faunus.graph.input.titan.storage.tablename'] = table_name
+            keys = sorted(faunus_params.keys())
+            for k in keys:
+                out.write(k)
+                out.write("=")
+                out.write(faunus_params[k])
+                out.write("\n")
+        return filename
+
     def get_rexster_server_uri(self, table_name):
         return '{0}:{1}/graphs/{2}'.format(
             config['rexster_baseuri'],
@@ -180,5 +210,25 @@ Template(rexster_xml_graph_template_str).substitute(d)
 del d['titan_storage_tablename']
 rexster_keys = d.keys()
 rexster_keys.sort()
+
+#--------------------------------------------------------------------------
+# GraphBuilder
+#--------------------------------------------------------------------------
+gb_keys = ['conf_folder']
+for k in ['hostname', 'backend', 'port', 'connection_timeout']:
+    gb_keys.append('titan_storage_' + k)
+gb_keys.sort()
+
+#--------------------------------------------------------------------------
+# Faunus keys
+#--------------------------------------------------------------------------
+faunus_keys = []
+for k in ['hostname', 'backend', 'port', 'connection_timeout']:
+    faunus_keys.append('faunus.graph.input.titan.storage.' + k)
+for k in ['input.format', 'output.format']:
+    faunus_keys.append('faunus.graph.' + k)
+for k in ['sideeffect.output.format', 'output.location', 'output.location.overwrite']:
+    faunus_keys.append('faunus.' + k)
+faunus_keys.sort()
 
 titan_config = TitanConfig()

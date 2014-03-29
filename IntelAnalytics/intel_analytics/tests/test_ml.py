@@ -61,6 +61,7 @@ else:
     sys.modules['intel_analytics.progress'] = sys.modules['intel_analytics.tests.mock_progress']
 
 from intel_analytics.graph.titan.ml import TitanGiraphMachineLearning
+from intel_analytics.graph.titan.ml import AlgorithmReport
 
 
 class TestsTitanGiraphMachineLearning(unittest.TestCase):
@@ -248,10 +249,66 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
                         max_supersteps='10')
         self.assertEqual('test_graph', result.graph_name)
 
+    @patch('pydoop.hdfs.path.exists')
+    @patch('pydoop.hdfs.open')
+    def test_combine_required_inputs(self, mock_open, mock_exists):
+        ml = TitanGiraphMachineLearning(self.graph)
+        ml._latest_algorithm = 'als'
+        ml._result['als'] = ['test1','test2','test3']
+        with self.assertRaises(ValueError):
+            ml.kfold_combine(['test_combine_result'])
+
+    @patch('pydoop.hdfs.path.exists')
+    @patch('pydoop.hdfs.open')
+    @patch('__builtin__.long')
+    @patch('uuid.uuid4')
+    def test_combine_optional_inputs(self, mock_id, mock_long, mock_open, mock_exists):
+        ml = TitanGiraphMachineLearning(self.graph)
+        report = AlgorithmReport()
+        report.output_vertex_property_list = ['test1']
+        report.method  = 'lda'
+        ml.report.append(report)
+        report = AlgorithmReport()
+        report.output_vertex_property_list = ['test2']
+        report.method  = 'lda'
+        ml.report.append(report)
+        result = ml.kfold_combine(['test_combine_result'], k=2, type='AVG')
+        self.assertEqual('test_graph', result.graph_name)
+
+
+    @patch('pydoop.hdfs.path.exists')
+    @patch('pydoop.hdfs.open')
+    def test_split_wrong_fold(self, mock_open, mock_exists):
+        ml = TitanGiraphMachineLearning(self.graph)
+        with self.assertRaises(ValueError):
+            ml.kfold_split_update(test_fold_id=0)
+
+
+    @patch('pydoop.hdfs.path.exists')
+    @patch('pydoop.hdfs.open')
+    def test_split_wrong_name(self, mock_open, mock_exists):
+        ml = TitanGiraphMachineLearning(self.graph)
+        with self.assertRaises(ValueError):
+            ml.kfold_split_update(split_name=["test1","test2","test3"])
+
+    @patch('pydoop.hdfs.path.exists')
+    @patch('pydoop.hdfs.open')
+    @patch('__builtin__.long')
+    @patch('uuid.uuid4')
+    def test_split_optional_inputs(self, mock_id, mock_long, mock_open, mock_exists):
+        ml = TitanGiraphMachineLearning(self.graph)
+        result = ml.kfold_split_update(test_fold_id=2,
+                                       fold_id_property_key="test_id",
+                                       split_name=["TE","TR"],
+                                       split_property_key='test_splits')
+        self.assertEqual('test_graph', result.graph_name)
+
     @patch('__builtin__.open')
     @patch('numpy.genfromtxt')
     def test_get_histogram_required_inputs(self, mock_ny, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
+        report = AlgorithmReport()
+        ml.report.append(report)
         result = ml.get_histogram('test_first_property_name')
         self.assertEqual('test_graph', result.graph_name)
 
@@ -259,6 +316,8 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
     @patch('numpy.genfromtxt')
     def test_get_histogram_optional_inputs(self, mock_py, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
+        report = AlgorithmReport()
+        ml.report.append(report)
         result = ml.get_histogram('test_first_property_name',
                                   second_property_name = 'test_second_property_name',
                                   enable_roc = 'true',
@@ -273,12 +332,14 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
 
     def test_recommend_normal(self):
         ml = TitanGiraphMachineLearning(self.graph)
-        ml._output_vertex_property_list = 'test_vertex_properties'
-        ml._vertex_type = 'test_vertex_type'
-        ml._edge_type = 'test_edge_type'
-        ml._vector_value = 'test_vector_value'
-        ml._feature_dimension = 'test_dimension'
-        ml._bias_on =  'test_bias_on'
+        report = AlgorithmReport()
+        report.output_vertex_property_list = ['test_vertex_properties']
+        report.vertex_type = 'test_vertex_type'
+        report.edge_type = 'test_edge_type'
+        report.vector_value = 'test_vector_value'
+        report.feature_dimension = 'test_dimension'
+        report.bias_on =  'test_bias_on'
+        ml.report.append(report)
         result = ml.recommend('101010')
         self.assertEqual('test_graph', result.graph_name)
         self.assertEqual([], result.recommend_id)

@@ -54,12 +54,6 @@ class HBaseStoreFunction(StoreFunction):
         loading_hbase_constructor_args = get_hbase_storage_schema(self._feature_name_iterable)
         return "org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s')" %(loading_hbase_constructor_args)
 
-class PigExpression(object):
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractmethod
-    def get_statement(self):
-        pass
 
 
 class PigScriptBuilder(object):
@@ -98,12 +92,6 @@ class PigScriptBuilder(object):
         """
         self.statements.append("store %s into '%s' using %s;" %(relation_to_store, data_source.get_data_source_as_string(), store_function.get_storing_function_statement()))
 
-
-    def add_foreach_statement(self, output_relation_name, input_relation_name, features, pig_expressions):
-        pig_statements = []
-        for exp in pig_expressions:
-            pig_statements.append(exp.get_statement())
-        self.statements.append("%s = foreach %s generate %s" %(output_relation_name, input_relation_name, ','.join(features + pig_statements)))
 
     def get_statements(self):
         return "\n".join(self.statements)
@@ -196,7 +184,7 @@ class PigScriptBuilder(object):
 
         # Outer join in pig can only do two tables a time
         if join_type and len(tables) != 2:
-           raise Exception('Outer join only works on two tables')
+            raise Exception('Outer join only works on two tables')
 
         if not join_table_name:
             raise Exception('Must specify an output table name for join operation!')
