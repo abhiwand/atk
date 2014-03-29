@@ -152,4 +152,3 @@ class ETLSchema:
 	Returns the schema as a string in the format a:int,b:chararray,c:bytearray
 	"""
         return ','.join(s[0] + ':' + s[1] for s in zip(self.feature_names,self.feature_types))
-

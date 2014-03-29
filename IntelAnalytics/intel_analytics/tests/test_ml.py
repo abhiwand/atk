@@ -307,6 +307,8 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
     @patch('numpy.genfromtxt')
     def test_get_histogram_required_inputs(self, mock_ny, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
+        report = AlgorithmReport()
+        ml.report.append(report)
         result = ml.get_histogram('test_first_property_name')
         self.assertEqual('test_graph', result.graph_name)
 
@@ -314,6 +316,8 @@ class TestsTitanGiraphMachineLearning(unittest.TestCase):
     @patch('numpy.genfromtxt')
     def test_get_histogram_optional_inputs(self, mock_py, mock_open):
         ml = TitanGiraphMachineLearning(self.graph)
+        report = AlgorithmReport()
+        ml.report.append(report)
         result = ml.get_histogram('test_first_property_name',
                                   second_property_name = 'test_second_property_name',
                                   enable_roc = 'true',
