@@ -15,28 +15,10 @@
    delivery of the Materials, either expressly, by implication, inducement,
    estoppel or otherwise. Any license under such intellectual property rights
    must be express and approved by Intel in writing.
-   Intel Analytics documentation master file, created by
-   sphinx-quickstart on Tue Feb  4 11:21:20 2014.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to Intel Analytics Python documentation!
-================================================
+Graph
+=====
 
-Contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   frame
-   graph
-   graphbuilder
-   graphml
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`search`
+.. automodule:: intel_analytics.graph.titan.graph
+    :members:
 
