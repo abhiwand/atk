@@ -225,6 +225,7 @@ class EvalFunctions:
         """
 
         ADDDURATION = 4000
+        CURRENTTIME=4001
         GETDAY = 4003
         GETHOUR = 4004
         GETMILLISECOND = 4005
