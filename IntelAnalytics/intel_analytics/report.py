@@ -147,6 +147,8 @@ class PigJobReportStrategy(ReportStrategy):
         if log_file:
             file = open(log_file, "r")
             lines = file.readlines()
+            if len(lines):
+                stdout_logger.debug("Including %s log file" % log_file)
             for log_line in lines:
                 stdout_logger.debug(log_line)
                 error_code = self.get_error_code(log_line)
