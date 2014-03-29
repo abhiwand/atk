@@ -23,242 +23,293 @@
 """
 The Builtin functions that can be applied with the transform method on BigDataFrames.
 """
-class EvalFunctions:
 
+
+class EvalFunctions:
     class String:
         """
         String functions
         --------------
 
-**CONCAT(string)** - returns concatenation with given string
+        **CONCAT(string)** - returns concatenation with given string
 
-**ENDS_WITH(string)** - returns whether the string ends with the given argument
+        **ENDS_WITH(string)** - returns whether the string ends with the given argument
 
-**EQUALS_IGNORE_CASE(string)** - returns whether the string equals the given string, case-insensitive
+        **EQUALS_IGNORE_CASE(string)** - returns whether the string equals the given string, case-insensitive
 
-**INDEX_OF('character', startIndex)** - returns the index of the first occurrence of a character in a string, searching forward from a start index
+        **INDEX_OF('character', startIndex)** - returns the index of the first occurrence of a character in a string, searching forward from a start index
 
-**LAST_INDEX_OF('character')** - returns the index of the last occurrence of a character in a string, searching backward from the end of the string
+        **LAST_INDEX_OF('character')** - returns the index of the last occurrence of a character in a string, searching backward from the end of the string
 
-**LENGTH()** - returns the length of the string
+        **LENGTH()** - returns the length of the string
 
-**LOWER()** - converts all characters in a string to lower case
+        **LOWER()** - converts all characters in a string to lower case
 
-**LTRIM()** - returns a copy of a string with only leading white space removed
+        **LTRIM()** - returns a copy of a string with only leading white space removed
 
-**REGEX_EXTRACT(regex, index)** - performs regular expression matching and extracts the matched group defined by an index parameter
+        **REGEX_EXTRACT(regex, index)** - performs regular expression matching and extracts the matched group defined by an index parameter
 
-**REGEX_EXTRACT_ALL(regex)** - Performs regular expression matching and extracts all matched groups
+        **REGEX_EXTRACT_ALL(regex)** - Performs regular expression matching and extracts all matched groups
 
-**REPLACE(regex, string)** - replaces existing characters with new characters
+        **REPLACE(regex, string)** - replaces existing characters with new characters
 
-**RTRIM()** - returns a copy of a string with only trailing white space removed
+        **RTRIM()** - returns a copy of a string with only trailing white space removed
 
-**STARTSWITH(string)** - determine if the first argument starts with the string in the second
+        **STARTSWITH(string)** - determine if the first argument starts with the string in the second
 
-**STRSPLIT(regex, limit)** - splits a string around matches of a given regular expression;
-If the limit is positive, the pattern (the compiled representation of the regular expression) is
-applied at most limit-1 times, therefore the value of the argument means the maximum length of the
-result tuple. The last element of the result tuple will contain all input after the last match.  If the
-limit is negative, no limit is applied for the length of the result tuple.  If the limit is zero, no
-limit is applied for the length of the result tuple too, and trailing empty strings (if any) will be removed.
+        **STRSPLIT(regex, limit)** - splits a string around matches of a given regular expression;
+        If the limit is positive, the pattern (the compiled representation of the regular expression) is
+        applied at most limit-1 times, therefore the value of the argument means the maximum length of the
+        result tuple. The last element of the result tuple will contain all input after the last match.  If the
+        limit is negative, no limit is applied for the length of the result tuple.  If the limit is zero, no
+        limit is applied for the length of the result tuple too, and trailing empty strings (if any) will be removed.
 
-**SUBSTRING(startindex, stopIndex)** - returns a substring from a given string;
-startIndex is first character of the substring, stopIndex is the index of character *following* the last
-character of the substring
+        **SUBSTRING(startindex, stopIndex)** - returns a substring from a given string;
+        startIndex is first character of the substring, stopIndex is the index of character *following* the last
+        character of the substring
 
-**TRIM()** - returns a copy of a string with leading and trailing white space removed
+        **TRIM()** - returns a copy of a string with leading and trailing white space removed
 
-**UPPER()** - returns a string converted to upper case
+        **UPPER()** - returns a string converted to upper case
 
-**TOKENIZE([, 'field_delimiter'])** - splits a string and outputs a bag a words
+        **TOKENIZE([, 'field_delimiter'])** - splits a string and outputs a bag a words
 
-Examples
---------
+        Examples
+        --------
 
->>> # create "result_column" which indicates whether "input_column" ends with "suffix"
->>> frame.transform("input_column", "result_column", EvalFunctions.String.ENDS_WITH, ["suffix"])
-
-
->>> # create "result_column" which stores the index of where the character '$' first occurs in the element.
->>> # (stores -1 if '$' does not appear)
->>> frame.transform("input_column", "result_column", EvalFunctions.String.INDEX_OF, ['$', 0])
+        >>> # create "result_column" which indicates whether "input_column" ends with "suffix"
+        >>> frame.transform("input_column", "result_column", EvalFunctions.String.ENDS_WITH, ["suffix"])
 
 
->>> # Extract the port number from a column of strings like '192.168.0.1:8888'
->>> frame.transform('column_input', 'column_output', EvalFunctions.REGEX_EXTRACT, ['(.*):(.*)', 1])
+        >>> # create "result_column" which stores the index of where the character '$' first occurs in the element.
+        >>> # (stores -1 if '$' does not appear)
+        >>> frame.transform("input_column", "result_column", EvalFunctions.String.INDEX_OF, ['$', 0])
+
+
+        >>> # Extract the port number from a column of strings like '192.168.0.1:8888'
+        >>> frame.transform('column_input', 'column_output', EvalFunctions.REGEX_EXTRACT, ['(.*):(.*)', 1])
         """
-        ENDS_WITH=1
-        EQUALS_IGNORE_CASE=2
-        INDEX_OF=3
-        LAST_INDEX_OF=4
-        LOWER=5
-        LTRIM=6
-        REGEX_EXTRACT=7
-        REGEX_EXTRACT_ALL=8
-        REPLACE=9
-        RTRIM=10
-        STARTS_WITH=11
-        STRSPLIT=12
-        SUBSTRING=13
-        TRIM=14
-        UPPER=15
-        TOKENIZE=16
-        LENGTH=17
-        CONCAT=18   #CONCAT is part of Pig Eval functions
+        ENDS_WITH = 1
+        EQUALS_IGNORE_CASE = 2
+        INDEX_OF = 3
+        LAST_INDEX_OF = 4
+        LOWER = 5
+        LTRIM = 6
+        REGEX_EXTRACT = 7
+        REGEX_EXTRACT_ALL = 8
+        REPLACE = 9
+        RTRIM = 10
+        STARTS_WITH = 11
+        STRSPLIT = 12
+        SUBSTRING = 13
+        TRIM = 14
+        UPPER = 15
+        TOKENIZE = 16
+        LENGTH = 17
+        CONCAT = 18   #CONCAT is part of Pig Eval functions
 
     class Math:
         """
         Math functions
         --------------
 
-**ABS()** - returns the absolute value
+        **ABS()** - returns the absolute value
 
-**ARITHMETIC()** - performs basic arithmetic operations as specified in source column argument  +, -, *, /, %
+        **ARITHMETIC()** - performs basic arithmetic operations as specified in source column argument  +, -, *, /, %
 
-**CEIL()** - returns the value rounded up to the nearest integer
+        **CEIL()** - returns the value rounded up to the nearest integer
 
-**EXP()** - returns e raised to the power of argument
+        **EXP()** - returns e raised to the power of argument
 
-**FLOOR()** - returns the value rounded down to the nearest integer
+        **FLOOR()** - returns the value rounded down to the nearest integer
 
-**LOG()** - returns the natural logarithm (base e)
+        **LOG()** - returns the natural logarithm (base e)
 
-**LOG10()** - returns the base 10 logarithm
+        **LOG10()** - returns the base 10 logarithm
 
-**POW(power)** - returns the  value raised to the power
+        **POW(power)** - returns the  value raised to the power
 
-**RANDOM()** - returns a pseudo random number (input column argument is ignored)
+        **RANDOM()** - returns a pseudo random number (input column argument is ignored)
 
-**ROUND()** - returns the value rounded to an integer
+        **ROUND()** - returns the value rounded to an integer
 
-**SQRT()** -  returns the positive square root
+        **SQRT()** -  returns the positive square root
 
-**STND()** - returns standardized value by subtracting its mean from each element
-and dividing this difference by its standard deviation --i.e. ``(element - AVG("input_column"))/STDEV("input_column")``  (see `Standardization <http://en.wikipedia.org/wiki/Feature_scaling#Standardization>`_).
+        **STND()** - returns standardized value by subtracting its mean from each element
+        and dividing this difference by its standard deviation --i.e. ``(element - AVG("input_column"))/STDEV("input_column")``  (see `Standardization <http://en.wikipedia.org/wiki/Feature_scaling#Standardization>`_).
 
-Examples
---------
+        Examples
+        --------
 
->>> frame.transform("column_A + column_B", "column_sum", EvalFunctions.Math.ARITHMETIC)
->>> frame.transform("column_A % 2", "column_modulo", EvalFunctions.Math.ARITHMETIC)
-
-
->>> # raise the each value in "column_A" to the power of 2, store in "column_power2"
->>> frame.transform("column_A", "column_power2", EvalFunctions.Math.POW, [2])
+        >>> frame.transform("column_A + column_B", "column_sum", EvalFunctions.Math.ARITHMETIC)
+        >>> frame.transform("column_A % 2", "column_modulo", EvalFunctions.Math.ARITHMETIC)
 
 
->>> # generate random number in [1,10] range and save results in "result_column"
->>> frame.transform("input_column", "result_column", EvalFunctions.Math.Random, [1,10])
+        >>> # raise the each value in "column_A" to the power of 2, store in "column_power2"
+        >>> frame.transform("column_A", "column_power2", EvalFunctions.Math.POW, [2])
 
 
->>> # calculate standardized value for each element in "input_column" and store in "result_column"
->>> frame.transform("input_column", "result_column", EvalFunctions.Math.STND)
+        >>> # generate random number in [1,10] range and save results in "result_column"
+        >>> frame.transform("input_column", "result_column", EvalFunctions.Math.Random, [1,10])
+
+
+        >>> # calculate standardized value for each element in "input_column" and store in "result_column"
+        >>> frame.transform("input_column", "result_column", EvalFunctions.Math.STND)
         """
-        ABS=1000
-        LOG=1001
-        LOG10=1002
-        POW=1003
-        EXP=1004
-        STND=1005 #STND: Standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization).
+        ABS = 1000
+        LOG = 1001
+        LOG10 = 1002
+        POW = 1003
+        EXP = 1004
+        STND = 1005 #STND: Standardization (see http://en.wikipedia.org/wiki/Feature_scaling#Standardization).
 
         # Arithmetic operations, e.g., +-*/%?, syntax checking is left to pig script engine:
-        ARITHMETIC=1100
+        ARITHMETIC = 1100
 
-        FLOOR=1006
-        CEIL=1007
-        ROUND=1008
-        SQRT=1009
-        DIV=1010
-        MOD=1011
-        RANDOM=1012
-        
+        FLOOR = 1006
+        CEIL = 1007
+        ROUND = 1008
+        SQRT = 1009
+        DIV = 1010
+        MOD = 1011
+        RANDOM = 1012
+
     class Json:
         """
         JSON functions
         --------------
         Json.EXTRACT_FIELD
 
-**EXTRACT_FIELD(jsonPath)** -  Extracts a field using JSONPath expression from JSON string which has been imported to a BigDataFrame
+        **EXTRACT_FIELD(jsonPath)** -  Extracts a field using JSONPath expression from JSON string which has been imported to a BigDataFrame
 
-Json.EXTRACT_FIELD can be used to extract individual fields from within the JSON strings stored in the BigDataFrame.
-The expression syntax follows JSONPath query and needs to return an individual field. Extracing lists are not supported at this time. Extracted fields are stored as strings.
+        Json.EXTRACT_FIELD can be used to extract individual fields from within the JSON strings stored in the BigDataFrame.
+        The expression syntax follows JSONPath query and needs to return an individual field. Extracing lists are not supported at this time. Extracted fields are stored as strings.
 
-Examples
---------
+        Examples
+        --------
 
->>> frame = fb.build_from_json('json_column', 'file.json')
->>> frame.transform('json_column', 'homepage_column', EvalFunctions.Json.EXTRACT_FIELD, ['repository.homepage'])
->>> frame.transform('json_column', 'title_column', EvalFunctions.Json.EXTRACT_FIELD, ['repository.store.book[0].title'])
+        >>> frame = fb.build_from_json('json_column', 'file.json')
+        >>> frame.transform('json_column', 'homepage_column', EvalFunctions.Json.EXTRACT_FIELD, ['repository.homepage'])
+        >>> frame.transform('json_column', 'title_column', EvalFunctions.Json.EXTRACT_FIELD, ['repository.store.book[0].title'])
         """
-        EXTRACT_FIELD=2000
+        EXTRACT_FIELD = 2000
+
+
+    class DateTime:
+        """
+        DateTime functions
+        --------------
+        **ADDDURATION()** - Returns the result of a DateTime object plus a duration.
+        **GETDAY** - Returns the day of a month from a DateTime object.
+        **GETHOUR** - Returns the hour of a day from a DateTime object.
+        **GETMILLISECOND** - Returns the millisecond of a second from a DateTime object.
+        **GETMINUTE** - Returns the minute of a hour from a DateTime object.
+        **GETMONTH** - Returns the month of a year from a DateTime object.
+        **GETSECOND** - Returns the second of a minute from a DateTime object.
+        **GETWEEK** - Returns the week of a week year from a DateTime object.
+        **GETWEEKYEAR** - Returns the week year from a DateTime object.
+        **GETYEAR** - Returns the year from a DateTime object.
+        **SUBTRACTDURATION** - Returns the result of a DateTime object minus a duration.
+        **TODATE** - Returns a DateTime object according to parameters.
+        **TOMILLISECONDS** - Returns the number of milliseconds elapsed since January 1, 1970, 00:00:00.000 GMT for a DateTime object.
+        **TOSTRING** - ToString converts the DateTime object to the ISO or the customized string.
+        **TOUNIXTIME** - Returns the Unix Time as long for a DateTime object. UnixTime is the number of seconds elapsed since January 1, 1970, 00:00:00.000 GMT.
+        **BEFOREDATE** - Compare two datetime object and determine if the first one is before the second one.
+        **AFTERDATE** - Compare two datetime object and determine if the first one is after the second one.
+        **DAYOFTHEYEAR** - Returns the day of the year from the DateTime object.
+        **ORDINALDATE** - Returns datetime string in ordinal date format.
+
+        Examples
+        --------
+        >>> frame.transform('created_date', 'year', EvalFunctions.DateTime.GETYEAR)
+        """
+
+        ADDDURATION = 4000
+        GETDAY = 4003
+        GETHOUR = 4004
+        GETMILLISECOND = 4005
+        GETMINUTE = 4006
+        GETMONTH = 4007
+        GETSECOND = 4008
+        GETWEEK = 4009
+        GETWEEKYEAR = 4010
+        GETYEAR = 4011
+        SUBTRACTDURATION = 4017
+        TODATE = 4018
+        TOMILLISECONDS = 4019
+        TOSTRING = 4020
+        TOUNIXTIME = 4021
+        BEFOREDATE = 4022
+        AFTERDATE = 4023
+        DAYOFTHEYEAR = 4024
+        ORDINALDATE = 4025
 
     class Xml:
         """
         XML functions
         --------------
 
-**EXTRACT_FIELD(xpath)** -  Extracts a field using XPath expression from XML which has been imported to a BigDataFrame
+        **EXTRACT_FIELD(xpath)** -  Extracts a field using XPath expression from XML which has been imported to a BigDataFrame
 
-Xml.EXTRACT_FIELD can be used to extract individual fields from within the XML data stored in the BigDataFrame. Extracted fields are stored as strings.
-The expression syntax follows XPath query and needs to return an individual field.
+        Xml.EXTRACT_FIELD can be used to extract individual fields from within the XML data stored in the BigDataFrame. Extracted fields are stored as strings.
+        The expression syntax follows XPath query and needs to return an individual field.
 
-Extracting lists is not supported at this time.
+        Extracting lists is not supported at this time.
 
-Examples
---------
+        Examples
+        --------
 
->>> frame = fb.build_from_xml('xml', 'file.xml', 'repository')
->>> frame.transform('xml_column', 'homepage_column', EvalFunctions.Xml.EXTRACT_FIELD, ['repository/homepage'])
->>> frame.transform('xml_column', 'title_column', EvalFunctions.Xml.EXTRACT_FIELD, ['repository/store/book[1]/title'])
+        >>> frame = fb.build_from_xml('xml', 'file.xml', 'repository')
+        >>> frame.transform('xml_column', 'homepage_column', EvalFunctions.Xml.EXTRACT_FIELD, ['repository/homepage'])
+        >>> frame.transform('xml_column', 'title_column', EvalFunctions.Xml.EXTRACT_FIELD, ['repository/store/book[1]/title'])
         """
-        EXTRACT_FIELD=3000
+        EXTRACT_FIELD = 3000
 
     class Aggregation:
         """
         Aggregation functions
         ---------------------
 
-**AVG()** - computes the average of the values
+        **AVG()** - computes the average of the values
 
-**SUM()** - computes the sum of the values
+        **SUM()** - computes the sum of the values
 
-**MAX()** - returns the maximum value
+        **MAX()** - returns the maximum value
 
-**MIN()** - returns the minimum value
+        **MIN()** - returns the minimum value
 
-**COUNT()** - returns the number of values present
+        **COUNT()** - returns the number of values present
 
-**DISTINCT()** - returns the distinct values; EvalFunctions.Aggregation.DISTINCT discovers
-the values which are distinct and belong to the same group after aggregation.
+        **DISTINCT()** - returns the distinct values; EvalFunctions.Aggregation.DISTINCT discovers
+        the values which are distinct and belong to the same group after aggregation.
 
-**DISTINCT_COUNT()** - return the number of unique values
+        **DISTINCT_COUNT()** - return the number of unique values
 
-**STDEV()** - computes the standard deviation
+        **STDEV()** - computes the standard deviation
 
-**VAR()** - computes the variance
+        **VAR()** - computes the variance
 
-Examples
---------
+        Examples
+        --------
 
->>> # group by column_A and compute the average of column_B in each group
->>> # create a new aggregate frame with columns "column_A" and "column_B_avg"
->>> frame.aggregate("column_A", [(EvalFunctions.Aggregation.AVG, "column_B", "column_B_avg")])
+        >>> # group by column_A and compute the average of column_B in each group
+        >>> # create a new aggregate frame with columns "column_A" and "column_B_avg"
+        >>> frame.aggregate("column_A", [(EvalFunctions.Aggregation.AVG, "column_B", "column_B_avg")])
 
 
->>> # group by column_A and collect all the distinct values in column_B per group
->>> # create a new aggregate frame 'frame_distict' with columns 'column_A' and 'column_B_avg'
->>> aggregated_frame = frame.aggregate('column_A', [(EvalFunctions.Aggregation.DISTINCT, "column_B", "column_B_distinct")], 'frame_distinct')
+        >>> # group by column_A and collect all the distinct values in column_B per group
+        >>> # create a new aggregate frame 'frame_distict' with columns 'column_A' and 'column_B_avg'
+        >>> aggregated_frame = frame.aggregate('column_A', [(EvalFunctions.Aggregation.DISTINCT, "column_B", "column_B_distinct")], 'frame_distinct')
        """
-        AVG=5000
-        SUM=5001
-        MAX=5002
-        MIN=5003
-        COUNT=5004
-        DISTINCT=5005
-        COUNT_DISTINCT=5006
-        STDEV=5007 #Population standard deviation
-        VAR=5008
+        AVG = 5000
+        SUM = 5001
+        MAX = 5002
+        MIN = 5003
+        COUNT = 5004
+        DISTINCT = 5005
+        COUNT_DISTINCT = 5006
+        STDEV = 5007 #Population standard deviation
+        VAR = 5008
 
 
     @staticmethod
@@ -302,6 +353,7 @@ Examples
             EvalFunctions.Json.EXTRACT_FIELD: 'com.intel.pig.udf.ExtractJSON',
             EvalFunctions.Xml.EXTRACT_FIELD: 'org.apache.pig.piggybank.evaluation.xml.XPathWithType',
 
+
             EvalFunctions.Aggregation.AVG: 'AVG',
             EvalFunctions.Aggregation.SUM: 'SUM',
             EvalFunctions.Aggregation.MAX: 'MAX',
@@ -310,7 +362,29 @@ Examples
             EvalFunctions.Aggregation.DISTINCT: 'DISTINCT',
             EvalFunctions.Aggregation.COUNT_DISTINCT: 'COUNT_DISTINCT',
             EvalFunctions.Aggregation.STDEV: 'STDEV',
-            EvalFunctions.Aggregation.VAR: 'VAR' }
+            EvalFunctions.Aggregation.VAR: 'VAR',
+
+            EvalFunctions.DateTime.ADDDURATION: 'AddDuration',
+            EvalFunctions.DateTime.CURRENTTIME: 'CurrentTime',
+            EvalFunctions.DateTime.GETDAY: 'GetDay',
+            EvalFunctions.DateTime.GETHOUR: 'GetHour',
+            EvalFunctions.DateTime.GETMILLISECOND: 'GetMilliSecond',
+            EvalFunctions.DateTime.GETMINUTE: 'GetMinute',
+            EvalFunctions.DateTime.GETMONTH: 'GetMonth',
+            EvalFunctions.DateTime.GETSECOND: 'GetSecond',
+            EvalFunctions.DateTime.GETWEEK: 'GetWeek',
+            EvalFunctions.DateTime.GETWEEKYEAR: 'GetWeekYear',
+            EvalFunctions.DateTime.GETYEAR: 'GetYear',
+            EvalFunctions.DateTime.SUBTRACTDURATION: 'SubtractDuration',
+            EvalFunctions.DateTime.TODATE: 'ToDate',
+            EvalFunctions.DateTime.TOMILLISECONDS: 'ToMilliSeconds',
+            EvalFunctions.DateTime.TOSTRING: 'ToString',
+            EvalFunctions.DateTime.TOUNIXTIME: 'ToUnixTime',
+            EvalFunctions.DateTime.BEFOREDATE: 'com.intel.pig.udf.BeforeDate',
+            EvalFunctions.DateTime.AFTERDATE: 'com.intel.pig.udf.AfterDate',
+            EvalFunctions.DateTime.DAYOFTHEYEAR: 'com.intel.pig.udf.DayOfTheYear',
+            EvalFunctions.DateTime.ORDINALDATE: 'com.intel.pig.udf.OrdinalDate'
+        }
 
         if x in mapping:
             return mapping[x]
@@ -322,35 +396,44 @@ string_functions = []
 math_functions = []
 json_functions = []
 xml_functions = []
-aggregation_functions= []
+aggregation_functions = []
 available_builtin_functions = []#used for validation, does the user try to call a valid function?
-for key,val in EvalFunctions.String.__dict__.items():
-   if key == '__module__' or key == '__doc__':
-       continue
-   string_functions.append(EvalFunctions.to_string(val))
+available_builtin_functions = []#used for validation, does the user try to call a valid function?
+datetime_functions = []
 
-for key,val in EvalFunctions.Math.__dict__.items():
-   if key == '__module__' or key == '__doc__':
-       continue
-   math_functions.append(EvalFunctions.to_string(val))
+for key, val in EvalFunctions.String.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    string_functions.append(EvalFunctions.to_string(val))
 
-for key,val in EvalFunctions.Json.__dict__.items():
-   if key == '__module__' or key == '__doc__':
-       continue
-   json_functions.append(EvalFunctions.to_string(val))
+for key, val in EvalFunctions.Math.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    math_functions.append(EvalFunctions.to_string(val))
 
-for key,val in EvalFunctions.Xml.__dict__.items():
-   if key == '__module__' or key == '__doc__':
-       continue
-   xml_functions.append(EvalFunctions.to_string(val))
+for key, val in EvalFunctions.Json.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    json_functions.append(EvalFunctions.to_string(val))
 
-for key,val in EvalFunctions.Aggregation.__dict__.items():
-   if key == '__module__' or key == '__doc__':
-       continue
-   aggregation_functions.append(EvalFunctions.to_string(val))
+for key, val in EvalFunctions.DateTime.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    datetime_functions.append(EvalFunctions.to_string(val))
+
+for key, val in EvalFunctions.Xml.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    xml_functions.append(EvalFunctions.to_string(val))
+
+for key, val in EvalFunctions.Aggregation.__dict__.items():
+    if key == '__module__' or key == '__doc__':
+        continue
+    aggregation_functions.append(EvalFunctions.to_string(val))
 
 available_builtin_functions.extend(string_functions)
 available_builtin_functions.extend(math_functions)
 available_builtin_functions.extend(json_functions)
 available_builtin_functions.extend(xml_functions)
 available_builtin_functions.extend(aggregation_functions)
+available_builtin_functions.extend(datetime_functions)

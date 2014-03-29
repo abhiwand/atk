@@ -317,6 +317,44 @@ class HbaseTableTest(unittest.TestCase):
         script_path = os.path.join(config['pig_py_scripts'], 'pig_transform.py')
         self.assertTrue(script_path in result_holder["call_args"])
 
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_transform_with_valid_column_name(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        call_method.return_value = None
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+
+        try:
+            table.transform("col1", "new_col1", EvalFunctions.Math.ABS)
+        except HBaseTableException:
+            self.fail("table.transform raised ExceptionType unexpectedly!")
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_transform_with_valid_column_name_multiple(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        call_method.return_value = None
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+
+        try:
+            table.transform("col1,col2", "new_col1", EvalFunctions.Math.ABS)
+        except HBaseTableException:
+            self.fail("table.transform raised ExceptionType unexpectedly!")
+
+
+
     @patch('intel_analytics.table.hbase.table.ETLSchema')
     def test_transform_with_random_column_name(self, etl_schema_class):
 
@@ -327,6 +365,17 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         self.assertRaises(HBaseTableException, table.transform, "random_column", "new_col1", EvalFunctions.Math.ABS)
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_transform_with_random_column_name_multiple(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(HBaseTableException, table.transform, "random_column1,random_column2", "new_col1", EvalFunctions.Math.ABS)
 
     def test_transform_random_evaulation_function(self):
         table_name = "test_table"
