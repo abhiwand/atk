@@ -292,17 +292,17 @@ class HBaseTable(object):
                         raise HBaseTableException("Column %s in expression %s does not exist" % (col, column_name))
         # check input: comma separated columns or single-quoted string literals
         # accepted format exampe: transform('(a,b,\'MyString\'', ...
-        elif transformation == EvalFunctions.String.CONCAT:
+        else:
             cols = column_name.split(',')
-            if len(cols) < 2:
+
+            if transformation == EvalFunctions.String.CONCAT and len(cols) < 2:
                 raise HBaseTableException("Concatenation needs more than 1 input")
+
             for col in cols:
                 if ((not ('\'' == col[0] and '\'' == col[len(col)-1])) and
                     col not in etl_schema.feature_names):
                     raise HBaseTableException("Column %s in expression %s does not exist" % (col, column_name))
-        # single column
-        elif column_name not in etl_schema.feature_names:
-            raise HBaseTableException("Column %s does not exist" % column_name)
+
 
         if not column_name:
             column_name = '' #some operations does not requires a column name.
