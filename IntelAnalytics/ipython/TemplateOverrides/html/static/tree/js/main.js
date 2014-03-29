@@ -25,8 +25,11 @@ $(document).ready(function () {
     // auto refresh every xx secondes, no need to be fast,
     //  update is done at least when page get focus
     var time_refresh = 60; // in sec
-
+    //keep track of the notebook refresh status
+    var refreshed = false;
     var enable_autorefresh = function(){
+        if(refreshed) return true;
+        refreshed = true;
         //refresh immediately , then start interval
         if($('.upload_button').length == 0)
         {
@@ -45,6 +48,7 @@ $(document).ready(function () {
     }
 
     var disable_autorefresh = function(){
+        refreshed = false;
         clearInterval(interval_id);
         interval_id = 0;
     }

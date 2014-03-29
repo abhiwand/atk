@@ -1,13 +1,12 @@
 package com.intel.graph.analytics.examples;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.builtin.MonitoredUDF;
 import org.apache.pig.data.Tuple;
-
 import org.apache.pig.impl.util.WrappedIOException;
+
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 
 @MonitoredUDF(errorCallback = GenericErrorHandler.class, duration=30, timeUnit=TimeUnit.MINUTES)

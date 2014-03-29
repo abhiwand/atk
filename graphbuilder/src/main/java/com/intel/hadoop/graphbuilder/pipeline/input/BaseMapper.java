@@ -23,8 +23,6 @@
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
 import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.keyfunction.KeyFunction;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.GraphTokenizer;
-import com.intel.hadoop.graphbuilder.graphelements.Edge;
-import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.util.GraphBuilderExit;
 import com.intel.hadoop.graphbuilder.util.StatusCode;
 import org.apache.hadoop.conf.Configuration;
@@ -33,7 +31,6 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 /**
  * This class implements the basic mapper <code>context.writes</code> tasks
@@ -52,14 +49,13 @@ public class BaseMapper {
         EDGE_WRITE_ERROR,
     }
 
-    private Logger               log;
-    private IntWritable          mapKey;
+    private Logger                 log;
+    private IntWritable            mapKey;
     private SerializedGraphElement mapVal;
-    private Class                valClass;
-    private GraphTokenizer       tokenizer;
-    private KeyFunction          keyFunction;
-    private Mapper.Context       context;
-    private Configuration        conf;
+    private Class                  valClass;
+    private GraphTokenizer         tokenizer;
+    private KeyFunction            keyFunction;
+    private Mapper.Context         context;
 
     /**
      * An Exception construction will log a fatal error and cause a <code>system.exit</code>. There is no point in
@@ -72,7 +68,6 @@ public class BaseMapper {
     public BaseMapper(Mapper.Context context, Configuration conf, Logger log) {
         this.context = context;
         this.log     = log;
-        this.conf    = conf;
         setUp(conf);
     }
 
@@ -170,7 +165,7 @@ public class BaseMapper {
      * @param key      The vertex and edge key  to write.
      * @param val      The property graph element to write, either vertex or edge.
      */
-    protected void contextWrite(Mapper.Context context, IntWritable key, SerializedGraphElement val) {
+    public void contextWrite(Mapper.Context context, IntWritable key, SerializedGraphElement val) {
         try {
             context.write(key, val);
         } catch (IOException e) {
@@ -182,53 +177,12 @@ public class BaseMapper {
         }
     }
 
-    /**
-     * Iterates through the edge list, creates the Edge graph element, gets its key and writes it. 
-     * <code>NullPointerException</code>s are captured whenever edge or vertex has any null values.
-     *
-     * @param context  The mapper's current context.
-     */
-    public void writeEdges(Mapper.Context context) {
-        try {
-             Iterator<Edge> edgeIterator = tokenizer.getEdges();
-
-            while (edgeIterator.hasNext()) {
-
-                Edge edge = edgeIterator.next();
-
-                mapVal.init(edge);
-                mapKey.set(keyFunction.getEdgeKey(edge));
-
-                contextWrite(context, mapKey, mapVal);
-            }
-        } catch (NullPointerException e) {
-            context.getCounter(getEdgeWriteErrorCounter()).increment(1);
-            log.error(e.getMessage(), e);
-        }
+    public IntWritable getMapKey() {
+        return this.mapKey;
     }
 
-    /**
-     * Iterates through the vertex list, creates a vertex graph element, gets its key, and writes it. 
-     * <code>NullPointerException</code>s are captured whenever the edge or vertex has any null values.
-     *
-     * @param context The mapper's current context.
-     */
-    public void writeVertices(Mapper.Context context) {
-        try {
-            Iterator<Vertex> vertexIterator = tokenizer.getVertices();
-            while (vertexIterator.hasNext()) {
-
-                Vertex vertex = vertexIterator.next();
-
-                mapVal.init(vertex);
-                mapKey.set(keyFunction.getVertexKey(vertex));
-
-                contextWrite(context, mapKey, mapVal);
-            }
-        } catch (NullPointerException e) {
-            context.getCounter(getVertexWriteErrorCounter()).increment(1);
-            log.error(e.getMessage(), e);
-        }
+    public SerializedGraphElement getMapVal() {
+        return this.mapVal;
     }
 
     public void setMapKey(IntWritable mapKey) {
@@ -265,5 +219,17 @@ public class BaseMapper {
      */
     public static Counters getVertexWriteErrorCounter() {
         return Counters.VERTEX_WRITE_ERROR;
+    }
+
+    public KeyFunction getKeyFunction() {
+        return keyFunction;
+    }
+
+    public Mapper.Context getContext() {
+        return context;
+    }
+
+    public void setContext(Mapper.Context context) {
+        this.context = context;
     }
 }

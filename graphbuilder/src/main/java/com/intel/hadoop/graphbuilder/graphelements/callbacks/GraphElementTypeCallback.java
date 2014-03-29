@@ -48,7 +48,7 @@ import com.intel.hadoop.graphbuilder.util.ArgumentBuilder;
  *      }
  * </code>
  * </pre>
- * <b>For a sample usage look at</b>
+ * <b>For sample usage</b>
  *
  * @see com.intel.hadoop.graphbuilder.graphelements.GraphElement
  */

@@ -19,12 +19,11 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.input.hbase;
 
-import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
-import static org.powermock.api.mockito.PowerMockito.mock;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.*;
 
-import org.apache.hadoop.hbase.client.Scan;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,10 +40,6 @@ import com.intel.hadoop.graphbuilder.util.HBaseUtils;
 @PrepareForTest({HBaseInputConfiguration.class,HBaseUtils.class, GraphBuilderExit.class})
 public class HBaseInputConfigurationTest {
 
-    Logger     loggerMock;
-    HBaseUtils hBaseUtilsMock;
-    Scan       scanMock;
-
     @BeforeClass
     public static final void beforeClass(){
         //this is to suppress the log 4j errors during the tests
@@ -54,7 +49,7 @@ public class HBaseInputConfigurationTest {
 
     @Before
     public final void setupHBaseForTest() throws Exception {
-        loggerMock = mock(Logger.class);
+        Logger loggerMock = mock(Logger.class);
         Whitebox.setInternalState(HBaseInputConfiguration.class, "LOG", loggerMock);
     }
 
@@ -62,7 +57,7 @@ public class HBaseInputConfigurationTest {
     public void testSimpleUseCase() throws Exception {
 
         String tableName = "fakeyTable";
-        hBaseUtilsMock = mock(HBaseUtils.class);
+        HBaseUtils hBaseUtilsMock = mock(HBaseUtils.class);
 
         mockStatic(HBaseUtils.class);
 
@@ -71,13 +66,36 @@ public class HBaseInputConfigurationTest {
 
         HBaseInputConfiguration hbic = new HBaseInputConfiguration(tableName);
 
-
-        assert(hbic.usesHBase());
+		assertTrue(hbic.usesHBase());
         assertSame(hbic.getMapperClass(), HBaseReaderMapper.class);
 
         // conceivably you could vary this, but you don't want to violate it accidentally
-        assert(hbic.getDescription().contains(tableName));
+		assertTrue(hbic.getDescription().contains(tableName));
+
     }
 
+	@Test
+	public void HBaseInputConfiguration_table_does_not_exist_is_a_fatal_exit() throws Exception {
+        String expectedMessage = "expected exception message from mock";
+		String tableName = "fakeyTable";
 
+        HBaseUtils hBaseUtilsMock = mock(HBaseUtils.class);
+        when(hBaseUtilsMock.tableExists(tableName)).thenReturn(false);
+
+        mockStatic(HBaseUtils.class);
+		when(HBaseUtils.getInstance()).thenReturn(hBaseUtilsMock);
+
+        mockStatic(GraphBuilderExit.class);
+        doThrow(new RuntimeException(expectedMessage)).when(GraphBuilderExit.class, "graphbuilderFatalExitNoException",
+                any(), any(), any());
+
+		try {
+            // invoke method under test
+			new HBaseInputConfiguration(tableName);
+
+            fail("Expected exception did not occur");
+		} catch (Exception e) {
+            assertEquals(expectedMessage, e.getMessage());
+		}
+	}
 }

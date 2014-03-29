@@ -19,20 +19,25 @@
 
 package com.intel.pig.udf.eval;
 
-import com.intel.hadoop.graphbuilder.graphelements.*;
+import com.intel.hadoop.graphbuilder.graphelements.Edge;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
+import com.intel.hadoop.graphbuilder.graphelements.Vertex;
 import com.intel.hadoop.graphbuilder.pipeline.tokenizer.hbase.HBaseGraphBuildingRule;
 import com.intel.hadoop.graphbuilder.types.*;
 import com.intel.hadoop.graphbuilder.util.BaseCLI;
 import com.intel.hadoop.graphbuilder.util.CommandLineInterface;
 import com.intel.pig.data.GBTupleFactory;
 import com.intel.pig.data.PropertyGraphElementTuple;
+import com.intel.pig.rules.EdgeRule;
 import com.intel.pig.udf.GBUdfException;
 import com.intel.pig.udf.GBUdfExceptionHandler;
-
+import com.intel.pig.udf.util.InputTupleInProgress;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapreduce.Counter;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.PigWarning;
 import org.apache.pig.backend.executionengine.ExecException;
@@ -43,25 +48,30 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.FrontendException;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
+import org.apache.pig.tools.pigstats.PigStatusReporter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 /**
  * CreatePropGraphElements ... converts tuples of scalar data into bag of property graph elements..
  * <p/>
- *
+ * <p/>
  * <b>Example of use in pig script:</b>
- *
+ * <p/>
  * <pre>
  * REGISTER target/graphbuilder-2.0alpha-with-deps.jar;
- * x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id: int, name: chararray, age: int, dept: chararray, managerId: int, tenure: chararray);
- * DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "name=age,managerId" -e "name,dept,worksAt,tenure"');
+ * x = LOAD 'examples/data/employees.csv' USING PigStorage(',') AS (id: int, name: chararray, age: int,
+ * dept: chararray, managerId: int, tenure: chararray);
+ * DEFINE CreatePropGraphElements com.intel.pig.udf.eval.CreatePropGraphElements('-v "name=age,managerId" -e "name,
+ * dept,worksAt,tenure"');
  * pge = FOREACH x GENERATE flatten(CreatePropGraphElements(*));
  * </pre>
- *
+ * <p/>
  * The argument to the UDF constructor is a command string interpreted in the following manner:
  * The rules for specifying a graph are, at present, as follows:
  * </p>
@@ -75,102 +85,150 @@ import java.util.concurrent.TimeUnit;
  * </p>
  * <p>
  * <p>VERTICES: The first attribute in the string is an optional vertex label, the next is the required
- *  vertex ID field name. Subsequent attributes denote vertex properties
+ * vertex ID field name. Subsequent attributes denote vertex properties
  * and are separated from the first by an equals sign:</p>
  * <code> vertex_id_fieldname=vertex_prop1_fieldname,... vertex_propn_fieldname</code>
  * <p>or in the case there are no properties associated with the vertex id:
  * <code> vertex_id_fieldname </code>
  * </p>
- *  * <p>
- *     EXAMPLE:
- *     <p>
- *<code>-v "name=age" -e "name,dept,worksAt,seniority"</code>
- *     </p>
- *     This generates a vertex for each employee annotated by their age, a vertex for each department with at least
- *     one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
- *     seniority in that department.
+ * * <p>
+ * EXAMPLE:
+ * <p>
+ * <code>-v "name=age" -e "name,dept,worksAt,seniority"</code>
  * </p>
+ * This generates a vertex for each employee annotated by their age, a vertex for each department with at least
+ * one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
+ * seniority in that department.
+ * </p>
+ * This generates a vertex for each employee annotated by their age, a vertex for each department with at least
+ * one employee, and an edge labeled "worksAt" between each employee and their department, annotated by their
+ * seniority in that department.
  * </p>
  */
 @MonitoredUDF(errorCallback = GBUdfExceptionHandler.class, duration = 30, timeUnit = TimeUnit.MINUTES)
 public class CreatePropGraphElements extends EvalFunc<DataBag> {
-    private CommandLineInterface commandLineInterface = new CommandLineInterface();
+
+    /**
+     * Special vertex name used when retaining dangling edges
+     */
+    public static final String NULL_VERTEX_NAME = "null";
+    public static final String VERTEX_PROPERTY_SIDE = "side";
+    public static final String LEFT = "L";
+    public static final String RIGHT = "R";
+
+    final boolean BIDIRECTIONAL = true;
+    final boolean DIRECTED = false;
+
+    private boolean retainDanglingEdges = false;
+    private boolean flattenLists = false;
 
     private BagFactory mBagFactory = BagFactory.getInstance();
 
-    private String   tokenizationRule;
-    private String[] rawEdgeRules;
-    private String[] vertexRules;
-    private String[] rawDirectedEdgeRules;
-
-    private boolean flattenLists = false;
     private List<String> vertexIdFieldList;
+
     private Hashtable<String, String[]> vertexPropToFieldNamesMap;
     private Hashtable<String, String> vertexLabelMap;
-
-    private Hashtable<String, EdgeRule>     edgeLabelToEdgeRules;
-
-    private Hashtable<String, Byte> fieldNameToDataType;
+    private MultiValueMap edgeLabelToEdgeRules;
+    private boolean addSideToVertices = false;
 
     /**
-     * Encapsulation of the rules for creating edges.
-     *
-     * <p> Edge rules consist of the following:
-     * <ul>
-     * <li> A field name from which to read the edge's source vertex</li>
-     * <li> A field name from which to read the edge's destination vertex</li>
-     * <li> A boolean flag denoting if the edge is bidirectional or directed</li>
-     * <li> A list of field names from which to read the edge's properties</li>
-     * </ul></p>
-     * <p>Edge rules are indexed by their label, so we do not store the label in the rule.</p>
+     * Implements the dangling edge counters.
+     * Use getter methods to call these counters
      */
-    private class EdgeRule {
-        private String       srcFieldName;
-        private String       dstFieldName;
-        private List<String> propertyFieldNames;
-        boolean              isBiDirectional;
-
-        private EdgeRule() {
-
-        }
-
-        /**
-         * Constructor must take source, destination and bidirectionality as arguments.
-         * <p>There is no public default constructor.</p>
-         * @param srcFieldName  column name from which to get source vertex
-         * @param dstFieldName  column name from which to get destination vertex
-         * @param biDirectional  is this edge bidirectional or not?
-         */
-        EdgeRule(String srcFieldName, String dstFieldName, boolean biDirectional) {
-            this.srcFieldName = srcFieldName;
-            this.dstFieldName = dstFieldName;
-            this.propertyFieldNames = new ArrayList<String>();
-            this.isBiDirectional     = biDirectional;
-        }
-
-        String getSrcFieldName() {
-            return this.srcFieldName;
-        }
-
-        String getDstFieldName() {
-            return this.dstFieldName;
-        }
-
-        boolean isBiDirectional() {
-            return this.isBiDirectional;
-        }
-
-        void addPropertyColumnName(String columnName) {
-            propertyFieldNames.add(columnName);
-        }
-
-        List<String> getPropertyFieldNames() {
-            return propertyFieldNames;
-        }
+    public enum Counters {
+        NUM_DANGLING_EDGES,
+        NUM_EDGES,
+        NUM_VERTICES
     }
 
-    final boolean BIDIRECTIONAL = true;
-    final boolean DIRECTED      = false;
+    /**
+     * UDF Constructor : uses parse rule in command string to initialize graph construction rules.
+     *
+     * @param tokenizationRule
+     */
+    public CreatePropGraphElements(String tokenizationRule) {
+
+        CommandLineInterface commandLineInterface = new CommandLineInterface();
+
+        Options options = new Options();
+        options.addOption(BaseCLI.Options.vertex.get());
+        options.addOption(BaseCLI.Options.edge.get());
+        options.addOption(BaseCLI.Options.directedEdge.get());
+        options.addOption(BaseCLI.Options.flattenList.get());
+        options.addOption(BaseCLI.Options.retainDanglingEdges.get());
+        options.addOption(BaseCLI.Options.addSideToVertex.get());
+
+        commandLineInterface.setOptions(options);
+
+        CommandLine cmd = commandLineInterface.checkCli(tokenizationRule.split(" "));
+
+        vertexLabelMap = new Hashtable<String, String>();
+        vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
+        vertexIdFieldList = new ArrayList<String>();
+        edgeLabelToEdgeRules = new MultiValueMap();
+
+        String[] vertexRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
+        String[] rawEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
+        String[] rawDirectedEdgeRules = nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge
+                .getLongOpt()));
+
+        flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
+        retainDanglingEdges = cmd.hasOption(BaseCLI.Options.retainDanglingEdges.getLongOpt());
+        addSideToVertices = cmd.hasOption(BaseCLI.Options.addSideToVertex.getLongOpt());
+
+        // Parse the column names of vertices and properties from command line prompt
+        // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
+
+        for (String vertexRule : vertexRules) {
+
+            // this tokenizer is based off the old HBase -> graph tokenizer and uses those parsing/extraction
+            // routines as subroutines... those routines have nothing to do with hbase and simply extract field
+            // ("column") names from command strings
+
+            String vertexIdFieldName = HBaseGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
+
+            vertexIdFieldList.add(vertexIdFieldName);
+
+            String[] vertexPropertiesFieldNames =
+                    HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
+
+            vertexPropToFieldNamesMap.put(vertexIdFieldName, vertexPropertiesFieldNames);
+
+            // Vertex labels are maintained in a separate map
+            String vertexLabel = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
+            if (vertexLabel != null) {
+                vertexLabelMap.put(vertexIdFieldName, vertexLabel);
+            }
+        }
+
+        for (String rawEdgeRule : rawEdgeRules) {
+
+            String srcVertexFieldName = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
+            String tgtVertexFieldName = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
+            String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
+            List<String> edgePropertyFieldNames =
+                    HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawEdgeRule);
+
+            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, BIDIRECTIONAL, label,
+                    edgePropertyFieldNames);
+
+            edgeLabelToEdgeRules.put(label, edgeRule);
+        }
+
+        for (String rawDirectedEdgeRule : rawDirectedEdgeRules) {
+
+            String srcVertexFieldName = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawDirectedEdgeRule);
+            String tgtVertexFieldName = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawDirectedEdgeRule);
+            String label = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
+            List<String> edgePropertyFieldNames =
+                    HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
+
+            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED, label,
+                    edgePropertyFieldNames);
+
+            edgeLabelToEdgeRules.put(label, edgeRule);
+        }
+    }
 
     /*
      * A helper function that replaces nulls with empty lists.
@@ -183,167 +241,41 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
         }
     }
 
-    /**
-     * UDF Constructor : uses parse rule in command string to initialize graph construction rules.
-     *
-     * @param tokenizationRule
-     */
-    public CreatePropGraphElements(String tokenizationRule) {
-
-        commandLineInterface = new CommandLineInterface();
-
-        Options options = new Options();
-
-        options.addOption(BaseCLI.Options.vertex.get());
-
-        options.addOption(BaseCLI.Options.edge.get());
-
-        options.addOption(BaseCLI.Options.directedEdge.get());
-        
-        options.addOption(BaseCLI.Options.flattenList.get());
-        
-        commandLineInterface.setOptions(options);
-
-        CommandLine cmd = commandLineInterface.checkCli(tokenizationRule.split(" "));
-
-        this.tokenizationRule = tokenizationRule;
-
-
-        vertexLabelMap = new Hashtable<String, String>();
-        vertexPropToFieldNamesMap = new Hashtable<String, String[]>();
-        vertexIdFieldList = new ArrayList<String>();
-
-        edgeLabelToEdgeRules  = new Hashtable<String, EdgeRule>();
-
-        vertexRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.vertex.getLongOpt()));
-
-        rawEdgeRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.edge.getLongOpt()));
-
-        rawDirectedEdgeRules =
-                nullIntoEmptyArray(cmd.getOptionValues(BaseCLI.Options.directedEdge.getLongOpt()));
-        
-        flattenLists = cmd.hasOption(BaseCLI.Options.flattenList.getLongOpt());
-        
-        // Parse the column names of vertices and properties from command line prompt
-        // <vertex_col1>=[<vertex_prop1>,...] [<vertex_col2>=[<vertex_prop1>,...]]
-
-
-        String   vertexIdFieldName  = null;
-        String   vertexLabel      = null;
-
-        for (String vertexRule : vertexRules) {
-
-            // this tokenizer is based off the old HBase -> graph tokenizer and uses those parsing/extraction
-            // routines as subroutines... those routines have nothing to do with hbase and simply extract field
-            // ("column") names from command strings
-
-            vertexIdFieldName = HBaseGraphBuildingRule.getVidColNameFromVertexRule(vertexRule);
-
-            vertexIdFieldList.add(vertexIdFieldName);
-
-            String[] vertexPropertiesFieldNames =
-                    HBaseGraphBuildingRule.getVertexPropertyColumnsFromVertexRule(vertexRule);
-
-            vertexPropToFieldNamesMap.put(vertexIdFieldName, vertexPropertiesFieldNames);
-
-            // Vertex labels are maintained in a separate map
-            vertexLabel = HBaseGraphBuildingRule.getRDFTagFromVertexRule(vertexRule);
-            if (vertexLabel != null) {
-                vertexLabelMap.put(vertexIdFieldName, vertexLabel);
-            }
-        }
-
-        for (String rawEdgeRule : rawEdgeRules) {
-
-            String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawEdgeRule);
-            String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawEdgeRule);
-            String   label                = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawEdgeRule);
-            List<String> edgePropertyFieldNames =
-                    HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawEdgeRule);
-
-            EdgeRule edgeRule = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, BIDIRECTIONAL);
-
-            for (String edgePropertyFieldName : edgePropertyFieldNames) {
-                edgeRule.addPropertyColumnName(edgePropertyFieldName);
-            }
-            edgeLabelToEdgeRules.put(label, edgeRule);
-        }
-
-        for (String rawDirectedEdgeRule : rawDirectedEdgeRules) {
-
-            String   srcVertexFieldName     = HBaseGraphBuildingRule.getSrcColNameFromEdgeRule(rawDirectedEdgeRule);
-            String   tgtVertexFieldName     = HBaseGraphBuildingRule.getDstColNameFromEdgeRule(rawDirectedEdgeRule);
-            String   label                = HBaseGraphBuildingRule.getLabelFromEdgeRule(rawDirectedEdgeRule);
-            List<String> edgePropertyFieldNames =
-                    HBaseGraphBuildingRule.getEdgePropertyColumnNamesFromEdgeRule(rawDirectedEdgeRule);
-
-            EdgeRule edgeRule         = new EdgeRule(srcVertexFieldName, tgtVertexFieldName, DIRECTED);
-
-            for (String edgePropertyFieldName : edgePropertyFieldNames) {
-                edgeRule.addPropertyColumnName(edgePropertyFieldName);
-            }
-
-            edgeLabelToEdgeRules.put(label, edgeRule);
-        }
-    }
-
     private String[] expandString(String string) {
 
-        String[] outArray = null;
+        String[] outArray;
 
         int inLength = string.length();
 
         if (this.flattenLists && string.startsWith("{") && string.endsWith("}")) {
 
-            String bracesStrippedString     = string.substring(1,inLength-1);
-            String parenthesesDroppedString = bracesStrippedString.replace("(","").replace(")","");
-            String[] expandedString         = parenthesesDroppedString.split("\\,");
-            outArray                        = expandedString;
-
-        }  else {
-            outArray = new String[] {string} ;
+            String bracesStrippedString = string.substring(1, inLength - 1);
+            String parenthesesDroppedString = bracesStrippedString.replace("(", "").replace(")", "");
+            outArray = parenthesesDroppedString.split("\\,");
+        } else {
+            outArray = new String[]{string};
         }
 
         return outArray;
     }
 
-    /**
-     * Get an element from a tuple
-     * @param input to get field from
-     * @param inputSchema schema to determine what index to read from tuple
-     * @param fieldName name of field to get from tuple
-     * @return an element from the tuple
-     */
-    private Object getTupleData(Tuple input, Schema inputSchema, String fieldName) throws IOException{
-
-        int fieldPos = inputSchema.getPosition(fieldName);
-        if (fieldPos < 0) {
-            throw new IllegalArgumentException("Did NOT find field named: " + fieldName + " in input schema");
-        }
-        return input.get(fieldPos);
-    }
-
     private void addVertexToPropElementBag(DataBag outputBag, Vertex vertex) throws IOException {
 
-        PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory()
-                .newTuple(1);
-
-        SerializedGraphElementStringTypeVids serializedgraphElement = new SerializedGraphElementStringTypeVids();
-
-        serializedgraphElement.init(vertex);
+        PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory().newTuple(1);
+        SerializedGraphElementStringTypeVids serializedGraphElement = new SerializedGraphElementStringTypeVids();
+        serializedGraphElement.init(vertex);
 
         try {
-            graphElementTuple.set(0, serializedgraphElement);
+            graphElementTuple.set(0, serializedGraphElement);
             outputBag.add(graphElementTuple);
+            incrementCounter(Counters.NUM_VERTICES, 1L);
         } catch (ExecException e) {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
         }
     }
 
-    private void addEdgeToPropElementBag(DataBag outputBag, Edge edge) throws IOException{
+    private void addEdgeToPropElementBag(DataBag outputBag, Edge edge) throws IOException {
 
         PropertyGraphElementTuple graphElementTuple = (PropertyGraphElementTuple) new GBTupleFactory().newTuple(1);
 
@@ -358,13 +290,28 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
             warn("Could not set output tuple", PigWarning.UDF_WARNING_1);
             throw new IOException(new GBUdfException(e));
         }
-
     }
 
-    private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte) throws IllegalArgumentException{
-        WritableComparable object = null;
+    /**
+     * Converts Pig serialized data types to Java data types
+     * BYTE -> Integer
+     * Integer -> Integer
+     * Long -> Long
+     * Float -> Float
+     * Double -> Double
+     * Chararray -> String
+     *
+     * @param value
+     * @param typeByte
+     * @return
+     * @throws IllegalArgumentException
+     */
+    private WritableComparable pigTypesToSerializedJavaTypes(Object value, byte typeByte)
+            throws IllegalArgumentException {
 
-        switch(typeByte) {
+        WritableComparable object;
+
+        switch (typeByte) {
             case DataType.BYTE:
                 object = new IntType((Integer) value);
                 break;
@@ -394,7 +341,7 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
 
     /**
      * exec - the workhorse for the CreatePropGraphElements UDF
-     *
+     * <p/>
      * Takes a tuple of scalars and outputs a bag of property graph elements.
      *
      * @param input a tuple of scalars
@@ -404,157 +351,287 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     @Override
     public DataBag exec(Tuple input) throws IOException {
 
-        Schema inputSchema = getInputSchema();
-        fieldNameToDataType = new Hashtable<String,Byte>();
-
-        for (Schema.FieldSchema field : inputSchema.getFields()) {
-            fieldNameToDataType.put(field.alias, field.type);
-        }
-
+        InputTupleInProgress inputTupleInProgress = new InputTupleInProgress(input, getInputSchema());
         DataBag outputBag = mBagFactory.newDefaultBag();
 
-        // check tuple for vertices
+        // Check input tuple for vertices
 
-        for (String fieldName : vertexIdFieldList) {
+        extractVertices(inputTupleInProgress, outputBag);
 
-            String vidCell = (String) getTupleData(input, inputSchema, fieldName);
+        // Check input tuple for edges
 
-            if (null != vidCell) {
-
-                for (String vertexId : expandString(vidCell)) {
-
-                    // create vertex
-
-                    Vertex<StringType> vertex = new Vertex<StringType>(new StringType(vertexId));
-
-                    // add the vertex properties
-
-                    String[] vpFieldNames = vertexPropToFieldNamesMap.get(fieldName);
-
-                    if (null != vpFieldNames && vpFieldNames.length > 0) {
-                        for (String vertexPropertyFieldName : vpFieldNames) {
-                            Object value = null;
-
-                            value =  getTupleData(input, inputSchema, vertexPropertyFieldName);
-                            if (value != null) {
-                                try {
-                                    vertex.setProperty(vertexPropertyFieldName, pigTypesToSerializedJavaTypes(value,
-                                            fieldNameToDataType.get(vertexPropertyFieldName)));
-                                } catch (ClassCastException e) {
-                                    warn("Cannot cast Pig type to Java type, skipping entry.", PigWarning.UDF_WARNING_1);
-                                }
-                            }
-                        }
-                    }
-
-                    // add the abel to the vertex
-
-                    String label = vertexLabelMap.get(fieldName);
-                    if (label != null) {
-                        vertex.setLabel(new StringType(label));
-                    }
-                    addVertexToPropElementBag(outputBag, vertex);
-                }
-            }  else {
-                warn("Null data, skipping tuple.", PigWarning.UDF_WARNING_1);
-            }
-        }// End of vertex block
-
-        // check tuple for edges
-
-        Object propertyValue;
-        String property;
-        String srcVertexFieldName;
-        String tgtVertexFieldName;
-
-        for (String eLabel : edgeLabelToEdgeRules.keySet()) {
-
-            int          countEdgeAttr  = 0;
-            EdgeRule     edgeRule           = edgeLabelToEdgeRules.get(eLabel);
-            List<String> edgeAttributeList  = edgeRule.getPropertyFieldNames();
-            String[]     edgeAttributes     = edgeAttributeList.toArray(new String[edgeAttributeList.size()]);
-
-
-            srcVertexFieldName     = edgeRule.getSrcFieldName();
-            tgtVertexFieldName     = edgeRule.getDstFieldName();
-
-            String srcVertexCellString = (String) getTupleData(input, inputSchema, srcVertexFieldName);
-            String tgtVertexCellString = (String) getTupleData(input, inputSchema, tgtVertexFieldName);
-
-            StringType srcLabel = null;
-            String srcLabelString = vertexLabelMap.get(srcVertexFieldName);
-            if (srcLabelString != null) {
-                srcLabel = new StringType(srcLabelString);
-            }
-
-            StringType tgtLabel = null;
-            String tgtLabelString = vertexLabelMap.get(tgtVertexFieldName);
-            if (tgtLabelString != null) {
-                tgtLabel = new StringType(tgtLabelString);
-            }
-
-            if (srcVertexCellString != null && tgtVertexCellString != null && eLabel != null) {
-
-                for (String srcVertexName : expandString(srcVertexCellString)) {
-                    for (String tgtVertexName: expandString(tgtVertexCellString)) {
-
-                        Edge<StringType> edge = new Edge<StringType>(new StringType
-                                (srcVertexName),srcLabel,
-                                new StringType(tgtVertexName),
-                                tgtLabel, new StringType(eLabel));
-
-                        for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-                            propertyValue =  getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
-                            property = edgeAttributes[countEdgeAttr];
-
-                            if (propertyValue != null) {
-                                edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
-                                        fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
-                            }
-                        }
-
-                        addEdgeToPropElementBag(outputBag, edge);
-
-                        // need to make sure both ends of the edge are proper
-                        // vertices!
-
-                        Vertex<StringType> srcVertex = new Vertex<StringType>(new
-                                StringType(srcVertexName), srcLabel);
-                        Vertex<StringType> tgtVertex = new Vertex<StringType>(new
-                                StringType(tgtVertexName), tgtLabel);
-                        addVertexToPropElementBag(outputBag, srcVertex);
-                        addVertexToPropElementBag(outputBag, tgtVertex);
-
-                        if (edgeRule.isBiDirectional()) {
-                            Edge<StringType> opposingEdge = new Edge<StringType>(new
-                                    StringType(tgtVertexName), tgtLabel,
-                                    new StringType(srcVertexName), srcLabel,
-                                    new StringType(eLabel));
-
-                            // now add the edge properties
-
-                            for (countEdgeAttr = 0; countEdgeAttr < edgeAttributes.length; countEdgeAttr++) {
-                                propertyValue = (String) getTupleData(input, inputSchema, edgeAttributes[countEdgeAttr]);
-
-                                property = edgeAttributes[countEdgeAttr];
-
-                                if (propertyValue != null) {
-                                    edge.setProperty(property, pigTypesToSerializedJavaTypes(propertyValue,
-                                            fieldNameToDataType.get(edgeAttributes[countEdgeAttr])));
-                                }
-                            }
-                            addEdgeToPropElementBag(outputBag, opposingEdge);
-                        }
-                    }
-                }
-            }
-        }
+        extractEdges(inputTupleInProgress, outputBag);
 
         return outputBag;
     }
 
     /**
+     * Scan the vertex rules, create serialized Vertex elements and add them to the output Bag
+     *
+     * @param inputTupleInProgress
+     * @param outputBag
+     * @throws IOException
+     */
+    private void extractVertices(InputTupleInProgress inputTupleInProgress, DataBag outputBag) throws IOException {
+
+        for (String fieldName : this.vertexIdFieldList) {
+
+            Object vidCell = inputTupleInProgress.getTupleData(fieldName);
+
+            if (vidCell == null) {
+                warn("Null data, skipping tuple.", PigWarning.UDF_WARNING_1);
+                continue;
+            }
+
+            for (String vertexId : expandString(vidCell.toString())) {
+
+                Vertex<StringType> vertex = new Vertex<StringType>(new StringType(vertexId));
+
+                // add the vertex properties
+
+                String[] vpFieldNames = this.vertexPropToFieldNamesMap.get(fieldName);
+
+                if (null != vpFieldNames && vpFieldNames.length > 0) {
+                    for (String vertexPropertyFieldName : vpFieldNames) {
+                        Object value = inputTupleInProgress.getTupleData(vertexPropertyFieldName);
+                        if (value != null) {
+                            try {
+                                vertex.setProperty(vertexPropertyFieldName, pigTypesToSerializedJavaTypes(value,
+                                        inputTupleInProgress.getType(vertexPropertyFieldName)));
+                            } catch (ClassCastException e) {
+                                warn("Cannot cast Pig type to Java type, skipping entry.", PigWarning.UDF_WARNING_1);
+                            }
+                        }
+                    }
+                }
+
+                // add the label to the vertex
+
+                String label = this.vertexLabelMap.get(fieldName);
+                if (label != null) {
+                    vertex.setLabel(new StringType(label));
+                }
+                addVertexToPropElementBag(outputBag, vertex);
+            }
+        }
+    }
+
+    /**
+     * Scan the edge rules, create serialized Edge elements and add them to the output Bag
+     *
+     * @param inputTupleInProgress
+     * @param outputBag
+     * @throws IOException
+     */
+    private void extractEdges(InputTupleInProgress inputTupleInProgress, DataBag outputBag) throws IOException {
+
+        for (Object edgeLabel : this.edgeLabelToEdgeRules.keySet()) {
+
+            Collection<EdgeRule> edgeRules = this.edgeLabelToEdgeRules.getCollection(edgeLabel);
+
+            for (EdgeRule edgeRule : edgeRules) {
+                String srcVertexFieldName = edgeRule.getSrcFieldName();
+                String tgtVertexFieldName = edgeRule.getDstFieldName();
+
+                Object srcVertexCell = inputTupleInProgress.getTupleData(srcVertexFieldName);
+                Object tgtVertexCell = inputTupleInProgress.getTupleData(tgtVertexFieldName);
+
+                if (srcVertexCell != null && tgtVertexCell != null) {
+
+                    String srcVertexCellString = srcVertexCell.toString();
+                    String tgtVertexCellString = tgtVertexCell.toString();
+
+                    StringType srcLabel = null;
+                    StringType tgtLabel = null;
+
+                    String srcLabelString = this.vertexLabelMap.get(srcVertexFieldName);
+                    if (srcLabelString != null) {
+                        srcLabel = new StringType(srcLabelString);
+                    }
+
+                    String tgtLabelString = this.vertexLabelMap.get(tgtVertexFieldName);
+                    if (tgtLabelString != null) {
+                        tgtLabel = new StringType(tgtLabelString);
+                    }
+
+                    List<String> srcVertexList = parseCommaSeparatedVertexList(srcVertexCellString);
+                    List<String> tgtVertexList = parseCommaSeparatedVertexList(tgtVertexCellString);
+
+                    for (String srcVertex : srcVertexList) {
+                        for (String tgtVertex : tgtVertexList) {
+
+                            // skip case where both are null
+                            if (srcVertex.equals(NULL_VERTEX_NAME) && tgtVertex.equals(NULL_VERTEX_NAME)) {
+                                continue;
+                            }
+
+                            createEdge(inputTupleInProgress, srcVertex, tgtVertex, srcLabel, tgtLabel, edgeRule, outputBag);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Function to add Edge, source and target vertices and edge properties to the outputBag
+     *
+     * @param inputTupleInProgress
+     * @param srcVertexName
+     * @param tgtVertexName
+     * @param srcLabel
+     * @param tgtLabel
+     * @param edgeRule
+     * @param outputBag
+     * @throws IOException
+     */
+    private void createEdge(InputTupleInProgress inputTupleInProgress, String srcVertexName,
+                            String tgtVertexName, StringType srcLabel, StringType tgtLabel,
+                            EdgeRule edgeRule, DataBag outputBag) throws IOException {
+
+        StringType currentSrcVertexName = new StringType(srcVertexName);
+        StringType currentTgtVertexName = new StringType(tgtVertexName);
+
+        addNewEdge(inputTupleInProgress, currentSrcVertexName, srcLabel,
+                currentTgtVertexName, tgtLabel, edgeRule, outputBag);
+
+        // Add both ends of the edge to the list of serialized property graph elements
+
+        Vertex<StringType> srcVertex = createVertexWithDirection(currentSrcVertexName, srcLabel, LEFT);
+        Vertex<StringType> tgtVertex = createVertexWithDirection(currentTgtVertexName, tgtLabel, RIGHT);
+        addVertexToPropElementBag(outputBag, srcVertex);
+        addVertexToPropElementBag(outputBag, tgtVertex);
+
+        if (edgeRule.isBiDirectional()) {
+
+            addNewEdge(inputTupleInProgress, currentTgtVertexName, tgtLabel,
+                    currentSrcVertexName, srcLabel, edgeRule, outputBag);
+        }
+    }   // End of createEdge
+
+    /**
+     * Creates the edge object, adds the properties to it and adds the edge object to the output bag
+     *
+     * @param inputTupleInProgress
+     * @param srcVertexName
+     * @param srcLabel
+     * @param tgtVertexName
+     * @param tgtLabel
+     * @param edgeRule
+     * @param outputBag
+     * @throws IOException
+     */
+    private void addNewEdge(InputTupleInProgress inputTupleInProgress, StringType srcVertexName,
+                            StringType srcLabel, StringType tgtVertexName, StringType tgtLabel,
+                            EdgeRule edgeRule, DataBag outputBag) throws IOException {
+
+        Edge<StringType> edge = new Edge<StringType>(srcVertexName, srcLabel, tgtVertexName, tgtLabel,
+                new StringType(edgeRule.getLabel(inputTupleInProgress)));
+
+        for (String edgeAttribute : edgeRule.getPropertyFieldNames()) {
+            Object propertyValue = inputTupleInProgress.getTupleData(edgeAttribute);
+
+            if (propertyValue != null) {
+                edge.setProperty(edgeAttribute, pigTypesToSerializedJavaTypes(propertyValue,
+                        inputTupleInProgress.getType(edgeAttribute)));
+            }
+        }
+
+        addEdgeToPropElementBag(outputBag, edge);
+        incrementCounter(Counters.NUM_EDGES, 1L);
+
+        if (isDangling(srcVertexName.get(), tgtVertexName.get()) && this.retainDanglingEdges) {
+            incrementCounter(Counters.NUM_DANGLING_EDGES, 1L);
+        }
+    }
+
+
+    /**
+     * Increment counters for Hadoop Job in this UDF
+     *
+     * @param key   Enumerate counter name
+     * @param value Increment value
+     */
+    public void incrementCounter(Enum key, Long value) {
+
+        PigStatusReporter reporter = PigStatusReporter.getInstance();
+        if (reporter != null) {
+            Counter reporterCounter = reporter.getCounter(key);
+            if (reporterCounter != null) {
+                reporterCounter.increment(value);
+            }
+        }
+    }
+
+    /**
+     * Parse a comma separated string and convert to a list of vertex names
+     *
+     * @param vertexCellString comma separated list. E.g. a,b,,d
+     * @return List of "a, b, null, d" or "a, b, d" depending on retainDanglingEdges
+     */
+    private List<String> parseCommaSeparatedVertexList(String vertexCellString) {
+        List<String> list = new ArrayList<String>();
+
+        if (vertexCellString == null) {
+            if (retainDanglingEdges) {
+                list.add(NULL_VERTEX_NAME);
+            }
+        } else {
+            for (String vertexName : expandString(vertexCellString)) {
+                if (vertexName.isEmpty() && retainDanglingEdges) {
+                    list.add(NULL_VERTEX_NAME);
+                } else {
+                    list.add(vertexName);
+                }
+            }
+        }
+        return list;
+    }
+
+
+    /**
+     * Determines whether an edge is dangling or not
+     *
+     * @param srcVertexName
+     * @param tgtVertexName
+     * @return
+     */
+    private boolean isDangling(String srcVertexName, String tgtVertexName) {
+        return srcVertexName.equals(NULL_VERTEX_NAME) || tgtVertexName.equals(NULL_VERTEX_NAME);
+    }
+
+    /**
+     * Creates a new vertex data type with direction property "L" or "R"
+     *
+     * @param vertexName
+     * @param label
+     * @param direction
+     * @return
+     */
+    private Vertex<StringType> createVertexWithDirection(StringType vertexName, StringType label, String direction) {
+        Vertex<StringType> vertex = new Vertex<StringType>(vertexName, label);
+
+        // If "-p" flag is enabled, then add the direction property to vertices
+        // The direction property retains the original relationship direction as a vertex property
+        // E.g., a data set with schema user, movie and ratings must create graph elements as
+        // user1 "L" movie1 "R" rating1
+        // movie1 "R" user1 "L" rating1, and not as
+        // user1 "L" movie1 "R" rating1
+        // user1 "R" movie1 "L" rating1
+        // movie1 "R" user1 "L" rating1
+        // movie1 "R" user1 "L" rating1
+        // This property is not added in the reverse edge when bidirectional edges are enabled
+
+        if (addSideToVertices) {
+            vertex.setProperty(VERTEX_PROPERTY_SIDE, pigTypesToSerializedJavaTypes(direction, DataType.CHARARRAY));
+        }
+        return vertex;
+    }
+
+
+    /**
      * Provide return type information back to the Pig level.
+     *
      * @param input
      * @return Schema for a bag of property graph elements packed into unary tuples.
      */
@@ -562,12 +639,8 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
     public Schema outputSchema(Schema input) {
         try {
 
-            Schema pgeTuple = new Schema(new Schema.FieldSchema(
-                    "property graph element (unary tuple)", DataType.TUPLE));
-
-
-            return new Schema(new Schema.FieldSchema("property graph elements",
-                    pgeTuple, DataType.BAG));
+            Schema pgeTuple = new Schema(new Schema.FieldSchema("property_graph_element_schema", DataType.TUPLE));
+            return new Schema(new Schema.FieldSchema(null, pgeTuple, DataType.BAG));
 
         } catch (FrontendException e) {
             // This should not happen
@@ -575,4 +648,5 @@ public class CreatePropGraphElements extends EvalFunc<DataBag> {
                     + "creating output schema for CreatePropGraphElements udf", e);
         }
     }
+
 }

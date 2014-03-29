@@ -112,7 +112,7 @@ public class RuntimeConfig {
     }
 
     public GraphConstructionPipeline addConfig(GraphConstructionPipeline conf){
-        for(Map.Entry<String, String> option : hadoopConf.getValByRegex("^graphbuilder.").entrySet()){
+        for(Map.Entry<String, String> option : hadoopConf.getValByRegex("^graphbuilder.|^mapred.").entrySet()){
             String key = option.getKey();
             String value = option.getValue();
             conf.addUserOpt(key, value);
@@ -129,7 +129,7 @@ public class RuntimeConfig {
 
     public void loadConfig(Configuration conf) {
         if( conf != null){
-            for (Map.Entry<String, String> option : conf.getValByRegex("^graphbuilder.").entrySet()) {
+            for (Map.Entry<String, String> option : conf.getValByRegex("^graphbuilder.|^mapred.").entrySet()) {
                 String key = option.getKey();
                 String value = option.getValue();
                 hadoopConf.set(key, value);

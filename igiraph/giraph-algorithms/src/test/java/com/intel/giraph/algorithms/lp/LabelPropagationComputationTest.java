@@ -23,25 +23,23 @@
 
 package com.intel.giraph.algorithms.lp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.intel.giraph.algorithms.lp.LabelPropagationComputation.LabelPropagationMasterCompute;
 import com.intel.giraph.algorithms.lp.LabelPropagationComputation.LabelPropagationAggregatorWriter;
+import com.intel.giraph.algorithms.lp.LabelPropagationComputation.LabelPropagationMasterCompute;
 import com.intel.giraph.io.formats.JsonPropertyGraph4LPInputFormat;
 import com.intel.giraph.io.formats.JsonPropertyGraph4LPOutputFormat;
-
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.utils.InternalVertexRunner;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class LabelPropagationComputationTest {
 

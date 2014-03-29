@@ -18,23 +18,21 @@
  */
 package com.intel.hadoop.graphbuilder.pig;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-
-import com.intel.hadoop.graphbuilder.graphelements.VertexID;
-import org.apache.pig.EvalFunc;
-import org.apache.pig.impl.PigContext;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
 import com.intel.hadoop.graphbuilder.graphelements.Vertex;
+import com.intel.hadoop.graphbuilder.graphelements.VertexID;
 import com.intel.hadoop.graphbuilder.types.PropertyMap;
 import com.intel.hadoop.graphbuilder.types.StringType;
 import com.intel.pig.data.PropertyGraphElementTuple;
+import org.apache.pig.EvalFunc;
+import org.apache.pig.impl.PigContext;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestVertexlistUdf {
     EvalFunc<?> toEdgelistUdf0;
@@ -42,7 +40,6 @@ public class TestVertexlistUdf {
 
     @Before
     public void setup() throws Exception {
-        System.out.println("*** Starting VertexList test cases ***");
         toEdgelistUdf0 = (EvalFunc<?>) PigContext
                 .instantiateFuncFromSpec(
                         "com.intel.pig.udf.eval.VertexList('false')");
@@ -77,18 +74,9 @@ public class TestVertexlistUdf {
                     "Employee001\tHAWK.People");
 
         String statement1 = (String) toEdgelistUdf1.exec(t);
-        System.out.println(statement1);
-        boolean flag = statement1.contains("HAWK.People.Employee001");
-        assertTrue("Vertex tuple mismatch", flag);
-        flag = statement1.contains("name:Alice");
-        assertTrue("Vertex tuple mismatch", flag);
-        flag = statement1.contains("age:30");
-        assertTrue("Vertex tuple mismatch", flag);
-    }
 
-    @After
-    public void done() {
-        System.out.println("*** Done with the VertexList tests ***");
+        assertTrue("Vertex tuple mismatch, statement1:" + statement1, statement1.contains("Employee001\tHAWK.People"));
+        assertTrue("Vertex tuple mismatch, statement1:" + statement1, statement1.contains("name\tAlice"));
+        assertTrue("Vertex tuple mismatch, statement1:" + statement1, statement1.contains("age\t30"));
     }
-
 }

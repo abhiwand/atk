@@ -23,11 +23,6 @@
 
 package com.intel.pig.udf;
 
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.util.Arrays;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.DataByteArray;
 import org.apache.pig.data.Tuple;
@@ -37,6 +32,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.JUnitCore;
+
+import java.io.IOException;
+import java.util.Arrays;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Nezih Yigitbasi
@@ -83,13 +83,9 @@ public class TestExtractJSON {
 		result = ((DataByteArray) testFn.exec(inTuple)).toString();
 		assertEquals("Result should have been true!", result, "true");
 
-		inTuple.set(1, "store.book.findAll{book -> book.price}[0].price");
+		inTuple.set(1, "store.book.[?(@.price)][0].price");
 		result = ((DataByteArray) testFn.exec(inTuple)).toString();
 		assertEquals("Result should have been 8.95!", result, "8.95");
-
-		inTuple.set(1, "store.book.size()");
-		result = ((DataByteArray) testFn.exec(inTuple)).toString();
-		assertEquals("Result should have been 2!", result, "2");
 
 	}
 
@@ -99,11 +95,10 @@ public class TestExtractJSON {
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
-		DataByteArray result = (DataByteArray) testFn.exec(inTuple);
-		assertEquals("Result should have been null!", result, null);
+		String result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		assertEquals("Result should have been [\"Nigel Rees\",\"Evelyn Waugh\"]", result, null);
 	}
 
-	@Test(expected = IllegalArgumentException.class)
 	public void testFailureCase2() throws IOException {
 		System.out.println("Testing failure cases - 2");
 
@@ -111,10 +106,10 @@ public class TestExtractJSON {
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
-		testFn.exec(inTuple);
+		String result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		assertEquals("Result should have been \"\"", result, "");
 	}
 
-	@Test(expected = IllegalArgumentException.class)
 	public void testFailureCase3() throws IOException {
 		System.out.println("Testing failure cases - 3");
 
@@ -122,7 +117,9 @@ public class TestExtractJSON {
 		String[] inputTuple = { testJson, testQuery };
 		Tuple inTuple = TupleFactory.getInstance().newTuple(
 				Arrays.asList(inputTuple));
-		testFn.exec(inTuple);
+		String result = ((DataByteArray) testFn.exec(inTuple)).toString();
+		assertEquals("Result should have been \"\"", result, "");
+
 	}
 
 	@After

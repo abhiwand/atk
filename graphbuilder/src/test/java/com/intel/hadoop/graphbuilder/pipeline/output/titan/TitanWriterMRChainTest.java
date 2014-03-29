@@ -19,22 +19,17 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.output.titan;
 
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.powermock.api.mockito.PowerMockito.mock;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
+import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementLongTypeVids;
+import com.intel.hadoop.graphbuilder.pipeline.TestMapReduceDriverUtils;
+import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
+import com.intel.hadoop.graphbuilder.types.LongType;
+import com.intel.hadoop.graphbuilder.types.StringType;
+import com.thinkaurelius.titan.core.TitanElement;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.After;
 import org.junit.Before;
@@ -44,15 +39,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElement;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementLongTypeVids;
-import com.intel.hadoop.graphbuilder.graphelements.SerializedGraphElementStringTypeVids;
-import com.intel.hadoop.graphbuilder.pipeline.TestMapReduceDriverUtils;
-import com.intel.hadoop.graphbuilder.pipeline.input.hbase.GBHTableConfiguration;
-import com.intel.hadoop.graphbuilder.types.LongType;
-import com.intel.hadoop.graphbuilder.types.PropertyMap;
-import com.intel.hadoop.graphbuilder.types.StringType;
-import com.thinkaurelius.titan.core.TitanElement;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(TitanElement.class)
@@ -79,8 +70,6 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
                         , sampleDataAlice());
 
         Pair<ImmutableBytesWritable, Result>[] pairs = new Pair[]{alice};
-
-
 
         com.tinkerpop.blueprints.Vertex  bpVertex = vertexMock();
 
@@ -135,7 +124,8 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
 
         verifyPairSecond(run.get(1), graphElement);
 
-        vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(new StringType("GAO123"));
+		vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(
+				new StringType("GAO123"));
         vertex.setProperty("TitanID", new LongType(901L));
 
         graphElement.init(vertex);
@@ -156,7 +146,6 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
                 (new ImmutableBytesWritable(Bytes.toBytes("row2")),
                         sampleDataBob());
         Pair<ImmutableBytesWritable, Result>[] pairs = new Pair[]{alice, bob};
-
 
         com.tinkerpop.blueprints.Vertex  bpVertex = vertexMock();
 
@@ -242,7 +231,8 @@ public class TitanWriterMRChainTest extends TestMapReduceDriverUtils {
 
         verifyPairSecond(run.get(4), graphElement);
 
-        vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(new StringType("GAO123"));
+		vertex = new com.intel.hadoop.graphbuilder.graphelements.Vertex<StringType>(
+				new StringType("GAO123"));
         vertex.setProperty("TitanID", new LongType(903L));
 
         graphElement.init(vertex);

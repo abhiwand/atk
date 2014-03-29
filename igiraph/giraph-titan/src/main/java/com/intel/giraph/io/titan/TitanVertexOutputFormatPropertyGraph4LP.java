@@ -22,8 +22,8 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan;
 
-import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.intel.giraph.io.VertexData4LPWritable;
+import com.intel.giraph.io.titan.common.GiraphTitanUtils;
 import com.thinkaurelius.titan.core.TitanGraph;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;

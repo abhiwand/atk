@@ -19,14 +19,15 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
-import static junit.framework.Assert.assertEquals;
-
-import java.util.Set;
-
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Writable;
 import org.junit.Test;
+
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PropertyMapTest {
     @Test
@@ -70,8 +71,6 @@ public class PropertyMapTest {
 
         assertEquals(pm.getProperty("foo"), null);
 
-
-
         IntWritable    one = new IntWritable(1);
         IntWritable    two = new IntWritable(2);
         DoubleWritable pi  = new DoubleWritable(3.14159);
@@ -89,7 +88,7 @@ public class PropertyMapTest {
     public void testGetPropertyKeys() throws Exception {
         PropertyMap pm= new PropertyMap();
 
-        assert(pm.getPropertyKeys().isEmpty());
+		assertTrue(pm.getPropertyKeys().isEmpty());
 
         IntWritable    one = new IntWritable(1);
         IntWritable    two = new IntWritable(2);
@@ -101,22 +100,21 @@ public class PropertyMapTest {
 
         Set<Writable> keySet = pm.getPropertyKeys();
 
-        for (Writable key : keySet)
-        {
-            assert(key.toString().compareTo("p1") == 0 || key.toString().compareTo("p2") == 0);
+		for (Writable key : keySet) {
+			assertTrue(key.toString().compareTo("p1") == 0
+					|| key.toString().compareTo("p2") == 0);
         }
 
         boolean foundP1 = false;
         boolean foundP2 = false;
 
-        for (Writable key : keySet)
-        {
+        for (Writable key : keySet) {
             foundP1 |= (key.toString().compareTo("p1") == 0);
             foundP2 |= (key.toString().compareTo("p2") == 0);
         }
 
-        assert(foundP1);
-        assert(foundP2);
+		assertTrue(foundP1);
+		assertTrue(foundP2);
     }
 
 }
