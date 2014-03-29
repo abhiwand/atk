@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2013 Intel Corporation All Rights Reserved.
+# Copyright 2014 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -65,6 +65,10 @@ if not os.getenv('HADOOP_HOME'):
 if not os.getenv('TITAN_HOME'):
     if os.path.exists('/home/hadoop/IntelAnalytics/titan-server'):
         os.environ['TITAN_HOME'] = '/home/hadoop/IntelAnalytics/titan-server'
+
+if not os.getenv('FAUNUS_HOME'):
+    if os.path.exists('/home/hadoop/IntelAnalytics/faunus'):
+        os.environ['FAUNUS_HOME'] = '/home/hadoop/IntelAnalytics/faunus'
 
 if not os.getenv('PIG_OPTS'):
     os.environ['PIG_OPTS'] = "-Dpython.verbose=error"#to get rid of Jython logging
