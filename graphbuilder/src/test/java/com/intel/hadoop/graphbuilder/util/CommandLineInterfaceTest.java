@@ -19,19 +19,7 @@
  */
 package com.intel.hadoop.graphbuilder.util;
 
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.powermock.api.mockito.PowerMockito.spy;
-import static org.powermock.api.support.membermodification.MemberMatcher.method;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Random;
-
+import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
@@ -45,7 +33,15 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
 
-import com.intel.hadoop.graphbuilder.sampleapplications.TableToGraphDB;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Random;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.powermock.api.mockito.PowerMockito.spy;
+import static org.powermock.api.support.membermodification.MemberMatcher.method;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(GraphBuilderExit.class)
@@ -69,7 +65,6 @@ public class CommandLineInterfaceTest {
             .withDescription("sample option two").hasArgs().isRequired()
             .withArgName("Edge-Column-Name").create("2");
 
-
     private HashMap<String, String> hadoopOptions = new HashMap<String, String>();
 
     @Before
@@ -81,7 +76,6 @@ public class CommandLineInterfaceTest {
 
         options.addOption(optionOne);
         options.addOption(optionTwo);
-
 
         hadoopOptions.put("-conf", configFile);
         hadoopOptions.put("-D", "test=0");
@@ -110,7 +104,7 @@ public class CommandLineInterfaceTest {
     public void test_TableToGraphDB_cli_options() throws Exception {
 
         //the options for the demo app
-        HashMap<String, String> cliArgs = new HashMap <String, String>();
+		HashMap<String, String> cliArgs = new HashMap<String, String>();
         cliArgs.put("t", "employeeData");
         cliArgs.put("v", "cf:name=cf:age,cf:dept");
         cliArgs.put("e", "cf:name,cf:dept,worksAt");
@@ -121,6 +115,7 @@ public class CommandLineInterfaceTest {
         cliArgs.put("k", "keys index");
         cliArgs.put("h", "");
         cliArgs.put("s", "");
+        cliArgs.put("P", "");
 
         testDemoApp(TableToGraphDB.class, cliArgs);
     }
@@ -207,7 +202,6 @@ public class CommandLineInterfaceTest {
             count++;
             hadoopArgs.remove(key);
         }
-
 
         while(gbArgs.size() > 0 ){
             String key = getRandomKey(gbArgs);

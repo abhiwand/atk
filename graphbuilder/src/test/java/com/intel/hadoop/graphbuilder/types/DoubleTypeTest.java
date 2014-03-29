@@ -19,11 +19,13 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
+import org.junit.Test;
+
+import java.io.DataInput;
+
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.powermock.api.mockito.PowerMockito.mock;
-import java.io.DataInput;
-import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 
 public class DoubleTypeTest {
 	private static final double EPSILON = 0.0001d;
@@ -46,7 +48,8 @@ public class DoubleTypeTest {
 
 		d.add(new DoubleType(1.0d));
 		assertEquals(124.0d, d.get(), EPSILON);
-		assertEquals("compareTo mismatch", d.compareTo(new DoubleType(124.0d)),0);
+		assertEquals("compareTo mismatch", d.compareTo(new DoubleType(124.0d)),
+				0);
 
 		val = 500.0d;
 		DataInput dInput = mock(DataInput.class);
@@ -54,4 +57,11 @@ public class DoubleTypeTest {
 		d.readFields(dInput);
 		assertEquals(val, d.get(), EPSILON);
 	}
+
+    @Test
+    public void testGetBaseType() throws Exception {
+        DoubleType d = new DoubleType();
+
+        assertEquals(d.getBaseType(), Double.class);
+    }
 }

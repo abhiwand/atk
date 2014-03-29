@@ -19,9 +19,10 @@
  */
 package com.intel.hadoop.graphbuilder.pipeline.tokenizer;
 
-import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.PropertyGraphSchema;
-import org.apache.commons.cli.CommandLine;
+import com.intel.hadoop.graphbuilder.pipeline.pipelinemetadata.propertygraphschema.SchemaElement;
 import org.apache.hadoop.conf.Configuration;
+
+import java.util.List;
 
 /**
  * The class that implements this interface encapsulates the set-up time information 
@@ -56,14 +57,14 @@ public interface GraphBuildingRule {
     /**
      * Obtains the type information for the graphs this method can generate.
      *
-     * The graph construction (tokenization) process determines all of the vertex, 
+     * That is, all of the vertex,
 	 * edge, and property types that can appear in the resulting property graph. 
 	 * This type of information is sometimes needed by the graph storage target.
      *
      * @return The property graph schema for the graph elements generated.
      */
 
-    public PropertyGraphSchema getGraphSchema();
+    public List<SchemaElement> getGraphSchema();
 
     /**
      * Gets the class for the Map Reduce time graph generation method, the graph 

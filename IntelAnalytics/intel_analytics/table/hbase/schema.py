@@ -99,6 +99,8 @@ class ETLSchema:
         Loads schema from HBase for the given table.
         """
         schema_table = config['hbase_schema_table']
+        self.feature_names = []
+        self.feature_types = []
         with ETLHBaseClient() as hbase_client:
             assert hbase_client.table_exists(schema_table), 'Cannot read the schema from %s!' % (schema_table)
             data_dict = hbase_client.get(schema_table,table_name)
@@ -135,3 +137,18 @@ class ETLSchema:
     
     def get_feature_types_as_CSV(self):
         return ",".join(self.feature_types)    
+
+    def get_feature_type(self, feature_name):
+	"""
+	Return feature type for feature name
+	"""
+	for i, name in enumerate(self.feature_names):
+		if (name == feature_name):
+			return self.feature_types[i]
+	raise Exception('No such feature exists %s' % (feature_name))
+
+    def get_schema_as_str(self):
+	"""
+	Returns the schema as a string in the format a:int,b:chararray,c:bytearray
+	"""
+        return ','.join(s[0] + ':' + s[1] for s in zip(self.feature_names,self.feature_types))

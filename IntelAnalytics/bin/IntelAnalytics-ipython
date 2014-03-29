@@ -17,6 +17,9 @@ if [ -d /home/hadoop/IntelAnalytics/hbase ]
 		export HBASE_HOME=/home/hadoop/IntelAnalytics/hbase
 fi
 
+#Needed for pydoop support
+export LD_LIBRARY_PATH="${JAVA_HOME}/jre/lib/amd64/server:${LD_LIBRARY_PATH}"
+
 if [ -d /home/hadoop/IntelAnalytics ] && [ `whoami` != 'hadoop' ]
 	then
 		sudo -i -u hadoop bash -c "

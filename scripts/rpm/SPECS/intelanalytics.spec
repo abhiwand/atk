@@ -28,12 +28,11 @@ The Intel Graph Analytics System. Build number: Build number: %{?BUILD_NUMBER}. 
     %{!?__debug_package:/usr/lib/rpm/redhat/brp-strip %{__strip}} \
     /usr/lib/rpm/redhat/brp-strip-static-archive %{__strip} \
     /usr/lib/rpm/redhat/brp-strip-comment-note %{__strip} %{__objdump} \
-    /usr/lib/rpm/brp-python-bytecompile \
-    /usr/lib/rpm/redhat/brp-python-hardlink \
 %{nil}
 
 %define TIMESTAMP %(echo $TIMESTAMP)
 
+B
 %prep
 
 %setup -q

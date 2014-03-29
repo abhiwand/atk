@@ -24,9 +24,9 @@ package com.intel.giraph.io.titan;
 
 import com.thinkaurelius.titan.core.TitanTransaction;
 import com.thinkaurelius.titan.graphdb.configuration.GraphDatabaseConfiguration;
+import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
-import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.log4j.Logger;
 import org.junit.After;
@@ -35,7 +35,6 @@ import org.junit.Before;
 import java.io.IOException;
 
 import static com.intel.giraph.io.titan.common.GiraphTitanConstants.*;
-import static com.intel.giraph.io.titan.common.GiraphTitanConstants.GIRAPH_TITAN_STORAGE_READ_ONLY;
 
 /** 
  * Base class for all Titan/HBase related Giraph tests.

@@ -23,8 +23,8 @@
 
 package com.intel.giraph.io.formats;
 
-import java.io.IOException;
-import java.util.ArrayList;
+import com.intel.giraph.io.VertexData4CFWritable;
+import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 import org.apache.giraph.conf.GiraphConfiguration;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.graph.Vertex;
@@ -35,10 +35,11 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.mahout.math.DenseVector;
-import com.intel.giraph.io.VertexData4CFWritable;
-import com.intel.giraph.io.VertexData4CFWritable.VertexType;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 import static org.mockito.Mockito.*;
 
