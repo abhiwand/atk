@@ -447,6 +447,19 @@ class TitanGiraphMachineLearning(object):
         output.graph_name = self._graph.user_graph_name
         output.start_time = time_str
         output.exec_time = str(exec_time) + ' seconds'
+        if len(self.report) > 0:
+            if hasattr(self.report[-1], 'output_vertex_property_list'):
+                output.output_vertex_property_list = self.report[-1].output_vertex_property_list
+            if hasattr(self.report[-1], 'vertex_type'):
+                output.vertex_type = self.report[-1].vertex_type
+            if hasattr(self.report[-1], 'edge_type'):
+                output.edge_type = self.report[-1].edge_type
+            if hasattr(self.report[-1], 'vector_value'):
+                output.vector_value = self.report[-1].vector_value
+            if hasattr(self.report[-1], 'bias_on'):
+                output.bias_on = self.report[-1].bias_on
+            if hasattr(self.report[-1], 'feature_dimension'):
+                output.feature_dimension = self.report[-1].feature_dimension
         if enable_roc == 'true':
             output.auc = list(auc)
         self.report.append(output)
@@ -498,20 +511,46 @@ class TitanGiraphMachineLearning(object):
             if len(self.report) < 1:
                 raise ValueError("There is no AlgorithmReport to get recommendation for!")
             else:
-                output_vertex_property_list = ','.join(self.report[-1].output_vertex_property_list)
-                vertex_type_key = self.report[-1].vertex_type
-                edge_type_key = self.report[-1].edge_type
-                vector_value = self.report[-1].vector_value
-                bias_on = self.report[-1].bias_on
-                feature_dimension = self.report[-1].feature_dimension
+                if hasattr(self.report[-1], 'output_vertex_property_list'):
+                    output_list = self.report[-1].output_vertex_property_list
+                else:
+                    raise ValueError("There is no output_vertex_property_list attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'vertex_type'):
+                    vertex_type_key = self.report[-1].vertex_type
+                else:
+                    raise ValueError("There is no vertex_type attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'edge_type'):
+                    edge_type_key = self.report[-1].edge_type
+                else:
+                    raise ValueError("There is no edge_type attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'vector_value'):
+                    vector_value = self.report[-1].vector_value
+                else:
+                    raise ValueError("There is no vector_value attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'bias_on'):
+                    bias_on = self.report[-1].bias_on
+                else:
+                    raise ValueError("There is no bias_on attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+                if hasattr(self.report[-1], 'feature_dimension'):
+                    feature_dimension = self.report[-1].feature_dimension
+                else:
+                    raise ValueError("There is no feature_dimension attribute in AlgorithmReport!"
+                                     "Recommend method needs this attribute.")
+
         else:
-            output_vertex_property_list = ','.join(input_report.output_vertex_property_list)
+            output_list = input_report.output_vertex_property_list
             vertex_type_key = input_report.vertex_type
             edge_type_key = input_report.edge_type
             vector_value = input_report.vector_value
             bias_on = input_report.bias_on
             feature_dimension = input_report.feature_dimension
 
+        output_vertex_property_list = ','.join(output_list)
         rec_cmd1 = [ global_config['titan_gremlin'],
                      '-e',
                      global_config['giraph_recommend_script']
@@ -570,6 +609,12 @@ class TitanGiraphMachineLearning(object):
         output.exec_time = str(exec_time) + ' seconds'
         output.recommend_id = list(recommend_id)
         output.recommend_score = list(recommend_score)
+        output.output_vertex_property_list = output_list
+        output.vertex_type = vertex_type_key
+        output.edge_type = edge_type_key
+        output.vector_value = vector_value
+        output.bias_on = bias_on
+        output.feature_dimension = feature_dimension
         self.report.append(output)
         return output
 
@@ -706,7 +751,7 @@ class TitanGiraphMachineLearning(object):
         ----------
         output_vertex_property_list : String List
             The list of the result properties on which to save final results.
-            When bias_on was True when running algorithms, the last element is the key for combined bias.
+            When bias_on was True when running algorithms, the last element is the key for the combined bias.
 
         k: Integer, optional
             The number of folds for k-fold cross validation.
@@ -745,7 +790,7 @@ class TitanGiraphMachineLearning(object):
         input_result_keys = []
         vertex_type = None
         edge_type = None
-        feature_dimension = None
+        feature_dimension = 0
         supported_list = global_config['giraph_supported_algorithms'].split(',')
         if input_result_list is None:
             num_runs = len(self.report)
@@ -875,12 +920,11 @@ class TitanGiraphMachineLearning(object):
         output.type = type
         output.input_result_list = input_result_keys
         output.enable_standard_deviation = enable_standard_deviation
-        if bias_on:
-            output.vertex_type = vertex_type
-            output.edge_type = edge_type
-            output.feature_dimension = feature_dimension
-            output.bias_on = bias_on
-            output.vector_value = vector_value
+        output.vertex_type = vertex_type
+        output.edge_type = edge_type
+        output.feature_dimension = feature_dimension
+        output.bias_on = bias_on
+        output.vector_value = vector_value
         self.report.append(output)
         return output
 
@@ -2522,8 +2566,6 @@ class AlgorithmReport():
     """
     Algorithm execution report object, tailored to each algorithm
     """
-    #  Since different algorithms have different properties to report,
-    #  we initialize it as an empty class
     pass
 
 

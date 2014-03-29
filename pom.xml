@@ -462,6 +462,7 @@
     <module>graphbuilder</module>
     <module>imahout</module>
     <module>igiraph</module> 
+		<module>imllib</module>
     <module>IntelAnalytics</module>
     <module>feateng</module>
     <!--module>IntelAnalytics-web</module-->

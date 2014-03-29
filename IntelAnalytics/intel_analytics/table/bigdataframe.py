@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2013 Intel Corporation All Rights Reserved.
+# Copyright 2014 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,6 +25,7 @@ The common methods and class for buiding and operating with big data frames
 """
 import abc
 import traceback
+from intel_analytics.table.bigcolumn import BigColumn
 import collections
 from intel_analytics.config import global_config, dynamic_import, get_time_str
 
@@ -32,7 +33,8 @@ __all__ = ['get_frame_builder',
            'get_frame',
            'get_frame_names',
            'BigDataFrame',
-           'FrameBuilder'
+           'FrameBuilder',
+           'BigDataFilter'
            ]
 
 
@@ -203,30 +205,30 @@ class FrameBuilder(object):
 
         Parameters
         ----------
-        left: BigDataFrame
+        left : BigDataFrame
             Left side of the join
-        right: List
+        right : List
             List of BigDataFrame(s) on the right side of the join
-        left_on: String
+        left_on : String
             String of columnes from left table, space or comma separated
             e.g., 'c1,c2' or 'b2 b3'
-        right_on: List
+        right_on : List
             List of strings, each of which is in comma separated indicating
             columns to be joined corresponding to the list of tables as 
             the 'right', e.g., ['c1,c2', 'b2 b3']
-        how: String
+        how : String
             The type of join, INNER, OUTER, LEFT, RIGHT
-        suffixes: List
+        suffixes : List
             List of strings, each of which is used as suffix to the column
             names from left and right of the join, e.g. ['_x', '_y1', '_y2'].
             Note the first one is always for the left
-        join_frame_name: String
+        join_frame_name : String
             Output BigDataFrame name
-        overwrite: Boolean
+        overwrite : Boolean
             Wether to overwrite the output table if it already exists
 
-        Return
-        ------
+        Returns
+        -------
         BigDataFrame
 
         """
@@ -325,6 +327,35 @@ class BigDataFilter(object):
 class BigDataFrameException(Exception):
     pass
 
+class StringSplitOptions():
+    """
+    Options for how to split a string
+
+    delimiter : String
+        The delimiter between the parts. Comma is default value.
+    trim_start : String
+        A string to remove from the start of the value.
+    trim_end : String
+        A string to remove from the end of the value.
+    trim_whitespace : Boolean
+        True if whitespace should be trimmed from each part. True is default value.
+
+    For example, to split "(1, 2, 3)" into ["1", "2", "3"] you would use the options:
+        delimiter = ','
+        trim_start = '('
+        trim_end = '('
+        trim_whitespace = True
+
+    Examples
+    --------
+    >>> options = StringSplitOptions()
+    >>> options.delimiter = '|'
+    >>> options.trim_whitespace = False
+    """
+    delimiter = ','
+    trim_start = None
+    trim_end = None
+    trim_whitespace = True
 
 class BigDataFrame(object):
     """
@@ -378,6 +409,33 @@ class BigDataFrame(object):
     # Apply User-Defined Function (canned and UDF)
     #----------------------------------------------------------------------
 
+    def get_column_statistics(self, column_list, force_recomputation=False):
+        """
+        Fetch column statistics
+
+        Parameters
+        ----------
+        column_list : List of BigColumn instances
+            list of BigColumn instances to compute statistics for
+        force_recomputation : boolean
+            if true: will recompute statistics otherwise
+            will check if a cached result is available for each column
+
+        Returns
+        -------
+        List: List of statistics for each column
+
+        Examples
+        --------
+        >>> bc1 = BigColumn('col1')
+        >>> bc2 = BigColumn('col2')
+        >>> column_profile = ColumnProfile(data_intervals=[Interval(1,2), Interval(3,4)])
+        >>> bc3 = BigColumn('col3', profile=column_profile)
+        >>> frame.get_column_statistics([bc1,bc2,bc3])
+        """
+        if not all(isinstance(c, BigColumn) for c in column_list):
+            raise BigDataFrameException("Some items in column_list are not valid instances of BigColumn")
+        return self._table.get_column_statistics(column_list, force_recomputation)
 
     def transform(self, column_name, new_column_name, transformation, transformation_args=None):
         """
@@ -391,7 +449,7 @@ class BigDataFrame(object):
             name for the new column that will be created as a result of applying the transformation
         transformation : :ref:`EvalFunctions <evalfunctions>` enumeration
             function to apply
-        transformation_args: List
+        transformation_args : List
             arguments for the function
 
         Examples
@@ -412,43 +470,44 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        aggregate_frame_name: String
+        aggregate_frame_name : String
             aggregate frame name for the output of the aggregation
-        group_by_column_list: List
+        group_by_column_list : List
             List of columns to group the data by before applying aggregation to each group
-        aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
+        aggregation_list : List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
             aggregation functions to apply on each group
-        overwrite: Boolean
-            whether to overwrite the existing table with the same name
+        overwrite : Boolean
+	        whether to overwrite the existing table with the same name
 
         Returns
-        -------
-        frame : BigDataFrame
-            Aggregated frame
+	    -------
+	    frame : BigDataFrame
+	        Aggregated frame
         """
         try:
             aggregate_table = self._table.aggregate(aggregate_frame_name, group_by_column_list, aggregation_list, overwrite)
-            return BigDataFrame(aggregate_frame_name, aggregate_table)
+	    return BigDataFrame(aggregate_frame_name, aggregate_table)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("Error during aggregation " + str(e))
 
     def aggregate_on_range(self, group_by_column, range, aggregation_list, aggregate_frame_name, overwrite=False):
+
         """
         Applies a built-in aggregation function to the given column given a range
 
         Parameters
         ----------
-        aggregate_frame_name: String
+        aggregate_frame_name : String
             aggregate frame name for the output of the aggregation
-        group_by_column: String
+        group_by_column : String
             Column to group the data by before applying aggregation to each group
-        range: String
+        range : String
             range of the group_by_column for applying the group
             Supported formats - min:max:stepsize, comma separated values
-        aggregation_list: List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
+        aggregation_list : List of Tuples [(aggregation_Function, column_to_apply, new_column_name), ...]
             aggregation functions to apply on each group
-        overwrite: Boolean
+        overwrite : Boolean
             whether to overwrite the existing table with the same name
 
         Returns
@@ -629,14 +688,35 @@ class BigDataFrame(object):
 
         Parameters
         ----------
-        filter: BigDataFilter
+        filter : BigDataFilter
             Filter to be applied to each row, either on specific column or the complete row
-        frame_name: String, optional
+        frame_name : String, optional
         create a new frame for the remaining records if not deleting inplace
 
         Returns
         -------
-        frame : BigDataFrame
+        frame: BigDataFrame
+
+        Examples
+        --------
+        >>> # Drop all record with col1 greater than 30
+        >>> f1 = BigDataFilter("col1 > 30") 
+        >>> frame.drop(f1)                                
+        >>> # Creates a new frame col2_equals_5 which contains all records
+        >>> # which do not satisfy the condition col2 equals 5 in the original frame.
+        >>> # Original frame is not modified in this case.
+        >>> f2 = BigDataFilter("col2 == 5")
+        >>> new_frame = frame.drop(f2, "col2_equals_5")   
+        >>> # Drop records when col3 equals 'custom_string' or col4 when it is null or col5 equals ''
+        >>> # Please note to use single quotes for string comparison and '' in case null strings need to dropped
+        >>> f3 = BigDataFilter("col3 == 'custom_string' or col4 is null or col5 == ''")
+        >>> frame.drop(f3)
+        >>> # Drop records which match a regex pattern a-z occuring twice or more
+        >>> f4 = BigDataFilter('[a-z]{2,}', 'col')
+        >>> frame.drop(f4)
+        >>> # Drop records opening with a curly brace
+        >>> f5 = BigDataFilter('^{', 'col')
+        >>> frame.drop(f5)
         """
 
         try:
@@ -653,7 +733,7 @@ class BigDataFrame(object):
             raise BigDataFrameException("Unable to drop rows " + str(e))
 
 
-    def dropna(self, how='any', column_name=None):
+    def dropna(self, how='any', column_name=None, inplace=True):
         """
         Drops all rows which have NA values
 
@@ -662,6 +742,11 @@ class BigDataFrame(object):
         how : { 'any', 'all' }
             any : if any column has an NA value, drop row
             all : if all the columns have an NA value, drop row
+        column_name : String
+            name of column which has an NA value, drop row
+            Optional. If column name is passed, only that column is checked for NA values
+        inplace : Boolean
+            True if dropping inplace else create a new HBase storage table for the frame and append lineage 
         """
         # Currently we don't support threshold or subset so leave them out for the 0.5 release
         #         thresh : int
@@ -669,8 +754,9 @@ class BigDataFrame(object):
         #         subset : array-like
         #             considers only the given columns in the check, None means all
         try:
-            self._table.dropna(how, column_name)
-            self._lineage.append(self._table.table_name)
+            self._table.dropna(how, column_name, inplace)
+            if not inplace:
+                self._lineage.append(self._table.table_name)
         except Exception, e:
             print traceback.format_exc()
             raise BigDataFrameException("dropna exception " + str(e))
@@ -749,14 +835,14 @@ class BigDataFrame(object):
             {'left', 'right', 'outer', 'inner'}, default 'inner'
         left_on : Str
             Columns selected to bed joined on from left frame
-        right_on: Str or list/tuple of Str
+        right_on : Str or list/tuple of Str
             Columns selected to bed joined on from right frame(s)
-        suffixes: tuple of Str
+        suffixes : tuple of Str
             Suffixes to apply to columns on the output frame
-        join_frame_name: Str
+        join_frame_name : Str
             The name of the BigDataFrame that holds the result of join
-        overwrite: Boolean
-            Wether to overwrite the output table if it already exists
+        overwrite : Boolean
+            True will overwrite the output table if it already exists
 
         Returns
         -------
@@ -853,3 +939,52 @@ class BigDataFrame(object):
             raise BigDataFrameException("join exception "+ str(e))
 
         return join_frame
+
+    def flatten(self, column_name, new_frame_name, string_split_options=StringSplitOptions()):
+        """
+        Flatten a column with a list of values into multiple rows
+
+        For example,
+
+          | Input:
+          |    1 a,b,c
+          |    2 b
+          |    3 c
+          |
+          | "Flattened" Output:
+          |    1 a
+          |    1 b
+          |    1 c
+          |    2 b
+          |    3 c
+
+
+        Parameters
+        ----------
+        column_name : String
+            The column containing delimited values.
+        new_frame_name : String
+            The name of the new frame to be created. If this frame already exists, it will be overwritten.
+        string_split_options : StringSplitOptions, optional
+            The options for how to split the delimited values.  Default is comma delimited and trim whitespace.
+
+        Returns
+        -------
+        BigDataFrame
+            The newly created frame.
+
+        Examples
+        --------
+        >>> string_split_options = StringSplitOptions()
+        >>> string_split_options.delimiter = '|'
+        >>> string_split_options.trim_whitespace = True
+        >>>
+        >>> flattened_frame = frame.flatten('column_to_flatten', 'new_frame_name', string_split_options)
+        """
+        try:
+            frame = self._table.flatten(column_name, new_frame_name, string_split_options)
+        except Exception, e:
+            print traceback.format_exc()
+            raise BigDataFrameException("flatten exception " + str(e))
+
+        return frame
