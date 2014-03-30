@@ -907,7 +907,7 @@ class HBaseTable(object):
             etl_schema.load_schema(self.table_name)
 
             def get_drop_stmt_for_column(col):
-                return "%s == ''" % (col) if etl_schema.get_feature_type(col) == "chararray" else "%s is null" % (col)
+                return "%s == ''" % (col) if etl_schema.get_feature_type(col) in ["chararray","bytearray"] else "%s is null" % (col)
             if column_name:
                 columns.append(column_name)
             else:
