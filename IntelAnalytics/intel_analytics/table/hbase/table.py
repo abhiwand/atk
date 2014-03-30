@@ -341,7 +341,7 @@ class HBaseTable(object):
             if len(transformation_args) > 1:
                 etl_schema.feature_types.append(get_pig_type(transformation_args[1]))
             else:
-                etl_schema.feature_types.append('chararray')
+                etl_schema.feature_types.append('bytearray')
         else:
             etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
@@ -1612,8 +1612,10 @@ def get_pig_type(type):
         return "boolean"
     elif type == "Long":
         return "long"
-    else:
+    elif type == "String":
         return "chararray"
+    else:
+        return "bytearray"
 
 
 class HBaseFrameBuilderFactory(object):
