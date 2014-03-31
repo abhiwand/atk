@@ -70,6 +70,13 @@ then
     mkdir ${installDir}.intelanalytics/logs
 fi
 
+if [ ! -d ${installDir}.intelanalytics/docs ]
+then
+    mkdir ${installDir}.intelanalytics/docs
+fi
+
+cp -R %{prefix}/docs/* /home/%{IAUSER}/.intelanalytics/docs
+
 cp %{prefix}/conf/pig_log4j.properties /home/%{IAUSER}/.intelanalytics/conf/
 if [ `ls %{prefix}/notebooks/*.ipynb | wc -l` -gt 0 ]
 then
