@@ -39,22 +39,24 @@ from intel_analytics.table.builtin_functions import EvalFunctions
 
 def generate_hbase_store_args(cmd_line_args):
     hbase_store_args = ''
-    for col in cmd_line_args.group_by_columns.split(","):
-        hbase_store_args += config['hbase_column_family'] + "%s " % (col)
+    if cmd_line_args.group_by_columns:
+        for col in cmd_line_args.group_by_columns.split(","):
+            hbase_store_args += config['hbase_column_family'] + "%s " % (col)
     arg_list = cmd_line_args.aggregation_function_list.split(" ")
     for i in range(0,len(arg_list), 3):
-    	hbase_store_args += config['hbase_column_family']  + "%s " % (arg_list[i+2])
+        hbase_store_args += config['hbase_column_family']  + "%s " % (arg_list[i+2])
 
     return hbase_store_args
 
 def generate_aggregation_statement(cmd_line_args):
     aggregation_statement = 'GENERATE group'
-    group_by_columns = cmd_line_args.group_by_columns.split(",")
-    if len(group_by_columns) == 1:
-        aggregation_statement += ", group AS %s" % (group_by_columns[0])
-    else:
-        for col in group_by_columns:
-            aggregation_statement += ', group.%s' % (col)
+    if cmd_line_args.group_by_columns:
+        group_by_columns = cmd_line_args.group_by_columns.split(",")
+        if len(group_by_columns) == 1:
+            aggregation_statement += ", group AS %s" % (group_by_columns[0])
+        else:
+            for col in group_by_columns:
+                aggregation_statement += ', group.%s' % (col)
     arg_list = cmd_line_args.aggregation_function_list.split(" ")
     for i in range(0,len(arg_list), 3):
 	if (arg_list[i] == EvalFunctions.to_string(EvalFunctions.Aggregation.DISTINCT) or
@@ -87,7 +89,7 @@ def main(argv):
     parser.add_argument('-l', '--range', dest='range', help='specify the range for group by column')
 
     cmd_line_args = parser.parse_args()
-    
+
     features = [(f.strip()) for f in cmd_line_args.feature_names.split(',')]
     pig_schema_info = pig_helpers.get_pig_schema_string(cmd_line_args.feature_names, cmd_line_args.feature_types)
     hbase_constructor_args = pig_helpers.get_hbase_storage_schema_string(cmd_line_args.feature_names)
@@ -110,7 +112,11 @@ def main(argv):
     
     aggregation_statement = generate_aggregation_statement(cmd_line_args)
 
-    pig_statements.append("grp = GROUP hbase_data BY (%s);" % (cmd_line_args.group_by_columns))
+    if cmd_line_args.group_by_columns:
+        pig_statements.append("grp = GROUP hbase_data BY (%s);" % (cmd_line_args.group_by_columns))
+    else:
+        pig_statements.append("grp = GROUP hbase_data ALL PARALLEL 1;")
+
     pig_statements.append("aggregate_relation = FOREACH grp {%s;};" % (aggregation_statement))
 
     pig_statements.append("store aggregate_relation into 'hbase://$OUTPUT' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s');" % (hbase_store_args))
