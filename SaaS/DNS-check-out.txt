@@ -28,4 +28,6 @@ Domain: yftke764d7.graphtrial.intel.com CNAME yftke764d7.graphtrial.infra-host.c
 Domain: 5wkhr4dxd6.graphtrial.intel.com CNAME 5wkhr4dxd6.graphtrial.infra-host.com  
 Domain: vuegmd2b8u.graphtrial.intel.com CNAME vuegmd2b8u.graphtrial.infra-host.com ebi reg    GAOQA-6-4
 Domain: wmd5tqr6cy.graphtrial.intel.com CNAME wmd5tqr6cy.graphtrial.infra-host.com  ebi gmail GAOQA-5-4
-Domain: o5bu6lmq7i.graphtrial.intel.com CNAME o5bu6lmq7i.graphtrial.infra-host.com  Jesse	Treger	jessetreger@gmail.com  IntelAnalytics-40-2   i-aa445ca3
+Domain: o5bu6lmq7i.graphtrial.intel.com CNAME o5bu6lmq7i.graphtrial.infra-host.com
+
+
