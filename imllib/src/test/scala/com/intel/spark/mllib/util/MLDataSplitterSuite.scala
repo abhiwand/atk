@@ -29,7 +29,6 @@ import scala.collection.JavaConversions._
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.FunSuite
 import org.scalatest.matchers.ShouldMatchers
-
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.regression._
 
@@ -55,7 +54,6 @@ class MLDataSplitterSuite extends FunSuite with BeforeAndAfterAll with ShouldMat
     val rnd = new Random(41)
     val testData = Array.fill[Double](nPoints)(rnd.nextGaussian())
     val testRDD = sc.parallelize(testData, 2)
-    testRDD.cache()
     
     // test the size of generated RDD
     val nTotal = testRDD.count
