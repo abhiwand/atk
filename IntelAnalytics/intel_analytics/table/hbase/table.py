@@ -113,40 +113,43 @@ class HBaseTable(object):
 
     def __get_aggregation_list_and_schema(self, aggregation_arguments, etl_schema, new_schema_def):
 
-	aggregation_list = []
-	for i in aggregation_arguments:
-	    function_name = column_to_apply = new_column_name = ""
-	    if isinstance(i, tuple):
-		function_name, column_to_apply, new_column_name = i[0], i[1], (i[1] if len(i) == 2 else i[2])
-	    else:
-		function_name = i
-		if (function_name == EvalFunctions.Aggregation.COUNT):
-		    column_to_apply, new_column_name = "*", "count"
-		else:
-                    raise HBaseTableException("Invalid aggregation: " + function_name)
+        aggregation_list = []
+        aggregation_schema_def = []
+        for i in aggregation_arguments:
+            function_name = column_to_apply = new_column_name = ""
+            if isinstance(i, tuple):
+                function_name, column_to_apply, new_column_name = i[0], i[1], (i[1] if len(i) == 2 else i[2])
+            else:
+                function_name = i
+                if (function_name == EvalFunctions.Aggregation.COUNT):
+                    column_to_apply, new_column_name = "*", "count"
+                else:
+                    raise HBaseTableException("Invalid aggregation: " + EvalFunctions.to_string(function_name))
 
-	    try:
-	        aggregation_list.append(EvalFunctions.to_string(function_name))
-	    except:
-		raise HBaseTableException('The specified aggregation function is invalid: ' + function_name)
-
-
-	    if (column_to_apply != "*" and column_to_apply not in etl_schema.feature_names):
-                raise HBaseTableException("Column %s does not exist" % column_to_apply)
-
-	    aggregation_list.append(column_to_apply);
-	    aggregation_list.append(new_column_name)
+            try:
+                aggregation_list.append(EvalFunctions.to_string(function_name))
+            except:
+                raise HBaseTableException('The specified aggregation function is invalid: ' + EvalFunctions.to_string(function_name))
 
 
-	    if (function_name in [EvalFunctions.Aggregation.COUNT, EvalFunctions.Aggregation.COUNT_DISTINCT]):
-	        new_schema_def += ",%s:int" % (new_column_name)
-	    elif (function_name in [EvalFunctions.Aggregation.DISTINCT]):
-	        new_schema_def += ",%s:chararray" % (new_column_name)
-	    else:
-	        new_schema_def += ",%s:%s" % (new_column_name,
-					          etl_schema.get_feature_type(column_to_apply))
+            if (column_to_apply != "*" and column_to_apply not in etl_schema.feature_names):
+                    raise HBaseTableException("Column %s does not exist" % column_to_apply)
 
-	return aggregation_list, new_schema_def
+            aggregation_list.append(column_to_apply);
+            aggregation_list.append(new_column_name)
+
+
+            if (function_name in [EvalFunctions.Aggregation.COUNT, EvalFunctions.Aggregation.COUNT_DISTINCT]):
+                aggregation_schema_def.append("%s:int" % (new_column_name))
+            elif (function_name in [EvalFunctions.Aggregation.DISTINCT]):
+                aggregation_schema_def.append("%s:chararray" % (new_column_name))
+            else:
+                aggregation_schema_def.append("%s:%s" % (new_column_name, etl_schema.get_feature_type(column_to_apply)))
+
+
+        new_schema_def = (new_schema_def + "," if new_schema_def else "") + ",".join(aggregation_schema_def)
+
+        return aggregation_list, new_schema_def
 
     def aggregate(self,
 		  aggregate_frame_name,
@@ -162,9 +165,12 @@ class HBaseTable(object):
 
         # You should check if the group_by_columns are valid or not
 
-        new_schema_def = ",".join(["%s:%s" % (col, etl_schema.get_feature_type(col)) for col in group_by_columns])
+        new_schema_def = ""
+        if group_by_columns:
+            new_schema_def = ",".join(["%s:%s" % (col, etl_schema.get_feature_type(col)) for col in group_by_columns])
 
-	aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
+
+        aggregation_list, new_schema_def = self.__get_aggregation_list_and_schema(aggregation_arguments, etl_schema, new_schema_def)
 
         args = get_pig_args('pig_aggregation.py')
 
@@ -178,10 +184,12 @@ class HBaseTable(object):
 
         args.extend(['-i', self.table_name,
                  '-o', new_table_name,
-		 '-a', " ".join(aggregation_list),
-		 '-g', ",".join(group_by_columns),
+		         '-a', " ".join(aggregation_list),
                  '-u', feature_names_as_str, '-r', feature_types_as_str,
                 ])
+
+        if group_by_columns:
+            args.extend(['-g', ",".join(group_by_columns)])
 
         logger.debug(args)
 
