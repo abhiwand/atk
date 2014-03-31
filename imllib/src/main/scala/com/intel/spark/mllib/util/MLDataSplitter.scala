@@ -68,7 +68,7 @@ class MLDataSplitter(percentages: Array[Double], seed: Int) extends Serializable
    */
   def randomlyLabelRDD[T: ClassTag](inputRDD: RDD[T]): RDD[LabeledLine[T]] = {
     // generate auxiliary (sample) RDD
-    val auxiliaryRDD = new AuxiliaryRDD(inputRDD, seed).cache()
+    val auxiliaryRDD = new AuxiliaryRDD(inputRDD, seed)
     val labeledRDD = inputRDD.zip(auxiliaryRDD).map { p =>
           val (line, sampleValue) = p
           val label = cdf.indexWhere(_ >= sampleValue)
@@ -112,7 +112,7 @@ object MLDataSplitter {
     val sc = new SparkContext(conf)
 
     // load data for sampling/splitting
-    val inputRDD  = sc.textFile(input).cache()
+    val inputRDD  = sc.textFile(input)
     val totalSize = inputRDD.count
     println("Number of lines in input files: %d".format(totalSize))
     
