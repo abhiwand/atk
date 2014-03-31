@@ -135,7 +135,7 @@ class HBaseTable(object):
             if (column_to_apply != "*" and column_to_apply not in etl_schema.feature_names):
                     raise HBaseTableException("Column %s does not exist" % column_to_apply)
 
-            aggregation_list.append(column_to_apply);
+            aggregation_list.append(column_to_apply)
             aggregation_list.append(new_column_name)
 
 
