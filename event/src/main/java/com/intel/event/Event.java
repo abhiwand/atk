@@ -142,7 +142,8 @@ public class Event {
         json.put("id", getId());
         json.put("corId", getCorrelationId());
         json.put("severity", getSeverity().name());
-        json.put("message", getMessage().name());
+        json.put("messageCode", getMessageCode());
+        json.put("message", getMessage());
         json.put("machine", getMachine());
         json.put("user", getUser());
         json.put("threadId", getThreadId());
@@ -222,7 +223,14 @@ public class Event {
     /**
      * Returns the message constant associated with the event
      */
-    public Enum getMessage() {
+    public int getMessageCode() {
+        return data.getMessageCode();
+    }
+
+    /**
+     * Returns the message associated with the event
+     */
+    public String getMessage() {
         return data.getMessage();
     }
 

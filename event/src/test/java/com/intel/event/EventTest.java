@@ -45,10 +45,14 @@ public class EventTest {
         EventContext.setCurrent(null);
     }
 
+    private EventData eventData(Enum message) {
+        return new EventData(Severity.INFO, null, null, null, 0, message.toString());
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void events_require_instant() {
         EventContext ctx = new EventContext("ctx");
-        EventData data = new EventData(EventTestMessages.SOMETHING_HAPPENED);
+        EventData data = eventData(EventTestMessages.SOMETHING_HAPPENED);
         new Event(ctx, null, data);
     }
 
@@ -60,8 +64,8 @@ public class EventTest {
 
     @Test
     public void events_have_unique_Ids() {
-        Event e1 = new Event(null, new Instant(), new EventData(EventTestMessages.SOMETHING_HAPPENED));
-        Event e2 = new Event(null, new Instant(), new EventData(EventTestMessages.SOMETHING_HAPPENED));
+        Event e1 = new Event(null, new Instant(), eventData(EventTestMessages.SOMETHING_HAPPENED));
+        Event e2 = new Event(null, new Instant(), eventData(EventTestMessages.SOMETHING_HAPPENED));
 
         assertThat(e1.getId(), is(notNullValue()));
         assertThat(e1.getId(), is(not(equalTo(e2.getId()))));
@@ -71,7 +75,7 @@ public class EventTest {
     @Test
     public void events_with_contexts_inherit_correlation_id_from_context() {
         EventContext ctx = new EventContext("ctx");
-        Event e1 = new Event(ctx, new Instant(), new EventData(EventTestMessages.SOMETHING_HAPPENED));
+        Event e1 = new Event(ctx, new Instant(), eventData(EventTestMessages.SOMETHING_HAPPENED));
 
         assertThat(e1.getId(), is(not(equalTo(ctx.getCorrelationId()))));
         assertThat(e1.getCorrelationId(), equalTo(ctx.getCorrelationId()));
@@ -80,19 +84,30 @@ public class EventTest {
     @Test
     public void events_without_contexts_use_their_ids_as_the_correlation_id() {
         EventContext.setCurrent(null);
-        Event e1 = new Event(null, new Instant(), new EventData(EventTestMessages.SOMETHING_HAPPENED));
+        Event e1 = new Event(null, new Instant(), eventData(EventTestMessages.SOMETHING_HAPPENED));
 
         assertThat(e1.getId(), equalTo(e1.getCorrelationId()));
     }
 
     @Test
     public void events_can_carry_additional_string_data() {
-        EventContext context = new EventContext("Ctx");
         Event e = EventContext.event(EventTestMessages.SOMETHING_HAPPENED)
                 .put("hello", "world")
                 .build();
 
         assertThat(e.getData().get("hello"), is(equalTo("world")));
+    }
+
+    @Test
+    public void events_can_use_literal_strings_and_error_codes() {
+        Event e = EventContext.event(Severity.INFO, 150, "Something happened!")
+                .put("hello", "world")
+                .build();
+
+        assertThat(e.getMessage(), is(equalTo("Something happened!")));
+        assertThat(e.getMessageCode(), is(equalTo(150)));
+        assertThat(e.getData().get("hello"), is(equalTo("world")));
+
     }
 
     @Test
@@ -105,7 +120,7 @@ public class EventTest {
         //Just to prove that contexts aren't sharing context data
         assertThat(context1.get("hello"), is(not(equalTo(context2.get("hello")))));
 
-        Event event = new Event(context2, new Instant(), new EventData(EventTestMessages.SOMETHING_HAPPENED));
+        Event event = new Event(context2, new Instant(), eventData(EventTestMessages.SOMETHING_HAPPENED));
 
         assertThat(event.getData().get("hello"), is(equalTo("galaxy")));
     }
@@ -161,7 +176,8 @@ public class EventTest {
         assertThat("Failed to parse json", json, not(nullValue()));
         assertThat((String)json.get("id"), equalTo(event.getId()));
         assertThat((String)json.get("severity"), equalTo(event.getSeverity().toString()));
-        assertThat((String)json.get("message"), equalTo(event.getMessage().toString()));
+        assertThat(((Long)json.get("messageCode")).intValue(), equalTo(event.getMessageCode()));
+        assertThat((String)json.get("message"), equalTo(event.getMessage()));
         JSONArray substitutions = (JSONArray) json.get("substitutions");
         String[] subs = new String[substitutions.size()];
         for(int i = 0; i < subs.length; i++) {
