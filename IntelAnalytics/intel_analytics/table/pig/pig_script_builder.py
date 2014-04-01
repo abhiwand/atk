@@ -55,6 +55,7 @@ class HBaseStoreFunction(StoreFunction):
         return "org.apache.pig.backend.hadoop.hbase.HBaseStorage('%s')" %(loading_hbase_constructor_args)
 
 
+
 class PigScriptBuilder(object):
 
     def __init__(self):
