@@ -84,13 +84,8 @@ then
 fi
 chown %{IAUSER}:%{IAUSER} -R /home/%{IAUSER}/.intelanalytics
 
-cp  %{prefix}/conf/ipython.conf %{_sysconfdir}/init/
-
-chmod +x %{prefix}/bin/set_ipython_password.sh
-#echo "administrator" | %{prefix}/IntelAnalytics/bin/set_ipython_password.sh
 
 %postun
-rm %{_sysconfdir}/init/ipython.conf
 
 %files
 %{prefix}
