@@ -64,6 +64,7 @@ pushd $DIR
 python efuncgen.py > source/efunc.rst
 make -B html 2>&1 | grep -v 'WARNING: toctree contains reference to nonexisting document'
 zip -rq intel_analytics_pydoc.zip build
+
 popd
 
 # undo if we made any changes above

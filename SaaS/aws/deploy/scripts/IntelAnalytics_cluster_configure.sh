@@ -163,6 +163,12 @@ for n in `cat ${nodesfile}`; do
         service gmond restart 2>&1 > /dev/null;
         '"
     fi
+    jumpServer=$(hostname -f)
+    ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
+        sed -i \"s/^master:.*/master: ${jumpServer}/g\" /etc/salt/minion
+        sed -i \"s/^#master:.*/master: ${jumpServer}/g\" /etc/salt/minion
+        service salt-minion restart
+         '"
 done
 
 rm _gmond.* 2>&1 > /dev/null

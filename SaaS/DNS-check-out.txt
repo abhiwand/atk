@@ -2,23 +2,32 @@ to get graphtrial clusters working with single sign on through graphtrial.intel.
 the clusters master node needs to be mapped to one of these hashed.graphtrial.infra-host.com domains which have been mapped
 to the corresponding hashed.graphtrial.intel.com domain.
 
-Domain: y6vxnrvagg.graphtrial.intel.com CNAME y6vxnrvagg.graphtrial.infra-host.com 
+Domain: y6vxnrvagg.graphtrial.intel.com CNAME y6vxnrvagg.graphtrial.infra-host.com  ridha
 Domain: yccc3662w2.graphtrial.intel.com CNAME yccc3662w2.graphtrial.infra-host.com 	abolfazl	shahbazi, ebi
 Domain: yhrfhdjdcv.graphtrial.intel.com CNAME yhrfhdjdcv.graphtrial.infra-host.com 	soila GAODev-6-4, i-3aba2c33
-Domain: cbjalnicx4.graphtrial.intel.com CNAME cbjalnicx4.graphtrial.infra-host.com
-Domain: 7ae862ce3i.graphtrial.intel.com CNAME 7ae862ce3i.graphtrial.infra-host.com	'Lakshmanan', 'Letchumanan',  IntelAnalytics-4-4 i-e9a5b4e0
-Domain: ktrkyaob46.graphtrial.intel.com CNAME ktrkyaob46.graphtrial.infra-host.com	'Grant', 'Babb', 	IntelAnalytics-5-4	i-46d9424f
+
+Domain: cbjalnicx4.graphtrial.intel.com CNAME cbjalnicx4.graphtrial.infra-host.com  new 'Michael', 'Zions', IntelAnalytics-14-4     i-a7166aae
+
+Domain: 7ae862ce3i.graphtrial.intel.com CNAME 7ae862ce3i.graphtrial.infra-host.com  new 'Grant', 'Babb',  IntelAnalytics-15-4 i-d9106cd0
+
+Domain: ktrkyaob46.graphtrial.intel.com CNAME ktrkyaob46.graphtrial.infra-host.com
 Domain: qiqwtjizki.graphtrial.intel.com CNAME qiqwtjizki.graphtrial.infra-host.com	'Paul', 'Crawford', 	IntelAnalytics-6-4	i-d2d843db
-Domain: 86ic2zvsac.graphtrial.intel.com CNAME 86ic2zvsac.graphtrial.infra-host.com	'Eugene', 'Dedits',  IntelAnalytics-7-4	i-50a8b959
-Domain: qpdtesizic.graphtrial.intel.com CNAME qpdtesizic.graphtrial.infra-host.com	'Michael', 'Zions', 	IntelAnalytics-9-4	i-d287e0da
-Domain: gplchaoz7x.graphtrial.intel.com CNAME gplchaoz7x.graphtrial.infra-host.com	'Susan', 'Imberman', 	IntelAnalytics-10-4	i-8b85e283
-Domain: tz8emp8xa3.graphtrial.intel.com CNAME tz8emp8xa3.graphtrial.infra-host.com	Seshu	Edala	IntelAnalytics-11-4 i-0f97f507
+Domain: 86ic2zvsac.graphtrial.intel.com CNAME 86ic2zvsac.graphtrial.infra-host.com
+Domain: qpdtesizic.graphtrial.intel.com CNAME qpdtesizic.graphtrial.infra-host.com
+Domain: gplchaoz7x.graphtrial.intel.com CNAME gplchaoz7x.graphtrial.infra-host.com
+
 Domain: 2ayu5td2p4.graphtrial.intel.com CNAME 2ayu5td2p4.graphtrial.infra-host.com	Michael	Kress	IntelAnalytics-12-4 i-3b117332
-Domain: n5s7twa6hu.graphtrial.intel.com CNAME n5s7twa6hu.graphtrial.infra-host.com	
-Domain: houkuut3o5.graphtrial.intel.com CNAME houkuut3o5.graphtrial.infra-host.com
+
+Domain: tz8emp8xa3.graphtrial.intel.com CNAME tz8emp8xa3.graphtrial.infra-host.com
+
+Domain: n5s7twa6hu.graphtrial.intel.com CNAME n5s7twa6hu.graphtrial.infra-host.com	new Seshu	Edala   IntelAnalytics-16-4 i-a8f01fa0
+
+Domain: houkuut3o5.graphtrial.intel.com CNAME houkuut3o5.graphtrial.infra-host.com  new Susan', 'Imberman', IntelAnalytics-17-4 i-67d2a46f
 Domain: n4pvr6fora.graphtrial.intel.com CNAME n4pvr6fora.graphtrial.infra-host.com  abolfazl	shahbazi, ebi GAOQA-2-4 i-9fb2ba96
 Domain: yftke764d7.graphtrial.intel.com CNAME yftke764d7.graphtrial.infra-host.com
-Domain: 5wkhr4dxd6.graphtrial.intel.com CNAME 5wkhr4dxd6.graphtrial.infra-host.com 
-Domain: vuegmd2b8u.graphtrial.intel.com CNAME vuegmd2b8u.graphtrial.infra-host.com 
-Domain: wmd5tqr6cy.graphtrial.intel.com CNAME wmd5tqr6cy.graphtrial.infra-host.com
-Domain: o5bu6lmq7i.graphtrial.intel.com CNAME o5bu6lmq7i.graphtrial.infra-host.com 
+Domain: 5wkhr4dxd6.graphtrial.intel.com CNAME 5wkhr4dxd6.graphtrial.infra-host.com  
+Domain: vuegmd2b8u.graphtrial.intel.com CNAME vuegmd2b8u.graphtrial.infra-host.com ebi reg    GAOQA-6-4
+Domain: wmd5tqr6cy.graphtrial.intel.com CNAME wmd5tqr6cy.graphtrial.infra-host.com  ebi gmail GAOQA-5-4
+Domain: o5bu6lmq7i.graphtrial.intel.com CNAME o5bu6lmq7i.graphtrial.infra-host.com
+
+
