@@ -83,7 +83,7 @@ class ETLRange:
             range_str = self.range_expression
 
         elif (self.range_type == ETLRange.__range_csv):
-            L = [int(x) for x in self.range_expression.split(',')]
+            L = [float(x) for x in self.range_expression.split(',')]
             if (_strictly_increasing(L) or _strictly_decreasing(L)):
                 range_str = self.range_expression
             else:
