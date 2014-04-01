@@ -4,13 +4,13 @@ Version: 0.8.0
 
 License: Apache
 
-Group: Development
+Group: Intel Analytics
 
 Name: intelanalytics
 
 Requires: java >= 1.7
 
-Prefix: /usr
+Prefix: /usr/lib/IntelAnalytics
 
 Release: %{?BUILD_NUMBER}
 
@@ -21,15 +21,13 @@ URL: <TODO>
 Buildroot: /tmp/intelanaylticsrpm
 
 %description
-The Intel Graph Analytics System. Build number: Build number: %{?BUILD_NUMBER}. Time %{?TIMESTAMP}.
+The Intel Graph Analytics System. Build number: Build number: %{BUILD_NUMBER}. Time %{TIMESTAMP}.
 
 %define __os_install_post    \
-    /usr/lib/rpm/redhat/brp-compress \
-    %{!?__debug_package:/usr/lib/rpm/redhat/brp-strip %{__strip}} \
-    /usr/lib/rpm/redhat/brp-strip-static-archive %{__strip} \
-    /usr/lib/rpm/redhat/brp-strip-comment-note %{__strip} %{__objdump} \
-    /usr/lib/rpm/brp-python-bytecompile \
-    /usr/lib/rpm/redhat/brp-python-hardlink \
+    /usr/lib/rpm/brp-compress \
+    %{!?__debug_package:/usr/lib/rpm/brp-strip %{__strip}} \
+    /usr/lib/rpm/brp-strip-static-archive %{__strip} \
+    /usr/lib/rpm/brp-strip-comment-note %{__strip} %{__objdump} \
 %{nil}
 
 %define TIMESTAMP %(echo $TIMESTAMP)
@@ -42,20 +40,19 @@ The Intel Graph Analytics System. Build number: Build number: %{?BUILD_NUMBER}. 
 
 %install
 
-rm -fr $RPM_BUILD_ROOT
+rm -fr %{buildroot}
 
-mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
-mkdir -p $RPM_BUILD_ROOT/usr/bin
-mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/conf
-mkdir -p $RPM_BUILD_ROOT/usr/lib/IntelAnalytics/target
+mkdir -p %{buildroot}%{prefix}
+#mkdir -p %{buildroot}/usr/bin
+mkdir -p %{buildroot}%{prefix}/conf
+mkdir -p %{buildroot}%{prefix}/target
 
-cp -R * $RPM_BUILD_ROOT/usr/lib/IntelAnalytics
+cp -R * %{buildroot}%{prefix}
 
-#ln -sf %{buildroot}/usr/lib/IntelAnalytics/conf %{_sysconfdir}/IntelAnalytics
-ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-env.sh %{buildroot}/usr/lib/IntelAnalytics/conf/hbase-env.sh
-ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}/usr/lib/IntelAnalytics/conf/hbase-site.xml
-ln -sf %{_sysconfdir}/hadoop/conf/hadoop-env.sh %{buildroot}/usr/lib/IntelAnalytics/conf/hadoop-env.sh
-ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}/usr/lib/IntelAnalytics/conf/hadoop-site.xml
+ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-env.sh %{buildroot}%{prefix}/conf/hbase-env.sh
+ln -sf %{_sysconfdir}/hbase/conf.dist/hbase-site.xml %{buildroot}%{prefix}/conf/hbase-site.xml
+ln -sf %{_sysconfdir}/hadoop/conf/hadoop-env.sh %{buildroot}%{prefix}/conf/hadoop-env.sh
+ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}%{prefix}/conf/hadoop-site.xml
 
 
 %clean
@@ -63,8 +60,8 @@ ln -sf %{_sysconfdir}/hadoop/conf/hadoop-site.xml %{buildroot}/usr/lib/IntelAnal
 rm -rf $RPM_BUILD_ROOT
 
 %files
-
-%{_exec_prefix}/lib/IntelAnalytics
+%{prefix}
+#%{_exec_prefix}/lib/IntelAnalytics
 #%{_sysconfdir}/IntelAnalytics
 
 

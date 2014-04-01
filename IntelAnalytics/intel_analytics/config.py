@@ -1,7 +1,7 @@
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
-# Copyright 2013 Intel Corporation All Rights Reserved.
+# Copyright 2014 Intel Corporation All Rights Reserved.
 #
 # The source code contained or described herein and all documents related to
 # the source code (Material) are owned by Intel Corporation or its suppliers
@@ -25,7 +25,6 @@
 Provides the 'global_config' singleton.
 """
 
-from pyjavaprops import Properties
 from StringIO import StringIO
 from string import Template
 import os
@@ -33,6 +32,9 @@ import time
 import datetime
 import platform
 import sys
+
+from pyjavaprops import Properties
+
 
 __all__ = ['get_global_config', 'Config', "get_keys_from_template"]
 
@@ -63,6 +65,10 @@ if not os.getenv('HADOOP_HOME'):
 if not os.getenv('TITAN_HOME'):
     if os.path.exists('/home/hadoop/IntelAnalytics/titan-server'):
         os.environ['TITAN_HOME'] = '/home/hadoop/IntelAnalytics/titan-server'
+
+if not os.getenv('FAUNUS_HOME'):
+    if os.path.exists('/home/hadoop/IntelAnalytics/faunus'):
+        os.environ['FAUNUS_HOME'] = '/home/hadoop/IntelAnalytics/faunus'
 
 if not os.getenv('PIG_OPTS'):
     os.environ['PIG_OPTS'] = "-Dpython.verbose=error"#to get rid of Jython logging
@@ -363,6 +369,11 @@ try:
     global_config = Config(properties_file)
 
     os.environ["JYTHONPATH"] = global_config['pig_jython_path']#required to ship jython scripts with pig
+    try:
+        existing_hadoop_cp = os.environ['HADOOP_CLASSPATH']
+    except:
+        existing_hadoop_cp = ''
+    os.environ['HADOOP_CLASSPATH'] = existing_hadoop_cp + ':' + global_config['graph_builder_jar']#required for Graph Builder
 except Exception, e:
     sys.stderr.write("""
 WARNING - could not load default properties file %s because:

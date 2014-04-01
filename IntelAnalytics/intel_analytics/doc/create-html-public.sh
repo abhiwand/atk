@@ -37,10 +37,11 @@ fi
 
 source $ACTIVATE_FILE
 
-# Make sure env vars are set: CLUSTER_HOSTS, HADOOP_HOME, TITAN_HOME
+# Make sure env vars are set: CLUSTER_HOSTS, HADOOP_HOME, TITAN_HOME, FAUNUS_HOME
 set ch = "bogus CLUSTER_HOSTS var set for doc creation"
 set hh = "bogus HADOOP_HOME var set for doc creation"
 set th = "bogus TITAN_HOME var set for doc creation"
+set fh = "bogus FAUNUS_HOME var set for doc creation"
 
 if [ -z "$CLUSTER_HOSTS" ]; then
     export CLUSTER_HOSTS=ch
@@ -51,6 +52,9 @@ fi
 if [ -z "$TITAN_HOME" ]; then
     export TITAN_HOME=th
 fi
+if [ -z "$FAUNUS_HOME" ]; then
+    export FAUNUS_HOME=fh
+fi
 
 DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
 # see http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
@@ -60,6 +64,7 @@ pushd $DIR
 python efuncgen.py > source/efunc.rst
 make -B html 2>&1 | grep -v 'WARNING: toctree contains reference to nonexisting document'
 zip -rq intel_analytics_pydoc.zip build
+
 popd
 
 # undo if we made any changes above
@@ -71,4 +76,7 @@ if [ "$HADOOP_HOME" == hh ]; then
 fi
 if [ "$TITAN_HOME" == th ]; then
     unset TITAN_HOME
+fi
+if [ "$FAUNUS_HOME" == th ]; then
+    unset FAUNUS_HOME
 fi

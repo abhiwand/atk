@@ -32,6 +32,7 @@ target
 *.tar.gz
 testgraphs
 *.zip
+graphbuilder/graphbuilder.iml
 cscope*
 tags
 *.patch

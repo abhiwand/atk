@@ -23,7 +23,10 @@ cp $src/conf/intel_analytics.properties $source_folder/conf
 cp $src/conf/pig_log4j.properties $source_folder/conf
 cp $src/conf/ipython_notebook_config.py $source_folder/conf
 cp -R $src/notebooks $source_folder/
+mkdir -p $source_folder/docs
+
+cp -R $src/intel_analytics/doc/build/html/* $source_folder/docs
 
 (cd SOURCES && tar czf $package-$TRIBECA_VERSION.tar.gz $package-$TRIBECA_VERSION)
 
-rpmbuild --clean --define "_topdir ${PWD}" --define "BUILD_NUMBER $BUILD_NUMBER" --define "TIMESTAMP $TIMESTAMP" -bb SPECS/$package.spec
+rpmbuild --clean --define "_topdir ${PWD}" --define "BUILD_NUMBER $BUILD_NUMBER" --define "TIMESTAMP $TIMESTAMP" --define "IAUSER $IAUSER"  -bb SPECS/$package.spec

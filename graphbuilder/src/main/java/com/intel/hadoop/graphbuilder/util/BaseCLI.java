@@ -56,13 +56,17 @@ public class BaseCLI {
     private static final String TITAN_APPEND = TitanCommandLineOptions.APPEND;
     private static final String TITAN_OVERWRITE = TitanCommandLineOptions.OVERWRITE;
     private static final String TITAN_STORAGE = TitanCommandLineOptions.STORE;
+    private static final String TITAN_PROPERTY_TYPES = TitanCommandLineOptions.PROPERTY_TYPES;
+    private static final String TITAN_EDGE_SIGNATURES = TitanCommandLineOptions.EDGE_SIGNATURES;
+    private static final String TITAN_INFER_SCHEMA = TitanCommandLineOptions.INFER_SCHEMA;
     private static final String TITAN_KEY_INDEX_DECLARATION_CLI_HELP = TitanCommandLineOptions.KEY_DECLARATION_CLI_HELP;
     private static final String TITAN_KEY_INDEX = TitanCommandLineOptions.CMD_KEYS_OPTNAME;
 
     //general options
     private static final String CMD_OUTPUT_OPTION_NAME = "out";
     private static final String CMD_INPUT_OPTION_NAME  = "in";
-    private static final String CMD_RDF_NAMESPACE      = "namespace";
+    private static final String CMD_RETAIN_DANGLING_EDGES = "retainDanglingEdges";
+    private static final String CMD_ADD_SIDE_PROPERTY_TO_VERTEX = "addSidePropertyToVertex";
 
     public enum Options{
         hbaseTable(CLI_HBASE_TABLE_NAME_OPTION), vertex(CLI_VERTEX_OPTION), edge(CLI_EDGE_OPTION),
@@ -71,7 +75,11 @@ public class BaseCLI {
         titanAppend(CLI_TITAN_APPEND_OPTION), titanKeyIndex(CLI_TITAN_KEY_INDEX),
         titanOverwrite(CLI_TITAN_OVERWRITE_OPTION),
         titanStorage(CLI_TITAN_STORAGE_OPTION),
-        outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION);
+        outputPath(CLI_OUTPUT_PATH_OPTION), inputPath(CLI_INPUT_PATH_OPTION),
+        retainDanglingEdges(CLI_RETAIN_DANGLING_EDGE_OPTION),
+        titanPropertyTypes(CLI_TITAN_PROPERTY_TYPES), titanEdgeSignatures(CLI_TITAN_EDGE_SIGNATURES),
+        titanInferSchema(CLI_TITAN_INFER_SCHEMA),
+        addSideToVertex(CLI_ADD_SIDE_PROPERTY_TO_VERTEX);
 
         private final Option option;
         Options(Option option){this.option = option;}
@@ -80,6 +88,22 @@ public class BaseCLI {
     }
 
     //shared options amongst the demo apps no reason duplicate these configs all over the place
+    private static final Option CLI_TITAN_PROPERTY_TYPES = OptionBuilder.withLongOpt(TITAN_PROPERTY_TYPES)
+            .withDescription("specify data types of edge and vertex properties")
+            .withArgName("proptypes")
+            .hasArg()
+            .create("p");
+
+    private static final Option CLI_TITAN_EDGE_SIGNATURES = OptionBuilder.withLongOpt(TITAN_EDGE_SIGNATURES)
+            .withDescription("specify edge signatures")
+            .withArgName("edgesignatures")
+            .hasArg()
+            .create("E");
+
+    private static final Option CLI_TITAN_INFER_SCHEMA = OptionBuilder.withLongOpt(TITAN_INFER_SCHEMA)
+            .withDescription("infer graph schema with a scan over input")
+            .create("I");
+
     private static final Option CLI_TITAN_STORAGE_OPTION = OptionBuilder.withLongOpt(TITAN_STORAGE)
             .withDescription("select Titan for graph storage")
             .withArgName("titan")
@@ -89,8 +113,9 @@ public class BaseCLI {
             .withDescription("Flag that expends lists into multiple items. " )
             .create("F");
 
-    private static final Option CLI_STRIP_COLUMNFAMILY_NAMES_OPTION = OptionBuilder.withLongOpt(STRIP_COLUMNFAMILY_NAMES_OPTION_NAME)
-            .withDescription("Flag that strips HBase column family names from the property names used in the graph. " )
+    private static final Option CLI_STRIP_COLUMNFAMILY_NAMES_OPTION =
+            OptionBuilder.withLongOpt(STRIP_COLUMNFAMILY_NAMES_OPTION_NAME)
+            .withDescription("Flag that strips HBase column family names from the property names used in the graph")
             .create("s");
 
     private static final Option CLI_TITAN_APPEND_OPTION= OptionBuilder.withLongOpt(TITAN_APPEND)
@@ -135,18 +160,29 @@ public class BaseCLI {
             .create("v");
 
     private static final Option CLI_EDGE_OPTION = OptionBuilder.withLongOpt(CMD_EDGES_OPTION_NAME)
-            .withDescription("Specify the HTable columns which are undirected edge tokens; " +
-                    "Example: --" + CMD_EDGES_OPTION_NAME + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                    "Note: Edge labels must be unique")
+            .withDescription("Specify the HTable columns which are undirected edge tokens; Example: --" +
+                    CMD_EDGES_OPTION_NAME + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col," +
+                    "...]\"..." + "Note: Edge labels must be unique")
             .hasArgs()
             .withArgName("Edge-Column-Name")
             .create("e");
 
     private static final Option CLI_DIRECTED_EDGE_OPTION = OptionBuilder.withLongOpt(CMD_DIRECTED_EDGES_OPTION_NAME)
-            .withDescription("Specify the columns which are directed edge tokens; " +
-                    "Example: --" + CMD_DIRECTED_EDGES_OPTION_NAME + "\"<src_vertex_col>,<dest_vertex_col>,<label>,[edge_property_col,...]\"..." +
-                    "Note: Edge labels must be unique")
+            .withDescription("Specify the columns which are directed edge tokens; Example: --" +
+                    CMD_DIRECTED_EDGES_OPTION_NAME + "\"<src_vertex_col>,<dest_vertex_col>,<label>," +
+                    "[edge_property_col,...]\"..." + "Note: Edge labels must be unique")
             .hasArgs()
             .withArgName("Edge-Column-Name")
             .create("d");
+
+    private static final Option CLI_RETAIN_DANGLING_EDGE_OPTION = OptionBuilder.withLongOpt (CMD_RETAIN_DANGLING_EDGES)
+            .withDescription("The default behavior is to discard dangling edges. Set this option to retain " +
+                    "edges with null source or target vertices")
+            .withArgName("Retain-Dangling-Edges")
+            .create("x");
+    private static final Option CLI_ADD_SIDE_PROPERTY_TO_VERTEX = OptionBuilder.withLongOpt
+            (CMD_ADD_SIDE_PROPERTY_TO_VERTEX)
+            .withDescription("Set this option to add \"L\" and \"R\" direction property to vertices")
+            .withArgName("Add-direction-to-vertices")
+            .create("P");
 }

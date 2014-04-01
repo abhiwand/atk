@@ -22,13 +22,13 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.pig.gb;
 
-import java.io.IOException;
-
 import org.apache.pig.EvalFunc;
 import org.apache.pig.data.BinSedesTuple;
 import org.apache.pig.data.DataByteArray;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.data.TupleFactory;
+
+import java.io.IOException;
 
 public class XMLParserEvalFunc extends EvalFunc<Tuple> {
 

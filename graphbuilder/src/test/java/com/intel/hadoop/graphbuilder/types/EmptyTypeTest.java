@@ -19,9 +19,9 @@
  */
 package com.intel.hadoop.graphbuilder.types;
 
-import static junit.framework.Assert.assertEquals;
-
 import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
 
 public class EmptyTypeTest {
 
