@@ -20,7 +20,7 @@ tribeca_ia=$(abspath `dirname $0`/../../IntelAnalytics)
 
 cp -R /usr/lib/IntelAnalytics/virtpy SOURCES/$package-$TRIBECA_VERSION
 
-(cd SOURCES/$package-$TRIBECA_VERSION && tar -czf template_overrides.tar.gz -C $tribeca_ia/ipython/TemplateOverrides .)
+(cd SOURCES/$package-$TRIBECA_VERSION && tar -czvf template_overrides.tar.gz -C $tribeca_ia/ipython/TemplateOverrides .)
 
 (cd SOURCES && tar czf $package-$TRIBECA_VERSION.tar.gz $package-$TRIBECA_VERSION)
 

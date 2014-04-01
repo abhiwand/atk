@@ -22,9 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.giraph.io.titan.hbase;
 
+import com.intel.giraph.io.VertexData4LBPWritable;
 import com.intel.giraph.io.titan.GiraphToTitanGraphFactory;
 import com.intel.giraph.io.titan.common.GiraphTitanUtils;
-import com.intel.giraph.io.VertexData4LBPWritable;
 import com.thinkaurelius.titan.diskstorage.Backend;
 import org.apache.giraph.conf.ImmutableClassesGiraphConfiguration;
 import org.apache.giraph.edge.Edge;
@@ -32,8 +32,8 @@ import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.VertexReader;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.log4j.Logger;

@@ -131,7 +131,7 @@ class GraphBuilder(object):
         self._source = source
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite, append, flatten):
+    def build(self, graph_name, overwrite, append, flatten, retainDanglingEdges):
         """
         Builds a graph according to the settings in the builder.
 
@@ -153,7 +153,8 @@ class GraphBuilder(object):
             as a vertex ID, it is to be expanded into one vertex for each
             entry in the list. This applies to the source and destination
             columns for edges as well. It does not apply to properties.
-
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
         Returns
         -------
         graph : Graph
@@ -171,9 +172,11 @@ class BipartiteGraphBuilder(GraphBuilder):
     def __init__(self, source=None):
         super(BipartiteGraphBuilder, self).__init__(source)
         self._vertex_list = []
+        self.registered_vertex_properties = None # vertex properties registered with register_vertex_properties()
+        self.registered_edge_properties = None # edge properties registered with register_edge_properties()
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite=False, append=False, flatten=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False, retainDanglingEdges=False, withSideVertexProperty=False):
         """
         Builds a bipartite graph according to the settings in the builder.
 
@@ -195,6 +198,10 @@ class BipartiteGraphBuilder(GraphBuilder):
             as a vertex ID, it is to be expanded into one vertex for each
             entry in the list. This applies to the source and destination
             columns for edges as well. It does not apply to properties.
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
+        withSideVertexProperty : Bool, optional
+            adds the 'side' property to all vertices in a bipartite-graph            
 
         Returns
         -------
@@ -226,7 +233,7 @@ ERROR: Attempt to register more than two vertex sources for a bipartite
 graph; check vertex registration or switch to a property graph builder""")
 
         self._vertex_list.append(GraphBuilderVertex(key, properties))
-
+        
     def register_vertices(self, vertices):
         """
         Specify vertex creation rules (see register_vertex)
@@ -238,14 +245,43 @@ graph; check vertex registration or switch to a property graph builder""")
 
         Examples
         --------
-        >>> gb = get_graph_builder(GraphTypes.Property, my_frame)
+        >>> gb = get_graph_builder(GraphTypes.Bipartite, my_frame)
         >>> gb.register_vertices([('id', ['name', 'age', 'dept']), ('manager', ['income', 'org'])])
         """
         for entry in vertices:
             if len(entry) != 2:
                 raise ValueError("ERROR: Incorrect vertex tuple: " + str(entry))
             self.register_vertex(entry[0], entry[1])
-
+            
+    def register_vertex_properties(self, vertex_property_frame, key, vertex_property_cols):
+        """
+        Parameters
+        ----------
+        vertex_property_frame: a frame holding the additional vertex properties to register
+        key: the name of the vertex id column used to match the vertices that are already registered
+        vertex_property_cols: list of columns in the specified vertex_property_frame to use for vertex properties 
+        
+        Examples
+        ----------
+        >>> gb = get_graph_builder(GraphTypes.Bipartite, my_frame)
+        >>> gb.register_vertex_properties(v_prop_frame, 'id', ['name', 'age', 'dept'])
+        """
+        self.registered_vertex_properties = GraphBuilderVertexProperties(vertex_property_frame, key, vertex_property_cols)
+        
+    def register_edge_properties(self, edge_property_frame, edge_tuple, edge_property_cols):
+        """
+        Parameters
+        ----------
+        edge_property_frame: a frame holding the additional edge properties to register
+        edge_tuple: the tuple specifying the edge id (src_vertex_id, dest_vertex_id, edge_label) used to match the edges that are already registered
+        edge_property_cols: list of columns in the specified edge_property_frame to use for edge properties 
+        
+        Examples
+        ----------
+        >>> gb = get_graph_builder(GraphTypes.Bipartite, my_frame)
+        >>> gb.register_edge_properties(v_prop_frame, 'id', ['name', 'age', 'dept'])
+        """
+        self.registered_edge_properties = GraphBuilderEdgeProperties(edge_property_frame, edge_tuple, edge_property_cols)     
 
 class PropertyGraphBuilder(GraphBuilder):
     """
@@ -257,9 +293,12 @@ class PropertyGraphBuilder(GraphBuilder):
         super(PropertyGraphBuilder, self).__init__(source)
         self._vertex_list = []
         self._edge_list = []
+        self.registered_vertex_properties = None # vertex properties registered with register_vertex_properties()
+        self.registered_edge_properties = None # edge properties registered with register_edge_properties()
 
     @abc.abstractmethod
-    def build(self, graph_name, overwrite=False, append=False, flatten=False):
+    def build(self, graph_name, overwrite=False, append=False, flatten=False,
+              retainDanglingEdges=False):
         """
         Builds a property graph according to the settings in the builder.
 
@@ -281,7 +320,9 @@ class PropertyGraphBuilder(GraphBuilder):
             as a vertex ID, it is to be expanded into one vertex for each
             entry in the list. This applies to the source and destination
             columns for edges as well. It does not apply to properties.
-
+        retainDanglingEdges : Bool, optional
+            retains the dangling edges with missing source or target vertices
+            
         Returns
         -------
         graph : Graph
@@ -325,6 +366,21 @@ class PropertyGraphBuilder(GraphBuilder):
             if len(entry) != 2:
                 raise ValueError("ERROR: Incorrect vertex tuple: " + str(entry))
             self.register_vertex(entry[0], entry[1])
+            
+    def register_vertex_properties(self, vertex_property_frame, key, vertex_property_cols):
+        """
+        Parameters
+        ----------
+        vertex_property_frame: a frame holding the additional vertex properties to register
+        key: the name of the vertex id column used to match the vertices that are already registered
+        vertex_property_cols: list of columns in the specified vertex_property_frame to use for vertex properties 
+        
+        Examples
+        ----------
+        >>> gb = get_graph_builder(GraphTypes.Property, my_frame)
+        >>> gb.register_vertex_properties(v_prop_frame, 'id', ['name', 'age', 'dept'])
+        """
+        self.registered_vertex_properties = GraphBuilderVertexProperties(vertex_property_frame, key, vertex_property_cols)         
 
     def register_edge(self, edge_tuple, properties=None):
         """
@@ -362,8 +418,46 @@ class PropertyGraphBuilder(GraphBuilder):
             if len(edge) != 2:
                 raise ValueError("ERROR: Incorrect edge tuple: " + str(edge))
             self.register_edge(edge[0], edge[1])
+            
+    def register_edge_properties(self, edge_property_frame, edge_tuple, edge_property_cols):
+        """
+        Parameters
+        ----------
+        edge_property_frame: a frame holding the additional edge properties to register
+        edge_tuple: the tuple specifying the edge id (src_vertex_id, dest_vertex_id, edge_label) used to match the edges that are already registered
+        edge_property_cols: list of columns in the specified edge_property_frame to use for edge properties 
+        
+        Examples
+        ----------
+        >>> gb = get_graph_builder(GraphTypes.Property, my_frame)
+        >>> gb.register_edge_properties(v_prop_frame, 'id', ['name', 'age', 'dept'])
+        """
+        self.registered_edge_properties = GraphBuilderEdgeProperties(edge_property_frame, edge_tuple, edge_property_cols)                     
 
-
+#TODO would be nice to use GraphBuilderVertexProperties/GraphBuilderEdgeProperties
+#for all properties, not only for properties added with register_vertex/edge_properties 
+class GraphBuilderVertexProperties:
+    """
+    Class for holding GraphBuilder vertex properties that can be built from different frames
+    """
+    def __init__(self, source_frame, key, vertex_property_cols):
+        self.source_frame = source_frame
+        self.vertex = GraphBuilderVertex(key, vertex_property_cols)
+    
+    def __str__(self):
+        return  "GraphBuilderVertexProperties: {0}, {1}".format(self.source_frame.__str__(), self.vertex.__str__())        
+        
+class GraphBuilderEdgeProperties:
+    """
+    Class for holding GraphBuilder edge properties that can be built from different frames
+    """
+    def __init__(self, source_frame, edge_tuple, edge_property_cols):
+        self.source_frame = source_frame
+        self.edge = GraphBuilderEdge(edge_tuple, edge_property_cols) 
+        
+    def __str__(self):
+        return  "GraphBuilderEdgeProperties: {0}, {1}".format(self.source_frame.__str__(), self.edge.__str__())
+    
 class GraphBuilderVertex:
     """
     An entry for GraphBuilder vertex registration.
@@ -377,7 +471,7 @@ class GraphBuilderVertex:
         self.properties = properties
 
     def __repr__(self):
-        "'{0}', [{1}]".format(self.key,
+        return "'{0}', [{1}]".format(self.key,
                               ("'" + "', '".join(self.properties) + "'")
                               if len(self.properties) > 0 else "")
 
@@ -414,7 +508,7 @@ class GraphBuilderEdge:
         self.properties = properties
 
     def __repr__(self):
-        "('{0}','{1}','{2}'), [{3}]".format(self.source,
+        return "('{0}','{1}','{2}'), [{3}]".format(self.source,
                                             self.target,
                                             self.label,
                                             ("'" + "', '".join(self.properties)
