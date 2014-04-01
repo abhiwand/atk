@@ -25,7 +25,7 @@ The Titan-specific graph implementation.
 """
 from intel_analytics.pig import get_pig_args_with_gb
 
-__all__ = []
+__all__ = ['BulbsGraphWrapper']
 
 from intel_analytics.graph.biggraph import \
     PropertyGraphBuilder, BipartiteGraphBuilder,\
@@ -395,7 +395,10 @@ Many graph operations will fail.  Two options:
     sys.stderr.flush()
 
 
-class BulbsGraphWrapper:
+class BulbsGraphWrapper(object):
+    """
+    Wrapper for bulbsGraph object
+    """
     def __init__(self, graph):
         self._graph = graph
         self._graph.vertices.remove_properties = lambda n : self.__raise_(Exception('The feature is not currently supported'))
@@ -431,34 +434,16 @@ class BulbsGraphWrapper:
     def scripts(self):
         return self._graph.scripts
 
-    def load_graphml(self,uri):
-        self._graph.load_graphml(uri)
-
-    def get_graphml(self):
-        self._graph.get_graphml()
-
-    def warm_cache(self):
-        self._graph.warm_cache()
-
-    def clear(self):
-        self._graph.clear()
-
-    def add_proxy(self, proxy_name, element_class, index_class=None):
-        self._graph.add_proxy(proxy_name, element_class, index_class)
-
-    def build_proxy(self, element_class, index_class=None):
-        self._graph.build_proxy(self, element_class, index_class)
-
     def export_as_graphml(self, statements, file):
         """
-        Execute graph queries and output result as a graphml file in the specified file location.
+        Execute graph queries and output result as a graphml file in the specified HDFS file location.
 
         Parameters
         ----------
         statements : Iterable
            Iterable of query strings. The query returns vertices or edges.
            For example, g.V('name','user_123').out
-        file: String
+        file : String
             output file path
 
         Examples
@@ -466,7 +451,7 @@ class BulbsGraphWrapper:
         >>> statements = []
         >>> statements.append("g.V('name','user_123').out")
         >>> graph = get_graph("SampleGraph")
-        >>> graph.export_as_graphml(statements, "example.xml")
+        >>> graph.export_as_graphml(statements, "output/example.xml")
 
         """
         xml = '\"' + self._get_query_xml(statements) + '\"'
@@ -495,6 +480,10 @@ class BulbsGraphWrapper:
         ----------
         statements : Iterable
             Iterable of query strings
+
+        Returns
+        -------
+        query_xml : String
         """
         root = ET.Element("query")
 

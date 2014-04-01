@@ -317,6 +317,44 @@ class HbaseTableTest(unittest.TestCase):
         script_path = os.path.join(config['pig_py_scripts'], 'pig_transform.py')
         self.assertTrue(script_path in result_holder["call_args"])
 
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_transform_with_valid_column_name(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        call_method.return_value = None
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+
+        try:
+            table.transform("col1", "new_col1", EvalFunctions.Math.ABS)
+        except HBaseTableException:
+            self.fail("table.transform raised ExceptionType unexpectedly!")
+
+    @patch('intel_analytics.table.hbase.table.call')
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_transform_with_valid_column_name_multiple(self, etl_schema_class, call_method):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        call_method.return_value = None
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+
+        try:
+            table.transform("col1,col2", "new_col1", EvalFunctions.Math.ABS)
+        except HBaseTableException:
+            self.fail("table.transform raised ExceptionType unexpectedly!")
+
+
+
     @patch('intel_analytics.table.hbase.table.ETLSchema')
     def test_transform_with_random_column_name(self, etl_schema_class):
 
@@ -327,6 +365,17 @@ class HbaseTableTest(unittest.TestCase):
         file_name = "test_file"
         table = HBaseTable(table_name, file_name)
         self.assertRaises(HBaseTableException, table.transform, "random_column", "new_col1", EvalFunctions.Math.ABS)
+
+    @patch('intel_analytics.table.hbase.table.ETLSchema')
+    def test_transform_with_random_column_name_multiple(self, etl_schema_class):
+
+        result_holder = {}
+        etl_schema_class.return_value = self.create_mock_etl_object(result_holder)
+
+        table_name = "test_table"
+        file_name = "test_file"
+        table = HBaseTable(table_name, file_name)
+        self.assertRaises(HBaseTableException, table.transform, "random_column1,random_column2", "new_col1", EvalFunctions.Math.ABS)
 
     def test_transform_random_evaulation_function(self):
         table_name = "test_table"
@@ -1058,8 +1107,9 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         with self.assertRaises(Exception):
             builder._validate_exists('/some/real/path/that/does/not/exist')
 
+    @patch('intel_analytics.table.hbase.table.save_table_properties_from_pig_report')
     @patch('intel_analytics.table.hbase.table.call')
-    def test_project_table_without_rename(self, call_method):
+    def test_project_table_without_rename(self, call_method, save_table_properties_from_pig_report):
         result_holder = {}
 
         def call_side_effect(arg, report_strategy):
@@ -1067,6 +1117,8 @@ class HBaseFrameBuilderTest(unittest.TestCase):
 
         call_method.return_value = None
         call_method.side_effect = call_side_effect
+
+
 
         table_name = "test_table"
         file_name = "test_file"
@@ -1079,8 +1131,9 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         expected = "project_relation = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3', '-loadKey true') as (key:chararray,f1:t1,f2:t2,f3:t3);" + '\n' + "store project_relation into 'hbase://test_output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f1 etl-cf:f2 etl-cf:f3');"
         self.assertEqual(expected, result_holder["call_args"][result_holder["call_args"].index('-s') + 1])
 
+    @patch('intel_analytics.table.hbase.table.save_table_properties_from_pig_report')
     @patch('intel_analytics.table.hbase.table.call')
-    def test_project_table_with_rename(self, call_method):
+    def test_project_table_with_rename(self, call_method, save_table_properties_from_pig_report):
         result_holder = {}
 
         def call_side_effect(arg, report_strategy):
@@ -1100,6 +1153,33 @@ class HBaseFrameBuilderTest(unittest.TestCase):
         expected = "project_relation = LOAD 'hbase://test_table' USING org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f2 etl-cf:f3', '-loadKey true') as (key:chararray,f2:t2,f3:t3);" + \
                    '\n' + "store project_relation into 'hbase://test_output_table' using org.apache.pig.backend.hadoop.hbase.HBaseStorage('etl-cf:f2_new etl-cf:f3');"
         self.assertEqual(expected, result_holder["call_args"][result_holder["call_args"].index('-s') + 1])
+
+
+    @patch("intel_analytics.table.hbase.table.is_local_run")
+    @patch("intel_analytics.table.hbase.table.exists_hdfs")
+    def test_validate_not_exists_local_multiple(self, exists, is_local_run):
+        exists.return_value = False
+        is_local_run.return_value = True
+
+        builder = HBaseFrameBuilder()
+        try:
+            builder._validate_exists(['not_exists1', 'not_exists2'])
+            self.fail()
+        except Exception as e:
+            self.assertEqual(e.message, "ERROR: File not_exists1 does NOT exist locally\nERROR: File not_exists2 does NOT exist locally")
+
+
+
+    @patch("intel_analytics.table.hbase.table.exists_hdfs")
+    def test_validate_not_exists_hdfs_multiple(self, exists):
+        exists.return_value = False
+
+        builder = HBaseFrameBuilder()
+        try:
+            builder._validate_exists(['not_exists1', 'not_exists2'])
+            self.fail()
+        except Exception as e:
+            self.assertEqual(e.message, "ERROR: File not_exists1 does NOT exist in HDFS\nERROR: File not_exists2 does NOT exist in HDFS")
 
 
 if __name__ == '__main__':
