@@ -35,6 +35,8 @@ mkdir -p $RPM_BUILD_ROOT/home/ec2-user/intel/IntelAnalytics/%{?VERSION}/
 
 cp -R * $RPM_BUILD_ROOT/home/ec2-user/intel/IntelAnalytics/%{?VERSION}/
 
+chmod 755 $RPM_BUILD_ROOT/home/ec2-user/intel/IntelAnalytics/%{?VERSION}/deploy/scripts/*
+
 %clean
 
 rm -rf $RPM_BUILD_ROOT
