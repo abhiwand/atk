@@ -11,6 +11,7 @@ if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 eval set -- "$TEMP"
 
 JARNAME="s3copier.jar"
+SHELLNAME="s3copier.sh"
 CONFNAME="s3copier.conf"
 COPIERHOME="/var/intelanalytics/s3copier"
 
@@ -42,7 +43,7 @@ while true; do
 done
 
 #copy over copier jar
-scp  -i "$PEM" -p "$JAR"  $USER@$HOST:/home/$USER/$JARNAME
+scp  -i "$PEM" -p "$JAR"  $USER@$HOST:/home/$USER/$SHELLNAME
 #copy over our upstart conf
 scp  -i "$PEM" -p "$CONF"  $USER@$HOST:/home/$USER/$CONFNAME
 
@@ -52,7 +53,7 @@ initctl status s3copier
 initctl stop s3copier
 
 mkdir -p $COPIERHOME
-mv /home/$USER/$JARNAME $COPIERHOME
+mv /home/$USER/$SHELLNAME $COPIERHOME
 mv /home/$USER/$CONFNAME /etc/init/$CONFNAME
 
 initctl reload s3copier
