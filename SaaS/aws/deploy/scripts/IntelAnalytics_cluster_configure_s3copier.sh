@@ -10,8 +10,7 @@ if [ $? != 0 ] ; then echo "Terminating..." >&2 ; exit 1 ; fi
 
 eval set -- "$TEMP"
 
-JARNAME="s3copier.jar"
-SHELLNAME="s3copier.sh"
+SHELLNAME="s3copier.jar"
 CONFNAME="s3copier.conf"
 COPIERHOME="/var/intelanalytics/s3copier"
 
