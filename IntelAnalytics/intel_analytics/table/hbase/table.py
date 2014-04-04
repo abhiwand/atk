@@ -370,7 +370,7 @@ class HBaseTable(object):
             #print "here"
             etl_schema.feature_types.append('chararray')
         elif transformation == EvalFunctions.String.TOKENIZE:
-            etl_schema.feature_types.append('bag')
+            etl_schema.feature_types.append('chararray')
         #same as input column
         elif transformation in [
                                 EvalFunctions.Math.ABS,
