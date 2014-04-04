@@ -269,7 +269,7 @@ sleep 2;
 popd
 '"
 
-if [ -f s3copier.jar ];
+if [ -f s3copier.sh ];
 then
     echo "copy s3copier and start service"
     ${dryrun} sh IntelAnalytics_cluster_configure_s3copier.sh -p ${pemfile} -j s3copier.sh -c s3copier.conf -h ${m} -u ${IA_USR}
