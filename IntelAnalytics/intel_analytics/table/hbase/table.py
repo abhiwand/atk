@@ -378,10 +378,7 @@ class HBaseTable(object):
                                 EvalFunctions.Math.LOG10,
                                 EvalFunctions.Math.POW,
                                 EvalFunctions.Math.EXP,
-                                EvalFunctions.Math.STND
-                               ]:
-            etl_schema.feature_types.append(type)
-        elif transformation in [
+                                EvalFunctions.Math.STND,
                                 EvalFunctions.Math.SQRT,
                                 EvalFunctions.Math.DIV,
                                 EvalFunctions.Math.RANDOM,
