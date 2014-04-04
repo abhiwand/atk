@@ -4,13 +4,15 @@ import Keys._
 object IABuild extends Build {
 
   lazy val root = Project(id = "intel-analytics",
-                          base = file(".")) dependsOn (server, engine)
+                          base = file(".")) dependsOn (launcher, server, engine)
+
+  lazy val launcher = Project(id = "launcher", base = file("launcher"))
 
   lazy val server = Project(id = "api-server",
                          base = file("api-server")) dependsOn (interfaces, shared)
 
   lazy val engine = Project(id = "engine",
-                         base = file("engine")) dependsOn (interfaces, shared)
+                         base = file("engine")) dependsOn (interfaces, shared, launcher)
 
   lazy val shared = Project(id = "shared",
               base = file("shared"))
