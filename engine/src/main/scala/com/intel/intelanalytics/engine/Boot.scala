@@ -39,9 +39,7 @@ class Boot extends Component {
   def stop() = {}
   def start(configuration: Map[String, String]) = {
     val sparkLoader = {
-      val sparkJar = Directory.Current.get / "lib" / "spark-client.jar"
-      val loader = new URLClassLoader(Array(sparkJar.toURL), getClass.getClassLoader)
-      loader
+      com.intel.intelanalytics.component.Boot.getClassLoader("spark")
     }
 
     val engine = {

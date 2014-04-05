@@ -26,23 +26,41 @@ package com.intel.intelanalytics.component
 import java.net.URLClassLoader
 import scala.reflect.io.{File, Path, Directory}
 import scala.util.control.NonFatal
+import scala.collection.mutable
 
 object Boot extends App {
-  def getClassLoader(archive: String, parent: ClassLoader) : ClassLoader = {
+
+  val loaders = new mutable.HashMap[String, ClassLoader]
+                            with mutable.SynchronizedMap[String, ClassLoader] {}
+
+  def getClassLoader(archive: String) : ClassLoader = {
+    loaders.getOrElse(archive, buildClassLoader(archive, interfaces))
+  }
+
+  def buildClassLoader(archive: String, parent: ClassLoader) : ClassLoader = {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
     val classDirectory : Path  = Directory.Current.get / archive / "target" / "scala-2.10" / "classes"
-    if (Directory(classDirectory).exists) {
-      println(s"Found class directory at $classDirectory")
-      return new URLClassLoader(Array(classDirectory.toURL), parent)
-    }
     val jar : Path = Directory.Current.get / "lib" / (archive + ".jar")
-    if (File(jar).exists) {
-      println(s"Found jar at $jar")
-      return new URLClassLoader(Array(jar.toURL), getClass.getClassLoader)
+    val loader = if (Directory(classDirectory).exists) {
+                    println(s"Found class directory at $classDirectory")
+                    Some(new URLClassLoader(Array(classDirectory.toURL), parent))
+                  } else if (File(jar).exists) {
+                    println(s"Found jar at $jar")
+                    Some(new URLClassLoader(Array(jar.toURL), getClass.getClassLoader))
+                  } else {
+                    None
+                  }
+    loader match {
+      case Some(ldr) => {
+        loaders += (archive -> ldr)
+        ldr
+      }
+      case _ => throw new Exception(s"Could not locate archive $archive")
     }
-    throw new Exception(s"Could not locate archive $archive")
   }
+
+  lazy val interfaces = buildClassLoader("interfaces", getClass.getClassLoader)
 
   def usage() = println("Usage: java -jar launcher.jar <archive> <application>")
 
@@ -50,8 +68,7 @@ object Boot extends App {
     usage()
   } else {
     try {
-      val ifaceLoader = getClassLoader("interfaces", getClass.getClassLoader)
-      val loader = getClassLoader(args(0), ifaceLoader)
+      val loader = getClassLoader(args(0))
       val klass = loader.loadClass(args(1))
 //      val main = klass.getMethod("main")
 //      if (main == null) {
