@@ -9,7 +9,7 @@ import spray.http.MediaTypes
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrame
 import scala.reflect.runtime.universe._
-import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository, HasId}
+import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels.{DecoratedDataFrame, DataFrameHeader, ViewModelJsonProtocol, Rel}
 

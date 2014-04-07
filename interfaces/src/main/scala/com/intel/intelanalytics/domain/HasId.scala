@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,15 +20,9 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.repository.HasId
-
-case class Transform(language: String, serialization: String, data: String) {
-
-}
-
-case class View(id: Option[Long], basedOn: Long,
-                name: String, schema: Schema, transform: Transform) extends HasId {
-
+trait HasId {
+  def id : Option[Long]
 }

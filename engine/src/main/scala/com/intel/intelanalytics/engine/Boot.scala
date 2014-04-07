@@ -27,15 +27,12 @@ import scala.reflect.io.Directory
 import java.net.URLClassLoader
 import scala.util.control.NonFatal
 import com.intel.intelanalytics.component.Component
+import com.intel.intelanalytics.domain.{Schema, DataFrame}
+
+import scala.concurrent.ExecutionContext
+import ExecutionContext.Implicits.global
 
 class Boot extends Component {
-
-  //  val engineLoader = {
-  //    val thisJar = Directory.Current.get / "lib" / "engine.jar"
-  //    val loader = new URLClassLoader(Array(thisJar.toURL), getClass.getClassLoader.getParent)
-  //    loader
-  //  }
-
   def stop() = {}
   def start(configuration: Map[String, String]) = {
     val sparkLoader = {
@@ -43,36 +40,17 @@ class Boot extends Component {
     }
 
     val engine = {
-      println("Constructing engine")
-      //    val previousLoader = Thread.currentThread().getContextClassLoader
-      //    Thread.currentThread().setContextClassLoader(sparkLoader)
-      //    try {
-      //      val actorRefFactory = sparkLoader.loadClass("akka.remote.RemoteActorRefProvider")
-      //      println("Found remote actor provider")
-
       val class_ = sparkLoader.loadClass("com.intel.intelanalytics.engine.spark.SparkComponent")
       val instance = class_.newInstance()
-      instance.asInstanceOf[EngineComponent]
-      //    } catch {
-      //      case e: Exception => {
-      //        var ex:Throwable = e
-      //        do {
-      //          println(ex)
-      //          ex = ex.getCause()
-      //        } while(ex != null)
-      //        throw(e)
-      //      }
-      //    } finally {
-      //      Thread.currentThread().setContextClassLoader(previousLoader)
-      //    }
+      instance.asInstanceOf[EngineComponent with FrameComponent]
     }
-    println("OK")
-    //readLine("Press enter")
     try {
-      val actorRefFactory = sparkLoader.loadClass("akka.remote.RemoteActorRefProvider")
-      println("Found remote actor provider")
-      engine.engine.dropRows(1, new RowFunction[Boolean](language = "python-cloudpickle", definition = "\\x80\\x02ccloud.serialization.cloudpickle\\n_fill_function\\nq\\x00(ccloud.serialization.cloudpickle\\n_make_skel_func\\nq\\x01cnew\\ncode\\nq\\x02(K\\x01K\\x01K\\x03KCU\\x16|\\x00\\x00j\\x00\\x00d\\x01\\x00d\\x02\\x00\\x83\\x02\\x00d\\x03\\x00k\\x04\\x00Sq\\x03(NU\\x01aq\\x04G\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00K\\x01tq\\x05U\\x03getq\\x06\\x85q\\x07U\\x03rowq\\x08\\x85q\\tU\\x07<stdin>q\\nU\\x06myfuncq\\x0bK\\x01U\\x02\\x00\\x01q\\x0c))tq\\rRq\\x0eK\\x00}q\\x0f\\x87q\\x10Rq\\x11}q\\x12N]q\\x13}q\\x14tR."))
-
+      val ng = engine.engine
+      for {
+        frame <- ng.create(new DataFrame(id = None, name = "test", schema = new Schema(columns = List(("a", "int")))))
+        app <- ng.appendFile(frame, "test.csv", new Builtin("line/csv"))
+        filt <- ng.filter(frame, new RowFunction[Boolean](language = "python-cloudpickle", definition = "\\x80\\x02ccloud.serialization.cloudpickle\\n_fill_function\\nq\\x00(ccloud.serialization.cloudpickle\\n_make_skel_func\\nq\\x01cnew\\ncode\\nq\\x02(K\\x01K\\x01K\\x03KCU\\x16|\\x00\\x00j\\x00\\x00d\\x01\\x00d\\x02\\x00\\x83\\x02\\x00d\\x03\\x00k\\x04\\x00Sq\\x03(NU\\x01aq\\x04G\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00K\\x01tq\\x05U\\x03getq\\x06\\x85q\\x07U\\x03rowq\\x08\\x85q\\tU\\x07<stdin>q\\nU\\x06myfuncq\\x0bK\\x01U\\x02\\x00\\x01q\\x0c))tq\\rRq\\x0eK\\x00}q\\x0f\\x87q\\x10Rq\\x11}q\\x12N]q\\x13}q\\x14tR."))
+      } yield filt
     } catch {
       case NonFatal(e) => e.printStackTrace()
     }
