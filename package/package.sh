@@ -1,0 +1,78 @@
+#!/bin/bash
+#This script will package a tar into a deb and rpm package.
+#The tar has to be built with the entire directory structrue of the linux file system
+#if the file needs to be installed in /usr/lib/intelanalytics/myfiles
+#the tar has to have  directory tree
+#The tar will be extracted to both deb and rpm dir wich have all the boiler plate files 
+#necessary for packing.
+#Arguments
+#	--package-name the name of the package that we will be creating. the given package must have a config folder
+#	--build any build identifier
+#source common.sh 
+
+TEMP=`getopt -o p:b:t: --long package-name:,build:,tar: -n 'package.sh' -- "$@"`
+
+if [ $? != 0 ]; then echo "Terminating .." >&2 ; exit 1; fi
+
+eval set -- "$TEMP"
+
+config="config"
+packages="deb rpm"
+version="0.8.0"
+while true; do
+        case "$1" in
+                -p|--package-name)
+                        echo "package-name: '$2'"
+                        packageName=$2
+                        shift 2;;
+                -b|--build)
+                        echo "build: '$2'"
+                        build=$2
+                        shift 2;;
+                -t|--tar)
+                        echo "tar file: '$2'"
+                        tarFile=$2
+                        shift 2;;
+                --) shift; break;;
+                *) echo "error"; exit 1;;
+        esac
+done
+
+function usage()
+{
+        echo "Usage: package -p or --package-name <the name of the packge to build> -b or --build <some build id> "
+        exit 1;
+}
+
+if [ "$packageName" == "" ]; then
+        echo "no package name specified"
+        usage
+fi
+
+if [ "$build" == "" ]; then
+        echo "no build id specified"
+        usage
+fi
+
+if [ "$tarFile" == "" ]; then
+        echo "no tar file specified"
+        usage
+fi
+
+configDir="$config/$packageName"
+
+
+
+for package in $packages
+do 
+	if [ -d  $configDir/$package ] && [ -f $configDir/$package.sh  ]; then
+			echo "found $package config"
+			sh $configDir/$package.sh $packageName $tarFile $version
+		else
+			echo "no package config found for: $package"
+			
+	fi
+done
+
+#tar -xvf -C $configDir $tarFile 
+
