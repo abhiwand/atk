@@ -11,12 +11,12 @@ Domain: cbjalnicx4.graphtrial.intel.com CNAME cbjalnicx4.graphtrial.infra-host.c
 Domain: 7ae862ce3i.graphtrial.intel.com CNAME 7ae862ce3i.graphtrial.infra-host.com  new 'Grant', 'Babb',  IntelAnalytics-15-4 i-d9106cd0
 
 Domain: ktrkyaob46.graphtrial.intel.com CNAME ktrkyaob46.graphtrial.infra-host.com
-Domain: qiqwtjizki.graphtrial.intel.com CNAME qiqwtjizki.graphtrial.infra-host.com	'Paul', 'Crawford', 	IntelAnalytics-6-4	i-d2d843db
-Domain: 86ic2zvsac.graphtrial.intel.com CNAME 86ic2zvsac.graphtrial.infra-host.com  new 'Paul', 'Crawford', 	IntelAnalytics-20-4	i-d2d843db
+Domain: qiqwtjizki.graphtrial.intel.com CNAME qiqwtjizki.graphtrial.infra-host.com
+Domain: 86ic2zvsac.graphtrial.intel.com CNAME 86ic2zvsac.graphtrial.infra-host.com
 Domain: qpdtesizic.graphtrial.intel.com CNAME qpdtesizic.graphtrial.infra-host.com
 Domain: gplchaoz7x.graphtrial.intel.com CNAME gplchaoz7x.graphtrial.infra-host.com
 
-Domain: 2ayu5td2p4.graphtrial.intel.com CNAME 2ayu5td2p4.graphtrial.infra-host.com	Michael	Kress	IntelAnalytics-12-4 i-3b117332
+Domain: 2ayu5td2p4.graphtrial.intel.com CNAME 2ayu5td2p4.graphtrial.infra-host.com
 
 Domain: tz8emp8xa3.graphtrial.intel.com CNAME tz8emp8xa3.graphtrial.infra-host.com new    Michael	Kress	IntelAnalytics-19-4 i-255d242d
 
