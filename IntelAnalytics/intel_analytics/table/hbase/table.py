@@ -328,11 +328,10 @@ class HBaseTable(object):
         if return_code:
             raise HBaseTableException('Could not apply transformation')
 
-        type = "bytearray"
+        idx =  etl_schema.feature_names.index(column_name)
+        type = etl_schema.feature_types[idx]
         #need to update schema here as it's difficult to pass the updated schema info from jython to python
         if (not keep_source_column) or column_name == new_column_name:
-            idx =  etl_schema.feature_names.index(column_name)
-            type = etl_schema.feature_types[idx]
             del etl_schema.feature_names[idx]
             del etl_schema.feature_types[idx]
         etl_schema.feature_names.append(new_column_name)
@@ -341,7 +340,7 @@ class HBaseTable(object):
         if transformation in [
                               EvalFunctions.String.ENDS_WITH,
                               EvalFunctions.String.EQUALS_IGNORE_CASE,
-                              EvalFunctions.String.STARTS_WITH,
+                              EvalFunctions.String.STARTS_WITH
                               ]:
             etl_schema.feature_types.append('boolean')
         elif transformation in [
@@ -351,7 +350,7 @@ class HBaseTable(object):
                                 EvalFunctions.Math.FLOOR,
                                 EvalFunctions.Math.CEIL,
                                 EvalFunctions.Math.ROUND,
-                                EvalFunctions.Math.MOD,
+                                EvalFunctions.Math.MOD
                                ]:
             etl_schema.feature_types.append('long')
         elif transformation in [
@@ -367,16 +366,21 @@ class HBaseTable(object):
                                 EvalFunctions.String.UPPER,
                                 EvalFunctions.String.CONCAT
                                 ]:
-            #print "here"
             etl_schema.feature_types.append('chararray')
         elif transformation == EvalFunctions.String.TOKENIZE:
             etl_schema.feature_types.append('chararray')
         #same as input column
         elif transformation in [
                                 EvalFunctions.Math.ABS,
+                                EvalFunctions.Math.POW
+                               ]:
+            if type == 'bytearray':
+                etl_schema.feature_types.append('double')
+            else:
+                etl_schema.feature_types.append(type)
+        elif transformation in [
                                 EvalFunctions.Math.LOG,
                                 EvalFunctions.Math.LOG10,
-                                EvalFunctions.Math.POW,
                                 EvalFunctions.Math.EXP,
                                 EvalFunctions.Math.STND,
                                 EvalFunctions.Math.SQRT,
@@ -385,6 +389,11 @@ class HBaseTable(object):
                                 EvalFunctions.Math.ARITHMETIC
                                ]:
             etl_schema.feature_types.append('double')
+        elif transformation in [
+                                EvalFunctions.Json.EXTRACT_FIELD,
+                                EvalFunctions.Xml.EXTRACT_FIELD]:
+            if len(transformation_args) > 1:
+                etl_schema.feature_types.append(get_pig_type(transformation_args[1]))
         else:
             etl_schema.feature_types.append('bytearray')
         etl_schema.save_schema(self.table_name)
