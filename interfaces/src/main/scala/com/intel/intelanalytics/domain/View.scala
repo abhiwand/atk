@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2013 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,32 +20,14 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+package com.intel.intelanalytics.domain
 
-package com.intel.intelanalytics.engine
 
-import akka.actor.Actor
-import com.intel.intelanalytics.shared.EventLogging
-
-import scala.concurrent.ExecutionContext.Implicits.global
-
-/** This is the Akka interface to the engine */
-class ApiServiceActor extends Actor with EventLogging { this: EngineComponent =>
-
-  def receive = {
-    case AppendFile(id, fileName, rowParser) => for {
-      f <- engine.getFrame(id)
-      res <- engine.appendFile(f, fileName, rowParser)
-    } yield res
-//    case AddColumn(id, name, map) => engine.addColumn(id, name, map)
-//    case DropColumn(id, name) => engine.dropColumn(id, name)
-//    case DropRows(id, filter) => engine.dropRows(id, filter)
-    case x => warn("Unknown message: " + x)
-  }
+case class Transform(language: String, serialization: String, data: String) {
 
 }
 
-case class AppendFile(id: Long, fileName: String, rowGenerator: Functional)
-case class DropColumn(id: Long, name: String)
-case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
-case class DropRows(id: Long, filter: RowFunction[Boolean])
+case class View(id: Option[Long], basedOn: Long,
+                name: String, schema: Schema, transform: Transform) extends HasId {
 
+}

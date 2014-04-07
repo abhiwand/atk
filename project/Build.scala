@@ -15,7 +15,7 @@ object IABuild extends Build {
                          base = file("engine")) dependsOn (interfaces, shared, launcher)
 
   lazy val shared = Project(id = "shared",
-              base = file("shared"))
+              base = file("shared")) dependsOn (interfaces)
 
   lazy val interfaces = Project(id = "interfaces",
               base = file("interfaces"))
