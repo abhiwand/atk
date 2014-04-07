@@ -4,7 +4,7 @@ import Keys._
 object IABuild extends Build {
 
   lazy val root = Project(id = "intel-analytics",
-                          base = file(".")) dependsOn (launcher, server, engine)
+                          base = file(".")) dependsOn (launcher, server, engine, spark)
 
   lazy val launcher = Project(id = "launcher", base = file("launcher"))
 
