@@ -135,6 +135,7 @@ def main(argv):
 
     #when input column name is the same as output column name
     #will store the newly generated output column to replace the input column
+    #cmd_line_args.keep_original_feature will not used by load, but only in transform and store part
     if cmd_line_args.new_feature_name == cmd_line_args.feature_to_transform:
         cmd_line_args.keep_original_feature  = False
 
