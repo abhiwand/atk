@@ -1,0 +1,13 @@
+Source: intelanalytics
+Priority: extra
+Maintainer: Ubuntu <ubuntu@unknown>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.2
+Section: libs
+
+Package: intelanalytics
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: bleh
+ bleh
+
