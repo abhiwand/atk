@@ -9,7 +9,7 @@ source IntelAnalytics_common_env.sh
 ALARM_ARN_NOTIFICATION="arn:aws:sns:us-west-2:953196509655:bdaawssupport"
 # existing AMI Names (with build version, can override 
 if [ -z "${IA_AMI_BUILD}" ]; then
-    IA_AMI_BUILD="Build.14"
+    IA_AMI_BUILD="Build.27"
 fi
 export IA_AMI_VERSION="${IA_VERSION}-${IA_AMI_BUILD}"
 export IA_AMI_MASTER="${IA_NAME}-Master-${IA_AMI_VERSION}"
@@ -715,9 +715,11 @@ function IA_generate_hosts_file_auto_scale()
         #while i'm deciding the fate of the instances i'm going to set the first launched instance as the master
         #set the extra security group and update the name tag
         if [ $i -eq 0  ]; then
-            /usr/local/bin/aws ec2 create-tags --resources $instanceId --tags Key=Name,Value="$clusterName-master"
-            eval " /usr/local/bin/aws ec2 modify-instance-attribute --instance-id $instanceId --groups $securityGroups \"$masterGroup\" "
+            aws ec2 create-tags --resources $instanceId --tags Key=Name,Value="$clusterName-master"
+            eval " aws ec2 modify-instance-attribute --instance-id $instanceId --groups $securityGroups \"$masterGroup\" "
         fi
+        #add minionId tag for salt stack minion to pick up
+        aws ec2 create-tags --resources $instanceId --tags Key=minionId,Value="$clusterName-$i"
         hosts[$i]=`IA_format_node_name_role $i`
         nname[$i]=`IA_format_node_name ${cname} $i`
         orderHosts[$i]="$privateDns"
