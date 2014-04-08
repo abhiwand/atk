@@ -29,6 +29,15 @@
     <artifactId>package</artifactId>
     <name>package</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+            </plugin>
+        </plugins>
+    </build>
     <profiles>
         <profile>
             <id>package</id>
