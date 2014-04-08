@@ -1,14 +1,15 @@
 Name: intelanalytics
 Provides: intelanalytics
-Summary: intelanalytics-0.8.0 Build number: 99. TimeStamp 20140408201027Z
+Summary: intelanalytics-0.8.1 Build number: 99. TimeStamp 20140408210121Z
 License: Apache
-Version: 0.8.0
+Version: 0.8.1
 Group: Intel Analytics
 Release: 99
-Source: intelanalytics-0.8.0.tar.gz
+Source: intelanalytics-0.8.1.tar.gz
+URL: graphtrial.intel.com
 %description
-intelanalytics-0.8.0 Build number: 99. TimeStamp 20140408201027Z
-%define TIMESTAMP %(echo 20140408201027Z)
+intelanalytics-0.8.1 Build number: 99. TimeStamp 20140408210121Z
+%define TIMESTAMP %(echo 20140408210121Z)
 %define TAR_FILE %(echo /home/ubuntu/source.tar.gz)
 %build
  cp %{TAR_FILE} %{_builddir}/files.tar.gz

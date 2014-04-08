@@ -2,7 +2,7 @@
 #This script will package a tar into a deb and rpm package.
 #The tar has to be built with the entire directory structrue of the linux file system
 #if the file needs to be installed in /usr/lib/intelanalytics/myfiles
-#the tar has to have  directory tree
+#the tar should be created with that  directory structure
 #The tar will be extracted to both deb and rpm dir wich have all the boiler plate files 
 #necessary for packing.
 #Arguments
@@ -10,7 +10,7 @@
 #	--build any build identifier
 source common.sh 
 
-TEMP=`getopt -o p:b:t: --long package-name:,build:,tar: -n 'package.sh' -- "$@"`
+TEMP=`getopt -o p:b:t:v: --long package-name:,build:,tar:,version: -n 'package.sh' -- "$@"`
 
 if [ $? != 0 ]; then echo "Terminating .." >&2 ; exit 1; fi
 
@@ -33,6 +33,10 @@ while true; do
                         echo "tar file: '$2'"
                         tarFile=$2
                         shift 2;;
+		-v|--version)
+			echo "version: '$2'"
+			version=$2
+			shift 2;;
                 --) shift; break;;
                 *) echo "error"; exit 1;;
         esac
@@ -68,7 +72,9 @@ export PACKAGE_NAME=$packageName
 export LICENSE=Apache
 export GROUP="Intel Analytics"
 
+#do a verbose extract of the tar file to get a list of all the files in the tar file
 tarFiles $tarFile
+
 
 for package in $packages
 do 
@@ -79,6 +85,4 @@ do
 			log "no package config found for: $package"
 	fi
 done
-
-#tar -xvf -C $configDir $tarFile 
 
