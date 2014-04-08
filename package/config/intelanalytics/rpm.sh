@@ -13,12 +13,7 @@ log "package name: $packageName, tar file: $tarFile, version: $version, script p
 log "copy and rename: $tarFile"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
-PROVIDES=$packageName
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
-REQUIRES=""
-PREFIX=""
-RELEASE=$BUILD_NUMBER
-SOURCE="$packageName-$version.tar.gz"
 DESCRIPTION=$SUMMARY
 
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec

@@ -4,16 +4,26 @@
 SCRIPT=$(readlink -f "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 
-#some sensible defaults for some of the fields in all these control files
-BUILD_DEPENDS="debhelper (>= 8.0.0)"
+URL="graphtrial.intel.com"
 MAINTAINER="BDA <BDA@intel.com>"
-STANDARDS_VERSION="3.9.2"
+
+#deb build defaults
+#some sensible defaults for some of the fields in all these control files
+BUILD_DEPENDS="debhelper (>= 9.0.0)"
+DEPENDS="\${misc:Depends}"
+STANDARDS_VERSION="3.9.3"
 ARCH="any"
 SECTION="libs"
 PRIORITY="extra"
 COMPAT=9
 
-function log ()
+#rpm build defaults
+PROVIDES=$PACKAGE_NAME
+RELEASE=$BUILD_NUMBER
+SOURCE="$PACKAGE_NAME-$VERSION.tar.gz"
+
+
+function log()
 {
  	echo "-##LOG##-$1"
 }
@@ -55,21 +65,25 @@ function debControl()
 	if [ ! -z "$DEPENDS" ]; then
 		echo "Depends: $DEPENDS"
 	fi
-	echo "Description: $DESCRIPTION"
+	echo "Description: $SUMMARY"
+	echo " $DESCRIPTION"
+}
+
+function debCopyright()
+{
+	echo "TC package $BUILD_NUMBER $TIMESTAMP $MAINTAINER"
+	echo ""
+	echo "Copyright:"
+	echo ""
+	echo "Copyright (C) 2014 Intel Corporation"
+	echo ""
+	echo "License:"
+	echo ""
+	echo "All Rights reserved."
 }
 
 function debChangeLog()
 {
-#	echo "$PACKAGE_NAME ($VERSION) UNRELEASED; urgency=low"
-#	echo "SUBJECT: $SUBJECT"
-#	echo ""
-#	echo "  * Initial release (Closes: #nnnn)"
-#	for file in `cat $TAR_FILES`;
-#	do
-		#echo "  * $file: ribet"
-#	done#
-#	echo ""
-#	echo " -- $MAINTAINER  Tue, 08 Apr 2014 18:47.41 +0000"
 	dch --create -M -v $version --package $packageName "Initial release. (Closes: #XXXXXX)"
 }
 
@@ -138,3 +152,4 @@ cat $TAR_FILES
 
 
 }
+
