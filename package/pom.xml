@@ -52,7 +52,7 @@
                         <configuration>
                             <executable>/bin/chmod</executable>
                             <arguments>
-                                <argument>+R</argument>
+                                <argument>-R</argument>
                                 <argument>+x</argument>
                                 <argument>${basedir}/../package</argument>
                             </arguments>
@@ -69,6 +69,7 @@
                             <workingDirectory>../package/package.sh</workingDirectory>
                             <arguments>
                                 <argument>package.sh</argument>
+				<argument>-b </argument>
                             </arguments>
                         </configuration>
                     </execution>
