@@ -463,6 +463,7 @@
     <module>igiraph</module> 
 		<module>imllib</module>
     <module>IntelAnalytics</module>
+    <module>package</module>
     <!--module>IntelAnalytics-web</module-->
   </modules>
 </project>
