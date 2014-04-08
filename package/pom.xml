@@ -80,10 +80,13 @@
                         </goals>
                         <configuration>
                             <executable>bash</executable>
-                            <workingDirectory>../package/package.sh</workingDirectory>
+                            <workingDirectory>${basedir}</workingDirectory>
                             <arguments>
                                 <argument>package.sh</argument>
-				                <argument>-b </argument>
+				                <argument>-p intelanalytics</argument>
+                                <argument>-b ${evn.BUILD_NUMBER} </argument>
+                                <argument>-t source.tar.gz</argument>
+                                <argument>-v ${version}</argument>
                             </arguments>
                         </configuration>
                     </execution>
