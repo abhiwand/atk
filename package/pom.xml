@@ -59,6 +59,19 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>build-spark</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>sbt</executable>
+                            <arguments>
+                                <argument>package</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>package</id>
                         <phase>package</phase>
                         <goals>
@@ -69,7 +82,7 @@
                             <workingDirectory>../package/package.sh</workingDirectory>
                             <arguments>
                                 <argument>package.sh</argument>
-				<argument>-b </argument>
+				                <argument>-b </argument>
                             </arguments>
                         </configuration>
                     </execution>
