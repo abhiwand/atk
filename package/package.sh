@@ -8,7 +8,7 @@
 #Arguments
 #	--package-name the name of the package that we will be creating. the given package must have a config folder
 #	--build any build identifier
-#source common.sh 
+source common.sh 
 
 TEMP=`getopt -o p:b:t: --long package-name:,build:,tar: -n 'package.sh' -- "$@"`
 
@@ -17,7 +17,7 @@ if [ $? != 0 ]; then echo "Terminating .." >&2 ; exit 1; fi
 eval set -- "$TEMP"
 
 config="config"
-packages="deb rpm"
+packages="rpm"
 version="0.8.0"
 while true; do
         case "$1" in
@@ -40,37 +40,44 @@ done
 
 function usage()
 {
-        echo "Usage: package -p or --package-name <the name of the packge to build> -b or --build <some build id> "
+        echo "Usage: package -p or --package-name <the name of the packge to build> -b or --build <some build id> -t or --tar <path to tar file> "
         exit 1;
 }
 
 if [ "$packageName" == "" ]; then
-        echo "no package name specified"
+       	log "no package name specified"
         usage
 fi
 
 if [ "$build" == "" ]; then
-        echo "no build id specified"
+        log "no build id specified"
         usage
 fi
 
 if [ "$tarFile" == "" ]; then
-        echo "no tar file specified"
+        log "no tar file specified"
         usage
 fi
 
 configDir="$config/$packageName"
 
+export BUILD_NUMBER=$build
+export TIMESTAMP=$(date --utc +%Y%m%d%H%M%SZ)
+export VERSION=$version
+export PACKAGE_NAME=$packageName
+export LICENSE=Apache
+export GROUP="Intel Analytics"
 
+tarFiles $tarFile
 
+echo "bleh"
 for package in $packages
 do 
 	if [ -d  $configDir/$package ] && [ -f $configDir/$package.sh  ]; then
-			echo "found $package config"
-			sh $configDir/$package.sh $packageName $tarFile $version
+			log "found $package config"
+			$configDir/$package.sh $packageName $tarFile $version
 		else
-			echo "no package config found for: $package"
-			
+			log "no package config found for: $package"
 	fi
 done
 

@@ -1,0 +1,31 @@
+Format: 1.8
+Date: Wed, 02 Apr 2014 18:20:46 +0000
+Source: intelanalytics
+Binary: intelanalytics
+Architecture: source amd64
+Version: 0.8.0
+Distribution: UNRELEASED
+Urgency: low
+Maintainer: Ubuntu <ubuntu@unknown>
+Changed-By: Ubuntu <ubuntu@ip-172-31-20-201.us-west-2.compute.internal>
+Description: 
+ intelanalytics - bleh
+Changes: 
+ intelanalytics (0.8.0) UNRELEASED; urgency=low
+ .
+   * Initial release. (Closes: #XXXXXX)
+Checksums-Sha1: 
+ eb777996a55c03d31ac7688df58746609ec28d9d 798 intelanalytics_0.8.0.dsc
+ 0d30037e8f5d43eb3110ef2c51a1cca9765538cb 230 intelanalytics_0.8.0.orig.tar.gz
+ 67c719657e2815c70b828b8dc74ff57cea5d82ed 832 intelanalytics_0.8.0.debian.tar.gz
+ 00cd95ff7fb57707509b724b095bdfa6905b831a 972 intelanalytics_0.8.0_amd64.deb
+Checksums-Sha256: 
+ 07a9bd3bcc07ef7dd03de375762cf50b0a38aeb514497d73c0fe5dedd843b679 798 intelanalytics_0.8.0.dsc
+ 80e991b6455302949b6f69121add6b5603206a36144df7ab0f5a314292d01ab2 230 intelanalytics_0.8.0.orig.tar.gz
+ fc7a2a72d5e0e1a85e2dbeaaed9d54cdb317d85d4fbb5caeaa1da1a0c743ce56 832 intelanalytics_0.8.0.debian.tar.gz
+ 0fb259abaf9f7df0272257ae71f83efcb246fcd7ccfae866de0db4a49f86a072 972 intelanalytics_0.8.0_amd64.deb
+Files: 
+ 28c3ff841f3fc27cac53016fd5ffda3b 798 libs extra intelanalytics_0.8.0.dsc
+ df40687be7c0ce1b3d85f01fab993528 230 libs extra intelanalytics_0.8.0.orig.tar.gz
+ b6f2d723bbfd0c8c62e9601a738c7ff9 832 libs extra intelanalytics_0.8.0.debian.tar.gz
+ e2fc1100c77b83b39ce0d73efca5cce2 972 libs extra intelanalytics_0.8.0_amd64.deb
