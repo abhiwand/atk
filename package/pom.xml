@@ -29,6 +29,13 @@
     <artifactId>package</artifactId>
     <name>package</name>
 
+    <parent>
+        <groupId>com.intel.hadoop</groupId>
+        <artifactId>IntelAnalytics</artifactId>
+        <relativePath>../pom.xml</relativePath>
+        <version>0.8-SNAPSHOT</version>
+    </parent>
+
     <build>
         <plugins>
             <plugin>
