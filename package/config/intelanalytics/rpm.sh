@@ -21,7 +21,7 @@ RELEASE=$BUILD_NUMBER
 SOURCE="$packageName-$version.tar.gz"
 DESCRIPTION=$SUMMARY
 
-spec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
+rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
 #exit 1
 pushd $SCRIPTPATH/rpm

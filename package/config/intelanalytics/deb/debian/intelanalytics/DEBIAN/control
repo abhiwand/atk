@@ -1,9 +1,0 @@
-Package: intelanalytics
-Version: 0.8.0
-Architecture: amd64
-Maintainer: Ubuntu <ubuntu@unknown>
-Installed-Size: 25
-Section: libs
-Priority: extra
-Description: bleh
- bleh

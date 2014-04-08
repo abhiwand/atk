@@ -17,7 +17,7 @@ if [ $? != 0 ]; then echo "Terminating .." >&2 ; exit 1; fi
 eval set -- "$TEMP"
 
 config="config"
-packages="rpm"
+packages="deb rpm"
 version="0.8.0"
 while true; do
         case "$1" in
@@ -70,7 +70,6 @@ export GROUP="Intel Analytics"
 
 tarFiles $tarFile
 
-echo "bleh"
 for package in $packages
 do 
 	if [ -d  $configDir/$package ] && [ -f $configDir/$package.sh  ]; then
