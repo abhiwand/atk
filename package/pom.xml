@@ -50,7 +50,7 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>/bin/chmod</executable>
+                            <executable>chmod</executable>
                             <arguments>
                                 <argument>-R</argument>
                                 <argument>+x</argument>
@@ -65,9 +65,10 @@
                             <goal>exec</goal>
                         </goals>
                         <configuration>
-                            <executable>sbt</executable>
+                            <executable>bash</executable>
+                            <workingDirectory>${basedir}</workingDirectory>
                             <arguments>
-                                <argument>package</argument>
+                                <argument>package_sbt.sh</argument>
                             </arguments>
                         </configuration>
                     </execution>
