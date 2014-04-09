@@ -11,6 +11,7 @@ libraryDependencies := {
         exclude("commons-collections", "commons-collections").
         exclude("com.esotericsoftware.minlog", "minlog").
         exclude("org.slf4j", "slf4j-log4j12").
-        exclude("ch.qos.logback", "logback-classic"))
+        exclude("ch.qos.logback", "logback-classic"),
+      "com.jsuereth"        %%  "scala-arm"         % "1.3")
 }
 

@@ -29,11 +29,13 @@ import scala.util.control.NonFatal
 import com.intel.intelanalytics.component.Component
 import com.intel.intelanalytics.domain.{Schema, DataFrame}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Await, ExecutionContext}
 import ExecutionContext.Implicits.global
+import scala.concurrent.duration._
 
 class Boot extends Component {
   def stop() = {}
+
   def start(configuration: Map[String, String]) = {
     val sparkLoader = {
       com.intel.intelanalytics.component.Boot.getClassLoader("spark")
@@ -46,11 +48,15 @@ class Boot extends Component {
     }
     try {
       val ng = engine.engine
-      for {
-        frame <- ng.create(new DataFrame(id = None, name = "test", schema = new Schema(columns = List(("a", "int")))))
+      println("Processing")
+      val create = new DataFrame(id = None, name = "test", schema = new Schema(columns = List(("a", "int"))))
+      val f = for {
+        frame <- ng.create(create)
         app <- ng.appendFile(frame, "test.csv", new Builtin("line/csv"))
-        filt <- ng.filter(frame, new RowFunction[Boolean](language = "python-cloudpickle", definition = "\\x80\\x02ccloud.serialization.cloudpickle\\n_fill_function\\nq\\x00(ccloud.serialization.cloudpickle\\n_make_skel_func\\nq\\x01cnew\\ncode\\nq\\x02(K\\x01K\\x01K\\x03KCU\\x16|\\x00\\x00j\\x00\\x00d\\x01\\x00d\\x02\\x00\\x83\\x02\\x00d\\x03\\x00k\\x04\\x00Sq\\x03(NU\\x01aq\\x04G\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00K\\x01tq\\x05U\\x03getq\\x06\\x85q\\x07U\\x03rowq\\x08\\x85q\\tU\\x07<stdin>q\\nU\\x06myfuncq\\x0bK\\x01U\\x02\\x00\\x01q\\x0c))tq\\rRq\\x0eK\\x00}q\\x0f\\x87q\\x10Rq\\x11}q\\x12N]q\\x13}q\\x14tR."))
+        filt <- ng.filter(app, new RowFunction[Boolean](language = "python-cloudpickle", definition = "\\x80\\x02ccloud.serialization.cloudpickle\\n_fill_function\\nq\\x00(ccloud.serialization.cloudpickle\\n_make_skel_func\\nq\\x01cnew\\ncode\\nq\\x02(K\\x01K\\x01K\\x03KCU\\x16|\\x00\\x00j\\x00\\x00d\\x01\\x00d\\x02\\x00\\x83\\x02\\x00d\\x03\\x00k\\x04\\x00Sq\\x03(NU\\x01aq\\x04G\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00K\\x01tq\\x05U\\x03getq\\x06\\x85q\\x07U\\x03rowq\\x08\\x85q\\tU\\x07<stdin>q\\nU\\x06myfuncq\\x0bK\\x01U\\x02\\x00\\x01q\\x0c))tq\\rRq\\x0eK\\x00}q\\x0f\\x87q\\x10Rq\\x11}q\\x12N]q\\x13}q\\x14tR."))
       } yield filt
+      println(Await.result(f, atMost = 60 seconds)
+      )
     } catch {
       case NonFatal(e) => e.printStackTrace()
     }

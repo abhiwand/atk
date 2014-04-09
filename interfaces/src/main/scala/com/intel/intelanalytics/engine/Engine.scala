@@ -28,7 +28,7 @@ import java.nio.file.Path
 import PartialFunction._
 import com.intel.intelanalytics.domain.{Schema, DataFrame}
 import scala.concurrent.Future
-import java.io.InputStream
+import java.io.{OutputStream, InputStream}
 
 object Rows {
   type Row = Seq[Any] //TODO: Can we constrain this better?
@@ -51,7 +51,7 @@ case class Builtin(name: String) extends Functional { def language = "builtin"; 
 trait FrameComponent {
   def frames: FrameStorage
 
-  type Frame <: DataFrame
+  type Frame = DataFrame
   type Row <: Rows.Row
   type View <: DataView
 
@@ -70,7 +70,7 @@ trait FrameComponent {
 
   trait FrameStorage {
     def compile[T](func: RowFunction[T]): Row => T
-    def create(frame: Frame)
+    def create(frame: Frame): Frame
     def scan(frame: Frame): Iterable[Row]
     def addColumn[T](frame: Frame, column: Column[T], generatedBy: Row => T): Unit
     def addColumnWithValue[T](frame: Frame, column: Column[T], default: T): Unit
@@ -107,10 +107,10 @@ trait FileComponent {
     def getMetaData(path: Path): Option[Entry]
     def move(source: Path, destination: Path)
     def copy(source: Path, destination: Path)
-    def read(source: File) : Iterable[Byte]
+    def read(source: File) : InputStream
     def list(source: Directory): Seq[Entry]
     def readRows(source: File, rowGenerator: InputStream => Rows.RowSource, offsetBytes: Long = 0, readBytes: Long = -1)
-    def write(sink: File, append: Boolean = false)
+    def write(sink: File, append: Boolean = false): OutputStream
   }
 }
 

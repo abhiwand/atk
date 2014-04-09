@@ -28,7 +28,8 @@ libraryDependencies in ThisBuild ++= {
       .exclude("junit", "junit")
       .exclude("org.apache.hadoop", "hadoop-core"),
     "ch.qos.logback"      %   "logback-classic"   % "1.1.1",
-    "org.slf4j"           %   "slf4j-api"         % "1.7.5"
+    "org.slf4j"           %   "slf4j-api"         % "1.7.5",
+    "com.jsuereth"        %%  "scala-arm"         % "1.3"
   )
 }
 
