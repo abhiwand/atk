@@ -38,7 +38,7 @@ class Boot extends Component {
 
   def start(configuration: Map[String, String]) = {
     val sparkLoader = {
-      com.intel.intelanalytics.component.Boot.getClassLoader("spark")
+      com.intel.intelanalytics.component.Boot.getClassLoader("engine-spark")
     }
 
     val engine = {

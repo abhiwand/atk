@@ -23,10 +23,10 @@ libraryDependencies in ThisBuild ++= {
     "org.specs2"          %%  "specs2-html"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-scalacheck" % "2.3.10"  % "test",
     "org.mockito"         %   "mockito-core"      % "1.9.5"   % "test",
-    ("com.intel.hadoop"    %   "event"             % "1.0-SNAPSHOT")
-      .exclude("ch.qos.cal10n.plugins", "maven-cal10n-plugin")
-      .exclude("junit", "junit")
-      .exclude("org.apache.hadoop", "hadoop-core"),
+//    ("com.intel.hadoop"    %   "event"             % "1.0-SNAPSHOT")
+//      .exclude("ch.qos.cal10n.plugins", "maven-cal10n-plugin")
+//      .exclude("junit", "junit")
+//      .exclude("org.apache.hadoop", "hadoop-core"),
     "ch.qos.logback"      %   "logback-classic"   % "1.1.1",
     "org.slf4j"           %   "slf4j-api"         % "1.7.5",
     "com.jsuereth"        %%  "scala-arm"         % "1.3"
