@@ -16,27 +16,34 @@ SUMMARY="zombies "
 DESCRIPTION=$SUMMARY
 SUBJECT=$DESCRIPTION
 
+debDir=${packageName}-${version}
+
 log "create control file"
-debControl > $SCRIPTPATH/deb/debian/control
+debControl > $SCRIPTPATH/$debDir/debian/control
 
 log "create compat file"
-debCompat >  $SCRIPTPATH/deb/debian/compat
+debCompat >  $SCRIPTPATH/$debDir/debian/compat
 
 log "create install file"
-debInstall > $SCRIPTPATH/deb/debian/$packageName.install
+debInstall > $SCRIPTPATH/$debDir/debian/$packageName.install
 
 log "create copyright file"
-debCopyright >  $SCRIPTPATH/deb/debian/copyright
-pushd $SCRIPTPATH/deb
+debCopyright >  $SCRIPTPATH/$debDir/debian/copyright
+
+
+pushd $SCRIPTPATH/$debDir
 
 rm -rf debian/intelanalytics
+
+log "clean debian/source dir"
 rm -rf debian/source
+mkdir debian/source ; echo '3.0 (quilt)' > debian/source/format ; dch 'Switch to dpkg-source 3.0 (quilt) format'
 
 log "create change log "
 rm debian/changelog
 debChangeLog
 
 log "build deb package"
-debuild -us -uc
+debuild -us -uc --source-option=--include-binaries --source-option=-isession
 
-popd $SCRIPTPATH/deb
+popd $SCRIPTPATH/$debDir

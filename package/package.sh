@@ -78,7 +78,7 @@ tarFiles $tarFile
 
 for package in $packages
 do 
-	if [ -d  $configDir/$package ] && [ -f $configDir/$package.sh  ]; then
+	if [ -f $configDir/$package.sh  ]; then
 			log "found $package config"
 			$configDir/$package.sh $packageName $tarFile $version
 		else
