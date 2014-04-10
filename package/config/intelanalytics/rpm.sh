@@ -18,6 +18,7 @@ DESCRIPTION=$SUMMARY
 
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
+topDir="$SCRIPTPATH/rpm"
 #exit 1
 pushd $SCRIPTPATH/rpm
 
@@ -27,7 +28,7 @@ rm -rf BUILDROOT/*
 
 
 log $BUILD_NUMBER
-rpmbuild --define "_topdir /home/ubuntu/package/config/intelanalytics/rpm"  --define "BUILD_NUMBER $BUILD_NUMBER" --define "VERSION $VERSION" -bb SPECS/intelanalytics.spec
+rpmbuild --define "_topdir $topDir"  --define "BUILD_NUMBER $BUILD_NUMBER" --define "VERSION $VERSION" -bb SPECS/intelanalytics.spec
 
 popd $SCRIPTPATH/rpm 
 

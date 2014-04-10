@@ -57,7 +57,7 @@ function expandTarDeb()
 
 	pushd $SCRIPTPATH/repack/
 	tar -pczf ../$packageTar  ${packageName}-${version}/
-	popd $SCRIPTPATH/repack
+	popd
 	
 	log "untar"
 	tar -xvf $SCRIPTPATH/${packageTar} -C $SCRIPTPATH
@@ -113,6 +113,15 @@ function debInstall()
 	do
 		echo "$file $file"
 	done
+}
+
+function debRules()
+{
+	echo "#!/usr/bin/make -f"
+	echo "# Uncomment this to turn on verbose mode."
+	echo "#export DH_VERBOSE=1"
+	echo "%:"
+	echo -e "\tdh \$@"
 }
 
 function rpmSpec()

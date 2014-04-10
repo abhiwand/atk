@@ -1,16 +1,16 @@
 Name: intelanalytics
 Provides: intelanalytics
-Summary: intelanalytics-0.8.1 Build number: 99. TimeStamp 20140408210121Z
+Summary: intelanalytics-0.8.0 Build number: 1111. TimeStamp 20140410202311Z
 License: Apache
-Version: 0.8.1
+Version: 0.8.0
 Group: Intel Analytics
-Release: 99
-Source: intelanalytics-0.8.1.tar.gz
+Release: 1111
+Source: intelanalytics-0.8.0.tar.gz
 URL: graphtrial.intel.com
 %description
-intelanalytics-0.8.1 Build number: 99. TimeStamp 20140408210121Z
-%define TIMESTAMP %(echo 20140408210121Z)
-%define TAR_FILE %(echo /home/ubuntu/source.tar.gz)
+intelanalytics-0.8.0 Build number: 1111. TimeStamp 20140410202311Z
+%define TIMESTAMP %(echo 20140410202311Z)
+%define TAR_FILE %(echo /home/rodorad/IdeaProjects/source_code/package/source.tar.gz)
 %build
  cp %{TAR_FILE} %{_builddir}/files.tar.gz
 %install
@@ -23,5 +23,4 @@ intelanalytics-0.8.1 Build number: 99. TimeStamp 20140408210121Z
 %post
 %postun
 %files
-/usr/lib/intelanalytics/4rf
-/usr/lib/intelanalytics/test.txt
+/usr/lib/intelanalytics/intel-analytics_2.10-0.8.jar
