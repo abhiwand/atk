@@ -46,8 +46,21 @@ function tarFiles()
 
 function expandTarDeb()
 {
-	cp $tarFile $SCRIPTPATH/${packageName}_${version}.orig.tar.gz
-	tar -xvf $tarFile -C $SCRIPTPATH/deb
+	packageTar=${packageName}_${version}.orig.tar.gz
+	rm -rf $packageTar
+	
+	rm -rf $SCRIPTPATH/repack/
+	log "repack source tar gz with packageName-version parent file"
+	mkdir -p $SCRIPTPATH/repack/${packageName}-${version}
+	
+	tar -xvf $tarFile -C $SCRIPTPATH/repack/${packageName}-${version}
+
+	pushd $SCRIPTPATH/repack/
+	tar -pczf ../$packageTar  ${packageName}-${version}/
+	popd $SCRIPTPATH/repack
+	
+	log "untar"
+	tar -xvf $SCRIPTPATH/${packageTar} -C $SCRIPTPATH
 }
 
 #the deb control is the deb packages meta data file it's kind of like the rpm spec file
