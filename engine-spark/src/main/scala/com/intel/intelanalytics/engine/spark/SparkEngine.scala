@@ -42,6 +42,9 @@ import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
 import resource._
+import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.hdfs.DistributedFileSystem
 
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
@@ -126,10 +129,35 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = ???
   }
 
-  val files = new SparkFileStorage {}
+  val files = new HdfsFileStorage {}
 
-  trait SparkFileStorage extends FileStorage {
-    override def write(sink: File, append: Boolean): OutputStream = ???
+  trait HdfsFileStorage extends FileStorage {
+
+    val configuration = {
+      val hadoopConfig = new Configuration()
+      require(hadoopConfig.getClass().getClassLoader == this.getClass.getClassLoader)
+      //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
+      hadoopConfig.set("fs.hdfs.impl",
+        classOf[DistributedFileSystem].getName)
+      hadoopConfig.set("fs.file.impl",
+        classOf[LocalFileSystem].getName)
+      require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+      hadoopConfig
+    }
+
+
+    val fs = FileSystem.get(configuration)
+
+    import org.apache.hadoop.fs.{Path => HPath}
+
+    override def write(sink: File, append: Boolean): OutputStream = {
+      val path: HPath = new HPath(sink.path.toString)
+      if (append) {
+        fs.append(path)
+      } else {
+        fs.create(path, true)
+      }
+    }
 
     override def readRows(source: File, rowGenerator: (InputStream) => RowSource, offsetBytes: Long, readBytes: Long): Unit = ???
 

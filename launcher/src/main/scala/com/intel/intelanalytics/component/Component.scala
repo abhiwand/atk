@@ -24,6 +24,15 @@
 package com.intel.intelanalytics.component
 
 trait Component {
+  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
+    try {
+      Thread.currentThread().setContextClassLoader(loader)
+      expr
+    } finally {
+      Thread.currentThread().setContextClassLoader(prior)
+    }
+  }
   def start(configuration: Map[String, String])
   def stop()
 }
