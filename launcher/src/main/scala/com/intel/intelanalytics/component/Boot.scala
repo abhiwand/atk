@@ -50,16 +50,21 @@ object Boot extends App {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
     val classDirectory : Path  = Directory.Current.get / archive / "target" / "scala-2.10" / "classes"
-    val jar : Path = Directory.Current.get / "lib" / (archive + ".jar")
+    val developmentJar : Path = Directory.Current.get / archive / "target" / "scala-2.10" / (archive + ".jar")
+    val deployedJar : Path = Directory.Current.get / "lib" / (archive + ".jar")
     val urls = Array(
                 Directory(classDirectory).exists.option {
                     println(s"Found class directory at $classDirectory")
                     classDirectory.toURL
                   },
-                File(jar).exists.option {
-                    println(s"Found jar at $jar")
-                    jar.toURL
-                  }).flatten
+                File(developmentJar).exists.option {
+                    println(s"Found jar at $developmentJar")
+                    developmentJar.toURL
+                  },
+                File(deployedJar).exists.option {
+                  println(s"Found jar at $deployedJar")
+                  deployedJar.toURL
+                }).flatten
     urls match {
       case u if u.length > 0 => new URLClassLoader(u, parent)
       case _ => throw new Exception(s"Could not locate archive $archive")
@@ -76,11 +81,6 @@ object Boot extends App {
     try {
       val loader = getClassLoader(args(0))
       val klass = loader.loadClass(args(1))
-//      val main = klass.getMethod("main")
-//      if (main == null) {
-//        throw new Exception("No main method on specified class.")
-//      }
-//      main.invoke(null, Array():Array[String])
       val instance = klass.newInstance().asInstanceOf[Component]
       instance.start(Map.empty)
     } catch {

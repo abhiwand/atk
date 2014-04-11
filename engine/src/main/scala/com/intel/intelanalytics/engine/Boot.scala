@@ -37,16 +37,20 @@ class Boot extends Component {
   def stop() = {}
 
   def start(configuration: Map[String, String]) = {
-    val sparkLoader = {
-      com.intel.intelanalytics.component.Boot.getClassLoader("engine-spark")
-    }
 
-    val engine = {
-      val class_ = sparkLoader.loadClass("com.intel.intelanalytics.engine.spark.SparkComponent")
-      val instance = class_.newInstance()
-      instance.asInstanceOf[EngineComponent with FrameComponent]
-    }
     try {
+      val sparkLoader = {
+        com.intel.intelanalytics.component.Boot.getClassLoader("engine-spark")
+      }
+
+      val engine = {
+        withLoader(sparkLoader) {
+          val class_ = sparkLoader.loadClass("com.intel.intelanalytics.engine.spark.SparkComponent")
+          val instance = class_.newInstance()
+          instance.asInstanceOf[EngineComponent with FrameComponent]
+        }
+      }
+
       val ng = engine.engine
       println("Processing")
       val create = new DataFrame(id = None, name = "test", schema = new Schema(columns = List(("a", "int"))))
@@ -58,7 +62,11 @@ class Boot extends Component {
       println(Await.result(f, atMost = 60 seconds)
       )
     } catch {
-      case NonFatal(e) => e.printStackTrace()
+      case NonFatal(e) => {
+        println("ERROR:")
+        println(e)
+        e.printStackTrace()
+      }
     }
   }
 }
