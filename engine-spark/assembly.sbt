@@ -4,7 +4,7 @@ assemblySettings
 
 // your assembly settings here
 
-jarName in assembly := "spark-client.jar"
+jarName in assembly := "engine-spark.jar"
 
 test in assembly := {}
 
