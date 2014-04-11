@@ -36,10 +36,15 @@ import com.intel.intelanalytics.engine.RowFunction
 import com.intel.intelanalytics.domain.DataFrame
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.Path
-import java.io.InputStream
+import java.nio.file.{Paths, Path}
+import java.io.{OutputStream, ByteArrayInputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
+import java.util.concurrent.atomic.AtomicLong
+import resource._
+import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.hdfs.DistributedFileSystem
 
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
@@ -63,10 +68,10 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def withMyClassLoader[T](f: => T): T = {
       val prior = Thread.currentThread().getContextClassLoader
       try {
-        Thread.currentThread() setContextClassLoader (this.getClass.getClassLoader)
+        Thread.currentThread setContextClassLoader this.getClass.getClassLoader
         f
       } finally {
-        Thread.currentThread().setContextClassLoader(prior)
+        Thread.currentThread setContextClassLoader prior
       }
     }
 
@@ -86,20 +91,18 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     def create(frame: DataFrame): Future[DataFrame] = {
       future {
-        //this implementation is temporary
-        val fid = {val temp = id; id+=1;temp}
-        val newf = frame.copy(id = Some(fid))
-        frameStore += (fid -> newf)
-        newf
+        frames.create(frame)
       }
     }
 
-    //temporary
-    var id = 1L
-    //temporary
-    val frameStore : mutable.Map[Long,DataFrame] = new mutable.HashMap[Long,DataFrame]()
 
-    def delete(frame: DataFrame): Future[Unit] = ???
+
+
+    def delete(frame: DataFrame): Future[Unit] = {
+      future {
+        frames.drop(frame)
+      }
+    }
 
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
       future {
@@ -126,16 +129,41 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = ???
   }
 
-  val files = new SparkFileStorage {}
+  val files = new HdfsFileStorage {}
 
-  trait SparkFileStorage extends FileStorage {
-    override def write(sink: File, append: Boolean): Unit = ???
+  trait HdfsFileStorage extends FileStorage {
+
+    val configuration = {
+      val hadoopConfig = new Configuration()
+      require(hadoopConfig.getClass().getClassLoader == this.getClass.getClassLoader)
+      //http://stackoverflow.com/questions/17265002/hadoop-no-filesystem-for-scheme-file
+      hadoopConfig.set("fs.hdfs.impl",
+        classOf[DistributedFileSystem].getName)
+      hadoopConfig.set("fs.file.impl",
+        classOf[LocalFileSystem].getName)
+      require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+      hadoopConfig
+    }
+
+
+    val fs = FileSystem.get(configuration)
+
+    import org.apache.hadoop.fs.{Path => HPath}
+
+    override def write(sink: File, append: Boolean): OutputStream = {
+      val path: HPath = new HPath(sink.path.toString)
+      if (append) {
+        fs.append(path)
+      } else {
+        fs.create(path, true)
+      }
+    }
 
     override def readRows(source: File, rowGenerator: (InputStream) => RowSource, offsetBytes: Long, readBytes: Long): Unit = ???
 
     override def list(source: Directory): Seq[Entry] = ???
 
-    override def read(source: File): Iterable[Byte] = ???
+    override def read(source: File): InputStream = ???
 
     override def copy(source: Path, destination: Path): Unit = ???
 
@@ -165,9 +193,24 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def scan(frame: Frame): Iterable[Row] = ???
 
-    override def create(frame: Frame): Unit = ???
+    override def create(frame: Frame): DataFrame = {
+        val id = frame.id.getOrElse(nextFrameId())
+        val path = Paths.get(s"$frameBase/$id")
+        val meta = File(Paths.get(path.toString, "meta"))
+        for(f <- managed(files.write(meta))) {
+          f.write(frame.toString.getBytes("UTF-8"))
+        }
+        frame.copy(id = Some(id))
+    }
 
     override def compile[T](func: RowFunction[T]): (Row) => T = ???
+    val frameBase = "/intelanalytics/dataframes"
+    //temporary
+    var frameId = new AtomicLong(1)
+    def nextFrameId() = {
+      //Just a temporary implementation, only appropriate for scaffolding.
+      frameId.getAndIncrement
+    }
   }
 
 }
