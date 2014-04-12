@@ -45,6 +45,10 @@ import resource._
 import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
+import java.nio.file.Path
+import spray.json.JsonParser
+import scala.io.{Codec, Source}
+import scala.util.control.NonFatal
 
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
@@ -76,16 +80,39 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     }
 
     def getRddForId(id: Long): RDD[Array[Byte]] = {
-      context().textFile("frame_" + id + ".txt").map(line => line.getBytes("UTF-8"))
+      context().textFile("frame_" + id + ".txt").map(line => line.getBytes(Codec.UTF8.name))
     }
 
     def getPyCommand(function: RowFunction[Boolean]): Array[Byte] = {
-      function.definition.getBytes("UTF-8")
+      function.definition.getBytes(Codec.UTF8.name)
     }
 
     def alter(frame: DataFrame, changes: Seq[SparkComponent.this.Alteration]): Unit = ???
 
-    def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = ???
+    def getLineParser(parser: Functional): String => Array[String] = {
+      parser.language match {
+        case "builtin" => parser.definition match {
+          case "line/csv" => (s: String) => {
+            s.split(',')
+          } //TODO: Return the real parser when Mohit's is finished.
+          case p => throw new Exception("Unsupported parser: " + p)
+        }
+        case lang => throw new Exception("Unsupported language: " + lang)
+      }
+    }
+
+    def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = {
+      require(frame.id.isDefined)
+      require(file != null)
+      require(parser != null)
+      future {
+        val parserFunction = getLineParser(parser)
+        val location = fsRoot + frames.getFrameDirectory(frame.id.get)
+        context().textFile(fsRoot + "/" + file).map(parserFunction).saveAsObjectFile(location)
+        frames.lookup(frame.id.get).getOrElse(
+          throw new Exception(s"Data frame ${frame.id.get} no longer exists or is inaccessible"))
+      }
+    }
 
     def clear(frame: DataFrame): Future[DataFrame] = ???
 
@@ -94,8 +121,6 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         frames.create(frame)
       }
     }
-
-
 
 
     def delete(frame: DataFrame): Future[Unit] = {
@@ -121,7 +146,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
               initialValue = new JArrayList[Array[Byte]](),
               param = null)
           )
-        pyRdd.map(bytes => new String(bytes, "UTF-8")).saveAsTextFile("frame_" + id + "_drop.txt")
+        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + id + "_drop.txt")
         frame
       }
     }
@@ -131,7 +156,10 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
   val files = new HdfsFileStorage {}
 
+  val fsRoot = System.getProperty("intelanalytics.fs.root", "/home/hadoop")
+
   trait HdfsFileStorage extends FileStorage {
+
 
     val configuration = {
       val hadoopConfig = new Configuration()
@@ -151,7 +179,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     import org.apache.hadoop.fs.{Path => HPath}
 
     override def write(sink: File, append: Boolean): OutputStream = {
-      val path: HPath = new HPath(sink.path.toString)
+      val path: HPath = new HPath(fsRoot + sink.path.toString)
       if (append) {
         fs.append(path)
       } else {
@@ -163,7 +191,10 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def list(source: Directory): Seq[Entry] = ???
 
-    override def read(source: File): InputStream = ???
+    override def read(source: File): InputStream = {
+      val path: HPath = new HPath(fsRoot + source.path.toString)
+      fs.open(path)
+    }
 
     override def copy(source: Path, destination: Path): Unit = ???
 
@@ -176,40 +207,82 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     override def create(entry: Entry): Unit = ???
   }
 
-  val frames = new SparkFrameStorage {}
+  val frames = new SparkFrameStorage {
+  }
 
   trait SparkFrameStorage extends FrameStorage {
-    override def drop(frame: Frame): Unit = ???
 
-    override def appendRows(startWith: Frame, append: Iterable[Row]): Unit = ???
+    import spray.json._
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-    override def removeRows(frame: Frame, predicate: (Row) => Boolean): Unit = ???
+    override def drop(frame: DataFrame): Unit = ???
 
-    override def removeColumn(frame: Frame): Unit = ???
+    override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = ???
 
-    override def addColumnWithValue[T](frame: Frame, column: Column[T], default: T): Unit = ???
+    override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit = ???
 
-    override def addColumn[T](frame: Frame, column: Column[T], generatedBy: (Row) => T): Unit = ???
+    override def removeColumn(frame: DataFrame): Unit = ???
 
-    override def scan(frame: Frame): Iterable[Row] = ???
+    override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit = ???
 
-    override def create(frame: Frame): DataFrame = {
-        val id = frame.id.getOrElse(nextFrameId())
-        val path = Paths.get(s"$frameBase/$id")
-        val meta = File(Paths.get(path.toString, "meta"))
-        for(f <- managed(files.write(meta))) {
-          f.write(frame.toString.getBytes("UTF-8"))
+    override def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: (Row) => T): Unit = ???
+
+    override def scan(frame: DataFrame): Iterable[Row] = ???
+
+    override def create(frame: DataFrame): DataFrame = {
+      val id = frame.id.getOrElse(nextFrameId())
+      val frame2 = frame.copy(id = Some(id))
+      val path = getFrameDirectory(id)
+      val meta = File(Paths.get(path, "meta"))
+      //todo: resource management
+      val f = files.write(meta)
+      println("Opened for write")
+      f.write(frame2.toJson.prettyPrint.getBytes(Codec.UTF8.name))
+      f.close()
+//      for (f <- managed(files.write(meta))) {
+//        f.write(frame2.toJson.prettyPrint.getBytes(Codec.UTF8.name))
+//      }
+      frame2
+    }
+
+    override def lookup(id: Long): Option[DataFrame] = {
+      val path = getFrameDirectory(id)
+      val meta = File(Paths.get(path, "meta"))
+      //todo: resource management
+      val f = files.read(meta)
+      println("Opened for read")
+      try {
+        val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
+        val json = JsonParser(src)
+        f.close()
+        return Some(json.convertTo[DataFrame])
+      } catch {
+        case NonFatal(e) => {
+          println("Problem reading file: " + e)
+          e.printStackTrace()
+          throw e
         }
-        frame.copy(id = Some(id))
+      }
+      //for (f <- managed(files.read(meta))) {
+
+      //}
+      None
     }
 
     override def compile[T](func: RowFunction[T]): (Row) => T = ???
+
     val frameBase = "/intelanalytics/dataframes"
     //temporary
     var frameId = new AtomicLong(1)
+
     def nextFrameId() = {
       //Just a temporary implementation, only appropriate for scaffolding.
       frameId.getAndIncrement
+    }
+
+    def getFrameDirectory(id: Long): String = {
+      val path = Paths.get(s"$frameBase/$id")
+      path.toString
     }
   }
 
