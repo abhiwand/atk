@@ -21,7 +21,7 @@ object IABuild extends Build {
               base = file("interfaces")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
 
   lazy val spark = Project(id = "engine-spark", base = file("engine-spark"))
-    .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, event)
+    .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, event, shared)
 
   lazy val event = Project(id = "event", base = file("event"))
                     .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)

@@ -51,7 +51,6 @@ case class Builtin(name: String) extends Functional { def language = "builtin"; 
 trait FrameComponent {
   def frames: FrameStorage
 
-  type Frame = DataFrame
   type Row <: Rows.Row
   type View <: DataView
 
@@ -70,26 +69,27 @@ trait FrameComponent {
 
   trait FrameStorage {
     def compile[T](func: RowFunction[T]): Row => T
-    def create(frame: Frame): Frame
-    def scan(frame: Frame): Iterable[Row]
-    def addColumn[T](frame: Frame, column: Column[T], generatedBy: Row => T): Unit
-    def addColumnWithValue[T](frame: Frame, column: Column[T], default: T): Unit
-    def removeColumn(frame: Frame): Unit
-    def removeRows(frame: Frame, predicate: Row => Boolean)
-    def appendRows(startWith: Frame, append: Iterable[Row])
-    def drop(frame: Frame)
+    def lookup(id: Long): Option[DataFrame]
+    def create(DataFrame: DataFrame): DataFrame
+    def scan(DataFrame: DataFrame): Iterable[Row]
+    def addColumn[T](DataFrame: DataFrame, column: Column[T], generatedBy: Row => T): Unit
+    def addColumnWithValue[T](DataFrame: DataFrame, column: Column[T], default: T): Unit
+    def removeColumn(DataFrame: DataFrame): Unit
+    def removeRows(DataFrame: DataFrame, predicate: Row => Boolean)
+    def appendRows(startWith: DataFrame, append: Iterable[Row])
+    def drop(DataFrame: DataFrame)
   }
 
-  trait ViewStorage {
-    def viewOfFrame(frame: Frame): View
-    def create(view: View): Unit
-    def scan(view: View): Iterable[Row]
-    def addColumn[T](view: View, column: Column[T], generatedBy: Row => T): View
-    def addColumnWithValue[T](view: View, column: Column[T], default: T): View
-    def removeColumn(view: View): View
-    def removeRows(view: View, predicate: Row => Boolean): View
-    def appendRows(startWith: View, append: View) : View
-  }
+//  trait ViewStorage {
+//    def viewOfFrame(frame: Frame): View
+//    def create(view: View): Unit
+//    def scan(view: View): Iterable[Row]
+//    def addColumn[T](view: View, column: Column[T], generatedBy: Row => T): View
+//    def addColumnWithValue[T](view: View, column: Column[T], default: T): View
+//    def removeColumn(view: View): View
+//    def removeRows(view: View, predicate: Row => Boolean): View
+//    def appendRows(startWith: View, append: View) : View
+//  }
 }
 
 trait FileComponent {
