@@ -42,13 +42,19 @@ import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
 import resource._
-import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
+import org.apache.hadoop.fs.{FSDataInputStream, LocalFileSystem, FileSystem}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
 import spray.json.JsonParser
 import scala.io.{Codec, Source}
 import scala.util.control.NonFatal
+import org.apache.hadoop.io._
+import scala.collection.mutable.ArrayBuffer
+import org.apache.hadoop.fs.{Path => HPath}
+import scala.Some
+import com.intel.intelanalytics.engine.RowFunction
+import com.intel.intelanalytics.domain.DataFrame
 
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
@@ -106,11 +112,19 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       require(file != null)
       require(parser != null)
       future {
-        val parserFunction = getLineParser(parser)
-        val location = fsRoot + frames.getFrameDirectory(frame.id.get)
-        context().textFile(fsRoot + "/" + file).map(parserFunction).saveAsObjectFile(location)
-        frames.lookup(frame.id.get).getOrElse(
-          throw new Exception(s"Data frame ${frame.id.get} no longer exists or is inaccessible"))
+        withMyClassLoader {
+          val parserFunction = getLineParser(parser)
+          val location = fsRoot + frames.getFrameDataFile(frame.id.get)
+          context().textFile(fsRoot + "/" + file)
+            .map(parserFunction)
+            //TODO: type conversions based on schema
+            .map(strings => strings.map(s => s.getBytes))
+            //.map(strings => strings.map(s => new BytesWritable(s.getBytes()).asInstanceOf[Writable]))
+            //.map(array => new ArrayWritable(classOf[BytesWritable], array))
+            .saveAsObjectFile(location)
+          frames.lookup(frame.id.get).getOrElse(
+            throw new Exception(s"Data frame ${frame.id.get} no longer exists or is inaccessible"))
+        }
       }
     }
 
@@ -151,6 +165,14 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
+    def getRows(id: Identifier, offset: Long, count: Int) = {
+      future {
+        val frame = frames.lookup(id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+        val rows = frames.getRows(frame, offset, count)
+        rows
+      }
+    }
+
     def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = ???
   }
 
@@ -176,7 +198,6 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     val fs = FileSystem.get(configuration)
 
-    import org.apache.hadoop.fs.{Path => HPath}
 
     override def write(sink: File, append: Boolean): OutputStream = {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
@@ -213,6 +234,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
   trait SparkFrameStorage extends FrameStorage {
 
     import spray.json._
+    import Rows.Row
+
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
     override def drop(frame: DataFrame): Unit = ???
@@ -227,13 +250,37 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: (Row) => T): Unit = ???
 
-    override def scan(frame: DataFrame): Iterable[Row] = ???
+    override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] = {
+      //TODO: Find a better way to implement, this is crazy. There's no drop method on RDD.
+      //there's no easy way to get the number of records in a sequence file
+      //there's no easy way to use the hdfs interface to read a directory full of part files as if it's
+      //one file
+      //TODO: Resource management
+      val ctx = engine.context()
+      ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id.get))
+        .take(offset.toInt + count)
+        .drop(offset.toInt)
+//        .map(v => v.getBytes
+//        .map(v2 => v2.asInstanceOf[BytesWritable].getBytes))
+//      val reader = new SequenceFile.Reader(files.configuration,
+//        SequenceFile.Reader.file(new HPath(getFrameDataFile(frame.id.get))),
+//        SequenceFile.Reader.start(offset),
+//        SequenceFile.Reader.length(count))
+//      val nullWritable = NullWritable.get()
+//      val value = new ArrayWritable(classOf[BytesWritable])
+//      val buffer = new ArrayBuffer[Array[Array[Byte]]]()
+//      while(reader.next(nullWritable, value)) {
+//        val writables = value.get()
+//        val array = writables.map(w => w.asInstanceOf[BytesWritable].getBytes)
+//        buffer += array
+//      }
+//      buffer
+    }
 
     override def create(frame: DataFrame): DataFrame = {
       val id = frame.id.getOrElse(nextFrameId())
       val frame2 = frame.copy(id = Some(id))
-      val path = getFrameDirectory(id)
-      val meta = File(Paths.get(path, "meta"))
+      val meta = File(Paths.get(getFrameMetaDataFile(id)))
       //todo: resource management
       val f = files.write(meta)
       println("Opened for write")
@@ -283,6 +330,14 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def getFrameDirectory(id: Long): String = {
       val path = Paths.get(s"$frameBase/$id")
       path.toString
+    }
+
+    def getFrameDataFile(id: Long): String = {
+      getFrameDirectory(id) + "/data"
+    }
+
+    def getFrameMetaDataFile(id: Long): String = {
+      getFrameDirectory(id) + "/meta"
     }
   }
 

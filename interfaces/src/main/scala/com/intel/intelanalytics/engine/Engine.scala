@@ -31,7 +31,7 @@ import scala.concurrent.Future
 import java.io.{OutputStream, InputStream}
 
 object Rows {
-  type Row = Seq[Any] //TODO: Can we constrain this better?
+  type Row = Array[Array[Byte]] //TODO: Can we constrain this better?
   trait RowSource {
     def schema: Schema
     def rows: Iterable[Row]
@@ -49,9 +49,9 @@ case class Builtin(name: String) extends Functional { def language = "builtin"; 
 
 
 trait FrameComponent {
+  import Rows.Row
   def frames: FrameStorage
 
-  type Row <: Rows.Row
   type View <: DataView
 
   trait Column[T] {
@@ -70,14 +70,14 @@ trait FrameComponent {
   trait FrameStorage {
     def compile[T](func: RowFunction[T]): Row => T
     def lookup(id: Long): Option[DataFrame]
-    def create(DataFrame: DataFrame): DataFrame
-    def scan(DataFrame: DataFrame): Iterable[Row]
-    def addColumn[T](DataFrame: DataFrame, column: Column[T], generatedBy: Row => T): Unit
-    def addColumnWithValue[T](DataFrame: DataFrame, column: Column[T], default: T): Unit
-    def removeColumn(DataFrame: DataFrame): Unit
-    def removeRows(DataFrame: DataFrame, predicate: Row => Boolean)
+    def create(frame: DataFrame): DataFrame
+    def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: Row => T): Unit
+    def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
+    def removeColumn(frame: DataFrame): Unit
+    def removeRows(frame: DataFrame, predicate: Row => Boolean)
     def appendRows(startWith: DataFrame, append: Iterable[Row])
-    def drop(DataFrame: DataFrame)
+    def getRows(frame: DataFrame, offset: Long, count: Int) : Iterable[Row]
+    def drop(frame: DataFrame)
   }
 
 //  trait ViewStorage {
@@ -117,12 +117,17 @@ trait FileComponent {
 trait EngineComponent { this: EngineComponent with FrameComponent
                                               with FileComponent =>
 
+  import Rows.Row
   type Identifier = Long //TODO: make more generic?
 
   def engine: Engine
   //TODO: make these all use Try instead?
+  //TODO: make as many of these as possible use id instead of dataframe as the first argument?
+  //TODO: distinguish between DataFrame and DataFrameSpec,
+  // where the latter has no ID, and is the argument passed to create?
   trait Engine {
     def getFrame(id: Identifier) : Future[DataFrame]
+    def getRows(id: Identifier, offset: Long, count: Int) : Future[Iterable[Row]]
     def create(frame: DataFrame): Future[DataFrame]
     def clear(frame: DataFrame) : Future[DataFrame]
     def appendFile(frame: DataFrame, file: String, parser: Functional) : Future[DataFrame]
