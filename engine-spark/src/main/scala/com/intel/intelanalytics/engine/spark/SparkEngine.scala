@@ -37,7 +37,7 @@ import com.intel.intelanalytics.domain.DataFrame
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.{Paths, Path}
-import java.io.{OutputStream, ByteArrayInputStream, InputStream}
+import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
@@ -55,6 +55,7 @@ import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
 import com.intel.intelanalytics.engine.RowFunction
 import com.intel.intelanalytics.domain.DataFrame
+import scala.util.matching.Regex
 
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
@@ -69,6 +70,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       .setAppName("tribeca")
       .setSparkHome(sparkHome)
 
+    //TODO: Decide on spark context life cycle - should it be torn down after every operation,
+    //or left open for some time, and reused if a request from the same user comes in?
+    //Is there some way of sharing a context across two different Engine instances?
     def context() = {
       withMyClassLoader {
         new SparkContext(config = config)
@@ -93,7 +97,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       function.definition.getBytes(Codec.UTF8.name)
     }
 
-    def alter(frame: DataFrame, changes: Seq[SparkComponent.this.Alteration]): Unit = ???
+    def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = ???
 
     def getLineParser(parser: Functional): String => Array[String] = {
       parser.language match {
@@ -140,6 +144,12 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def delete(frame: DataFrame): Future[Unit] = {
       future {
         frames.drop(frame)
+      }
+    }
+
+    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]] = {
+      future {
+        frames.getFrames(offset, count)
       }
     }
 
@@ -210,7 +220,14 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def readRows(source: File, rowGenerator: (InputStream) => RowSource, offsetBytes: Long, readBytes: Long): Unit = ???
 
-    override def list(source: Directory): Seq[Entry] = ???
+    override def list(source: Directory): Seq[Entry] = {
+      fs.listStatus(new HPath(fsRoot + frames.frameBase))
+        .map {
+        case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
+        case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
+        case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
+      }
+    }
 
     override def read(source: File): InputStream = {
       val path: HPath = new HPath(fsRoot + source.path.toString)
@@ -260,35 +277,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id.get))
         .take(offset.toInt + count)
         .drop(offset.toInt)
-//        .map(v => v.getBytes
-//        .map(v2 => v2.asInstanceOf[BytesWritable].getBytes))
-//      val reader = new SequenceFile.Reader(files.configuration,
-//        SequenceFile.Reader.file(new HPath(getFrameDataFile(frame.id.get))),
-//        SequenceFile.Reader.start(offset),
-//        SequenceFile.Reader.length(count))
-//      val nullWritable = NullWritable.get()
-//      val value = new ArrayWritable(classOf[BytesWritable])
-//      val buffer = new ArrayBuffer[Array[Array[Byte]]]()
-//      while(reader.next(nullWritable, value)) {
-//        val writables = value.get()
-//        val array = writables.map(w => w.asInstanceOf[BytesWritable].getBytes)
-//        buffer += array
-//      }
-//      buffer
     }
 
     override def create(frame: DataFrame): DataFrame = {
       val id = frame.id.getOrElse(nextFrameId())
       val frame2 = frame.copy(id = Some(id))
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
-      //todo: resource management
-      val f = files.write(meta)
-      println("Opened for write")
-      f.write(frame2.toJson.prettyPrint.getBytes(Codec.UTF8.name))
-      f.close()
-//      for (f <- managed(files.write(meta))) {
-//        f.write(frame2.toJson.prettyPrint.getBytes(Codec.UTF8.name))
-//      }
+      for (f <- managed(files.write(meta))) {
+        f.write(frame2.toJson.prettyPrint.getBytes(Codec.UTF8.name))
+      }
       frame2
     }
 
@@ -314,6 +311,18 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
       //}
       None
+    }
+
+    val idRegex: Regex = "^\\d+$".r
+
+    def getFrames(offset: Int, count: Int): Seq[DataFrame] = {
+      files.list(Directory(Paths.get(fsRoot + frameBase)))
+        .flatMap {
+          case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
+          case _ => None
+        }
+        .filter(idRegex.findFirstMatchIn(_).isDefined)  //may want to extract a method for this
+        .flatMap(sid => frames.lookup(sid.toLong))
     }
 
     override def compile[T](func: RowFunction[T]): (Row) => T = ???

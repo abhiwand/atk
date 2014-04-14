@@ -34,6 +34,16 @@ import ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 class Boot extends Component {
+
+  var engine : EngineComponent with FrameComponent = null
+
+  def get[T] (descriptor: String) = {
+    descriptor match {
+      case "engine" => engine.asInstanceOf[T]
+      case _ => throw new IllegalArgumentException(s"No suitable implementation for: '$descriptor'")
+    }
+  }
+
   def stop() = {}
 
   def start(configuration: Map[String, String]) = {
@@ -43,7 +53,7 @@ class Boot extends Component {
         com.intel.intelanalytics.component.Boot.getClassLoader("engine-spark")
       }
 
-      val engine = {
+      engine = {
         withLoader(sparkLoader) {
           val class_ = sparkLoader.loadClass("com.intel.intelanalytics.engine.spark.SparkComponent")
           val instance = class_.newInstance()

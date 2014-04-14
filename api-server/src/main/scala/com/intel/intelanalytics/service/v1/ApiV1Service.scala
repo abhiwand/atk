@@ -5,18 +5,23 @@ import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
 import akka.event.Logging
 import spray.json._
-import spray.http.MediaTypes
+import spray.http.{StatusCodes, MediaTypes}
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrame
 import scala.reflect.runtime.universe._
 import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels.{DecoratedDataFrame, DataFrameHeader, ViewModelJsonProtocol, Rel}
+import com.intel.intelanalytics.engine.EngineComponent
+import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext
+import ExecutionContext.Implicits.global //TODO: Is this right execution context for us?
 
 
 trait ApiV1Service extends Directives with EventLoggingDirectives {
                                               this:ApiV1Service
-                                                with MetaStoreComponent =>
+                                                with MetaStoreComponent
+                                                with EngineComponent =>
 
   import ViewModelJsonProtocol._
 
@@ -24,6 +29,8 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
     method &  eventContext(eventCtx) & logResponse(eventCtx, Logging.InfoLevel) & requestUri
   }
 
+  //TODO: are there parts of this that are worth using for things
+  // that aren't stored in the metastore, e.g. dataframes?
   def crud[Entity <: HasId : RootJsonFormat : TypeTag,
             Index : RootJsonFormat,
             Decorated : RootJsonFormat]
@@ -73,10 +80,17 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
 
   def frameRoutes() = {
     import ViewModelJsonProtocol._
-    import com.intel.intelanalytics.domain.DomainJsonProtocol._
-    crud[DataFrame,
-          DataFrameHeader,
-          DecoratedDataFrame]("dataframes", metaStore.frameRepo, Decorators.frames)
+//    crud[DataFrame,
+//          DataFrameHeader,
+//          DecoratedDataFrame]("dataframes", metaStore.frameRepo, Decorators.frames)
+    val prefix = "dataframes"
+    std(get, prefix) { uri =>
+      //TODO: cursor
+      onComplete(engine.getFrames(0,20)) {
+        case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
+        case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
+      }
+    }
   }
 
   def apiV1Service: Route = {
