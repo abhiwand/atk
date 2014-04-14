@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine
 import scala.xml.persistent.CachedFileStorage
 import java.nio.file.Path
 import PartialFunction._
-import com.intel.intelanalytics.domain.{Schema, DataFrame}
+import com.intel.intelanalytics.domain.{DataFrameTemplate, Schema, DataFrame}
 import scala.concurrent.Future
 import java.io.{OutputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.Row
@@ -79,7 +79,7 @@ trait FrameComponent {
   trait FrameStorage {
     def compile[T](func: RowFunction[T]): Row => T
     def lookup(id: Long): Option[DataFrame]
-    def create(frame: DataFrame): DataFrame
+    def create(frame: DataFrameTemplate): DataFrame
     def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: Row => T): Unit
     def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
     def removeColumn(frame: DataFrame): Unit
@@ -136,7 +136,7 @@ trait EngineComponent {
   trait Engine {
     def getFrame(id: Identifier) : Future[DataFrame]
     def getRows(id: Identifier, offset: Long, count: Int) : Future[Iterable[Row]]
-    def create(frame: DataFrame): Future[DataFrame]
+    def create(frame: DataFrameTemplate): Future[DataFrame]
     def clear(frame: DataFrame) : Future[DataFrame]
     def appendFile(frame: DataFrame, file: String, parser: Functional) : Future[DataFrame]
     //def append(frame: DataFrame, rowSource: Rows.RowSource): Future[DataFrame]

@@ -27,5 +27,6 @@ import spray.json.DefaultJsonProtocol
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val schemaFormat = jsonFormat1(Schema)
+
   implicit val dataFrameFormat = jsonFormat3(DataFrame)
 }
