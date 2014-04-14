@@ -57,8 +57,15 @@ import com.intel.intelanalytics.engine.RowFunction
 import com.intel.intelanalytics.domain.DataFrame
 import scala.util.matching.Regex
 
+//TODO logging
+//TODO error handling
+//TODO documentation
+//TODO progress notification
+//TODO event notification
+//TODO pass current user info
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
+  //TODO: get these settings using the Typesafe Config library (see application.conf)
   val sparkHome = System.getProperty("spark.home", "c:\\temp")
   val sparkMaster = System.getProperty("spark.master", "local[4]")
 
@@ -70,6 +77,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       .setAppName("intel-analytics")
       .setSparkHome(sparkHome)
 
+
+    //TODO: how to run jobs as a particular user
     //TODO: Decide on spark context life cycle - should it be torn down after every operation,
     //or left open for some time, and reused if a request from the same user comes in?
     //Is there some way of sharing a context across two different Engine instances?
@@ -272,15 +281,29 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     override def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: (Row) => T): Unit = ???
 
     override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] = {
-      //TODO: Find a better way to implement, this is crazy. There's no drop method on RDD.
-      //there's no easy way to get the number of records in a sequence file
-      //there's no easy way to use the hdfs interface to read a directory full of part files as if it's
-      //one file
+      //TODO: Check to see if there's a better way to implement, this might be too slow.
+      // Need to cache row counts per partition somewhere.
       //TODO: Resource management
       val ctx = engine.context()
-      ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id.get))
-        .take(offset.toInt + count)
-        .drop(offset.toInt)
+      val rdd = ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id.get)).cache()
+      val counts = rdd.mapPartitionsWithIndex(
+                            (i, rows) => Iterator.single((i, rows.length)))
+                      .collect()
+                      .sortBy(_._1)
+      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
+                      .drop(1)
+                      .toMap
+      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
+      rdd.mapPartitionsWithIndex((i, rows) => {
+        val (ct: Int, sum: Int) = sumsAndCounts(i)
+        if (sum < offset || sum - ct > offset + count) {
+          Iterator.empty
+        } else {
+          val start = offset - (sum - ct)
+          rows.drop(start.toInt).take(count)
+        }
+      }).collect
+
     }
 
     override def create(frame: DataFrame): DataFrame = {
