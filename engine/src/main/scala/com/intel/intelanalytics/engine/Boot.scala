@@ -39,7 +39,7 @@ class Boot extends Component {
 
   def get[T] (descriptor: String) = {
     descriptor match {
-      case "engine" => engine.asInstanceOf[T]
+      case "engine" => engine.engine.asInstanceOf[T]
       case _ => throw new IllegalArgumentException(s"No suitable implementation for: '$descriptor'")
     }
   }
@@ -62,7 +62,7 @@ class Boot extends Component {
       }
 
       val ng = engine.engine
-      println("Processing")
+      println("Running test of frame creation and loading")
       val create = new DataFrame(id = None, name = "test", schema = new Schema(columns = List(("a", "int"))))
       val f = for {
         frame <- ng.create(create)
