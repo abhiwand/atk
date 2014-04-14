@@ -67,7 +67,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     def config = new SparkConf()
       .setMaster(sparkMaster)
-      .setAppName("tribeca")
+      .setAppName("intel-analytics")
       .setSparkHome(sparkHome)
 
     //TODO: Decide on spark context life cycle - should it be torn down after every operation,
@@ -183,7 +183,11 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = ???
+    def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = {
+      future {
+        frames.lookup(id).get
+      }
+    }
   }
 
   val files = new HdfsFileStorage {}

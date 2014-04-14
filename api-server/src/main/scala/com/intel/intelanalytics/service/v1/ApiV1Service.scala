@@ -84,13 +84,25 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
 //          DataFrameHeader,
 //          DecoratedDataFrame]("dataframes", metaStore.frameRepo, Decorators.frames)
     val prefix = "dataframes"
-    std(get, prefix) { uri =>
-      //TODO: cursor
-      onComplete(engine.getFrames(0,20)) {
-        case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
-        case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
+    pathPrefix(prefix / LongNumber) { id =>
+      std(get, prefix) { uri =>
+        onComplete(engine.getFrame(id)) {
+          case Success(frame) => {
+            val links = List(Rel.self(uri + "/" + id))
+            complete {Decorators.frames.decorateEntity(uri.toString, links, frame)}
+          }
+          case _ => reject()
+        }
       }
-    }
+    } ~
+      std(get, prefix) {
+        uri =>
+        //TODO: cursor
+          onComplete(engine.getFrames(0, 20)) {
+            case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
+            case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
+          }
+      }
   }
 
   def apiV1Service: Route = {
