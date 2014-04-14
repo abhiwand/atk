@@ -31,9 +31,8 @@ import org.apache.spark.broadcast.Broadcast
 import scala.collection.Set
 import scala.Predef
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
 import com.intel.intelanalytics.engine.RowFunction
-import com.intel.intelanalytics.domain.DataFrame
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.{Paths, Path}
@@ -54,7 +53,6 @@ import scala.collection.mutable.ArrayBuffer
 import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
 import com.intel.intelanalytics.engine.RowFunction
-import com.intel.intelanalytics.domain.DataFrame
 import scala.util.matching.Regex
 
 //TODO logging
@@ -121,13 +119,13 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     }
 
     def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = {
-      require(frame.id.isDefined)
+      require(frame != null)
       require(file != null)
       require(parser != null)
       future {
         withMyClassLoader {
           val parserFunction = getLineParser(parser)
-          val location = fsRoot + frames.getFrameDataFile(frame.id.get)
+          val location = fsRoot + frames.getFrameDataFile(frame.id)
           context().textFile(fsRoot + "/" + file)
             .map(parserFunction)
             //TODO: type conversions based on schema
@@ -135,15 +133,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
             //.map(strings => strings.map(s => new BytesWritable(s.getBytes()).asInstanceOf[Writable]))
             //.map(array => new ArrayWritable(classOf[BytesWritable], array))
             .saveAsObjectFile(location)
-          frames.lookup(frame.id.get).getOrElse(
-            throw new Exception(s"Data frame ${frame.id.get} no longer exists or is inaccessible"))
+          frames.lookup(frame.id).getOrElse(
+            throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
         }
       }
     }
 
     def clear(frame: DataFrame): Future[DataFrame] = ???
 
-    def create(frame: DataFrame): Future[DataFrame] = {
+    def create(frame: DataFrameTemplate): Future[DataFrame] = {
       future {
         frames.create(frame)
       }
@@ -164,9 +162,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
       future {
-        val id = frame.id.getOrElse(throw new IllegalArgumentException("Data frame ID is required"))
-
-        val rdd = getRddForId(id)
+        val rdd = getRddForId(frame.id)
         val command = getPyCommand(predicate)
         val pythonExec = "python" //TODO: take from env var or config
         val environment = System.getenv() //TODO - should be empty instead?
@@ -179,7 +175,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
               initialValue = new JArrayList[Array[Byte]](),
               param = null)
           )
-        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + id + "_drop.txt")
+        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
         frame
       }
     }
@@ -247,6 +243,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       fs.open(path)
     }
 
+    //TODO: switch file methods to strings instead of Path?
     override def copy(source: Path, destination: Path): Unit = ???
 
     override def move(source: Path, destination: Path): Unit = ???
@@ -285,7 +282,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       // Need to cache row counts per partition somewhere.
       //TODO: Resource management
       val ctx = engine.context()
-      val rdd = ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id.get)).cache()
+      val rdd = ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id)).cache()
       val counts = rdd.mapPartitionsWithIndex(
                             (i, rows) => Iterator.single((i, rows.length)))
                       .collect()
@@ -302,16 +299,22 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
           val start = offset - (sum - ct)
           rows.drop(start.toInt).take(count)
         }
-      }).collect
+      }).collect()
 
     }
 
-    override def create(frame: DataFrame): DataFrame = {
-      val id = frame.id.getOrElse(nextFrameId())
-      val frame2 = frame.copy(id = Some(id))
+    override def create(frame: DataFrameTemplate): DataFrame = {
+      val id = nextFrameId()
+      val frame2 = new DataFrame(id = id, name = frame.name, schema = frame.schema)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
-      for (f <- managed(files.write(meta))) {
-        f.write(frame2.toJson.prettyPrint.getBytes(Codec.UTF8.name))
+      val f = files.write(meta)
+      try {
+        val json: String = frame2.toJson.prettyPrint
+        println("Saving metadata")
+        println(json)
+        f.write(json.getBytes(Codec.UTF8.name))
+      } finally {
+        f.close()
       }
       frame2
     }
@@ -319,9 +322,11 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     override def lookup(id: Long): Option[DataFrame] = {
       val path = getFrameDirectory(id)
       val meta = File(Paths.get(path, "meta"))
-      //todo: resource management
+      //TODO: uncomment after files.getMetaData implemented
+//      if (files.getMetaData(meta.path).isEmpty) {
+//        return None
+//      }
       val f = files.read(meta)
-      println("Opened for read")
       try {
         val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
         val json = JsonParser(src)
@@ -329,15 +334,12 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         return Some(json.convertTo[DataFrame])
       } catch {
         case NonFatal(e) => {
+          //todo: logging
           println("Problem reading file: " + e)
           e.printStackTrace()
           throw e
         }
       }
-      //for (f <- managed(files.read(meta))) {
-
-      //}
-      None
     }
 
     val idRegex: Regex = "^\\d+$".r

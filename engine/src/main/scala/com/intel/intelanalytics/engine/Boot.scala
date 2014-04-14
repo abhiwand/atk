@@ -27,7 +27,7 @@ import scala.reflect.io.Directory
 import java.net.URLClassLoader
 import scala.util.control.NonFatal
 import com.intel.intelanalytics.component.Component
-import com.intel.intelanalytics.domain.{Schema, DataFrame}
+import com.intel.intelanalytics.domain.{DataFrameTemplate, Schema, DataFrame}
 
 import scala.concurrent.{Await, ExecutionContext}
 import ExecutionContext.Implicits.global
@@ -63,11 +63,11 @@ class Boot extends Component {
 
       val ng = engine.engine
       println("Running test of frame creation and loading")
-      val create = new DataFrame(id = None, name = "test", schema = new Schema(columns = List(("a", "int"))))
+      val create = new DataFrameTemplate(name = "test", schema = new Schema(columns = List(("a", "int"))))
       val f = for {
         frame <- ng.create(create)
         app <- ng.appendFile(frame, "test.csv", new Builtin("line/csv"))
-        rows <- ng.getRows(app.id.get, offset = 0, count = 10)
+        rows <- ng.getRows(app.id, offset = 0, count = 10)
         //filt <- ng.filter(app, new RowFunction[Boolean](language = "python-cloudpickle", definition = "\\x80\\x02ccloud.serialization.cloudpickle\\n_fill_function\\nq\\x00(ccloud.serialization.cloudpickle\\n_make_skel_func\\nq\\x01cnew\\ncode\\nq\\x02(K\\x01K\\x01K\\x03KCU\\x16|\\x00\\x00j\\x00\\x00d\\x01\\x00d\\x02\\x00\\x83\\x02\\x00d\\x03\\x00k\\x04\\x00Sq\\x03(NU\\x01aq\\x04G\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00K\\x01tq\\x05U\\x03getq\\x06\\x85q\\x07U\\x03rowq\\x08\\x85q\\tU\\x07<stdin>q\\nU\\x06myfuncq\\x0bK\\x01U\\x02\\x00\\x01q\\x0c))tq\\rRq\\x0eK\\x00}q\\x0f\\x87q\\x10Rq\\x11}q\\x12N]q\\x13}q\\x14tR."))
       } yield (app,rows) //filt
       val (meta, data) = Await.result(f, atMost = 60 seconds)

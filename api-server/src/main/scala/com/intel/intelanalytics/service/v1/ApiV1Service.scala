@@ -31,52 +31,53 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
 
   //TODO: are there parts of this that are worth using for things
   // that aren't stored in the metastore, e.g. dataframes?
-  def crud[Entity <: HasId : RootJsonFormat : TypeTag,
-            Index : RootJsonFormat,
-            Decorated : RootJsonFormat]
-          (prefix: String,
-           repo: Repository[metaStore.Session, Entity],
-           decorator: EntityDecorator[Entity, Index, Decorated]): Route = {
-    require(prefix != null)
-    require(repo != null)
-    require(decorator != null)
-    path (prefix) {
-      val typeName = typeOf[Entity].typeSymbol.name
-      std(get, prefix) { uri =>
-        complete {
-          metaStore.withSession("list " + typeName) { implicit session =>
-            decorator.decorateForIndex(uri.toString, repo.scan())
-          }
-        }
-      } ~
-      std(post, prefix) { uri =>
-        entity(as[Entity]) { entity =>
-          metaStore.withSession("create " +  typeName) { implicit session =>
-            val copy = repo.insert(entity).get
-            val id = copy.id.get
-            val links = List(Rel.self(uri + "/" + id))
-            complete {
-              decorator.decorateEntity(uri.toString, links, copy)
-            }
-          }
-        }
-      }
-    } ~
-    pathPrefix(prefix / LongNumber) { id =>
-      std(get, prefix) { uri =>
-        val typeName = typeOf[Entity].typeSymbol.name
-        metaStore.withSession("get " +  typeName) { implicit session =>
-          repo.lookup(id) match {
-            case Some(f) => {
-              val links = List(Rel.self(uri + "/" + id))
-              complete {decorator.decorateEntity(uri.toString, links, f)}
-            }
-            case _ => reject()
-          }
-        }
-      }
-    }
-  }
+  //TODO: needs to be updated for the distinction between Foos and FooTemplates
+//  def crud[Entity <: HasId : RootJsonFormat : TypeTag,
+//            Index : RootJsonFormat,
+//            Decorated : RootJsonFormat]
+//          (prefix: String,
+//           repo: Repository[metaStore.Session, Entity],
+//           decorator: EntityDecorator[Entity, Index, Decorated]): Route = {
+//    require(prefix != null)
+//    require(repo != null)
+//    require(decorator != null)
+//    path (prefix) {
+//      val typeName = typeOf[Entity].typeSymbol.name
+//      std(get, prefix) { uri =>
+//        complete {
+//          metaStore.withSession("list " + typeName) { implicit session =>
+//            decorator.decorateForIndex(uri.toString, repo.scan())
+//          }
+//        }
+//      } ~
+//      std(post, prefix) { uri =>
+//        entity(as[Entity]) { entity =>
+//          metaStore.withSession("create " +  typeName) { implicit session =>
+//            val copy = repo.insert(entity).get
+//            val id = copy.id
+//            val links = List(Rel.self(uri + "/" + id))
+//            complete {
+//              decorator.decorateEntity(uri.toString, links, copy)
+//            }
+//          }
+//        }
+//      }
+//    } ~
+//    pathPrefix(prefix / LongNumber) { id =>
+//      std(get, prefix) { uri =>
+//        val typeName = typeOf[Entity].typeSymbol.name
+//        metaStore.withSession("get " +  typeName) { implicit session =>
+//          repo.lookup(id) match {
+//            case Some(f) => {
+//              val links = List(Rel.self(uri + "/" + id))
+//              complete {decorator.decorateEntity(uri.toString, links, f)}
+//            }
+//            case _ => reject()
+//          }
+//        }
+//      }
+//    }
+//  }
 
   def frameRoutes() = {
     import ViewModelJsonProtocol._
@@ -88,7 +89,7 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
       std(get, prefix) { uri =>
         onComplete(engine.getFrame(id)) {
           case Success(frame) => {
-            val links = List(Rel.self(uri + "/" + id))
+            val links = List(Rel.self(uri.toString))
             complete {Decorators.frames.decorateEntity(uri.toString, links, frame)}
           }
           case _ => reject()

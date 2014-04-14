@@ -27,7 +27,11 @@ case class Transform(language: String, serialization: String, data: String) {
 
 }
 
-case class View(id: Option[Long], basedOn: Long,
+case class View(id: Long, basedOn: Long,
                 name: String, schema: Schema, transform: Transform) extends HasId {
-
+  require(id > 0)
+  require(name != null)
+  require(name.trim.length > 0)
+  require(schema != null)
+  require(schema.columns.length > 0)
 }

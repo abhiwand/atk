@@ -25,8 +25,8 @@ package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.HasId
 
-case class Cluster(id: Option[Long], name: String) extends HasId {
-  require(id.isEmpty || id.get > 0)
+case class Cluster(id: Long, name: String) extends HasId {
+  require(id > 0)
   require(name != null)
   require(name.trim.length > 0)
 }
