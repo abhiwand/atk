@@ -9,7 +9,7 @@ object IABuild extends Build {
   lazy val launcher = Project(id = "launcher", base = file("launcher")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
 
   lazy val server = Project(id = "api-server",
-                         base = file("api-server")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, shared)
+                         base = file("api-server")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, shared, launcher)
 
   lazy val engine = Project(id = "engine",
                          base = file("engine")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, shared, launcher)

@@ -29,6 +29,7 @@ import PartialFunction._
 import com.intel.intelanalytics.domain.{Schema, DataFrame}
 import scala.concurrent.Future
 import java.io.{OutputStream, InputStream}
+import com.intel.intelanalytics.engine.Rows.Row
 
 object Rows {
   type Row = Array[Array[Byte]] //TODO: Can we constrain this better?
@@ -44,9 +45,20 @@ trait Functional {
   def definition: String
 }
 
+object EngineMessages {
+  case class AppendFile(id: Long, fileName: String, rowGenerator: Functional)
+  case class DropColumn(id: Long, name: String)
+  case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
+  case class DropRows(id: Long, filter: RowFunction[Boolean])
+}
+
 case class RowFunction[T](language: String, definition: String) extends Functional
 case class Builtin(name: String) extends Functional { def language = "builtin"; def definition = name }
 
+sealed abstract class Alteration { }
+
+case class AddColumn[T](name: String, value: Option[T], generator: Row => T) extends Alteration
+case class RemoveColumn[T](name: String) extends Alteration
 
 trait FrameComponent {
   import Rows.Row
@@ -62,10 +74,7 @@ trait FrameComponent {
 
   }
 
-  sealed abstract class Alteration { }
 
-  case class AddColumn[T](name: String, value: Option[T], generator: Row => T) extends Alteration
-  case class RemoveColumn[T](name: String) extends Alteration
 
   trait FrameStorage {
     def compile[T](func: RowFunction[T]): Row => T
@@ -114,8 +123,7 @@ trait FileComponent {
   }
 }
 
-trait EngineComponent { this: EngineComponent with FrameComponent
-                                              with FileComponent =>
+trait EngineComponent {
 
   import Rows.Row
   type Identifier = Long //TODO: make more generic?
@@ -135,5 +143,6 @@ trait EngineComponent { this: EngineComponent with FrameComponent
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame]
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
+    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]]
   }
 }
