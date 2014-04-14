@@ -24,17 +24,33 @@
 * Unit test specs for Parser
 */
 import org.specs2.mutable.Specification
-import com.intel.intelanalytics.engine.Parser
+import com.intel.intelanalytics.engine.Row
 
 class ParserSpec extends Specification {
-  "Parser" should {
+   "Parser" should {
     "parse a String" in {
-      Parser.parse_csv("a,b") == List("a","b")      
-    }
-    "Parser" should{
-    	"parse a String" in {
-    		Parser.parse_csv("foo and bar,bar and foo,'foo, is bar'") == List("foo and bar", "bar and foo", "'foo, is bar'")
-    	}
+      Row.parseRecord("a,b") == List("a","b")      
     }
   }
+   "Parser" should{
+    "parse a String with single quotes" in {
+        Row.parseRecord("foo and bar,bar and foo,'foo, is bar'") == List("foo and bar", "bar and foo", "foo, is bar")
+      }
+    }
+    "Parser" should{
+     "parse an empty string" in {
+        Row.parseRecord("") == List("")
+      }
+    }
+    "Parser" should{
+     "parse a nested double quotes string" in {
+        Row.parseRecord("foo and bar,bar and foo,\"foo, is bar\"") == List("foo and bar", "bar and foo", "foo, is bar")
+      }
+    }
+    "Parser" should{
+     "parse a string with empty fields" in {
+        Row.parseRecord("foo,bar,,,baz") == List("foo","bar","","","baz")
+      }
+  }
+   
 }
