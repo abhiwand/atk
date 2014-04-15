@@ -5,17 +5,24 @@ import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
 import akka.event.Logging
 import spray.json._
-import spray.http.{StatusCodes, MediaTypes}
+import spray.http.{Uri, StatusCodes, MediaTypes}
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrame
 import scala.reflect.runtime.universe._
 import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
 import com.intel.intelanalytics.service.EventLoggingDirectives
-import com.intel.intelanalytics.service.v1.viewmodels.{DecoratedDataFrame, DataFrameHeader, ViewModelJsonProtocol, Rel}
+import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.EngineComponent
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext
-import ExecutionContext.Implicits.global //TODO: Is this right execution context for us?
+import ExecutionContext.Implicits.global
+import scala.util.Failure
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import scala.util.Success
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
+
+//TODO: Is this right execution context for us?
 
 
 trait ApiV1Service extends Directives with EventLoggingDirectives {
@@ -85,12 +92,18 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
 //          DataFrameHeader,
 //          DecoratedDataFrame]("dataframes", metaStore.frameRepo, Decorators.frames)
     val prefix = "dataframes"
+
+    def decorate(uri: Uri, frame: DataFrame): DecoratedDataFrame = {
+      val links = List(Rel.self(uri.toString))
+      Decorators.frames.decorateEntity(uri.toString, links, frame)
+    }
+
     pathPrefix(prefix / LongNumber) { id =>
       std(get, prefix) { uri =>
         onComplete(engine.getFrame(id)) {
           case Success(frame) => {
-            val links = List(Rel.self(uri.toString))
-            complete {Decorators.frames.decorateEntity(uri.toString, links, frame)}
+            val decorated = decorate(uri, frame)
+            complete {decorated}
           }
           case _ => reject()
         }
@@ -106,15 +119,22 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
         }
       }
     } ~
-    std(get, prefix) {
-      uri =>
+    std(get, prefix) { uri =>
       //TODO: cursor
-        onComplete(engine.getFrames(0, 20)) {
-          case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
+      onComplete(engine.getFrames(0, 20)) {
+        case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
+        case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
+      }
+    } ~
+    std(post, prefix) { uri =>
+      import DomainJsonProtocol._
+      entity(as[DataFrameTemplate]) { frame =>
+        onComplete(engine.create(frame)) {
+          case Success(frame) => complete(decorate(uri, frame))
           case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
         }
+      }
     }
-
   }
 
   def apiV1Service: Route = {
