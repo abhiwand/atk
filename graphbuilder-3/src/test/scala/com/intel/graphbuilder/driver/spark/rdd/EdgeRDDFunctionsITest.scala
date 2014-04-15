@@ -5,19 +5,13 @@ import com.intel.graphbuilder.testutils.TestingSparkContext
 import com.intel.graphbuilder.elements.{GbIdToPhysicalId, Property, Edge}
 import GraphBuilderRDDImplicits._
 
-// TODO: working through issues where Spark tests work individually but interfere with each other
-
-/*
-
-class EdgeRDDFunctionsIntegrationTest extends Specification {
-
-  args(sequential=true)
+class EdgeRDDFunctionsITest extends Specification {
 
   "EdgeRDDFunctions" should {
 
+    // A lot of tests are being grouped together here because it
+    // is somewhat expensive to spin up a testing SparkContext
     "pass integration test" in new TestingSparkContext {
-
-
 
       val edge1 = new Edge(Property("gbId", 1L),Property("gbId", 2L), "myLabel", List(Property("key", "value")))
       val edge2 = new Edge(Property("gbId", 2L),Property("gbId", 3L), "myLabel", List(Property("key", "value")))
@@ -48,8 +42,9 @@ class EdgeRDDFunctionsIntegrationTest extends Specification {
       val vertices = edges.verticesFromEdges()
       vertices.count() mustEqual 6
       vertices.mergeDuplicates().count() mustEqual 3
+
     }
   }
 
 }
-*/
+

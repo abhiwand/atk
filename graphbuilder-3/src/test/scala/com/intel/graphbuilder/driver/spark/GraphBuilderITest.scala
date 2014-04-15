@@ -1,6 +1,6 @@
 package com.intel.graphbuilder.driver.spark
 
-import com.intel.graphbuilder.testutils.{TestingSparkContext, TestingTitan}
+import com.intel.graphbuilder.testutils.{TestingSparkContextWithTitan, TestingSparkContext, TestingTitan}
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
 import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
@@ -9,17 +9,16 @@ import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import java.util.Date
 import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
-
-// TODO: working through issues where Spark tests work individually but interfere with each other
+import com.intel.graphbuilder.driver.spark.titan.{GraphBuilder, GraphBuilderConfig}
 
 /**
  * End-to-end Integration Test
  */
-/*class End2EndIntegrationTest extends Specification {
+class GraphBuilderITest extends Specification {
 
-  "GraphBuilderRuleParserTitan" should {
+  "GraphBuilder" should {
 
-    "support an end-to-end flow" in new TestingSparkContext with TestingTitan {
+    "support an end-to-end flow" in new TestingSparkContextWithTitan {
 
       // Input Data
       val inputRows = List(
@@ -48,14 +47,13 @@ import scala.collection.JavaConversions._
       val inputRdd = sc.parallelize(inputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Build the Graph
-      val config = new RuleParserConfig(inputSchema, vertexRules, edgeRules, false)
-      val gb = new GraphBuilderRuleParserTitan(inputRdd, config, titanConnector)
-      gb.build()
+      val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig)
+      val gb = new GraphBuilder(config)
+      gb.build(inputRdd)
 
       // Validate
       graph.getEdges.size mustEqual 5
       graph.getVertices.size mustEqual 5
     }
-
   }
-}*/
+}

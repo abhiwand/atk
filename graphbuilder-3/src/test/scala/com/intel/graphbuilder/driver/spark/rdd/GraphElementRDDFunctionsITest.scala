@@ -7,16 +7,12 @@ import GraphBuilderRDDImplicits._
 import com.intel.graphbuilder.elements.Vertex
 import com.intel.graphbuilder.elements.Edge
 
-// TODO: working through issues where Spark tests work individually but interfere with each other
-
-/*
-class GraphElementRDDFunctionsIntegrationTest extends Specification {
-
-  args(sequential=true)
-
+class GraphElementRDDFunctionsITest extends Specification {
 
   "GraphElementRDDFunctions" should {
 
+    // A lot of tests are being grouped together here because it
+    // is somewhat expensive to spin up a testing SparkContext
     "pass integration test" in new TestingSparkContext {
 
       val edge1 = new Edge(Property("gbId", 1L),Property("gbId", 2L), "myLabel", List(Property("key", "value")))
@@ -29,8 +25,7 @@ class GraphElementRDDFunctionsIntegrationTest extends Specification {
       graphElements.filterEdges().count() mustEqual 2
       graphElements.filterVertices().count() mustEqual 1
     }
-
   }
 }
 
-*/
+

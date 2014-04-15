@@ -4,27 +4,37 @@ import java.util.Date
 import org.apache.commons.lang3.RandomUtils
 import org.apache.spark.{SparkConf, SparkContext}
 import org.specs2.mutable.After
+import scala.concurrent.Lock
 
 /**
  * This trait case be mixed into Specifications to create a SparkContext for testing.
- *
- * IMPORTANT! this adds a couple seconds to your unit test!
+ * <p>
+ * IMPORTANT! This adds a couple seconds to your unit test!
+ * </p>
+ * <p>
+ * Lock is used because you can only have one local SparkContext running at a time.
+ * Other option is to use "parallelExecution in Test := false" but locking seems to be faster.
+ * </p>
  */
-class TestingSparkContext extends After {
+trait TestingSparkContext extends After {
 
-  //LogUtils.silenceSpark()
+  // locking in the constructor is slightly odd but it seems to work well
+  TestingSparkContext.lock.acquire()
 
-  lazy val conf = new SparkConf()
-    .setMaster("local")
-    .setAppName("test " + new Date())
-    .set("spark.ui.port", availablePort().toString)
+  LogUtils.silenceSpark()
 
-  lazy val sc = new SparkContext(conf)
+  lazy val sc = new SparkContext("local", "test " + new Date())
 
+  /**
+   * Clean up after the test is done
+   */
   override def after: Any = {
     cleanupSpark()
   }
 
+  /**
+   * Shutdown spark and release the lock
+   */
   def cleanupSpark(): Unit = {
     try {
       if (sc != null) {
@@ -34,13 +44,12 @@ class TestingSparkContext extends After {
     finally {
       // To avoid Akka rebinding to the same port, since it doesn't unbind immediately on shutdown
       System.clearProperty("spark.driver.port")
-      //System.clearProperty("spark.hostPort")
-      //System.clearProperty("spark.ui.port")
+
+      TestingSparkContext.lock.release()
     }
   }
+}
 
-  private def availablePort(): Int = {
-    // TODO: we could actually look for an available port
-    RandomUtils.nextInt(10000, 30000)
-  }
+object TestingSparkContext {
+  val lock = new Lock()
 }
