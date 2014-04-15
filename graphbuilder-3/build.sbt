@@ -62,14 +62,11 @@ resolvers ++= Seq(
   "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases" // Scala Check
 )
 
-// TODO: remove
+// TODO: remove or comment out? still needed for now
 // This is nice if you want to use some local artifacts from Maven during local development
 resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
-
-// TODO: remove?
-// Speeds up write? http://stackoverflow.com/questions/21123819/how-to-avoid-rebuilding-the-resolvers-in-sbt-0-13-x
-//cleanKeepFiles ++= Seq("resolution-cache", "streams").map(target.value / _)
 
 ScoverageSbtPlugin.instrumentSettings
 
 ScoverageSbtPlugin.ScoverageKeys.excludedPackages in ScoverageSbtPlugin.scoverage := "com.intel.graphbuilder.driver.spark.titan.examples.*;com.intel.graphbuilder.driver.local.examples.*"
+

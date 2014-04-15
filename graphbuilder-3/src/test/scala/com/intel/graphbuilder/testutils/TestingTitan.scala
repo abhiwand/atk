@@ -15,11 +15,11 @@ trait TestingTitan extends After {
   LogUtils.silenceTitan()
 
   private var tmpDir: File = createTempDirectory("titan-graph-for-unit-testing-")
-  private val config = new SerializableBaseConfiguration()
 
-  config.setProperty("storage.directory", tmpDir.getAbsolutePath)
+  var titanConfig = new SerializableBaseConfiguration()
+  titanConfig.setProperty("storage.directory", tmpDir.getAbsolutePath)
 
-  var titanConnector: TitanGraphConnector = new TitanGraphConnector(config)
+  var titanConnector = new TitanGraphConnector(titanConfig)
   var graph: TitanGraph = titanConnector.connect()
 
   override def after: Unit = {
@@ -40,6 +40,7 @@ trait TestingTitan extends After {
     }
 
     // make sure this class is unusable when we're done
+    titanConfig = null
     titanConnector = null
     graph = null
     tmpDir = null
