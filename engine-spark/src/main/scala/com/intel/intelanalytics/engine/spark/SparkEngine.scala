@@ -130,8 +130,6 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
             .map(parserFunction)
             //TODO: type conversions based on schema
             .map(strings => strings.map(s => s.getBytes))
-            //.map(strings => strings.map(s => new BytesWritable(s.getBytes()).asInstanceOf[Writable]))
-            //.map(array => new ArrayWritable(classOf[BytesWritable], array))
             .saveAsObjectFile(location)
           frames.lookup(frame.id).getOrElse(
             throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
