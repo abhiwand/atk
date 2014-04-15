@@ -87,6 +87,7 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
 //  }
 
   def frameRoutes() = {
+    //TODO: standardize and extract error handling and messaging
     import ViewModelJsonProtocol._
 //    crud[DataFrame,
 //          DataFrameHeader,
