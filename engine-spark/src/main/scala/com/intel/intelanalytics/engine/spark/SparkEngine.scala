@@ -52,7 +52,7 @@ import org.apache.hadoop.io._
 import scala.collection.mutable.ArrayBuffer
 import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
-import com.intel.intelanalytics.engine.RowFunction
+import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
 
 //TODO logging
@@ -110,7 +110,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       parser.language match {
         case "builtin" => parser.definition match {
           case "line/csv" => (s: String) => {
-            s.split(',')
+            //s.split(',')
+            Row.apply(s)
           } //TODO: Return the real parser when Mohit's is finished.
           case p => throw new Exception("Unsupported parser: " + p)
         }
