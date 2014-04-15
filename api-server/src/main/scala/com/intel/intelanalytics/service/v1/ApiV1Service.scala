@@ -94,16 +94,27 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
           }
           case _ => reject()
         }
-      }
-    } ~
-      std(get, prefix) {
-        uri =>
-        //TODO: cursor
-          onComplete(engine.getFrames(0, 20)) {
-            case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
+      } ~
+      std(delete, prefix) { uri => {
+          onComplete(for {
+            f <- engine.getFrame(id)
+            res <- engine.delete(f)
+          } yield res) {
+            case Success(frames) => complete("OK")
             case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
           }
+        }
       }
+    } ~
+    std(get, prefix) {
+      uri =>
+      //TODO: cursor
+        onComplete(engine.getFrames(0, 20)) {
+          case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
+          case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
+        }
+    }
+
   }
 
   def apiV1Service: Route = {

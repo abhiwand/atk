@@ -44,7 +44,7 @@ object ServiceHost {
 
     metaStore.create()
 
-    override lazy val engine = com.intel.intelanalytics.component.Boot.getComponent(
+    override val engine = com.intel.intelanalytics.component.Boot.getComponent(
       "engine", "com.intel.intelanalytics.engine.Boot").get[Engine]("engine")
 
   }
@@ -58,6 +58,7 @@ object ServiceHost {
   implicit val timeout = Timeout(5.seconds)
 
   def start() = {
+
     // start a new HTTP server on port 8080 with our service actor as the handler
     IO(Http) ? Http.Bind(service, interface = "0.0.0.0", port = 8080)
 
