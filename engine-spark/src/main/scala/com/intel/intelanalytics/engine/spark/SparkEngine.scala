@@ -250,7 +250,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def getMetaData(path: Path): Option[Entry] = ???
 
-    override def delete(path: Path): Unit = ???
+    override def delete(path: Path): Unit = {
+      fs.delete(new HPath(fsRoot + path.toString), true)
+    }
 
     override def create(entry: Entry): Unit = ???
   }
@@ -265,7 +267,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-    override def drop(frame: DataFrame): Unit = ???
+    override def drop(frame: DataFrame): Unit = {
+      files.delete(Paths.get(getFrameDirectory(frame.id)))
+    }
 
     override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = ???
 
@@ -278,29 +282,34 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     override def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: (Row) => T): Unit = ???
 
     override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] = {
+      val ctx = engine.context()
+      val rdd: RDD[Array[Array[Byte]]] =
+        ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id))
+      //Brute force until the code below can be fixed
+      val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
+      //The below fails with a classcast exception saying it can't convert a byteswritable
+      //into a Text. Nobody asked it to try to do that, so it's a bit mysterious.
       //TODO: Check to see if there's a better way to implement, this might be too slow.
       // Need to cache row counts per partition somewhere.
       //TODO: Resource management
-      val ctx = engine.context()
-      val rdd = ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id)).cache()
-      val counts = rdd.mapPartitionsWithIndex(
-                            (i, rows) => Iterator.single((i, rows.length)))
-                      .collect()
-                      .sortBy(_._1)
-      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
-                      .drop(1)
-                      .toMap
-      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
-      rdd.mapPartitionsWithIndex((i, rows) => {
-        val (ct: Int, sum: Int) = sumsAndCounts(i)
-        if (sum < offset || sum - ct > offset + count) {
-          Iterator.empty
-        } else {
-          val start = offset - (sum - ct)
-          rows.drop(start.toInt).take(count)
-        }
-      }).collect()
-
+      //      val counts = rdd.mapPartitionsWithIndex(
+//                            (i:Int, rows:Iterator[Array[Array[Byte]]]) => Iterator.single((i, rows.size)))
+//                      .collect()
+//                      .sortBy(_._1)
+//      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
+//                      .drop(1)
+//                      .toMap
+//      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
+//      val rows: Seq[Array[Array[Byte]]] = rdd.mapPartitionsWithIndex((i, rows) => {
+//        val (ct: Int, sum: Int) = sumsAndCounts(i)
+//        if (sum < offset || sum - ct > offset + count) {
+//          Iterator.empty
+//        } else {
+//          val start = offset - (sum - ct)
+//          rows.drop(start.toInt).take(count)
+//        }
+//      }).collect()
+      rows
     }
 
     override def create(frame: DataFrameTemplate): DataFrame = {
