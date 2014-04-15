@@ -20,37 +20,40 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-/*
-* Unit test specs for Parser
-*/
-import org.specs2.mutable.Specification
-import com.intel.intelanalytics.engine.Row
 
-class ParserSpec extends Specification {
-   "Parser" should {
-    "parse a String" in {
-      Row.apply("a,b") == List("a","b")      
-    }
+package com.intel.intelanalytics.engine
+
+/** This object parses comma delimited strings into List[String]
+  * Usage:
+  * scala> import com.intelanalytics.engine.Row
+  * scala> val out = Row.apply("foo,bar")
+  * scala> val out = Row.apply("a,b,\"foo,is this ,bar\",foobar ")
+  * scala> val out = Row.apply(" a,b,'',\"\"  ")
+  */
+import util.parsing.combinator.RegexParsers 
+ 
+object Row extends RegexParsers {
+  /**Row Object takes a string as an input and parses the csv formatted string */
+
+  override def skipWhitespace = false
+  /** Apply method parses the string and returns a list of String tokens
+    * @param line to be parsed
+    */
+  def apply(line: String): Array[String] = parseAll(record, line) match {
+    case Success(result, _) => result.toArray
+    case failure: NoSuccess => {throw new Exception("Parse Failed")}
   }
-   "Parser" should{
-    "parse a String with single quotes" in {
-        Row.apply("foo and bar,bar and foo,'foo, is bar'") == List("foo and bar", "bar and foo", "foo, is bar")
-      }
-    }
-    "Parser" should{
-     "parse an empty string" in {
-        Row.apply("") == List("")
-      }
-    }
-    "Parser" should{
-     "parse a nested double quotes string" in {
-        Row.apply("foo and bar,bar and foo,\"foo, is bar\"") == List("foo and bar", "bar and foo", "foo, is bar")
-      }
-    }
-    "Parser" should{
-     "parse a string with empty fields" in {
-        Row.apply("foo,bar,,,baz") == List("foo","bar","","","baz")
-      }
-  }
-   
+  
+  
+  def record = repsep(mainToken, ",")
+  def mainToken = doubleQuotes | singleQuotes | unquotes | empty
+  /** function to evaluate empty fields*/
+  lazy val empty = success ("")
+  /** function to evaluate single quotes*/
+  lazy val singleQuotes = "'" ~> "[^']+".r <~ "'" 
+  /** function to evaluate double quotes*/
+  lazy val doubleQuotes: Parser[String] = "\"" ~> "[^\"]+".r <~ "\"" 
+  /** function to evaluate normal tokens*/
+  lazy val unquotes = "[^,]+".r 
+
 }
