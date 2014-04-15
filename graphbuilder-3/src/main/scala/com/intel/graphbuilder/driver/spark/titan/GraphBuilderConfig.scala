@@ -14,7 +14,7 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
  * @param biDirectional true to create an Edge in the opposite direction for each one parsed
  * @param append true to append to an existing Graph, slower because each write requires a read.
  * @param retainDanglingEdges true to add extra vertices for dangling edges, false to drop dangling edges
- * @param inferSchema true to automatically infer the schema from the rules and data, if needed, false if the schema is already defined.
+ * @param inferSchema true to automatically infer the schema from the rules and, if needed, the data, false if the schema is already defined.
  */
 case class GraphBuilderConfig(inputSchema: InputSchema,
                               vertexRules: List[VertexRule],
