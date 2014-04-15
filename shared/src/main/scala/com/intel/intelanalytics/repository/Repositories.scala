@@ -1,10 +1,8 @@
 package com.intel.intelanalytics.repository
 
 import scala.util.Try
+import com.intel.intelanalytics.domain.HasId
 
-trait HasId {
-  def id : Option[Long]
-}
 
 trait ReadRepository[Session, Entity <: HasId] {
   def defaultScanCount: Int = 20 //TODO: move to config

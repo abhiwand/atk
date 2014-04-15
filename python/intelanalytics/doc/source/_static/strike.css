@@ -1,0 +1,11 @@
+@import url("default.css");
+
+.strike {
+    text-decoration: line-through;
+}
+.strikeraw {
+    text-decoration: line-through;
+    font-family: monospace;
+    white-space: pre;
+}
+
