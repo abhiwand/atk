@@ -26,62 +26,34 @@ package com.intel.intelanalytics.engine
 /** This object parses comma delimited strings into List[String]
   * Usage:
   * scala> import com.intelanalytics.engine.Row
-  * scala> val out = Row.parseRecord("foo,bar")
-  * scala> val out = Row.parseRecord("a,b,\"foo,is this ,bar\",foobar ")
-  * scala> val out = Row.parseRecord(" a,b,'',\"\"  ")
-  * Modified from: http://poundblog.wordpress.com/2013/06/06/a-scala-parser-combinator-grammar-for-csv/
+  * scala> val out = Row.apply("foo,bar")
+  * scala> val out = Row.apply("a,b,\"foo,is this ,bar\",foobar ")
+  * scala> val out = Row.apply(" a,b,'',\"\"  ")
   */
-import util.parsing.combinator.RegexParsers
+import util.parsing.combinator.RegexParsers 
+ 
+object Row extends RegexParsers {
+  /**Row Object takes a string as an input and parses the csv formatted string */
 
-trait RecordParser extends RegexParsers {
-  /** A generic interface to handle parsing logic*/
-  override val whiteSpace = """[ \t]""".r
-  
-  override val skipWhitespace = false
-  
-  /** Takes in the string and applies the parsing logic   */
-  def apply(line: String) : List[String]={
-  	parseAll(record,line).get
-  }
-
-  
-  def record:Parser[List[String]] = repsep(field,",") ^^ {case x => x}
-  
-  // Specify various portions of strings and how to handle them and the order of precedence
-  def field: Parser[String] = TEXT ||| SINGLEQUOTES | STRING  |EMPTY
- 
-  val STRING: Parser[String] = whiteSpace.* ~> "\"" ~> rep("\"\"" | """[^\"]""".r) <~ "\"" <~ whiteSpace.* ^^ makeString
-  val TEXT: Parser[String] = rep1("""[^,\n\r\"]""".r) ^^ makeText
-  val EMPTY: Parser[String] = "" ^^ makeEmpty
- 
-  def SINGLEQUOTES = "'" ~> "[^']+".r <~ "'" ^^ {case a => (""/:a)(_+_)}
-  def makeText: (List[String]) => String
-  def makeString: (List[String]) => String
-  def makeEmpty: (String) => String
-}
- 
-
- 
-trait RecordParserAction {
-  /** Implementation of text,string and empty cases handler*/
-  // no trimming of WhiteSpace
-  def makeText = (text: List[String]) => text.mkString("")
-  // remove embracing quotation marks
-  // replace double quotes by single quotes
-  def makeString = (string: List[String]) => string.mkString("").replaceAll("\"\"", "\"")
-  
-  // modify result of EMPTY token if required
-  def makeEmpty = (string: String) => ""
-}
-
- 
-object Row extends RecordParser with RecordParserAction {
-  /** Creates a Row with given input String
-    *
+  override def skipWhitespace = false
+  /** Apply method parses the string and returns a list of String tokens
     * @param line to be parsed
     */
-    def parseRecord(line:String):List[String]={
-    	//println(apply(record))
-     return apply(line)
-  }  
+  def apply(line: String): List[String] = parseAll(record, line) match {
+    case Success(result, _) => result
+    case failure: NoSuccess => {throw new Exception("Parse Failed")}
+  }
+  
+  
+  def record = repsep(mainToken, ",")
+  def mainToken = doubleQuotes | singleQuotes | unquotes | empty
+  /** function to evaluate empty fields*/
+  lazy val empty = success ("")
+  /** function to evaluate single quotes*/
+  lazy val singleQuotes = "'" ~> "[^']+".r <~ "'" 
+  /** function to evaluate double quotes*/
+  lazy val doubleQuotes: Parser[String] = "\"" ~> "[^\"]+".r <~ "\"" 
+  /** function to evaluate normal tokens*/
+  lazy val unquotes = "[^,]+".r 
+
 }
