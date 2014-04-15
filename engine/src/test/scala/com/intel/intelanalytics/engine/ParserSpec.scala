@@ -29,27 +29,27 @@ import com.intel.intelanalytics.engine.Row
 class ParserSpec extends Specification {
    "Parser" should {
     "parse a String" in {
-      Row.parseRecord("a,b") == List("a","b")      
+      Row.apply("a,b") == List("a","b")      
     }
   }
    "Parser" should{
     "parse a String with single quotes" in {
-        Row.parseRecord("foo and bar,bar and foo,'foo, is bar'") == List("foo and bar", "bar and foo", "foo, is bar")
+        Row.apply("foo and bar,bar and foo,'foo, is bar'") == List("foo and bar", "bar and foo", "foo, is bar")
       }
     }
     "Parser" should{
      "parse an empty string" in {
-        Row.parseRecord("") == List("")
+        Row.apply("") == List("")
       }
     }
     "Parser" should{
      "parse a nested double quotes string" in {
-        Row.parseRecord("foo and bar,bar and foo,\"foo, is bar\"") == List("foo and bar", "bar and foo", "foo, is bar")
+        Row.apply("foo and bar,bar and foo,\"foo, is bar\"") == List("foo and bar", "bar and foo", "foo, is bar")
       }
     }
     "Parser" should{
      "parse a string with empty fields" in {
-        Row.parseRecord("foo,bar,,,baz") == List("foo","bar","","","baz")
+        Row.apply("foo,bar,,,baz") == List("foo","bar","","","baz")
       }
   }
    
