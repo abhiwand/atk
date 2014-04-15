@@ -4,7 +4,7 @@ assemblySettings
 
 // your assembly settings here
 
-jarName in assembly := "api.jar"
+jarName in assembly := "api-server.jar"
 
 test in assembly := {}
 

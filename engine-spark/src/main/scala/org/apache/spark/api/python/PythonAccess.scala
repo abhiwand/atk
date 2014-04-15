@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2013 Intel Corporation All Rights Reserved.
+// Copyright 2014 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -20,15 +20,29 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.repository.HasId
+package org.apache.spark.api.python
 
-case class Transform(language: String, serialization: String, data: String) {
+import org.apache.spark.rdd.RDD
+import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
 
-}
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.Accumulator
+import scala.reflect.ClassTag
 
-case class View(id: Option[Long], basedOn: Long,
-                name: String, schema: Schema, transform: Transform) extends HasId {
+/**
+ * Wrapper to enable access to private Spark class PythonRDD
+ */
+class EnginePythonRDD[T: ClassTag](
+                                    parent: RDD[T],
+                                    command: Array[Byte],
+                                    envVars: JMap[String, String],
+                                    pythonIncludes: JList[String],
+                                    preservePartitioning: Boolean,
+                                    pythonExec: String,
+                                    broadcastVars: JList[Broadcast[Array[Byte]]],
+                                    accumulator: Accumulator[JList[Array[Byte]]])
+  extends PythonRDD[T](parent, command, envVars, pythonIncludes,
+    preservePartitioning, pythonExec, broadcastVars, accumulator) {
 
 }

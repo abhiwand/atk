@@ -32,10 +32,10 @@ libraryDependencies ++= {
     "org.mockito"         %   "mockito-core"      % "1.9.5"   % "test",
     "com.typesafe.slick"  %%  "slick"             % "2.0.1-RC1",
     "com.h2database"      %   "h2"                % "1.3.175",
-    ("com.intel.hadoop"    %   "event"             % "1.0-SNAPSHOT")
-      .exclude("ch.qos.cal10n.plugins", "maven-cal10n-plugin")
-      .exclude("junit", "junit")
-      .exclude("org.apache.hadoop", "hadoop-core"),
+//    ("com.intel.hadoop"    %   "event"             % "1.0-SNAPSHOT")
+//      .exclude("ch.qos.cal10n.plugins", "maven-cal10n-plugin")
+//      .exclude("junit", "junit")
+//      .exclude("org.apache.hadoop", "hadoop-core"),
     "ch.qos.logback"      %   "logback-classic"   % "1.1.1",
     "org.slf4j"           %   "slf4j-api"         % "1.7.6"
   )

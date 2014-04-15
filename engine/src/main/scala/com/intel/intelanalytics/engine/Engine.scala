@@ -26,23 +26,24 @@ package com.intel.intelanalytics.engine
 import akka.actor.Actor
 import com.intel.intelanalytics.shared.EventLogging
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import com.intel.intelanalytics.engine.EngineMessages.AppendFile
 
 /** This is the Akka interface to the engine */
 class ApiServiceActor extends Actor with EventLogging { this: EngineComponent =>
 
-
   def receive = {
-    case AppendFile(id, fileName, rowParser) => engine.appendFile(id, fileName, rowParser)
-    case AddColumn(id, name, map) => engine.addColumn(id, name, map)
-    case DropColumn(id, name) => engine.dropColumn(id, name)
-    case DropRows(id, filter) => engine.dropRows(id, filter)
+    case AppendFile(id, fileName, rowParser) => for {
+      f <- engine.getFrame(id)
+      res <- engine.appendFile(f, fileName, rowParser)
+    } yield res
+//    case AddColumn(id, name, map) => engine.addColumn(id, name, map)
+//    case DropColumn(id, name) => engine.dropColumn(id, name)
+//    case DropRows(id, filter) => engine.dropRows(id, filter)
     case x => warn("Unknown message: " + x)
   }
 
 }
 
-case class AppendFile(id: Long, fileName: String, rowParser: RowFunction[Map[String,Any]])
-case class DropColumn(id: Long, name: String)
-case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
-case class DropRows(id: Long, filter: RowFunction[Boolean])
+
 

@@ -1,3 +1,4 @@
+application.home_IS_UNDEFINED
 /bin
 build
 BUILD
@@ -40,3 +41,5 @@ tags
 patches-*
 */dependency-reduced-pom.xml
 virtpy
+lib
+*.jar

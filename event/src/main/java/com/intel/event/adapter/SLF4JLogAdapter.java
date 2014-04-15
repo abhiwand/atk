@@ -25,7 +25,6 @@ package com.intel.event.adapter;
 
 import com.intel.event.Event;
 import com.intel.event.EventLog;
-import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -37,9 +36,20 @@ import org.slf4j.MarkerFactory;
  */
 public class SLF4JLogAdapter implements EventLog {
 
+    private String join(String separator, String[] parts) {
+        StringBuilder builder = new StringBuilder();
+        for(int i = 0; i < parts.length; i++) {
+            builder.append(parts[i]);
+            if (i + 1 != parts.length) {
+                builder.append(separator);
+            }
+        }
+        return builder.toString();
+    }
+
     @Override
     public void log(Event e) {
-        Logger factory = LoggerFactory.getLogger(StringUtils.join(":", e.getContextNames()));
+        Logger factory = LoggerFactory.getLogger(join(":", e.getContextNames()));
         MDC.setContextMap(e.getData());
         String[] markers = e.getMarkers();
         Marker marker = null;
