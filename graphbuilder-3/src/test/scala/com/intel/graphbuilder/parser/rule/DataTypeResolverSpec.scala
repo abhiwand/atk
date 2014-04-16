@@ -35,8 +35,11 @@ class DataTypeResolverSpec extends Specification with Mockito {
     "throw exception for other types not yet implemented" in {
       val unsupportedValue = new Value {
         override def value(row: InputRow): Any = null
+
         override def value: Any = null
+
         override def in(row: InputRow): Boolean = false
+
         override def isParsed: Boolean = false
       }
 
