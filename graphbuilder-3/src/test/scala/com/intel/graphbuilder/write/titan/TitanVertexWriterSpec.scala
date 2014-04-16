@@ -2,9 +2,7 @@ package com.intel.graphbuilder.write.titan
 
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification
-import com.intel.graphbuilder.write.dao.VertexDAO
 import com.intel.graphbuilder.elements.{Property, Vertex}
-import com.intel.graphbuilder.write.dao.VertexDAO
 import com.intel.graphbuilder.write.VertexWriter
 import com.thinkaurelius.titan.core.TitanVertex
 
