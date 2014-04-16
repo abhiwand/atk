@@ -33,7 +33,10 @@ case class Edge(var tailPhysicalId: AnyRef, var headPhysicalId: AnyRef, tailVert
   }
 
   /**
-   * Merge properties for two edges
+   * Merge properties for two edges.
+   *
+   * Conflicts are handled arbitrarily.
+   *
    * @param other item to merge
    * @return the new merged item
    */

@@ -23,6 +23,9 @@ case class Vertex(gbId: Property, properties: Seq[Property]) extends GraphElemen
 
   /**
    * Merge two Vertices with the same id into a single Vertex with a combined list of properties.
+   *
+   * Conflicts are handled arbitrarily.
+   *
    * @param other item to merge
    * @return the new merged item
    */
