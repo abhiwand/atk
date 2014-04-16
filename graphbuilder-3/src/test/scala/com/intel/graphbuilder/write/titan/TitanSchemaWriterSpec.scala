@@ -28,6 +28,19 @@ class TitanSchemaWriterSpec extends Specification with Mockito {
       graph.getType("myLabel").isEdgeLabel mustEqual true
     }
 
+    "ignore duplicate edge label definitions" in new SchemaWriterSetup {
+      // setup
+      val edgeLabel = new EdgeLabelDef("myLabel")
+      val edgeLabelDup = new EdgeLabelDef("myLabel")
+      val schema = new GraphSchema(List(edgeLabel, edgeLabelDup), Nil)
+
+      // invoke method under test
+      titanSchemaWriter.write(schema)
+
+      // validate
+      graph.getType("myLabel").isEdgeLabel mustEqual true
+    }
+
     "write a property definition" in new SchemaWriterSetup {
       val propertyDef = new PropertyDef(PropertyType.Vertex, "propName", classOf[String], unique = false, indexed = false)
       val schema = new GraphSchema(Nil, List(propertyDef))
