@@ -64,10 +64,8 @@ class FrameBackendSimplePrint(object):
         for i, key in enumerate(dst_list):
             frame._columns[key] = src_list[i]
 
-    def drop_columns(self, frame, column_names):
-        logger.info("Backend: Dropping columns {0} from frame {1}".format(','.join(column_names), repr(frame)))
-        for c in column_names:
-            del frame._columns[c]
+    def delete_column(self, frame, name):
+        logger.info("Backend: Dropping columns {0} from frame {1}".format(name, repr(frame)))
 
     def drop_rows(self, frame, predicate):
         logger.info("Backend: Dropping rows from frame {0} where {1}".format(repr(frame), repr(predicate)))

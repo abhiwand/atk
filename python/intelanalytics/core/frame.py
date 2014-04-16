@@ -331,8 +331,8 @@ class BigFrame(object):
     def save(self, name=None):
         self._backend.save(self, name)
 
-    def take(self, n):
-        return self._backend.take(self, n)
+    def take(self, n, offset=0):
+        return self._backend.take(self, n, offset)
 
 
 
