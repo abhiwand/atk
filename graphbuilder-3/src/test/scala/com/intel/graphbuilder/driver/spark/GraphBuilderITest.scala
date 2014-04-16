@@ -1,12 +1,10 @@
 package com.intel.graphbuilder.driver.spark
 
-import com.intel.graphbuilder.testutils.{TestingSparkContextWithTitan, TestingSparkContext, TestingTitan}
-import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import com.intel.graphbuilder.testutils.{TestingSparkContext, TestingTitan}
 import com.intel.graphbuilder.parser.{ColumnDef, InputSchema}
 import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
 import org.specs2.mutable.Specification
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
-import java.util.Date
 import org.apache.spark.rdd.RDD
 import scala.collection.JavaConversions._
 import com.intel.graphbuilder.driver.spark.titan.{GraphBuilder, GraphBuilderConfig}
