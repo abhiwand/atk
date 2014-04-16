@@ -1,9 +1,7 @@
 package com.intel.graphbuilder.testutils
 
 import java.util.Date
-import org.apache.commons.lang3.RandomUtils
-import org.apache.spark.{SparkConf, SparkContext}
-import org.specs2.mutable.After
+import org.apache.spark.SparkContext
 import scala.concurrent.Lock
 
 /**

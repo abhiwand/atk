@@ -2,7 +2,7 @@ package com.intel.graphbuilder.write.titan
 
 import org.specs2.mutable.Specification
 import com.intel.graphbuilder.schema.{PropertyType, PropertyDef, EdgeLabelDef, GraphSchema}
-import com.tinkerpop.blueprints.Direction
+import com.tinkerpop.blueprints.{Vertex, Direction, Edge}
 import org.specs2.mock.Mockito
 import com.thinkaurelius.titan.core.TitanGraph
 import com.intel.graphbuilder.testutils.TestingTitan
@@ -63,6 +63,26 @@ class TitanSchemaWriterSpec extends Specification with Mockito {
 
       // invoke method under test
       new TitanSchemaWriter(graph) must throwA[IllegalArgumentException]
+    }
+
+    "determine indexType for Edges " in {
+      val graph = mock[TitanGraph]
+      graph.isOpen returns true
+      new TitanSchemaWriter(graph).indexType(PropertyType.Edge) mustEqual classOf[Edge]
+    }
+
+    "determine indexType for Vertices " in {
+      val graph = mock[TitanGraph]
+      graph.isOpen returns true
+      new TitanSchemaWriter(graph).indexType(PropertyType.Vertex) mustEqual classOf[Vertex]
+    }
+
+    "fail for unexpected types" in {
+      val graph = mock[TitanGraph]
+      graph.isOpen returns true
+      new TitanSchemaWriter(graph).indexType(new PropertyType.Value {
+        override def id: Int = -99999999
+      }) must throwA[RuntimeException]
     }
   }
 }

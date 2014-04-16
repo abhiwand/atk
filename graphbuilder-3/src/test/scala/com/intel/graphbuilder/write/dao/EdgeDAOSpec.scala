@@ -1,12 +1,9 @@
 package com.intel.graphbuilder.write.dao
 
 import org.specs2.mutable.Specification
-import org.specs2.mutable.Before
-import org.specs2.specification.Fragments
 import com.intel.graphbuilder.elements.{Edge, Property}
 import com.tinkerpop.blueprints.Direction
 import com.intel.graphbuilder.elements.Vertex
-import com.thinkaurelius.titan.core.TitanEdge
 import com.intel.graphbuilder.write.titan.TitanIdUtils.titanId
 import com.intel.graphbuilder.testutils.TestingTitan
 

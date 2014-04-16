@@ -3,11 +3,11 @@ package com.intel.graphbuilder.elements
 import com.intel.graphbuilder.util.StringUtils
 
 /**
- * A Graph Edge
- *
+ * An Edge links two Vertices.
+ * <p>
  * GB Id's are special properties that uniquely identify Vertices.  They are special, in that they must uniquely
  * identify vertices, but otherwise they are completely normal properties.
- *
+ * </p>
  * @param tailPhysicalId the unique Physical ID for the source Vertex from the underlying Graph storage layer (optional)
  * @param headPhysicalId the unique Physical ID for the destination Vertex from the underlying Graph storage layer (optional)
  * @param tailVertexGbId the unique ID for the source Vertex
@@ -26,14 +26,19 @@ case class Edge(var tailPhysicalId: AnyRef, var headPhysicalId: AnyRef, tailVert
   }
 
   /**
-   * The unique id to used in the groupBy before the merge
+   * Merge-ables with the same id can be merged together.
+   *
+   * (In Spark, you would use this as the unique id in the groupBy before merging duplicates)
    */
   override def id: Any = {
     (tailVertexGbId, headVertexGbId, label)
   }
 
   /**
-   * Merge properties for two edges
+   * Merge properties for two edges.
+   *
+   * Conflicts are handled arbitrarily.
+   *
    * @param other item to merge
    * @return the new merged item
    */

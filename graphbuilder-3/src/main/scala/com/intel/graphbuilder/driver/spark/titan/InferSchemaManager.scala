@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
 /**
  * Infers schema and writes as appropriate
  */
-class InferSchemaManager(config: GraphBuilderConfig) {
+class InferSchemaManager(config: GraphBuilderConfig) extends Serializable {
 
   val titanConnector = new TitanGraphConnector(config.titanConfig)
   val dataTypeResolver = new DataTypeResolver(config.inputSchema)

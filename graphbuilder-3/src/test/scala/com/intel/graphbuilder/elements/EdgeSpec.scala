@@ -25,7 +25,7 @@ class EdgeSpec extends Specification {
     }
 
     "have a unique id made up of the tailId, headId, and label" in {
-      edge.id mustEqual (tailId, headId, label)
+      edge.id mustEqual(tailId, headId, label)
     }
 
     "be mergeable" in {
