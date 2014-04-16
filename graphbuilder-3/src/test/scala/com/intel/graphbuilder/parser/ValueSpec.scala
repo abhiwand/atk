@@ -23,7 +23,6 @@ class ValueSpec extends Specification with ScalaCheck with Mockito {
       new ConstantValue("any").isParsed mustEqual false
     }
 
-    // TODO: cool but less readable?
     "never be considerd parsed for any value" ! check {
       (a: String) => StringUtils.isNotEmpty(a) ==>
         !new ConstantValue(a).isParsed
@@ -47,7 +46,6 @@ class ValueSpec extends Specification with ScalaCheck with Mockito {
       new ParsedValue("any").value must throwA[RuntimeException]
     }
 
-    // TODO: cool but less readable?
     "always be considered parsed for any value" ! check {
       (a: String) => StringUtils.isNotEmpty(a) ==>
         new ParsedValue(a).isParsed
@@ -71,7 +69,6 @@ class ValueSpec extends Specification with ScalaCheck with Mockito {
       new CompoundValue(new ParsedValue("any"), new ParsedValue("any")).isParsed mustEqual true
     }
 
-    // TODO: cool but less readable?
     "never be considered parsed when fully composed of constant values" ! check {
       (a: String, b: String) => (StringUtils.isNotEmpty(a) && StringUtils.isNotEmpty(b)) ==>
         !new CompoundValue(new ConstantValue(a), new ConstantValue(b)).isParsed
