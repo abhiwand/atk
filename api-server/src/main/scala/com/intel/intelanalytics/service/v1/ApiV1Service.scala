@@ -12,7 +12,7 @@ import scala.reflect.runtime.universe._
 import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.EngineComponent
+import com.intel.intelanalytics.engine.{Builtin, Functional, EngineComponent}
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
@@ -21,6 +21,7 @@ import com.intel.intelanalytics.domain.DataFrameTemplate
 import scala.util.Success
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
+import scala.util.control.NonFatal
 
 //TODO: Is this right execution context for us?
 
@@ -99,25 +100,63 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
       Decorators.frames.decorateEntity(uri.toString, links, frame)
     }
 
+    def getErrorMessage[T](value: scala.util.Try[T]): String = value match {
+      case Success(x) => ""
+      case Failure(ex) => ex.getMessage
+    }
+
+
     pathPrefix(prefix / LongNumber) { id =>
-      std(get, prefix) { uri =>
-        onComplete(engine.getFrame(id)) {
-          case Success(frame) => {
-            val decorated = decorate(uri, frame)
-            complete {decorated}
+      std(post, "transforms") { uri =>
+        entity(as[JsonTransform]) { xform =>
+          (xform.language, xform.name) match {
+            case ("builtin", "load") =>  {
+              val args = scala.util.Try { xform.arguments.get.convertTo[LoadFile] }
+              validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
+                onComplete(
+                  for {
+                    frame <- engine.getFrame(id)
+                    res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
+                  } yield res) {
+                  case Success(r) => complete(decorate(uri, r))
+                  case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
+                }
+              }
+            }
+            case (x,y) => complete(StatusCodes.NotImplemented, "This transformation is not yet supported")
           }
-          case _ => reject()
         }
       } ~
-      std(delete, prefix) { uri => {
-          onComplete(for {
-            f <- engine.getFrame(id)
-            res <- engine.delete(f)
-          } yield res) {
-            case Success(frames) => complete("OK")
+      std(get, "data") { uri =>
+        parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
+          onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
+            case Success(rows:Iterable[Array[Array[Byte]]]) => {
+              import DefaultJsonProtocol._
+              val strings : List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
+              complete(strings)
+            }
             case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
-          }
         }
+      }~
+          std(get, prefix) { uri =>
+            onComplete(engine.getFrame(id)) {
+              case Success(frame) => {
+                val decorated = decorate(uri, frame)
+                complete {decorated}
+              }
+              case _ => reject()
+            }
+          } ~
+          std(delete, prefix) { uri => {
+            onComplete(for {
+              f <- engine.getFrame(id)
+              res <- engine.delete(f)
+            } yield res) {
+              case Success(frames) => complete("OK")
+              case Failure(ex) => complete(StatusCodes.InternalServerError, s"An error occurred: ${ex.getMessage}")
+            }
+          }
+          }
       }
     } ~
     std(get, prefix) { uri =>
@@ -141,6 +180,7 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
   def apiV1Service: Route = {
 //      clusters ~
 //      users ~
-      frameRoutes()
+    frameRoutes()
+
   }
 }
