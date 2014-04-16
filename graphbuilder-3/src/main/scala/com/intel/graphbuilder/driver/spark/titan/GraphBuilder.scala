@@ -6,6 +6,8 @@ import com.intel.graphbuilder.parser.rule._
 import java.text.NumberFormat
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
+import com.intel.graphbuilder.parser.Parser
+import com.intel.graphbuilder.elements.Vertex
 
 /**
  * This is a GraphBuilder that runs on Spark, uses a RuleParser and creates Graphs in Titan.

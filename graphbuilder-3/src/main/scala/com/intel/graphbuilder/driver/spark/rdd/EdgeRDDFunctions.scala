@@ -100,16 +100,20 @@ class EdgeRDDFunctions(self: RDD[Edge]) extends Serializable {
       val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
       val writer = new EdgeWriter(edgeDAO, append)
 
-      var count = 0L
-      while (iterator.hasNext) {
-        writer.write(iterator.next())
-        count += 1
+      try {
+        var count = 0L
+        while (iterator.hasNext) {
+          writer.write(iterator.next())
+          count += 1
+        }
+
+        println("wrote edges: " + count + " for split: " + context.partitionId)
+
+        graph.commit()
       }
-
-      println("wrote edges: " + count + " for split: " + context.partitionId)
-
-      graph.commit()
-      graph.shutdown()
+      finally {
+        graph.shutdown()
+      }
     })
   }
 }
