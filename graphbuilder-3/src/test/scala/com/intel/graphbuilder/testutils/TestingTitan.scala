@@ -9,6 +9,9 @@ import org.specs2.mutable.BeforeAfter
 
 /**
  * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
+ *
+ * IMPORTANT! only one thread can use the graph below at a time. This isn't normally an issue because
+ * each test usually gets its own copy.
  */
 trait TestingTitan extends MultipleAfter {
 
