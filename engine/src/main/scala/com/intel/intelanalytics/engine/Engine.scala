@@ -27,6 +27,7 @@ import akka.actor.Actor
 import com.intel.intelanalytics.shared.EventLogging
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import com.intel.intelanalytics.engine.EngineMessages.AppendFile
 
 /** This is the Akka interface to the engine */
 class ApiServiceActor extends Actor with EventLogging { this: EngineComponent =>
@@ -44,8 +45,5 @@ class ApiServiceActor extends Actor with EventLogging { this: EngineComponent =>
 
 }
 
-case class AppendFile(id: Long, fileName: String, rowGenerator: Functional)
-case class DropColumn(id: Long, name: String)
-case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
-case class DropRows(id: Long, filter: RowFunction[Boolean])
+
 

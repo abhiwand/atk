@@ -1,15 +1,17 @@
 import sbt._
 import Keys._
+import sbtassembly.Plugin.Assembly
 
 object IABuild extends Build {
 
   lazy val root = Project(id = "root",
-                          base = file(".")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (launcher, server, engine, spark)
+                          base = file(".")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
+                          .aggregate(event, interfaces, launcher, server, engine, spark) dependsOn (shared)
 
   lazy val launcher = Project(id = "launcher", base = file("launcher")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
 
   lazy val server = Project(id = "api-server",
-                         base = file("api-server")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, shared)
+                         base = file("api-server")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, shared, launcher)
 
   lazy val engine = Project(id = "engine",
                          base = file("engine")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, shared, launcher)
@@ -21,10 +23,11 @@ object IABuild extends Build {
               base = file("interfaces")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
 
   lazy val spark = Project(id = "engine-spark", base = file("engine-spark"))
-    .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, event)
+    .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (interfaces, event, shared)
 
   lazy val event = Project(id = "event", base = file("event"))
                     .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
+
 
   val akkaV = "2.3.0"
   val sprayV = "1.3.1"
