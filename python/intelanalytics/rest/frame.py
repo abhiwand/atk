@@ -23,10 +23,12 @@
 """
 REST backend for frames
 """
+import requests
 import logging
 logger = logging.getLogger(__name__)
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
+from intelanalytics.core.types import *
 
 
 class FrameBackendREST(object):
@@ -34,47 +36,27 @@ class FrameBackendREST(object):
 
     def append(self, frame, data):
         logger.info("REST Backend: Appending data to frame {0}: {1}".format(repr(frame), repr(data)))
-        # hack back end to create columns
+        # for now, many data sources requires many calls to append
         if isinstance(data, list):
             for d in data:
                 self.append(frame, d)
             return
 
+        # Serialize the data source
+        #  data.to_json()
+        #  call REST append on the frame
+
         if isinstance(data, CsvFile):
+            # update the Python object (set the columns)
+            # todo - this info should come back from the engine
             for name, data_type in data.fields:
-                frame._columns[name] = BigColumn(name, data_type)
-        elif isinstance(data, BigColumn):
-            frame._columns[data.name] = BigColumn(data.name, data.data_type)
+                if data_type is not ignore:
+                    frame._columns[name] = BigColumn(name, data_type)
         else:
             raise TypeError("Unsupported append data type "
                             + data.__class__.__name__)
 
-    def assign(self, dst, value):
-        logger.info("REST Backend: Assignment {0} = {1}".format(repr(dst), repr(value)))
-        if hasattr(dst, 'frame'):
-            if dst not in dst.frame._columns:
-                dst.frame._columns[dst.name] = dst
-        else:
-            logger.info("(Doing Nothing for Assignment)")
+    def delete_frame(self, frame):
+        logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
 
 
-    def copy_columns(self, frame, dst_list, src_list):
-        logger.info("REST Backend: copy_columns([{0}], [{1}])".format(','.join([repr(dst) for dst in dst_list]),
-                                                                 ','.join([repr(src) for src in src_list])))
-        for i, key in enumerate(dst_list):
-            frame._columns[key] = src_list[i]
-
-    def drop_columns(self, frame, column_names):
-        logger.info("REST Backend: Dropping columns {0} from frame {1}".format(','.join(column_names), repr(frame)))
-        for c in column_names:
-            del frame._columns[c]
-
-    def drop_rows(self, frame, predicate):
-        logger.info("REST Backend: Dropping rows from frame {0} where {1}".format(repr(frame), repr(predicate)))
-
-    def rename_columns(self, frame, name_pairs):
-        old, new = zip(*name_pairs)
-        logger.info("REST Backend: Renaming columns in frame {0} from {1} to {2}".format(repr(frame), ','.join(old), ','.join(new)))
-
-    def save(self, frame, name):
-        logger.info("REST Backend: Saving frame {0} to '{1}'".format(repr(frame), name))
