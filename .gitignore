@@ -1,6 +1,8 @@
+application.home_IS_UNDEFINED
 /bin
 build
 BUILD
+.cache
 *.class
 .classpath
 *clean*.sh

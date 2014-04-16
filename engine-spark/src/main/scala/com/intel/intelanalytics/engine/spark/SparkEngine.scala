@@ -31,23 +31,39 @@ import org.apache.spark.broadcast.Broadcast
 import scala.collection.Set
 import scala.Predef
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
 import com.intel.intelanalytics.engine.RowFunction
-import com.intel.intelanalytics.domain.DataFrame
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.{Paths, Path}
-import java.io.{OutputStream, ByteArrayInputStream, InputStream}
+import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
 import resource._
-import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
+import org.apache.hadoop.fs.{FSDataInputStream, LocalFileSystem, FileSystem}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
+import java.nio.file.Path
+import spray.json.JsonParser
+import scala.io.{Codec, Source}
+import scala.util.control.NonFatal
+import org.apache.hadoop.io._
+import scala.collection.mutable.ArrayBuffer
+import org.apache.hadoop.fs.{Path => HPath}
+import scala.Some
+import com.intel.intelanalytics.engine.RowFunction
+import scala.util.matching.Regex
 
+//TODO logging
+//TODO error handling
+//TODO documentation
+//TODO progress notification
+//TODO event notification
+//TODO pass current user info
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
+  //TODO: get these settings using the Typesafe Config library (see application.conf)
   val sparkHome = System.getProperty("spark.home", "c:\\temp")
   val sparkMaster = System.getProperty("spark.master", "local[4]")
 
@@ -56,9 +72,14 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     def config = new SparkConf()
       .setMaster(sparkMaster)
-      .setAppName("tribeca")
+      .setAppName("intel-analytics")
       .setSparkHome(sparkHome)
 
+
+    //TODO: how to run jobs as a particular user
+    //TODO: Decide on spark context life cycle - should it be torn down after every operation,
+    //or left open for some time, and reused if a request from the same user comes in?
+    //Is there some way of sharing a context across two different Engine instances?
     def context() = {
       withMyClassLoader {
         new SparkContext(config = config)
@@ -76,26 +97,53 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     }
 
     def getRddForId(id: Long): RDD[Array[Byte]] = {
-      context().textFile("frame_" + id + ".txt").map(line => line.getBytes("UTF-8"))
+      context().textFile("frame_" + id + ".txt").map(line => line.getBytes(Codec.UTF8.name))
     }
 
     def getPyCommand(function: RowFunction[Boolean]): Array[Byte] = {
-      function.definition.getBytes("UTF-8")
+      function.definition.getBytes(Codec.UTF8.name)
     }
 
-    def alter(frame: DataFrame, changes: Seq[SparkComponent.this.Alteration]): Unit = ???
+    def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = ???
 
-    def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = ???
+    def getLineParser(parser: Functional): String => Array[String] = {
+      parser.language match {
+        case "builtin" => parser.definition match {
+          case "line/csv" => (s: String) => {
+            s.split(',')
+          } //TODO: Return the real parser when Mohit's is finished.
+          case p => throw new Exception("Unsupported parser: " + p)
+        }
+        case lang => throw new Exception("Unsupported language: " + lang)
+      }
+    }
+
+    def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = {
+      require(frame != null)
+      require(file != null)
+      require(parser != null)
+      future {
+        withMyClassLoader {
+          val parserFunction = getLineParser(parser)
+          val location = fsRoot + frames.getFrameDataFile(frame.id)
+          context().textFile(fsRoot + "/" + file)
+            .map(parserFunction)
+            //TODO: type conversions based on schema
+            .map(strings => strings.map(s => s.getBytes))
+            .saveAsObjectFile(location)
+          frames.lookup(frame.id).getOrElse(
+            throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
+        }
+      }
+    }
 
     def clear(frame: DataFrame): Future[DataFrame] = ???
 
-    def create(frame: DataFrame): Future[DataFrame] = {
+    def create(frame: DataFrameTemplate): Future[DataFrame] = {
       future {
         frames.create(frame)
       }
     }
-
-
 
 
     def delete(frame: DataFrame): Future[Unit] = {
@@ -104,11 +152,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
+    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]] = {
+      future {
+        frames.getFrames(offset, count)
+      }
+    }
+
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
       future {
-        val id = frame.id.getOrElse(throw new IllegalArgumentException("Data frame ID is required"))
-
-        val rdd = getRddForId(id)
+        val rdd = getRddForId(frame.id)
         val command = getPyCommand(predicate)
         val pythonExec = "python" //TODO: take from env var or config
         val environment = System.getenv() //TODO - should be empty instead?
@@ -121,17 +173,32 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
               initialValue = new JArrayList[Array[Byte]](),
               param = null)
           )
-        pyRdd.map(bytes => new String(bytes, "UTF-8")).saveAsTextFile("frame_" + id + "_drop.txt")
+        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
         frame
       }
     }
 
-    def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = ???
+    def getRows(id: Identifier, offset: Long, count: Int) = {
+      future {
+        val frame = frames.lookup(id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
+        val rows = frames.getRows(frame, offset, count)
+        rows
+      }
+    }
+
+    def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = {
+      future {
+        frames.lookup(id).get
+      }
+    }
   }
 
   val files = new HdfsFileStorage {}
 
+  val fsRoot = System.getProperty("intelanalytics.fs.root", "/home/hadoop")
+
   trait HdfsFileStorage extends FileStorage {
+
 
     val configuration = {
       val hadoopConfig = new Configuration()
@@ -148,10 +215,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     val fs = FileSystem.get(configuration)
 
-    import org.apache.hadoop.fs.{Path => HPath}
 
     override def write(sink: File, append: Boolean): OutputStream = {
-      val path: HPath = new HPath(sink.path.toString)
+      val path: HPath = new HPath(fsRoot + sink.path.toString)
       if (append) {
         fs.append(path)
       } else {
@@ -161,55 +227,162 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def readRows(source: File, rowGenerator: (InputStream) => RowSource, offsetBytes: Long, readBytes: Long): Unit = ???
 
-    override def list(source: Directory): Seq[Entry] = ???
+    override def list(source: Directory): Seq[Entry] = {
+      fs.listStatus(new HPath(fsRoot + frames.frameBase))
+        .map {
+        case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
+        case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
+        case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
+      }
+    }
 
-    override def read(source: File): InputStream = ???
+    override def read(source: File): InputStream = {
+      val path: HPath = new HPath(fsRoot + source.path.toString)
+      fs.open(path)
+    }
 
+    //TODO: switch file methods to strings instead of Path?
     override def copy(source: Path, destination: Path): Unit = ???
 
     override def move(source: Path, destination: Path): Unit = ???
 
     override def getMetaData(path: Path): Option[Entry] = ???
 
-    override def delete(path: Path): Unit = ???
+    override def delete(path: Path): Unit = {
+      fs.delete(new HPath(fsRoot + path.toString), true)
+    }
 
     override def create(entry: Entry): Unit = ???
   }
 
-  val frames = new SparkFrameStorage {}
+  val frames = new SparkFrameStorage {
+  }
 
   trait SparkFrameStorage extends FrameStorage {
-    override def drop(frame: Frame): Unit = ???
 
-    override def appendRows(startWith: Frame, append: Iterable[Row]): Unit = ???
+    import spray.json._
+    import Rows.Row
 
-    override def removeRows(frame: Frame, predicate: (Row) => Boolean): Unit = ???
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-    override def removeColumn(frame: Frame): Unit = ???
+    override def drop(frame: DataFrame): Unit = {
+      files.delete(Paths.get(getFrameDirectory(frame.id)))
+    }
 
-    override def addColumnWithValue[T](frame: Frame, column: Column[T], default: T): Unit = ???
+    override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = ???
 
-    override def addColumn[T](frame: Frame, column: Column[T], generatedBy: (Row) => T): Unit = ???
+    override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit = ???
 
-    override def scan(frame: Frame): Iterable[Row] = ???
+    override def removeColumn(frame: DataFrame): Unit = ???
 
-    override def create(frame: Frame): DataFrame = {
-        val id = frame.id.getOrElse(nextFrameId())
-        val path = Paths.get(s"$frameBase/$id")
-        val meta = File(Paths.get(path.toString, "meta"))
-        for(f <- managed(files.write(meta))) {
-          f.write(frame.toString.getBytes("UTF-8"))
+    override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit = ???
+
+    override def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: (Row) => T): Unit = ???
+
+    override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] = {
+      val ctx = engine.context()
+      val rdd: RDD[Array[Array[Byte]]] =
+        ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id))
+      //Brute force until the code below can be fixed
+      val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
+      //The below fails with a classcast exception saying it can't convert a byteswritable
+      //into a Text. Nobody asked it to try to do that, so it's a bit mysterious.
+      //TODO: Check to see if there's a better way to implement, this might be too slow.
+      // Need to cache row counts per partition somewhere.
+      //TODO: Resource management
+      //      val counts = rdd.mapPartitionsWithIndex(
+//                            (i:Int, rows:Iterator[Array[Array[Byte]]]) => Iterator.single((i, rows.size)))
+//                      .collect()
+//                      .sortBy(_._1)
+//      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
+//                      .drop(1)
+//                      .toMap
+//      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
+//      val rows: Seq[Array[Array[Byte]]] = rdd.mapPartitionsWithIndex((i, rows) => {
+//        val (ct: Int, sum: Int) = sumsAndCounts(i)
+//        if (sum < offset || sum - ct > offset + count) {
+//          Iterator.empty
+//        } else {
+//          val start = offset - (sum - ct)
+//          rows.drop(start.toInt).take(count)
+//        }
+//      }).collect()
+      rows
+    }
+
+    override def create(frame: DataFrameTemplate): DataFrame = {
+      val id = nextFrameId()
+      val frame2 = new DataFrame(id = id, name = frame.name, schema = frame.schema)
+      val meta = File(Paths.get(getFrameMetaDataFile(id)))
+      val f = files.write(meta)
+      try {
+        val json: String = frame2.toJson.prettyPrint
+        println("Saving metadata")
+        println(json)
+        f.write(json.getBytes(Codec.UTF8.name))
+      } finally {
+        f.close()
+      }
+      frame2
+    }
+
+    override def lookup(id: Long): Option[DataFrame] = {
+      val path = getFrameDirectory(id)
+      val meta = File(Paths.get(path, "meta"))
+      //TODO: uncomment after files.getMetaData implemented
+//      if (files.getMetaData(meta.path).isEmpty) {
+//        return None
+//      }
+      val f = files.read(meta)
+      try {
+        val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
+        val json = JsonParser(src)
+        f.close()
+        return Some(json.convertTo[DataFrame])
+      } catch {
+        case NonFatal(e) => {
+          //todo: logging
+          println("Problem reading file: " + e)
+          e.printStackTrace()
+          throw e
         }
-        frame.copy(id = Some(id))
+      }
+    }
+
+    val idRegex: Regex = "^\\d+$".r
+
+    def getFrames(offset: Int, count: Int): Seq[DataFrame] = {
+      files.list(Directory(Paths.get(fsRoot + frameBase)))
+        .flatMap {
+          case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
+          case _ => None
+        }
+        .filter(idRegex.findFirstMatchIn(_).isDefined)  //may want to extract a method for this
+        .flatMap(sid => frames.lookup(sid.toLong))
     }
 
     override def compile[T](func: RowFunction[T]): (Row) => T = ???
+
     val frameBase = "/intelanalytics/dataframes"
     //temporary
     var frameId = new AtomicLong(1)
+
     def nextFrameId() = {
       //Just a temporary implementation, only appropriate for scaffolding.
       frameId.getAndIncrement
+    }
+
+    def getFrameDirectory(id: Long): String = {
+      val path = Paths.get(s"$frameBase/$id")
+      path.toString
+    }
+
+    def getFrameDataFile(id: Long): String = {
+      getFrameDirectory(id) + "/data"
+    }
+
+    def getFrameMetaDataFile(id: Long): String = {
+      getFrameDirectory(id) + "/meta"
     }
   }
 

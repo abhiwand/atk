@@ -34,6 +34,9 @@ trait Component {
     }
   }
   def start(configuration: Map[String, String])
+
   def stop()
+
+  def get[T](descriptor: String): T
 }
 
