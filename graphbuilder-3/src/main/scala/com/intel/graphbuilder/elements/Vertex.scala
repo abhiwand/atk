@@ -1,11 +1,11 @@
 package com.intel.graphbuilder.elements
 
 /**
- * A Graph Vertex
- *
+ * A Vertex.
+ * <p>
  * GB Id's are special properties that uniquely identify Vertices.  They are special, in that they must uniquely
  * identify vertices, but otherwise they are completely normal properties.
- *
+ * </p>
  * @constructor create a new Vertex
  * @param gbId the unique id that will be used by graph builder
  * @param properties the other properties that exist on this vertex
