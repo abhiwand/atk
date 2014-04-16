@@ -158,11 +158,11 @@ class LittleFramePandasBackend(object):
     def save(self, frame, name):
         raise NotImplementedError
 
-    def take(self, frame, n):
+    def take(self, frame, n, offset):
         t = []
         gen = frame._df.itertuples(index=False)
         try:
-            for i in xrange(n):
+            for i in xrange(offset, offset + n):
                 t.append(gen.next())
         except StopIteration:
             pass

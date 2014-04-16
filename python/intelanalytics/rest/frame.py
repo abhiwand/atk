@@ -23,7 +23,7 @@
 """
 REST backend for frames
 """
-import requests
+#import requests
 import logging
 logger = logging.getLogger(__name__)
 from intelanalytics.core.column import BigColumn
@@ -45,6 +45,7 @@ class FrameBackendREST(object):
         # Serialize the data source
         #  data.to_json()
         #  call REST append on the frame
+        #requests.post(url, data.to_json())
 
         if isinstance(data, CsvFile):
             # update the Python object (set the columns)
@@ -55,6 +56,12 @@ class FrameBackendREST(object):
         else:
             raise TypeError("Unsupported append data type "
                             + data.__class__.__name__)
+
+    def filter(self, frame, predicate):
+        # pickle predicate in a payload
+        #requests.post(url, payload)
+        raise NotImplementedError
+
 
     def delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))

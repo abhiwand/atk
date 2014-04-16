@@ -87,7 +87,7 @@ class FrameConstruction(unittest.TestCase):
     def test_del_column(self):
         f = get_simple_frame_abcde()
         self.assertEqual(5, len(f))
-        del f['B']
+        f.delete_column('B')
         self.assertEqual(4, len(f))
         try:
             b = f['B']
@@ -98,7 +98,7 @@ class FrameConstruction(unittest.TestCase):
     def test_del_column_with_list(self):
         f = get_simple_frame_abcde()
         self.assertEqual(5, len(f))
-        del f[['C', 'E', 'A']]
+        f.delete_column(['C', 'E', 'A'])
         self.assertEqual(2, len(f))
         self.assertEqual(2, len(f.column_names))
         self.assertTrue('D' in f.column_names)
