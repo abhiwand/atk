@@ -26,7 +26,9 @@ case class Edge(var tailPhysicalId: AnyRef, var headPhysicalId: AnyRef, tailVert
   }
 
   /**
-   * The unique id to used in the groupBy before the merge
+   * Merge-ables with the same id can be merged together.
+   *
+   * (In Spark, you would use this as the unique id in the groupBy before merging duplicates)
    */
   override def id: Any = {
     (tailVertexGbId, headVertexGbId, label)

@@ -17,7 +17,9 @@ case class Vertex(gbId: Property, properties: Seq[Property]) extends GraphElemen
   }
 
   /**
-   * The unique id to used in the groupBy before the merge
+   * Merge-ables with the same id can be merged together.
+   *
+   * (In Spark, you would use this as the unique id in the groupBy before merging duplicates)
    */
   override def id: Any = gbId
 
@@ -31,7 +33,7 @@ case class Vertex(gbId: Property, properties: Seq[Property]) extends GraphElemen
    */
   override def merge(other: Vertex): Vertex = {
     if (id != other.id) {
-      throw new IllegalArgumentException("You can merge vertices with different ids")
+      throw new IllegalArgumentException("You can't merge vertices with different ids")
     }
     new Vertex(gbId, Property.merge(this.properties, other.properties))
   }
