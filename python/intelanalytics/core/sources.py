@@ -1,3 +1,4 @@
+from collections import OrderedDict
 
 class SimpleDataSource(object):
 
@@ -6,11 +7,14 @@ class SimpleDataSource(object):
     def __init__(self, schema=None, rows=None, columns=None):
         if not ((rows is None) ^ (columns is None)):
             raise ValueError("Either rows or columns must be supplied")
-        self.schema = schema
+        if schema and not isinstance(schema, OrderedDict):
+            self.schema = OrderedDict(schema)
+        else:
+            self.schema = schema
         self.rows = rows
         self.columns = columns
         if columns:
-            (names, types) = zip(*self.schema)
+            names = self.schema.keys()
             if len(names) != len(self.columns):
                 raise ValueError("number of columns in schema not equals number of columns provided")
             for key in self.columns.keys():
@@ -29,7 +33,7 @@ class SimpleDataSource(object):
         return df
 
 def _schema_as_numpy_dtype(schema):
-    return [(c, _get_numpy_dtype_from_core_type(t)) for c, t in schema]
+    return [(c, _get_numpy_dtype_from_core_type(t)) for c, t in schema.items()]
 
 def _get_numpy_dtype_from_core_type(t):
     return object

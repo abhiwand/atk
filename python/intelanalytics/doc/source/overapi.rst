@@ -124,105 +124,116 @@ Fill cells with map jobs
 
 >>> j['a'].fillna(800001)
 
-**Drop Columns**
-
->>> del g['b']  # in place
-
 **Copy Columns**
 
 >>> k = BigFrame(j[['a', 'c']])  # projects columns 'a' and 'b' to new frame k
+
+**Drop Columns**
+
+>>> g.remove_column('b')  # in place
 
 **Rename Columns**
 
 >>> j.rename_column(a='id')
 >>> j.rename_column(b='author', c='publisher')
 
+** Cast Columns**
 
-**Add Columns**
-
->>> # Add an empty column
->>> j.add_column('d', int32)
->>>
->>> # Add a column 'e' which is the absolute value of column 'a'
->>> j.add_column('e', int32, lambda row: abs(row['a']))
-
->>> # Add a column 'e' which is the absolute value of column 'a'
->>> j.add_column('e', int32, lambda row: abs(row['a']))
-
-** Map **
+>>> j.cast_column(ia=int32)
 
 
-Map a function to each row in the frame
+4. Engineer
+~~~~~~~~~~~
 
->>> j.map(func)
->>> j.map(lambda row: 1).assign('all_ones')  # add new column of all ones
+**Map**
 
->>> Fill NA with 0
->>> j.map(lambda row: 0 if row.is_empty(a) else row.a).assign('a')
->>> # or with sugar
->>> j.fillna('a', 0)
+Map a function to each row in the frame, produce new column
 
-def func(row):
-    if row.a > 10:
-        row
+>>> j.map(lambda row: 1, out='all_ones')  # add new column of all ones
+>>> j.map(lambda row: row.a + row.b, out='a_plus_b')
 
->>> j.apply(func)
-vs.
->>> j.map(func).reduce(func)  # map and reduce do not have assignments in them
+>>> # Fill NA with 0 (rather than sugared j.fillna('a', 0))
+>>> j.map(lambda row: 0 if row.is_empty('a') else row.a, out='a')
 
-# do we want to let user have arbitrary powers at the row level?
-# or consider the row immutable?
-# map - row is immutable, map just produce a map object, requires an assign or reduce call to effectuate
-# reduce
-# assign
-
->>> j.map(func).assign('d', 'e')
->>> j.map(func).assign(**{a:int32, b:int32})
-
->>> def my_row_op(col):
-        def row_op(row):
-            if row[col] is None:
-                return None
-            if 30 <= row[col] <= 127:
-                a, b = 0.0046, 0.4168
-            elif 15 <= row[col] <= 29:
-                a, b = 0.0071, 0.3429
-            elif -127 <= row[col] <= 14:
-                a, b = 0.0032, 0.4025
-            else:
-                return None
-
-            return a*row[col] + b
-        return row_op
-
-
->>> j.map(my_row_op('a')).assign('prior')
-
-
->>> j.map(func).reduce(avg)
-
-
+            # uh, this was a thought once --something about not cancelling the job on an error, but just marking row/cell as None and reporting
             raise FillNone("col value out of range")
             # map or whatever will catch this, log it, add to a count in the report, and fill the entry with a None
 
+>>> # Conditional Linear Transformation
+>>> def transform_a(row):
+        x = row['a']
+        if x is None:
+            return None
+        if 30 <= x <= 127:
+            m, c = 0.0046, 0.4168
+        elif 15 <= x <= 29:
+            m, c = 0.0071, 0.3429
+        elif -127 <= x <= 14:
+            m, c = 0.0032, 0.4025
+        else:
+            return None
+        return m * x + c
 
->>> j['a'].reduce(lambda row_accum, row: row_accum + row)
+>>> j.map(transform_a, out='prior')
+
+
+**Reduce**
+
+Apply a reduce function to each row in a Frame, or each cell in a column.  The
+reducer has two parameters, the **accumulator** value and the **update** value.
+
+>>> x = j.reduce(lambda acc, row_upd: acc + row_upd['a'] - row_upd['b'])
+
+>>> j['a'].reduce(lambda acc, cell_upd: acc + cell_upd)
+
+
+**Groupby** and **Aggregate**
+
+Group rows together based on matching column values and then apply aggregation
+functions on each group, producing a new Frame object
+
 >>> j['a'].avg()
->>> j.groupby('a', 'b').reduce(lambda row1, row2: )
+
+>>> j.groupby('a', 'b').reduce(lambda acc, row_upd: row_a)
 >>> j.groupby('a', 'b').c.avg()
->>> j.groupby('a', 'b').map(lambda( row1c.avg()
->>> j.groupby('a', 'b').aggregate(c_avg=row.c.avg)
+>>> j.groupby('a', 'b').map(func1).reduce(func2, out="custom_m1r2")
+>>> # j.groupby('a', 'b').aggregate(c_avg=row.c.avg)
 >>> j.groupby('a', 'b').aggregate([('c', avg),
                                    ('c', min),
                                    ('c', max, out='c_maximum'),
-                                   ('*', lambda row_accum, row: row_accum + (1 if row.c > 10 else 0)), 'c_over_10')  # custom reducer
+                                   (reduce, lambda row_accum, row: row_accum + (1 if row.c > 10 else 0)), 'c_over_10')  # custom reducer
                                    ('c', sum)],
                                    exclude_groupby_columns=True),
+>>> j.groupby(...).map(...).map().reduce(  )
 >>> j.groupby('a', 'b').stats('c')
 
-** Reduce **
 
->>> j.map(func1).reduce(func2)
+>>> j.groupby('a', 'b').map(func1).reduce(func2, out="custom_m1r2")
+
+>>> j.groupby('a', 'b').aggregate([('c', avg),
+                                   ('c', min),
+                                   ('c', max, 'c_maximum'),
+                                   ('', (map, func1, reduce, func2), 'c_specialA'),
+                                   ('', (reduce, func3), 'c_specialB'),
+                                   ('c', sum)],
+                                   exclude_groupby_columns=True)
+
+>>> j.groupby('a', 'b').aggregate([( ('c', 'd'), (avg, min, max)),
+                                   ('c', min),
+                                   ('d', min),
+                                   ('c', max, 'c_maximum'),
+
+def my_agg(frame):
+    return frame[c].avg(), frame[d].avg(), frame[e].avg()
+
+
+    j.groupby('a', 'b').reduce(my_agg_reduce, out=('c_avg', 'd_avg', 'e'.avg))
+
+
+
+
+>>> j.map(lambda row:  (row['a'], row['b'], abs(row['a']), abs(row['b']))
+>>> k = BigFrame(MapSource(j, lambda row: (row['a'], row['b'], abs(row['a']), abs(row['b'])), out=('a', 'b', 'a_abs', 'b_abs'))
 
 
 

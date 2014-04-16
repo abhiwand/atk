@@ -26,7 +26,6 @@ BigFrame object
 from collections import OrderedDict
 import json
 
-from intelanalytics.core.column import BigColumn
 from intelanalytics.core.types import supported_types
 
 import logging
@@ -143,30 +142,29 @@ class BigFrame(object):
 #                             + value.__class__.__name__)
 #             # todo - consider supported immediate numbers, strings, lists?
 
-    def _attach_column_to_python_frame(self, key, column):
-        column.frame = self
-        self._columns[key] = column  # todo, improve Column creation and assignment to BigDF
+    #def _attach_column_to_python_frame(self, key, column):
+    #    column.frame = self
+    #    self._columns[key] = column  # todo, improve Column creation and assignment to BigDF
 
-    def _copy_column(self, key, column):
-        self._validate_key(key)
-        self._backend.copy_columns([key], [column])  #(dst, src)
+    #def _copy_column(self, key, column):
+    #    self._validate_key(key)
+    #    self._backend.copy_columns([key], [column])  #(dst, src)
 
-    def _copy_columns(self, keys, columns):
-        for key in keys:
-            self._validate_key(key)
-        self._backend.copy_columns(self, keys, columns)  #(dst, src)
+    #def _copy_columns(self, keys, columns):
+    #    for key in keys:
+    #        self._validate_key(key)
+    #    self._backend.copy_columns(self, keys, columns)  #(dst, src)
 
-    def _assign_column(self, key, value):
-        self._validate_key(key)
-        try:
-            dst = self._columns[key]
-        except KeyError:
-            dst = BigColumn(key)
-            dst.frame = self
-        self._backend.assign(dst, value)
-
-    def _assign_frame(self, value):
-        self._backend.assign(self, value)
+    #def _assign_column(self, key, value):
+    #    self._validate_key(key)
+    #    try:
+    #        dst = self._columns[key]
+    #    except KeyError:
+    #        dst = BigColumn(key)
+    #        dst.frame = self
+    #    self._backend.assign(dst, value)
+    #def _assign_frame(self, value):
+    #    self._backend.assign(self, value)
 
     def _get_new_frame_name(self, source=None):
         try:
@@ -179,16 +177,16 @@ class BigFrame(object):
         if key in dir(self) and key not in self._columns:
             raise KeyError("Invalid column name '%s'" % key)
 
-    def __delitem__(self, key):
-        if isinstance(key, slice):
-            keys = self._columns.keys()[key]
-        elif isinstance(key, list):
-            keys = key
-        else:
-            keys = [key]
-        for k in keys:  # check for KeyError now before sending to backend
-            dummy = self._columns[k]
-        self._backend.drop_columns(self, keys)
+    #def __delitem__(self, key):
+    #    if isinstance(key, slice):
+    #        keys = self._columns.keys()[key]
+    #    elif isinstance(key, list):
+    #        keys = key
+    #    else:
+    #        keys = [key]
+    #    for k in keys:  # check for KeyError now before sending to backend
+    #        dummy = self._columns[k]
+    #    self._backend.drop_columns(self, keys)
 
     def __len__(self):
         return len(self._columns)
@@ -246,6 +244,13 @@ class BigFrame(object):
     def count(self):
         return self._backend.count(self)
 
+    def delete_column(self, name):
+        self._backend.delete_column(self, name)
+        if isinstance(name, basestring):
+            name = [name]
+        for victim in name:
+            del self._columns[victim]
+
     def drop(self, predicate):
         self._backend.drop(self, predicate)
 
@@ -299,6 +304,10 @@ class BigFrame(object):
     #         raise ValueError("A value for right must be specified")
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
 
+    def add_column(self, column_name, func):
+        return self._backend.add_column(self, column_name, func)
+
+
     def rename_column(self, column_name, new_name):
         if isinstance(column_name, basestring) and isinstance(new_name, basestring):
             column_name = [column_name]
@@ -308,14 +317,16 @@ class BigFrame(object):
         current_names = self._columns.keys()
         for nn in new_name:
             if nn in current_names:
-                raise ValueError("Cannot use rename to {0} because another column already exists with that name".format(nn))
+                raise ValueError("Cannot use rename to '{0}' because another column already exists with that name".format(nn))
         name_pairs = zip(column_name, new_name)
 
         self._backend.rename_columns(self, name_pairs)
-        # rename on python side (ultimately this should refresh from the server)
+        # rename on python side, here in the frame's local columns:
+        values = self._columns.values()  # must preserve order in OrderedDict
         for p in name_pairs:
-            self._columns[p[1]] = self._columns[p[0]]
-            del self._columns[p[0]]
+            self._columns[p[0]].name = p[1]
+        self._columns = OrderedDict([(v.name, v) for v in values])
+
 
     def save(self, name=None):
         self._backend.save(self, name)
