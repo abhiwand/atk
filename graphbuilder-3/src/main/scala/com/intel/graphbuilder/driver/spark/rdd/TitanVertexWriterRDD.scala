@@ -17,7 +17,7 @@ import org.apache.spark.{TaskContext, Partition}
  * @param prev input RDD
  * @param titanConnector connector to Titan
  */
-class TitanVertexWriterRDD(prev: RDD[Vertex], titanConnector: TitanGraphConnector, append: Boolean = false) extends RDD[GbIdToPhysicalId](prev) {
+class TitanVertexWriterRDD(prev: RDD[Vertex], titanConnector: TitanGraphConnector, val append: Boolean = false) extends RDD[GbIdToPhysicalId](prev) {
 
   override def getPartitions: Array[Partition] = firstParent[Vertex].partitions
 

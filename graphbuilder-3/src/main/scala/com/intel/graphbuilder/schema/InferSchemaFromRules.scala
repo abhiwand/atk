@@ -4,7 +4,9 @@ import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.util.StringUtils
 
 /**
- * Infer Graph schema as best as possible from the supplied parameters
+ * Infer Graph schema as best as possible from the supplied parameters.  This means if only part
+ * of the schema can be inferred, it will infer that part and it is someone else's responsibility
+ * to handle the rest.
  * <p>
  * This can only be done completely when property keys and Edge labels are defined as constants.
  * When property keys and/or Edge labels are defined to be dynamically parsed from the input then

@@ -9,12 +9,6 @@ import com.intel.graphbuilder.parser._
  */
 case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) extends Parser[Edge](inputSchema) with Serializable {
 
-  // TODO: delete me?
-  /** no-args constructor for serialization */
-  //def this() {
-  //  this(null, Nil)
-  //}
-
   // each rule gets its own parser
   private val edgeParsers = edgeRules.map(rule => rule -> new SingleEdgeRuleParser(rule)).toMap
 
@@ -27,7 +21,6 @@ case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) e
       if rule appliesTo row
     } yield edgeParsers(rule).parse(row)
   }
-
 }
 
 

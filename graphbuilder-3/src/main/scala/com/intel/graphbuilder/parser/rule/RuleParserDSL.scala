@@ -9,28 +9,28 @@ object RuleParserDSL {
   /**
    * Convert Any to a ConstantValue
    */
-  implicit def any2ConstantValue(value: Any) = {
+  implicit def anyToConstantValue(value: Any) = {
     new ConstantValue(value)
   }
 
   /**
    * Convert a single EdgeRule to a List containing one EdgeRule
    */
-  implicit def edgeRule2EdgeRuleList(edgeRule: EdgeRule) = {
+  implicit def edgeRuleToEdgeRuleList(edgeRule: EdgeRule) = {
     List(edgeRule)
   }
 
   /**
    * Convert a single VertexRule to a List containing one VertexRule
    */
-  implicit def vertexRule2VertexRuleList(vertexRule: VertexRule) = {
+  implicit def vertexRuleToVertexRuleList(vertexRule: VertexRule) = {
     List(vertexRule)
   }
 
   /**
    * Convert a single PropertyRule to a List containing one PropertyRule
    */
-  implicit def propertyRule2PropertyRuleList(propertyRule: PropertyRule) = {
+  implicit def propertyRuleToPropertyRuleList(propertyRule: PropertyRule) = {
     List(propertyRule)
   }
 
