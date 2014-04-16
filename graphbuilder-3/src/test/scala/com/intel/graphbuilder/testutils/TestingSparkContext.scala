@@ -16,7 +16,7 @@ import scala.concurrent.Lock
  * Other option is to use "parallelExecution in Test := false" but locking seems to be faster.
  * </p>
  */
-trait TestingSparkContext extends After {
+trait TestingSparkContext extends MultipleAfter {
 
   // locking in the constructor is slightly odd but it seems to work well
   TestingSparkContext.lock.acquire()
@@ -30,6 +30,7 @@ trait TestingSparkContext extends After {
    */
   override def after: Any = {
     cleanupSpark()
+    super.after
   }
 
   /**

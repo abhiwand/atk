@@ -10,7 +10,7 @@ import org.specs2.mutable.{After, BeforeAfter}
 /**
  * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
  */
-trait TestingTitan extends After {
+trait TestingTitan extends MultipleAfter {
 
   LogUtils.silenceTitan()
 
@@ -24,6 +24,7 @@ trait TestingTitan extends After {
 
   override def after: Unit = {
     cleanupTitan()
+    super.after
   }
 
   /**

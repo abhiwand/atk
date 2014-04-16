@@ -18,7 +18,7 @@ class GraphBuilderITest extends Specification {
 
   "GraphBuilder" should {
 
-    "support an end-to-end flow" in new TestingSparkContextWithTitan {
+    "support an end-to-end flow" in new TestingSparkContext with TestingTitan {
 
       // Input Data
       val inputRows = List(
