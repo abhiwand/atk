@@ -33,7 +33,7 @@ case class ColumnDef(columnName: String, dataType: Class[_], columnIndex: Intege
  * Defines the schema of the rows of input
  * @param columns the definitions for each column
  */
-case class InputSchema(columns: Seq[ColumnDef]) {
+case class InputSchema(columns: Seq[ColumnDef]) extends Serializable {
 
   /**
    * Convenience constructor for creating InputSchemas when all of the columns are the same type
@@ -44,7 +44,7 @@ case class InputSchema(columns: Seq[ColumnDef]) {
     this(columnNames.map(columnName => new ColumnDef(columnName, columnType)))
   }
 
-  private val schema = {
+  private lazy val schema = {
     var schema = Map[String, ColumnDef]()
     var columnIndex = 0
     for (column <- columns) {

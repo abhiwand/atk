@@ -5,7 +5,7 @@ import com.intel.graphbuilder.parser.InputSchema
 /**
  * Figure out the dataType of the supplied value using the InputSchema, if needed.
  */
-class DataTypeResolver(inputSchema: InputSchema) {
+class DataTypeResolver(inputSchema: InputSchema) extends Serializable {
 
   /**
    * Figure out the dataType of the supplied value using the InputSchema, if needed.
