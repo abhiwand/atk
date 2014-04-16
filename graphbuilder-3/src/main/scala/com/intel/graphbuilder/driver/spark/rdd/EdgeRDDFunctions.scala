@@ -92,8 +92,9 @@ class EdgeRDDFunctions(self: RDD[Edge]) extends Serializable {
 
   /**
    * Write the Edges to Titan using the supplied connector
+   * @param append true to append to an existing graph
    */
-  def write(titanConnector: TitanGraphConnector, append: Boolean = false): Unit = {
+  def write(titanConnector: TitanGraphConnector, append: Boolean): Unit = {
 
     self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) => {
       val graph = titanConnector.connect()
