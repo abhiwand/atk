@@ -26,6 +26,7 @@ LittleFrame object (BigFrame without Big backend, i.e. all Python memory space)
 (wraps Pandas DataFrame)
 """
 
+from pandas import Series
 from collections import OrderedDict
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
@@ -74,30 +75,27 @@ class LittleFramePandasBackend(object):
     def _as_json_obj(self, frame):
         raise NotImplementedError
 
+    def add_column(self, frame, schema, row_func):
+        wrapped_func = _get_row_func(row_func, frame.schema, out_schema=schema)
+        result = frame._df.apply(wrapped_func, axis=1)
+
+        if hasattr(schema, '__iter__'):
+            for name in schema:
+                _assign_result_col(frame, name, result[name])
+        else:
+            _assign_result_col(frame, schema, result)
+
     def append(self, frame, *data):
         for src in data:
             if isinstance(src, SimpleDataSource):
                 if frame._df is None:
                     frame._df = src.to_pandas_dataframe()
                     frame._columns = OrderedDict([(n, BigColumn(n, t))
-                                                  for n, t in src.schema])
+                                                  for n, t in src.schema.items()])
                 else:
                     frame._df.append(src.to_pandas_dataframe)
-            # elif isinstance(src, list):
-            #     You're in here going... I want to append a list of tuples'
-            #      if frame._df is None:
-            #         frame._df = src.to_pandas_dataframe()
-            #         frame._columns = OrderedDict([(n, BigColumn(n, t))
-            #                                       for n, t in src.schema])
-            #     else:
-            #         frame._df.append(src.to_pandas_dataframe)
-            #      list of tuples
-
             else:
                 raise TypeError("Unsupported data source type %s" % type(src))
-
-    def assign(self, frame, dst, value):
-        raise NotImplementedError
 
     def copy_columns(self, frame, keys, columns):
         raise NotImplementedError
@@ -105,8 +103,11 @@ class LittleFramePandasBackend(object):
     def count(self, frame):
         return len(frame._df.index)
 
-    def drop_columns(self, frame, keys):
-        raise NotImplementedError
+    def delete_column(self, frame, name):
+        if isinstance(name, basestring):
+            name = [name]
+        for victim in name:
+            del frame._df[victim]
 
     def drop(self, frame, predicate, rejected_store=None):
         self._drop(frame, predicate, rejected_store, is_filter=False)
@@ -118,18 +119,11 @@ class LittleFramePandasBackend(object):
         self._drop(frame, predicate, rejected_store, is_filter=True)
 
     def _drop(self, frame, predicate, rejected_store, is_filter):
-        matching_rows_mask = frame._df.apply(self._get_row_func(predicate, frame.schema), axis=1)
+        matching_rows_mask = frame._df.apply(_get_row_func(predicate, frame.schema), axis=1)
         keep_mask = matching_rows_mask if is_filter else ~matching_rows_mask
         frame._df = frame._df[keep_mask]
         if rejected_store:
             rejected_store.append(frame._df[~keep_mask])
-
-    def _get_row_func(self, func, schema):
-        row_wrapper = RowWrapper(schema)
-        def row_function(series):
-            row_wrapper._series = series
-            return func(row_wrapper)
-        return row_function
 
     class InspectionTable(object):
         def __init__(self, df):
@@ -148,11 +142,18 @@ class LittleFramePandasBackend(object):
                       for n, t in frame.schema.items()]
         return self.InspectionTable(df)
 
-    def reduce(self, frame, predicate, rejected_store=None):
-        raise NotImplementedError
+
+    #def map(self, frame, row_func, out=None):
 
     def rename_columns(self, frame, name_pairs):
-        raise NotImplementedError
+        d = dict(name_pairs)
+        columns = list(frame._df.columns)
+        for i, c in enumerate(columns):
+            try:
+                columns[i] = d[c]
+            except KeyError:
+                pass
+        frame._df.columns = columns
 
     def save(self, frame, name):
         raise NotImplementedError
@@ -166,6 +167,92 @@ class LittleFramePandasBackend(object):
         except StopIteration:
             pass
         return t
+
+
+def _get_row_func(func, frame_schema, out_schema=None):
+    row_wrapper = RowWrapper(frame_schema)
+    def row_function(series):
+        row_wrapper._series = series
+        result = func(row_wrapper)
+        if out_schema:
+            if hasattr(result, '__iter__'):
+                names = _get_names_from_schema(out_schema)
+                assert(len(names) == len(result))
+                return Series(dict(zip(names, result)))
+        return result
+    return row_function
+
+# Note, for wrapping a row function to return multiple columns
+# ---------------------------------------------------------
+#  result \ out  |      x        |  (x, y, z)    |  None
+# ---------------+---------------+---------------+---------
+#       a        |  frame.x = a  |  Error!       | Error!
+# ---------------+---------------+---------------+---------
+#   (a, b, c)    |  Error!       | frame.x=a,    | Error!
+#                |               | frame.y=b     |
+#                |               | frame.z=c     |
+# ---------------+---------------+---------------+---------
+# ((a, b), c, d) |  Error!       | frame.x=(a,b) | Error!
+#                |               | frame.y=c     |
+#                |               | frame.z=d     |
+# ---------------+---------------+---------------+---------
+# ((a, b, c),)   |  frame.x =    | Error!        | Error!
+#                |    (a, b, c)  |               |
+# -----------------------------------------------+---------
+
+
+def _get_pairs_from_column_schema(schema):
+    #  'x'
+    #  ('x',)
+    #  ('x', int32)
+    #  ('x', 'y')
+    #  (('x', int32),)
+    #  (('x', int32), 'y')
+    #  (('x', int32), ('y', str))
+    if isinstance(schema, basestring):
+        return [(schema, unknown)]
+    if isinstance(schema, tuple) and len(schema) == 2 and isinstance(schema[1], type):
+        return [(schema[0], schema[1])]
+    if hasattr(schema, '__iter__'):
+        result = []
+        for item in schema:
+            if isinstance(item, basestring):
+                result.append((item, unknown))
+            if isinstance(item, tuple):
+                if len(item) == 1:
+                    result.append((item[0], unknown))
+                elif len(item) == 2 and isinstance(item[1], type):
+                    result.append(item)
+                else:
+                    raise ValueError('Bad column schema' + str(schema) + " has nested tuple")
+
+        return result
+    raise ValueError('Bad column schema' + str(schema))
+
+
+def _get_names_from_schema(schema):
+    names, data_types = zip(*_get_pairs_from_column_schema(schema))
+    return names
+
+
+def _get_types_from_schema(schema):
+    names, data_types = zip(*_get_pairs_from_column_schema(schema))
+    return names
+
+
+def _assign_result_col(frame, schema, series):
+    if isinstance(schema, tuple):
+        name = schema[0]
+        if schema[1] in supported_types:
+            data_type = schema[1]
+        else:
+            data_type = supported_types.get_type(series.ix[0])
+    else:
+        name = schema
+        data_type = supported_types.get_type(series.ix[0])
+    frame._df[name] = series
+    frame._columns[name] = BigColumn(name, data_type)
+
 
 class RowWrapper(object):
     def __init__(self, schema):
