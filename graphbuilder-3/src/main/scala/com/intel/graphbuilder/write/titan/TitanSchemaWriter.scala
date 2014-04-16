@@ -60,7 +60,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
    * Determine the index type from the supplied PropertyType
    * @param propertyType enumeration to specify Vertex or Edge
    */
-  private def indexType(propertyType: PropertyType.Value): Class[_ <: Element] = {
+  private[titan] def indexType(propertyType: PropertyType.Value): Class[_ <: Element] = {
     if (propertyType == PropertyType.Vertex) {
       classOf[Vertex] // TODO: this should probably be an Index Type property?
     }
@@ -68,7 +68,7 @@ class TitanSchemaWriter(graph: TitanGraph) extends SchemaWriter {
       classOf[Edge] // TODO: this should probably be an Index Type property?
     }
     else {
-      throw new RuntimeException("Unknown PropertyType: " + propertyType)
+      throw new RuntimeException("Unknown PropertyType is not yet implemented: " + propertyType)
     }
   }
 

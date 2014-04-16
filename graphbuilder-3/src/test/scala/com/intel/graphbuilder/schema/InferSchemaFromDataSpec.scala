@@ -82,7 +82,7 @@ class InferSchemaFromDataSpec extends Specification {
     }
 
     "infer two Edge properties from an Edge" in {
-      val edge = new Edge(null, null, null, List(new Property("key1", "value1"),new Property("key2", new Date())))
+      val edge = new Edge(null, null, null, List(new Property("key1", "value1"), new Property("key2", new Date())))
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge)
@@ -127,7 +127,7 @@ class InferSchemaFromDataSpec extends Specification {
     }
 
     "infer two Vertex properties from a Vertex" in {
-      val vertex = new Vertex(new Property("gbId", 10001L), List(new Property("key1", "value1"),new Property("key2", new Date())))
+      val vertex = new Vertex(new Property("gbId", 10001L), List(new Property("key1", "value1"), new Property("key2", new Date())))
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(vertex)
@@ -144,7 +144,7 @@ class InferSchemaFromDataSpec extends Specification {
 
     "combine results from Edges and Vertices" in {
       val edge = new Edge(null, null, "myLabel", List(new Property("key3", "value3")))
-      val vertex = new Vertex(new Property("gbId", 10001L), List(new Property("key1", "value1"),new Property("key2", new Date())))
+      val vertex = new Vertex(new Property("gbId", 10001L), List(new Property("key1", "value1"), new Property("key2", new Date())))
       val inferSchemaFromData = new InferSchemaFromData()
 
       inferSchemaFromData.add(edge)
