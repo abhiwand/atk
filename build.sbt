@@ -23,6 +23,7 @@ libraryDependencies in ThisBuild ++= {
     "org.specs2"          %%  "specs2-html"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-scalacheck" % "2.3.10"  % "test",
     "org.mockito"         %   "mockito-core"      % "1.9.5"   % "test",
+    "org.specs2"	%% 	"specs2"	 % "2.3.10"   % "test",
 //    ("com.intel.hadoop"    %   "event"             % "1.0-SNAPSHOT")
 //      .exclude("ch.qos.cal10n.plugins", "maven-cal10n-plugin")
 //      .exclude("junit", "junit")
