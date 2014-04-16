@@ -6,7 +6,8 @@ import scala.collection.mutable.Map
 /**
  * Infer the schema from the GraphElements themselves after parsing.
  *
- * This is more overhead but allows cases like dynamic labels, i.e. labels that are parsed from the input.
+ * This is more overhead because it requires passing over all of the data but allows
+ * for cases like dynamic labels, i.e. labels that are parsed from the input.
  */
 class InferSchemaFromData extends Serializable {
 

@@ -29,8 +29,9 @@ class VertexRDDFunctions(self: RDD[Vertex]) {
    * This is an unusual transformation because it has the side effect of writing to Titan.
    * This means extra care is needed to prevent it from being recomputed.
    * </p>
+   * @param append true to append to an existing graph
    */
-  def write(titanConnector: TitanGraphConnector, append: Boolean = false): RDD[GbIdToPhysicalId] =
+  def write(titanConnector: TitanGraphConnector, append: Boolean): RDD[GbIdToPhysicalId] =
     new TitanVertexWriterRDD(self, titanConnector, append)
 
 }
