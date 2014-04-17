@@ -5,7 +5,6 @@ import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import com.thinkaurelius.titan.core.TitanGraph
 import java.io.File
-import org.specs2.mutable.BeforeAfter
 
 /**
  * This trait can be mixed into Specifications to get a TitanGraph backed by Berkeley for testing purposes.
