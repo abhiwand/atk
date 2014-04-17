@@ -79,13 +79,21 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       .setSparkHome(sparkHome)
 
 
+    val runningContexts = new mutable.HashMap[String,SparkContext] with mutable.SynchronizedMap[String,SparkContext] {}
     //TODO: how to run jobs as a particular user
     //TODO: Decide on spark context life cycle - should it be torn down after every operation,
     //or left open for some time, and reused if a request from the same user comes in?
     //Is there some way of sharing a context across two different Engine instances?
     def context() = {
-      withMyClassLoader {
-        new SparkContext(config = config)
+      runningContexts.get("user") match {
+        case Some(ctx) => ctx
+        case None => {
+          val ctx = withMyClassLoader {
+            new SparkContext(config = config.setAppName("intel-analytics:user"))
+          }
+          runningContexts += ("user" -> ctx)
+          ctx
+        }
       }
     }
 
@@ -125,13 +133,14 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         withMyClassLoader {
           val parserFunction = getLineParser(parser)
           val location = fsRoot + frames.getFrameDataFile(frame.id)
-          context().textFile(fsRoot + "/" + file)
-            .map(parserFunction)
-            //TODO: type conversions based on schema
-            .map(strings => strings.map(s => s.getBytes))
-            .saveAsObjectFile(location)
-          frames.lookup(frame.id).getOrElse(
-            throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
+          val ctx = context()
+            ctx.textFile(fsRoot + "/" + file)
+              .map(parserFunction)
+              //TODO: type conversions based on schema
+              .map(strings => strings.map(s => s.getBytes))
+              .saveAsObjectFile(location)
+            frames.lookup(frame.id).getOrElse(
+              throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
         }
       }
     }
@@ -289,22 +298,22 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       // Need to cache row counts per partition somewhere.
       //TODO: Resource management
       //      val counts = rdd.mapPartitionsWithIndex(
-//                            (i:Int, rows:Iterator[Array[Array[Byte]]]) => Iterator.single((i, rows.size)))
-//                      .collect()
-//                      .sortBy(_._1)
-//      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
-//                      .drop(1)
-//                      .toMap
-//      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
-//      val rows: Seq[Array[Array[Byte]]] = rdd.mapPartitionsWithIndex((i, rows) => {
-//        val (ct: Int, sum: Int) = sumsAndCounts(i)
-//        if (sum < offset || sum - ct > offset + count) {
-//          Iterator.empty
-//        } else {
-//          val start = offset - (sum - ct)
-//          rows.drop(start.toInt).take(count)
-//        }
-//      }).collect()
+      //                            (i:Int, rows:Iterator[Array[Array[Byte]]]) => Iterator.single((i, rows.size)))
+      //                      .collect()
+      //                      .sortBy(_._1)
+      //      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
+      //                      .drop(1)
+      //                      .toMap
+      //      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
+      //      val rows: Seq[Array[Array[Byte]]] = rdd.mapPartitionsWithIndex((i, rows) => {
+      //        val (ct: Int, sum: Int) = sumsAndCounts(i)
+      //        if (sum < offset || sum - ct > offset + count) {
+      //          Iterator.empty
+      //        } else {
+      //          val start = offset - (sum - ct)
+      //          rows.drop(start.toInt).take(count)
+      //        }
+      //      }).collect()
       rows
     }
 
