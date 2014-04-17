@@ -31,7 +31,7 @@ import org.apache.commons.configuration.{PropertiesConfiguration, Configuration}
 /**
  * Get a connection to Titan.
  * <p>
- * This was needed because a 'Connector' can be serialized across the network, where an live connection can't.
+ * This was needed because a 'Connector' can be serialized across the network, whereas a live connection can't.
  * </p>
  */
 class TitanGraphConnector(config: Configuration) extends GraphConnector with Serializable {
