@@ -129,75 +129,90 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
     //using futures, but they keep the client on the phone the whole time while they're waiting
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
-    pathPrefix(prefix / LongNumber) { id =>
-      std(post, "transforms") { uri =>
-        entity(as[JsonTransform]) { xform =>
-          (xform.language, xform.name) match {
-              //TODO: improve mapping between rest api and engine arguments
-            case ("builtin", "load") =>  {
-              val args = Try { xform.arguments.get.convertTo[LoadFile] }
-              validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
-                onComplete(
-                  for {
-                    frame <- engine.getFrame(id)
-                    res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
-                  } yield res) {
-                  case Success(r) => complete(decorate(uri, r))
-                  case Failure(ex) => completeWithError(ex)
+    pathPrefix(prefix / LongNumber) {
+      id =>
+        std(post, "transforms") {
+          uri =>
+            entity(as[JsonTransform]) {
+              xform =>
+                (xform.language, xform.name) match {
+                  //TODO: improve mapping between rest api and engine arguments
+                  case ("builtin", "load") => {
+                    val args = Try {
+                      xform.arguments.get.convertTo[LoadFile]
+                    }
+                    validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
+                      onComplete(
+                        for {
+                          frame <- engine.getFrame(id)
+                          res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
+                        } yield res) {
+                        case Success(r) => complete(decorate(uri, r))
+                        case Failure(ex) => completeWithError(ex)
+                      }
+                    }
+                  }
+                  case _ => completeNotImplemented()
                 }
+            }
+        } ~
+          std(get, "data") {
+            uri =>
+              parameters('offset.as[Int], 'count.as[Int]) {
+                (offset, count) =>
+                  onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {
+                    case Success(rows: Iterable[Array[Array[Byte]]]) => {
+                      import DefaultJsonProtocol._
+                      val strings: List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
+                      complete(strings)
+                    }
+                    case Failure(ex) => completeInternalError(ex.getMessage)
+                  }
+              } ~
+                std(get, prefix) {
+                  uri =>
+                    onComplete(engine.getFrame(id)) {
+                      case Success(frame) => {
+                        val decorated = decorate(uri, frame)
+                        complete {
+                          decorated
+                        }
+                      }
+                      case _ => reject()
+                    }
+                }
+          } ~
+          std(delete, prefix) {
+            uri =>
+              onComplete(for {
+                f <- engine.getFrame(id)
+                res <- engine.delete(f)
+              } yield res) {
+                case Success(frames) => complete("OK")
+                case Failure(ex) => completeInternalError(ex.getMessage)
               }
-            }
-            case _ => completeNotImplemented()
           }
-        }
-      } ~
-      std(get, "data") { uri =>
-        parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
-          onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
-            case Success(rows:Iterable[Array[Array[Byte]]]) => {
-              import DefaultJsonProtocol._
-              val strings : List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
-              complete(strings)
-            }
-            case Failure(ex) => completeInternalError(ex.getMessage)
-        }
-      } ~
-      std(get, prefix) { uri =>
-        onComplete(engine.getFrame(id)) {
-          case Success(frame) => {
-            val decorated = decorate(uri, frame)
-            complete {decorated}
-          }
-          case _ => reject()
-        }
-      } ~
-      std(delete, prefix) { uri =>
-        onComplete(for {
-            f <- engine.getFrame(id)
-            res <- engine.delete(f)
-          } yield res) {
-            case Success(frames) => complete("OK")
-            case Failure(ex) => completeInternalError(ex.getMessage)
-          }
-        }
-      }
+
     } ~
-    std(get, prefix) { uri =>
+      std(get, prefix) {
+      uri =>
       //TODO: cursor
-      onComplete(engine.getFrames(0, 20)) {
-        case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
-        case Failure(ex) => completeInternalError(ex.getMessage)
-      }
-    } ~
-    std(post, prefix) { uri =>
-      import DomainJsonProtocol._
-      entity(as[DataFrameTemplate]) { frame =>
-        onComplete(engine.create(frame)) {
-          case Success(frame) => complete(decorate(uri, frame))
+        onComplete(engine.getFrames(0, 20)) {
+          case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
           case Failure(ex) => completeInternalError(ex.getMessage)
         }
+    } ~
+      std(post, prefix) {
+        uri =>
+          import DomainJsonProtocol._
+          entity(as[DataFrameTemplate]) {
+            frame =>
+              onComplete(engine.create(frame)) {
+                case Success(frame) => complete(decorate(uri, frame))
+                case Failure(ex) => completeInternalError(ex.getMessage)
+              }
+          }
       }
-    }
   }
 
   def apiV1Service: Route = {
