@@ -79,6 +79,13 @@ class FrameBackendREST(object):
         #  data.to_json()
         #  call REST append on the frame
         #requests.post(url, data.to_json())
+        base_uri = 'http://127.0.0.1:8080/v1' # TODO make base_uri configurable
+        uri = base_uri +"/dataframes/1/transforms"
+        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': 1}}
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+
+        r = requests.post(uri, data=json.dumps(payload), headers = headers)
+        logger.info("Response from REST server {0}".format(r.text))
 
         if isinstance(data, CsvFile):
             # update the Python object (set the columns)

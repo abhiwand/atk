@@ -13,6 +13,7 @@ import com.intel.intelanalytics.component.Component
 import com.intel.intelanalytics.repository.{DbProfileComponent, SlickMetaStoreComponent}
 import com.intel.intelanalytics.service.v1.ApiV1Service
 import com.intel.intelanalytics.engine.EngineComponent
+import com.typesafe.config.ConfigFactory
 
 class Boot extends Component {
 
@@ -59,8 +60,11 @@ object ServiceHost {
 
   def start() = {
 
+    val config = ConfigFactory.load()
+    val interface = config.getString("intel.analytics.api.host")
+    val port = config.getInt("intel.analytics.api.port")
     // start a new HTTP server on port 8080 with our service actor as the handler
-    IO(Http) ? Http.Bind(service, interface = "0.0.0.0", port = 8080)
+    IO(Http) ? Http.Bind(service, interface = interface, port = port)
 
   }
 }
