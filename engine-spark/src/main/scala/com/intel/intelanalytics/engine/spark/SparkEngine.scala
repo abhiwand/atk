@@ -54,6 +54,7 @@ import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
+import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
 
 //TODO logging
 //TODO error handling
@@ -63,9 +64,10 @@ import scala.util.matching.Regex
 //TODO pass current user info
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
+  val conf = ConfigFactory.load()
   //TODO: get these settings using the Typesafe Config library (see application.conf)
-  val sparkHome = System.getProperty("spark.home", "c:\\temp")
-  val sparkMaster = System.getProperty("spark.master", "local[4]")
+  val sparkHome = conf.getString("intel.analytics.spark.home")
+  val sparkMaster = conf.getString("intel.analytics.spark.master")
 
   //Very simpleminded implementation, not ready for multiple users, for example.
   class SparkEngine extends Engine {
@@ -192,7 +194,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
   val files = new HdfsFileStorage {}
 
-  val fsRoot = System.getProperty("intelanalytics.fs.root", "/home/hadoop")
+  val fsRoot = conf.getString("intel.analytics.fs.root")
 
   trait HdfsFileStorage extends FileStorage {
 
