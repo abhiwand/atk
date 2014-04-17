@@ -25,7 +25,7 @@ case class PropertyRuleParser(propertyRules: Seq[PropertyRule]) extends Serializ
 }
 
 /**
- * Always parse a singe property using a single rule.
+ * Always parse a single property using a single rule.
  *
  * This parser should be used for GbId's.
  */

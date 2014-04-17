@@ -69,7 +69,7 @@ class GraphBuilderITest extends Specification {
       val inputRdd2 = sc.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Append to the existing Graph
-      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, biDirectional = true))
+      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, biDirectional = true, inferSchema = false))
       gb2.build(inputRdd2)
 
       // Validate
@@ -83,17 +83,17 @@ class GraphBuilderITest extends Specification {
 
       // Input Data
       val inputRows = List(
-        List("userId", 1001L,"President Obama", "", "", ""), // a vertex that is a user named President Obama
+        List("userId", 1001L, "President Obama", "", "", ""), // a vertex that is a user named President Obama
         List("movieId", 1001L, "When Harry Met Sally", "", "", ""), // a vertex representing a movie
         List("movieId", 1002L, "Frozen", "", "", ""),
         List("movieId", 1003L, "The Hobbit", "", "", ""),
         List("", "", "", 1001L, "likes", 1001L), // edge that means "Obama likes When Harry Met Sally"
-        List("userId", 1004L,"Abraham Lincoln", "", "", ""),
+        List("userId", 1004L, "Abraham Lincoln", "", "", ""),
         List("", "", "", 1004L, "likes", 1001L), // edge that means "Lincoln likes When Harry Met Sally"
         List("", "", "", 1004L, "likes", 1001L), // duplicate edge that means "Lincoln likes When Harry Met Sally"
         List("", "", "", 1004L, "hated", 1002L), // edge that means "Lincoln hated Frozen"
         List("", "", "", 1001L, "hated", 1003L), // edge that means "Obama hated The Hobbit"
-        List("", "", "", 1001L, "hated", 1007L)  // edge that means "Obama hated a movie that is a dangling edge"
+        List("", "", "", 1001L, "hated", 1007L) // edge that means "Obama hated a movie that is a dangling edge"
       )
 
       // Input Schema

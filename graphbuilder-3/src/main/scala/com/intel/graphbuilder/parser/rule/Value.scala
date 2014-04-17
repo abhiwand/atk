@@ -12,10 +12,19 @@ import org.apache.commons.lang3.StringUtils
  */
 abstract class Value {
 
+  /**
+   * True if this value gets parsed from the Input
+   */
   def isParsed: Boolean
 
+  /**
+   * True if this value is NOT parsed from the Input
+   */
   final def isNotParsed = !isParsed
 
+  /**
+   * True if this value is available (meaning it is either a constant or available from the input row)
+   */
   def in(row: InputRow): Boolean
 
   /**
@@ -25,7 +34,7 @@ abstract class Value {
   def value: Any
 
   /**
-   * Always gives the value, either parsed from the supplied InputRow, or otherwise, depending on the type of Value.
+   * Always gives the value, either parsed from the supplied InputRow and/or the immediate data, if isParsed is false
    */
   def value(row: InputRow): Any
 

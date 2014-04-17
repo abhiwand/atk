@@ -25,11 +25,12 @@ REST backend for frames
 """
 #import requests
 import logging
+from StringIO import StringIO
 logger = logging.getLogger(__name__)
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-
+from intelanalytics.rest.serialize import IAPickle
 
 class FrameBackendREST(object):
     """REST plumbing for BigFrame"""
@@ -58,8 +59,14 @@ class FrameBackendREST(object):
                             + data.__class__.__name__)
 
     def filter(self, frame, predicate):
+        # payload = StringIO()
+        # pickler = IAPickle(file)
+        # pickler.dump(predicate)
+        # Does payload have any other header/content apart from the serialized predicate for REST Server to parse?
+
         # pickle predicate in a payload
-        #requests.post(url, payload)
+        # requests.post(url, payload)
+
         raise NotImplementedError
 
 
