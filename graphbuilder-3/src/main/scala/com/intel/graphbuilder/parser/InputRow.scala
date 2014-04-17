@@ -27,6 +27,9 @@ import org.apache.commons.lang3.StringUtils
 
 /**
  * Wrapper for rows to simplify parsing.
+ * <p>
+ * An input row is row of raw data plus a schema
+ * </p>
  */
 class InputRow(inputSchema: InputSchema, row: Seq[Any]) {
 
@@ -34,6 +37,9 @@ class InputRow(inputSchema: InputSchema, row: Seq[Any]) {
     throw new IllegalArgumentException("Input row should have the same number of columns as the inputSchema")
   }
 
+  /**
+   * The data or value from a column.
+   */
   def value(columnName: String): Any = {
     row(inputSchema.columnIndex(columnName))
   }
