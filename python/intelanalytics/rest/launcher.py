@@ -4,7 +4,7 @@ from hooks import WebhookServer
 
 message_queue = multiprocessing.Queue()
 
-class Launcher(object):
+class _Launcher(object):
 
     def __init__(self):
         self.server = WebhookServer()
@@ -15,5 +15,11 @@ class Launcher(object):
 
     def shutdown(self):
         self.server_process.terminate()
+
+
+launcher = _Launcher()
+
+
+
 
 
