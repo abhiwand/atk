@@ -32,8 +32,11 @@ package com.intel.intelanalytics.engine
   */
 import util.parsing.combinator.RegexParsers 
  
-object Row extends RegexParsers {
-  /**Row Object takes a string as an input and parses the csv formatted string */
+ 
+class Row(separator: Char) extends RegexParsers {
+  /**Row Class to split a string based on delimiter
+    * @param seperator : delimiter character 
+  */
 
   override def skipWhitespace = false
   /** Apply method parses the string and returns a list of String tokens
@@ -45,7 +48,7 @@ object Row extends RegexParsers {
   }
   
   
-  def record = repsep(mainToken, ",")
+  def record = repsep(mainToken, separator.toString)
   def mainToken = doubleQuotes | singleQuotes | unquotes | empty
   /** function to evaluate empty fields*/
   lazy val empty = success ("")
@@ -54,6 +57,7 @@ object Row extends RegexParsers {
   /** function to evaluate double quotes*/
   lazy val doubleQuotes: Parser[String] = "\"" ~> "[^\"]+".r <~ "\"" 
   /** function to evaluate normal tokens*/
-  lazy val unquotes = "[^,]+".r 
+  lazy val unquotes = ("[^" + separator + "]+").r
 
+ 
 }
