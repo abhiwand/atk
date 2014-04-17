@@ -30,7 +30,7 @@ import java.util.Date
 /**
  * Utility for use during development.
  */
-object TitanQueryDriver {
+object DumpTitanGraph {
 
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
