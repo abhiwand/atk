@@ -3,7 +3,7 @@ package com.intel.graphbuilder.schema
 import org.apache.commons.lang3.StringUtils
 
 /**
- * Edge or Vertex Type
+ * A property definition is either of type Edge or Vertex
  */
 object PropertyType extends Enumeration {
   val Vertex, Edge = Value
