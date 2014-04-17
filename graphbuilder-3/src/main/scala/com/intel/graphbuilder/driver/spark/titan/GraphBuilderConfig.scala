@@ -3,7 +3,6 @@ package com.intel.graphbuilder.driver.spark.titan
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import org.apache.commons.configuration.Configuration
 
 /**
  * Configuration options for GraphBuilder
