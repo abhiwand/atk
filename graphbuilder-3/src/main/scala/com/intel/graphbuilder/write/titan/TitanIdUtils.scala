@@ -34,7 +34,7 @@ object TitanIdUtils {
 
   /**
    * Obtain the Titan-assigned ID from a Blueprints Element (Vertex or Edge)
-   * @param blueprintsElement  a Titan implementation of a Blueprints Element (Vertex or Edge)
+   * @param blueprintsElement a Titan implementation of a Blueprints Element (Vertex or Edge)
    * @return its Titan-assigned ID.
    */
   def titanId(blueprintsElement: blueprints.Element): Long = {
