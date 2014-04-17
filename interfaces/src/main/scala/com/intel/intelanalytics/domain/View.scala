@@ -22,10 +22,9 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.domain
 
-
-case class Transform(language: String, serialization: String, data: String) {
-
-}
+case class Transform(packaged: Option[UserTransform], builtin: Option[BuiltinTransform])
+case class UserTransform(language: String, serialization: String, data: String)
+case class BuiltinTransform(name: String, arguments: String)
 
 case class View(id: Long, basedOn: Long,
                 name: String, schema: Schema, transform: Transform) extends HasId {

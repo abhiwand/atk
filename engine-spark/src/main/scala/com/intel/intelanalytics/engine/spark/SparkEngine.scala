@@ -96,10 +96,6 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def getRddForId(id: Long): RDD[Array[Byte]] = {
-      context().textFile("frame_" + id + ".txt").map(line => line.getBytes(Codec.UTF8.name))
-    }
-
     def getPyCommand(function: RowFunction[Boolean]): Array[Byte] = {
       function.definition.getBytes(Codec.UTF8.name)
     }
@@ -110,9 +106,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       parser.language match {
         case "builtin" => parser.definition match {
           case "line/csv" => (s: String) => {
-            //s.split(',')
             Row.apply(s)
-          } //TODO: Return the real parser when Mohit's is finished.
+          }
           case p => throw new Exception("Unsupported parser: " + p)
         }
         case lang => throw new Exception("Unsupported language: " + lang)
@@ -161,20 +156,21 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
       future {
-        val rdd = getRddForId(frame.id)
+        val ctx = context() //TODO: resource management
+        val rdd = frames.getFrameRdd(ctx, frame.id)
         val command = getPyCommand(predicate)
         val pythonExec = "python" //TODO: take from env var or config
         val environment = System.getenv() //TODO - should be empty instead?
-        val pyRdd = new EnginePythonRDD[Array[Byte]](
-            rdd, command = command, System.getenv(),
-            new JArrayList, preservePartitioning = true,
-            pythonExec = pythonExec,
-            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-            accumulator = new Accumulator[JList[Array[Byte]]](
-              initialValue = new JArrayList[Array[Byte]](),
-              param = null)
-          )
-        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
+//        val pyRdd = new EnginePythonRDD[Array[Byte]](
+//            rdd, command = command, System.getenv(),
+//            new JArrayList, preservePartitioning = true,
+//            pythonExec = pythonExec,
+//            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
+//            accumulator = new Accumulator[JList[Array[Byte]]](
+//              initialValue = new JArrayList[Array[Byte]](),
+//              param = null)
+//          )
+//        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
         frame
       }
     }
@@ -282,8 +278,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] = {
       val ctx = engine.context()
-      val rdd: RDD[Array[Array[Byte]]] =
-        ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id))
+      val rdd: RDD[Array[Array[Byte]]] = getFrameRdd(ctx, frame.id)
       //Brute force until the code below can be fixed
       val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
       //The below fails with a classcast exception saying it can't convert a byteswritable
@@ -309,6 +304,11 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 //        }
 //      }).collect()
       rows
+    }
+
+
+    def getFrameRdd(ctx: SparkContext, id: Long): RDD[Array[Array[Byte]]] = {
+      ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(id))
     }
 
     override def create(frame: DataFrameTemplate): DataFrame = {
