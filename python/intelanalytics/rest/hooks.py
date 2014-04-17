@@ -21,7 +21,6 @@ class WebhookServer(object):
         self._app.close()
 
     def __notify(self, id):
-        m = Message(id, 0, request.forms['result'])
+        m = Message(id, request.json)
         self.message_queue.put(m)
-        return 'success'
 
