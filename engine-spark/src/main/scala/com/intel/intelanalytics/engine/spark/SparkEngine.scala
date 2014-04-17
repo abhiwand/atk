@@ -72,7 +72,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     def config = new SparkConf()
       .setMaster(sparkMaster)
-      .setAppName("intel-analytics")
+      .setAppName("intel-analytics") //TODO: this will probably wind up being a different
+                                      //application name for each user session
       .setSparkHome(sparkHome)
 
 
@@ -140,7 +141,6 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         frames.create(frame)
       }
     }
-
 
     def delete(frame: DataFrame): Future[Unit] = {
       future {
