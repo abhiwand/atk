@@ -35,9 +35,9 @@ schema_ab = [('a', int32), ('b', str)]
 rows_ab_123 =[(1, 'one'), (2, 'two'), (3, 'three')]
 data_source_ab_123 = SimpleDataSource(schema=schema_ab, rows=rows_ab_123)
 expected_repr_ab_123 = """  a:int32  b:str
-0       1    one
-1       2    two
-2       3  three"""
+        1    one
+        2    two
+        3  three"""
 
 schema_nenfr = [('n', int32), ('en', str), ('fr', str)]
 rows_nenfr =  [(1, 'one', "un"),
@@ -173,12 +173,12 @@ class TestLittleFrame(unittest.TestCase):
         f.rename_column(('en', 'fr'), ('english', 'french'))
         self.validate_schema(f, [('n', int32), ('english', str), ('french', str)])
 
-    def test_delete_column(self):
+    def test_remove_column(self):
         f = LittleFrame(data_source_nenfr_na)
-        f.delete_column('en')
+        f.remove_column('en')
         self.validate_schema(f, [('n', int32), ('fr', str)])
 
-    def test_delete_column_multiple(self):
+    def test_remove_column_multiple(self):
         f = LittleFrame(data_source_nenfr_na)
-        f.delete_column(['fr', 'en'])
+        f.remove_column(['fr', 'en'])
         self.validate_schema(f, [('n', int32)])
