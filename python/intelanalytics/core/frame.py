@@ -63,6 +63,7 @@ class BigFrame(object):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
         self._backend = _get_backend()
         self._name = self._get_new_frame_name(source)
+        self._backend.create(self)
         logger.info('Created new frame "%s"', self._name)
         if source is not None:
             self.append(source)
@@ -244,8 +245,8 @@ class BigFrame(object):
     def count(self):
         return self._backend.count(self)
 
-    def delete_column(self, name):
-        self._backend.delete_column(self, name)
+    def remove_column(self, name):
+        self._backend.remove_column(self, name)
         if isinstance(name, basestring):
             name = [name]
         for victim in name:

@@ -103,7 +103,10 @@ class LittleFramePandasBackend(object):
     def count(self, frame):
         return len(frame._df.index)
 
-    def delete_column(self, frame, name):
+    def create(self, frame):
+        return
+
+    def remove_column(self, frame, name):
         if isinstance(name, basestring):
             name = [name]
         for victim in name:
