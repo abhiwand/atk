@@ -20,27 +20,38 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
   val edgeParser = new EdgeRuleParser(config.inputSchema, config.edgeRules)
 
   /**
-   * Build the Graph
+   * Build the Graph, both Edges and Vertices from one source.
    *
    * @param inputRdd the input rows to create the graph from
    */
   def build(inputRdd: RDD[Seq[_]]) {
+    build(inputRdd, inputRdd)
+  }
+
+  /**
+   * Build the Graph, separate sources for Edges and Vertices
+   *
+   * @param vertexInputRdd the input rows to create the vertices from
+   * @param edgeInputRdd the input rows to create the edges from
+   */
+  def build(vertexInputRdd: RDD[Seq[_]], edgeInputRdd: RDD[Seq[_]]) {
     if (config.inferSchema) {
       titanSchemaManager.writeSchemaFromRules()
     }
-    buildGraphWithSpark(inputRdd)
+    buildGraphWithSpark(vertexInputRdd, edgeInputRdd)
   }
 
   /**
    * Build the Graph using Spark
    *
-   * @param inputRdd the input rows to create the graph from
+   * @param vertexInputRdd the input rows to create the vertices from
+   * @param edgeInputRdd the input rows to create the edges from
    */
-  def buildGraphWithSpark(inputRdd: RDD[Seq[_]]) {
+  def buildGraphWithSpark(vertexInputRdd: RDD[Seq[_]], edgeInputRdd: RDD[Seq[_]]) {
 
     println("Parse and Write Vertices")
-    var vertices = inputRdd.parseVertices(vertexParser)
-    var edges = inputRdd.parseEdges(edgeParser)
+    var vertices = vertexInputRdd.parseVertices(vertexParser)
+    var edges = edgeInputRdd.parseEdges(edgeParser)
 
     if (config.retainDanglingEdges) {
       println("retain dangling edges means we parse edges now too")
