@@ -28,6 +28,19 @@ class TitanSchemaWriterSpec extends Specification with Mockito {
       graph.getType("myLabel").isEdgeLabel mustEqual true
     }
 
+    "ignore duplicate edge label definitions" in new SchemaWriterSetup {
+      // setup
+      val edgeLabel = new EdgeLabelDef("myLabel")
+      val edgeLabelDup = new EdgeLabelDef("myLabel")
+      val schema = new GraphSchema(List(edgeLabel, edgeLabelDup), Nil)
+
+      // invoke method under test
+      titanSchemaWriter.write(schema)
+
+      // validate
+      graph.getType("myLabel").isEdgeLabel mustEqual true
+    }
+
     "write a property definition" in new SchemaWriterSetup {
       val propertyDef = new PropertyDef(PropertyType.Vertex, "propName", classOf[String], unique = false, indexed = false)
       val schema = new GraphSchema(Nil, List(propertyDef))
@@ -40,7 +53,7 @@ class TitanSchemaWriterSpec extends Specification with Mockito {
       graph.getType("propName").isUnique(Direction.IN) mustEqual false
     }
 
-    "write a property definition" in new SchemaWriterSetup {
+    "write a property definition that is unique and indexed" in new SchemaWriterSetup {
       val propertyDef = new PropertyDef(PropertyType.Vertex, "propName", classOf[String], unique = true, indexed = true)
       val schema = new GraphSchema(Nil, List(propertyDef))
 
@@ -50,6 +63,29 @@ class TitanSchemaWriterSpec extends Specification with Mockito {
       // validate
       graph.getType("propName").isPropertyKey mustEqual true
       graph.getType("propName").isUnique(Direction.IN) mustEqual true
+    }
+
+    "ignore duplicate property definitions" in new SchemaWriterSetup {
+      val propertyDef = new PropertyDef(PropertyType.Vertex, "propName", classOf[String], unique = false, indexed = false)
+      val propertyDup = new PropertyDef(PropertyType.Vertex, "propName", classOf[String], unique = false, indexed = false)
+      val schema = new GraphSchema(Nil, List(propertyDef, propertyDup))
+
+      // invoke method under test
+      titanSchemaWriter.write(schema)
+
+      // validate
+      graph.getType("propName").isPropertyKey mustEqual true
+      graph.getType("propName").isUnique(Direction.IN) mustEqual false
+    }
+
+    "handle empty lists" in new SchemaWriterSetup {
+      val schema = new GraphSchema(Nil, Nil)
+
+      // invoke method under test
+      titanSchemaWriter.write(schema)
+
+      // validate
+      graph.getType("propName") must beNull
     }
 
     "require a graph" in {
