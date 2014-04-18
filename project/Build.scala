@@ -6,7 +6,7 @@ object IABuild extends Build {
 
   lazy val root = Project(id = "root",
                           base = file(".")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
-                          .aggregate(event, /*graphbuilder,*/ interfaces, launcher, server, engine, spark) dependsOn (shared)
+                          .aggregate(event, graphbuilder, interfaces, launcher, server, engine, spark) dependsOn (shared)
 
   lazy val launcher = Project(id = "launcher", base = file("launcher")).settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
 
