@@ -34,16 +34,34 @@ class WebhookServer(object):
         self.response_dict = HeaderDict()
 
     def _route(self):
+        """
+        Setup routing and handlers
+        """
         self._app.route('/notify/<id>', method="POST", callback=self.__notify)
 
     def start(self, port, message_queue):
+        """
+        Launch webhook server with the specified port
+
+        Parameters
+        ----------
+        port: int
+            The port that the webhook server uses to serve the request
+        message_queue: multiprocessing.Queue
+            The queue object to send message to. The message will be picked up by REPL
+        """
         self.message_queue = message_queue
         self._app.run(host='localhost', port=port, quiet=True)
 
-    def stop(self):
-        self._app.close()
-
     def __notify(self, id):
+        """
+        Handler to receiving notification
+
+        Parameters
+        ----------
+        id: int
+            The identifier for job object
+        """
         m = Message(id, request.json)
         self.message_queue.put(m)
 
