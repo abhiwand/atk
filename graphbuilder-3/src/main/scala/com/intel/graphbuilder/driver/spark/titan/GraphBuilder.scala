@@ -32,6 +32,10 @@ import org.apache.spark.storage.StorageLevel
 
 /**
  * This is a GraphBuilder that runs on Spark, uses a RuleParser and creates Graphs in Titan.
+ * <p>
+ * This class wraps the Spark data flow and gives an example of how you can compose a
+ * Graph Building utility from the other classes.
+ * </p>
  *
  * @param config configuration options
  */
@@ -77,7 +81,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     var edges = edgeInputRdd.parseEdges(edgeParser)
 
     if (config.retainDanglingEdges) {
-      println("retain dangling edges means we parse edges now too")
+      println("retain dangling edges was true so we'll create extra vertices from edges")
       vertices = vertices.union(edges.verticesFromEdges())
     }
 
@@ -91,14 +95,13 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     idMap.persist(StorageLevel.MEMORY_AND_DISK)
     println("done parsing and writing, vertices count: " + NumberFormat.getInstance().format(idMap.count()))
 
-    println("parsing and merging edges")
     if (config.biDirectional) {
+      println("creating bi-directional edges")
       edges = edges.biDirectional()
     }
     val mergedEdges = edges.mergeDuplicates()
-    //println("done parsing and merging, edge count: " + NumberFormat.getInstance().format(mergedEdges.count()))
 
-    println("join with physical ids")
+    println("join edges with physical ids")
     val edgesWithPhysicalIds = mergedEdges.joinWithPhysicalIds(idMap)
 
     println("starting write of edges")
