@@ -3,7 +3,8 @@ addSbtPlugin("io.spray" % "sbt-revolver" % "0.7.1")
 // The Typesafe repository 
 resolvers ++= Seq(
     "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-    "sonatype-releases" at "http://oss.sonatype.org/content/repositories/releases/"
+    "sonatype-releases" at "http://oss.sonatype.org/content/repositories/releases/",
+    DefaultMavenRepository
     )
 
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.5.2")

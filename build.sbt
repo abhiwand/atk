@@ -10,7 +10,8 @@ scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
 resolvers in ThisBuild ++= Seq(
   "spray repo" at "http://repo.spray.io/",
-  Resolver.mavenLocal
+  Resolver.mavenLocal,
+  DefaultMavenRepository
 )
 
 
