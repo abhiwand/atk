@@ -37,12 +37,6 @@ import org.apache.spark.{SparkContext, SparkConf}
  */
 object NetflixExampleDriver {
 
-  // Spark Settings
-  val master = "spark://GAO-WSE.jf.intel.com:7077"
-  //val master = "local"
-  val sparkHome = "/opt/cloudera/parcels/CDH/lib/spark/"
-  val gbJar = "/home/hadoop/source_code/graphbuilder-3/target/scala-2.10/gb.jar"
-
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", "cassandra")
@@ -56,8 +50,6 @@ object NetflixExampleDriver {
   titanConfig.setProperty("storage.lock-retries", "15")
   titanConfig.setProperty("ids.block-size", "300000")
   titanConfig.setProperty("ids.renew-timeout", "150000")
-
-  val inputPath = "hdfs://GAO-WSE.jf.intel.com/data/movie_data_1mb.csv"
 
   // Input Schema
   val inputSchema = new InputSchema(List(
@@ -81,17 +73,17 @@ object NetflixExampleDriver {
 
     // Initialize Spark Connection
     val conf = new SparkConf()
-      .setMaster(master)
+      .setMaster(ExamplesUtils.sparkMaster())
       .setAppName(this.getClass.getSimpleName + " " + new Date())
-      .setSparkHome(sparkHome)
-      .setJars(List(gbJar))
+      .setSparkHome(ExamplesUtils.sparkHome())
+      .setJars(List(ExamplesUtils.gbJar()))
     conf.set("spark.executor.memory", "32g")
     conf.set("spark.cores.max", "16")
 
     val sc = new SparkContext(conf)
 
     // Setup data in Spark
-    val inputRows = sc.textFile(inputPath, 240) /* 240 worked for 1gb file, smaller values like 90 were failing with OutOfMemory for 1GB */
+    val inputRows = sc.textFile(ExamplesUtils.movieDataset(), 240) /* 240 worked for 1gb file, smaller values like 90 were failing with OutOfMemory for 1GB */
     val inputRdd = inputRows.map(row => row.split(","): Seq[_])
 
     // Build the Graph

@@ -30,9 +30,10 @@ import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.util.{GraphUtils, SerializableBaseConfiguration}
-import java.util.Date
+import java.util.{Calendar, Date}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
+import java.util
 
 /**
  * This is an example of building a graph on Titan with a Cassandra backend using Spark.
@@ -41,17 +42,11 @@ import org.apache.spark.{SparkConf, SparkContext}
  */
 object SparkTitanCassandraExampleDriver {
 
-  // Spark Settings
-  val master = "spark://GAO-WSE.jf.intel.com:7077"
-  //val master = "local"
-  val sparkHome = "/opt/cloudera/parcels/CDH/lib/spark/"
-  val gbJar = "/home/hadoop/source_code/graphbuilder-3/target/scala-2.10/gb.jar"
-
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", "cassandra")
   titanConfig.setProperty("storage.hostname", "127.0.0.1")
-  titanConfig.setProperty("storage.keyspace", "titan")
+  titanConfig.setProperty("storage.keyspace", "titan" + System.currentTimeMillis())
 
   // Input Data
   val inputRows = List(
@@ -87,10 +82,10 @@ object SparkTitanCassandraExampleDriver {
 
     // Initialize Spark Connection
     val conf = new SparkConf()
-      .setMaster(master)
+      .setMaster(ExamplesUtils.sparkMaster())
       .setAppName(this.getClass.getSimpleName + " " + new Date())
-      .setSparkHome(sparkHome)
-      .setJars(List(gbJar))
+      .setSparkHome(ExamplesUtils.sparkHome())
+      .setJars(List(ExamplesUtils.gbJar()))
     val sc = new SparkContext(conf)
 
     // Setup data in Spark

@@ -31,13 +31,11 @@ import org.apache.spark.SparkContext
  */
 object SparkTest {
 
-  val master = "spark://GAO-WSE.jf.intel.com:7077"
-
   def main(args: Array[String]): Unit = {
 
     val appName = this.getClass.getSimpleName + " " + new Date()
 
-    val sc = new SparkContext(master, appName)
+    val sc = new SparkContext(ExamplesUtils.sparkMaster(), appName)
 
     val count = sc.parallelize(1 to 100).count()
 
