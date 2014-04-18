@@ -1,18 +1,17 @@
 
-// The Typesafe repository
 resolvers ++= Seq(
-  "Typesafe repository" at "http://repo.typesafe.com/typesafe/releases/",
-  "sonatype-releases" at "http://oss.sonatype.org/content/repositories/releases/"
+  Resolver.typesafeRepo("releases"),
+  Resolver.sonatypeRepo("releases")
 )
 
-// generate IntelliJ project files
+// Generate IntelliJ project files. I didn't have good luck with this --Todd
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.6.0")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.3.2")
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")
 
-// create one big jar
+// Create one big jar
 addSbtPlugin("com.eed3si9n" %% "sbt-assembly" % "0.10.1") // version with imllib
 //addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.11.2") // latest as of April 2014
 
