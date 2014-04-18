@@ -23,6 +23,9 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
+/**
+ * Single location for settings used in examples to make them easier to run on different machines.
+ */
 object ExamplesUtils {
 
   private val SPARK_PORT = "7077"
@@ -33,11 +36,16 @@ object ExamplesUtils {
   private val HDFS_MASTER = "hdfs://" + HOST_NAME
   private val MOVIE_DATA_SET =  HDFS_MASTER + "/user/hadoop/netflix.csv"
 
-  // Returns Spark Master
+  /**
+   * URL to the Spark Master
+   */
   def sparkMaster(): String = {
     return SPARK_MASTER;
   }
 
+  /**
+   * Absolute path to the gb.jar file
+   */
   def gbJar(): String = {
     val jar = new java.io.File(GB_JAR_PATH)
     if (!jar.exists()) {
@@ -46,6 +54,9 @@ object ExamplesUtils {
     jar.getAbsolutePath
   }
 
+  /**
+   * Spark home directory
+   */
   def sparkHome(): String = {
     val path = new java.io.File(SPARK_HOME)
     if (!path.exists()) {
@@ -54,8 +65,10 @@ object ExamplesUtils {
     path.getAbsolutePath
   }
 
+  /**
+   * Path to the movie data set.
+   */
   def movieDataset(): String = {
-    println("----------------------------" + MOVIE_DATA_SET)
     return MOVIE_DATA_SET
   }
 
