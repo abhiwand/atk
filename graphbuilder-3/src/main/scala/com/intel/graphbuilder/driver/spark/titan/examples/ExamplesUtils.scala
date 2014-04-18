@@ -23,23 +23,40 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
-import java.util.Date
-import org.apache.spark.SparkContext
+object ExamplesUtils {
 
-/**
- * Test if you can connect to Spark and do something trivial
- */
-object SparkTest {
+  private val SPARK_PORT = "7077"
+  private val HOST_NAME = java.net.InetAddress.getLocalHost().getHostName()
+  private val SPARK_MASTER = "spark://" + HOST_NAME + ":" + SPARK_PORT
+  private val SPARK_HOME = "/opt/cloudera/parcels/CDH/lib/spark/"
+  private val GB_JAR_PATH = System.getProperty("user.dir") + "/target//scala-2.10/gb.jar"
+  private val HDFS_MASTER = "hdfs://" + HOST_NAME
+  private val MOVIE_DATA_SET =  HDFS_MASTER + "/user/hadoop/netflix.csv"
 
-  def main(args: Array[String]): Unit = {
-
-    val appName = this.getClass.getSimpleName + " " + new Date()
-
-    val sc = new SparkContext(ExamplesUtils.sparkMaster(), appName)
-
-    val count = sc.parallelize(1 to 100).count()
-
-    println("count: " + count)
-    println("Spark is working: " + (count == 100))
+  // Returns Spark Master
+  def sparkMaster(): String = {
+    return SPARK_MASTER;
   }
+
+  def gbJar(): String = {
+    val jar = new java.io.File(GB_JAR_PATH)
+    if (!jar.exists()) {
+      throw new RuntimeException("gb jar wasn't found at: " + jar.getAbsolutePath + " please run 'sbt assembly'")
+    }
+    jar.getAbsolutePath
+  }
+
+  def sparkHome(): String = {
+    val path = new java.io.File(SPARK_HOME)
+    if (!path.exists()) {
+      throw new RuntimeException("path wasn't found at: " + path.getAbsolutePath + " please ensure the path is correct and rerun the test.")
+    }
+    path.getAbsolutePath
+  }
+
+  def movieDataset(): String = {
+    println("----------------------------" + MOVIE_DATA_SET)
+    return MOVIE_DATA_SET
+  }
+
 }
