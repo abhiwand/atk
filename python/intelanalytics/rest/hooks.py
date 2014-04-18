@@ -60,7 +60,7 @@ class WebhookServer(object):
         Parameters
         ----------
         id: int
-            The identifier for job object
+            The identifier for job
         """
         m = Message(id, request.json)
         self.message_queue.put(m)

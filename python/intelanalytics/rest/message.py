@@ -28,10 +28,16 @@ class Message(object):
 
     @property
     def job_id(self):
+        """
+        job_id property
+        """
         return self.__job_id
 
     @property
     def content(self):
+        """
+        content property
+        """
         return self.__content
 
 
