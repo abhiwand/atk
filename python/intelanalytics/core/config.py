@@ -21,6 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 from intelanalytics.core.backend import FrameBackendSimplePrint as FrameBackend
+#from intelanalytics.rest.frame import FrameBackendREST as FrameBackend
 
 _frame_backend = None
 
