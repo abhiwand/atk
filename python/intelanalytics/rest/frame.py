@@ -33,16 +33,21 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
 #from intelanalytics.rest.serialize import IAPickle
 
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Set this manually...
 base_uri = "http://localhost:8090/v1/"
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
 headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
 
 def post(url_arg_str, payload):
     data = (json.dumps(payload))
-    #print data
-    r = requests.post(base_uri + url_arg_str,
-                      data=data,
-                      headers=headers)
+    url = base_uri + url_arg_str
+    logger.info("Post to: " + url + " with payload: " + data)
+    r = requests.post(url, data=data, headers=headers)
     return r
 
 
@@ -58,33 +63,31 @@ class FrameBackendREST(object):
 
     def create(self, frame):
         logger.info("REST Backend: create: " + frame.name)
-        payload = {'name': frame.name,
-                   'schema': {"columns":
-                                  [[n, supported_types.get_type_string(t)]
-                                   for n, t in frame.schema.items()]}}
+        # hack, steal schema early if possible...
+        columns = [[n, supported_types.get_type_string(t)]
+                  for n, t in frame.schema.items()]
+        if not len(columns):
+            try:
+                if isinstance(frame._original_source,CsvFile):
+                    columns = frame._original_source._schema_to_json()
+            except:
+                pass
+        payload = {'name': frame.name, 'schema': {"columns": columns}}
         r = post('dataframes', payload)
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
 
     def append(self, frame, data):
-        logger.info("REST Backend: Appending data to frame {0}: {1}".format(repr(frame), repr(data)))
+        logger.info("REST Backend: Appending data to frame {0}: {1}".format(frame.name, repr(data)))
         # for now, many data sources requires many calls to append
         if isinstance(data, list):
             for d in data:
                 self.append(frame, d)
             return
 
-        # Serialize the data source
-        #  data.to_json()
-        #  call REST append on the frame
-        #requests.post(url, data.to_json())
-        base_uri = 'http://127.0.0.1:8080/v1' # TODO make base_uri configurable
-        uri = base_uri +"/dataframes/1/transforms"
         payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': 1}}
-        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-
-        r = requests.post(uri, data=json.dumps(payload), headers = headers)
+        r = post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
         logger.info("Response from REST server {0}".format(r.text))
 
         if isinstance(data, CsvFile):
@@ -109,8 +112,9 @@ class FrameBackendREST(object):
         raise NotImplementedError
 
     def take(self, frame, n, offset):
-        cmd = 'dataframes/1/data?offset={1}&count={0}'.format(n, offset)
-        r = requests.get(base_uri + cmd)
+        url = base_uri + 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
+        logger.info("REST Backend: take: get " + url)
+        r = requests.get(url)
         return r.json()
 
     def delete_frame(self, frame):

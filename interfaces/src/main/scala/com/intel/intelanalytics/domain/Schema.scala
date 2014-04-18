@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.domain
 
 object SchemaValidation {
-  val types = Array("int", "string")
+  val types = Array("int", "string", "int32", "int64", "float32", "float64", "str")
 }
 
 case class Schema(columns: List[(String,String)]) {
