@@ -28,6 +28,7 @@ import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
 
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.Accumulator
+import org.apache.spark.AccumulatorParam
 import scala.reflect.ClassTag
 
 /**
@@ -46,3 +47,16 @@ class EnginePythonRDD[T: ClassTag](
     preservePartitioning, pythonExec, broadcastVars, accumulator) {
 
 }
+
+class EnginePythonAccumulatorParam()
+  extends AccumulatorParam[JList[Array[Byte]]] {
+
+  override def zero(value: JList[Array[Byte]]): JList[Array[Byte]] = new JArrayList
+
+  override def addInPlace(val1: JList[Array[Byte]], val2: JList[Array[Byte]])
+  : JList[Array[Byte]] = {
+    val1.addAll(val2)
+    val1
+  }
+}
+
