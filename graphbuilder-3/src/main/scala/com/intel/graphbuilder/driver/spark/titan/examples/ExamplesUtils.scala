@@ -55,7 +55,6 @@ object ExamplesUtils {
   }
 
   def movieDataset(): String = {
-    println("----------------------------" + MOVIE_DATA_SET)
     return MOVIE_DATA_SET
   }
 
