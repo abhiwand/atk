@@ -35,7 +35,7 @@ import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
 import com.intel.intelanalytics.engine.RowFunction
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.{Paths, Path}
+import java.nio.file.{Paths, Path, Files}
 import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
@@ -97,7 +97,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     }
 
     def getPyCommand(function: RowFunction[Boolean]): Array[Byte] = {
-      function.definition.getBytes(Codec.UTF8.name)
+//      function.definition.getBytes(Codec.UTF8.name)
+      function.definition.getBytes()
     }
 
     def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = ???
@@ -157,20 +158,32 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
       future {
         val ctx = context() //TODO: resource management
-        val rdd = frames.getFrameRdd(ctx, frame.id)
-        val command = getPyCommand(predicate)
+        val rdd = frames.getFrameRdd1(ctx, frame.id)
+//        val command = getPyCommand(predicate)
+        val command = Files.readAllBytes(Paths.get("/home/joyeshmi/pickledbytes"))
+
+        println("**************In filter functon************")
+        print(command)
+        println("*THE*END*******")
+        println("Command Length:" + command.length)
         val pythonExec = "python" //TODO: take from env var or config
         val environment = System.getenv() //TODO - should be empty instead?
-//        val pyRdd = new EnginePythonRDD[Array[Byte]](
-//            rdd, command = command, System.getenv(),
-//            new JArrayList, preservePartitioning = true,
-//            pythonExec = pythonExec,
-//            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-//            accumulator = new Accumulator[JList[Array[Byte]]](
-//              initialValue = new JArrayList[Array[Byte]](),
-//              param = null)
-//          )
-//        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
+        val accumulator = new Accumulator[JList[Array[Byte]]](
+            initialValue = new JArrayList[Array[Byte]](),
+            param = new EnginePythonAccumulatorParam())
+        var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+
+        val pyRdd = new EnginePythonRDD[Array[Byte]](
+            rdd, command, environment,
+            new JArrayList, preservePartitioning = true,
+            pythonExec = pythonExec,
+            broadcastVars, accumulator
+          )
+        //pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsObjectFile("frame_" + frame.id + "_drop.txt")
+        println("*********************Saving results")
+        val x = pyRdd.take(10)
+        //pyRdd.saveAsObjectFile("frame_" + frame.id + "_drop.txt")
+        ctx.parallelize(x).saveAsObjectFile("frame_" + frame.id + "_drop.txt")
         frame
       }
     }
@@ -310,6 +323,11 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def getFrameRdd(ctx: SparkContext, id: Long): RDD[Array[Array[Byte]]] = {
       ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(id))
     }
+
+    def getFrameRdd1(ctx: SparkContext, id: Long): RDD[Array[Byte]] = {
+      ctx.objectFile[Array[Byte]](fsRoot + getFrameDataFile(id))
+    }
+
 
     override def create(frame: DataFrameTemplate): DataFrame = {
       val id = nextFrameId()
