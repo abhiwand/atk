@@ -140,7 +140,8 @@ trait EngineComponent {
     def clear(frame: DataFrame) : Future[DataFrame]
     def appendFile(frame: DataFrame, file: String, parser: Functional) : Future[DataFrame]
     //def append(frame: DataFrame, rowSource: Rows.RowSource): Future[DataFrame]
-    def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame]
+    //def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame]
+    def filter(frame: DataFrame, predicate: String): Future[DataFrame]
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
     def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]]

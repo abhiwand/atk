@@ -155,12 +155,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
       future {
         val ctx = context() //TODO: resource management
         val rdd = frames.getFrameRdd1(ctx, frame.id)
-//        val command = getPyCommand(predicate)
-        val command = Files.readAllBytes(Paths.get("/home/joyeshmi/pickledbytes"))
+        //val command = getPyCommand(predicate.getBytes(Codec.UTF8.name)
+        val command = new sun.misc.BASE64Decoder().decodeBuffer(predicate)
+        command.map{ case '-' => '+'; case '_' => '/'; case c => c }
+
+        //val command = predicate.getBytes(Codec.UTF8.name)
+        //val command = Files.readAllBytes(Paths.get("/home/joyeshmi/pickledbytes"))
 
         println("**************In filter functon************")
         print(command)
@@ -174,11 +177,11 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
 
         val pyRdd = new EnginePythonRDD[Array[Byte]](
-            rdd, command, environment,
-            new JArrayList, preservePartitioning = true,
-            pythonExec = pythonExec,
-            broadcastVars, accumulator
-          )
+          rdd, command, environment,
+          new JArrayList, preservePartitioning = true,
+          pythonExec = pythonExec,
+          broadcastVars, accumulator
+        )
         //pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsObjectFile("frame_" + frame.id + "_drop.txt")
         println("*********************Saving results")
         val x = pyRdd.take(10)
