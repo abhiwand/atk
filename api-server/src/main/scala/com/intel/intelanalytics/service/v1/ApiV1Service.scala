@@ -129,21 +129,46 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
     //using futures, but they keep the client on the phone the whole time while they're waiting
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
-    pathPrefix(prefix / LongNumber) { id =>
-      std(post, "transforms") { uri =>
-        entity(as[JsonTransform]) { xform =>
-          (xform.language, xform.name) match {
-              //TODO: improve mapping between rest api and engine arguments
-            case ("builtin", "load") =>  {
-              val args = Try { xform.arguments.get.convertTo[LoadFile] }
-              validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
-                onComplete(
-                  for {
-                    frame <- engine.getFrame(id)
-                    res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
-                  } yield res) {
-                  case Success(r) => complete(decorate(uri, r))
-                  case Failure(ex) => completeWithError(ex)
+    pathPrefix(prefix / LongNumber) {
+      id =>
+        std(post, "transforms") {
+          uri =>
+            entity(as[JsonTransform]) {
+              xform =>
+                (xform.language, xform.name) match {
+                  //TODO: improve mapping between rest api and engine arguments
+                  case ("builtin", "load") => {
+                    val args = Try {
+                      xform.arguments.get.convertTo[LoadFile]
+                    }
+                    validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
+                      onComplete(
+                        for {
+                          frame <- engine.getFrame(id)
+                          res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
+                        } yield res) {
+                        case Success(r) => complete(decorate(uri, r))
+                        case Failure(ex) => completeWithError(ex)
+                      }
+                    }
+                  }
+                  case ("builtin", "filter") => {
+                    val args = Try {
+                      xform.arguments.get.convertTo[FilterWhatever]
+                    }
+                    validate(args.isSuccess, "Failed to parse filter descriptor: " + getErrorMessage(args)) {
+                      //validate(true, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
+                      onComplete(
+                        for {
+                          frame <- engine.getFrame(id)
+                          res <- engine.filter(frame, args.get.predicate)
+                        } yield res) {
+                        case Success(r) => complete(decorate(uri, r))
+                        case Failure(ex) => completeWithError(ex)
+                      }
+                    }
+                  }
+                  case _ => completeNotImplemented()
                 }
               }
             }

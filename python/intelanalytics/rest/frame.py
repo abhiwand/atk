@@ -59,15 +59,17 @@ class FrameBackendREST(object):
                             + data.__class__.__name__)
 
     def filter(self, frame, predicate):
+        payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': predicate}}
+        r = post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
+        logger.info("Response from REST server {0}".format(r.text))
+
         # payload = StringIO()
         # pickler = IAPickle(file)
         # pickler.dump(predicate)
         # Does payload have any other header/content apart from the serialized predicate for REST Server to parse?
-
         # pickle predicate in a payload
         # requests.post(url, payload)
-
-        raise NotImplementedError
+        #raise NotImplementedError
 
 
     def delete_frame(self, frame):
