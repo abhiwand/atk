@@ -26,14 +26,14 @@ package com.intel.intelanalytics.engine
 import scala.reflect.io.Directory
 import java.net.URLClassLoader
 import scala.util.control.NonFatal
-import com.intel.intelanalytics.component.Component
+import com.intel.intelanalytics.component.{Archive}
 import com.intel.intelanalytics.domain.{DataFrameTemplate, Schema, DataFrame}
 
 import scala.concurrent.{Await, ExecutionContext}
 import ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-class Boot extends Component {
+class EngineApplication extends Archive {
 
   var engine : EngineComponent with FrameComponent = null
 
