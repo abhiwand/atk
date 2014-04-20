@@ -14,6 +14,7 @@ import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{Builtin, Functional, EngineComponent}
 import scala.util._
 import scala.concurrent.ExecutionContext
+//TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
@@ -28,7 +29,6 @@ import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.engine.Builtin
 
-//TODO: Is this right execution context for us?
 
 
 trait ApiV1Service extends Directives with EventLoggingDirectives {
