@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.component
 
-trait Component {
+trait Archive {
   def withLoader[T](loader: ClassLoader)(expr: => T): T = {
     val prior = Thread.currentThread().getContextClassLoader
     try {

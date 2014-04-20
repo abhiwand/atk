@@ -42,28 +42,28 @@ object Boot extends App {
   val loaders = new mutable.HashMap[String, ClassLoader]
                             with mutable.SynchronizedMap[String, ClassLoader] {}
 
-  val components = new mutable.HashMap[String, Component]
-                            with mutable.SynchronizedMap[String, Component] {}
+  val archives = new mutable.HashMap[String, Archive]
+                            with mutable.SynchronizedMap[String, Archive] {}
 
 
-  def buildComponent(archive: String, className: String): Component = {
+  def buildArchive(archive: String, className: String): Archive = {
     val loader = getClassLoader(archive)
     val klass = loader.loadClass(className)
     val thread = Thread.currentThread()
     val prior = thread.getContextClassLoader
     try {
       thread.setContextClassLoader(loader)
-      val instance = klass.newInstance().asInstanceOf[Component]
+      val instance = klass.newInstance().asInstanceOf[Archive]
       instance.start(Map.empty)
-      components += ((archive + ":" + className) -> instance)
+      archives += ((archive + ":" + className) -> instance)
       instance
     } finally {
       thread.setContextClassLoader(prior)
     }
   }
 
-  def getComponent(archive: String, className: String): Component = {
-    components.getOrElse(archive + ":" + className, buildComponent(archive, className))
+  def getArchive(archive: String, className: String): Archive = {
+    archives.getOrElse(archive + ":" + className, buildArchive(archive, className))
   }
 
   def getClassLoader(archive: String) : ClassLoader = {
@@ -103,7 +103,7 @@ object Boot extends App {
     usage()
   } else {
     try {
-      val instance = getComponent(args(0), args(1))
+      val instance = getArchive(args(0), args(1))
     } catch {
       case NonFatal(e) => println(e)
     }
