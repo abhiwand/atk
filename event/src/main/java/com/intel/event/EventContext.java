@@ -24,15 +24,10 @@
 package com.intel.event;
 
 import com.google.common.base.Strings;
-import org.apache.tools.ant.filters.StringInputStream;
 import org.json.simple.JSONObject;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInput;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -182,7 +177,7 @@ public class EventContext implements AutoCloseable {
         if (Strings.isNullOrEmpty(s)) {
             throw new IllegalArgumentException("Dehydrated event context cannot be null or empty");
         }
-        try (DataInputStream is = new DataInputStream(new StringInputStream(s, "UTF-8"))) {
+        try (DataInputStream is = new DataInputStream(new ByteArrayInputStream(s.getBytes(StandardCharsets.UTF_8)))) {
             EventContext ctx = new EventContext("default");
             ctx.readFields(is);
             setCurrent(ctx);
