@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.driver.spark.titan.examples
 
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
-import com.intel.graphbuilder.util.{GraphUtils, SerializableBaseConfiguration}
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import java.util.Date
 
 /**
@@ -44,7 +44,7 @@ object DumpTitanGraph {
 
     val graph = titanConnector.connect()
     try {
-      println(GraphUtils.dumpGraph(graph))
+      println(ExamplesUtils.dumpGraph(graph))
     }
     finally {
       graph.shutdown()
