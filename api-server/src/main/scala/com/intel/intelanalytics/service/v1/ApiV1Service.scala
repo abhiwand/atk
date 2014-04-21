@@ -133,29 +133,15 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
     std(prefix) {
-      pathPrefix(prefix / LongNumber) { id =>
-        pathEnd {
-          requestUri { uri =>
-            get {
-              onComplete(engine.getFrame(id)) {
-                case Success(frame) => {
-                  val decorated = decorate(uri, frame)
-                  complete {
-                    decorated
-                  }
-                }
-                case _ => reject()
-              }
-            } ~
-            delete {
-              onComplete(for {
-                f <- engine.getFrame(id)
-                res <- engine.delete(f)
-              } yield res) {
-                case Success(frames) => complete("OK")
-                case Failure(ex) => throw ex
-              }
-            } ~
+      (path(prefix) & pathEnd) {
+        requestUri { uri =>
+          get {
+            //TODO: cursor
+            onComplete(engine.getFrames(0, 20)) {
+              case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString(), frames))
+              case Failure(ex) => throw ex
+            }
+          } ~
             post {
               import DomainJsonProtocol._
               entity(as[DataFrameTemplate]) {
@@ -166,64 +152,78 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
                   }
               }
             }
-          }
-        } ~
-        path("transforms") {
-          post {
+        }
+      } ~
+        pathPrefix(prefix / LongNumber) { id =>
+          pathEnd {
             requestUri { uri =>
-              entity(as[JsonTransform]) { xform =>
-                (xform.language, xform.name) match {
-                  //TODO: improve mapping between rest api and engine arguments
-                  case ("builtin", "load") => {
-                    val args = Try {
-                      xform.arguments.get.convertTo[LoadFile]
-                    }
-                    validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
-                      onComplete(
-                        for {
-                          frame <- engine.getFrame(id)
-                          res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
-                        } yield res) {
-                        case Success(r) => complete(decorate(uri, r))
-                        case Failure(ex) => throw ex
-                      }
+              get {
+                onComplete(engine.getFrame(id)) {
+                  case Success(frame) => {
+                    val decorated = decorate(uri, frame)
+                    complete {
+                      decorated
                     }
                   }
-                  case _ => ???
+                  case _ => reject()
+                }
+              } ~
+                delete {
+                  onComplete(for {
+                    f <- engine.getFrame(id)
+                    res <- engine.delete(f)
+                  } yield res) {
+                    case Success(frames) => complete("OK")
+                    case Failure(ex) => throw ex
+                  }
+                }
+            }
+          } ~
+            path("transforms") {
+              post {
+                requestUri { uri =>
+                  entity(as[JsonTransform]) { xform =>
+                    (xform.language, xform.name) match {
+                      //TODO: improve mapping between rest api and engine arguments
+                      case ("builtin", "load") => {
+                        val args = Try {
+                          xform.arguments.get.convertTo[LoadFile]
+                        }
+                        validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
+                          onComplete(
+                            for {
+                              frame <- engine.getFrame(id)
+                              res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
+                            } yield res) {
+                            case Success(r) => complete(decorate(uri, r))
+                            case Failure(ex) => throw ex
+                          }
+                        }
+                      }
+                      case _ => ???
+                    }
+                  }
+                }
+              }
+            } ~
+            (path("data") & get) {
+              parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
+                onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {
+                  case Success(rows: Iterable[Array[Array[Byte]]]) => {
+                    import DefaultJsonProtocol._
+                    val strings: List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
+                    complete(strings)
+                  }
+                  case Failure(ex) => throw ex
                 }
               }
             }
-          }
-        } ~
-        (path("data") & get) {
-          parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
-            onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {
-              case Success(rows: Iterable[Array[Array[Byte]]]) => {
-                import DefaultJsonProtocol._
-                val strings: List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
-                complete(strings)
-              }
-              case Failure(ex) => throw ex
-            }
-          }
-        } ~
-        (pathEnd & get) {
-          requestUri { uri =>
-          //TODO: cursor
-            onComplete(engine.getFrames(0, 20)) {
-              case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString(), frames))
-              case Failure(ex) => throw ex
-            }
-          }
         }
-      }
     }
   }
 
-  def apiV1Service: Route = {
-    //      clusters ~
-    //      users ~
-    frameRoutes()
 
+  def apiV1Service: Route = {
+    frameRoutes()
   }
 }
