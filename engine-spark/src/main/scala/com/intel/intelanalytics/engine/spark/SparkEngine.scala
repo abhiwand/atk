@@ -65,7 +65,6 @@ import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
   val conf = ConfigFactory.load()
-  //TODO: get these settings using the Typesafe Config library (see application.conf)
   val sparkHome = conf.getString("intel.analytics.spark.home")
   val sparkMaster = conf.getString("intel.analytics.spark.master")
 
@@ -255,17 +254,35 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def move(source: Path, destination: Path): Unit = ???
 
-    override def getMetaData(path: Path): Option[Entry] = ???
+    override def getMetaData(path: Path): Option[Entry] = {
+      val hPath: HPath = new HPath(fsRoot + path.toString)
+      val exists = fs.exists(hPath)
+      if (!exists) {
+        None
+      } else {
+        val status = fs.getStatus(hPath)
+        if (status == null || fs.isDirectory(hPath)) {
+          Some(Directory(path))
+        } else {
+          Some(File(path, status.getUsed))
+        }
+      }
+    }
 
     override def delete(path: Path): Unit = {
       fs.delete(new HPath(fsRoot + path.toString), true)
     }
 
-    override def create(entry: Entry): Unit = ???
+    override def create(file: Path): Unit = fs.create(new HPath(fsRoot + file.toString))
+
+    override def createDirectory(directory: Path): Directory = {
+      val adjusted = fsRoot + directory.toString
+      fs.mkdirs(new HPath(adjusted))
+      getMetaData(Paths.get(directory.toString)).get.asInstanceOf[Directory]
+    }
   }
 
-  val frames = new SparkFrameStorage {
-  }
+  val frames = new SparkFrameStorage { }
 
   trait SparkFrameStorage extends FrameStorage {
 
@@ -294,10 +311,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       //Brute force until the code below can be fixed
       val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
       //The below fails with a classcast exception saying it can't convert a byteswritable
-      //into a Text. Nobody asked it to try to do that, so it's a bit mysterious.
+      //into a Text. Nobody asked it to try to do that cast, so it's a bit mysterious.
       //TODO: Check to see if there's a better way to implement, this might be too slow.
       // Need to cache row counts per partition somewhere.
-      //TODO: Resource management
       //      val counts = rdd.mapPartitionsWithIndex(
       //                            (i:Int, rows:Iterator[Array[Array[Byte]]]) => Iterator.single((i, rows.size)))
       //                      .collect()
@@ -323,6 +339,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(id))
     }
 
+    def getOrCreateDirectory(name: String) : Directory = {
+      val path = Paths.get(name)
+      val meta = files.getMetaData(path).getOrElse(files.createDirectory(path))
+      meta match {
+        case File(f,s) => throw new IllegalArgumentException(path + " is not a directory")
+        case d: Directory => d
+      }
+    }
+
     override def create(frame: DataFrameTemplate): DataFrame = {
       val id = nextFrameId()
       val frame2 = new DataFrame(id = id, name = frame.name, schema = frame.schema)
@@ -343,9 +368,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       val path = getFrameDirectory(id)
       val meta = File(Paths.get(path, "meta"))
       //TODO: uncomment after files.getMetaData implemented
-//      if (files.getMetaData(meta.path).isEmpty) {
-//        return None
-//      }
+      if (files.getMetaData(meta.path).isEmpty) {
+        return None
+      }
       val f = files.read(meta)
       try {
         val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
@@ -365,7 +390,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     val idRegex: Regex = "^\\d+$".r
 
     def getFrames(offset: Int, count: Int): Seq[DataFrame] = {
-      files.list(Directory(Paths.get(fsRoot + frameBase)))
+      files.list(getOrCreateDirectory(frameBase))
         .flatMap {
           case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
           case _ => None
