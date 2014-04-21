@@ -29,7 +29,7 @@ import com.intel.graphbuilder.parser.ColumnDef
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
-import com.intel.graphbuilder.util.{GraphUtils, SerializableBaseConfiguration}
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
 import java.util.{Calendar, Date}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -100,7 +100,7 @@ object SparkTitanCassandraExampleDriver {
     val titanConnector = new TitanGraphConnector(titanConfig)
     val graph = titanConnector.connect()
     try {
-      println(GraphUtils.dumpGraph(graph))
+      println(ExamplesUtils.dumpGraph(graph))
     }
     finally {
       graph.shutdown()
