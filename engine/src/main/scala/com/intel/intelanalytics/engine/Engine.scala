@@ -30,7 +30,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import com.intel.intelanalytics.engine.EngineMessages.AppendFile
 
 /** This is the Akka interface to the engine */
-class ApiServiceActor extends Actor with EventLogging { this: EngineComponent =>
+class EngineActor extends Actor with EventLogging { this: EngineComponent =>
 
   def receive = {
     case AppendFile(id, fileName, rowParser) => for {

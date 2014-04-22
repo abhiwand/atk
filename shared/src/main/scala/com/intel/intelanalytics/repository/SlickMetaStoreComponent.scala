@@ -69,7 +69,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     }
   }
 
-  class Frames(tag: Tag) extends Table[DataFrame](tag, "frames") {
+  class Frame(tag: Tag) extends Table[DataFrame](tag, "frame") {
     def id = column[Long]("frame_id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def schema = column[String]("schema")
@@ -79,7 +79,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
         (f: DataFrame) => DataFrame.unapply(f) map {case (i,n,s) => (i,n,s.toJson.prettyPrint)})
   }
 
-  val frames = TableQuery[Frames]
+  val frames = TableQuery[Frame]
 
   protected val framesAutoInc = frames returning frames.map(_.id) into { case (f, id) => f.copy(id = id)}
 
