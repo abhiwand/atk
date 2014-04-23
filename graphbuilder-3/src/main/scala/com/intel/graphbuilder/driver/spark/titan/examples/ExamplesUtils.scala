@@ -34,7 +34,16 @@ import java.net.InetAddress
 object ExamplesUtils {
 
   val hdfsMaster = System.getProperty("HDFS_MASTER", "hdfs://" + hostname)
-  
+
+  /**
+   * Storage hostname setting for titan.
+   */
+  def storageHostname: String = {
+    val storageHostname = System.getProperty("STORAGE_HOSTNAME", "localhost")
+    println("STORAGE_HOSTNAME: " + storageHostname)
+    storageHostname
+  }
+
   /**
    * URL to the Spark Master, from either a system property or best guess
    */

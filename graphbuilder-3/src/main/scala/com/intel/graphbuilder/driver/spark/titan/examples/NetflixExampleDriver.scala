@@ -40,7 +40,7 @@ object NetflixExampleDriver {
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", "cassandra")
-  titanConfig.setProperty("storage.hostname", "127.0.0.1")
+  titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
   titanConfig.setProperty("storage.keyspace", "netflix")
   titanConfig.setProperty("storage.batch-loading", "true")
   titanConfig.setProperty("autotype", "none")
@@ -77,8 +77,8 @@ object NetflixExampleDriver {
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
-    //conf.set("spark.executor.memory", "32g")
-    //conf.set("spark.cores.max", "32")
+    conf.set("spark.executor.memory", "32g")
+    conf.set("spark.cores.max", "32")
 
     val sc = new SparkContext(conf)
 
