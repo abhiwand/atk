@@ -27,8 +27,8 @@ import org.apache.spark.rdd.RDD
 import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
 
 import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.Accumulator
 import scala.reflect.ClassTag
+import org.apache.spark.{AccumulatorParam, Accumulator}
 
 /**
  * Wrapper to enable access to private Spark class PythonRDD
@@ -45,4 +45,15 @@ class EnginePythonRDD[T: ClassTag](
   extends PythonRDD[T](parent, command, envVars, pythonIncludes,
     preservePartitioning, pythonExec, broadcastVars, accumulator) {
 
+}
+
+
+class EnginePythonAccumulatorParam()
+  extends AccumulatorParam[JList[Array[Byte]]] {
+  override def zero(value: JList[Array[Byte]]): JList[Array[Byte]] = new JArrayList
+  override def addInPlace(val1: JList[Array[Byte]], val2: JList[Array[Byte]])
+  : JList[Array[Byte]] = {
+    val1.addAll(val2)
+    val1
+  }
 }

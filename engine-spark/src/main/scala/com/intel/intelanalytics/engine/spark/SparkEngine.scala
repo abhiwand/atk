@@ -125,6 +125,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
+
     def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = {
       require(frame != null)
       require(file != null)
@@ -165,24 +166,32 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
+    def convert(x: Array[String]): Array[Int] = {
+      val y = x.map(f => f.toInt)
+      y
+    }
+
+    def filter(frame: DataFrame, predicate: String): Future[DataFrame] = {
       future {
-        val ctx = context() //TODO: resource management
-        val rdd = frames.getFrameRdd(ctx, frame.id)
-        val command = getPyCommand(predicate)
-        val pythonExec = "python" //TODO: take from env var or config
-        val environment = System.getenv() //TODO - should be empty instead?
-//        val pyRdd = new EnginePythonRDD[Array[Byte]](
-//            rdd, command = command, System.getenv(),
-//            new JArrayList, preservePartitioning = true,
-//            pythonExec = pythonExec,
-//            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-//            accumulator = new Accumulator[JList[Array[Byte]]](
-//              initialValue = new JArrayList[Array[Byte]](),
-//              param = null)
-//          )
-//        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
-        frame
+        withMyClassLoader {
+          val ctx = context()
+//          val location = fsRoot + frames.getFrameDataFile(frame.id)
+
+          val location = "/home/joyeshmi/test.csv"
+          println("*************** In FILTER FUNCTION **********")
+          val output = ctx.textFile(location)
+            .map[Array[String]](f => f.split(","))
+            .map[Array[Int]](convert)
+            .filter(row => row.map(g => g).sum > 10)
+            .take(10)
+//            .saveAsObjectFile(location)
+          output.map(f => f.map(println))
+          println(frame.name)
+          println("*************** Done filtering*****************")
+          //        frames.lookup(frame.id).getOrElse(
+          //          throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
+          frame
+        }
       }
     }
 
@@ -297,7 +306,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = ???
 
-    override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit = ???
+    override def removeRows(frame: DataFrame, predicate: Row => Boolean): Unit = ???
 
     override def removeColumn(frame: DataFrame): Unit = ???
 
