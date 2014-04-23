@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -21,35 +23,41 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from cloud.serialization.cloudpickle import CloudPickler
-import pkg_resources
-import types
 
+# Executes all of the tests defined in this doc folder, using Python's doctest
 
-class IAPickle(CloudPickler):
+if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
+    ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+else
+    ACTIVATE_FILE=/usr/local/virtpy/bin/activate
+fi
 
-    def __init__(self, file, protocol=None, min_size_to_save=0):
-        CloudPickler.__init__(self, file, protocol, min_size_to_save)
-        self.imports_required = set()
+if [[ ! -f $ACTIVATE_FILE ]]; then
+    echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
+    exit 1
+fi
 
-    def save_inst(self, obj):
-        CloudPickler.save_inst(self, obj)
-        self.imports_required.add(obj.__class__.__module__)
+source $ACTIVATE_FILE
 
-    CloudPickler.dispatch[types.InstanceType] = save_inst
+TESTS_DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
+IA=`dirname $TESTS_DIR`
+DOC=$IA/doc
+SOURCE_CODE_PYTHON=`dirname $IA`
 
-    def __extract_module_names(self, module_set):
-        modules = set()
-        for module in module_set:
-            modules.add(module.__name__.split('.')[0])
-        return modules
+echo SOURCE_CODE_PYTHON=$SOURCE_CODE_PYTHON
 
-    def get_dependent_modules(self):
-        module_dependency = []
-        final_set = self.imports_required.union(self.__extract_module_names(self.modules))
-        for i in final_set:
-            try:
-                module_dependency.append("%s %s" % (i, pkg_resources.get_distribution(i).version))
-            except:
-                module_dependency.append(i)
-        return module_dependency
+cd $SOURCE_CODE_PYTHON 
+
+python -m doctest -v $DOC/source/examples.rst
+
+success=$?
+
+rm *.log 2> /dev/null
+
+if [[ $success == 0 ]] ; then
+   echo "Python Doc Tests Successful"
+   exit 0
+fi
+echo "Python Doc Tests Unsuccessful"
+exit 1
+
