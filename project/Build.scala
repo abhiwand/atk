@@ -32,7 +32,7 @@ object IABuild extends Build {
                     .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
 
 
-  val akkaV = "2.3.0"
+  val akkaV = "2.3.2"
   val sprayV = "1.3.1"
   val slickV = "2.0.1"
 }
