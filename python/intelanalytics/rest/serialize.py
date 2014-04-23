@@ -49,7 +49,7 @@ class IAPickle(CloudPickler):
         final_set = self.imports_required.union(self.__extract_module_names(self.modules))
         for i in final_set:
             try:
-                module_dependency.append('%s %s' % (i, pkg_resources.get_distribution(i).version))
+                module_dependency.append("%s %s" % (i, pkg_resources.get_distribution(i).version))
             except:
                 module_dependency.append(i)
         return module_dependency

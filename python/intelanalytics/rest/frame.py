@@ -23,30 +23,72 @@
 """
 REST backend for frames
 """
-#import requests
+import requests
+import json
 import logging
 from StringIO import StringIO
 logger = logging.getLogger(__name__)
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-from intelanalytics.rest.serialize import IAPickle
+#from intelanalytics.rest.serialize import IAPickle
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Set this manually...
+base_uri = "http://localhost:8090/v1/"
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+
+
+def post(url_arg_str, payload):
+    data = (json.dumps(payload))
+    url = base_uri + url_arg_str
+    logger.info("Post to: " + url + " with payload: " + data)
+    r = requests.post(url, data=data, headers=headers)
+    return r
+
 
 class FrameBackendREST(object):
     """REST plumbing for BigFrame"""
 
+    def get_frame_names(self):
+        logger.info("REST Backend: get_frame_names")
+        r = requests.get(base_uri + 'dataframes')
+        logger.info("REST Backend: get_frame_names response: " + r.text)
+        payload = r.json()
+        return [f['name'] for f in payload]
+
+    def create(self, frame):
+        logger.info("REST Backend: create: " + frame.name)
+        # hack, steal schema early if possible...
+        columns = [[n, supported_types.get_type_string(t)]
+                  for n, t in frame.schema.items()]
+        if not len(columns):
+            try:
+                if isinstance(frame._original_source,CsvFile):
+                    columns = frame._original_source._schema_to_json()
+            except:
+                pass
+        payload = {'name': frame.name, 'schema': {"columns": columns}}
+        r = post('dataframes', payload)
+        logger.info("REST Backend: create response: " + r.text)
+        payload = r.json()
+        frame._id = payload['id']
+
     def append(self, frame, data):
-        logger.info("REST Backend: Appending data to frame {0}: {1}".format(repr(frame), repr(data)))
+        logger.info("REST Backend: Appending data to frame {0}: {1}".format(frame.name, repr(data)))
         # for now, many data sources requires many calls to append
         if isinstance(data, list):
             for d in data:
                 self.append(frame, d)
             return
 
-        # Serialize the data source
-        #  data.to_json()
-        #  call REST append on the frame
-        #requests.post(url, data.to_json())
+        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': 1}}
+        r = post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
+        logger.info("Response from REST server {0}".format(r.text))
 
         if isinstance(data, CsvFile):
             # update the Python object (set the columns)
@@ -59,20 +101,41 @@ class FrameBackendREST(object):
                             + data.__class__.__name__)
 
     def filter(self, frame, predicate):
-        payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': predicate}}
+        from itertools import ifilter
+        from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer
+
+
+        serializer = BatchedSerializer(PickleSerializer(),
+                                    1024)
+        def filter_func(iterator): return ifilter(predicate, iterator)
+        def func(s, iterator): return filter_func(iterator)
+
+        command = (func, UTF8Deserializer(), serializer)
+
+        pickled_predicate = CloudPickleSerializer().dumps(command)
+        file = open('/home/joyeshmi/pickled_predicate', "w")
+        file.write(bytearray(pickled_predicate))
+        file.close()
+
+
+        # from serialize import IAPickle
+        # pickled_stream = StringIO()
+        # i = IAPickle(pickled_stream)
+        # i.dump(predicate)
+        # pickled_predicate = pickled_stream.getvalue()
+        payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': 'placeholder'}}
         r = post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
-        logger.info("Response from REST server {0}".format(r.text))
 
-        # payload = StringIO()
-        # pickler = IAPickle(file)
-        # pickler.dump(predicate)
-        # Does payload have any other header/content apart from the serialized predicate for REST Server to parse?
-        # pickle predicate in a payload
-        # requests.post(url, payload)
-        #raise NotImplementedError
-
+    def take(self, frame, n, offset):
+        url = base_uri + 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
+        logger.info("REST Backend: take: get " + url)
+        r = requests.get(url)
+        print r.text
+        return r.json()
 
     def delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
+        r = requests.delete(base_uri + "dataframes/" + str(frame._id))
+        return r
 
 

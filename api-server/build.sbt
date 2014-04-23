@@ -38,6 +38,7 @@ libraryDependencies ++= {
 //      .exclude("org.apache.hadoop", "hadoop-core"),
     "ch.qos.logback"      %   "logback-classic"   % "1.1.1",
     "org.slf4j"           %   "slf4j-api"         % "1.7.6"
+    //"com.gettyimages"     %%  "spray-swagger"     % "0.3.1"
   )
 }
 
