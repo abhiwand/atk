@@ -44,7 +44,7 @@ object NetflixExampleDriver {
   titanConfig.setProperty("storage.keyspace", "netflix")
   titanConfig.setProperty("storage.batch-loading", "true")
   titanConfig.setProperty("autotype", "none")
-  //titanConfig.setProperty("storage.buffer-size", "4096")
+  titanConfig.setProperty("storage.buffer-size", "2048")
   titanConfig.setProperty("storage.attempt-wait", "300")
   titanConfig.setProperty("storage.lock-wait-time", "400")
   titanConfig.setProperty("storage.lock-retries", "15")
@@ -83,7 +83,7 @@ object NetflixExampleDriver {
     val sc = new SparkContext(conf)
 
     // Setup data in Spark
-    val inputRows = sc.textFile(ExamplesUtils.movieDataset, 240)
+    val inputRows = sc.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "240").toInt)
     val inputRdd = inputRows.map(row => row.split(","): Seq[_])
 
     // Build the Graph
