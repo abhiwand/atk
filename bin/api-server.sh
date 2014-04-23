@@ -15,4 +15,4 @@ else
     CONFDIR=$DIR/conf
 fi
 
-java -cp $CONFDIR:$LAUNCHER com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ServiceApplication
+java $@ -cp $CONFDIR:$LAUNCHER com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ServiceApplication
