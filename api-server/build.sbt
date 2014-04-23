@@ -23,11 +23,6 @@ libraryDependencies ++= {
     "com.typesafe.akka"   %%  "akka-actor"        % akkaV,
     "com.typesafe.akka"   %%  "akka-slf4j"        % akkaV,
     "com.typesafe.akka"   %%  "akka-testkit"      % akkaV     % "test",
-    "org.specs2"          %%  "specs2-core"       % "2.3.10"  % "test",
-    "org.specs2"          %%  "specs2-mock"       % "2.3.10"  % "test",
-    "org.specs2"          %%  "specs2-html"       % "2.3.10"  % "test",
-    "org.specs2"          %%  "specs2-scalacheck" % "2.3.10"  % "test",
-    "org.mockito"         %   "mockito-core"      % "1.9.5"   % "test",
     "com.typesafe.slick"  %%  "slick"             % "2.0.1-RC1",
     "com.h2database"      %   "h2"                % "1.3.175",
 //    ("com.intel.hadoop"    %   "event"             % "1.0-SNAPSHOT")
