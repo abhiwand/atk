@@ -63,6 +63,24 @@ class EngineApplication extends Archive with EventLogging {
           instance.asInstanceOf[EngineComponent with FrameComponent]
         }
       }
+
+      val ng = engine.engine
+      println("Running test of frame creation and loading")
+      val create = new DataFrameTemplate(name = "test", schema = new Schema(columns = List(("a", "int"), ("b", "int"), ("c", "int"))))
+      val f = for {
+        frame <- ng.create(create)
+        _ = println("*************Created")
+        app <- ng.appendFile(frame, "test.csv",new Builtin("line/csv"))
+        _ = println("*************Loaded")
+        rows <- ng.getRows(app.id, offset = 0, count = 10)
+        filt <- ng.filter(app, "sample")
+        filter_rows <- ng.getRows(app.id, offset = 0, count = 10)
+      } yield (app,rows, filt, filter_rows)
+      val (meta, data, fil, fil_rows) = Await.result(f, atMost = 60 seconds)
+      println(s"metadata: $meta")
+      data.foreach(row => println(row.map(bytes => new String(bytes)).mkString("|")))
+      fil_rows.foreach(row => println(row.map(bytes => new String(bytes)).mkString("|")))
+
     } catch {
       case NonFatal(e) => {
         error("An error occurred while starting the engine.", exception = e)
