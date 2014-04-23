@@ -14,8 +14,6 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= {
-  val akkaV = "2.3.0"
-  val sprayV = "1.3.1"
   Seq(
     "org.scala-lang"      %   "scala-reflect"     % scalaVersion.value,
     "io.spray"            %   "spray-can"         % sprayV,
