@@ -35,7 +35,7 @@ object SparkTest {
 
     val appName = this.getClass.getSimpleName + " " + new Date()
 
-    val sc = new SparkContext(ExamplesUtils.sparkMaster(), appName)
+    val sc = new SparkContext(ExamplesUtils.sparkMaster, appName)
 
     val count = sc.parallelize(1 to 100).count()
 
