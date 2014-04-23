@@ -1,5 +1,4 @@
 #!/bin/bash
-set -o nounset
 set -o errexit
 
 DIR="$( cd "$( dirname "$0" )" && pwd )"
@@ -15,4 +14,11 @@ else
     CONFDIR=$DIR/conf
 fi
 
-java $@ -cp $CONFDIR:$LAUNCHER com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ServiceApplication
+if [[ -n "$EXTRA_CONF" ]]
+ then
+    CONF="$EXTRA_CONF:$CONFDIR"
+else
+    CONF="$CONFDIR"
+fi
+
+java $@ -cp "$CONF:$LAUNCHER" com.intel.intelanalytics.component.Boot api-server com.intel.intelanalytics.service.ServiceApplication
