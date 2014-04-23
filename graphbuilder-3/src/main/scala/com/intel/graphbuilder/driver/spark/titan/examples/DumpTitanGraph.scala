@@ -21,47 +21,36 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.graphbuilder.elements
+package com.intel.graphbuilder.driver.spark.titan.examples
 
-import org.specs2.mutable.Specification
+import com.intel.graphbuilder.graph.titan.TitanGraphConnector
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import java.util.Date
 
-class VertexSpec extends Specification {
+/**
+ * Utility for use during development.
+ */
+object DumpTitanGraph {
 
-  val gbId = new Property("gbId", 10001)
-  val vertex = Vertex(gbId, List(new Property("key", "value")))
+  // Titan Settings
+  val titanConfig = new SerializableBaseConfiguration()
+  titanConfig.setProperty("storage.backend", "cassandra")
+  titanConfig.setProperty("storage.hostname", "127.0.0.1")
+  titanConfig.setProperty("storage.keyspace", "netflix")
 
-  "Vertex" should {
-    "have a unique id that is the gbId" in {
-      vertex.id mustEqual gbId
+  def main(args: Array[String]) = {
+
+    val titanConnector = new TitanGraphConnector(titanConfig)
+
+    val graph = titanConnector.connect()
+    try {
+      println(ExamplesUtils.dumpGraph(graph))
+    }
+    finally {
+      graph.shutdown()
     }
 
-    "be mergeable with another vertex" in {
-      val vertex2 = new Vertex(gbId, List(new Property("anotherKey", "anotherValue")))
+    println("done " + new Date())
 
-      // invoke method under test
-      val merged = vertex.merge(vertex2)
-
-      merged.gbId mustEqual gbId
-      merged.properties.size mustEqual 2
-
-      merged.properties(0).key mustEqual "key"
-      merged.properties(0).value mustEqual "value"
-
-      merged.properties(1).key mustEqual "anotherKey"
-      merged.properties(1).value mustEqual "anotherValue"
-    }
-
-    "not allow null gbIds" in {
-      new Vertex(null, Nil) must throwA[IllegalArgumentException]
-    }
-
-    "not allow merging of vertices with different ids" in {
-      val diffId = new Property("gbId", 10002)
-      val vertex2 = new Vertex(diffId, List(new Property("anotherKey", "anotherValue")))
-
-      // invoke method under test
-      vertex.merge(vertex2) must throwA[IllegalArgumentException]
-    }
   }
-
 }

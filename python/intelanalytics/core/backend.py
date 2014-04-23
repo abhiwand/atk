@@ -32,6 +32,10 @@ from files import CsvFile
 class FrameBackendSimplePrint(object):
     """Simple backend stub that just prints expected backend activity"""
 
+    def get_frame_names(self):
+        logger.info("Backend: get_frame_names")
+        return ""
+
     def append(self, frame, data):
         logger.info("Backend: Appending data to frame {0}: {1}".format(repr(frame), repr(data)))
         # hack back end to create columns
@@ -64,8 +68,15 @@ class FrameBackendSimplePrint(object):
         for i, key in enumerate(dst_list):
             frame._columns[key] = src_list[i]
 
-    def delete_column(self, frame, name):
+    def create(self, frame):
+        logger.info("Backend: create frame {0}".format(frame.name))
+        return None
+
+    def remove_column(self, frame, name):
         logger.info("Backend: Dropping columns {0} from frame {1}".format(name, repr(frame)))
+
+    def delete_frame(self, frame):
+        logger.info("Backend: Delete frame {0}".format(repr(frame)))
 
     def drop_rows(self, frame, predicate):
         logger.info("Backend: Dropping rows from frame {0} where {1}".format(repr(frame), repr(predicate)))

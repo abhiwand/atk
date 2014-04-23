@@ -14,6 +14,10 @@ import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{Builtin, Functional, EngineComponent}
 import scala.util._
 import scala.concurrent.ExecutionContext
+import spray.util.LoggingContext
+
+//TODO: Is this right execution context for us?
+
 import ExecutionContext.Implicits.global
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
@@ -28,69 +32,83 @@ import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.engine.Builtin
 
-//TODO: Is this right execution context for us?
-
 
 trait ApiV1Service extends Directives with EventLoggingDirectives {
-                                              this:ApiV1Service
-                                                with MetaStoreComponent
-                                                with EngineComponent =>
+  this: ApiV1Service
+    with MetaStoreComponent
+    with EngineComponent =>
 
   import ViewModelJsonProtocol._
 
-  def std(method: Directive0, eventCtx: String) = {
-    method &  eventContext(eventCtx) & logResponse(eventCtx, Logging.InfoLevel) & requestUri
+  def errorHandler = {
+    ExceptionHandler {
+      case e: IllegalArgumentException => {
+        error("An error occurred during request processing.", exception = e)
+        complete(StatusCodes.BadRequest, "Bad request: " + e.getMessage)
+      }
+      case NonFatal(e) => {
+        error("An error occurred during request processing.", exception = e)
+        complete(StatusCodes.InternalServerError, "An internal server error occurred")
+      }
+    }
   }
+
+  def std(eventCtx: String) = {
+    eventContext(eventCtx) &
+      handleExceptions(errorHandler) &
+      logResponse(eventCtx, Logging.InfoLevel)
+  }
+
 
   //TODO: needs to be updated for the distinction between Foos and FooTemplates
   //This code is likely to be useful for CRUD operations that need to work with the
   //metastore, such as web hooks. However, nothing is using it yet, so it's commented out.
-//  def crud[Entity <: HasId : RootJsonFormat : TypeTag,
-//            Index : RootJsonFormat,
-//            Decorated : RootJsonFormat]
-//          (prefix: String,
-//           repo: Repository[metaStore.Session, Entity],
-//           decorator: EntityDecorator[Entity, Index, Decorated]): Route = {
-//    require(prefix != null)
-//    require(repo != null)
-//    require(decorator != null)
-//    path (prefix) {
-//      val typeName = typeOf[Entity].typeSymbol.name
-//      std(get, prefix) { uri =>
-//        complete {
-//          metaStore.withSession("list " + typeName) { implicit session =>
-//            decorator.decorateForIndex(uri.toString, repo.scan())
-//          }
-//        }
-//      } ~
-//      std(post, prefix) { uri =>
-//        entity(as[Entity]) { entity =>
-//          metaStore.withSession("create " +  typeName) { implicit session =>
-//            val copy = repo.insert(entity).get
-//            val id = copy.id
-//            val links = List(Rel.self(uri + "/" + id))
-//            complete {
-//              decorator.decorateEntity(uri.toString, links, copy)
-//            }
-//          }
-//        }
-//      }
-//    } ~
-//    pathPrefix(prefix / LongNumber) { id =>
-//      std(get, prefix) { uri =>
-//        val typeName = typeOf[Entity].typeSymbol.name
-//        metaStore.withSession("get " +  typeName) { implicit session =>
-//          repo.lookup(id) match {
-//            case Some(f) => {
-//              val links = List(Rel.self(uri + "/" + id))
-//              complete {decorator.decorateEntity(uri.toString, links, f)}
-//            }
-//            case _ => reject()
-//          }
-//        }
-//      }
-//    }
-//  }
+  //  def crud[Entity <: HasId : RootJsonFormat : TypeTag,
+  //            Index : RootJsonFormat,
+  //            Decorated : RootJsonFormat]
+  //          (prefix: String,
+  //           repo: Repository[metaStore.Session, Entity],
+  //           decorator: EntityDecorator[Entity, Index, Decorated]): Route = {
+  //    require(prefix != null)
+  //    require(repo != null)
+  //    require(decorator != null)
+  //    path (prefix) {
+  //      val typeName = typeOf[Entity].typeSymbol.name
+  //      std(get, prefix) { uri =>
+  //        complete {
+  //          metaStore.withSession("list " + typeName) { implicit session =>
+  //            decorator.decorateForIndex(uri.toString, repo.scan())
+  //          }
+  //        }
+  //      } ~
+  //      std(post, prefix) { uri =>
+  //        entity(as[Entity]) { entity =>
+  //          metaStore.withSession("create " +  typeName) { implicit session =>
+  //            val copy = repo.insert(entity).get
+  //            val id = copy.id
+  //            val links = List(Rel.self(uri + "/" + id))
+  //            complete {
+  //              decorator.decorateEntity(uri.toString, links, copy)
+  //            }
+  //          }
+  //        }
+  //      }
+  //    } ~
+  //    pathPrefix(prefix / LongNumber) { id =>
+  //      std(get, prefix) { uri =>
+  //        val typeName = typeOf[Entity].typeSymbol.name
+  //        metaStore.withSession("get " +  typeName) { implicit session =>
+  //          repo.lookup(id) match {
+  //            case Some(f) => {
+  //              val links = List(Rel.self(uri + "/" + id))
+  //              complete {decorator.decorateEntity(uri.toString, links, f)}
+  //            }
+  //            case _ => reject()
+  //          }
+  //        }
+  //      }
+  //    }
+  //  }
 
   //TODO: internationalization
 
@@ -99,21 +117,6 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
     case Failure(ex) => ex.getMessage
   }
 
-  def completeNotImplemented() = {
-    complete(StatusCodes.NotImplemented, "Not yet supported")
-  }
-
-  def completeInternalError(message: String) = {
-    complete(StatusCodes.InternalServerError, s"An error occurred: ${message}")
-  }
-
-  def completeWithError(t: Throwable) : Route = {
-    error(t.getMessage)
-    t match {
-      case e: IllegalArgumentException => complete(StatusCodes.BadRequest, t.getLocalizedMessage)
-      case e => completeInternalError(t.getLocalizedMessage)
-    }
-  }
 
   def frameRoutes() = {
     import ViewModelJsonProtocol._
@@ -129,106 +132,112 @@ trait ApiV1Service extends Directives with EventLoggingDirectives {
     //using futures, but they keep the client on the phone the whole time while they're waiting
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
-    pathPrefix(prefix / LongNumber) {
-      id =>
-        std(post, "transforms") {
-          uri =>
-            entity(as[JsonTransform]) {
-              xform =>
-                (xform.language, xform.name) match {
-                  //TODO: improve mapping between rest api and engine arguments
-                  case ("builtin", "load") => {
-                    val args = Try {
-                      xform.arguments.get.convertTo[LoadFile]
-                    }
-                    validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
-                      onComplete(
-                        for {
-                          frame <- engine.getFrame(id)
-                          res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
-                        } yield res) {
-                        case Success(r) => complete(decorate(uri, r))
-                        case Failure(ex) => completeWithError(ex)
-                      }
+    std(prefix) {
+      (path(prefix) & pathEnd) {
+        requestUri { uri =>
+          get {
+            //TODO: cursor
+            onComplete(engine.getFrames(0, 20)) {
+              case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString(), frames))
+              case Failure(ex) => throw ex
+            }
+          } ~
+            post {
+              import DomainJsonProtocol._
+              entity(as[DataFrameTemplate]) {
+                frame =>
+                  onComplete(engine.create(frame)) {
+                    case Success(frame) => complete(decorate(uri, frame))
+                    case Failure(ex) => throw ex
+                  }
+              }
+            }
+        }
+      } ~
+        pathPrefix(prefix / LongNumber) { id =>
+          pathEnd {
+            requestUri { uri =>
+              get {
+                onComplete(engine.getFrame(id)) {
+                  case Success(frame) => {
+                    val decorated = decorate(uri, frame)
+                    complete {
+                      decorated
                     }
                   }
-                  case ("builtin", "filter") => {
-                    val args = Try {
-                      xform.arguments.get.convertTo[FilterWhatever]
-                    }
-                    validate(args.isSuccess, "Failed to parse filter descriptor: " + getErrorMessage(args)) {
-                      //validate(true, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
-                      onComplete(
-                        for {
-                          frame <- engine.getFrame(id)
-                          res <- engine.filter(frame, args.get.predicate)
-                        } yield res) {
-                        case Success(r) => complete(decorate(uri, r))
-                        case Failure(ex) => completeWithError(ex)
+                  case _ => reject()
+                }
+              } ~
+                delete {
+                  onComplete(for {
+                    f <- engine.getFrame(id)
+                    res <- engine.delete(f)
+                  } yield res) {
+                    case Success(frames) => complete("OK")
+                    case Failure(ex) => throw ex
+                  }
+                }
+            }
+          } ~
+            path("transforms") {
+              post {
+                requestUri { uri =>
+                  entity(as[JsonTransform]) { xform =>
+                    (xform.language, xform.name) match {
+                      //TODO: improve mapping between rest api and engine arguments
+                      case ("builtin", "load") => {
+                        val args = Try {
+                          xform.arguments.get.convertTo[LoadFile]
+                        }
+                        validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
+                          onComplete(
+                            for {
+                              frame <- engine.getFrame(id)
+                              res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
+                            } yield res) {
+                            case Success(r) => complete(decorate(uri, r))
+                            case Failure(ex) => throw ex
+                          }
+                        }
                       }
+                      case ("builtin", "filter") => {
+                        val args = Try {
+                          xform.arguments.get.convertTo[FilterPredicate]
+                        }
+                        validate(args.isSuccess, "Failed to parse filter descriptor: " + getErrorMessage(args)) {
+                          onComplete(
+                            for {
+                              frame <- engine.getFrame(id)
+                              res <- engine.filter(frame, args.get.predicate)
+                            } yield res) {
+                            case Success(r) => complete(decorate(uri, r))
+                            case Failure(ex) => throw ex
+                          }
+                        }
+                      }
+                      case _ => ???
                     }
                   }
-                  case _ => completeNotImplemented()
+                }
+              }
+            } ~
+            (path("data") & get) {
+              parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
+                onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {
+                  case Success(rows: Iterable[Array[Array[Byte]]]) => {
+                    import DefaultJsonProtocol._
+                    val strings: List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
+                    complete(strings)
+                  }
+                  case Failure(ex) => throw ex
                 }
               }
             }
-            case _ => completeNotImplemented()
-          }
         }
-      } ~
-      std(get, "data") { uri =>
-        parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
-          onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
-            case Success(rows:Iterable[Array[Array[Byte]]]) => {
-              import DefaultJsonProtocol._
-              val strings : List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
-              complete(strings)
-            }
-            case Failure(ex) => completeInternalError(ex.getMessage)
-        }
-      } ~
-      std(get, prefix) { uri =>
-        onComplete(engine.getFrame(id)) {
-          case Success(frame) => {
-            val decorated = decorate(uri, frame)
-            complete {decorated}
-          }
-          case _ => reject()
-        }
-      } ~
-      std(delete, prefix) { uri =>
-        onComplete(for {
-            f <- engine.getFrame(id)
-            res <- engine.delete(f)
-          } yield res) {
-            case Success(frames) => complete("OK")
-            case Failure(ex) => completeInternalError(ex.getMessage)
-          }
-        }
-      }
-    } ~
-    std(get, prefix) { uri =>
-      //TODO: cursor
-      onComplete(engine.getFrames(0, 20)) {
-        case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString, frames))
-        case Failure(ex) => completeInternalError(ex.getMessage)
-      }
-    } ~
-    std(post, prefix) { uri =>
-      import DomainJsonProtocol._
-      entity(as[DataFrameTemplate]) { frame =>
-        onComplete(engine.create(frame)) {
-          case Success(frame) => complete(decorate(uri, frame))
-          case Failure(ex) => completeInternalError(ex.getMessage)
-        }
-      }
     }
   }
 
   def apiV1Service: Route = {
-//      clusters ~
-//      users ~
     frameRoutes()
-
   }
 }

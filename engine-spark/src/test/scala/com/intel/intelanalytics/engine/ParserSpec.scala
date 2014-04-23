@@ -27,29 +27,36 @@ import org.specs2.mutable.Specification
 import com.intel.intelanalytics.engine.Row
 
 class ParserSpec extends Specification {
+  val row = new Row(',')
    "Parser" should {
     "parse a String" in {
-      Row.apply("a,b") shouldEqual  Array("a","b")      
+      row.apply("a,b") shouldEqual  Array("a","b")      
     }
   }
    "Parser" should{
     "parse a String with single quotes" in {
-        Row.apply("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
+        row.apply("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
       }
     }
     "Parser" should{
      "parse an empty string" in {
-        Row.apply("") shouldEqual Array("")
+        row.apply("") shouldEqual Array("")
       }
     }
     "Parser" should{
      "parse a nested double quotes string" in {
-        Row.apply("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
+        row.apply("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
       }
     }
     "Parser" should{
      "parse a string with empty fields" in {
-        Row.apply("foo,bar,,,baz") shouldEqual Array("foo","bar","","","baz")
+        row.apply("foo,bar,,,baz") shouldEqual Array("foo","bar","","","baz")
+      }
+  }
+  val trow = new Row('\t')
+  "Parser" should{
+     "parse a tab separated string" in {
+        trow.apply("foo\tbar\tbaz") shouldEqual Array("foo","bar","baz")
       }
   }
    

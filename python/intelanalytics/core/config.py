@@ -20,7 +20,7 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-#from intelanalytics.core.backend import FrameBackendSimplePrint as FrameBackend
+# from intelanalytics.core.backend import FrameBackendSimplePrint as FrameBackend
 from intelanalytics.rest.frame import FrameBackendREST as FrameBackend
 
 _frame_backend = None
