@@ -2,7 +2,7 @@ name := "imllib"
 
 version := "0.8"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 libraryDependencies += "org.apache.spark" % "spark-mllib_2.10" % "0.9.0-incubating"
 
