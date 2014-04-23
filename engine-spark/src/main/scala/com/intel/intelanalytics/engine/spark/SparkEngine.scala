@@ -54,6 +54,7 @@ import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
+import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
 
 //TODO logging
 //TODO error handling
@@ -63,26 +64,35 @@ import scala.util.matching.Regex
 //TODO pass current user info
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
-  //TODO: get these settings using the Typesafe Config library (see application.conf)
-  val sparkHome = System.getProperty("spark.home", "c:\\temp")
-  val sparkMaster = System.getProperty("spark.master", "local[4]")
+  val conf = ConfigFactory.load()
+  val sparkHome = conf.getString("intel.analytics.spark.home")
+  val sparkMaster = conf.getString("intel.analytics.spark.master")
 
   //Very simpleminded implementation, not ready for multiple users, for example.
   class SparkEngine extends Engine {
 
     def config = new SparkConf()
       .setMaster(sparkMaster)
-      .setAppName("intel-analytics")
+      .setAppName("intel-analytics") //TODO: this will probably wind up being a different
+                                      //application name for each user session
       .setSparkHome(sparkHome)
 
 
+    val runningContexts = new mutable.HashMap[String,SparkContext] with mutable.SynchronizedMap[String,SparkContext] {}
     //TODO: how to run jobs as a particular user
     //TODO: Decide on spark context life cycle - should it be torn down after every operation,
     //or left open for some time, and reused if a request from the same user comes in?
     //Is there some way of sharing a context across two different Engine instances?
     def context() = {
-      withMyClassLoader {
-        new SparkContext(config = config)
+      runningContexts.get("user") match {
+        case Some(ctx) => ctx
+        case None => {
+          val ctx = withMyClassLoader {
+            new SparkContext(config = config.setAppName("intel-analytics:user"))
+          }
+          runningContexts += ("user" -> ctx)
+          ctx
+        }
       }
     }
 
@@ -96,10 +106,6 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def getRddForId(id: Long): RDD[Array[Byte]] = {
-      context().textFile("frame_" + id + ".txt").map(line => line.getBytes(Codec.UTF8.name))
-    }
-
     def getPyCommand(function: RowFunction[Boolean]): Array[Byte] = {
       function.definition.getBytes(Codec.UTF8.name)
     }
@@ -110,9 +116,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       parser.language match {
         case "builtin" => parser.definition match {
           case "line/csv" => (s: String) => {
-            //s.split(',')
-            Row.apply(s)
-          } //TODO: Return the real parser when Mohit's is finished.
+            val row = new Row(',')
+            row.apply(s)
+          }
           case p => throw new Exception("Unsupported parser: " + p)
         }
         case lang => throw new Exception("Unsupported language: " + lang)
@@ -127,13 +133,14 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         withMyClassLoader {
           val parserFunction = getLineParser(parser)
           val location = fsRoot + frames.getFrameDataFile(frame.id)
-          context().textFile(fsRoot + "/" + file)
-            .map(parserFunction)
-            //TODO: type conversions based on schema
-            .map(strings => strings.map(s => s.getBytes))
-            .saveAsObjectFile(location)
-          frames.lookup(frame.id).getOrElse(
-            throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
+          val ctx = context()
+            ctx.textFile(fsRoot + "/" + file)
+              .map(parserFunction)
+              //TODO: type conversions based on schema
+              .map(strings => strings.map(s => s.getBytes))
+              .saveAsObjectFile(location)
+            frames.lookup(frame.id).getOrElse(
+              throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
         }
       }
     }
@@ -145,7 +152,6 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         frames.create(frame)
       }
     }
-
 
     def delete(frame: DataFrame): Future[Unit] = {
       future {
@@ -161,20 +167,21 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
       future {
-        val rdd = getRddForId(frame.id)
+        val ctx = context() //TODO: resource management
+        val rdd = frames.getFrameRdd(ctx, frame.id)
         val command = getPyCommand(predicate)
         val pythonExec = "python" //TODO: take from env var or config
         val environment = System.getenv() //TODO - should be empty instead?
-        val pyRdd = new EnginePythonRDD[Array[Byte]](
-            rdd, command = command, System.getenv(),
-            new JArrayList, preservePartitioning = true,
-            pythonExec = pythonExec,
-            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-            accumulator = new Accumulator[JList[Array[Byte]]](
-              initialValue = new JArrayList[Array[Byte]](),
-              param = null)
-          )
-        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
+//        val pyRdd = new EnginePythonRDD[Array[Byte]](
+//            rdd, command = command, System.getenv(),
+//            new JArrayList, preservePartitioning = true,
+//            pythonExec = pythonExec,
+//            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
+//            accumulator = new Accumulator[JList[Array[Byte]]](
+//              initialValue = new JArrayList[Array[Byte]](),
+//              param = null)
+//          )
+//        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
         frame
       }
     }
@@ -196,7 +203,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
   val files = new HdfsFileStorage {}
 
-  val fsRoot = System.getProperty("intelanalytics.fs.root", "/home/hadoop")
+  val fsRoot = conf.getString("intel.analytics.fs.root")
 
   trait HdfsFileStorage extends FileStorage {
 
@@ -247,17 +254,35 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def move(source: Path, destination: Path): Unit = ???
 
-    override def getMetaData(path: Path): Option[Entry] = ???
+    override def getMetaData(path: Path): Option[Entry] = {
+      val hPath: HPath = new HPath(fsRoot + path.toString)
+      val exists = fs.exists(hPath)
+      if (!exists) {
+        None
+      } else {
+        val status = fs.getStatus(hPath)
+        if (status == null || fs.isDirectory(hPath)) {
+          Some(Directory(path))
+        } else {
+          Some(File(path, status.getUsed))
+        }
+      }
+    }
 
     override def delete(path: Path): Unit = {
       fs.delete(new HPath(fsRoot + path.toString), true)
     }
 
-    override def create(entry: Entry): Unit = ???
+    override def create(file: Path): Unit = fs.create(new HPath(fsRoot + file.toString))
+
+    override def createDirectory(directory: Path): Directory = {
+      val adjusted = fsRoot + directory.toString
+      fs.mkdirs(new HPath(adjusted))
+      getMetaData(Paths.get(directory.toString)).get.asInstanceOf[Directory]
+    }
   }
 
-  val frames = new SparkFrameStorage {
-  }
+  val frames = new SparkFrameStorage { }
 
   trait SparkFrameStorage extends FrameStorage {
 
@@ -282,33 +307,45 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] = {
       val ctx = engine.context()
-      val rdd: RDD[Array[Array[Byte]]] =
-        ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(frame.id))
+      val rdd: RDD[Array[Array[Byte]]] = getFrameRdd(ctx, frame.id)
       //Brute force until the code below can be fixed
       val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
       //The below fails with a classcast exception saying it can't convert a byteswritable
-      //into a Text. Nobody asked it to try to do that, so it's a bit mysterious.
+      //into a Text. Nobody asked it to try to do that cast, so it's a bit mysterious.
       //TODO: Check to see if there's a better way to implement, this might be too slow.
       // Need to cache row counts per partition somewhere.
-      //TODO: Resource management
       //      val counts = rdd.mapPartitionsWithIndex(
-//                            (i:Int, rows:Iterator[Array[Array[Byte]]]) => Iterator.single((i, rows.size)))
-//                      .collect()
-//                      .sortBy(_._1)
-//      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
-//                      .drop(1)
-//                      .toMap
-//      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
-//      val rows: Seq[Array[Array[Byte]]] = rdd.mapPartitionsWithIndex((i, rows) => {
-//        val (ct: Int, sum: Int) = sumsAndCounts(i)
-//        if (sum < offset || sum - ct > offset + count) {
-//          Iterator.empty
-//        } else {
-//          val start = offset - (sum - ct)
-//          rows.drop(start.toInt).take(count)
-//        }
-//      }).collect()
+      //                            (i:Int, rows:Iterator[Array[Array[Byte]]]) => Iterator.single((i, rows.size)))
+      //                      .collect()
+      //                      .sortBy(_._1)
+      //      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
+      //                      .drop(1)
+      //                      .toMap
+      //      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
+      //      val rows: Seq[Array[Array[Byte]]] = rdd.mapPartitionsWithIndex((i, rows) => {
+      //        val (ct: Int, sum: Int) = sumsAndCounts(i)
+      //        if (sum < offset || sum - ct > offset + count) {
+      //          Iterator.empty
+      //        } else {
+      //          val start = offset - (sum - ct)
+      //          rows.drop(start.toInt).take(count)
+      //        }
+      //      }).collect()
       rows
+    }
+
+
+    def getFrameRdd(ctx: SparkContext, id: Long): RDD[Array[Array[Byte]]] = {
+      ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(id))
+    }
+
+    def getOrCreateDirectory(name: String) : Directory = {
+      val path = Paths.get(name)
+      val meta = files.getMetaData(path).getOrElse(files.createDirectory(path))
+      meta match {
+        case File(f,s) => throw new IllegalArgumentException(path + " is not a directory")
+        case d: Directory => d
+      }
     }
 
     override def create(frame: DataFrameTemplate): DataFrame = {
@@ -331,9 +368,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       val path = getFrameDirectory(id)
       val meta = File(Paths.get(path, "meta"))
       //TODO: uncomment after files.getMetaData implemented
-//      if (files.getMetaData(meta.path).isEmpty) {
-//        return None
-//      }
+      if (files.getMetaData(meta.path).isEmpty) {
+        return None
+      }
       val f = files.read(meta)
       try {
         val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
@@ -353,7 +390,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     val idRegex: Regex = "^\\d+$".r
 
     def getFrames(offset: Int, count: Int): Seq[DataFrame] = {
-      files.list(Directory(Paths.get(fsRoot + frameBase)))
+      files.list(getOrCreateDirectory(frameBase))
         .flatMap {
           case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
           case _ => None

@@ -103,7 +103,10 @@ class LittleFramePandasBackend(object):
     def count(self, frame):
         return len(frame._df.index)
 
-    def delete_column(self, frame, name):
+    def create(self, frame):
+        return
+
+    def remove_column(self, frame, name):
         if isinstance(name, basestring):
             name = [name]
         for victim in name:
@@ -130,7 +133,17 @@ class LittleFramePandasBackend(object):
             self._df = df
 
         def __repr__(self):
-            return repr(self._df)
+            r = repr(self._df)
+            lines = r.split('\n')
+            a = []
+            for line in lines:
+                try:
+                    i = line.index(' ')
+                except ValueError:
+                    a.append(line)
+                else:
+                    a.append( (' ' * i) + line[i:])
+            return "\n".join(a)
 
         def _repr_html_(self):
             return self._df._repr_html_()
@@ -141,7 +154,6 @@ class LittleFramePandasBackend(object):
         df.columns = ["{0}:{1}".format(n, supported_types.get_type_string(t))
                       for n, t in frame.schema.items()]
         return self.InspectionTable(df)
-
 
     #def map(self, frame, row_func, out=None):
 

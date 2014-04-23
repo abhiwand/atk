@@ -111,7 +111,8 @@ trait FileComponent {
   case class Directory(path: Path) extends Entry(path)
 
   trait FileStorage {
-    def create(entry: Entry)
+    def createDirectory(name: Path): Directory
+    def create(name: Path)
     def delete(path: Path)
     def getMetaData(path: Path): Option[Entry]
     def move(source: Path, destination: Path)
