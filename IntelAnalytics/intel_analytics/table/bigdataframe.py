@@ -890,7 +890,7 @@ class BigDataFrame(object):
 
             if len(suffixes) != (len(right) + 1):
                 return None
-            return suffixes
+            return list(suffixes)
 
         # check input
         right = __tolist(right, BigDataFrame, [self])

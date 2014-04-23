@@ -1,3 +1,26 @@
+//////////////////////////////////////////////////////////////////////////////
+// INTEL CONFIDENTIAL
+//
+// Copyright 2014 Intel Corporation All Rights Reserved.
+//
+// The source code contained or described herein and all documents related to
+// the source code (Material) are owned by Intel Corporation or its suppliers
+// or licensors. Title to the Material remains with Intel Corporation or its
+// suppliers and licensors. The Material may contain trade secrets and
+// proprietary and confidential information of Intel Corporation and its
+// suppliers and licensors, and is protected by worldwide copyright and trade
+// secret laws and treaty provisions. No part of the Material may be used,
+// copied, reproduced, modified, published, uploaded, posted, transmitted,
+// distributed, or disclosed in any way without Intel's prior express written
+// permission.
+//
+// No license under any patent, copyright, trade secret or other intellectual
+// property right is granted to or conferred upon you by disclosure or
+// delivery of the Materials, either expressly, by implication, inducement,
+// estoppel or otherwise. Any license under such intellectual property rights
+// must be express and approved by Intel in writing.
+//////////////////////////////////////////////////////////////////////////////
+
 package com.intel.graphbuilder.driver.spark
 
 import com.intel.graphbuilder.testutils.{TestingSparkContext, TestingTitan}
@@ -69,7 +92,7 @@ class GraphBuilderITest extends Specification {
       val inputRdd2 = sc.parallelize(additionalInputRows.asInstanceOf[Seq[_]]).asInstanceOf[RDD[Seq[_]]]
 
       // Append to the existing Graph
-      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, biDirectional = true))
+      val gb2 = new GraphBuilder(config.copy(append = true, retainDanglingEdges = true, biDirectional = true, inferSchema = false))
       gb2.build(inputRdd2)
 
       // Validate
@@ -83,17 +106,17 @@ class GraphBuilderITest extends Specification {
 
       // Input Data
       val inputRows = List(
-        List("userId", 1001L,"President Obama", "", "", ""), // a vertex that is a user named President Obama
+        List("userId", 1001L, "President Obama", "", "", ""), // a vertex that is a user named President Obama
         List("movieId", 1001L, "When Harry Met Sally", "", "", ""), // a vertex representing a movie
         List("movieId", 1002L, "Frozen", "", "", ""),
         List("movieId", 1003L, "The Hobbit", "", "", ""),
         List("", "", "", 1001L, "likes", 1001L), // edge that means "Obama likes When Harry Met Sally"
-        List("userId", 1004L,"Abraham Lincoln", "", "", ""),
+        List("userId", 1004L, "Abraham Lincoln", "", "", ""),
         List("", "", "", 1004L, "likes", 1001L), // edge that means "Lincoln likes When Harry Met Sally"
         List("", "", "", 1004L, "likes", 1001L), // duplicate edge that means "Lincoln likes When Harry Met Sally"
         List("", "", "", 1004L, "hated", 1002L), // edge that means "Lincoln hated Frozen"
         List("", "", "", 1001L, "hated", 1003L), // edge that means "Obama hated The Hobbit"
-        List("", "", "", 1001L, "hated", 1007L)  // edge that means "Obama hated a movie that is a dangling edge"
+        List("", "", "", 1001L, "hated", 1007L) // edge that means "Obama hated a movie that is a dangling edge"
       )
 
       // Input Schema

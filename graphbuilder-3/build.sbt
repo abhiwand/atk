@@ -52,21 +52,15 @@ scalacOptions in Test ++= Seq("-Yrangepos")
 // See https://github.com/jrudolph/sbt-dependency-graph
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-// From Specs2 WIKI
-// Read here for optional dependencies:
-// http://etorreborre.github.io/specs2/guide/org.specs2.guide.Runners.html#Dependencies
-resolvers ++= Seq("snapshots", "releases").map(Resolver.sonatypeRepo) // Specs2
-
 resolvers ++= Seq(
+  Resolver.sonatypeRepo("snapshots"),
+  Resolver.sonatypeRepo("releases"),
+  Resolver.typesafeRepo("releases"),
   "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
-  "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases" // Scala Check
+  "gao-mirror" at "http://gaomaven.jf.intel.com:8081/nexus/content/groups/public",
+  Resolver.mavenLocal
 )
-
-// TODO: remove or comment out? still needed for now
-// This is nice if you want to use some local artifacts from Maven during local development
-resolvers += "Local Maven Repository" at "file://"+Path.userHome.absolutePath+"/.m2/repository"
 
 ScoverageSbtPlugin.instrumentSettings
 
 ScoverageSbtPlugin.ScoverageKeys.excludedPackages in ScoverageSbtPlugin.scoverage := "com.intel.graphbuilder.driver.spark.titan.examples.*;com.intel.graphbuilder.driver.local.examples.*"
-

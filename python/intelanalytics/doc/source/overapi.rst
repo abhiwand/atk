@@ -64,9 +64,10 @@ will merge with those of the new data sources.
 2. Inspect
 ~~~~~~~~~~
 
->>> f.count()      # row count
->>> len(f)         # column count
->>> f.inspect(5)   # print 5 rows chosen randomly
+>>> f.count()               # row count
+>>> len(f)                  # column count
+>>> f.inspect(5)            # print 5 rows chosen randomly
+>>> f.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
 
 
 3. Clean
@@ -120,24 +121,24 @@ See :doc:`rowfunc`
 
 **Fill Cells**
 
-Fill cells with map jobs
-
 >>> j['a'].fillna(800001)
 
 **Copy Columns**
 
 >>> k = BigFrame(j[['a', 'c']])  # projects columns 'a' and 'b' to new frame k
 
-**Drop Columns**
+**Delete Columns**
 
->>> g.remove_column('b')  # in place
+>>> g.delete_column('b')  # in place
 
 **Rename Columns**
 
 >>> j.rename_column(a='id')
 >>> j.rename_column(b='author', c='publisher')
 
-** Cast Columns**
+**Cast Columns**
+
+***TBD...*** Do we need something like this?
 
 >>> j.cast_column(ia=int32)
 
@@ -145,49 +146,67 @@ Fill cells with map jobs
 4. Engineer
 ~~~~~~~~~~~
 
+**Add Column**
+
+Map a function to each row in the frame, producing a new column
+
+>>> j.add_column('all_ones', lambda row: 1) # add new column of all ones
+>>> j.add_column('a_plus_b', lambda row: row.a + row.b)
+
+
+>>> # Piecewise Linear Transformation
+>>> def transform_a(row):
+...     x = row['a']
+...     if x is None:
+...         return None
+...     if 30 <= x <= 127:
+...         m, c = 0.0046, 0.4168
+...     elif 15 <= x <= 29:
+...         m, c = 0.0071, 0.3429
+...     elif -127 <= x <= 14:
+...         m, c = 0.0032, 0.4025
+...     else:
+...         return None
+...     return m * x + c
+
+>>> j.map(transform_a, out='prior')
+
+Creating multiple columns at once requires a function that returns a tuple
+
+>>> j.add_column(('a_abs', 'b_abs'), lambda row: (abs(row.a), abs(row.b)))
+
+
 **Map**
 
-Map a function to each row in the frame, produce new column
+***TBD...***  ideas include:
 
->>> j.map(lambda row: 1, out='all_ones')  # add new column of all ones
->>> j.map(lambda row: row.a + row.b, out='a_plus_b')
+>>> j.map().assign()
+>>> j.map().reduce()
+>>> j.map().map().reduce()
 
 >>> # Fill NA with 0 (rather than sugared j.fillna('a', 0))
 >>> j.map(lambda row: 0 if row.is_empty('a') else row.a, out='a')
 
-            # uh, this was a thought once --something about not cancelling the job on an error, but just marking row/cell as None and reporting
-            raise FillNone("col value out of range")
-            # map or whatever will catch this, log it, add to a count in the report, and fill the entry with a None
-
->>> # Conditional Linear Transformation
->>> def transform_a(row):
-        x = row['a']
-        if x is None:
-            return None
-        if 30 <= x <= 127:
-            m, c = 0.0046, 0.4168
-        elif 15 <= x <= 29:
-            m, c = 0.0071, 0.3429
-        elif -127 <= x <= 14:
-            m, c = 0.0032, 0.4025
-        else:
-            return None
-        return m * x + c
-
->>> j.map(transform_a, out='prior')
+>>> j.map(lambda row:  (row['a'], row['b'], abs(row['a']), abs(row['b']))
+>>> k = BigFrame(MapSource(j, func, schema))
+>>> k = BigFrame(MapSource(j, lambda row: (row['a'], row['b'], abs(row['a']), abs(row['b'])), out=('a', 'b', 'a_abs', 'b_abs'))
 
 
 **Reduce**
 
+***TBD...***  ideas include:
+
 Apply a reduce function to each row in a Frame, or each cell in a column.  The
 reducer has two parameters, the **accumulator** value and the **update** value.
 
->>> x = j.reduce(lambda acc, row_upd: acc + row_upd['a'] - row_upd['b'])
+>>> j.reduce(lambda acc, row_upd: acc + row_upd['a'] - row_upd['b'])
 
 >>> j['a'].reduce(lambda acc, cell_upd: acc + cell_upd)
 
 
 **Groupby** and **Aggregate**
+
+***TBD...***  ideas include:
 
 Group rows together based on matching column values and then apply aggregation
 functions on each group, producing a new Frame object
@@ -230,10 +249,11 @@ def my_agg(frame):
     j.groupby('a', 'b').reduce(my_agg_reduce, out=('c_avg', 'd_avg', 'e'.avg))
 
 
+Misc Notes
+==========
 
-
->>> j.map(lambda row:  (row['a'], row['b'], abs(row['a']), abs(row['b']))
->>> k = BigFrame(MapSource(j, lambda row: (row['a'], row['b'], abs(row['a']), abs(row['b'])), out=('a', 'b', 'a_abs', 'b_abs'))
-
-
-
+. uh, this was a thought once --something about not cancelling the job on an
+error, but just marking row/cell as None and reporting
+``raise FillNone("col value out of range")``
+map or whatever will catch this, log it, add to a count in the report, and
+ fill the entry with a None
