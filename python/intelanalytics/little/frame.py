@@ -59,18 +59,23 @@ def delete_little_frame(name):
 
 
 class LittleFrame(BigFrame):
-    def __init__(self, *source):
-        super(LittleFrame, self).__init__()
-        self._df = None
+    def __init__(self, source):
         self._backend = _get_little_frame_backend()
-        if source:
-            self.append(*source)
+        self._df = None
+        super(LittleFrame, self).__init__(source)
 
     def __repr__(self):
         return repr(self.inspect(n=None))
 
 
 class LittleFramePandasBackend(object):
+
+    _id_gen = 0
+
+    @staticmethod
+    def get_next_little_id():
+        LittleFramePandasBackend._id_gen =- 1  # todo - make thread safe at some point
+        return LittleFramePandasBackend._id_gen
 
     def _as_json_obj(self, frame):
         raise NotImplementedError
@@ -104,7 +109,7 @@ class LittleFramePandasBackend(object):
         return len(frame._df.index)
 
     def create(self, frame):
-        return
+        frame._id = LittleFramePandasBackend.get_next_little_id()
 
     def remove_column(self, frame, name):
         if isinstance(name, basestring):
