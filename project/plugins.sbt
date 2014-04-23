@@ -18,3 +18,7 @@ addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")
 addSbtPlugin("com.orrsella" % "sbt-sublime" % "1.0.9")
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.98.0")
+
+addSbtPlugin("com.zavakid.sbt" % "sbt-one-log" % "0.1.1")
+
+
