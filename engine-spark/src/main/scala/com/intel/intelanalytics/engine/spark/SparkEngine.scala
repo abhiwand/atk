@@ -35,8 +35,8 @@ import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
 import com.intel.intelanalytics.engine.RowFunction
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.{Paths, Path}
-import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
+import java.nio.file.{Paths, Path, Files}
+import java.io._
 import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
@@ -55,6 +55,10 @@ import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
 import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
+import scala.Some
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.engine.RowFunction
+import com.intel.intelanalytics.domain.DataFrame
 
 //TODO logging
 //TODO error handling
@@ -178,18 +182,39 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 //          val location = fsRoot + frames.getFrameDataFile(frame.id)
 
           val location = "/home/joyeshmi/test.csv"
+          //Little placeholder for now
+          val predicate_from_file = Files.readAllBytes(Paths.get("/home/joyeshmi/pickled_predicate"))
+
           println("*************** In FILTER FUNCTION **********")
-          val output = ctx.textFile(location)
-            .map[Array[String]](f => f.split(","))
-            .map[Array[Int]](convert)
-            .filter(row => row.map(g => g).sum > 10)
-            .take(10)
-//            .saveAsObjectFile(location)
-          output.map(f => f.map(println))
-          println(frame.name)
+          val baseRdd = ctx.textFile(location)
+//            .map[Array[String]](f => f.split(","))
+          println("Printing baserdd")
+          baseRdd.take(10).map(println)
+
+
+          val pythonExec = "python2.7" //TODO: take from env var or config
+          val environment = System.getenv() //TODO - should be empty instead?
+          val accumulator = new Accumulator[JList[Array[Byte]]](
+              initialValue = new JArrayList[Array[Byte]](),
+              param = new EnginePythonAccumulatorParam())
+          var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+
+          val pyRdd = new EnginePythonRDD[String](
+//            baseRdd, predicate.getBytes("UTF-8"), environment,
+              baseRdd, predicate_from_file, environment,
+            new JArrayList, preservePartitioning = false,
+            pythonExec = pythonExec,
+            broadcastVars, accumulator)
+
+
+          println("Predicate:" + predicate)
+          println("Printing pyRdd")
+          val output = pyRdd.take(10)
+
+//          val f = new PrintWriter("/home/joyeshmi/filteredoutput");
+//          output.map(x => f.println(x))
+//          f.close();
           println("*************** Done filtering*****************")
-          //        frames.lookup(frame.id).getOrElse(
-          //          throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
           frame
         }
       }

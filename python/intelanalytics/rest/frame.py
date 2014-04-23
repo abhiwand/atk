@@ -101,17 +101,31 @@ class FrameBackendREST(object):
                             + data.__class__.__name__)
 
     def filter(self, frame, predicate):
-        payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': predicate}}
-        r = post('dataframes/{0}/filter'.format(frame._id), payload=payload)
-        logger.info("Response from REST server {0}".format(r.text))
-        # pickler = IAPickle(file)
-        # pickler.dump(predicate)
-        # Does payload have any other header/content apart from the serialized predicate for REST Server to parse?
 
-        # pickle predicate in a payload
-        # requests.post(url, payload)
+        from itertools import ifilter
+        from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer
 
-        # raise NotImplementedError
+
+        serializer = BatchedSerializer(PickleSerializer(),
+                                    1024)
+        def filter_func(iterator): return ifilter(predicate, iterator)
+        def func(s, iterator): return filter_func(iterator)
+
+        command = (func, UTF8Deserializer(), serializer)
+
+        pickled_predicate = CloudPickleSerializer().dumps(command)
+        file = open('/home/joyeshmi/pickled_predicate', "w")
+        file.write(bytearray(pickled_predicate))
+        file.close()
+
+
+        # from serialize import IAPickle
+        # pickled_stream = StringIO()
+        # i = IAPickle(pickled_stream)
+        # i.dump(predicate)
+        # pickled_predicate = pickled_stream.getvalue()
+        payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': 'placeholder'}}
+        r = post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
 
     def take(self, frame, n, offset):
         url = base_uri + 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
