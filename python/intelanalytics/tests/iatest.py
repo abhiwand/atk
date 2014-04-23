@@ -55,5 +55,5 @@ def set_logging(logger_name, level=logging.DEBUG):
     logger = logging.getLogger(logger_name)
     logger.setLevel(level)
     h = logging.StreamHandler()
-    h.setLevel(logging.INFO)
+    h.setLevel(logging.DEBUG)
     logger.addHandler(h)

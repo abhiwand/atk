@@ -63,14 +63,22 @@ class Connection(object):
         """
         Ping the server, throw exception if not there
         """
+        url = ""
         try:
-            r = requests.get(self.get_url() + "/info")
+            url = self.get_url()
+            uri = url + "/info"
+            logger.info("[HTTP Get] %s", uri)
+            r = requests.get(uri)
+            logger.debug("[HTTP Get Response] %s", r.text)
+            r.raise_for_status()
             if "Intel Analytics" != r.json()['name']:
-                raise Exception("invalid response payload: " + r.text)
+                raise Exception("Invalid response payload: " + r.text)
+            print "Successful ping to Intel Analytics at " + url
         except Exception as e:
-            #print ("Ping failed: " + e.message)
-            logger.error("Ping failed: " + e.message)
-            raise IOError("Unable to find Intel Analytics server at " + self.get_url())
+            message = "Failed to ping Intel Analytics at " + url + "\n" + str(e)
+            #print (message)
+            logger.error(message)
+            raise IOError(message)
 
 
 class HttpMethods(object):
@@ -87,19 +95,34 @@ class HttpMethods(object):
 
     def get(self, uri_path):
         uri = self._get_base_uri() + uri_path
-        logger.info("Get: " + uri)
-        return requests.get(uri)
+        if logger.level <= logging.INFO:
+            logger.info("[HTTP Get] %s", uri)
+        r = requests.get(uri)
+        if logger.level <= logging.DEBUG:
+            logger.debug("[HTTP Get Response] %s", r.text)
+        r.raise_for_status()
+        return r
 
     def delete(self, uri_path):
         uri = self._get_base_uri() + uri_path
-        logger.info("Delete: " + uri)
-        return requests.delete(uri)
+        logger.info("[HTTP Delete] %s", uri)
+        r = requests.delete(uri)
+        if logger.level <= logging.DEBUG:
+            logger.debug("[HTTP Delete Response] %s", r.text)
+        r.raise_for_status()
+        return r
 
     def post(self, uri_path, payload):
-        data = (json.dumps(payload))
+        data = json.dumps(payload)
         uri = self._get_base_uri() + uri_path
-        logger.info("Post to: " + uri + " with payload: " + data)
-        return requests.post(uri, data=data, headers=self.connection.headers)
+        if logger.level <= logging.INFO:
+            pretty_data = json.dumps(payload, indent=2)
+            logger.info("[HTTP Post] %s\n%s", uri, pretty_data)
+        r = requests.post(uri, data=data, headers=self.connection.headers)
+        if logger.level <= logging.DEBUG:
+            logger.debug("[HTTP Post Response] %s", r.text)
+        r.raise_for_status()
+        return r
 
 
 rest_connection = Connection()
