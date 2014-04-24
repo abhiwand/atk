@@ -22,7 +22,7 @@ trait EventLogging {
             markers: Seq[String] = Nil,
             severity: Severity = Severity.DEBUG,
             substitutions: Seq[String] = Nil,
-            exception: Exception = null) = {
+            exception: Throwable = null) = {
     var builder = EventContext.event(severity, messageCode, message, substitutions.toArray : _*)
     if (exception != null) {
       builder = builder.addException(exception)
@@ -37,25 +37,25 @@ trait EventLogging {
            messageCode: Int = 0,
            markers: Seq[String] = Nil,
            substitutions: Seq[String] = Nil,
-           exception: Exception = null) = event(message, messageCode, markers, Severity.DEBUG, substitutions, exception)
+           exception: Throwable = null) = event(message, messageCode, markers, Severity.DEBUG, substitutions, exception)
 
   def info(message: String,
            messageCode: Int = 0,
            markers: Seq[String] = Nil,
            substitutions: Seq[String] = Nil,
-           exception: Exception = null) = event(message, messageCode, markers, Severity.INFO, substitutions, exception)
+           exception: Throwable = null) = event(message, messageCode, markers, Severity.INFO, substitutions, exception)
 
   def warn(message: String,
            messageCode: Int = 0,
            markers: Seq[String] = Nil,
            substitutions: Seq[String] = Nil,
-           exception: Exception = null) = event(message, messageCode, markers, Severity.WARN, substitutions, exception)
+           exception: Throwable = null) = event(message, messageCode, markers, Severity.WARN, substitutions, exception)
 
   def error(message: String,
            messageCode: Int = 0,
            markers: Seq[String] = Nil,
            substitutions: Seq[String] = Nil,
-           exception: Exception = null) = event(message, messageCode, markers, Severity.ERROR, substitutions, exception)
+           exception: Throwable = null) = event(message, messageCode, markers, Severity.ERROR, substitutions, exception)
 }
 
 

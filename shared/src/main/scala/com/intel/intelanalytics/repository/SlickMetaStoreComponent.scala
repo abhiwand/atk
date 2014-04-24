@@ -70,12 +70,12 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   }
 
   class Frames(tag: Tag) extends Table[DataFrame](tag, "frames") {
-    def id = column[Option[Long]]("frame_id", O.PrimaryKey, O.AutoInc)
+    def id = column[Long]("frame_id", O.PrimaryKey, O.AutoInc)
     def name = column[String]("name")
     def schema = column[String]("schema")
 
     def * = (id, name, schema) <>
-      ((t: (Option[Long],String,String)) => t match {case (i:Option[Long], n:String, s:String) => DataFrame.tupled((i, n, JsonParser(s).convertTo[Schema]))},
+      ((t: (Long,String,String)) => t match {case (i:Long, n:String, s:String) => DataFrame.tupled((i, n, JsonParser(s).convertTo[Schema]))},
         (f: DataFrame) => DataFrame.unapply(f) map {case (i,n,s) => (i,n,s.toJson.prettyPrint)})
   }
 

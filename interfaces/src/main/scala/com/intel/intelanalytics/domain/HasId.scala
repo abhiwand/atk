@@ -24,5 +24,5 @@
 package com.intel.intelanalytics.domain
 
 trait HasId {
-  def id : Option[Long]
+  def id : Long
 }
