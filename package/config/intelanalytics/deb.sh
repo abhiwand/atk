@@ -18,18 +18,24 @@ SUBJECT=$DESCRIPTION
 
 debDir=${packageName}-${version}
 
+mkdir -p $SCRIPTPATH/$debDir/debian
+
 log "create control file"
 debControl > $SCRIPTPATH/$debDir/debian/control
 
 log "create compat file"
 debCompat >  $SCRIPTPATH/$debDir/debian/compat
 
+pwd
 log "create install file"
 debInstall > $SCRIPTPATH/$debDir/debian/$packageName.install
 
 log "create copyright file"
 debCopyright >  $SCRIPTPATH/$debDir/debian/copyright
 
+log "create reles file"
+debRules > $SCRIPTPATH/$debDir/debian/rules
+chmod +x $SCRIPTPATH/$debDir/debian/rules
 
 pushd $SCRIPTPATH/$debDir
 
