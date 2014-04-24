@@ -35,8 +35,8 @@ import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
 import com.intel.intelanalytics.engine.RowFunction
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.{Paths, Path}
-import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
+import java.nio.file.{Paths, Path, Files}
+import java.io._
 import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
@@ -55,6 +55,10 @@ import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
 import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
+import scala.Some
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.engine.RowFunction
+import com.intel.intelanalytics.domain.DataFrame
 
 //TODO logging
 //TODO error handling
@@ -107,7 +111,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     }
 
     def getPyCommand(function: RowFunction[Boolean]): Array[Byte] = {
-      function.definition.getBytes(Codec.UTF8.name)
+//      function.definition.getBytes(Codec.UTF8.name)
+      function.definition.getBytes()
     }
 
     def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = ???
@@ -124,6 +129,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         case lang => throw new Exception("Unsupported language: " + lang)
       }
     }
+
 
     def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = {
       require(frame != null)
@@ -165,24 +171,53 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
+   def convert(x: Array[String]): Array[Int] = {
+      val y = x.map(f => f.toInt)
+      y
+    }
+
+    def filter(frame: DataFrame, predicate: String): Future[DataFrame] = {
       future {
-        val ctx = context() //TODO: resource management
-        val rdd = frames.getFrameRdd(ctx, frame.id)
-        val command = getPyCommand(predicate)
-        val pythonExec = "python" //TODO: take from env var or config
-        val environment = System.getenv() //TODO - should be empty instead?
-//        val pyRdd = new EnginePythonRDD[Array[Byte]](
-//            rdd, command = command, System.getenv(),
-//            new JArrayList, preservePartitioning = true,
-//            pythonExec = pythonExec,
-//            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-//            accumulator = new Accumulator[JList[Array[Byte]]](
-//              initialValue = new JArrayList[Array[Byte]](),
-//              param = null)
-//          )
-//        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
-        frame
+        withMyClassLoader {
+          val ctx = context()
+//          val location = fsRoot + frames.getFrameDataFile(frame.id)
+
+          val location = "/home/joyeshmi/test.csv"
+          //Little placeholder for now
+          val predicate_from_file = Files.readAllBytes(Paths.get("/home/joyeshmi/pickled_predicate"))
+
+          println("*************** In FILTER FUNCTION **********")
+          val baseRdd = ctx.textFile(location)
+//            .map[Array[String]](f => f.split(","))
+          println("Printing baserdd")
+          baseRdd.take(10).map(println)
+
+
+          val pythonExec = "python2.7" //TODO: take from env var or config
+          val environment = System.getenv() //TODO - should be empty instead?
+          val accumulator = new Accumulator[JList[Array[Byte]]](
+              initialValue = new JArrayList[Array[Byte]](),
+              param = new EnginePythonAccumulatorParam())
+          var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+
+          val pyRdd = new EnginePythonRDD[String](
+//            baseRdd, predicate.getBytes("UTF-8"), environment,
+              baseRdd, predicate_from_file, environment,
+            new JArrayList, preservePartitioning = false,
+            pythonExec = pythonExec,
+            broadcastVars, accumulator)
+
+
+          println("Predicate:" + predicate)
+          println("Printing pyRdd")
+          val output = pyRdd.take(10)
+
+//          val f = new PrintWriter("/home/joyeshmi/filteredoutput");
+//          output.map(x => f.println(x))
+//          f.close();
+          println("*************** Done filtering*****************")
+          frame
+        }
       }
     }
 
@@ -297,7 +332,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = ???
 
-    override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit = ???
+    override def removeRows(frame: DataFrame, predicate: Row => Boolean): Unit = ???
 
     override def removeColumn(frame: DataFrame): Unit = ???
 
