@@ -275,8 +275,8 @@ class BigFrame(object):
         """
         self._backend.dropna(self, how, column_subset)
 
-    def inspect(self, n=10):
-        return self._backend.inspect(self, n)
+    def inspect(self, n=10, offset=0):
+        return self._backend.inspect(self, n, offset)
 
     # def join(self,
     #          right=None,
