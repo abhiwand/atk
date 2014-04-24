@@ -25,54 +25,92 @@ package com.intel.graphbuilder.driver.spark.titan.examples
 
 import com.tinkerpop.blueprints.Graph
 import scala.collection.JavaConversions._
+import java.io.File
+import java.net.InetAddress
 
 /**
  * Single location for settings used in examples to make them easier to run on different machines.
  */
 object ExamplesUtils {
 
-  private val SPARK_PORT = "7077"
-  private val HOST_NAME = java.net.InetAddress.getLocalHost().getHostName()
-  private val SPARK_MASTER = "spark://" + HOST_NAME + ":" + SPARK_PORT
-  private val SPARK_HOME = "/opt/cloudera/parcels/CDH/lib/spark/"
-  private val GB_JAR_PATH = System.getProperty("user.dir") + "/target//scala-2.10/gb.jar"
-  private val HDFS_MASTER = "hdfs://" + HOST_NAME
-  private val MOVIE_DATA_SET =  HDFS_MASTER + "/user/hadoop/netflix.csv"
+  val hdfsMaster = System.getProperty("HDFS_MASTER", "hdfs://" + hostname)
 
   /**
-   * URL to the Spark Master
+   * Storage hostname setting for titan.
    */
-  def sparkMaster(): String = {
-    return SPARK_MASTER;
+  def storageHostname: String = {
+    val storageHostname = System.getProperty("STORAGE_HOSTNAME", "localhost")
+    println("STORAGE_HOSTNAME: " + storageHostname)
+    storageHostname
   }
 
   /**
-   * Absolute path to the gb.jar file
+   * URL to the Spark Master, from either a system property or best guess
    */
-  def gbJar(): String = {
-    val jar = new java.io.File(GB_JAR_PATH)
-    if (!jar.exists()) {
-      throw new RuntimeException("gb jar wasn't found at: " + jar.getAbsolutePath + " please run 'sbt assembly'")
-    }
-    jar.getAbsolutePath
+  def sparkMaster: String = {
+    val sparkMaster = System.getProperty("SPARK_MASTER", "spark://" + hostname + ":7077")
+    println("SPARK_MASTER: " + sparkMaster)
+    sparkMaster
   }
 
   /**
-   * Spark home directory
+   * Absolute path to the gb.jar file from either a system property or best guess
    */
-  def sparkHome(): String = {
-    val path = new java.io.File(SPARK_HOME)
-    if (!path.exists()) {
-      throw new RuntimeException("path wasn't found at: " + path.getAbsolutePath + " please ensure the path is correct and rerun the test.")
-    }
-    path.getAbsolutePath
+  def gbJar: String = {
+    val gbJar = System.getProperty("GB_JAR", guessGbJar)
+    println("gbJar: " + gbJar)
+    require(new File(gbJar).exists(), "GB_JAR does not exist")
+    gbJar
   }
+
+  /**
+   * Check for the gb.jar in expected locations
+   */
+  private def guessGbJar: String = {
+    val possiblePaths = List( System.getProperty("user.dir") + "/target/scala-2.10/gb.jar", System.getProperty("user.dir") + "/gb.jar")
+    possiblePaths.foreach( path => {
+      val jar = new File(path)
+      if (jar.exists()) {
+        return jar.getAbsolutePath
+      }
+    })
+    throw new RuntimeException("gb jar wasn't found at in any of the expected locations, please run 'sbt assembly' or set GB_JAR")
+  }
+
+  /**
+   * Spark home directory from either a system property or best guess
+   */
+  def sparkHome: String = {
+    val sparkHome = System.getProperty("SPARK_HOME", guessSparkHome)
+    println("SPARK_HOME: "  + sparkHome)
+    require(new File(sparkHome).exists(), "SPARK_HOME does not exist")
+    sparkHome
+  }
+
+  /**
+   * Check for SPARK_HOME in the expected locations
+   */
+  private def guessSparkHome: String = {
+    val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark")
+    possibleSparkHomes.foreach( dir => {
+      val path = new File(dir)
+      if (path.exists()) {
+        return path.getAbsolutePath
+      }
+    })
+    throw new RuntimeException("SPARK_HOME wasn't found at any of the expected locations, please set SPARK_HOME")
+  }
+
+  /** Hostname for current system */
+  private def hostname: String = InetAddress.getLocalHost.getHostName
 
   /**
    * Path to the movie data set.
    */
-  def movieDataset(): String = {
-    return MOVIE_DATA_SET
+  def movieDataset: String = {
+    val moviePath = System.getProperty("MOVIE_DATA", "/user/hadoop/netflix.csv")
+    println("Movie Data Set in HDFS: " + moviePath)
+    hdfsMaster + moviePath
   }
 
   /**
