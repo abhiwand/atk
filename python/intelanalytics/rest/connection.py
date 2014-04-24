@@ -23,6 +23,7 @@
 """
 Connection to the Intel Analytics REST Server
 """
+import sys
 import json
 import requests
 import logging
@@ -91,6 +92,20 @@ class HttpMethods(object):
     def _get_base_uri(self):
         return "%s/%s/" % (self.connection.get_url(), self.connection.version)
 
+    @staticmethod
+    def _check_response(response, ignore=None):
+        if not ignore or response.status_code not in ignore:
+            response.raise_for_status()
+        else:
+            try:
+                response.raise_for_status()
+            except Exception as e:
+                m = "Ignoring HTTP Response ERROR probably due to {0}:\n\t{1}".\
+                    format(ignore[response.status_code], e)
+                logger.warn(m)
+                sys.stderr.write(m)
+                sys.stderr.flush()
+
    # HTTP commands
 
     def get(self, uri_path):
@@ -100,7 +115,7 @@ class HttpMethods(object):
         r = requests.get(uri)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Get Response] %s", r.text)
-        r.raise_for_status()
+        self._check_response(r)
         return r
 
     def delete(self, uri_path):
@@ -109,7 +124,7 @@ class HttpMethods(object):
         r = requests.delete(uri)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Delete Response] %s", r.text)
-        r.raise_for_status()
+        self._check_response(r)
         return r
 
     def post(self, uri_path, payload):
@@ -121,7 +136,7 @@ class HttpMethods(object):
         r = requests.post(uri, data=data, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Post Response] %s", r.text)
-        r.raise_for_status()
+        self._check_response(r, {406: 'long initialization time'})
         return r
 
 
