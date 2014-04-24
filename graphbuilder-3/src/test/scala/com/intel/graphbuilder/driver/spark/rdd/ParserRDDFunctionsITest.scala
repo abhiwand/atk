@@ -24,8 +24,8 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
 import com.intel.graphbuilder.testutils.TestingSparkContext
-import com.intel.graphbuilder.parser.{CombinedParser, InputSchema, ColumnDef}
-import com.intel.graphbuilder.parser.rule.{EdgeRuleParser, VertexRuleParser, EdgeRule, VertexRule}
+import com.intel.graphbuilder.parser.{ CombinedParser, InputSchema, ColumnDef }
+import com.intel.graphbuilder.parser.rule.{ EdgeRuleParser, VertexRuleParser, EdgeRule, VertexRule }
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import org.apache.spark.rdd.RDD
 import org.specs2.mutable.Specification

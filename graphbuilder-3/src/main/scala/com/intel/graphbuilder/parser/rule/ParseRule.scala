@@ -54,7 +54,6 @@ case class VertexRule(gbId: PropertyRule, propertyRules: List[PropertyRule] = Ni
   }
 }
 
-
 /**
  * An EdgeRule describes how to parse Edges from InputRows
  * @param tailVertexGbId the rule describing how to parse the source Vertex unique Id

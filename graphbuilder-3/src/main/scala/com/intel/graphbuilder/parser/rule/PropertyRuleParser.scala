@@ -26,7 +26,6 @@ package com.intel.graphbuilder.parser.rule
 import com.intel.graphbuilder.elements.Property
 import com.intel.graphbuilder.parser._
 
-
 /**
  * Parse zero or more properties using a list of rules
  */

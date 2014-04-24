@@ -24,8 +24,7 @@
 package com.intel.graphbuilder.parser.rule
 
 import com.intel.graphbuilder.elements.Vertex
-import com.intel.graphbuilder.parser.{InputSchema, Parser, InputRow}
-
+import com.intel.graphbuilder.parser.{ InputSchema, Parser, InputRow }
 
 /**
  * Parse an InputRow into Vertices using VertexRules
@@ -59,5 +58,4 @@ private[rule] case class SingleVertexRuleParser(rule: VertexRule) extends Serial
     new Vertex(gbIdParser.parse(row), propertyParser.parse(row))
   }
 }
-
 
