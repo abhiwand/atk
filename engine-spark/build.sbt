@@ -4,7 +4,7 @@ import sbt.ExclusionRule
 //default ones from the parent for this module.
 libraryDependencies := {
   Seq("org.scala-lang" % "scala-library" % scalaVersion.value,
-      ("org.apache.spark" %% "spark-core" % "0.9.1").
+      ("org.apache.spark" %% "spark-core" % "0.9.0-incubating").
         exclude("org.mortbay.jetty", "servlet-api").
         exclude("commons-beanutils", "commons-beanutils-core").
         exclude("commons-collections", "commons-collections").
