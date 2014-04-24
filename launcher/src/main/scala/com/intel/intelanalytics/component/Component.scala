@@ -23,8 +23,20 @@
 
 package com.intel.intelanalytics.component
 
-trait Component {
+trait Archive {
+  def withLoader[T](loader: ClassLoader)(expr: => T): T = {
+    val prior = Thread.currentThread().getContextClassLoader
+    try {
+      Thread.currentThread().setContextClassLoader(loader)
+      expr
+    } finally {
+      Thread.currentThread().setContextClassLoader(prior)
+    }
+  }
   def start(configuration: Map[String, String])
+
   def stop()
+
+  def get[T](descriptor: String): T
 }
 

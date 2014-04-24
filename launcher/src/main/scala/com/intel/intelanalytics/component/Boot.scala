@@ -27,11 +27,44 @@ import java.net.URLClassLoader
 import scala.reflect.io.{File, Path, Directory}
 import scala.util.control.NonFatal
 import scala.collection.mutable
+import PartialFunction._
+
+
+
 
 object Boot extends App {
 
+  //Scalaz also provides this, but we don't want a scalaz dependency in the launcher
+  implicit class RichBoolean(val b: Boolean) extends AnyVal {
+    final def option[A](a: => A): Option[A] = if (b) Some(a) else None
+  }
+
   val loaders = new mutable.HashMap[String, ClassLoader]
                             with mutable.SynchronizedMap[String, ClassLoader] {}
+
+  val archives = new mutable.HashMap[String, Archive]
+                            with mutable.SynchronizedMap[String, Archive] {}
+
+
+  def buildArchive(archive: String, className: String): Archive = {
+    val loader = getClassLoader(archive)
+    val klass = loader.loadClass(className)
+    val thread = Thread.currentThread()
+    val prior = thread.getContextClassLoader
+    try {
+      thread.setContextClassLoader(loader)
+      val instance = klass.newInstance().asInstanceOf[Archive]
+      instance.start(Map.empty)
+      archives += ((archive + ":" + className) -> instance)
+      instance
+    } finally {
+      thread.setContextClassLoader(prior)
+    }
+  }
+
+  def getArchive(archive: String, className: String): Archive = {
+    archives.getOrElse(archive + ":" + className, buildArchive(archive, className))
+  }
 
   def getClassLoader(archive: String) : ClassLoader = {
     loaders.getOrElse(archive, buildClassLoader(archive, interfaces))
@@ -41,21 +74,23 @@ object Boot extends App {
     //TODO: Allow directory to be passed in, or otherwise abstracted?
     //TODO: Make sensitive to actual scala version rather than hard coding.
     val classDirectory : Path  = Directory.Current.get / archive / "target" / "scala-2.10" / "classes"
-    val jar : Path = Directory.Current.get / "lib" / (archive + ".jar")
-    val loader = if (Directory(classDirectory).exists) {
+    val developmentJar : Path = Directory.Current.get / archive / "target" / "scala-2.10" / (archive + ".jar")
+    val deployedJar : Path = Directory.Current.get / "lib" / (archive + ".jar")
+    val urls = Array(
+                Directory(classDirectory).exists.option {
                     println(s"Found class directory at $classDirectory")
-                    Some(new URLClassLoader(Array(classDirectory.toURL), parent))
-                  } else if (File(jar).exists) {
-                    println(s"Found jar at $jar")
-                    Some(new URLClassLoader(Array(jar.toURL), getClass.getClassLoader))
-                  } else {
-                    None
-                  }
-    loader match {
-      case Some(ldr) => {
-        loaders += (archive -> ldr)
-        ldr
-      }
+                    classDirectory.toURL
+                  },
+                File(developmentJar).exists.option {
+                    println(s"Found jar at $developmentJar")
+                    developmentJar.toURL
+                  },
+                File(deployedJar).exists.option {
+                  println(s"Found jar at $deployedJar")
+                  deployedJar.toURL
+                }).flatten
+    urls match {
+      case u if u.length > 0 => new URLClassLoader(u, parent)
       case _ => throw new Exception(s"Could not locate archive $archive")
     }
   }
@@ -68,15 +103,7 @@ object Boot extends App {
     usage()
   } else {
     try {
-      val loader = getClassLoader(args(0))
-      val klass = loader.loadClass(args(1))
-//      val main = klass.getMethod("main")
-//      if (main == null) {
-//        throw new Exception("No main method on specified class.")
-//      }
-//      main.invoke(null, Array():Array[String])
-      val instance = klass.newInstance().asInstanceOf[Component]
-      instance.start(Map.empty)
+      val instance = getArchive(args(0), args(1))
     } catch {
       case NonFatal(e) => println(e)
     }

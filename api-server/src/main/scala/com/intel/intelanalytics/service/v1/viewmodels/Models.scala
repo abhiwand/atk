@@ -1,7 +1,7 @@
 package com.intel.intelanalytics.service.v1.viewmodels
 
 import com.intel.intelanalytics.domain.{DataFrame, Schema}
-import spray.json.DefaultJsonProtocol
+import spray.json.{JsValue, DefaultJsonProtocol}
 import spray.httpx.SprayJsonSupport
 
 //////////////////////////////////////////////////////////////////////////////
@@ -51,9 +51,25 @@ case class DataFrameHeader(id: Long, name: String, url: String) {
   require(url != null)
 }
 
+case class JsonTransform(name: String, language: String,
+                         definition: Option[String], arguments: Option[JsValue]) {
+  require(name != null, "Name is required")
+  require(language == "python-cloudpickle" || language == "builtin",
+    "Only python-cloudpickle and builtin are supported")
+  if (language == "builtin") {
+    require(definition.isEmpty && arguments.isDefined, "For builtins, only arguments should be provided, not definition")
+  } else {
+    require(definition.isDefined && arguments.isEmpty, "For user functions, only definition should be provided, not arguments")
+  }
+}
+
+case class LoadFile(source: String, separator: String, skipRows: Int = 0)
+
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
+  implicit val jsonTransformFormat = jsonFormat4(JsonTransform)
+  implicit val loadFileFormat = jsonFormat3(LoadFile)
 }

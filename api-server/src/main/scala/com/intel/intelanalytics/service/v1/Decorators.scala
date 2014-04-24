@@ -34,15 +34,14 @@ class FrameDecorator extends EntityDecorator[DataFrame, DataFrameHeader, Decorat
   override def decorateEntity(uri: String,
                               links: Iterable[RelLink],
                               entity: DataFrame): DecoratedDataFrame = {
-    require(entity.id.isDefined)
-    DecoratedDataFrame(id = entity.id.get, name = entity.name,
+    DecoratedDataFrame(id = entity.id, name = entity.name,
       schema = entity.schema, links = links.toList)
   }
 
   override def decorateForIndex(uri: String, entities: Seq[DataFrame]): List[DataFrameHeader] = {
-    entities.map(frame => new DataFrameHeader(id = frame.id.get,
+    entities.map(frame => new DataFrameHeader(id = frame.id,
       name = frame.name,
-      url = uri + "/" + frame.id.get)).toList
+      url = uri + "/" + frame.id)).toList
   }
 }
 
