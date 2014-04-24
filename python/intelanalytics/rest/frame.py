@@ -25,6 +25,9 @@ REST backend for frames
 """
 import logging
 logger = logging.getLogger(__name__)
+import texttable
+from collections import defaultdict
+
 from connection import rest_http
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
@@ -91,6 +94,64 @@ class FrameBackendREST(object):
         # requests.post(url, payload)
 
         raise NotImplementedError
+
+    class InspectionTable(object):
+
+        _dtypes = defaultdict(lambda: 'a')
+        _dtypes.update([(bool, 't'),
+                        (bytearray, 'a'),
+                        (dict, 'a'),
+                        (float32, 'f'),
+                        (float64, 'f'),
+                        (int32, 'i'),
+                        (int64, 'i'),
+                        (list, 'a'),
+                        (string, 't'),
+                        (str, 't')])
+
+        _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
+        _align.update([(bool, 'r'),
+                       (bytearray, 'l'),
+                       (dict, 'l'),
+                       (float32, 'r'),
+                       (float64, 'r'),
+                       (int32, 'r'),
+                       (int64, 'r'),
+                       (list, 'l'),
+                       (string, 'l'),
+                       (str, 'l')])
+
+        def __init__(self, schema, rows):
+            self.schema = schema
+            self.rows = rows
+
+        def __repr__(self):
+            table = texttable.Texttable()
+            table.set_deco(texttable.Texttable.HEADER)
+            dtypes, alignment = self._get_table_props()
+            table.set_cols_align(alignment)
+            table.set_cols_dtype(dtypes)
+            table.header(self._get_header())
+            table.add_rows(self.rows, header=False)
+            return table.draw()
+
+        def _get_header(self):
+            return ["{0}:{1}".format(n,supported_types.get_type_string(t))
+                    for n, t in self.schema.items()]
+
+        def _get_table_props(self):
+            props = [(FrameBackendREST.InspectionTable._dtypes[t],
+                      FrameBackendREST.InspectionTable._align[t])
+                     for t in self.schema.values()]
+            return zip(*props)
+
+        #def _repr_html_(self): Add this method for ipython notebooks
+
+    def inspect(self, frame, n, offset):
+        # inspect is just a pretty-print of take, we'll do it on the client
+        # side until there's a good reason not to
+        rows = self.take(frame, n, offset)
+        return FrameBackendREST.InspectionTable(frame.schema, rows)
 
     def take(self, frame, n, offset):
         r = rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
