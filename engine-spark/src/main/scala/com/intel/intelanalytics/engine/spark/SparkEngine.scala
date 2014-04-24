@@ -55,6 +55,7 @@ import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
 import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
+import org.apache.spark.scheduler.{SparkListenerStageCompleted, SparkListenerJobStart, SparkListener}
 
 //TODO logging
 //TODO error handling
@@ -62,6 +63,26 @@ import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
+
+class SparkProgressListener extends SparkListener {
+
+  var totalStages: Int = 0
+  var finishedStages: Int = 0
+  override def onJobStart(jobStart: SparkListenerJobStart) {
+    totalStages = jobStart.stageIds.length
+  }
+
+  override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
+    finishedStages = finishedStages + 1
+  }
+
+  def getProgress(): Int = {
+    (100 * finishedStages) / totalStages
+  }
+
+}
+
+
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
   val engine = new SparkEngine {}
   val conf = ConfigFactory.load()
