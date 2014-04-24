@@ -3,6 +3,10 @@ import sbt.Keys._
 
 import sbtassembly.Plugin.AssemblyKeys._
 
+import com.typesafe.sbt.SbtScalariform._
+
+import scalariform.formatter.preferences._
+
 name := "graphbuilder-3"
 
 version := "3"
@@ -57,10 +61,18 @@ resolvers ++= Seq(
   Resolver.sonatypeRepo("releases"),
   Resolver.typesafeRepo("releases"),
   "Cloudera Repo" at "https://repository.cloudera.com/artifactory/cloudera-repos/",
-  "gao-mirror" at "http://gaomaven.jf.intel.com:8081/nexus/content/groups/public",
+//  "gao-mirror" at "http://gaomaven.jf.intel.com:8081/nexus/content/groups/public",
   Resolver.mavenLocal
 )
 
 ScoverageSbtPlugin.instrumentSettings
 
 ScoverageSbtPlugin.ScoverageKeys.excludedPackages in ScoverageSbtPlugin.scoverage := "com.intel.graphbuilder.driver.spark.titan.examples.*;com.intel.graphbuilder.driver.local.examples.*"
+
+org.scalastyle.sbt.ScalastylePlugin.Settings
+
+scalariformSettings
+
+ScalariformKeys.preferences := ScalariformKeys.preferences.value
+  .setPreference(AlignParameters, true)
+  .setPreference(CompactControlReadability, true)

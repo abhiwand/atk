@@ -37,7 +37,7 @@ object ExamplesUtils {
   private val SPARK_HOME = "/opt/cloudera/parcels/CDH/lib/spark/"
   private val GB_JAR_PATH = System.getProperty("user.dir") + "/target//scala-2.10/gb.jar"
   private val HDFS_MASTER = "hdfs://" + HOST_NAME
-  private val MOVIE_DATA_SET =  HDFS_MASTER + "/user/hadoop/netflix.csv"
+  private val MOVIE_DATA_SET = HDFS_MASTER + "/user/hadoop/netflix.csv"
 
   /**
    * URL to the Spark Master

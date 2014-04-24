@@ -26,7 +26,6 @@ package com.intel.graphbuilder.parser.rule
 import com.intel.graphbuilder.elements.Edge
 import com.intel.graphbuilder.parser._
 
-
 /**
  * Parse InputRow's into Edges using EdgeRules
  */
@@ -46,7 +45,6 @@ case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) e
   }
 }
 
-
 /**
  * Parse a single InputRow into an Edge
  */
@@ -61,5 +59,4 @@ private[rule] case class SingleEdgeRuleParser(rule: EdgeRule) extends Serializab
     new Edge(tailGbIdParser.parse(row), headGbIdParser.parse(row), rule.label.value(row), propertyParser.parse(row))
   }
 }
-
 
