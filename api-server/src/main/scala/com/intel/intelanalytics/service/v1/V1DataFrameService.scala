@@ -137,6 +137,21 @@ trait V1DataFrameService extends V1Service {
                           }
                         }
                       }
+                      case ("builtin", "filter") => {
+                        val args = Try {
+                          xform.arguments.get.convertTo[FilterPredicate]
+                        }
+                        validate(args.isSuccess, "Failed to parse filter descriptor: " + getErrorMessage(args)) {
+                          onComplete(
+                            for {
+                              frame <- engine.getFrame(id)
+                              res <- engine.filter(frame, args.get.predicate)
+                            } yield res) {
+                            case Success(r) => complete(decorate(uri, r))
+                            case Failure(ex) => throw ex
+                          }
+                        }
+                      }
                       case _ => ???
                     }
                   }

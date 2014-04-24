@@ -64,6 +64,7 @@ case class JsonTransform(name: String, language: String,
 }
 
 case class LoadFile(source: String, separator: String, skipRows: Int = 0)
+case class FilterPredicate(predicate: String)
 
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits
@@ -72,4 +73,5 @@ object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
   implicit val jsonTransformFormat = jsonFormat4(JsonTransform)
   implicit val loadFileFormat = jsonFormat3(LoadFile)
+  implicit val dropRowFormat = jsonFormat1(FilterPredicate)
 }
