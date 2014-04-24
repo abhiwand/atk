@@ -40,7 +40,6 @@ def _get_backend():
 
 def get_frame_names():
     """Gets the names of BigFrame objects available for retrieval"""
-    #d
     return _get_backend().get_frame_names()
 
 
@@ -61,7 +60,9 @@ class BigFrame(object):
 
     def __init__(self, source=None):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
-        self._backend = _get_backend()
+        self._id = 0
+        if not hasattr(self, '_backend'):
+            self._backend = _get_backend()
         self._name = self._get_new_frame_name(source)
         self._original_source = source  # hack, hold on to original source
         self._backend.create(self)

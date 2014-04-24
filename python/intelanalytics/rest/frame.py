@@ -23,32 +23,14 @@
 """
 REST backend for frames
 """
-import requests
-import json
 import logging
-from StringIO import StringIO
 logger = logging.getLogger(__name__)
+from connection import rest_http
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
 #from intelanalytics.rest.serialize import IAPickle
 
-
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# Set this manually...
-base_uri = "http://localhost:8090/v1/"
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-
-
-def post(url_arg_str, payload):
-    data = (json.dumps(payload))
-    url = base_uri + url_arg_str
-    logger.info("Post to: " + url + " with payload: " + data)
-    r = requests.post(url, data=data, headers=headers)
-    return r
 
 
 class FrameBackendREST(object):
@@ -56,8 +38,7 @@ class FrameBackendREST(object):
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
-        r = requests.get(base_uri + 'dataframes')
-        logger.info("REST Backend: get_frame_names response: " + r.text)
+        r = rest_http.get('dataframes')
         payload = r.json()
         return [f['name'] for f in payload]
 
@@ -73,7 +54,7 @@ class FrameBackendREST(object):
             except:
                 pass
         payload = {'name': frame.name, 'schema': {"columns": columns}}
-        r = post('dataframes', payload)
+        r = rest_http.post('dataframes', payload)
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
@@ -87,7 +68,7 @@ class FrameBackendREST(object):
             return
 
         payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': 1}}
-        r = post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
+        r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
         logger.info("Response from REST server {0}".format(r.text))
 
         if isinstance(data, CsvFile):
@@ -112,14 +93,11 @@ class FrameBackendREST(object):
         raise NotImplementedError
 
     def take(self, frame, n, offset):
-        url = base_uri + 'dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset)
-        logger.info("REST Backend: take: get " + url)
-        r = requests.get(url)
+        r = rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
     def delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
-        r = requests.delete(base_uri + "dataframes/" + str(frame._id))
+        r = rest_http.delete("dataframes/" + str(frame._id))
         return r
-
 

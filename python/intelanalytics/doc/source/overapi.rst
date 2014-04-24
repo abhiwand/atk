@@ -84,13 +84,13 @@ advised to make a copy of the frame before cleaning.
 
 >>> # drop all rows where any column is empty
 >>> j = BigFrame(f)
-#>>> j.drop(lambda row: any([is_empty(c) for c in row]))
->>> j.drop(lambda row: row.is_empty('a'))
->>> j.drop(lambda row: row.is_empty(any, ('a', 'b'), any))
->>> j.drop(lambda row: row.is_empty('', all))
->>> j.drop(lambda row: row.is_empty('', any))
->>> j.drop(lambda row: row.is_empty(('a', 'b'), all)
->>> j.drop(lambda row: row.is_empty(any, ('a', 'b')))
+>>> j.drop(lambda row: row.is_empty(any))
+
+>>> # Other examples of row.is_empty
+>>> j.drop(lambda row: row.is_empty('a'))              # single column
+>>> j.drop(lambda row: row.is_empty(all))              # multi-column
+>>> j.drop(lambda row: row.is_empty(all, ('a', 'b')))  # multi-column
+>>> j.drop(lambda row: row.is_empty(any, ('a', 'b')))  # multi-column
 
 ``filter`` is like drop except it removes all the rows for which the predicate
 evaluates False.
@@ -191,6 +191,7 @@ Creating multiple columns at once requires a function that returns a tuple
 >>> k = BigFrame(MapSource(j, func, schema))
 >>> k = BigFrame(MapSource(j, lambda row: (row['a'], row['b'], abs(row['a']), abs(row['b'])), out=('a', 'b', 'a_abs', 'b_abs'))
 
+>>> j.add_column(j.map())
 
 **Reduce**
 
