@@ -40,7 +40,7 @@ object NetflixExampleDriver {
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", "cassandra")
-  titanConfig.setProperty("storage.hostname", "127.0.0.1")
+  titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
   titanConfig.setProperty("storage.keyspace", "netflix")
   titanConfig.setProperty("storage.batch-loading", "true")
   titanConfig.setProperty("autotype", "none")
@@ -73,17 +73,17 @@ object NetflixExampleDriver {
 
     // Initialize Spark Connection
     val conf = new SparkConf()
-      .setMaster(ExamplesUtils.sparkMaster())
+      .setMaster(ExamplesUtils.sparkMaster)
       .setAppName(this.getClass.getSimpleName + " " + new Date())
-      .setSparkHome(ExamplesUtils.sparkHome())
-      .setJars(List(ExamplesUtils.gbJar()))
+      .setSparkHome(ExamplesUtils.sparkHome)
+      .setJars(List(ExamplesUtils.gbJar))
     conf.set("spark.executor.memory", "32g")
-    conf.set("spark.cores.max", "16")
+    conf.set("spark.cores.max", "32")
 
     val sc = new SparkContext(conf)
 
     // Setup data in Spark
-    val inputRows = sc.textFile(ExamplesUtils.movieDataset(), 240) /* 240 worked for 1gb file, smaller values like 90 were failing with OutOfMemory for 1GB */
+    val inputRows = sc.textFile(ExamplesUtils.movieDataset, 240)
     val inputRdd = inputRows.map(row => row.split(","): Seq[_])
 
     // Build the Graph

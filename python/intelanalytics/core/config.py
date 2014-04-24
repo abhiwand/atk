@@ -20,14 +20,14 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-# from intelanalytics.core.backend import FrameBackendSimplePrint as FrameBackend
-from intelanalytics.rest.frame import FrameBackendREST as FrameBackend
+from intelanalytics.core.backend import FrameBackendSimplePrint
+from intelanalytics.rest.frame import FrameBackendREST
 
-_frame_backend = None
+_frame_backend = FrameBackendREST()
 
 
 def get_frame_backend():
     global _frame_backend
     if _frame_backend is None:
-        _frame_backend = FrameBackend()
+        _frame_backend = FrameBackendSimplePrint()
     return _frame_backend
