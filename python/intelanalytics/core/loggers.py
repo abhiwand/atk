@@ -26,6 +26,14 @@ Logging - simple helpers for now
 import logging
 
 
+# add a null handler to root logger to avoid handler warning messages
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+
+logging.getLogger('').addHandler(NullHandler())
+
+
 class Loggers(object):
     """
     Collection of loggers to stderr, wrapped for simplicity
@@ -56,6 +64,7 @@ class Loggers(object):
         return "{0:9} '{1}'".format(logging.getLevelName(logger.level), logger.name)
 
     def set(self, level=logging.DEBUG, logger_name=''):
+        logger_name = logger_name if logger_name != 'root' else ''
         logger = logging.getLogger(logger_name)
         if level is None:
             # turn logger OFF
