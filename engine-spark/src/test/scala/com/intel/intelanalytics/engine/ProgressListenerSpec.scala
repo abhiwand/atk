@@ -35,7 +35,7 @@ class ProgressListenerSpec extends Specification with Mockito {
   def createListener() : SparkProgressListener = {
     val listener = new SparkProgressListener()
     val stageIds = Array(1, 2, 3)
-    val jobStart = SparkListenerJobStart(null, stageIds) //mock[SparkListenerJobStart]
+    val jobStart = SparkListenerJobStart(null, stageIds)
     jobStart.stageIds(0) = 1
     jobStart.stageIds(1) = 2
     jobStart.stageIds(2) = 3
