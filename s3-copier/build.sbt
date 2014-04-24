@@ -2,7 +2,7 @@ name := "s3-copier"
 
 version := "1.0-SNAPSHOT"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 resolvers += "sonatype snapshots" at "http://oss.sonatype.org/content/repositories/snapshots"
 

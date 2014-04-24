@@ -4,7 +4,7 @@ organization in ThisBuild := "com.intel"
 
 version in ThisBuild      := "0.8"
 
-scalaVersion in ThisBuild := "2.10.3"
+scalaVersion in ThisBuild := "2.10.4"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
