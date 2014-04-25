@@ -171,9 +171,16 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-   def convert(x: Array[String]): Array[Int] = {
+    def convert(x: Array[String]): Array[Int] = {
       val y = x.map(f => f.toInt)
       y
+    }
+
+    def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
+      // Python uses different RFC than Java, must correct a couple characters
+      // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
+      val corrected = byteStr.map{ case '-' => '+'; case '_' => '/'; case c => c }
+      new sun.misc.BASE64Decoder().decodeBuffer(corrected)
     }
 
     def filter(frame: DataFrame, predicate: String): Future[DataFrame] = {
@@ -182,16 +189,20 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
           val ctx = context()
 //          val location = fsRoot + frames.getFrameDataFile(frame.id)
 
-          val location = "/home/joyeshmi/test.csv"
+          val location = "/home/hadoop/test.csv"
           //Little placeholder for now
-          val predicate_from_file = Files.readAllBytes(Paths.get("/home/joyeshmi/pickled_predicate"))
-
+          //val predicate_from_file = Files.readAllBytes(Paths.get("/home/joyeshmi/pickled_predicate"))
           println("*************** In FILTER FUNCTION **********")
+          val predicateBytes = decodePythonBase64EncodedStrToBytes(predicate)
+          println("predicate bytes:")
+          for (b <- predicateBytes) print("0x%02x ".format(b))
+          println()
+          println("*********************************************")
+
           val baseRdd = ctx.textFile(location)
 //            .map[Array[String]](f => f.split(","))
           println("Printing baserdd")
           baseRdd.take(10).map(println)
-
 
           val pythonExec = "python2.7" //TODO: take from env var or config
           val environment = System.getenv() //TODO - should be empty instead?
@@ -202,13 +213,13 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
           val pyRdd = new EnginePythonRDD[String](
 //            baseRdd, predicate.getBytes("UTF-8"), environment,
-              baseRdd, predicate_from_file, environment,
+              baseRdd, predicateBytes, environment,
             new JArrayList, preservePartitioning = false,
             pythonExec = pythonExec,
             broadcastVars, accumulator)
 
 
-          println("Predicate:" + predicate)
+          //println("Predicate:" + predicate)
           println("Printing pyRdd")
           val output = pyRdd.take(10)
 
