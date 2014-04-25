@@ -20,17 +20,17 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-/*
-* Unit test specs for Parser
-*/
-package com.intel.intelanalytics.engine
+
+package org.apache.spark.engine
 
 import org.specs2.mutable.Specification
 import com.intel.intelanalytics.engine.spark.SparkProgressListener
-import org.apache.spark.scheduler.SparkListenerJobStart
+import org.apache.spark.scheduler._
 import org.specs2.mock.Mockito
+import org.apache.spark.scheduler.SparkListenerStageSubmitted
+import org.apache.spark.scheduler.SparkListenerJobStart
 
-class ProgressListenerSpec extends Specification with Mockito {
+class ProgressListenerSpec extends Specification with Mockito  {
 
   def createListener() : SparkProgressListener = {
     val listener = new SparkProgressListener()
@@ -45,6 +45,10 @@ class ProgressListenerSpec extends Specification with Mockito {
 
   "initialize stages count" in {
     val listener = createListener
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(10)
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
     listener.totalStages shouldEqual 3
     listener.finishedStages shouldEqual 0
     listener.getProgress() shouldEqual 0
@@ -52,6 +56,11 @@ class ProgressListenerSpec extends Specification with Mockito {
 
   "finish first stage" in {
     val listener = createListener
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(10)
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
+
     listener.onStageCompleted(null)
     listener.finishedStages shouldEqual 1
     listener.getProgress() shouldEqual 33
@@ -59,6 +68,12 @@ class ProgressListenerSpec extends Specification with Mockito {
 
   "finish second stage" in {
     val listener = createListener
+
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(10)
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
+
     listener.onStageCompleted(null)
     listener.onStageCompleted(null)
     listener.finishedStages shouldEqual 2
@@ -67,11 +82,92 @@ class ProgressListenerSpec extends Specification with Mockito {
 
   "finish all stages" in {
     val listener = createListener
+
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(10)
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
+
     listener.onStageCompleted(null)
     listener.onStageCompleted(null)
     listener.onStageCompleted(null)
     listener.finishedStages shouldEqual 3
     listener.getProgress() shouldEqual 100
+  }
+
+  "finish first task in first stage" in {
+    val listener = createListener
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(10)
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
+    val taskEnd = mock[SparkListenerTaskEnd]
+    val taskInfo = mock[TaskInfo]
+    taskEnd.taskInfo.returns(taskInfo)
+    taskInfo.successful.returns(true)
+    listener.onTaskEnd(taskEnd)
+    listener.getProgress() shouldEqual 3
+  }
+
+  "finish second task in second stage" in {
+    val listener = createListener
+    listener.onStageCompleted(null)
+
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(10)
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
+    val taskEnd = mock[SparkListenerTaskEnd]
+    val taskInfo = mock[TaskInfo]
+
+    taskEnd.taskInfo.returns(taskInfo)
+    taskInfo.successful.returns(true)
+    listener.onTaskEnd(taskEnd)
+    listener.onTaskEnd(taskEnd)
+    listener.getProgress() shouldEqual 39
+  }
+
+  "finish all tasks in second stage" in {
+    val listener = createListener
+    listener.onStageCompleted(null)
+
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(3)
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
+    val taskEnd = mock[SparkListenerTaskEnd]
+    val taskInfo = mock[TaskInfo]
+
+    taskEnd.taskInfo.returns(taskInfo)
+    taskInfo.successful.returns(true)
+    listener.onTaskEnd(taskEnd)
+    listener.onTaskEnd(taskEnd)
+    listener.onTaskEnd(taskEnd)
+
+    listener.getProgress() shouldEqual 66
+  }
+
+
+  "finish all tasks in second stage" in {
+    val listener = createListener
+    listener.onStageCompleted(null)
+
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(3)
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
+    val taskEnd = mock[SparkListenerTaskEnd]
+    val taskInfo = mock[TaskInfo]
+
+    taskEnd.taskInfo.returns(taskInfo)
+    taskInfo.successful.returns(true)
+    listener.onTaskEnd(taskEnd)
+    listener.onTaskEnd(taskEnd)
+    listener.onTaskEnd(taskEnd)
+
+    listener.getProgress() shouldEqual 66
+    listener.onStageCompleted(null)
+    listener.getProgress() shouldEqual 66
   }
 
 }

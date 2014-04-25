@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{SparkContext, SparkConf, Accumulator}
+import org.apache.spark.{ExceptionFailure, SparkContext, SparkConf, Accumulator}
 import org.apache.spark.api.python._
 import org.apache.spark.rdd.RDD
 import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
@@ -55,7 +55,13 @@ import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
 import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
-import org.apache.spark.scheduler.{SparkListenerStageCompleted, SparkListenerJobStart, SparkListener}
+import org.apache.spark.scheduler._
+import org.apache.spark.scheduler.SparkListenerStageCompleted
+import scala.Some
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.engine.RowFunction
+import com.intel.intelanalytics.domain.DataFrame
+import org.apache.spark.scheduler.SparkListenerJobStart
 
 //TODO logging
 //TODO error handling
@@ -68,16 +74,37 @@ class SparkProgressListener extends SparkListener {
 
   var totalStages: Int = 0
   var finishedStages: Int = 0
+  var successCount: Int = 0
+  var totalTaskForStage: Int = 0
   override def onJobStart(jobStart: SparkListenerJobStart) {
     totalStages = jobStart.stageIds.length
   }
 
+  override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
+    totalTaskForStage = stageSubmitted.stage.numTasks
+
+  }
+
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
     finishedStages = finishedStages + 1
+    successCount = 0
+  }
+
+  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
+
+    taskEnd.taskInfo.successful match {
+      case true =>
+        successCount = successCount + 1
+
+//        stageIdToTasksFailed(sid) = stageIdToTasksFailed.getOrElse(sid, 0) + 1
+//        (Some(e), e.metrics)
+      case false =>
+
+    }
   }
 
   def getProgress(): Int = {
-    (100 * finishedStages) / totalStages
+    ((100 * finishedStages) / totalStages) + (100 * successCount / (totalTaskForStage * totalStages))
   }
 
 }
