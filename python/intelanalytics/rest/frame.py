@@ -23,6 +23,7 @@
 """
 REST backend for frames
 """
+import base64
 import logging
 logger = logging.getLogger(__name__)
 import texttable
@@ -34,6 +35,9 @@ from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
 #from intelanalytics.rest.serialize import IAPickle
 
+
+def encode_bytes_for_http(b):
+    return base64.urlsafe_b64encode(b)
 
 
 class FrameBackendREST(object):
@@ -88,29 +92,29 @@ class FrameBackendREST(object):
         from itertools import ifilter
         from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer
 
-
-        serializer = BatchedSerializer(PickleSerializer(),
-                                    1024)
+        serializer = BatchedSerializer(PickleSerializer(), 1024)
         def filter_func(iterator): return ifilter(predicate, iterator)
         def func(s, iterator): return filter_func(iterator)
 
         command = (func, UTF8Deserializer(), serializer)
 
         pickled_predicate = CloudPickleSerializer().dumps(command)
-        file = open('/home/joyeshmi/pickled_predicate', "w")
-        file.write(bytearray(pickled_predicate))
-        file.close()
-
+        http_ready_predicate = encode_bytes_for_http(pickled_predicate)
+        #file = open('/home/joyeshmi/pickled_predicate', "w")
+        #file.write(bytearray(pickled_predicate))
+        #file.close()
 
         # from serialize import IAPickle
         # pickled_stream = StringIO()
         # i = IAPickle(pickled_stream)
         # i.dump(predicate)
         # pickled_predicate = pickled_stream.getvalue()
-        payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': 'placeholder'}}
+
+        payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': http_ready_predicate}}
         r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
-        logger.info("REST Backend: create response: " + r.text)
-        payload = r.json()
+        #logger.info("REST Backend: create response: " + r.text)
+        #payload = r.json()
+        return r
 
     class InspectionTable(object):
 
