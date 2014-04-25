@@ -50,7 +50,7 @@ case class EdgeRuleParser(inputSchema: InputSchema, edgeRules: List[EdgeRule]) e
 /**
  * Parse a single InputRow into an Edge
  */
-private[rule] case class SingleEdgeRuleParser(rule: EdgeRule) extends Serializable {
+private[graphbuilder] case class SingleEdgeRuleParser(rule: EdgeRule) extends Serializable {
 
   // each rule can have different rules for parsing tailVertexGbId's, headVertexGbId's, and properties
   private val tailGbIdParser = new SinglePropertyRuleParser(rule.tailVertexGbId)
