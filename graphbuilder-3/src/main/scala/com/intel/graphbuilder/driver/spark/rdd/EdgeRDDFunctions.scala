@@ -37,8 +37,13 @@ import org.apache.spark.rdd.RDD
  * This is best used by importing GraphBuilderRDDImplicits._
  *
  * @param self input that these functions are applicable to
+ * @param maxEdgesPerCommit Titan performs poorly if you try to commit edges in too
+ *                          large of batches.  With Vertices the limit is much lower (10k).
+ *                          The limit for Edges is much higher but there is still a limit.
+ *                          It is hard to tell what the right number is for this one.
+ *                          I think somewhere larger than 400k is getting too big.
  */
-class EdgeRDDFunctions(self: RDD[Edge]) extends Serializable {
+class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) extends Serializable {
 
   /**
    * Merge duplicate Edges, creating a new Edge that has a combined set of properties.
@@ -128,6 +133,9 @@ class EdgeRDDFunctions(self: RDD[Edge]) extends Serializable {
         while (iterator.hasNext) {
           writer.write(iterator.next())
           count += 1
+          if (count % maxEdgesPerCommit == 0) {
+            graph.commit()
+          }
         }
 
         println("wrote edges: " + count + " for split: " + context.partitionId)
