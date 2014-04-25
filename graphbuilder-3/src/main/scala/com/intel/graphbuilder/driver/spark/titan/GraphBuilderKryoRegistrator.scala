@@ -30,7 +30,6 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[Edge])
     kryo.register(classOf[GbIdToPhysicalId])
     kryo.register(classOf[GraphElement])
-    kryo.register(classOf[Mergeable])
     kryo.register(classOf[Property])
     kryo.register(classOf[Vertex])
 
@@ -60,6 +59,5 @@ class GraphBuilderKryoRegistrator extends KryoRegistrator {
     kryo.register(classOf[InputRow])
     kryo.register(classOf[InputSchema])
     kryo.register(classOf[ColumnDef])
-    kryo.register(classOf[Parser])
   }
 }
