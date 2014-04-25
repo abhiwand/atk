@@ -78,7 +78,6 @@ class EdgeRDDFunctions(self: RDD[Edge]) extends Serializable {
    * This is an inner join.  Edges that can't be joined are dropped.
    */
   def joinWithPhysicalIds(ids: RDD[GbIdToPhysicalId]): RDD[Edge] = {
-    //TODO: can this be simplified?
 
     val idsByGbId = ids.groupBy(idMap => idMap.gbId)
 
