@@ -42,6 +42,9 @@ import org.apache.spark.{TaskContext, Partition}
  */
 class TitanVertexWriterRDD(prev: RDD[Vertex], titanConnector: TitanGraphConnector, val append: Boolean = false) extends RDD[GbIdToPhysicalId](prev) {
 
+  /** Titan performs poorly if you try to commit vertices in too large of batches */
+  val MaxVerticesPerCommit = 10000
+
   override def getPartitions: Array[Partition] = firstParent[Vertex].partitions
 
   /**
@@ -56,6 +59,9 @@ class TitanVertexWriterRDD(prev: RDD[Vertex], titanConnector: TitanGraphConnecto
     val gbIdsToPhyiscalIds = firstParent[Vertex].iterator(split, context).map(v => {
       val id = writer.write(v)
       count += 1
+      if (count % MaxVerticesPerCommit == 0) {
+        graph.commit()
+      }
       id
     })
 
