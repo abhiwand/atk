@@ -191,9 +191,10 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
           val location = "/home/hadoop/test.csv"
           //Little placeholder for now
-          //val predicate_from_file = Files.readAllBytes(Paths.get("/home/joyeshmi/pickled_predicate"))
           println("*************** In FILTER FUNCTION **********")
-          val predicateBytes = decodePythonBase64EncodedStrToBytes(predicate)
+          val predicate_from_file = Files.readAllBytes(Paths.get("/home/hadoop/pickled_predicate"))
+          val predicateBytes = predicate_from_file
+          //val predicateBytes = decodePythonBase64EncodedStrToBytes(predicate)
           println("predicate bytes:")
           for (b <- predicateBytes) print("0x%02x ".format(b))
           println()
@@ -204,6 +205,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
           println("Printing baserdd")
           baseRdd.take(10).map(println)
 
+
           val pythonExec = "python2.7" //TODO: take from env var or config
           val environment = System.getenv() //TODO - should be empty instead?
           val accumulator = new Accumulator[JList[Array[Byte]]](
@@ -211,6 +213,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
               param = new EnginePythonAccumulatorParam())
           var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
 
+          println("About to create EnginePythonRDD")
           val pyRdd = new EnginePythonRDD[String](
 //            baseRdd, predicate.getBytes("UTF-8"), environment,
               baseRdd, predicateBytes, environment,
@@ -220,7 +223,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
 
           //println("Predicate:" + predicate)
-          println("Printing pyRdd")
+          println("About to pyRdd.take(10)")
           val output = pyRdd.take(10)
 
 //          val f = new PrintWriter("/home/joyeshmi/filteredoutput");

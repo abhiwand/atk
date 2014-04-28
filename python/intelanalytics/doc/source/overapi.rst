@@ -7,6 +7,17 @@ Python API Overview
 
 >>> from intelanalytics import *
 
+Data Types
+----------
+
+The following data types are supported:
+
+>>> supported_types
+bool, bytearray, dict, float32, float64, int32, int64, list, str, string
+
+where ``str`` is ASCII per Python, ``string`` is UTF-8
+
+
 Data Sources
 ------------
 
@@ -21,8 +32,11 @@ Describe a CSV file with its name and schema at minimum:
 >>> csv3 = CsvFile("different_data.txt", [('x', float32), ('', ignore), ('y', int64)])
 
 The schema is the structure of a single line in the CSV File.  It is built from
-tuples, each representing a field --its name and type.  (See link:todo-DataTypes for
-supported Data Types)
+tuples, each representing a field --its name and type.  (See supported Data Types)
+
+For File schemas, the ``ignore`` type may be specified if the parser should ignore
+the field.  When used as a BigFrame data source, the CSV file's schema becomes
+the schema of the BigFrame, where the name and type become column descriptions
 
 Optionally choose a delimiter other than ',' and skip the first n lines
 of the file, which may be header:
@@ -66,7 +80,7 @@ will merge with those of the new data sources.
 
 >>> f.count()               # row count
 >>> len(f)                  # column count
->>> f.inspect(5)            # print 5 rows chosen randomly
+>>> f.inspect(5)            # pretty-print first 5 rows
 >>> f.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
 
 
@@ -125,11 +139,12 @@ See :doc:`rowfunc`
 
 **Copy Columns**
 
->>> k = BigFrame(j[['a', 'c']])  # projects columns 'a' and 'b' to new frame k
+>>> k = BigFrame(f[['a', 'c']])  # projects columns 'a' and 'c' to new frame k
 
 **Delete Columns**
 
 >>> g.delete_column('b')  # in place
+>>> g.delete_column(['a', 'c'])  # in place
 
 **Rename Columns**
 
@@ -178,7 +193,17 @@ Creating multiple columns at once requires a function that returns a tuple
 
 **Map**
 
-***TBD...***  ideas include:
+***WIP***  current idea:
+
+A 'free-standing' ``map()`` method would be a little too unruly to support,
+especially out of the chute.  We need to restrain the user to specific
+applications of map, such as add_column.
+
+map() does not actually do anything (similar to groupby()).  It just creates a
+Map object that describes a map operation.  That object can be used in
+construction of a new BigFrame, or other situation which calls for a list of
+data.  The Map object has a reduce method.   A subsequent call to ``assign`` or ``reduce``
+must be used.
 
 >>> j.map().assign()
 >>> j.map().reduce()
@@ -188,14 +213,12 @@ Creating multiple columns at once requires a function that returns a tuple
 >>> j.map(lambda row: 0 if row.is_empty('a') else row.a, out='a')
 
 >>> j.map(lambda row:  (row['a'], row['b'], abs(row['a']), abs(row['b']))
->>> k = BigFrame(MapSource(j, func, schema))
->>> k = BigFrame(MapSource(j, lambda row: (row['a'], row['b'], abs(row['a']), abs(row['b'])), out=('a', 'b', 'a_abs', 'b_abs'))
+>>> k = BigFrame(Map(j, func, schema))
+>>> k = BigFrame(Map(j, lambda row: (row['a'], row['b'], abs(row['a']), abs(row['b'])), out=('a', 'b', 'a_abs', 'b_abs'))
 
 >>> j.add_column(j.map())
 
 **Reduce**
-
-***TBD...***  ideas include:
 
 Apply a reduce function to each row in a Frame, or each cell in a column.  The
 reducer has two parameters, the **accumulator** value and the **update** value.
@@ -214,7 +237,7 @@ functions on each group, producing a new Frame object
 
 >>> j['a'].avg()
 
->>> j.groupby('a', 'b').reduce(lambda acc, row_upd: row_a)
+>>> j.groupby('a', 'b').reduce(lambda acc, row_upd: acc + row_upd['a'] - row_upd['b'])
 >>> j.groupby('a', 'b').c.avg()
 >>> j.groupby('a', 'b').map(func1).reduce(func2, out="custom_m1r2")
 >>> # j.groupby('a', 'b').aggregate(c_avg=row.c.avg)
@@ -256,5 +279,5 @@ Misc Notes
 . uh, this was a thought once --something about not cancelling the job on an
 error, but just marking row/cell as None and reporting
 ``raise FillNone("col value out of range")``
-map or whatever will catch this, log it, add to a count in the report, and
- fill the entry with a None
+map or whatever will catch this, log it, add to a count in the report, and fill
+the entry with a None

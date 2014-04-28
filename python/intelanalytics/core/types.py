@@ -101,7 +101,7 @@ class _Types(frozenset):
             return unknown
 
     def __repr__(self):
-        return ",".join(_Types._ia_types.keys())
+        return ", ".join(sorted(_Types._ia_types.keys()))
 
     @staticmethod
     def _get_list():
