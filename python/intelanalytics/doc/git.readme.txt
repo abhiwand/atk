@@ -1,0 +1,35 @@
+	Configure git with  your identification and email address
+git config --global user.name "<name>"; <name> is your Intel login identification
+git config --global user.email <email address>; <email address> is your Intel email address
+	Create a working directory
+mkdir work
+cd work
+	Get a copy of the repository (often refered to as the repo)
+git clone https://<name>@<MasterRepositary.git>;
+		<name> is your Intel login identification; whenever it asks for a password, use your Intel login password
+		<MasterRepositary.git> is stash01.devtools.intel.com/scm/trib/source_code.git
+		Example: https://rmaldrix@stash01.devtools.intel.com/scm/trib/source_code.git
+		Note: It will ask for a password and this is your Intel password
+	There should now be a directory called source_code; change to it
+cd source_code
+	Check out the current active branch, named after the Agile sprint number
+git checkout <sprint>; <sprint> is the name of the current Agile sprint branch, for example sprint_11
+	Make a new branch of your own named after the JIRA work issue
+git checkout -b <working branch>; <working branch> is the name of the branch being worked for general documentation issues
+	Change to the active working directory
+cd pyton/intelanalytics
+	This is the base directory of everybody's work. The documentation is in the folder called doc, in this case, coincidentally named the same as
+	the git branch.  Make your changes.  Add your changes to the local repository.
+git add <file name>
+git commit -m '<Revision note>'; <Revision note> is a freeform note and the command needs the ' or " marks
+	Merge the sprint branch into your branch, resolving difficulties
+git merge <sprint>; <sprint> is the name of the current Agile sprint branch, for example sprint_11
+	Change to the repo directory
+cd ~/.../source_code
+	Push your repository to the server, in other words, push the merged branch with your changes to the server
+git push origin <working branch>; <working branch> is the name of the branch being worked for general documentation issues
+	From the Windows computer, direct the browser to JIRA and select Fisheye + Crucible from the multi-line icon in the upper left corner
+https://jira01.devtools.intel.com; <Username> is your Intel login identification, <Password> is your Intel login password
+	Select the menu option labeled "Create review", then "Browse Changesets"
+	Change Repository to "TRIB-source_code" and check the box next to the changes you made and click the button labeled "Edit Details"
+	Select the appropriate reviewers, explain your objectives, then click the button labeled "Start Review"
