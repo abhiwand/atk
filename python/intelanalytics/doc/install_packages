@@ -1,3 +1,14 @@
+
+function pkg_check {
+	if [[ ! -d /usr/lib/IntelAnalytics/virtpy/lib/python2.7/site-packages/$1 ]]; then
+		echo ------------------------------------------------------
+		echo Installing $1
+        	pip install $1
+	else
+        	echo Module "$1" is installed
+	fi
+}
+
 # The primary purpose of this script file is to allow the Sphinx-Build program
 # to build in python 2.7 on a RedHat distribution of Linux. RedHat needs
 # version 2.6 to run properly, so we create a virtual environment with
@@ -16,9 +27,8 @@ fi
 
 source $ACTIVATE_FILE
 
-# We need to check the installed packages and insure they are complete.
-# The packages need superuser rights to install properly.
-sudo ./install_packages
-
-# We assume we are running from the doc directory.
-make html
+# If requests has not been installed, we need to do so.
+# Comment out the make line lower down and run this script as superuser.
+pkg_check requests
+pkg_check cloud
+pkg_check pandas
