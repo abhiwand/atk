@@ -9,6 +9,7 @@
 #	--package-name the name of the package that we will be creating. the given package must have a config folder
 #	--build any build identifier
 source common.sh 
+pwd
 
 TEMP=`getopt -o p:b:t:v: --long package-name:,build:,tar:,version: -n 'package.sh' -- "$@"`
 
@@ -19,6 +20,7 @@ eval set -- "$TEMP"
 config="config"
 packages="deb rpm"
 version="0.8.0"
+build="1"
 while true; do
         case "$1" in
                 -p|--package-name)
@@ -54,7 +56,7 @@ if [ "$packageName" == "" ]; then
 fi
 
 if [ "$build" == "" ]; then
-        log "no build id specified"
+        log "no build id specified default id: $build"
         usage
 fi
 
@@ -74,7 +76,6 @@ export GROUP="Intel Analytics"
 
 #do a verbose extract of the tar file to get a list of all the files in the tar file
 tarFiles $tarFile
-
 
 for package in $packages
 do 
