@@ -84,12 +84,10 @@ class SparkProgressListener extends SparkListener {
     successCount = 0
     totalTaskForStage = 0
 
-    jobStart.job.func
     val parents = jobStart.job.finalStage.parents
     val parentsIds = parents.sortBy(_.id).map(s => s.id)
 
     stageIds = (parentsIds :+ jobStart.job.finalStage.id).toArray
-//    stageIds.map(i => println("stage:" + i))
     totalStages = jobStart.stageIds.length
   }
 
@@ -99,9 +97,8 @@ class SparkProgressListener extends SparkListener {
 
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
     finishedStages = stageIds.indexOf(stageCompleted.stage.stageId) + 1
-//    println("finished:" + finishedStages + ", total:" + totalStages)
     successCount = 0
-    println(getProgress())
+//    println(getProgress())
   }
 
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
@@ -116,10 +113,10 @@ class SparkProgressListener extends SparkListener {
 
     }
 
-    println(getProgress())
+//    println(getProgress())
   }
 
-  def getProgress(): Int = {
+  def getProgress(jobId: Int): Int = {
     ((100 * finishedStages) / totalStages) + (100 * successCount / (totalTaskForStage * totalStages))
   }
 
