@@ -28,6 +28,13 @@ function log()
  	echo "-##LOG##-$1"
 }
 
+function deleteOldBuildDirs()
+{
+	echo "delete old build dirs"
+	echo "rm -rf $SCRIPTPATH/$PACKAGE_NAME-$VERSION"
+	rm -rf $SCRIPTPATH/$PACKAGE_NAME-$VERSION
+}
+
 function tarFiles()
 {
 	tar -xvf $1 > TAR.LOG
@@ -36,9 +43,8 @@ function tarFiles()
 	do
 		fullPath=$path
 		fileName=${path##*/}
-
 		if [ "$fileName" != "" ]; then
-			echo "/$fullPath" >> FILES.LOG
+			echo $fullPath | sed 's/^.\//\//g' >> FILES.LOG
 		fi
 	done
 	export TAR_FILES=FILES.LOG
@@ -76,7 +82,10 @@ function debControl()
 	echo "Package: $PACKAGE_NAME"
 	echo "Architecture: $ARCH"
 	if [ ! -z "$DEPENDS" ]; then
-		echo "Depends: $DEPENDS"
+		echo "Depends: $DEPENDS, \${misc:Depends}"
+	fi
+	if [ ! -z "$RECOMMENDS" ];then
+		echo "Recommends: $RECOMMENDS"
 	fi
 	echo "Description: $SUMMARY"
 	echo " $DESCRIPTION"
@@ -111,17 +120,28 @@ function debInstall()
 {
 	for file in `cat $TAR_FILES`;
 	do
-		echo "$file $file"
+#		bleh="/usr/lib/intelanalytics/rest-server/api-server.jar"
+		local fileName=${file##*/}
+
+		installDir=$(echo $file | sed "s/$fileName/ /g")
+
+		echo "$file $installDir"
 	done
 }
 
 function debRules()
 {
+	if [ -z "$RULEOPT" ]; then
+		RULEOPT=""
+	fi
 	echo "#!/usr/bin/make -f"
 	echo "# Uncomment this to turn on verbose mode."
+	if [ ! -z "$RULESSETUP" ]; then
+		echo $RULESSETUP
+	fi
 	echo "#export DH_VERBOSE=1"
 	echo "%:"
-	echo -e "\tdh \$@"
+	echo -e "\tdh \$@ $RULEOPT"
 }
 
 function rpmSpec()
