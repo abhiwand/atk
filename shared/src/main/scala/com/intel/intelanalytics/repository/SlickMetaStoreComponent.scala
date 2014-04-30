@@ -75,8 +75,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def schema = column[String]("schema")
 
     def * = (id, name, schema) <>
-      ((t: (Long,String,String)) => t match {case (i:Long, n:String, s:String) => DataFrame.tupled((i, n, JsonParser(s).convertTo[Schema]))},
-        (f: DataFrame) => DataFrame.unapply(f) map {case (i,n,s) => (i,n,s.toJson.prettyPrint)})
+      ((t: (Long,String,String)) => t match {
+        case (i:Long, n:String, s:String) => DataFrame.tupled((i, n, JsonParser(s).convertTo[Schema]))
+      },
+      (f: DataFrame) => DataFrame.unapply(f) map {case (i,n,s) => (i,n,s.toJson.prettyPrint)})
   }
 
   val frames = TableQuery[Frame]

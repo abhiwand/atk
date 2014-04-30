@@ -23,11 +23,28 @@
 
 package com.intel.intelanalytics.domain
 
-import spray.json.DefaultJsonProtocol
+import spray.json.{JsString, JsValue, JsonFormat, DefaultJsonProtocol}
+import com.intel.intelanalytics.domain.DataTypes.DataType
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
+
+
+
+
+
+  implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
+    override def read(json: JsValue): DataType = {
+      val raw = json.asInstanceOf[JsString].value
+      //val corrected = raw.substring(1, raw.length - 2)
+      DataTypes.toDataType(raw)
+    }
+
+    override def write(obj: DataType): JsValue = new JsString(obj.toString)
+  }
+
   implicit val schemaFormat = jsonFormat1(Schema)
 
   implicit val dataFrameFormat = jsonFormat3(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
+
 }

@@ -29,6 +29,8 @@ trait EventLogging {
     }
   }
 
+  def illegalArg(s: String) = throw new IllegalArgumentException(s)
+
   def event(message: String,
             messageCode: Int = 0,
             markers: Seq[String] = Nil,
