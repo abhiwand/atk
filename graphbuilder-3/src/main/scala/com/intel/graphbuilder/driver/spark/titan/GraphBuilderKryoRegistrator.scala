@@ -13,8 +13,8 @@ import com.intel.graphbuilder.parser.rule._
  * If you miss a class here, it will likely still work, but registering
  * helps Kryo to go faster.
  * <p>
- * Kryo is 2x to 10x faster than Java Serialization.  Kryo was 2 hours
- * faster with 23GB of Netflix data.
+ * Kryo is 2x to 10x faster than Java Serialization.  In one experiment,
+ * Kryo was 2 hours faster with 23GB of Netflix data.
  * </p>
  * <p>
  *  Usage:
