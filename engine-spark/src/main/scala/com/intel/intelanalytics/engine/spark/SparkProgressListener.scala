@@ -1,4 +1,4 @@
-package com.intel.intelanalytics.engine.spark
+package org.apache.spark.engine
 
 import org.apache.spark.scheduler._
 import scala.collection.mutable.{ListBuffer, HashSet, HashMap}
@@ -12,7 +12,6 @@ class SparkProgressListener extends SparkListener {
   val jobIdToStageIds = new HashMap[Int, Array[Int]]
   val activeStages = HashSet[StageInfo]()
   val completedStages = ListBuffer[StageInfo]()
-  val failedStages = ListBuffer[StageInfo]()
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
 
@@ -42,6 +41,24 @@ class SparkProgressListener extends SparkListener {
         stageIdToTasksComplete(sid) = stageIdToTasksComplete.getOrElse(sid, 0) + 1
       case false =>
 
+    }
+  }
+
+  override def onJobEnd(jobEnd: SparkListenerJobEnd) {
+
+    jobEnd match {
+      case end: SparkListenerJobEnd =>
+        end.jobResult match {
+          case JobFailed(ex, Some(stage)) =>
+            /* If two jobs share a stage we could get this failure message twice. So we first
+            *  check whether we've already retired this stage. */
+            val stageInfo = activeStages.filter(s => s.stageId == stage.id).headOption
+            stageInfo.foreach {s =>
+              activeStages -= s
+            }
+          case _ =>
+        }
+      case _ =>
     }
   }
 

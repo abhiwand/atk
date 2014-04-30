@@ -32,9 +32,8 @@ import org.apache.spark.scheduler.SparkListenerTaskEnd
 import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.{TaskEndReason, TaskContext, Success}
-import org.apache.spark.executor.TaskMetrics
-import com.intel.intelanalytics.engine.spark.SparkProgressListener
+import org.apache.spark.{TaskContext, Success}
+
 
 
 class ProgressListenerSpec extends Specification with Mockito  {
@@ -178,6 +177,11 @@ class ProgressListenerSpec extends Specification with Mockito  {
     val completed3 = SparkListenerStageCompleted(stageInfo3)
     listener.onStageCompleted(completed3)
     listener.getProgress(1) shouldEqual 100
+
+    val jobEnd = mock[SparkListenerJobEnd]
+    jobEnd.jobResult.returns(JobSucceeded)
+    listener.onJobEnd(jobEnd)
+    listener.getProgress(1) shouldEqual 100
   }
 
   "finish first task in first stage" in {
@@ -276,6 +280,26 @@ class ProgressListenerSpec extends Specification with Mockito  {
     val completed2 = SparkListenerStageCompleted(stageInfo)
     listener.onStageCompleted(completed2)
     listener.getProgress(1) shouldEqual 66
+  }
+
+  "failed at first stage" in {
+    val listener = createListener_one_job
+    val stageInfo = mock[StageInfo]
+    stageInfo.numTasks.returns(10)
+    stageInfo.stageId.returns(1)
+
+    val submitted = SparkListenerStageSubmitted(stageInfo, null)
+    listener.onStageSubmitted(submitted)
+
+    val jobEnd = mock[SparkListenerJobEnd]
+    val stage = mock[Stage]
+    stage.id.returns(1)
+    jobEnd.jobResult.returns(JobFailed(null, Some(stage)))
+
+    listener.activeStages.find(s=> s.stageId == 1) shouldNotEqual None
+    listener.onJobEnd(jobEnd)
+    listener.getProgress(1) shouldEqual 0
+    listener.activeStages.find(s=> s.stageId == 1) shouldEqual None
   }
 
 
