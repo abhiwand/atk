@@ -1,0 +1,36 @@
+#!/bin/bash
+
+
+# Source function library.
+. /etc/init.d/functions
+
+
+prog=intelanalytics-rest-server
+#lockfile=/var/lock/subsys/$prog
+
+initctlFunc() {
+	local event=$1
+	initctl $event $prog 
+	RETVAL=$?
+	return $RETVAL
+}
+
+# See how we were called.
+case "$1" in
+  start)
+	initctlFunc start
+	;;
+  stop)
+	initctlFunc stop
+	;;
+  status)
+	initctlFunc status
+	;;
+  restart|force-reload)
+	initctlFunc stop
+	initctlFunc start
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart|force-reload}"
+	exit 2
+esac
