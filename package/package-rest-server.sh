@@ -18,9 +18,16 @@ pushd $SCRIPTPATH
 rm -rf tarballs/$package
 rm $package-source.tar.gz
 
+
+
 mkdir -p  tarballs/$package/etc/intelanalytics/rest-server
 
 mkdir -p  tarballs/$package/usr/lib/intelanalytics/rest-server/lib
+
+mkdir -p  tarballs/$package/etc/init
+cp config/intelanalytics-rest-server/intelanalytics-rest-server.conf tarballs/$package/etc/init/.
+mkdir -p  tarballs/$package/etc/init.d
+cp config/intelanalytics-rest-server/intelanalytics-rest-server tarballs/$package/etc/init.d/.
 
 cp -Rv  ../api-server/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
 
