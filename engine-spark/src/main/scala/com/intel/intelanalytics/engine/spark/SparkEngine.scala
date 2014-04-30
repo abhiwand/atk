@@ -28,7 +28,7 @@ import org.apache.spark.api.python._
 import org.apache.spark.rdd.RDD
 import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
 import org.apache.spark.broadcast.Broadcast
-import scala.collection.Set
+import scala.collection.{mutable, Set}
 import scala.Predef
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
@@ -38,7 +38,6 @@ import ExecutionContext.Implicits.global
 import java.nio.file.{Paths, Path}
 import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.RowSource
-import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
 import resource._
 import org.apache.hadoop.fs.{FSDataInputStream, LocalFileSystem, FileSystem}
@@ -49,7 +48,7 @@ import spray.json.JsonParser
 import scala.io.{Codec, Source}
 import scala.util.control.NonFatal
 import org.apache.hadoop.io._
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{HashSet, ListBuffer, ArrayBuffer, HashMap}
 import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
 import com.intel.intelanalytics.engine.Row
@@ -63,6 +62,7 @@ import com.intel.intelanalytics.engine.RowFunction
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
 
+
 //TODO logging
 //TODO error handling
 //TODO documentation
@@ -70,57 +70,7 @@ import org.apache.spark.scheduler.SparkListenerJobStart
 //TODO event notification
 //TODO pass current user info
 
-class SparkProgressListener extends SparkListener {
 
-  var totalStages: Int = 0
-  var finishedStages: Int = 0
-  var successCount: Int = 0
-  var totalTaskForStage: Int = 0
-  var stageIds: Array[Int] = Array()
-
-  override def onJobStart(jobStart: SparkListenerJobStart) {
-    totalStages = 0
-    finishedStages = 0
-    successCount = 0
-    totalTaskForStage = 0
-
-    val parents = jobStart.job.finalStage.parents
-    val parentsIds = parents.sortBy(_.id).map(s => s.id)
-
-    stageIds = (parentsIds :+ jobStart.job.finalStage.id).toArray
-    totalStages = jobStart.stageIds.length
-  }
-
-  override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
-    totalTaskForStage = stageSubmitted.stage.numTasks
-  }
-
-  override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
-    finishedStages = stageIds.indexOf(stageCompleted.stage.stageId) + 1
-    successCount = 0
-//    println(getProgress())
-  }
-
-  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-
-    taskEnd.taskInfo.successful match {
-      case true =>
-        successCount = successCount + 1
-
-//        stageIdToTasksFailed(sid) = stageIdToTasksFailed.getOrElse(sid, 0) + 1
-//        (Some(e), e.metrics)
-      case false =>
-
-    }
-
-//    println(getProgress())
-  }
-
-  def getProgress(jobId: Int): Int = {
-    ((100 * finishedStages) / totalStages) + (100 * successCount / (totalTaskForStage * totalStages))
-  }
-
-}
 
 
 class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
