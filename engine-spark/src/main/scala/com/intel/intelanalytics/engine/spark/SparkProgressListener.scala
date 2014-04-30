@@ -25,7 +25,6 @@ class SparkProgressListener extends SparkListener {
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {
     val stage = stageSubmitted.stage
     activeStages += stage
-    activeStages.map(s=> println(s.stageId))
   }
 
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {

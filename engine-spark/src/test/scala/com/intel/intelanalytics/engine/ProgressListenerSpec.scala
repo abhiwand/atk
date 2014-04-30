@@ -318,6 +318,10 @@ class ProgressListenerSpec extends Specification with Mockito  {
     val task2 = new FakeTask(4)
     val taskEnd2 = SparkListenerTaskEnd(task2, Success, taskInfo2, null)
 
+    taskInfo2.successful.returns(false)
+    listener.getProgress(2) shouldEqual 0
+    listener.onTaskEnd(taskEnd2)
+
     taskInfo2.successful.returns(true)
     listener.onTaskEnd(taskEnd2)
     listener.getProgress(2) shouldEqual 2
