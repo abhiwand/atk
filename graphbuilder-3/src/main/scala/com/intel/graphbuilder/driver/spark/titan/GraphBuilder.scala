@@ -101,11 +101,27 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
     }
     val mergedEdges = edges.mergeDuplicates()
 
-    println("join edges with physical ids")
-    val edgesWithPhysicalIds = mergedEdges.joinWithPhysicalIds(idMap)
+    if (config.broadcastVertexIds) {
 
-    println("starting write of edges")
-    edgesWithPhysicalIds.write(titanConnector, config.append)
+      val ids = idMap.collect()
+      println("vertex ids size: " + ids.length)
+      val vertexMap = ids.map( gbIdToPhysicalId => gbIdToPhysicalId.toTuple).toMap
+
+      println("broadcasting vertex ids")
+      val gbIdToPhysicalIdMap = vertexInputRdd.sparkContext.broadcast(vertexMap)
+
+      println("starting write of edges")
+      mergedEdges.write(titanConnector, gbIdToPhysicalIdMap, config.append)
+
+    }
+    else {
+      println("join edges with physical ids")
+      val edgesWithPhysicalIds = mergedEdges.joinWithPhysicalIds(idMap)
+
+      println("starting write of edges")
+      edgesWithPhysicalIds.write(titanConnector, config.append)
+    }
+
     println("done writing edges")
   }
 

@@ -40,14 +40,17 @@ object NetflixExampleDriver {
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
   titanConfig.setProperty("storage.backend", "cassandra")
-  titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
   titanConfig.setProperty("storage.keyspace", "netflix")
+  titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
   titanConfig.setProperty("storage.batch-loading", "true")
   titanConfig.setProperty("autotype", "none")
   titanConfig.setProperty("storage.buffer-size", "2048")
   titanConfig.setProperty("storage.attempt-wait", "300")
   titanConfig.setProperty("storage.lock-wait-time", "400")
   titanConfig.setProperty("storage.lock-retries", "15")
+  titanConfig.setProperty("storage.idauthority-retries", "30")
+  titanConfig.setProperty("storage.write-attempts", "10")
+  titanConfig.setProperty("storage.read-attempts", "6")
   titanConfig.setProperty("ids.block-size", "300000")
   titanConfig.setProperty("ids.renew-timeout", "150000")
 
@@ -85,11 +88,11 @@ object NetflixExampleDriver {
     val sc = new SparkContext(conf)
 
     // Setup data in Spark
-    val inputRows = sc.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "240").toInt)
+    val inputRows = sc.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
     val inputRdd = inputRows.map(row => row.split(","): Seq[_])
 
     // Build the Graph
-    val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, biDirectional = false, append = false)
+    val config = new GraphBuilderConfig(inputSchema, vertexRules, edgeRules, titanConfig, biDirectional = false, append = false, broadcastVertexIds = false)
     val gb = new GraphBuilder(config)
     gb.build(inputRdd)
 
