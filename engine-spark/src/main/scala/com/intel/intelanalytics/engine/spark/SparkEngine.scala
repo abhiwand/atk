@@ -55,6 +55,8 @@ import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
 import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
+import com.intel.intelanalytics.shared.EventLogging
+import com.intel.event.EventContext
 
 //TODO logging
 //TODO error handling
@@ -62,7 +64,10 @@ import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
-class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
+class SparkComponent extends EngineComponent
+                        with FrameComponent
+                        with FileComponent
+                        with EventLogging {
   val engine = new SparkEngine {}
   val conf = ConfigFactory.load()
   val sparkHome = conf.getString("intel.analytics.spark.home")
@@ -96,10 +101,13 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def withMyClassLoader[T](f: => T): T = {
+    def withMyClassLoader[T](f: => T): T = withContext("se.withClassLoader") {
       val prior = Thread.currentThread().getContextClassLoader
+      EventContext.getCurrent.put("priorClassLoader", prior.toString)
       try {
-        Thread.currentThread setContextClassLoader this.getClass.getClassLoader
+        val loader= this.getClass.getClassLoader
+        EventContext.getCurrent.put("newClassLoader", loader.toString)
+        Thread.currentThread setContextClassLoader loader
         f
       } finally {
         Thread.currentThread setContextClassLoader prior
@@ -110,7 +118,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       function.definition.getBytes(Codec.UTF8.name)
     }
 
-    def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = ???
+    def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = withContext("se.alter") {
+      ???
+    }
 
     def getLineParser(parser: Functional): String => Array[String] = {
       parser.language match {
@@ -125,7 +135,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = {
+    def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] =
+    withContext("se.appendFile") {
       require(frame != null)
       require(file != null)
       require(parser != null)
@@ -145,27 +156,30 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def clear(frame: DataFrame): Future[DataFrame] = ???
+    def clear(frame: DataFrame): Future[DataFrame] = withContext("se.clear") {
+      ???
+    }
 
-    def create(frame: DataFrameTemplate): Future[DataFrame] = {
+    def create(frame: DataFrameTemplate): Future[DataFrame] = withContext("se.create") {
       future {
         frames.create(frame)
       }
     }
 
-    def delete(frame: DataFrame): Future[Unit] = {
+    def delete(frame: DataFrame): Future[Unit] = withContext("se.delete") {
       future {
         frames.drop(frame)
       }
     }
 
-    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]] = {
+    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]] = withContext("se.getFrames") {
       future {
         frames.getFrames(offset, count)
       }
     }
 
-    def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
+    def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] =
+      withContext("se.filter") {
       future {
         val ctx = context() //TODO: resource management
         val rdd = frames.getFrameRdd(ctx, frame.id)
@@ -186,7 +200,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def getRows(id: Identifier, offset: Long, count: Int) = {
+    def getRows(id: Identifier, offset: Long, count: Int) = withContext("se.getRows") {
       future {
         val frame = frames.lookup(id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
         val rows = frames.getRows(frame, offset, count)
@@ -194,7 +208,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = {
+    def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] =
+      withContext("se.getFrame") {
       future {
         frames.lookup(id).get
       }
@@ -205,7 +220,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
   val fsRoot = conf.getString("intel.analytics.fs.root")
 
-  trait HdfsFileStorage extends FileStorage {
+  trait HdfsFileStorage extends FileStorage with EventLogging {
 
 
     val configuration = {
@@ -224,7 +239,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     val fs = FileSystem.get(configuration)
 
 
-    override def write(sink: File, append: Boolean): OutputStream = {
+    override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
       if (append) {
         fs.append(path)
@@ -233,9 +248,12 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    override def readRows(source: File, rowGenerator: (InputStream) => RowSource, offsetBytes: Long, readBytes: Long): Unit = ???
+    override def readRows(source: File, rowGenerator: (InputStream) => RowSource,
+                          offsetBytes: Long, readBytes: Long): Unit = withContext("file.readRows") {
+      ???
+    }
 
-    override def list(source: Directory): Seq[Entry] = {
+    override def list(source: Directory): Seq[Entry] = withContext("file.list") {
       fs.listStatus(new HPath(fsRoot + frames.frameBase))
         .map {
         case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
@@ -244,17 +262,22 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    override def read(source: File): InputStream = {
+    override def read(source: File): InputStream = withContext("file.read") {
       val path: HPath = new HPath(fsRoot + source.path.toString)
       fs.open(path)
     }
 
     //TODO: switch file methods to strings instead of Path?
-    override def copy(source: Path, destination: Path): Unit = ???
+    override def copy(source: Path, destination: Path): Unit = withContext("file.copy") {
+      ???
+    }
 
-    override def move(source: Path, destination: Path): Unit = ???
+    override def move(source: Path, destination: Path): Unit = withContext("file.move") {
+      ???
+    }
 
-    override def getMetaData(path: Path): Option[Entry] = {
+
+    override def getMetaData(path: Path): Option[Entry] = withContext("file.getMetaData") {
       val hPath: HPath = new HPath(fsRoot + path.toString)
       val exists = fs.exists(hPath)
       if (!exists) {
@@ -269,13 +292,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    override def delete(path: Path): Unit = {
+    override def delete(path: Path): Unit = withContext("file.delete") {
       fs.delete(new HPath(fsRoot + path.toString), true)
     }
 
-    override def create(file: Path): Unit = fs.create(new HPath(fsRoot + file.toString))
+    override def create(file: Path): Unit = withContext("file.create") {
+      fs.create(new HPath(fsRoot + file.toString))
+    }
 
-    override def createDirectory(directory: Path): Directory = {
+    override def createDirectory(directory: Path): Directory = withContext("file.createDirectory") {
       val adjusted = fsRoot + directory.toString
       fs.mkdirs(new HPath(adjusted))
       getMetaData(Paths.get(directory.toString)).get.asInstanceOf[Directory]
@@ -284,34 +309,51 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
   val frames = new SparkFrameStorage { }
 
-  trait SparkFrameStorage extends FrameStorage {
+  trait SparkFrameStorage extends FrameStorage with EventLogging {
 
     import spray.json._
     import Rows.Row
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-    override def drop(frame: DataFrame): Unit = {
+    override def drop(frame: DataFrame): Unit = withContext("frame.drop") {
       files.delete(Paths.get(getFrameDirectory(frame.id)))
     }
 
-    override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit = ???
+    override def appendRows(startWith: DataFrame, append: Iterable[Row]): Unit =
+      withContext("frame.appendRows") {
+      ???
+    }
 
-    override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit = ???
+    override def removeRows(frame: DataFrame, predicate: (Row) => Boolean): Unit =
+      withContext("frame.removeRows") {
+      ???
+    }
 
-    override def removeColumn(frame: DataFrame): Unit = ???
+    override def removeColumn(frame: DataFrame): Unit =
+    withContext("frame.removeColumn") {
+      ???
+    }
 
-    override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit = ???
+    override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =
+    withContext("frame.addColumnWithValue") {
+      ???
+    }
 
-    override def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: (Row) => T): Unit = ???
+    override def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: (Row) => T): Unit =
+    withContext("frame.addColumn") {
+      ???
+    }
 
-    override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] = {
+    override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] =
+        withContext("frame.getRows") {
       val ctx = engine.context()
       val rdd: RDD[Array[Array[Byte]]] = getFrameRdd(ctx, frame.id)
       //Brute force until the code below can be fixed
       val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
       //The below fails with a classcast exception saying it can't convert a byteswritable
       //into a Text. Nobody asked it to try to do that cast, so it's a bit mysterious.
+      //update: looks like it may be a spark-0.9.0 bug, 0.9.1 may fix.
       //TODO: Check to see if there's a better way to implement, this might be too slow.
       // Need to cache row counts per partition somewhere.
       //      val counts = rdd.mapPartitionsWithIndex(
@@ -335,6 +377,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     }
 
 
+
     def getFrameRdd(ctx: SparkContext, id: Long): RDD[Array[Array[Byte]]] = {
       ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(id))
     }
@@ -348,15 +391,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    override def create(frame: DataFrameTemplate): DataFrame = {
+    override def create(frame: DataFrameTemplate): DataFrame = withContext("frame.create") {
       val id = nextFrameId()
       val frame2 = new DataFrame(id = id, name = frame.name, schema = frame.schema)
       val meta = File(Paths.get(getFrameMetaDataFile(id)))
+      info(s"Saving metadata to $meta")
       val f = files.write(meta)
       try {
         val json: String = frame2.toJson.prettyPrint
-        println("Saving metadata")
-        println(json)
+        debug(json)
         f.write(json.getBytes(Codec.UTF8.name))
       } finally {
         f.close()
@@ -364,10 +407,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       frame2
     }
 
-    override def lookup(id: Long): Option[DataFrame] = {
+    override def lookup(id: Long): Option[DataFrame] = withContext("frame.lookup") {
       val path = getFrameDirectory(id)
       val meta = File(Paths.get(path, "meta"))
-      //TODO: uncomment after files.getMetaData implemented
       if (files.getMetaData(meta.path).isEmpty) {
         return None
       }
@@ -375,21 +417,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       try {
         val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
         val json = JsonParser(src)
-        f.close()
         return Some(json.convertTo[DataFrame])
-      } catch {
-        case NonFatal(e) => {
-          //todo: logging
-          println("Problem reading file: " + e)
-          e.printStackTrace()
-          throw e
-        }
+      } finally {
+        f.close()
       }
     }
 
     val idRegex: Regex = "^\\d+$".r
 
-    def getFrames(offset: Int, count: Int): Seq[DataFrame] = {
+    def getFrames(offset: Int, count: Int): Seq[DataFrame] = withContext("frame.getFrames") {
       files.list(getOrCreateDirectory(frameBase))
         .flatMap {
           case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
@@ -423,6 +459,5 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       getFrameDirectory(id) + "/meta"
     }
   }
-
 }
 
