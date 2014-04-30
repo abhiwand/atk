@@ -1,6 +1,7 @@
 package com.intel.intelanalytics.shared
 
 import com.intel.event.{EventLogger, Severity, EventContext}
+import scala.util.control.NonFatal
 
 trait EventLogging {
 
@@ -11,9 +12,20 @@ trait EventLogging {
     try {
       block
     } catch {
-      case e: Exception => {error(e.getMessage, exception = e); throw e}
+      case NonFatal(e) => {error(e.getMessage, exception = e); throw e}
     } finally {
       ctx.close()
+    }
+  }
+
+  def logErrors[T](block: =>T): T = {
+    try {
+      block
+    } catch {
+      case NonFatal(e) => {
+        error(e.getMessage, exception = e)
+        throw e
+      }
     }
   }
 
