@@ -57,9 +57,8 @@ import scala.util.matching.Regex
 import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.event.EventContext
+import scala.concurrent.duration._
 
-//TODO logging
-//TODO error handling
 //TODO documentation
 //TODO progress notification
 //TODO event notification
@@ -72,6 +71,7 @@ class SparkComponent extends EngineComponent
   val conf = ConfigFactory.load()
   val sparkHome = conf.getString("intel.analytics.spark.home")
   val sparkMaster = conf.getString("intel.analytics.spark.master")
+  val defaultTimeout = conf.getInt("intel.analytics.engine.defaultTimeout").seconds
 
   //Very simpleminded implementation, not ready for multiple users, for example.
   class SparkEngine extends Engine {
@@ -142,13 +142,23 @@ class SparkComponent extends EngineComponent
       require(parser != null)
       future {
         withMyClassLoader {
+          //TODO: since we have to look up the real frame anyway, just take an ID as the parameter
+          val realFrame = frames.lookup(frame.id).getOrElse(
+            throw new IllegalArgumentException(s"No such data frame: ${frame.id}"))
           val parserFunction = getLineParser(parser)
           val location = fsRoot + frames.getFrameDataFile(frame.id)
+          val schema = realFrame.schema
+          val types = schema.columns.map(_._2).lift
           val ctx = context()
             ctx.textFile(fsRoot + "/" + file)
               .map(parserFunction)
               //TODO: type conversions based on schema
-              .map(strings => strings.map(s => s.getBytes))
+              .map(strings => strings.zipWithIndex.map { case  (s,i) => {
+                                                          val colType = types(i).getOrElse(
+                                                            illegalArg("Data extend beyond number" +
+                                                              " of columns defined in data frame"))
+                                                          val value = colType.parse(s)
+                                                        }})
               .saveAsObjectFile(location)
             frames.lookup(frame.id).getOrElse(
               throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
@@ -348,7 +358,7 @@ class SparkComponent extends EngineComponent
     override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] =
         withContext("frame.getRows") {
       val ctx = engine.context()
-      val rdd: RDD[Array[Array[Byte]]] = getFrameRdd(ctx, frame.id)
+      val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
       //Brute force until the code below can be fixed
       val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
       //The below fails with a classcast exception saying it can't convert a byteswritable
@@ -378,8 +388,8 @@ class SparkComponent extends EngineComponent
 
 
 
-    def getFrameRdd(ctx: SparkContext, id: Long): RDD[Array[Array[Byte]]] = {
-      ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(id))
+    def getFrameRdd(ctx: SparkContext, id: Long): RDD[Row] = {
+      ctx.objectFile[Row](fsRoot + getFrameDataFile(id))
     }
 
     def getOrCreateDirectory(name: String) : Directory = {
