@@ -11,7 +11,7 @@ name := "graphbuilder-3"
 
 version := "3"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 libraryDependencies ++= Seq(
   "com.intel.bda" % "ititan-core" % "0.4.2-SNAPSHOT", // Titan core to get around Kryo ClassLoader issue

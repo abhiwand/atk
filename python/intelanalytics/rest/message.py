@@ -20,40 +20,24 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-"""
-Initialization for any unit test
-"""
-import os
-import sys
-import logging
+
+class Message(object):
+    def __init__(self, job_id, content):
+        self.__job_id = job_id
+        self.__content = content
+
+    @property
+    def job_id(self):
+        """
+        job_id property
+        """
+        return self.__job_id
+
+    @property
+    def content(self):
+        """
+        content property
+        """
+        return self.__content
 
 
-class TestFolders(object):
-    """Folder paths for the tests"""
-    def __init__(self):
-        dirname = os.path.dirname
-        self.here = dirname(__file__)
-        self.tmp = os.path.join(self.here, "tmp")
-        self.conf = os.path.join(self.here, "conf")
-        self.root = dirname(dirname(self.here))  # parent of intel_analytics
-
-    def __repr__(self):
-        return '{' + ",".join(['"%s": "%s"' % (k, v)
-                               for k, v in self.__dict__.items()]) + '}'
-
-
-folders = TestFolders()
-
-
-def init():
-    if sys.path[1] != folders.root:
-        sys.path.insert(1, folders.root)
-
-
-def set_logging(logger_name, level=logging.DEBUG):
-    """Sets up logging for the test"""
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
-    h = logging.StreamHandler()
-    h.setLevel(logging.DEBUG)
-    logger.addHandler(h)

@@ -81,10 +81,10 @@ object SparkTitanCassandraExampleDriver {
 
     // Initialize Spark Connection
     val conf = new SparkConf()
-      .setMaster(ExamplesUtils.sparkMaster())
+      .setMaster(ExamplesUtils.sparkMaster)
       .setAppName(this.getClass.getSimpleName + " " + new Date())
-      .setSparkHome(ExamplesUtils.sparkHome())
-      .setJars(List(ExamplesUtils.gbJar()))
+      .setSparkHome(ExamplesUtils.sparkHome)
+      .setJars(List(ExamplesUtils.gbJar))
     val sc = new SparkContext(conf)
 
     // Setup data in Spark
