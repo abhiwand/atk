@@ -49,12 +49,9 @@ class MyBatchedSerializer(BatchedSerializer):
 
     def dump_stream_as_json(self, iterator, stream):
         for obj in iterator:
-            serialized = json.dumps(obj)
-            print serialized
+            serialized = ",".join(obj)
             write_int(len(serialized), stream)
             stream.write(serialized)
-
-
 
 class FrameBackendREST(object):
     """REST plumbing for BigFrame"""
