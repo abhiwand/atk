@@ -10,7 +10,6 @@ import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
 import scala.concurrent._
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class SparkProgressListener extends SparkListener {
 
@@ -52,7 +51,6 @@ class SparkProgressListener extends SparkListener {
   }
 
   override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
-
     val sid = taskEnd.task.stageId
     taskEnd.taskInfo.successful match {
       case true =>
@@ -94,5 +92,24 @@ class SparkProgressListener extends SparkListener {
     }
     progress
   }
+}
 
+
+class TestListener(progressListener: SparkProgressListener) extends SparkListener {
+  override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
+    printJobProgress()
+  }
+
+  override def onTaskEnd(taskEnd: SparkListenerTaskEnd) {
+    printJobProgress()
+  }
+
+  override def onJobEnd(jobEnd: SparkListenerJobEnd) {
+    printJobProgress()
+  }
+
+  def printJobProgress() {
+    val jobIds = progressListener.jobIdToStageIds.keys
+    jobIds.foreach(id => println("job: " + id + ", progress: " + progressListener.getProgress(id)))
+  }
 }
