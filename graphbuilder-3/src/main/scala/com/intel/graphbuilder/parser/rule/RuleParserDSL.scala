@@ -23,7 +23,6 @@
 
 package com.intel.graphbuilder.parser.rule
 
-
 /**
  * Methods and implicit conversions that help the creation of ParserRules to be simpler and use a more DSL-like syntax
  */

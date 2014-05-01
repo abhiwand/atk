@@ -23,13 +23,13 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{GbIdToPhysicalId, Vertex}
+import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Vertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.VertexWriter
 import com.intel.graphbuilder.write.dao.VertexDAO
 import com.intel.graphbuilder.write.titan.TitanVertexWriter
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{TaskContext, Partition}
+import org.apache.spark.{ TaskContext, Partition }
 
 /**
  * RDD that writes to Titan and produces output mapping GbId's to Physical Id's
