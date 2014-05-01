@@ -9,7 +9,7 @@ import org.apache.spark.scheduler.JobFailed
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
-import scala.concurrent.{Promise, promise, future}
+import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class SparkProgressListener extends SparkListener {
@@ -21,18 +21,12 @@ class SparkProgressListener extends SparkListener {
   val stageIdToTasksFailed = HashMap[Int, Int]()
   var jobIdPromise: Promise[Int] = null
 
-//  def getJobId(): Int = {
-//    val p = promise[Int]
-//    val f = p.future
-//    jobIdPromise = p
-//    var jobId = 0
-//
-//    f onSuccess {
-//      case r => jobId = r
-//    }
-//
-//    jobId
-//  }
+  def getJobId(): Future[Int] = {
+    val p = promise[Int]
+    val f = p.future
+    jobIdPromise = p
+    f
+  }
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val parents = jobStart.job.finalStage.parents
