@@ -9,8 +9,7 @@ object IABuild extends Build {
                           base = file("."))
                           .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
                           //.settings(oneLogSettings: _*)
-                          .aggregate(event, /* graphbuilder,*/ interfaces, launcher, server, engine, spark)
-                          .dependsOn(shared)
+                          .aggregate(event, /* graphbuilder,*/ interfaces, launcher, server, engine, spark, shared)
 
   lazy val launcher = Project(id = "launcher", base = file("launcher"))
                           .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)

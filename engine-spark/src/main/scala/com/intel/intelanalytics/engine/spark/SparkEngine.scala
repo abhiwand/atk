@@ -31,7 +31,7 @@ import org.apache.spark.broadcast.Broadcast
 import scala.collection.Set
 import scala.Predef
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
+import com.intel.intelanalytics.domain.{DataTypes, DataFrameTemplate, DataFrame}
 import com.intel.intelanalytics.engine.RowFunction
 import scala.concurrent._
 import ExecutionContext.Implicits.global
@@ -148,17 +148,12 @@ class SparkComponent extends EngineComponent
           val parserFunction = getLineParser(parser)
           val location = fsRoot + frames.getFrameDataFile(frame.id)
           val schema = realFrame.schema
-          val types = schema.columns.map(_._2).lift
+          val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
           val ctx = context()
             ctx.textFile(fsRoot + "/" + file)
               .map(parserFunction)
               //TODO: type conversions based on schema
-              .map(strings => strings.zipWithIndex.map { case  (s,i) => {
-                                                          val colType = types(i).getOrElse(
-                                                            illegalArg("Data extend beyond number" +
-                                                              " of columns defined in data frame"))
-                                                          val value = colType.parse(s)
-                                                        }})
+              .map(strings => converter(strings))
               .saveAsObjectFile(location)
             frames.lookup(frame.id).getOrElse(
               throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
