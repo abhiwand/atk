@@ -23,8 +23,11 @@
 
 package com.intel.intelanalytics.domain
 
-import spray.json.{JsString, JsValue, JsonFormat, DefaultJsonProtocol}
+import spray.json._
 import com.intel.intelanalytics.domain.DataTypes.DataType
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.DataFrameTemplate
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
@@ -46,5 +49,30 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val dataFrameFormat = jsonFormat3(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
+
+  implicit object DataTypeJsonFormat extends JsonFormat[Any] {
+    override def write(obj: Any): JsValue = {
+      obj match {
+        case n: Int => new JsNumber(n)
+        case n: Long => new JsNumber(n)
+        case n: Float => new JsNumber(n)
+        case n: Double => new JsNumber(n)
+        case s: String => new JsString(s)
+        case unk => serializationError("Cannot serialize " + unk.getClass.getName)
+      }
+    }
+
+    override def read(json: JsValue): Any = {
+      json match {
+        case JsNumber(n) if n.isValidInt => n.intValue()
+        case JsNumber(n) if n.isValidLong => n.longValue()
+        case JsNumber(n) if n.isValidFloat => n.floatValue()
+        case JsNumber(n) => n.doubleValue()
+        case JsString(s) => s
+        case unk => serializationError("Cannot deserialize " + unk.getClass.getName)
+      }
+    }
+  }
+
 
 }

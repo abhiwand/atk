@@ -146,9 +146,9 @@ trait V1DataFrameService extends V1Service {
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
                 onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {
-                  case Success(rows: Iterable[Array[Array[Byte]]]) => {
-                    import DefaultJsonProtocol._
-                    val strings: List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
+                  case Success(rows: Iterable[Array[Any]]) => {
+                    import DomainJsonProtocol._
+                    val strings = rows.map(r => r.map(a => a.toJson).toList).toList
                     complete(strings)
                   }
                   case Failure(ex) => throw ex
