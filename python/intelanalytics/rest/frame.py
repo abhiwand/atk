@@ -92,7 +92,7 @@ class FrameBackendREST(object):
         from itertools import ifilter
         from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer
 
-        serializer = BatchedSerializer(PickleSerializer(), 1024)
+        serializer = BatchedSerializer(PickleSerializer(), 1)
         def filter_func(iterator): return ifilter(predicate, iterator)
         def func(s, iterator): return filter_func(iterator)
 
