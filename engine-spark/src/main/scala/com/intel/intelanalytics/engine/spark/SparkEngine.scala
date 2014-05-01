@@ -61,7 +61,7 @@ import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.engine.RowFunction
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.engine.SparkProgressListener
+import org.apache.spark.engine.{SparkProgressListener, TestListener}
 
 
 //TODO logging
@@ -104,7 +104,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
           val ctx = withMyClassLoader {
             val context = new SparkContext(config = config.setAppName("intel-analytics:user"))
             val listener = new SparkProgressListener()
+            val testListener = new TestListener(listener)
             context.addSparkListener(listener)
+            context.addSparkListener(testListener)
             Context(context, listener)
           }
           runningContexts += ("user" -> ctx)
