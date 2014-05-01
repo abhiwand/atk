@@ -187,49 +187,45 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       future {
         withMyClassLoader {
           val ctx = context()
-//          val location = fsRoot + frames.getFrameDataFile(frame.id)
+          val predicate_from_file = Files.readAllBytes(Paths.get("/home/joyeshmi/pickled_predicate"))
+          val predicateInBytes =  decodePythonBase64EncodedStrToBytes(predicate)
+          println("Length of predicate file" + predicateInBytes)
+          for (b <- predicateInBytes) print("0x%02x ".format(b))
 
-          val location = "/home/hadoop/test.csv"
-          //Little placeholder for now
+          println("End of printing predicate_from_file")
+
           println("*************** In FILTER FUNCTION **********")
-          val predicate_from_file = Files.readAllBytes(Paths.get("/home/hadoop/pickled_predicate"))
-          val predicateBytes = predicate_from_file
-          //val predicateBytes = decodePythonBase64EncodedStrToBytes(predicate)
-          println("predicate bytes:")
-          for (b <- predicateBytes) print("0x%02x ".format(b))
-          println()
-          println("*********************************************")
 
-          val baseRdd = ctx.textFile(location)
-//            .map[Array[String]](f => f.split(","))
+          val baseRdd : RDD[String] = frames.getFrameRdd(ctx, frame.id)
+            .map(x => x.map(t => new String(t)).mkString(","))
+
+
           println("Printing baserdd")
           baseRdd.take(10).map(println)
 
-
           val pythonExec = "python2.7" //TODO: take from env var or config
-          val environment = System.getenv() //TODO - should be empty instead?
-          val accumulator = new Accumulator[JList[Array[Byte]]](
-              initialValue = new JArrayList[Array[Byte]](),
-              param = new EnginePythonAccumulatorParam())
+          val environment = new java.util.HashMap[String, String]()
+
+          println(environment)
+
+          val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
+
           var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
 
-          println("About to create EnginePythonRDD")
           val pyRdd = new EnginePythonRDD[String](
-//            baseRdd, predicate.getBytes("UTF-8"), environment,
-              baseRdd, predicateBytes, environment,
+            baseRdd, predicateInBytes, environment,
             new JArrayList, preservePartitioning = false,
             pythonExec = pythonExec,
             broadcastVars, accumulator)
 
+          println("Predicate:" + predicate)
 
-          //println("Predicate:" + predicate)
-          println("About to pyRdd.take(10)")
-          val output = pyRdd.take(10)
+          val location = fsRoot + frames.getFrameDataFile(frame.id)
+          pyRdd.map(s => new String(s).split(",").map(t => t.getBytes())).saveAsObjectFile(location)
 
-//          val f = new PrintWriter("/home/joyeshmi/filteredoutput");
-//          output.map(x => f.println(x))
-//          f.close();
           println("*************** Done filtering*****************")
+
+
           frame
         }
       }

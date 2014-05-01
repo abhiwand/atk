@@ -33,12 +33,25 @@ from connection import rest_http
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-#from intelanalytics.rest.serialize import IAPickle
+from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
+import json
 
 
 def encode_bytes_for_http(b):
     return base64.urlsafe_b64encode(b)
 
+class MyBatchedSerializer(BatchedSerializer):
+    def __init__(self):
+        super(MyBatchedSerializer,self).__init__(PickleSerializer(), 1)
+
+    def dump_stream(self, iterator, stream):
+        self.dump_stream_as_json(self._batched(iterator), stream)
+
+    def dump_stream_as_json(self, iterator, stream):
+        for obj in iterator:
+            serialized = ",".join(obj)
+            write_int(len(serialized), stream)
+            stream.write(serialized)
 
 class FrameBackendREST(object):
     """REST plumbing for BigFrame"""
@@ -90,9 +103,9 @@ class FrameBackendREST(object):
 
     def filter(self, frame, predicate):
         from itertools import ifilter
-        from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer
 
-        serializer = BatchedSerializer(PickleSerializer(), 1024)
+        # serializer = BatchedSerializer(PickleSerializer(), 1)
+        serializer = MyBatchedSerializer()
         def filter_func(iterator): return ifilter(predicate, iterator)
         def func(s, iterator): return filter_func(iterator)
 
@@ -100,15 +113,6 @@ class FrameBackendREST(object):
 
         pickled_predicate = CloudPickleSerializer().dumps(command)
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
-        #file = open('/home/joyeshmi/pickled_predicate', "w")
-        #file.write(bytearray(pickled_predicate))
-        #file.close()
-
-        # from serialize import IAPickle
-        # pickled_stream = StringIO()
-        # i = IAPickle(pickled_stream)
-        # i.dump(predicate)
-        # pickled_predicate = pickled_stream.getvalue()
 
         payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': http_ready_predicate}}
         r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
