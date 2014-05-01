@@ -2,10 +2,15 @@ package org.apache.spark.engine
 
 import org.apache.spark.scheduler._
 import scala.collection.mutable.{ListBuffer, HashSet, HashMap}
+import org.apache.spark.scheduler.SparkListenerTaskEnd
+import org.apache.spark.scheduler.SparkListenerJobEnd
 import org.apache.spark.scheduler.SparkListenerStageSubmitted
+import org.apache.spark.scheduler.JobFailed
 import org.apache.spark.scheduler.SparkListenerStageCompleted
+import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
-
+import scala.concurrent.{Promise, promise, future}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class SparkProgressListener extends SparkListener {
 
@@ -14,11 +19,30 @@ class SparkProgressListener extends SparkListener {
   val completedStages = ListBuffer[StageInfo]()
   val stageIdToTasksComplete = HashMap[Int, Int]()
   val stageIdToTasksFailed = HashMap[Int, Int]()
+  var jobIdPromise: Promise[Int] = null
+
+//  def getJobId(): Int = {
+//    val p = promise[Int]
+//    val f = p.future
+//    jobIdPromise = p
+//    var jobId = 0
+//
+//    f onSuccess {
+//      case r => jobId = r
+//    }
+//
+//    jobId
+//  }
 
   override def onJobStart(jobStart: SparkListenerJobStart) {
     val parents = jobStart.job.finalStage.parents
     val parentsIds = parents.sortBy(_.id).map(s => s.id)
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
+
+    if(jobIdPromise != null) {
+      jobIdPromise success jobStart.job.jobId
+      jobIdPromise = null
+    }
   }
 
   override def onStageSubmitted(stageSubmitted: SparkListenerStageSubmitted) {

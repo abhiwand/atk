@@ -33,6 +33,9 @@ import org.apache.spark.scheduler.SparkListenerStageSubmitted
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.{TaskContext, Success}
+import scala.concurrent._
+import scala.concurrent.ExecutionContext.Implicits.global
+
 
 
 
@@ -349,5 +352,31 @@ class ProgressListenerSpec extends Specification with Mockito  {
     taskInfo2.successful.returns(true)
     listener.onTaskEnd(taskEnd2)
     listener.getProgress(2) shouldEqual 2
+  }
+
+  "get job id" in {
+    val p = promise[Int]
+    val f = p.future
+    var jobId = 0
+    val listener = new SparkProgressListener()
+    val stageIds = Array(1)
+    val job = mock[ActiveJob]
+    job.jobId.returns(1)
+    val finalStage1 = mock[Stage]
+    finalStage1.id.returns(1)
+    finalStage1.parents.returns(List())
+    job.finalStage.returns(finalStage1)
+    val jobStart = SparkListenerJobStart(job, stageIds)
+    listener.jobIdPromise = p
+
+
+    f onSuccess {
+      case r => jobId = r
+    }
+    listener onJobStart jobStart
+
+    jobId shouldEqual 1
+
+
   }
 }
