@@ -37,7 +37,6 @@ abstract class Parser[T](inputSchema: InputSchema) extends Serializable {
     parse(new InputRow(inputSchema, row))
   }
 
-
   /**
    * Parse a row of data into zero to many T
    */

@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write.titan
 
-import com.intel.graphbuilder.schema.{EdgeLabelDef, PropertyDef, PropertyType, GraphSchema}
+import com.intel.graphbuilder.schema.{ EdgeLabelDef, PropertyDef, PropertyType, GraphSchema }
 import com.intel.graphbuilder.write.SchemaWriter
 import com.thinkaurelius.titan.core.TitanGraph
 import com.tinkerpop.blueprints._
