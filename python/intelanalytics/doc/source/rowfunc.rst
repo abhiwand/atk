@@ -15,9 +15,9 @@ accessed with square brackets or directly.
 >>> lambda row:  row['a'] > 0
 >>> lambda row:  row.a > 0
 
-The Row object is **iterable** on the cell values:
+The Row object is **iterable** on the cells:
 
->>> lambda row: ", ".join([c for c in rows])
+>>> lambda row: ", ".join(str(cell_value) for cell_value in row.values())
 
 
 **is_empty** - determines if the cell is "empty" according to the definition of
@@ -36,5 +36,5 @@ are prohibited.
 >>> def my_row_func(row):
         row['a'] = r['b'] * 0.031 - 1
 >>> frame.map(my_row_func)
-Exception!
+Error!
 
