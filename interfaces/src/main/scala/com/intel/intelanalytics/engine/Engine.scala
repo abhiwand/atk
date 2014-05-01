@@ -32,7 +32,7 @@ import java.io.{OutputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.Row
 
 object Rows {
-  type Row = Array[Array[Serializable]] //TODO: Can we constrain this better?
+  type Row = Array[Any] //TODO: Can we constrain this better?
   trait RowSource {
     def schema: Schema
     def rows: Iterable[Row]

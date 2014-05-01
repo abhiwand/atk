@@ -69,7 +69,7 @@ object DataTypes {
 
   implicit def toString(d: DataType): String = d.toString
 
-  def parseMany(columnTypes: Array[DataType])(strings: Array[String]) = {
+  def parseMany(columnTypes: Array[DataType])(strings: Array[String]): Array[Any] = {
     val lifted = columnTypes.lift
     strings.zipWithIndex.map {
       case (s, i) => {
@@ -77,6 +77,7 @@ object DataTypes {
           "Data extend beyond number" +
             " of columns defined in data frame"))
         val value = colType.parse(s)
+        value.get
       }
     }
   }
