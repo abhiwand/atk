@@ -61,6 +61,7 @@ import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.engine.RowFunction
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
+import org.apache.spark.engine.SparkProgressListener
 
 
 //TODO logging
@@ -80,6 +81,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
   val sparkMaster = conf.getString("intel.analytics.spark.master")
 
   //Very simpleminded implementation, not ready for multiple users, for example.
+  case class Context(sparkContext: SparkContext, progressMonitor: SparkProgressListener)
+
   class SparkEngine extends Engine {
 
     def config = new SparkConf()
@@ -89,7 +92,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       .setSparkHome(sparkHome)
 
 
-    val runningContexts = new mutable.HashMap[String,SparkContext] with mutable.SynchronizedMap[String,SparkContext] {}
+    val runningContexts = new mutable.HashMap[String,Context] with mutable.SynchronizedMap[String,Context] {}
     //TODO: how to run jobs as a particular user
     //TODO: Decide on spark context life cycle - should it be torn down after every operation,
     //or left open for some time, and reused if a request from the same user comes in?
@@ -99,7 +102,10 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         case Some(ctx) => ctx
         case None => {
           val ctx = withMyClassLoader {
-            new SparkContext(config = config.setAppName("intel-analytics:user"))
+            val context = new SparkContext(config = config.setAppName("intel-analytics:user"))
+            val listener = new SparkProgressListener()
+            context.addSparkListener(listener)
+            Context(context, listener)
           }
           runningContexts += ("user" -> ctx)
           ctx
@@ -144,7 +150,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         withMyClassLoader {
           val parserFunction = getLineParser(parser)
           val location = fsRoot + frames.getFrameDataFile(frame.id)
-          val ctx = context()
+          val ctx = context().sparkContext
             ctx.textFile(fsRoot + "/" + file)
               .map(parserFunction)
               //TODO: type conversions based on schema
@@ -178,7 +184,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame] = {
       future {
-        val ctx = context() //TODO: resource management
+        val ctx = context().sparkContext //TODO: resource management
         val rdd = frames.getFrameRdd(ctx, frame.id)
         val command = getPyCommand(predicate)
         val pythonExec = "python" //TODO: take from env var or config
@@ -318,7 +324,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
 
     override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] = {
       val ctx = engine.context()
-      val rdd: RDD[Array[Array[Byte]]] = getFrameRdd(ctx, frame.id)
+      val rdd: RDD[Array[Array[Byte]]] = getFrameRdd(ctx.sparkContext, frame.id)
       //Brute force until the code below can be fixed
       val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
       //The below fails with a classcast exception saying it can't convert a byteswritable
