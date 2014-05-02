@@ -382,8 +382,6 @@ class ProgressListenerSpec extends Specification with Mockito  {
 
 
   "get job id 2" in {
-//    val p = promise[Int]
-//    val f = p.future
     var jobId = 0
     val listener = new SparkProgressListener()
     val stageIds = Array(1)
@@ -395,17 +393,10 @@ class ProgressListenerSpec extends Specification with Mockito  {
     job.finalStage.returns(finalStage1)
     val jobStart = SparkListenerJobStart(job, stageIds)
 
-    val test = listener.getJobId()
-
-    test onSuccess {
-      case r => jobId = r
-    }
-
-
-
+    val jobIdFuture = listener.getJobId()
     listener onJobStart jobStart
     import scala.concurrent.duration._
-    jobId = Await.result(test, 10000 microseconds)
+    jobId = Await.result(jobIdFuture, 10000 microseconds)
     jobId shouldEqual 1
 
 
