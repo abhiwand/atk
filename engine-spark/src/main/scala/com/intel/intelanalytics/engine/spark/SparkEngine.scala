@@ -352,40 +352,18 @@ class SparkComponent extends EngineComponent
 
     override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] =
         withContext("frame.getRows") {
-      val ctx = engine.context()
+          require(frame != null, "frame is required")
+          require(offset >= 0, "offset must be zero or greater")
+          require(count > 0, "count must be zero or greater")
+
+          val ctx = engine.context()
       val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
-      //Brute force until the code below can be fixed
-      val rows = rdd.take(offset.toInt + count).drop(offset.toInt)
-      //The below fails with a classcast exception saying it can't convert a byteswritable
-      //into a Text. Nobody asked it to try to do that cast, so it's a bit mysterious.
-      //update: looks like it may be a spark-0.9.0 bug, 0.9.1 may fix.
-      //TODO: Check to see if there's a better way to implement, this might be too slow.
-      // Need to cache row counts per partition somewhere.
-      //      val counts = rdd.mapPartitionsWithIndex(
-      //                            (i:Int, rows:Iterator[Array[Array[Byte]]]) => Iterator.single((i, rows.size)))
-      //                      .collect()
-      //                      .sortBy(_._1)
-      //      val sums = counts.scanLeft((0,0)) { (t1,t2) => (t2._1, t1._2 + t2._2) }
-      //                      .drop(1)
-      //                      .toMap
-      //      val sumsAndCounts = counts.map {case (part, count) => (part, (count, sums(part)))}.toMap
-      //      val rows: Seq[Array[Array[Byte]]] = rdd.mapPartitionsWithIndex((i, rows) => {
-      //        val (ct: Int, sum: Int) = sumsAndCounts(i)
-      //        if (sum < offset || sum - ct > offset + count) {
-      //          Iterator.empty
-      //        } else {
-      //          val start = offset - (sum - ct)
-      //          rows.drop(start.toInt).take(count)
-      //        }
-      //      }).collect()
+      val rows = SparkOps.getRows(rdd, offset, count)
       rows
     }
 
-
-
     def getFrameRdd(ctx: SparkContext, id: Long): RDD[Row] = {
       ctx.objectFile[Row](fsRoot + getFrameDataFile(id))
-      //.map(_.map(i => i.asInstanceOf[Any]))
     }
 
     def getOrCreateDirectory(name: String) : Directory = {
