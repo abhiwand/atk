@@ -109,7 +109,11 @@ class TestListener(progressListener: SparkProgressListener) extends SparkListene
   }
 
   def printJobProgress() {
-    val jobIds = progressListener.jobIdToStageIds.keys
-    jobIds.foreach(id => println("job: " + id + ", progress: " + progressListener.getProgress(id)))
+    val jobIds = progressListener.jobIdToStageIds.keys.toList.sorted
+    println("PRINTING PROGRESS........................................................")
+    for(id <- jobIds) {
+      println("job: " + id + ", progress: " + progressListener.getProgress(id) + "%")
+    }
+    println("END.......................................................................")
   }
 }
