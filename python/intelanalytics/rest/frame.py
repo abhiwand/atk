@@ -36,10 +36,10 @@ from intelanalytics.core.types import *
 class FrameBackendREST(object):
     """REST plumbing for BigFrame"""
 
-    """credentials currently contain api key"""
+    """credentials currently only contain the client's api key"""
     def __init__(self, credentials = None):
         self.credentials = credentials
-        self.rest_http = HttpMethods(Connection(self.credentials))
+        self.rest_http = HttpMethods(Connection(credentials = self.credentials))
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
