@@ -35,7 +35,7 @@ class EngineActor extends Actor with EventLogging { this: EngineComponent =>
   def receive = {
     case AppendFile(id, fileName, rowParser) => for {
       f <- engine.getFrame(id)
-      res <- engine.appendFile(f, fileName, rowParser)
+      res <- engine.appendFile(f, fileName, rowParser)(p=null)//FIXME: pass user info as null for now
     } yield res
 //    case AddColumn(id, name, map) => engine.addColumn(id, name, map)
 //    case DropColumn(id, name) => engine.dropColumn(id, name)

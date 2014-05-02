@@ -23,9 +23,7 @@
 
 package com.intel.intelanalytics.repository
 
-import com.intel.intelanalytics.domain.DataFrame
-import scala.slick.driver.JdbcProfile
-
+import com.intel.intelanalytics.domain.{User, DataFrame}
 
 trait MetaStoreComponent {
   val metaStore: MetaStore
@@ -34,6 +32,7 @@ trait MetaStoreComponent {
     type Session
     def withSession[T](name: String) (f: Session => T) : T
     def frameRepo: Repository[Session, DataFrame]
+    def userRepo: Repository[Session, User]
     def create() : Unit
   }
 }
