@@ -36,7 +36,7 @@ import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{Builtin, Functional, EngineComponent}
 import scala.util._
-import scala.concurrent.ExecutionContext
+import scala.concurrent._
 import spray.util.LoggingContext
 import scala.util.Failure
 import com.intel.intelanalytics.domain.DataFrameTemplate
@@ -46,6 +46,9 @@ import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.engine.Builtin
+import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.security.UserPrincipal
+
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -53,7 +56,8 @@ import ExecutionContext.Implicits.global
 trait V1DataFrameService extends V1Service {
   this: V1Service
     with MetaStoreComponent
-    with EngineComponent =>
+    with EngineComponent
+    with EventLogging =>
 
   def frameRoutes() = {
     import ViewModelJsonProtocol._
@@ -65,12 +69,43 @@ trait V1DataFrameService extends V1Service {
       Decorators.frames.decorateEntity(uri.toString, links, frame)
     }
 
+    def getUserPrincipal(api_key: Option[String]) : Future[UserPrincipal] = {
+      future {
+        metaStore.withSession("Getting user principal") { implicit session =>
+          val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", api_key.get)
+          require(users.size == 1, "User not found in metastore")
+          val userPrincipal:UserPrincipal = new UserPrincipal(users(0), List("user"))//TODO need role definitions
+          info("Authenticated user " + userPrincipal)
+          userPrincipal
+        }
+      }
+    }
+
     //TODO: none of these are yet asynchronous - they communicate with the engine
     //using futures, but they keep the client on the phone the whole time while they're waiting
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
     std(prefix) {
-      (path(prefix) & pathEnd) {
+      //currently the user principal is passed as an implicit parameter to the engine methods
+      //see engine.getFrames for an example
+      //TODO is there a better way, one option is thread locals, but may break when we move to async processing with multiple different threads
+    //TODO how does spray process requests? If multiple threads may be running the code below, need to find a better way to pass user info
+      implicit var p: UserPrincipal =  null;
+
+      //first check the HTTP Authorization header for a client key
+      optionalHeaderValueByName("Authorization") {
+        client_api_key =>
+          if (client_api_key isEmpty) {
+            info("Authorization header is empty, so returning Unauthorized")
+            complete(StatusCodes.Unauthorized)
+          }else{
+            onComplete(getUserPrincipal(client_api_key)){
+              case Success(principal) => { p = principal; reject()}
+              case Failure(ex) => complete(StatusCodes.Unauthorized)
+            }
+          }
+      } ~
+       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
             //TODO: cursor

@@ -23,38 +23,31 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{SparkContext, SparkConf, Accumulator}
-import org.apache.spark.api.python._
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
-import org.apache.spark.broadcast.Broadcast
-import scala.collection.Set
-import scala.Predef
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
+import com.intel.intelanalytics.domain.{User, DataFrameTemplate, DataFrame}
 import com.intel.intelanalytics.engine.RowFunction
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.{Paths, Path}
-import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
+import java.nio.file.Paths
+import java.io.{IOException, OutputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.RowSource
 import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
-import resource._
-import org.apache.hadoop.fs.{FSDataInputStream, LocalFileSystem, FileSystem}
+import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
-import spray.json.JsonParser
 import scala.io.{Codec, Source}
 import scala.util.control.NonFatal
-import org.apache.hadoop.io._
-import scala.collection.mutable.ArrayBuffer
 import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
-import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
+import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.shared.EventLogging
 
 //TODO logging
 //TODO error handling
@@ -62,38 +55,29 @@ import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
-class SparkComponent extends EngineComponent with FrameComponent with FileComponent {
-  val engine = new SparkEngine {}
+class SparkComponent extends EngineComponent with FrameComponent with FileComponent with EventLogging{
+  val engine = new SparkEngine
   val conf = ConfigFactory.load()
   val sparkHome = conf.getString("intel.analytics.spark.home")
   val sparkMaster = conf.getString("intel.analytics.spark.master")
+  val sparkContextManager = new SparkContextManager(conf, new SparkContextFactory)
 
   //Very simpleminded implementation, not ready for multiple users, for example.
   class SparkEngine extends Engine {
 
-    def config = new SparkConf()
-      .setMaster(sparkMaster)
-      .setAppName("intel-analytics") //TODO: this will probably wind up being a different
-                                      //application name for each user session
-      .setSparkHome(sparkHome)
-
-
-    val runningContexts = new mutable.HashMap[String,SparkContext] with mutable.SynchronizedMap[String,SparkContext] {}
-    //TODO: how to run jobs as a particular user
-    //TODO: Decide on spark context life cycle - should it be torn down after every operation,
-    //or left open for some time, and reused if a request from the same user comes in?
-    //Is there some way of sharing a context across two different Engine instances?
-    def context() = {
-      runningContexts.get("user") match {
-        case Some(ctx) => ctx
-        case None => {
-          val ctx = withMyClassLoader {
-            new SparkContext(config = config.setAppName("intel-analytics:user"))
-          }
-          runningContexts += ("user" -> ctx)
-          ctx
-        }
+    def context(userPrincipal: UserPrincipal = null) = {
+      if(userPrincipal != null) {
+        //TODO this is just a workaround for calls that do not have the user info right now
+        //otherwise userPrincipal CANNOT be null
+        warn("userPrincipal is null! THIS IS A WORKAROUND UNTIL ALL CALLS HAVE THE USER INFO.")
+        sparkContextManager.getContext("default_user")
+      }else{
+        sparkContextManager.getContext(userPrincipal.user.api_key)
       }
+    }
+
+    def shutdown: Unit={
+      sparkContextManager cleanup
     }
 
     def withMyClassLoader[T](f: => T): T = {
@@ -125,7 +109,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def appendFile(frame: DataFrame, file: String, parser: Functional): Future[DataFrame] = {
+    def appendFile(frame: DataFrame, file: String, parser: Functional)(implicit p: UserPrincipal): Future[DataFrame] = {
       require(frame != null)
       require(file != null)
       require(parser != null)
@@ -133,14 +117,14 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         withMyClassLoader {
           val parserFunction = getLineParser(parser)
           val location = fsRoot + frames.getFrameDataFile(frame.id)
-          val ctx = context()
-            ctx.textFile(fsRoot + "/" + file)
-              .map(parserFunction)
-              //TODO: type conversions based on schema
-              .map(strings => strings.map(s => s.getBytes))
-              .saveAsObjectFile(location)
-            frames.lookup(frame.id).getOrElse(
-              throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
+          val ctx = context(p)
+          ctx.textFile(fsRoot + "/" + file)
+            .map(parserFunction)
+            //TODO: type conversions based on schema
+            .map(strings => strings.map(s => s.getBytes))
+            .saveAsObjectFile(location)
+          frames.lookup(frame.id).getOrElse(
+            throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
         }
       }
     }
@@ -159,7 +143,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       }
     }
 
-    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]] = {
+    def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = {
       future {
         frames.getFrames(offset, count)
       }

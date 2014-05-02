@@ -56,6 +56,9 @@ class Connection(object):
         self.version = version or _version
         self.headers = _headers
         self.credentials = credentials
+        #TODO: currently we put the api key as is in the Authorization header, but it's more secure if we use some sort
+        #of hashing to create a signature out of the key
+        #for an example see http://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html
         self.headers['Authorization'] = self.credentials
 
     def __repr__(self):

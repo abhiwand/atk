@@ -24,10 +24,9 @@
 package com.intel.intelanalytics.repository
 
 import com.intel.intelanalytics.shared.EventLogging
-import com.intel.intelanalytics.domain.{DataFrame,Schema}
+import com.intel.intelanalytics.domain.{User, DataFrame, Schema}
 import scala.util.Try
 import spray.json._
-
 import scala.slick.driver.JdbcProfile
 
 trait DbProfileComponent {
@@ -56,17 +55,28 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       withSession("Creating tables") { implicit session =>
         info("creating")
         frames.ddl.create
-        info("tables created")
+        users.ddl.create
+        info("created tables")
       }
     }
 
     override lazy val frameRepo: Repository[Session, DataFrame] = new SlickFrameRepository
+    override lazy val userRepo: Repository[Session, User] = new SlickUserRepository
 
     override def withSession[T](name: String)(f: (Session) => T): T = {
       withContext(name) {
         database.withSession(f)
       }
     }
+  }
+
+  class UserEntity(tag: Tag) extends Table[User](tag, "users") {
+    def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+    def api_key = column[String]("api_key")
+
+    def * = (id, api_key) <>
+      ((t: (Long,String)) => t match {case (i:Long, n:String) => User.tupled((i, n))},
+        (f: User) => User.unapply(f) map {case (i,n) => (i,n)})
   }
 
   class Frame(tag: Tag) extends Table[DataFrame](tag, "frame") {
@@ -79,6 +89,41 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
         (f: DataFrame) => DataFrame.unapply(f) map {case (i,n,s) => (i,n,s.toJson.prettyPrint)})
   }
 
+  /* CRUD for users */
+  val users = TableQuery[UserEntity]
+
+  protected val usersAutoInc = users returning users.map(_.id) into { case (c, id) => c.copy(id = id)}
+
+  class SlickUserRepository extends Repository[Session, User] with EventLogging {
+    this: Repository[Session, User] =>
+
+    override def insert(new_user: User) (implicit session: Session): Try[User] = Try {
+      usersAutoInc.insert(new_user)
+    }
+
+    override def lookup(id: Long) (implicit session: Session): Option[User] = {
+      users.where(_.id === id).firstOption
+    }
+
+    override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
+      users.where(_.id === id).mutate(c => c.delete())
+    }
+
+    override def update(c: User) (implicit session: Session): Try[User] = Try {
+      users.where(_.id === c.id).update(c)
+      c
+    }
+
+    override def scan(offset: Int = 0, count: Int = defaultScanCount) (implicit session: Session): Seq[User] = {
+      users.drop(offset).take(count).list
+    }
+
+    override  def retrieveByColumnValue(colName: String, value: String) (implicit session: Session): List[User] = {
+      users.filter(_.column[String](colName) === value).list
+    }
+  }
+
+  /* CRUD for frames */
   val frames = TableQuery[Frame]
 
   protected val framesAutoInc = frames returning frames.map(_.id) into { case (f, id) => f.copy(id = id)}
@@ -111,6 +156,10 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
 
     def create(implicit session:Session) = {
 
+    }
+
+    override  def retrieveByColumnValue(colName: String, value: String) (implicit session: Session) : List[DataFrame] = {
+      frames.filter(_.column[String](colName) === value).list
     }
   }
 
