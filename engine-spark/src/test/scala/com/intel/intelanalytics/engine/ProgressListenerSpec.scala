@@ -228,6 +228,44 @@ class ProgressListenerSpec extends Specification with Mockito  {
     listener.getProgress(1) shouldEqual 39
   }
 
+  "finish second task in second stage, secon task in third stage" in {
+    val listener = createListener_one_job
+    val stageInfo1 = mock[StageInfo]
+    stageInfo1.stageId.returns(1)
+    val completed1 = SparkListenerStageCompleted(stageInfo1)
+    listener.onStageCompleted(completed1)
+
+    val stageInfo2 = mock[StageInfo]
+    stageInfo2.numTasks.returns(10)
+    stageInfo2.stageId.returns(2)
+    val submitted = SparkListenerStageSubmitted(stageInfo2, null)
+    listener.onStageSubmitted(submitted)
+
+    val taskInfo = mock[TaskInfo]
+    taskInfo.successful.returns(true)
+
+    val task = new FakeTask(2)
+    val taskEnd = SparkListenerTaskEnd(task, Success, taskInfo, null)
+    listener.onTaskEnd(taskEnd)
+    listener.onTaskEnd(taskEnd)
+
+    val stageInfo3 = mock[StageInfo]
+    stageInfo3.numTasks.returns(10)
+    stageInfo3.stageId.returns(3)
+    val submitted3 = SparkListenerStageSubmitted(stageInfo3, null)
+    listener.onStageSubmitted(submitted3)
+
+    val taskInfo3 = mock[TaskInfo]
+    taskInfo3.successful.returns(true)
+
+    val task3 = new FakeTask(3)
+    val taskEnd3 = SparkListenerTaskEnd(task3, Success, taskInfo3, null)
+
+    listener.onTaskEnd(taskEnd3)
+    listener.onTaskEnd(taskEnd3)
+    listener.getProgress(1) shouldEqual 45
+  }
+
   "finish all tasks in second stage" in {
     val listener = createListener_one_job
 
