@@ -30,6 +30,7 @@ import com.intel.intelanalytics.domain.{DataFrameTemplate, Schema, DataFrame}
 import scala.concurrent.Future
 import java.io.{OutputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.security.UserPrincipal
 
 object Rows {
   type Row = Array[Array[Byte]] //TODO: Can we constrain this better?
@@ -136,14 +137,16 @@ trait EngineComponent {
   // where the latter has no ID, and is the argument passed to create?
   trait Engine {
     def getFrame(id: Identifier) : Future[DataFrame]
-    def getRows(id: Identifier, offset: Long, count: Int) : Future[Iterable[Row]]
+    def getRows(id: Identifier, offset: Long, count: Int): Future[Iterable[Row]]
     def create(frame: DataFrameTemplate): Future[DataFrame]
     def clear(frame: DataFrame) : Future[DataFrame]
-    def appendFile(frame: DataFrame, file: String, parser: Functional) : Future[DataFrame]
+    def appendFile(frame: DataFrame, file: String, parser: Functional)(implicit p: UserPrincipal): Future[DataFrame]
     //def append(frame: DataFrame, rowSource: Rows.RowSource): Future[DataFrame]
     def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame]
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
-    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]]
+    def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+
+    def shutdown: Unit
   }
 }

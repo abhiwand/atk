@@ -14,5 +14,6 @@ trait Repository[Session, Entity <: HasId] extends ReadRepository[Session, Entit
   def insert(entity: Entity) (implicit session: Session): Try[Entity]
   def update(entity: Entity) (implicit session: Session): Try[Entity]
   def delete(id: Long) (implicit session: Session): Try[Unit]
+  def retrieveByColumnValue(colName: String, value: String) (implicit session: Session): List[Entity]
 }
 

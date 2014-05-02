@@ -33,13 +33,20 @@ import scala.slick.driver.H2Driver
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
 import com.intel.intelanalytics.component.{Archive}
-import com.intel.intelanalytics.repository.{DbProfileComponent, SlickMetaStoreComponent}
+import com.intel.intelanalytics.repository.{MetaStoreComponent, DbProfileComponent, SlickMetaStoreComponent}
 import com.intel.intelanalytics.service.v1.{V1DataFrameService, ApiV1Service}
 import com.intel.intelanalytics.engine.EngineComponent
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.shared.EventLogging
 
-class ServiceApplication extends Archive {
+class ServiceApplication extends Archive
+    with DbProfileComponent
+    with SlickMetaStoreComponent {
 
+  //TODO: choose database profile from config
+  override lazy val profile = new Profile(H2Driver, connectionString = "jdbc:h2:mem:iatest;DB_CLOSE_DELAY=-1",
+    driver = "org.h2.Driver")
 
   def get[T](descriptor: String) : T = {
     throw new IllegalArgumentException("This component provides no services")
@@ -48,7 +55,31 @@ class ServiceApplication extends Archive {
   def stop() = {}
 
   def start(configuration: Map[String,String]) = {
-    ServiceHost.start()
+    val config = ConfigFactory.load()
+
+    ServiceHost.start(config)
+
+    //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
+    //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
+    metaStore.create()
+    //populate the database with some test users from the specified file (for testing)
+    val usersFile = config.getString("test.users.file")
+    //read from the resources folder
+    val source = scala.io.Source.fromURL(getClass.getResource("/" + usersFile))
+    try {
+      metaStore.withSession("Populating test users") {
+        implicit session =>
+          for (line <- source.getLines() if !line.startsWith("#")) {
+            val cols: Array[String] = line.split(",")
+            val userId:Long = cols(0).trim.toLong
+            val apiKey = cols(1).trim
+            metaStore.userRepo.insert(new User(userId, apiKey))
+          }
+      }
+    }
+    finally{
+      source.close()
+    }
   }
 }
 
@@ -64,13 +95,10 @@ object ServiceHost {
   with DbProfileComponent
   with V1DataFrameService
   with EngineComponent {
+
     //TODO: choose database profile from config
     override lazy val profile = new Profile(H2Driver, connectionString = "jdbc:h2:mem:iatest;DB_CLOSE_DELAY=-1",
       driver = "org.h2.Driver")
-
-    //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
-    //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
-    metaStore.create()
 
     override val engine = com.intel.intelanalytics.component.Boot.getArchive(
       "engine", "com.intel.intelanalytics.engine.EngineApplication").get[Engine]("engine")
@@ -85,13 +113,18 @@ object ServiceHost {
   val service = system.actorOf(Props[Service], "api-service")
   implicit val timeout = Timeout(5.seconds)
 
-  def start() = {
-
-    val config = ConfigFactory.load()
+  def start(config: Config) = {
     val interface = config.getString("intel.analytics.api.host")
     val port = config.getInt("intel.analytics.api.port")
     // start a new HTTP server with our service actor as the handler
     IO(Http) ? Http.Bind(service, interface = interface, port = port)
 
+    //cleanup stuff on exit
+    Runtime.getRuntime.addShutdownHook(new Thread(){
+      override def run(): Unit = {
+        com.intel.intelanalytics.component.Boot.getArchive(
+          "engine", "com.intel.intelanalytics.engine.EngineApplication").stop()
+      }
+    })
   }
 }
