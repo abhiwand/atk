@@ -29,29 +29,32 @@ logger = logging.getLogger(__name__)
 import texttable
 from collections import defaultdict
 
-from connection import rest_http
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
-import json
+from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.spark import RowWrapper, pickle_function
 
 
 def encode_bytes_for_http(b):
+    """
+    Encodes bytes using base64, so they can travel as a string
+    """
     return base64.urlsafe_b64encode(b)
 
-class MyBatchedSerializer(BatchedSerializer):
-    def __init__(self):
-        super(MyBatchedSerializer,self).__init__(PickleSerializer(), 1)
 
-    def dump_stream(self, iterator, stream):
-        self.dump_stream_as_json(self._batched(iterator), stream)
+def wrap_row_function(frame, row_function):
+    """
+    Wraps a python row function, like one used for a filter predicate, such
+    that it will be evaluated with using the expected 'row' object rather than
+    whatever raw form the engine is using.  Ideally, this belong in the engine
+    """
+    def row_func(row):
+        row_wrapper = RowWrapper(frame.schema)
+        row_wrapper.load_row(row)
+        return row_function(row_wrapper)
+    return row_func
 
-    def dump_stream_as_json(self, iterator, stream):
-        for obj in iterator:
-            serialized = ",".join(obj)
-            write_int(len(serialized), stream)
-            stream.write(serialized)
 
 class FrameBackendREST(object):
     """REST plumbing for BigFrame"""
@@ -102,22 +105,16 @@ class FrameBackendREST(object):
                             + data.__class__.__name__)
 
     def filter(self, frame, predicate):
+        row_ready_predicate = wrap_row_function(frame, predicate)
         from itertools import ifilter
-
-        # serializer = BatchedSerializer(PickleSerializer(), 1)
-        serializer = MyBatchedSerializer()
-        def filter_func(iterator): return ifilter(predicate, iterator)
+        def filter_func(iterator): return ifilter(row_ready_predicate, iterator)
         def func(s, iterator): return filter_func(iterator)
 
-        command = (func, UTF8Deserializer(), serializer)
-
-        pickled_predicate = CloudPickleSerializer().dumps(command)
+        pickled_predicate = pickle_function(func)
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
         payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': http_ready_predicate}}
         r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
-        #logger.info("REST Backend: create response: " + r.text)
-        #payload = r.json()
         return r
 
     class InspectionTable(object):
