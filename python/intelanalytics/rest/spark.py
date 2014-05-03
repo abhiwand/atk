@@ -21,8 +21,15 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 import os
-if not os.getenv('SPARK_HOME'):
-    os.environ['SPARK_HOME'] = '/home/hadoop/IntelAnalytics/spark'
+spark_home = os.getenv('SPARK_HOME')
+if not spark_home:
+    spark_home = '~/IntelAnalytics/spark'
+    os.environ['SPARK_HOME'] = spark_home
+
+spark_python = os.path.join(spark_home, 'python')
+import sys
+if spark_python not in sys.path:
+    sys.path.append(spark_python)
 
 from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
