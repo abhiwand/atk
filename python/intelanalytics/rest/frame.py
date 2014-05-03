@@ -26,8 +26,7 @@ REST backend for frames
 import base64
 import logging
 logger = logging.getLogger(__name__)
-import texttable
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
@@ -118,19 +117,6 @@ class FrameBackendREST(object):
         return r
 
     class InspectionTable(object):
-
-        _dtypes = defaultdict(lambda: 'a')
-        _dtypes.update([(bool, 't'),
-                        (bytearray, 'a'),
-                        (dict, 'a'),
-                        (float32, 'f'),
-                        (float64, 'f'),
-                        (int32, 'i'),
-                        (int64, 'i'),
-                        (list, 'a'),
-                        (string, 't'),
-                        (str, 't')])
-
         _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
         _align.update([(bool, 'r'),
                        (bytearray, 'l'),
@@ -148,26 +134,19 @@ class FrameBackendREST(object):
             self.rows = rows
 
         def __repr__(self):
-            table = texttable.Texttable()
-            table.set_deco(texttable.Texttable.HEADER)
-            dtypes, alignment = self._get_table_props()
-            table.set_cols_align(alignment)
-            table.set_cols_dtype(dtypes)
-            table.header(self._get_header())
-            table.add_rows(self.rows, header=False)
-            return table.draw()
+            # keep the import localized, as serialization doesn't like prettytable
+            import intelanalytics.rest.prettytable as prettytable
+            table = prettytable.PrettyTable()
+            fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema.items()])
+            table.field_names = fields.keys()
+            table.align.update(fields)
+            table.hrules = prettytable.HEADER
+            table.vrules = prettytable.NONE
+            for r in self.rows:
+                table.add_row(r)
+            return table.get_string()
 
-        def _get_header(self):
-            return ["{0}:{1}".format(n,supported_types.get_type_string(t))
-                    for n, t in self.schema.items()]
-
-        def _get_table_props(self):
-            props = [(FrameBackendREST.InspectionTable._dtypes[t],
-                      FrameBackendREST.InspectionTable._align[t])
-                     for t in self.schema.values()]
-            return zip(*props)
-
-        #def _repr_html_(self): Add this method for ipython notebooks
+         #def _repr_html_(self): Add this method for ipython notebooks
 
     def inspect(self, frame, n, offset):
         # inspect is just a pretty-print of take, we'll do it on the client

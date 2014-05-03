@@ -33,17 +33,17 @@ from intelanalytics.rest.frame import FrameBackendREST
 class TestInspectionTable(unittest.TestCase):
 
     def test_inspect(self):
-        schema = OrderedDict([('i', int32), ('f', float32), ('en', str), ('fr', str)])
-        rows = [[u'1', u' 1.0', u" 'one'", u" 'un'"],
-                [u'2', u' 2.0', u" 'two'", u" 'deux'"],
-                [u'3', u' 3.0', u" 'three'", u" 'trois'"]]
+        schema = OrderedDict([('dec', int32), ('float', float32), ('roman', str)])
+        rows = [(1, 2.0, 'iii'),
+                (4, 5.0, 'vi'),
+                (7, 8.0, 'ix')]
         it = FrameBackendREST.InspectionTable(schema, rows)
-        expected = """i:int32   f:float32    en:str     fr:str
-=========================================
-      1       1.000    'one'      'un'
-      2       2.000    'two'      'deux'
-      3       3.000    'three'    'trois'""".replace(" ", "")
-        # print repr(it)
+        expected = """dec:int32   float:float32   roman:str
+-----------------------------------------
+          1             2.0   iii
+          4             5.0   vi
+          7             8.0   ix""".replace(" ", "")
+        #print repr(it)
         self.assertEquals(expected, repr(it).replace(" ", ""))
 
 

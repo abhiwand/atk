@@ -79,7 +79,7 @@ class TestRestConnection(unittest.TestCase):
         try:
             create_conn1().ping()
         except Exception as e:
-            self.assertEquals("Unable to find Intel Analytics server at http://good:7", e.message)
+            self.assertTrue(e.message.startswith("Failed to ping Intel Analytics at http://good:7"))
         else:
             self.fail()
 
@@ -99,13 +99,24 @@ class TestRestConnection(unittest.TestCase):
 class MockRequests(MagicMock):
 
     def get(self, uri):
-        return uri
+        response = Mock()
+        response.uri = uri
+        response.text = uri
+        return response
 
     def delete(self, uri):
-        return uri
+        response = Mock()
+        response.uri = uri
+        response.text = uri
+        return response
+
 
     def post(self, *args, **kwargs):
-        return (args, kwargs)
+        response = Mock()
+        response.text = ""
+        response.args = args
+        response.kwargs = kwargs
+        return response
 
 
 
@@ -122,14 +133,14 @@ class TestHttpMethods(unittest.TestCase):
     def test_get(self, mock_conn):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
         r = rest_http.get(path)
-        self.assertEquals(uri, r)
+        self.assertEquals(uri, r.uri)
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
     @patch('intelanalytics.rest.connection.rest_http.connection')
     def test_delete(self, mock_conn):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
         r = rest_http.delete(path)
-        self.assertEquals(uri, r)
+        self.assertEquals(uri, r.uri)
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
     @patch('intelanalytics.rest.connection.rest_http.connection')
@@ -137,9 +148,9 @@ class TestHttpMethods(unittest.TestCase):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
         payload = { 'a': 'aah', 'b': 'boo', 'c': 'caw'}
         r = rest_http.post(path, payload)
-        self.assertEquals(uri, r[0][0])
-        self.assertEquals(json.dumps(payload), r[1]['data'])
-        self.assertTrue(r[1]['headers'])
+        self.assertEquals(uri, r.args[0])
+        self.assertEquals(json.dumps(payload), r.kwargs['data'])
+        self.assertTrue(r.kwargs['headers'])
 
 if __name__ == '__main__':
     unittest.main()
