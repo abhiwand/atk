@@ -34,18 +34,16 @@ import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{Builtin, Functional, EngineComponent}
+import com.intel.intelanalytics.engine.{EngineComponent}
 import scala.util._
 import scala.concurrent.ExecutionContext
 import spray.util.LoggingContext
 import scala.util.Failure
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import scala.util.Success
-import com.intel.intelanalytics.service.v1.viewmodels.LoadFile
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
-import com.intel.intelanalytics.engine.Builtin
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -120,17 +118,17 @@ trait V1DataFrameService extends V1Service {
               post {
                 requestUri { uri =>
                   entity(as[JsonTransform]) { xform =>
-                    (xform.language, xform.name) match {
-                      //TODO: improve mapping between rest api and engine arguments
-                      case ("builtin", "load") => {
+                    xform.name match {
+                      case ("load") => {
                         val args = Try {
-                          xform.arguments.get.convertTo[LoadFile]
+                          import ViewModelJsonProtocol._
+                          xform.arguments.get.convertTo[LoadLines]
                         }
                         validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
                           onComplete(
                             for {
                               frame <- engine.getFrame(id)
-                              res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
+                              res <- engine.appendFile(frame, args.get.source, args.get.lineParser)
                             } yield res) {
                             case Success(r) => complete(decorate(uri, r))
                             case Failure(ex) => throw ex

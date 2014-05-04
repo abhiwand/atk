@@ -22,15 +22,26 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.domain
 
-case class Transform(packaged: Option[UserTransform], builtin: Option[BuiltinTransform])
-case class UserTransform(language: String, serialization: String, data: String)
-case class BuiltinTransform(name: String, arguments: String)
+/**
+ * An invocation of a function defined on the server.
+ * @param name the name of the command to be performed. In the case of a builtin command, this name is used to
+ *             find the stored implementation. For a user command, this name is purely for descriptive purposes.
+ * @param arguments the arguments to the function. In some cases, such as line parsers, the arguments are configuration
+ *                  arguments that configure the parser before any input arrives. In other cases, such as training an
+ *                  ML algorithm, the parameters are used to execute the function directly.
+ *
+ * @tparam Arguments the type of the expected arguments object
+ */
+case class Command[+Arguments](name: String, arguments: Arguments)
+case class Definition(language: String, serialization: String, data: String)
+case class Operation(name: String, definition: Option[Definition])
+case class Partial[+Arguments](operation: Operation, arguments: Arguments)
 
-case class View(id: Long, basedOn: Long,
-                name: String, schema: Schema, transform: Transform) extends HasId {
-  require(id > 0)
-  require(name != null)
-  require(name.trim.length > 0)
-  require(schema != null)
-  require(schema.columns.length > 0)
-}
+//case class View(id: Long, basedOn: Long,
+//                name: String, schema: Schema, transform: Transform) extends HasId {
+//  require(id > 0)
+//  require(name != null)
+//  require(name.trim.length > 0)
+//  require(schema != null)
+//  require(schema.columns.length > 0)
+//}

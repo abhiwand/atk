@@ -1,8 +1,16 @@
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain.{DataFrame, Schema}
-import spray.json.{JsValue, DefaultJsonProtocol}
+import com.intel.intelanalytics.domain._
+import spray.json.{JsObject, JsValue, DefaultJsonProtocol}
 import spray.httpx.SprayJsonSupport
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.Operation
+import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
+import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
+import com.intel.intelanalytics.service.v1.viewmodels.RelLink
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.service.v1.viewmodels.LoadLines
+import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
@@ -51,25 +59,25 @@ case class DataFrameHeader(id: Long, name: String, url: String) {
   require(url != null)
 }
 
-case class JsonTransform(name: String, language: String,
-                         definition: Option[String], arguments: Option[JsValue]) {
+case class JsonTransform(name: String, arguments: Option[JsObject]) {
   require(name != null, "Name is required")
-  require(language == "python-cloudpickle" || language == "builtin",
-    "Only python-cloudpickle and builtin are supported")
-  if (language == "builtin") {
-    require(definition.isEmpty && arguments.isDefined, "For builtins, only arguments should be provided, not definition")
-  } else {
-    require(definition.isDefined && arguments.isEmpty, "For user functions, only definition should be provided, not arguments")
-  }
 }
 
-case class LoadFile(source: String, separator: String, skipRows: Int = 0)
+case class LoadLines(source: String, destination: String, skipRows: Option[Int], lineParser: Partial[JsObject]) {
+  require(source != null, "source is required")
+  require(destination != null, "destination is required")
+  require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
+  require(lineParser != null, "lineParser is required")
+}
 
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
-  implicit val jsonTransformFormat = jsonFormat4(JsonTransform)
-  implicit val loadFileFormat = jsonFormat3(LoadFile)
+  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
+  implicit val definitionFormat = jsonFormat3(Definition)
+  implicit val operationFormat = jsonFormat2(Operation)
+  implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
+  implicit val loadLinesFormat = jsonFormat4(LoadLines)
 }

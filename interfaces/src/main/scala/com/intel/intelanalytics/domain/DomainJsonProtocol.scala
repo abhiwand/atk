@@ -23,16 +23,14 @@
 
 package com.intel.intelanalytics.domain
 
-import spray.json._
 import com.intel.intelanalytics.domain.DataTypes.DataType
+import spray.json._
+import com.intel.intelanalytics.domain.SeparatorArgs
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.domain.Schema
 import com.intel.intelanalytics.domain.DataFrameTemplate
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
-
-
-
 
 
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
@@ -49,6 +47,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val dataFrameFormat = jsonFormat3(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
+  implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {
