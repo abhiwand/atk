@@ -21,28 +21,6 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.domain
 
-import akka.actor.Actor
-import com.intel.intelanalytics.shared.EventLogging
-
-import scala.concurrent.ExecutionContext.Implicits.global
-
-///** This is the Akka interface to the engine */
-//class EngineActor extends Actor with EventLogging { this: EngineComponent =>
-//
-//  def receive = {
-//    case AppendFile(id, fileName, rowParser) => for {
-//      f <- engine.getFrame(id)
-//      res <- engine.appendFile(f, fileName, rowParser)
-//    } yield res
-////    case AddColumn(id, name, map) => engine.addColumn(id, name, map)
-////    case DropColumn(id, name) => engine.dropColumn(id, name)
-////    case DropRows(id, filter) => engine.dropRows(id, filter)
-//    case x => warn("Unknown message: " + x)
-//  }
-//
-//}
-
-
-
+case class SeparatorArgs(separator: Char)

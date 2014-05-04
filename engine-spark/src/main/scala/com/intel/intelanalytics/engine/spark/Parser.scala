@@ -30,13 +30,13 @@ package com.intel.intelanalytics.engine
   * scala> val out = Row.apply("a,b,\"foo,is this ,bar\",foobar ")
   * scala> val out = Row.apply(" a,b,'',\"\"  ")
   */
-import util.parsing.combinator.RegexParsers 
- 
- 
-class Row(separator: Char) extends RegexParsers {
-  /**Row Class to split a string based on delimiter
-    * @param seperator : delimiter character 
+import util.parsing.combinator.RegexParsers
+
+
+/**Row Class to split a string based on delimiter
+  * @param separator : delimiter character
   */
+class Row(separator: Char) extends RegexParsers with Serializable {
 
   override def skipWhitespace = false
   /** Apply method parses the string and returns a list of String tokens

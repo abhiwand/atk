@@ -26,7 +26,7 @@ package com.intel.intelanalytics.engine
 import scala.xml.persistent.CachedFileStorage
 import java.nio.file.Path
 import PartialFunction._
-import com.intel.intelanalytics.domain.{DataFrameTemplate, Schema, DataFrame}
+import com.intel.intelanalytics.domain.{Partial, DataFrameTemplate, Schema, DataFrame}
 import scala.concurrent.Future
 import java.io.{OutputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.Row
@@ -40,20 +40,12 @@ object Rows {
 
 }
 
-trait Functional {
-  def language: String
-  def definition: String
-}
-
-object EngineMessages {
-  case class AppendFile(id: Long, fileName: String, rowGenerator: Functional)
-  case class DropColumn(id: Long, name: String)
-  case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
-  case class DropRows(id: Long, filter: RowFunction[Boolean])
-}
-
-case class RowFunction[T](language: String, definition: String) extends Functional
-case class Builtin(name: String) extends Functional { def language = "builtin"; def definition = name }
+//object EngineMessages {
+//  case class AppendFile(id: Long, fileName: String, rowGenerator: Functional)
+//  case class DropColumn(id: Long, name: String)
+//  case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
+//  case class DropRows(id: Long, filter: RowFunction[Boolean])
+//}
 
 sealed abstract class Alteration { }
 
@@ -77,7 +69,6 @@ trait FrameComponent {
 
 
   trait FrameStorage {
-    def compile[T](func: RowFunction[T]): Row => T
     def lookup(id: Long): Option[DataFrame]
     def create(frame: DataFrameTemplate): DataFrame
     def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: Row => T): Unit
@@ -139,9 +130,9 @@ trait EngineComponent {
     def getRows(id: Identifier, offset: Long, count: Int) : Future[Iterable[Row]]
     def create(frame: DataFrameTemplate): Future[DataFrame]
     def clear(frame: DataFrame) : Future[DataFrame]
-    def appendFile(frame: DataFrame, file: String, parser: Functional) : Future[DataFrame]
+    def appendFile(frame: DataFrame, file: String, parser: Partial[Any]) : Future[DataFrame]
     //def append(frame: DataFrame, rowSource: Rows.RowSource): Future[DataFrame]
-    def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame]
+    def filter(frame: DataFrame, predicate: Partial[Any]): Future[DataFrame]
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
     def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]]

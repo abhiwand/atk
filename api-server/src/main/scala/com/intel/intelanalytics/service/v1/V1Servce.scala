@@ -34,7 +34,7 @@ import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{Builtin, Functional, EngineComponent}
+import com.intel.intelanalytics.engine.{EngineComponent}
 import scala.util._
 import scala.concurrent.ExecutionContext
 import spray.util.LoggingContext
@@ -49,11 +49,9 @@ import scala.util.control.NonFatal
 import scala.util.Failure
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import scala.util.Success
-import com.intel.intelanalytics.service.v1.viewmodels.LoadFile
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
-import com.intel.intelanalytics.engine.Builtin
 
 trait V1Service extends Directives with EventLoggingDirectives {
   this: V1Service

@@ -22,7 +22,7 @@ resolvers in ThisBuild ++= Seq(
 libraryDependencies in ThisBuild ++= {
   Seq(
     "org.scala-lang"      %   "scala-reflect"     % scalaVersion.value,
-    "io.spray"            %%  "spray-json"        % "1.2.5",
+    "io.spray"            %%  "spray-json"        % sprayJsonV,
     "org.specs2"          %%  "specs2-core"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-mock"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-html"       % "2.3.10"  % "test",
