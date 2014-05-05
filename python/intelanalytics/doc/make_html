@@ -22,7 +22,7 @@ echo Press Ctrl-C if you are sure the support packages have been installed
 sudo ./install_packages
 
 # Build the API docs
-sphinx-apidoc --force -o source ../ ../doc
+sphinx-apidoc --force -o source/ ../../. ../doc/
 
 # We assume we are running from the doc directory.
 make html
