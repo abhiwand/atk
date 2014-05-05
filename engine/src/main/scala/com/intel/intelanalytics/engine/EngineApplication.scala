@@ -36,7 +36,7 @@ import com.intel.intelanalytics.shared.EventLogging
 
 class EngineApplication extends Archive with EventLogging {
 
-  var engine : EngineComponent with FrameComponent = null
+  var engine : EngineComponent with FrameComponent with CommandComponent = null
 
   def get[T] (descriptor: String) = {
     descriptor match {
@@ -60,7 +60,7 @@ class EngineApplication extends Archive with EventLogging {
         withLoader(sparkLoader) {
           val class_ = sparkLoader.loadClass("com.intel.intelanalytics.engine.spark.SparkComponent")
           val instance = class_.newInstance()
-          instance.asInstanceOf[EngineComponent with FrameComponent]
+          instance.asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
         }
       }
     } catch {

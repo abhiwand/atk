@@ -25,6 +25,9 @@ package com.intel.intelanalytics.engine.spark
 
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.rdd.RDD
+import org.apache.spark.SparkContext
+import com.intel.intelanalytics.domain.LoadLines
+import spray.json.JsObject
 
 /**
    This object exists to avoid having to serialize the entire engine in order to use spark
@@ -53,5 +56,25 @@ private [spark] object SparkOps extends Serializable {
       }
     }).collect()
     rows
+  }
+
+  def loadLines(ctx: SparkContext,
+                fileName: String,
+                location: String,
+                arguments: LoadLines[JsObject, Long],
+                parserFunction: String => Array[String],
+                converter: Array[String] => Array[Any]) = {
+    ctx.textFile(fileName)
+      .mapPartitionsWithIndex {
+      case (partition, lines) => {
+        if (partition == 0) {
+          lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
+        } else {
+          lines.map(parserFunction)
+        }
+      }
+    }
+      .map(converter)
+      .saveAsObjectFile(location)
   }
 }

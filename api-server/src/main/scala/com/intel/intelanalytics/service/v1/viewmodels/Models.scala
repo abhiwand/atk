@@ -1,17 +1,3 @@
-package com.intel.intelanalytics.service.v1.viewmodels
-
-import com.intel.intelanalytics.domain._
-import spray.json.{JsObject, JsValue, DefaultJsonProtocol}
-import spray.httpx.SprayJsonSupport
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.Operation
-import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.service.v1.viewmodels.RelLink
-import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.service.v1.viewmodels.LoadLines
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
-
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -34,6 +20,21 @@ import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
+
+
+package com.intel.intelanalytics.service.v1.viewmodels
+
+import com.intel.intelanalytics.domain._
+import spray.json.{JsObject, JsValue, DefaultJsonProtocol}
+import spray.httpx.SprayJsonSupport
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.Operation
+import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
+import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
+import com.intel.intelanalytics.service.v1.viewmodels.RelLink
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 
 case class RelLink(rel: String, uri: String, method: String) {
   require(rel != null)
@@ -59,16 +60,26 @@ case class DataFrameHeader(id: Long, name: String, url: String) {
   require(url != null)
 }
 
+case class CommandHeader(id: Long, name: String, url: String) {
+  require(id > 0)
+  require(name != null)
+  require(url != null)
+}
+
+case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
+                            complete: Boolean, links: List[RelLink]) {
+  require(id > 0)
+  require(name != null)
+  require(arguments != null)
+  require(links != null)
+  require(error != null)
+}
+
 case class JsonTransform(name: String, arguments: Option[JsObject]) {
   require(name != null, "Name is required")
 }
 
-case class LoadLines(source: String, destination: String, skipRows: Option[Int], lineParser: Partial[JsObject]) {
-  require(source != null, "source is required")
-  require(destination != null, "destination is required")
-  require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
-  require(lineParser != null, "lineParser is required")
-}
+
 
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits
@@ -76,8 +87,7 @@ object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
   implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
-  implicit val definitionFormat = jsonFormat3(Definition)
-  implicit val operationFormat = jsonFormat2(Operation)
-  implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
-  implicit val loadLinesFormat = jsonFormat4(LoadLines)
+  implicit val commandHeaderFormat = jsonFormat3(CommandHeader)
+  implicit val decoratedCommandFormat = jsonFormat6(DecoratedCommand)
+
 }

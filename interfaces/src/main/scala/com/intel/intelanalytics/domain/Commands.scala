@@ -23,4 +23,11 @@
 
 package com.intel.intelanalytics.domain
 
+case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], lineParser: Partial[Arguments]) {
+  require(source != null, "source is required")
+  require(destination != null, "destination is required")
+  require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
+  require(lineParser != null, "lineParser is required")
+}
+
 case class SeparatorArgs(separator: Char)

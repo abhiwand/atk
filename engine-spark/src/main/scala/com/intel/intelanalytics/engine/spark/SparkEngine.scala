@@ -61,20 +61,43 @@ import scala.Some
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.repository.{SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent}
+import scala.slick.driver.H2Driver
+import scala.util.{Success, Failure, Try}
 
 //TODO documentation
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
 class SparkComponent extends EngineComponent
-with FrameComponent
-with FileComponent
-with EventLogging {
+                      with FrameComponent
+                      with CommandComponent
+                      with FileComponent
+                      with DbProfileComponent
+                      with SlickMetaStoreComponent
+                      with EventLogging {
   val engine = new SparkEngine {}
-  val conf = ConfigFactory.load()
-  val sparkHome = conf.getString("intel.analytics.spark.home")
-  val sparkMaster = conf.getString("intel.analytics.spark.master")
-  val defaultTimeout = conf.getInt("intel.analytics.engine.defaultTimeout").seconds
+  lazy val conf = ConfigFactory.load()
+  lazy val sparkHome = conf.getString("intel.analytics.spark.home")
+  lazy val sparkMaster = conf.getString("intel.analytics.spark.master")
+  lazy val defaultTimeout = conf.getInt("intel.analytics.engine.defaultTimeout").seconds
+  lazy val connectionString = conf.getString("intel.analytics.metastore.connection.url") match {
+    case "" | null => throw new Exception("No metastore connection url specified in configuration")
+    case u => u
+  }
+  lazy val driver = conf.getString("intel.analytics.metastore.connection.driver") match {
+    case "" | null => throw new Exception("No metastore driver specified in configuration")
+    case d => d
+  }
+
+  //TODO: choose database profile driver class from config
+  override lazy val profile = withContext("engine connecting to metastore") {
+    new Profile(H2Driver, connectionString = connectionString, driver = driver)
+  }
+
+  //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
+  //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
+  metaStore.create()
 
   //Very simpleminded implementation, not ready for multiple users, for example.
   class SparkEngine extends Engine {
@@ -127,13 +150,25 @@ with EventLogging {
     }
 
 
+    override def getCommands(offset: Int, count: Int): Future[Seq[Command]] = withContext("se.getCommands") {
+      future {
+        commands.scan(offset, count)
+      }
+    }
+
+    override def getCommand(id: Identifier): Future[Option[Command]] = withContext("se.getCommand") {
+      future {
+        commands.lookup(id)
+      }
+    }
+
     def getLineParser(parser: Partial[Any]): String => Array[String] = {
       parser.operation.name match {
         //TODO: look functions up in a table rather than switching on names
         case "builtin/line/separator" => {
           import DomainJsonProtocol.separatorArgsJsonFormat
           val args = parser.arguments match {
-              //TODO: genericize this argument conversion
+            //TODO: genericize this argument conversion
             case a: JsObject => a.convertTo[SeparatorArgs]
             case a: SeparatorArgs => a
             case x => throw new IllegalArgumentException(
@@ -146,29 +181,34 @@ with EventLogging {
       }
     }
 
-    def appendFile(frame: DataFrame, file: String, parser: Partial[Any]): Future[DataFrame] =
-      withContext("se.appendFile") {
-        require(frame != null)
-        require(file != null)
-        require(parser != null)
-        future {
+    def withCommand[T](command: Command) (block: =>T) = {
+      commands.complete(command.id, Try{block})
+    }
+
+    def load(arguments: LoadLines[JsObject, Long]): (Command, Future[Command]) =
+      withContext("se.load") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
           withMyClassLoader {
-            //TODO: since we have to look up the real frame anyway, just take an ID as the parameter
-            val realFrame = frames.lookup(frame.id).getOrElse(
-              throw new IllegalArgumentException(s"No such data frame: ${frame.id}"))
-            val parserFunction = getLineParser(parser)
-            val location = fsRoot + frames.getFrameDataFile(frame.id)
-            val schema = realFrame.schema
-            val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-            val ctx = context()
-            ctx.textFile(fsRoot + "/" + file)
-              .map(parserFunction)
-              .map(converter)
-              .saveAsObjectFile(location)
-            frames.lookup(frame.id).getOrElse(
-              throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
+            withContext("se.load.future") {
+              withCommand(command) {
+                val realFrame = frames.lookup(arguments.destination).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
+                val frameId = arguments.destination
+                val parserFunction = getLineParser(arguments.lineParser)
+                val location = fsRoot + frames.getFrameDataFile(frameId)
+                val schema = realFrame.schema
+                val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+                val ctx = context()
+                SparkOps.loadLines(ctx, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+              }
+              commands.lookup(command.id).get
+            }
           }
         }
+        (command, result)
       }
 
     def clear(frame: DataFrame): Future[DataFrame] = withContext("se.clear") {
@@ -223,12 +263,14 @@ with EventLogging {
       }
     }
 
-    def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] =
+    def getFrame(id: SparkComponent.this.Identifier): Future[Option[DataFrame]] =
       withContext("se.getFrame") {
         future {
-          frames.lookup(id).get
+          frames.lookup(id)
         }
       }
+
+
   }
 
   val files = new HdfsFileStorage {}
@@ -452,5 +494,48 @@ with EventLogging {
     }
   }
 
+  val commands = new SparkCommandStorage {}
+
+  trait SparkCommandStorage extends CommandStorage {
+    val repo = metaStore.commandRepo
+
+    override def lookup(id: Long): Option[Command] =
+      metaStore.withSession("se.command.lookup") { implicit session =>
+      repo.lookup(id)
+    }
+
+    override def create(createReq: CommandTemplate): Command =
+      metaStore.withSession("se.command.create") { implicit session =>
+
+      val created = repo.insert(createReq)
+      repo.lookup(created.get.id).getOrElse(throw new Exception("Command not found immediately after creation"))
+    }
+
+    override def scan(offset: Int, count: Int): Seq[Command] = metaStore.withSession("se.command.getCommands") {
+      implicit session =>
+      repo.scan(offset, count)
+    }
+
+    override def start(id: Long): Unit = {
+      //TODO: set start date
+    }
+
+    override def complete(id: Long, result: Try[Unit]): Unit = {
+      require(id > 0, "invalid ID")
+      require(result != null)
+      metaStore.withSession("se.command.complete") { implicit session =>
+        val command = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Command $id not found"))
+        if (command.complete) {
+          warn(s"Ignoring completion attempt for command $id, already completed")
+        }
+        //TODO: Update dates
+        val changed = result match {
+          case Failure(ex) => command.copy(complete = true, error = Some(ex : Error))
+          case Success(_) => command.copy(complete = true)
+        }
+        repo.update(changed)
+      }
+    }
+  }
 }
 

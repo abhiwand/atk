@@ -26,10 +26,16 @@ package com.intel.intelanalytics.engine
 import scala.xml.persistent.CachedFileStorage
 import java.nio.file.Path
 import PartialFunction._
-import com.intel.intelanalytics.domain.{Partial, DataFrameTemplate, Schema, DataFrame}
+import com.intel.intelanalytics.domain._
 import scala.concurrent.Future
 import java.io.{OutputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import spray.json.JsObject
+import scala.util.Try
 
 object Rows {
   type Row = Array[Any] //TODO: Can we constrain this better?
@@ -126,15 +132,30 @@ trait EngineComponent {
   //TODO: distinguish between DataFrame and DataFrameSpec,
   // where the latter has no ID, and is the argument passed to create?
   trait Engine {
-    def getFrame(id: Identifier) : Future[DataFrame]
+    def getCommands(offset: Int, count: Int): Future[Seq[Command]]
+    def getCommand(id: Identifier): Future[Option[Command]]
+    def getFrame(id: Identifier) : Future[Option[DataFrame]]
     def getRows(id: Identifier, offset: Long, count: Int) : Future[Iterable[Row]]
     def create(frame: DataFrameTemplate): Future[DataFrame]
     def clear(frame: DataFrame) : Future[DataFrame]
-    def appendFile(frame: DataFrame, file: String, parser: Partial[Any]) : Future[DataFrame]
-    //def append(frame: DataFrame, rowSource: Rows.RowSource): Future[DataFrame]
+    def load(arguments: LoadLines[JsObject,Long]) : (Command, Future[Command])
     def filter(frame: DataFrame, predicate: Partial[Any]): Future[DataFrame]
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
     def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]]
   }
+}
+
+
+trait CommandComponent {
+  def commands: CommandStorage
+
+  trait CommandStorage {
+    def lookup(id: Long): Option[Command]
+    def create(frame: CommandTemplate): Command
+    def scan(offset: Int, count: Int): Seq[Command]
+    def start(id: Long): Unit
+    def complete(id: Long, result: Try[Unit]): Unit
+  }
+
 }

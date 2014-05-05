@@ -38,6 +38,7 @@ import com.intel.intelanalytics.engine.{EngineComponent}
 import scala.util._
 import scala.concurrent.ExecutionContext
 import spray.util.LoggingContext
+import com.typesafe.config.ConfigFactory
 
 //TODO: Is this right execution context for us?
 
@@ -57,6 +58,9 @@ trait V1Service extends Directives with EventLoggingDirectives {
   this: V1Service
     with MetaStoreComponent
     with EngineComponent =>
+
+  val config = ConfigFactory.load()
+  val defaultCount = config.getInt("intel.analytics.api.defaultCount")
 
   //TODO: internationalization
 
@@ -136,4 +140,10 @@ trait V1Service extends Directives with EventLoggingDirectives {
   //      }
   //    }
   //  }
+  val frameIdRegex = "/dataframes/(\\d+)".r
+
+  def getFrameId(url: String): Option[Long] = {
+    val id = frameIdRegex.findFirstMatchIn(url).map(m => m.group(1))
+    id.map(s => s.toLong)
+  }
 }
