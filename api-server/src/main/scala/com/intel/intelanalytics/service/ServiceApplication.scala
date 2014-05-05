@@ -34,7 +34,7 @@ import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
 import com.intel.intelanalytics.component.{Archive}
 import com.intel.intelanalytics.repository.{DbProfileComponent, SlickMetaStoreComponent}
-import com.intel.intelanalytics.service.v1.{V1DataFrameService, ApiV1Service}
+import com.intel.intelanalytics.service.v1.{V1CommandService, V1DataFrameService, ApiV1Service}
 import com.intel.intelanalytics.engine.EngineComponent
 import com.typesafe.config.ConfigFactory
 
@@ -63,16 +63,19 @@ object ServiceHost {
   with SlickMetaStoreComponent
   with DbProfileComponent
   with V1DataFrameService
+  with V1CommandService
   with EngineComponent {
-    //TODO: choose database profile from config
-    override lazy val profile = new Profile(H2Driver, connectionString = "jdbc:h2:mem:iatest;DB_CLOSE_DELAY=-1",
-      driver = "org.h2.Driver")
 
-    //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
-    //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
-    metaStore.create()
+    ///TODO: choose database profile driver class from config
+    override lazy val profile = {
+      lazy val config = ConfigFactory.load()
 
-    override val engine = com.intel.intelanalytics.component.Boot.getArchive(
+      val connectionString = config.getString("intel.analytics.metastore.connection.url")
+      val driver = config.getString("intel.analytics.metastore.connection.driver")
+      new Profile(H2Driver, connectionString = connectionString, driver = driver)
+    }
+
+    override lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
       "engine", "com.intel.intelanalytics.engine.EngineApplication").get[Engine]("engine")
 
   }
@@ -86,8 +89,8 @@ object ServiceHost {
   implicit val timeout = Timeout(5.seconds)
 
   def start() = {
+    lazy val config = ConfigFactory.load()
 
-    val config = ConfigFactory.load()
     val interface = config.getString("intel.analytics.api.host")
     val port = config.getInt("intel.analytics.api.port")
     // start a new HTTP server with our service actor as the handler

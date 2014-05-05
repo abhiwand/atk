@@ -13,11 +13,20 @@ trait EventLogging {
       block
     } catch {
       case NonFatal(e) => {
-        error(e.getMessage, exception = e)
+        val message = safeMessage(e)
+        error(message, exception = e)
         throw e
       }
     } finally {
       ctx.close()
+    }
+  }
+
+  def safeMessage[T](e: Throwable): String = {
+    e.getMessage match {
+      case null => e.getClass.getName + " (null error message)"
+      case "" => e.getClass.getName + " (empty error message)"
+      case m => m
     }
   }
 
@@ -26,7 +35,7 @@ trait EventLogging {
       block
     } catch {
       case NonFatal(e) => {
-        error(e.getMessage, exception = e)
+        error(safeMessage(e), exception = e)
         throw e
       }
     }

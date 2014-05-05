@@ -43,11 +43,14 @@ trait ApiService extends Directives
     }
   }
 
-  val config = ConfigFactory.load()
+  private val config = ConfigFactory.load()
 
-  val description = new ServiceDescription(name = "Intel Analytics",
-                                           identifier = config.getString("intel.analytics.api.identifier"),
-                                           versions = List("v1"))
+  lazy val description = {
+    new ServiceDescription(name = "Intel Analytics",
+      identifier = config.getString("intel.analytics.api.identifier"),
+      versions = List("v1"))
+  }
+
   import spray.json._
   import spray.httpx.SprayJsonSupport._
   import DefaultJsonProtocol._

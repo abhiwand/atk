@@ -36,7 +36,7 @@ import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{EngineComponent}
 import scala.util._
-import scala.concurrent.ExecutionContext
+import scala.concurrent._
 import spray.util.LoggingContext
 import scala.util.Failure
 import com.intel.intelanalytics.domain.DataFrameTemplate
@@ -60,8 +60,10 @@ trait V1DataFrameService extends V1Service {
     def decorate(uri: Uri, frame: DataFrame): DecoratedDataFrame = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
-      Decorators.frames.decorateEntity(uri.toString, links, frame)
+      FrameDecorator.decorateEntity(uri.toString, links, frame)
     }
+
+
 
     //TODO: none of these are yet asynchronous - they communicate with the engine
     //using futures, but they keep the client on the phone the whole time while they're waiting
@@ -73,7 +75,7 @@ trait V1DataFrameService extends V1Service {
           get {
             //TODO: cursor
             onComplete(engine.getFrames(0, 20)) {
-              case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString(), frames))
+              case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
               case Failure(ex) => throw ex
             }
           } ~
@@ -94,7 +96,7 @@ trait V1DataFrameService extends V1Service {
             requestUri { uri =>
               get {
                 onComplete(engine.getFrame(id)) {
-                  case Success(frame) => {
+                  case Success(Some(frame)) => {
                     val decorated = decorate(uri, frame)
                     complete {
                       decorated
@@ -105,42 +107,16 @@ trait V1DataFrameService extends V1Service {
               } ~
                 delete {
                   onComplete(for {
-                    f <- engine.getFrame(id)
-                    res <- engine.delete(f)
+                    fopt <- engine.getFrame(id)
+                    res <- engine.delete(fopt.get) if fopt.isDefined
+                    res <- future {()} if fopt.isEmpty
                   } yield res) {
-                    case Success(frames) => complete("OK")
+                    case Success(_) => complete("OK")
                     case Failure(ex) => throw ex
                   }
                 }
             }
           } ~
-            path("transforms") {
-              post {
-                requestUri { uri =>
-                  entity(as[JsonTransform]) { xform =>
-                    xform.name match {
-                      case ("load") => {
-                        val args = Try {
-                          import ViewModelJsonProtocol._
-                          xform.arguments.get.convertTo[LoadLines]
-                        }
-                        validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
-                          onComplete(
-                            for {
-                              frame <- engine.getFrame(id)
-                              res <- engine.appendFile(frame, args.get.source, args.get.lineParser)
-                            } yield res) {
-                            case Success(r) => complete(decorate(uri, r))
-                            case Failure(ex) => throw ex
-                          }
-                        }
-                      }
-                      case _ => ???
-                    }
-                  }
-                }
-              }
-            } ~
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
                 onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {

@@ -22,6 +22,8 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.domain
 
+import spray.json.JsObject
+
 /**
  * An invocation of a function defined on the server.
  * @param name the name of the command to be performed. In the case of a builtin command, this name is used to
@@ -30,12 +32,15 @@ package com.intel.intelanalytics.domain
  *                  arguments that configure the parser before any input arrives. In other cases, such as training an
  *                  ML algorithm, the parameters are used to execute the function directly.
  *
- * @tparam Arguments the type of the expected arguments object
  */
-case class Command[+Arguments](name: String, arguments: Arguments)
+case class Command(id: Long, name: String, arguments: Option[JsObject], error: Option[Error], complete: Boolean) extends HasId
+case class CommandTemplate(name: String, arguments: Option[JsObject])
 case class Definition(language: String, serialization: String, data: String)
 case class Operation(name: String, definition: Option[Definition])
 case class Partial[+Arguments](operation: Operation, arguments: Arguments)
+
+case class Error(message: String, stackTrace: Option[String], code: Option[Int],
+                 details: Option[String], additional: Option[JsObject])
 
 //case class View(id: Long, basedOn: Long,
 //                name: String, schema: Schema, transform: Transform) extends HasId {

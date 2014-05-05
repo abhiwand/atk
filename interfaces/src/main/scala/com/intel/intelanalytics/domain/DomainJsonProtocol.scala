@@ -48,6 +48,12 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val dataFrameFormat = jsonFormat3(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
   implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
+  implicit val definitionFormat = jsonFormat3(Definition)
+  implicit val operationFormat = jsonFormat2(Operation)
+  implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
+  implicit val loadLinesFormat = jsonFormat4(LoadLines[JsObject,String])
+  implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject,Long])
+  implicit val errorFormat = jsonFormat5(Error)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

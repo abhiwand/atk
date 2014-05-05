@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2013 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,23 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.service.v1
+package com.intel.intelanalytics
 
-import spray.routing._
-import com.intel.intelanalytics._
-import spray.http.StatusCodes
-import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.engine.{EngineComponent}
-import spray.util.LoggingContext
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
-import scala.util.control.NonFatal
-import scala.util.Success
+package object domain {
 
-
-trait ApiV1Service  { this: ApiV1Service
-                      with V1DataFrameService
-                      with V1CommandService =>
-  def apiV1Service: Route = {
-    frameRoutes() ~ commandRoutes()
+  implicit def throwableToError(t: Throwable): Error = {
+    val message = t.getMessage match {
+      case null | "" => t.getClass.getName
+      case s => s
+    }
+    Error(message, code = None, details = None, additional = None, stackTrace = Some(t.getStackTraceString))
   }
 }
