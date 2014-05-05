@@ -3,18 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PythonAPI's documentation!
-=====================================
+Intel® Big Data Platform: Analytics Toolkit
+===========================================
 
 Contents:
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   overapi
+   introduction
+   adminOverview
+   dataSciOverview
 
-Indices and tables
-==================
+References
+----------
+.. toctree::
+   :maxdepth: 1
+
+   glossary
 
 * :ref:`genindex`
 * :ref:`modindex`

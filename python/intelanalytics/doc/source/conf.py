@@ -19,6 +19,11 @@ import os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
+p = os.path.abspath('../../../')
+print "Adding path " + p
+sys.path.insert(0, p)# os.path.abspath('../../..'))
+print "sys.path is now:"
+print "\n".join(sys.path)
 
 # -- General configuration ------------------------------------------------
 
@@ -46,7 +51,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'PythonAPI'
+# project = u'PythonAPI'
+project = 'Welcome to the Intel Big Data Platform: Analytics Toolkit'
 copyright = u'2014, Intel'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -120,7 +126,7 @@ html_theme = 'default'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-#html_logo = None
+html_logo = "_static/intel-logo.jpg"
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
