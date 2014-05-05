@@ -18,7 +18,11 @@ source $ACTIVATE_FILE
 
 # We need to check the installed packages and insure they are complete.
 # The packages need superuser rights to install properly.
+echo Press Ctrl-C if you are sure the support packages have been installed
 sudo ./install_packages
+
+# Build the API docs
+sphinx-apidoc --force -o source ../ ../doc
 
 # We assume we are running from the doc directory.
 make html
