@@ -51,7 +51,6 @@ case class ColumnDef(columnName: String, dataType: Class[_], columnIndex: Intege
   }
 }
 
-
 /**
  * Defines the schema of the rows of input
  * @param columns the definitions for each column

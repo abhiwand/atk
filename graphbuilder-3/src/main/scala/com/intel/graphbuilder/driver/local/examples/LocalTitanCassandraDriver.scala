@@ -30,9 +30,9 @@ import com.intel.graphbuilder.parser._
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.schema.InferSchemaFromRules
-import com.intel.graphbuilder.write.dao.{EdgeDAO, VertexDAO}
+import com.intel.graphbuilder.write.dao.{ EdgeDAO, VertexDAO }
 import com.intel.graphbuilder.write.titan.TitanSchemaWriter
-import com.intel.graphbuilder.write.{EdgeWriter, VertexWriter}
+import com.intel.graphbuilder.write.{ EdgeWriter, VertexWriter }
 import com.thinkaurelius.titan.core.TitanGraph
 import java.util.Date
 import org.apache.commons.configuration.BaseConfiguration
@@ -107,7 +107,6 @@ object LocalTitanCassandraDriver {
     println("mergedVertices size: " + mergedVertices.size)
     println("mergedEdges size: " + mergedEdges.size)
 
-
     // Connect to Titan
     val titanConfig = new BaseConfiguration()
     titanConfig.setProperty("storage.backend", "cassandra")
@@ -150,5 +149,4 @@ object LocalTitanCassandraDriver {
   }
 
 }
-
 

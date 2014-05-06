@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.driver.spark.titan
 
 import com.intel.graphbuilder.parser.InputSchema
-import com.intel.graphbuilder.parser.rule.{EdgeRule, VertexRule}
+import com.intel.graphbuilder.parser.rule.{ EdgeRule, VertexRule }
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 /**
@@ -42,7 +42,8 @@ import com.intel.graphbuilder.util.SerializableBaseConfiguration
  *                           of doing the usual an RDD JOIN.  Should only be true if all of the vertices can fit in
  *                           memory of both the driver and each executor.
  *                           Theoretically, this should be faster but shouldn't scale as large as when it is false.
- *                           This feature does not perform well yet.
+ *                           This feature does not perform well yet for larger data sizes (it is hitting some other
+ *                           bottleneck while writing edges). 23GB Netflix data produced about 180MB of Vertex Ids.
  */
 case class GraphBuilderConfig(inputSchema: InputSchema,
                               vertexRules: List[VertexRule],
