@@ -18,8 +18,14 @@ source $ACTIVATE_FILE
 
 # We need to check the installed packages and insure they are complete.
 # The packages need superuser rights to install properly.
-echo Press Ctrl-C if you are sure the support packages have been installed
+echo "Press Ctrl-C if you are sure the support packages have been installed"
 sudo ./install_packages
+
+# Delete previously automatically built files
+if [[ -d build ]]; then
+	rm -R build
+fi
+delete_apidocs
 
 # Build the API docs
 sphinx-apidoc --force -o source/ ../../. ../doc/
