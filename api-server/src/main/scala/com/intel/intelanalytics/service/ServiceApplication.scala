@@ -34,7 +34,7 @@ import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
 import com.intel.intelanalytics.component.{Archive}
 import com.intel.intelanalytics.repository.{DbProfileComponent, SlickMetaStoreComponent}
-import com.intel.intelanalytics.service.v1.{V1DataFrameService, ApiV1Service}
+import com.intel.intelanalytics.service.v1.{V1GraphService, V1DataFrameService, ApiV1Service}
 import com.intel.intelanalytics.engine.EngineComponent
 import com.typesafe.config.ConfigFactory
 
@@ -63,6 +63,7 @@ object ServiceHost {
   with SlickMetaStoreComponent
   with DbProfileComponent
   with V1DataFrameService
+  with V1GraphService
   with EngineComponent {
     //TODO: choose database profile from config
     override lazy val profile = new Profile(H2Driver, connectionString = "jdbc:h2:mem:iatest;DB_CLOSE_DELAY=-1",

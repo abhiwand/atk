@@ -56,6 +56,8 @@ import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.Rel
 import com.intel.intelanalytics.domain.DomainJsonProtocol
 import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.Graph
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.LoadFile
 import com.intel.intelanalytics.engine.Builtin
@@ -69,7 +71,7 @@ trait V1GraphService extends V1Service {
     with MetaStoreComponent
     with EngineComponent =>
 
-  def frameRoutes() = {
+  def graphRoutes() = {
     import ViewModelJsonProtocol._
     val prefix = "graphs"
 

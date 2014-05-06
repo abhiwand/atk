@@ -22,8 +22,14 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.service.v1
 
+import com.intel.intelanalytics.domain.{Graph, DataFrame}
+import com.intel.intelanalytics.service.v1.viewmodels._
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.service.v1.viewmodels.GraphHeader
+import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
 import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.service.v1.viewmodels.{RelLink, DataFrameHeader, DecoratedDataFrame}
+import com.intel.intelanalytics.service.v1.viewmodels.RelLink
+import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 
 trait EntityDecorator[Entity, Index, Decorated] {
   def decorateForIndex(indexUri: String, entities: Seq[Entity]): List[Index]
@@ -45,6 +51,24 @@ class FrameDecorator extends EntityDecorator[DataFrame, DataFrameHeader, Decorat
   }
 }
 
+/**
+ * TODO: Byrn, please add comments to these projects. I will make changes as appropriate for graph stuff.
+ */
+class GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph] {
+  override def decorateEntity(uri: String,
+                              links: Iterable[RelLink],
+                              entity: Graph): DecoratedGraph = {
+    DecoratedGraph(id = entity.id, name = entity.name, links = links.toList)
+  }
+
+  override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
+    entities.map(graph => new GraphHeader(id = graph.id,
+      name = graph.name,
+      url = uri + "/" + graph.id)).toList
+  }
+
+}
 object Decorators {
   val frames = new FrameDecorator()
+  val graphs = new GraphDecorator()
 }

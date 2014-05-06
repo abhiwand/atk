@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain.{DataFrame, Schema}
+import com.intel.intelanalytics.domain.{Graph, GraphTemplate, DataFrame, Schema}
 import spray.json.{JsValue, DefaultJsonProtocol}
 import spray.httpx.SprayJsonSupport
 
@@ -51,6 +51,18 @@ case class DataFrameHeader(id: Long, name: String, url: String) {
   require(url != null)
 }
 
+case class DecoratedGraph(id: Long, name: String, links: List[RelLink]) {
+  require(id > 0)
+  require(name != null)
+  require(links != null)
+}
+
+case class GraphHeader(id: Long, name: String, url: String) {
+  require(id > 0)
+  require(name != null)
+  require(url != null)
+}
+
 case class JsonTransform(name: String, language: String,
                          definition: Option[String], arguments: Option[JsValue]) {
   require(name != null, "Name is required")
@@ -70,6 +82,8 @@ object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
+  implicit val graphHeaderFormat = jsonFormat3(GraphHeader)
+  implicit val decoratedGraphHeaderFormat = jsonFormat3(DecoratedGraph)
   implicit val jsonTransformFormat = jsonFormat4(JsonTransform)
   implicit val loadFileFormat = jsonFormat3(LoadFile)
 }
