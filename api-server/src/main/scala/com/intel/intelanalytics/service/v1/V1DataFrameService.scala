@@ -74,7 +74,7 @@ trait V1DataFrameService extends V1Service {
         requestUri { uri =>
           get {
             //TODO: cursor
-            onComplete(engine.getFrames(0, 20)) {
+            onComplete(engine.getFrames(0, defaultCount)) {
               case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
               case Failure(ex) => throw ex
             }
