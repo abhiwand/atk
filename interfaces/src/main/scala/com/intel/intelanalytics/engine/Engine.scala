@@ -26,10 +26,15 @@ package com.intel.intelanalytics.engine
 import scala.xml.persistent.CachedFileStorage
 import java.nio.file.Path
 import PartialFunction._
-import com.intel.intelanalytics.domain.{DataFrameTemplate, Schema, DataFrame}
+import com.intel.intelanalytics.domain._
 import scala.concurrent.Future
 import java.io.{OutputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.engine.RowFunction
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.DataFrameTemplate
 
 object Rows {
   type Row = Array[Array[Byte]] //TODO: Can we constrain this better?
@@ -89,6 +94,13 @@ trait FrameComponent {
     def drop(frame: DataFrame)
   }
 
+  trait GraphStorage {
+    def lookup(id: Long) : Option[Graph]
+    def createGraph(graph: GraphTemplate) : Graph
+    def drop(graph: Graph)
+
+  }
+
 //  trait ViewStorage {
 //    def viewOfFrame(frame: Frame): View
 //    def create(view: View): Unit
@@ -145,5 +157,10 @@ trait EngineComponent {
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
     def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]]
+
+    def getGraph(id: Identifier) : Future[Graph]
+    def getGraphs(offset: Int, count: Int) : Future[Seq[Graph]]
+    def createGraph(graph: GraphTemplate) : Future[Graph]
+    def deleteGraph(graph: Graph) : Future[Unit]
   }
 }

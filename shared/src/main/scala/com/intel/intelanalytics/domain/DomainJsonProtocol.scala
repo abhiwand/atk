@@ -24,10 +24,30 @@
 package com.intel.intelanalytics.domain
 
 import spray.json.DefaultJsonProtocol
+import com.intel.intelanalytics.domain.graphconstruction._
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.graphconstruction.Value
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
+import com.intel.intelanalytics.domain.graphconstruction.VertexRule
+import com.intel.intelanalytics.domain.graphconstruction.Property
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val schemaFormat = jsonFormat1(Schema)
 
   implicit val dataFrameFormat = jsonFormat3(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
+
+  // graph
+
+  implicit val outputConfigurationFormat = jsonFormat2(OutputConfiguration)
+
+  implicit val valueFormat = jsonFormat2(Value)
+  implicit val propertyFormat = jsonFormat2(Property)
+  implicit val edgeRuleFormat = jsonFormat4(EdgeRule)
+  implicit val vertexRuleFormat = jsonFormat2(VertexRule)
+
+  implicit val graphTemplateFormat = jsonFormat7(GraphTemplate)
+  implicit val graphFormat = jsonFormat2(Graph)
 }

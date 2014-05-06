@@ -35,8 +35,8 @@ import scala.util.Success
 import com.intel.intelanalytics.service.v1.viewmodels.LoadFile
 
 
-trait ApiV1Service  { this: ApiV1Service with V1DataFrameService =>
+trait ApiV1Service  { this: ApiV1Service with V1DataFrameService with V1GraphService =>
   def apiV1Service: Route = {
-    frameRoutes()
+    frameRoutes() ~ graphRoutes()
   }
 }

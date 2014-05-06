@@ -31,7 +31,7 @@ import org.apache.spark.broadcast.Broadcast
 import scala.collection.Set
 import scala.Predef
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{DataFrameTemplate, DataFrame}
+import com.intel.intelanalytics.domain.{GraphTemplate, Graph, DataFrameTemplate, DataFrame}
 import com.intel.intelanalytics.engine.RowFunction
 import scala.concurrent._
 import ExecutionContext.Implicits.global
@@ -74,11 +74,12 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def config = new SparkConf()
       .setMaster(sparkMaster)
       .setAppName("intel-analytics") //TODO: this will probably wind up being a different
-                                      //application name for each user session
+      //application name for each user session
       .setSparkHome(sparkHome)
 
 
-    val runningContexts = new mutable.HashMap[String,SparkContext] with mutable.SynchronizedMap[String,SparkContext] {}
+    val runningContexts = new mutable.HashMap[String, SparkContext] with mutable.SynchronizedMap[String, SparkContext] {}
+
     //TODO: how to run jobs as a particular user
     //TODO: Decide on spark context life cycle - should it be torn down after every operation,
     //or left open for some time, and reused if a request from the same user comes in?
@@ -134,13 +135,13 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
           val parserFunction = getLineParser(parser)
           val location = fsRoot + frames.getFrameDataFile(frame.id)
           val ctx = context()
-            ctx.textFile(fsRoot + "/" + file)
-              .map(parserFunction)
-              //TODO: type conversions based on schema
-              .map(strings => strings.map(s => s.getBytes))
-              .saveAsObjectFile(location)
-            frames.lookup(frame.id).getOrElse(
-              throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
+          ctx.textFile(fsRoot + "/" + file)
+            .map(parserFunction)
+            //TODO: type conversions based on schema
+            .map(strings => strings.map(s => s.getBytes))
+            .saveAsObjectFile(location)
+          frames.lookup(frame.id).getOrElse(
+            throw new Exception(s"Data frame ${frame.id} no longer exists or is inaccessible"))
         }
       }
     }
@@ -172,16 +173,16 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
         val command = getPyCommand(predicate)
         val pythonExec = "python" //TODO: take from env var or config
         val environment = System.getenv() //TODO - should be empty instead?
-//        val pyRdd = new EnginePythonRDD[Array[Byte]](
-//            rdd, command = command, System.getenv(),
-//            new JArrayList, preservePartitioning = true,
-//            pythonExec = pythonExec,
-//            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-//            accumulator = new Accumulator[JList[Array[Byte]]](
-//              initialValue = new JArrayList[Array[Byte]](),
-//              param = null)
-//          )
-//        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
+        //        val pyRdd = new EnginePythonRDD[Array[Byte]](
+        //            rdd, command = command, System.getenv(),
+        //            new JArrayList, preservePartitioning = true,
+        //            pythonExec = pythonExec,
+        //            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
+        //            accumulator = new Accumulator[JList[Array[Byte]]](
+        //              initialValue = new JArrayList[Array[Byte]](),
+        //              param = null)
+        //          )
+        //        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
         frame
       }
     }
@@ -197,6 +198,30 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def getFrame(id: SparkComponent.this.Identifier): Future[DataFrame] = {
       future {
         frames.lookup(id).get
+      }
+    }
+
+    def createGraph(graph: GraphTemplate): Future[Graph] = {
+      future {
+        graphs.createGraph(graph)
+      }
+    }
+
+    def getGraph(id: SparkComponent.this.Identifier) : Future[Graph] = {
+      future {
+        graphs.lookup(id).get
+      }
+    }
+
+    def getGraphs(offset: Int, count: Int) : Future[Seq[Graph]] = {
+      future {
+        graphs.getGraphs(offset, count)
+      }
+    }
+
+    def deleteGraph(graph: Graph) : Future[Unit]  = {
+      future {
+        graphs.drop(graph)
       }
     }
   }
@@ -282,7 +307,7 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     }
   }
 
-  val frames = new SparkFrameStorage { }
+  val frames = new SparkFrameStorage {}
 
   trait SparkFrameStorage extends FrameStorage {
 
@@ -339,11 +364,11 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       ctx.objectFile[Array[Array[Byte]]](fsRoot + getFrameDataFile(id))
     }
 
-    def getOrCreateDirectory(name: String) : Directory = {
+    def getOrCreateDirectory(name: String): Directory = {
       val path = Paths.get(name)
       val meta = files.getMetaData(path).getOrElse(files.createDirectory(path))
       meta match {
-        case File(f,s) => throw new IllegalArgumentException(path + " is not a directory")
+        case File(f, s) => throw new IllegalArgumentException(path + " is not a directory")
         case d: Directory => d
       }
     }
@@ -392,10 +417,10 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     def getFrames(offset: Int, count: Int): Seq[DataFrame] = {
       files.list(getOrCreateDirectory(frameBase))
         .flatMap {
-          case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
-          case _ => None
-        }
-        .filter(idRegex.findFirstMatchIn(_).isDefined)  //may want to extract a method for this
+        case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
+        case _ => None
+      }
+        .filter(idRegex.findFirstMatchIn(_).isDefined) //may want to extract a method for this
         .flatMap(sid => frames.lookup(sid.toLong))
     }
 
@@ -424,5 +449,39 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
     }
   }
 
+
+  val graphs = new SparkGraphStorage {}
+
+  trait SparkGraphStorage extends GraphStorage {
+
+    import spray.json._
+
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    //
+    // we can't actually use graph builder right now without breaking the build
+    // import com.intel.graphbuilder.driver.spark.titan.examples
+
+    override def drop(graph: Graph): Unit = {
+      println("DROPPING GRAPH: " + graph.name)
+      Unit
+    }
+
+
+    override def createGraph(graph: GraphTemplate): Graph = {
+      println("CREATING GRAPH " + graph.name)
+      new Graph(1, graph.name)
+    }
+
+
+    override def lookup(id: Long): Option[Graph] = {
+      println("DELETING GRAPH " + id)
+      None
+    }
+
+    def getGraphs(offset: Int, count: Int): Seq[Graph] = {
+      println("LISTING " + count + " GRAPHS FROM " + offset)
+      List[Graph]()
+    }
+  }
 }
 
