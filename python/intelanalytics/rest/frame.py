@@ -67,7 +67,7 @@ class FrameBackendREST(object):
                 self.append(frame, d)
             return
 
-        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': 1}}
+        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': data.skip_header_lines}}
         r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
         logger.info("Response from REST server {0}".format(r.text))
 

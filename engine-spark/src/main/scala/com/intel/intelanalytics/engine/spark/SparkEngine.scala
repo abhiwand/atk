@@ -116,8 +116,8 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       parser.language match {
         case "builtin" => parser.definition match {
           case "line/csv" => (s: String) => {
-            val builtIn = parser.asInstanceOf[Builtin]
-            val delimiter = builtIn.delimiter.toCharArray
+            //val builtIn = parser.asInstanceOf[Builtin]
+            val delimiter = parser.asInstanceOf[Builtin].delimiter.toCharArray
             val row = new Row(delimiter(0))
             row.apply(s)
           }
@@ -136,7 +136,15 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
           val parserFunction = getLineParser(parser)
           val location = fsRoot + frames.getFrameDataFile(frame.id)
           val ctx = context()
+          val numLinesToDrop = parser.asInstanceOf[Builtin].skipRows
             ctx.textFile(fsRoot + "/" + file)
+              .mapPartitionsWithIndex((idx: Int, lines: Iterator[String]) => {
+              if (idx == 0) {
+                lines.drop(numLinesToDrop)
+              }
+              lines
+            }
+              )
               .map(parserFunction)
               //TODO: type conversions based on schema
               .map(strings => strings.map(s => s.getBytes))
