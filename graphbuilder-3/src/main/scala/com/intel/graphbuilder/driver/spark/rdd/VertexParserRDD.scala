@@ -1,8 +1,8 @@
 package com.intel.graphbuilder.driver.spark.rdd
 
 import org.apache.spark.rdd.RDD
-import com.intel.graphbuilder.elements.{Property, Vertex}
-import org.apache.spark.{TaskContext, Partition}
+import com.intel.graphbuilder.elements.{ Property, Vertex }
+import org.apache.spark.{ TaskContext, Partition }
 import com.intel.graphbuilder.parser.Parser
 import scala.collection.mutable.Map
 

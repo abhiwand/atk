@@ -26,7 +26,6 @@ package com.intel.graphbuilder.write.titan
 import com.thinkaurelius.titan.core.TitanElement
 import com.tinkerpop.blueprints
 
-
 /**
  * Gets the Titan assigned physical ID from Blueprints
  */

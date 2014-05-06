@@ -23,13 +23,13 @@
 
 package com.intel.graphbuilder.driver.spark.rdd
 
-import com.intel.graphbuilder.elements.{GbIdToPhysicalId, Vertex}
+import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Vertex }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.VertexWriter
 import com.intel.graphbuilder.write.dao.VertexDAO
 import com.intel.graphbuilder.write.titan.TitanVertexWriter
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{TaskContext, Partition}
+import org.apache.spark.{ TaskContext, Partition }
 
 /**
  * RDD that writes to Titan and produces output mapping GbId's to Physical Id's
@@ -41,11 +41,11 @@ import org.apache.spark.{TaskContext, Partition}
  * @param titanConnector connector to Titan
  * @param append  true to append to an existing graph (incremental graph construction)
  * @param maxVerticesPerCommit Titan performs poorly if you try to commit vertices in too large of batches.
- *                              10k seems to be a pretty we established number to use for Vertices.              
+ *                              10k seems to be a pretty we established number to use for Vertices.
  */
-class TitanVertexWriterRDD(prev: RDD[Vertex], 
-                           titanConnector: TitanGraphConnector, 
-                           val append: Boolean = false, 
+class TitanVertexWriterRDD(prev: RDD[Vertex],
+                           titanConnector: TitanGraphConnector,
+                           val append: Boolean = false,
                            val maxVerticesPerCommit: Long = 10000L) extends RDD[GbIdToPhysicalId](prev) {
 
   override def getPartitions: Array[Partition] = firstParent[Vertex].partitions

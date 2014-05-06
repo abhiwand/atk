@@ -105,7 +105,7 @@ class GraphBuilder(config: GraphBuilderConfig) extends Serializable {
 
       val ids = idMap.collect()
       println("vertex ids size: " + ids.length)
-      val vertexMap = ids.map( gbIdToPhysicalId => gbIdToPhysicalId.toTuple).toMap
+      val vertexMap = ids.map(gbIdToPhysicalId => gbIdToPhysicalId.toTuple).toMap
 
       println("broadcasting vertex ids")
       val gbIdToPhysicalIdMap = vertexInputRdd.sparkContext.broadcast(vertexMap)
