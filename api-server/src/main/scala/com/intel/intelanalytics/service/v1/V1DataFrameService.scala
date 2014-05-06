@@ -130,7 +130,8 @@ trait V1DataFrameService extends V1Service {
                           onComplete(
                             for {
                               frame <- engine.getFrame(id)
-                              res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv",args.get.separator))
+                              res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv",args.get.separator,
+                                                        args.get.skipRows))
                             } yield res) {
                             case Success(r) => complete(decorate(uri, r))
                             case Failure(ex) => throw ex
