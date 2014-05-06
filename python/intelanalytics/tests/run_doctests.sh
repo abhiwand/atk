@@ -1,3 +1,5 @@
+#!/bin/bash
+
 ##############################################################################
 # INTEL CONFIDENTIAL
 #
@@ -20,40 +22,42 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-"""
-Initialization for any unit test
-"""
-import os
-import sys
-import logging
 
 
-class TestFolders(object):
-    """Folder paths for the tests"""
-    def __init__(self):
-        dirname = os.path.dirname
-        self.here = dirname(__file__)
-        self.tmp = os.path.join(self.here, "tmp")
-        self.conf = os.path.join(self.here, "conf")
-        self.root = dirname(dirname(self.here))  # parent of intel_analytics
+# Executes all of the tests defined in this doc folder, using Python's doctest
 
-    def __repr__(self):
-        return '{' + ",".join(['"%s": "%s"' % (k, v)
-                               for k, v in self.__dict__.items()]) + '}'
+if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
+    ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+else
+    ACTIVATE_FILE=/usr/local/virtpy/bin/activate
+fi
 
+if [[ ! -f $ACTIVATE_FILE ]]; then
+    echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
+    exit 1
+fi
 
-folders = TestFolders()
+source $ACTIVATE_FILE
 
+TESTS_DIR="$( cd "$( dirname "$BASH_SOURCE[0]}" )" && pwd )"
+IA=`dirname $TESTS_DIR`
+DOC=$IA/doc
+SOURCE_CODE_PYTHON=`dirname $IA`
 
-def init():
-    if sys.path[1] != folders.root:
-        sys.path.insert(1, folders.root)
+echo SOURCE_CODE_PYTHON=$SOURCE_CODE_PYTHON
 
+cd $SOURCE_CODE_PYTHON 
 
-def set_logging(logger_name, level=logging.DEBUG):
-    """Sets up logging for the test"""
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
-    h = logging.StreamHandler()
-    h.setLevel(logging.DEBUG)
-    logger.addHandler(h)
+python -m doctest -v $DOC/source/examples.rst
+
+success=$?
+
+rm *.log 2> /dev/null
+
+if [[ $success == 0 ]] ; then
+   echo "Python Doc Tests Successful"
+   exit 0
+fi
+echo "Python Doc Tests Unsuccessful"
+exit 1
+

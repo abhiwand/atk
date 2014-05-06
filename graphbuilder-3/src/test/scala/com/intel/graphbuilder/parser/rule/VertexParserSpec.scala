@@ -24,9 +24,8 @@
 package com.intel.graphbuilder.parser.rule
 
 import RuleParserDSL._
-import com.intel.graphbuilder.parser.{InputRow, InputSchema}
+import com.intel.graphbuilder.parser.{ InputRow, InputSchema }
 import org.specs2.mutable.Specification
-
 
 class VertexParserSpec extends Specification {
 

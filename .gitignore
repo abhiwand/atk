@@ -45,3 +45,4 @@ patches-*
 virtpy
 lib
 *.jar
+*.orig

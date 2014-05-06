@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.testutils
 
-import org.apache.log4j.{Logger, Level}
+import org.apache.log4j.{ Logger, Level }
 
 /**
  * Utility methods related to logging in Unit testing.

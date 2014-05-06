@@ -27,7 +27,6 @@ import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
 import org.specs2.mutable.Specification
 
-
 class CombinedParserSpec extends Specification {
 
   "CompinedParser" should {

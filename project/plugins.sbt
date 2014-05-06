@@ -19,4 +19,6 @@ addSbtPlugin("com.orrsella" % "sbt-sublime" % "1.0.9")
 
 addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.98.0")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.2.0")
+//addSbtPlugin("com.zavakid.sbt" % "sbt-one-log" % "0.1.1")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")

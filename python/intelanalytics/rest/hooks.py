@@ -20,40 +20,48 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
-"""
-Initialization for any unit test
-"""
-import os
-import sys
-import logging
+
+from bottle import request
+from bottle import Bottle, HeaderDict
+from message import Message
 
 
-class TestFolders(object):
-    """Folder paths for the tests"""
+class WebhookServer(object):
     def __init__(self):
-        dirname = os.path.dirname
-        self.here = dirname(__file__)
-        self.tmp = os.path.join(self.here, "tmp")
-        self.conf = os.path.join(self.here, "conf")
-        self.root = dirname(dirname(self.here))  # parent of intel_analytics
+        self._app = Bottle()
 
-    def __repr__(self):
-        return '{' + ",".join(['"%s": "%s"' % (k, v)
-                               for k, v in self.__dict__.items()]) + '}'
+        self._route()
+        self.response_dict = HeaderDict()
 
+    def _route(self):
+        """
+        Setup routing and handlers
+        """
+        self._app.route('/notify/<id>', method="POST", callback=self.__notify)
 
-folders = TestFolders()
+    def start(self, port, message_queue):
+        """
+        Launch webhook server with the specified port
 
+        Parameters
+        ----------
+        port: int
+            The port that the webhook server uses to serve the request
+        message_queue: multiprocessing.Queue
+            The queue object to send message to. The message will be picked up by REPL
+        """
+        self.message_queue = message_queue
+        self._app.run(host='localhost', port=port, quiet=True)
 
-def init():
-    if sys.path[1] != folders.root:
-        sys.path.insert(1, folders.root)
+    def __notify(self, id):
+        """
+        Handler to receiving notification
 
+        Parameters
+        ----------
+        id: int
+            The identifier for job
+        """
+        m = Message(id, request.json)
+        self.message_queue.put(m)
 
-def set_logging(logger_name, level=logging.DEBUG):
-    """Sets up logging for the test"""
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(level)
-    h = logging.StreamHandler()
-    h.setLevel(logging.DEBUG)
-    logger.addHandler(h)
