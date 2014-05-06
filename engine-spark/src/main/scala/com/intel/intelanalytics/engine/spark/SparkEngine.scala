@@ -116,7 +116,9 @@ class SparkComponent extends EngineComponent with FrameComponent with FileCompon
       parser.language match {
         case "builtin" => parser.definition match {
           case "line/csv" => (s: String) => {
-            val row = new Row(',')
+            val builtIn = parser.asInstanceOf[Builtin]
+            val delimiter = builtIn.delimiter.toCharArray
+            val row = new Row(delimiter(0))
             row.apply(s)
           }
           case p => throw new Exception("Unsupported parser: " + p)
