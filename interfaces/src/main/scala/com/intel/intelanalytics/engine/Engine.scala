@@ -53,7 +53,11 @@ object EngineMessages {
 }
 
 case class RowFunction[T](language: String, definition: String) extends Functional
-case class Builtin(name: String) extends Functional { def language = "builtin"; def definition = name }
+case class Builtin(name: String, delim:String = null) extends Functional {
+  def language = "builtin"
+  def definition = name
+  def delimiter = delim
+}
 
 sealed abstract class Alteration { }
 
