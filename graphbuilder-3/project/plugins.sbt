@@ -9,7 +9,9 @@ resolvers ++= Seq(
 // Generate IntelliJ project files.
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.6.0")
 
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.3.2")
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")
+
+resolvers += "sonatype-releases" at "https://oss.sonatype.org/content/repositories/releases/"
 
 addSbtPlugin("net.virtual-void" % "sbt-dependency-graph" % "0.7.4")
 

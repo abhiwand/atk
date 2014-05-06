@@ -29,9 +29,6 @@ import spray.http.StatusCodes
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.engine.{Builtin, EngineComponent}
 import spray.util.LoggingContext
-
-//TODO: Is this right execution context for us?
-
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import scala.util.control.NonFatal
 import scala.util.Success

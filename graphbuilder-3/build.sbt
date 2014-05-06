@@ -11,7 +11,7 @@ name := "graphbuilder-3"
 
 version := "3"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 libraryDependencies := {
   Seq(
@@ -53,6 +53,7 @@ ScoverageSbtPlugin.instrumentSettings
 
 ScoverageSbtPlugin.ScoverageKeys.excludedPackages in ScoverageSbtPlugin.scoverage := "com.intel.graphbuilder.driver.spark.titan.examples.*;com.intel.graphbuilder.driver.local.examples.*"
 
+org.scalastyle.sbt.ScalastylePlugin.Settings
 
 scalariformSettings
 
