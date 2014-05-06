@@ -23,12 +23,12 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{SparkContext, SparkConf, Accumulator}
+import org.apache.spark.{ExceptionFailure, SparkContext, SparkConf, Accumulator}
 import org.apache.spark.api.python._
 import org.apache.spark.rdd.RDD
 import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
 import org.apache.spark.broadcast.Broadcast
-import scala.collection.Set
+import scala.collection.{mutable, Set}
 import scala.Predef
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain._
@@ -37,7 +37,6 @@ import ExecutionContext.Implicits.global
 import java.nio.file.{Paths, Path}
 import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.RowSource
-import scala.collection.{mutable}
 import java.util.concurrent.atomic.AtomicLong
 import resource._
 import org.apache.hadoop.fs.{FSDataInputStream, LocalFileSystem, FileSystem}
@@ -48,7 +47,7 @@ import spray.json.{JsObject, JsonParser}
 import scala.io.{Codec, Source}
 import scala.util.control.NonFatal
 import org.apache.hadoop.io._
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{HashSet, ListBuffer, ArrayBuffer, HashMap}
 import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
 import com.intel.intelanalytics.engine.Row
@@ -57,13 +56,18 @@ import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.event.EventContext
 import scala.concurrent.duration._
-import scala.Some
-import com.intel.intelanalytics.domain.DataFrameTemplate
-import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.repository.{SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent}
 import scala.slick.driver.H2Driver
 import scala.util.{Success, Failure, Try}
+import org.apache.spark.scheduler._
+import org.apache.spark.scheduler.SparkListenerStageCompleted
+import scala.Some
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.DataFrame
+import org.apache.spark.scheduler.SparkListenerJobStart
+import org.apache.spark.engine.{SparkProgressListener, TestListener}
+
 
 //TODO documentation
 //TODO progress notification
@@ -76,6 +80,7 @@ class SparkComponent extends EngineComponent
                       with DbProfileComponent
                       with SlickMetaStoreComponent
                       with EventLogging {
+
   val engine = new SparkEngine {}
   lazy val conf = ConfigFactory.load()
   lazy val sparkHome = conf.getString("intel.analytics.spark.home")
@@ -100,6 +105,8 @@ class SparkComponent extends EngineComponent
   metaStore.create()
 
   //Very simpleminded implementation, not ready for multiple users, for example.
+  case class Context(sparkContext: SparkContext, progressMonitor: SparkProgressListener)
+
   class SparkEngine extends Engine {
 
     def config = new SparkConf()
@@ -109,7 +116,7 @@ class SparkComponent extends EngineComponent
       .setSparkHome(sparkHome)
 
 
-    val runningContexts = new mutable.HashMap[String, SparkContext] with mutable.SynchronizedMap[String, SparkContext] {}
+    val runningContexts = new mutable.HashMap[String,Context] with mutable.SynchronizedMap[String,Context] {}
 
     //TODO: how to run jobs as a particular user
     //TODO: Decide on spark context life cycle - should it be torn down after every operation,
@@ -120,7 +127,12 @@ class SparkComponent extends EngineComponent
         case Some(ctx) => ctx
         case None => {
           val ctx = withMyClassLoader {
-            new SparkContext(config = config.setAppName("intel-analytics:user"))
+            val context = new SparkContext(config = config.setAppName("intel-analytics:user"))
+            val listener = new SparkProgressListener()
+            val testListener = new TestListener(listener)
+            context.addSparkListener(listener)
+            context.addSparkListener(testListener)
+            Context(context, listener)
           }
           runningContexts += ("user" -> ctx)
           ctx
@@ -202,7 +214,7 @@ class SparkComponent extends EngineComponent
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context()
-                SparkOps.loadLines(ctx, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+                SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
               }
               commands.lookup(command.id).get
             }
@@ -236,7 +248,7 @@ class SparkComponent extends EngineComponent
     def filter(frame: DataFrame, predicate: Partial[Any]): Future[DataFrame] =
       withContext("se.filter") {
         future {
-          val ctx = context() //TODO: resource management
+          val ctx = context().sparkContext //TODO: resource management
           val rdd = frames.getFrameRdd(ctx, frame.id)
           val command = getPyCommand(predicate)
           val pythonExec = "python" //TODO: take from env var or config
@@ -407,9 +419,8 @@ class SparkComponent extends EngineComponent
         require(frame != null, "frame is required")
         require(offset >= 0, "offset must be zero or greater")
         require(count > 0, "count must be zero or greater")
-
         val ctx = engine.context()
-        val rdd: RDD[Row] = getFrameRdd(ctx, frame.id)
+        val rdd: RDD[Row] = getFrameRdd(ctx.sparkContext, frame.id)
         val rows = SparkOps.getRows(rdd, offset, count)
         rows
       }
