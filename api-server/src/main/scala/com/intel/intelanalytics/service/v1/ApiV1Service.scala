@@ -36,8 +36,9 @@ import scala.util.Success
 
 trait ApiV1Service  { this: ApiV1Service
                       with V1DataFrameService
-                      with V1CommandService =>
+                      with V1CommandService
+                      with V1GraphService =>
   def apiV1Service: Route = {
-    frameRoutes() ~ commandRoutes()
+    frameRoutes() ~ commandRoutes() ~ graphRoutes()
   }
 }
