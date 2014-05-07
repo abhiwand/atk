@@ -25,7 +25,7 @@ package com.intel.graphbuilder.driver.spark.rdd
 
 import org.specs2.mutable.Specification
 import com.intel.graphbuilder.testutils.TestingSparkContext
-import com.intel.graphbuilder.elements.{GbIdToPhysicalId, Property, Edge}
+import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Property, Edge }
 import GraphBuilderRDDImplicits._
 
 class EdgeRDDFunctionsITest extends Specification {

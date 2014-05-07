@@ -27,7 +27,6 @@ import com.intel.graphbuilder.elements.Edge
 import com.intel.graphbuilder.write.dao.EdgeDAO
 import com.tinkerpop.blueprints
 
-
 /**
  * Write parsed Edges into a Blueprints compatible Graph database
  *

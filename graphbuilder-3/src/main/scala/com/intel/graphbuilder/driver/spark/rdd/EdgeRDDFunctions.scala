@@ -26,7 +26,7 @@ package com.intel.graphbuilder.driver.spark.rdd
 import com.intel.graphbuilder.elements._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.EdgeWriter
-import com.intel.graphbuilder.write.dao.{VertexDAO, EdgeDAO}
+import com.intel.graphbuilder.write.dao.{ VertexDAO, EdgeDAO }
 import org.apache.spark.SparkContext._
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD

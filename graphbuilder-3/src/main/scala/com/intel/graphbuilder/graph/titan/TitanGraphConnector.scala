@@ -24,9 +24,9 @@
 package com.intel.graphbuilder.graph.titan
 
 import com.intel.graphbuilder.graph.GraphConnector
-import com.thinkaurelius.titan.core.{TitanGraph, TitanFactory}
+import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
 import java.io.File
-import org.apache.commons.configuration.{PropertiesConfiguration, Configuration}
+import org.apache.commons.configuration.{ PropertiesConfiguration, Configuration }
 
 /**
  * Get a connection to Titan.
