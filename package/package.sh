@@ -62,7 +62,12 @@ fi
 
 if [ "$tarFile" == "" ]; then
         log "no tar file specified"
-        usage
+       # usage
+fi
+
+if [ "$version" == "" ]; then
+	log "not version specified"
+	usage
 fi
 
 configDir="$config/$packageName"

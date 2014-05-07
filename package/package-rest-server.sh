@@ -42,6 +42,9 @@ do
 	echo $jarPath
 	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/lib/
 done
+	jarPath=$(find . -path ./package -prune -o -name launcher.jar -print)
+	cp -v $jarPath $SCRIPTPATH/tarballs/$package/usr/lib/intelanalytics/rest-server/
+
 popd
 
 pushd $SCRIPTPATH/tarballs/$package

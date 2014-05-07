@@ -15,7 +15,7 @@ cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
 DESCRIPTION=$SUMMARY
-
+REQUIRES="python27"
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
 topDir="$SCRIPTPATH/rpm"

@@ -11,7 +11,7 @@ log "package name: $packageName, tar file: $tarFile, version: $version, script p
 log "copy tar.gz and rename for packaing"
 expandTarDeb
 
-DEPENDS="python (>=2.7), $DEPENDS"
+DEPENDS="python (>=2.7), python-bottle, python-numpy, python-pandas, python-pkg-resources, python-requests , $DEPENDS"
 SOURCE=$packageName
 SUMMARY="zombies "
 DESCRIPTION=$SUMMARY
