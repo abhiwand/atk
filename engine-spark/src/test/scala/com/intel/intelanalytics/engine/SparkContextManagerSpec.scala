@@ -32,9 +32,9 @@ class SparkContextManagerSpec extends Specification with Mockito {
     val sparkContextManager = createMockSparkContextManager()
 
     "create a new context for a user if it doesn't exist" in {
-      val sc_1: SparkContext = sparkContextManager.getContext("user_1")
-      val sc_2: SparkContext = sparkContextManager.getContext("user_2")
-      val sc_3: SparkContext = sparkContextManager.getContext("user_3")
+      val sc_1: SparkContext = sparkContextManager.getContext("user_1").sparkContext
+      val sc_2: SparkContext = sparkContextManager.getContext("user_2").sparkContext
+      val sc_3: SparkContext = sparkContextManager.getContext("user_3").sparkContext
 
       sc_1 shouldNotEqual sc_2
       sc_1 shouldNotEqual sc_3
@@ -44,12 +44,12 @@ class SparkContextManagerSpec extends Specification with Mockito {
     }
 
     "return a spark context for a user if it already exists" in {
-      val sc_1: SparkContext = sparkContextManager.getContext("user_1")
-      val sc_2: SparkContext = sparkContextManager.getContext("user_2")
-      val sc_3: SparkContext = sparkContextManager.getContext("user_3")
-      val sc_4: SparkContext = sparkContextManager.getContext("user_1") //should be same as sc_1
-      val sc_5: SparkContext = sparkContextManager.getContext("user_2") //should be same as sc_2
-      val sc_6: SparkContext = sparkContextManager.getContext("user_3") //should be same as sc_3
+      val sc_1: SparkContext = sparkContextManager.getContext("user_1").sparkContext
+      val sc_2: SparkContext = sparkContextManager.getContext("user_2").sparkContext
+      val sc_3: SparkContext = sparkContextManager.getContext("user_3").sparkContext
+      val sc_4: SparkContext = sparkContextManager.getContext("user_1").sparkContext //should be same as sc_1
+      val sc_5: SparkContext = sparkContextManager.getContext("user_2").sparkContext //should be same as sc_2
+      val sc_6: SparkContext = sparkContextManager.getContext("user_3").sparkContext //should be same as sc_3
       sc_1 shouldEqual sc_4
       sc_2 shouldEqual sc_5
       sc_3 shouldEqual sc_6
