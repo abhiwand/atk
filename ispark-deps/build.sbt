@@ -26,7 +26,7 @@ resolvers ++= Seq(
 
 libraryDependencies := Seq(
   // Titan core to get around Kryo ClassLoader issue
-  "com.thinkaurelius.titan" % "titan-core" % "0.4.5-SNAPSHOT",
+  //"com.thinkaurelius.titan" % "titan-core" % "0.4.5-SNAPSHOT",
   // Classloader issue with com.google.protobuf
   "org.apache.hbase" % "hbase-protocol" % "0.96.1.1-cdh5.0.0"
 )
