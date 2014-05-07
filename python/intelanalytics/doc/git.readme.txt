@@ -18,8 +18,8 @@ git checkout <sprint>; <sprint> is the name of the current Agile sprint branch, 
 git checkout -b <working branch>; <working branch> is the name of the branch being worked for general documentation issues
 	Change to the active working directory
 cd pyton/intelanalytics
-	This is the base directory of everybody's work. The documentation is in the folder called doc, in this case, coincidentally named the same as
-	the git branch.  Make your changes.  Add your changes to the local repository.
+	This is the base directory of everybody's work. The documentation is in the folder called doc.
+	Make your changes.  Add your changes to the local repository.
 git add <file name>
 git commit -m '<Revision note>'; <Revision note> is a freeform note and the command needs the ' or " marks
 	Merge the sprint branch into your branch, resolving difficulties
