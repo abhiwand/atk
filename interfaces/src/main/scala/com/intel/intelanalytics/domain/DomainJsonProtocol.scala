@@ -25,10 +25,6 @@ package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.DataTypes.DataType
 import spray.json._
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.domain.DataFrameTemplate
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
@@ -54,6 +50,7 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val loadLinesFormat = jsonFormat4(LoadLines[JsObject,String])
   implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject,Long])
   implicit val errorFormat = jsonFormat5(Error)
+  implicit val userFormat = jsonFormat2(User)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

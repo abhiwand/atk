@@ -27,7 +27,6 @@ import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.domain._
 import scala.util.Try
 import spray.json._
-
 import scala.slick.driver.JdbcProfile
 import com.intel.intelanalytics.domain.CommandTemplate
 import com.intel.intelanalytics.domain.DataFrame
@@ -61,6 +60,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
         info("creating")
         frameRepo.asInstanceOf[SlickFrameRepository].create
         commandRepo.asInstanceOf[SlickCommandRepository].create
+        userRepo.asInstanceOf[SlickUserRepository].create
         info("tables created")
       }
     }
@@ -68,6 +68,8 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     override lazy val frameRepo: Repository[Session, DataFrameTemplate, DataFrame] = new SlickFrameRepository
 
     override lazy val commandRepo: Repository[Session, CommandTemplate, Command] = new SlickCommandRepository
+
+    override lazy val userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]= new SlickUserRepository
 
     override def withSession[T](name: String)(f: (Session) => T): T = {
       withContext(name) {
@@ -77,6 +79,60 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   }
 
 
+  class SlickUserRepository extends Repository[Session, UserTemplate, User]
+                              with Queryable[Session, User]
+                              with EventLogging {
+    this: Repository[Session, UserTemplate, User] with Queryable[Session, User] =>
+
+    class UserEntity(tag: Tag) extends Table[User](tag, "users") {
+      def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+
+      def api_key = column[String]("api_key")
+
+      def * = (id, api_key) <>
+        ((t: (Long, String)) => t match {
+          case (i: Long, n: String) => User.tupled((i, n))
+        },
+          (f: User) => User.unapply(f) map {
+            case (i, n) => (i, n)
+          })
+    }
+
+
+    val users = TableQuery[UserEntity]
+
+    protected val usersAutoInc = users returning users.map(_.id) into { case (c, id) => c.copy(id = id)}
+
+    def create() (implicit session: Session) = {
+      users.ddl.create
+    }
+
+    override def insert(newUser: UserTemplate) (implicit session: Session): Try[User] = Try {
+      usersAutoInc.insert(User(0, newUser.api_key)) (session)
+    }
+
+    override def lookup(id: Long) (implicit session: Session): Option[User] = {
+      users.where(_.id === id).firstOption
+    }
+
+    override def delete(id: Long)(implicit session: Session): Try[Unit] = Try {
+      users.where(_.id === id).mutate(c => c.delete())
+    }
+
+    override def update(c: User) (implicit session: Session): Try[User] = Try {
+      users.where(_.id === c.id).update(c)
+      c
+    }
+
+    override def scan(offset: Int = 0, count: Int = defaultScanCount) (implicit session: Session): Seq[User] = {
+      users.drop(offset).take(count).list
+    }
+
+    override  def retrieveByColumnValue(colName: String, value: String) (implicit session: Session): List[User] = {
+      users.filter(_.column[String](colName) === value).list
+    }
+
+  }
 
   class SlickFrameRepository extends Repository[Session, DataFrameTemplate, DataFrame]
                               with EventLogging { this: Repository[Session, DataFrameTemplate, DataFrame] =>
@@ -126,6 +182,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
     def create(implicit session:Session) = {
       frames.ddl.create
     }
+
   }
 
   class SlickCommandRepository extends Repository[Session, CommandTemplate, Command]

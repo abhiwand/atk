@@ -16,3 +16,7 @@ trait Repository[Session, CreateEntity, Entity <: HasId] extends ReadRepository[
   def delete(id: Long) (implicit session: Session): Try[Unit]
 }
 
+trait Queryable[Session, Entity <: HasId] {
+  def retrieveByColumnValue(colName: String, value: String) (implicit session: Session): List[Entity]
+}
+

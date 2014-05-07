@@ -30,11 +30,7 @@ import spray.json.{JsObject, JsValue, DefaultJsonProtocol}
 import spray.httpx.SprayJsonSupport
 import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.domain.Operation
-import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
-import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 
 case class RelLink(rel: String, uri: String, method: String) {
   require(rel != null)

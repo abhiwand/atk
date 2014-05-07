@@ -25,35 +25,33 @@ package com.intel.intelanalytics.engine.spark
 
 import org.apache.spark.{ExceptionFailure, SparkContext, SparkConf, Accumulator}
 import org.apache.spark.api.python._
-import org.apache.spark.rdd.RDD
 import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
 import org.apache.spark.broadcast.Broadcast
 import scala.collection.{mutable, Set}
-import scala.Predef
-import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain._
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import com.intel.intelanalytics.engine._
+import com.intel.intelanalytics.domain.{User, DataFrameTemplate, DataFrame}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.{Paths, Path}
-import java.io.{IOException, OutputStream, ByteArrayInputStream, InputStream}
+import java.nio.file.Paths
+import java.io.{IOException, OutputStream, InputStream}
 import com.intel.intelanalytics.engine.Rows.RowSource
 import java.util.concurrent.atomic.AtomicLong
-import resource._
-import org.apache.hadoop.fs.{FSDataInputStream, LocalFileSystem, FileSystem}
+import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
 import spray.json.{JsObject, JsonParser}
 import scala.io.{Codec, Source}
-import scala.util.control.NonFatal
-import org.apache.hadoop.io._
 import scala.collection.mutable.{HashSet, ListBuffer, ArrayBuffer, HashMap}
+import scala.io.{Codec, Source}
 import org.apache.hadoop.fs.{Path => HPath}
 import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
 import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
-import com.intel.intelanalytics.shared.EventLogging
 import com.intel.event.EventContext
 import scala.concurrent.duration._
 import com.intel.intelanalytics.domain.Partial
@@ -67,7 +65,9 @@ import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
 import org.apache.spark.engine.{SparkProgressListener, TestListener}
-
+import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.shared.EventLogging
 
 //TODO documentation
 //TODO progress notification
@@ -100,47 +100,24 @@ class SparkComponent extends EngineComponent
     new Profile(H2Driver, connectionString = connectionString, driver = driver)
   }
 
+  val sparkContextManager = new SparkContextManager(conf, new SparkContextFactory)
+
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
   metaStore.create()
 
-  //Very simpleminded implementation, not ready for multiple users, for example.
-  case class Context(sparkContext: SparkContext, progressMonitor: SparkProgressListener)
 
   class SparkEngine extends Engine {
 
-    def config = new SparkConf()
-      .setMaster(sparkMaster)
-      .setAppName("intel-analytics") //TODO: this will probably wind up being a different
-      //application name for each user session
-      .setSparkHome(sparkHome)
-
-
-    val runningContexts = new mutable.HashMap[String,Context] with mutable.SynchronizedMap[String,Context] {}
-
-    //TODO: how to run jobs as a particular user
-    //TODO: Decide on spark context life cycle - should it be torn down after every operation,
-    //or left open for some time, and reused if a request from the same user comes in?
-    //Is there some way of sharing a context across two different Engine instances?
-    def context() = {
-      runningContexts.get("user") match {
-        case Some(ctx) => ctx
-        case None => {
-          val ctx = withMyClassLoader {
-            val context = new SparkContext(config = config.setAppName("intel-analytics:user"))
-            val listener = new SparkProgressListener()
-            val testListener = new TestListener(listener)
-            context.addSparkListener(listener)
-            context.addSparkListener(testListener)
-            Context(context, listener)
-          }
-          runningContexts += ("user" -> ctx)
-          ctx
-        }
-      }
+    def context(implicit user: UserPrincipal) : Context = {
+        sparkContextManager.getContext(user.user.api_key)
     }
 
-    def withMyClassLoader[T](f: => T): T = withContext("se.withClassLoader") {
+    def shutdown: Unit = {
+      sparkContextManager.cleanup()
+    }
+
+    def withMyClassLoader[T](f: => T): T = {
       val prior = Thread.currentThread().getContextClassLoader
       EventContext.getCurrent.put("priorClassLoader", prior.toString)
       try {
@@ -197,7 +174,7 @@ class SparkComponent extends EngineComponent
       commands.complete(command.id, Try{block})
     }
 
-    def load(arguments: LoadLines[JsObject, Long]): (Command, Future[Command]) =
+    def load(arguments: LoadLines[JsObject, Long]) (implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.load") {
         require(arguments != null, "arguments are required")
         import DomainJsonProtocol._
@@ -213,7 +190,7 @@ class SparkComponent extends EngineComponent
                 val location = fsRoot + frames.getFrameDataFile(frameId)
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-                val ctx = context()
+                val ctx = context(user)
                 SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
               }
               commands.lookup(command.id).get
@@ -239,16 +216,16 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]] = withContext("se.getFrames") {
+    def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
       future {
         frames.getFrames(offset, count)
       }
     }
 
-    def filter(frame: DataFrame, predicate: Partial[Any]): Future[DataFrame] =
+    def filter(frame: DataFrame, predicate: Partial[Any]) (implicit user: UserPrincipal): Future[DataFrame] =
       withContext("se.filter") {
         future {
-          val ctx = context().sparkContext //TODO: resource management
+          val ctx = context(user).sparkContext //TODO: resource management
           val rdd = frames.getFrameRdd(ctx, frame.id)
           val command = getPyCommand(predicate)
           val pythonExec = "python" //TODO: take from env var or config
@@ -267,7 +244,7 @@ class SparkComponent extends EngineComponent
         }
       }
 
-    def getRows(id: Identifier, offset: Long, count: Int) = withContext("se.getRows") {
+    def getRows(id: Identifier, offset: Long, count: Int) (implicit user: UserPrincipal) = withContext("se.getRows") {
       future {
         val frame = frames.lookup(id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
         val rows = frames.getRows(frame, offset, count)
@@ -414,12 +391,12 @@ class SparkComponent extends EngineComponent
         ???
       }
 
-    override def getRows(frame: DataFrame, offset: Long, count: Int): Iterable[Row] =
+    override def getRows(frame: DataFrame, offset: Long, count: Int) (implicit user: UserPrincipal): Iterable[Row] =
       withContext("frame.getRows") {
         require(frame != null, "frame is required")
         require(offset >= 0, "offset must be zero or greater")
         require(count > 0, "count must be zero or greater")
-        val ctx = engine.context()
+        val ctx = engine.context(user)
         val rdd: RDD[Row] = getFrameRdd(ctx.sparkContext, frame.id)
         val rows = SparkOps.getRows(rdd, offset, count)
         rows

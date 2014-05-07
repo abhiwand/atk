@@ -40,6 +40,7 @@ import scala.util.Success
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.domain.LoadLines
 import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.security.UserPrincipal
 
 //TODO: Is this right execution context for us?
 
@@ -54,71 +55,73 @@ trait V1CommandService extends V1Service {
   def decorate(uri: Uri, command: Command): DecoratedCommand = {
     //TODO: add other relevant links
     val links = List(Rel.self(uri.toString()))
-   CommandDecorator.decorateEntity(uri.toString(), links, command)
+    CommandDecorator.decorateEntity(uri.toString(), links, command)
   }
 
   def commandRoutes() = {
-    pathPrefix("commands" / LongNumber) {
-      id =>
-        pathEnd {
-          requestUri {
-            uri =>
-              get {
-                onComplete(engine.getCommand(id)) {
-                  case Success(Some(command)) => {
-                    val decorated = decorate(uri, command)
-                    complete {
-                      decorated
-                    }
-                  }
-                  case _ => reject()
-                }
-              }
-          }
-        }
-    } ~
-      (path("commands") & pathEnd) {
-        requestUri {
-          uri =>
-
-            get {
-              //TODO: cursor
-              onComplete(engine.getCommands(0, defaultCount)) {
-                case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
-                case Failure(ex) => throw ex
-              }
-            } ~
-              post {
-                entity(as[JsonTransform]) {
-                  xform =>
-                    xform.name match {
-                        //TODO: genericize function resolution and invocation
-                      case ("load") => {
-                        val test = Try {
-                          import DomainJsonProtocol._
-                          xform.arguments.get.convertTo[LoadLines[JsObject, String]]
-                        }
-                        val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
-                        (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-                          & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-                          val args = test.get
-                          val id = idOpt.get
-                          onComplete(
-                            for {
-                              frame <- engine.getFrame(id)
-                              (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
-                                skipRows = args.skipRows, lineParser = args.lineParser))
-                            } yield c) {
-                            case Success(c) => complete(decorate(uri +"/" + c.id, c))
-                            case Failure(ex) => throw ex
-                          }
+    std("commands") { implicit principal: UserPrincipal =>
+        pathPrefix("commands" / LongNumber) {
+          id =>
+            pathEnd {
+              requestUri {
+                uri =>
+                  get {
+                    onComplete(engine.getCommand(id)) {
+                      case Success(Some(command)) => {
+                        val decorated = decorate(uri, command)
+                        complete {
+                          decorated
                         }
                       }
-                      case _ => ???
+                      case _ => reject()
                     }
-                }
+                  }
               }
-        }
-      }
+            }
+        } ~
+          (path("commands") & pathEnd) {
+            requestUri {
+              uri =>
+
+                get {
+                  //TODO: cursor
+                  onComplete(engine.getCommands(0, defaultCount)) {
+                    case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
+                    case Failure(ex) => throw ex
+                  }
+                } ~
+                  post {
+                    entity(as[JsonTransform]) {
+                      xform =>
+                        xform.name match {
+                          //TODO: genericize function resolution and invocation
+                          case ("load") => {
+                            val test = Try {
+                              import DomainJsonProtocol._
+                              xform.arguments.get.convertTo[LoadLines[JsObject, String]]
+                            }
+                            val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
+                            (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+                              & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+                              val args = test.get
+                              val id = idOpt.get
+                              onComplete(
+                                for {
+                                  frame <- engine.getFrame(id)
+                                  (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
+                                    skipRows = args.skipRows, lineParser = args.lineParser))
+                                } yield c) {
+                                case Success(c) => complete(decorate(uri + "/" + c.id, c))
+                                case Failure(ex) => throw ex
+                              }
+                            }
+                          }
+                          case _ => ???
+                        }
+                    }
+                  }
+            }
+          }
+    }
   }
 }

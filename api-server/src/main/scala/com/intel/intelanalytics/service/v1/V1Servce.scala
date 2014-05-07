@@ -28,7 +28,7 @@ import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
 import akka.event.Logging
 import spray.json._
-import spray.http.{Uri, StatusCodes, MediaTypes}
+import spray.http.{HttpHeader, Uri, StatusCodes, MediaTypes}
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
@@ -36,9 +36,19 @@ import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.{EngineComponent}
 import scala.util._
-import scala.concurrent.ExecutionContext
+import scala.concurrent._
 import spray.util.LoggingContext
 import com.typesafe.config.ConfigFactory
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.User
+import scala.util.Success
+import com.intel.intelanalytics.security.UserPrincipal
+import scala.util.Failure
+import PartialFunction._
+import spray.routing.authentication.BasicAuth
+import shapeless._
+import spray.routing._
+import Directives._
 
 //TODO: Is this right execution context for us?
 
@@ -53,6 +63,7 @@ import scala.util.Success
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
+import scala.concurrent.duration._
 
 trait V1Service extends Directives with EventLoggingDirectives {
   this: V1Service
@@ -61,6 +72,7 @@ trait V1Service extends Directives with EventLoggingDirectives {
 
   val config = ConfigFactory.load()
   val defaultCount = config.getInt("intel.analytics.api.defaultCount")
+  val defaultTimeout: FiniteDuration = config.getInt("intel.analytics.api.defaultTimeout") seconds
 
   //TODO: internationalization
 
@@ -83,11 +95,26 @@ trait V1Service extends Directives with EventLoggingDirectives {
     }
   }
 
-  def std(eventCtx: String) = {
+  def getUserPrincipalFromHeader(header: HttpHeader): Option[UserPrincipal] =
+    condOpt(header) {
+      case h if h.is("authorization") => Await.result(getUserPrincipal(h.value), defaultTimeout)
+    }
+
+  def authenticateKey : Directive1[UserPrincipal] =
+  //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
+    optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
+      case Some(p) => provide(p)
+      case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
+    }
+
+
+  def std(eventCtx: String) : Directive1[UserPrincipal] = {
     eventContext(eventCtx) &
       handleExceptions(errorHandler) &
-      logResponse(eventCtx, Logging.InfoLevel)
+      logResponse(eventCtx, Logging.InfoLevel) &
+      authenticateKey
   }
+
   import ViewModelJsonProtocol._
 
 
@@ -145,5 +172,26 @@ trait V1Service extends Directives with EventLoggingDirectives {
   def getFrameId(url: String): Option[Long] = {
     val id = frameIdRegex.findFirstMatchIn(url).map(m => m.group(1))
     id.map(s => s.toLong)
+  }
+
+  def getUserPrincipal(apiKey: String) : Future[UserPrincipal] = {
+    future {
+      metaStore.withSession("Getting user principal") { implicit session =>
+        val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
+        users match {
+          case Nil => {
+            import DomainJsonProtocol._
+            metaStore.userRepo.scan().foreach(u => info(u.toJson.prettyPrint))
+            throw new SecurityException("User not found")
+          }
+          case users if users.length > 1 => throw new SecurityException("Problem accessing user credentials")
+          case user => {
+            val userPrincipal:UserPrincipal = new UserPrincipal(users(0), List("user"))//TODO need role definitions
+            info("Authenticated user " + userPrincipal)
+            userPrincipal
+          }
+        }
+      }
+    }
   }
 }
