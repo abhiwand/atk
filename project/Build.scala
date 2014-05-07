@@ -44,10 +44,10 @@ object IABuild extends Build {
                     //.settings(oneLogSettings: _*)
                     .dependsOn (interfaces, event, shared)
 
-  lazy val graphbuilder = Project(id = "graphbuilder", base = file("graphbuilder-3"))
+  lazy val graphbuilder = Project(id = "graphbuilder-3", base = file("graphbuilder-3"))
                     .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*) dependsOn (isparkdeps)
 
-  lazy val isparkdeps = Project(id = "isparkdeps", base = file("ispark-deps"))
+  lazy val isparkdeps = Project(id = "ispark-deps", base = file("ispark-deps"))
                     .settings(net.virtualvoid.sbt.graph.Plugin.graphSettings: _*)
 
   lazy val event = Project(id = "event", base = file("event"))
