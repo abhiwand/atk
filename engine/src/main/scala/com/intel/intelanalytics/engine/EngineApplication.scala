@@ -45,7 +45,10 @@ class EngineApplication extends Archive with EventLogging {
     }
   }
 
-  def stop() = {}
+  def stop() = {
+    info("Shutting down engine")
+    engine.engine.shutdown
+  }
 
   def start(configuration: Map[String, String]) = {
 

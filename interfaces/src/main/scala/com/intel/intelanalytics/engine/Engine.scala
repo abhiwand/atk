@@ -36,6 +36,7 @@ import com.intel.intelanalytics.domain.Schema
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import spray.json.JsObject
 import scala.util.Try
+import com.intel.intelanalytics.security.UserPrincipal
 
 object Rows {
   type Row = Array[Any] //TODO: Can we constrain this better?
@@ -82,7 +83,7 @@ trait FrameComponent {
     def removeColumn(frame: DataFrame): Unit
     def removeRows(frame: DataFrame, predicate: Row => Boolean)
     def appendRows(startWith: DataFrame, append: Iterable[Row])
-    def getRows(frame: DataFrame, offset: Long, count: Int) : Iterable[Row]
+    def getRows(frame: DataFrame, offset: Long, count: Int) (implicit user: UserPrincipal) : Iterable[Row]
     def drop(frame: DataFrame)
   }
 
@@ -135,14 +136,15 @@ trait EngineComponent {
     def getCommands(offset: Int, count: Int): Future[Seq[Command]]
     def getCommand(id: Identifier): Future[Option[Command]]
     def getFrame(id: Identifier) : Future[Option[DataFrame]]
-    def getRows(id: Identifier, offset: Long, count: Int) : Future[Iterable[Row]]
+    def getRows(id: Identifier, offset: Long, count: Int) (implicit user: UserPrincipal): Future[Iterable[Row]]
     def create(frame: DataFrameTemplate): Future[DataFrame]
     def clear(frame: DataFrame) : Future[DataFrame]
-    def load(arguments: LoadLines[JsObject,Long]) : (Command, Future[Command])
-    def filter(frame: DataFrame, predicate: Partial[Any]): Future[DataFrame]
+    def load(arguments: LoadLines[JsObject,Long]) (implicit user: UserPrincipal) : (Command, Future[Command])
+    def filter(frame: DataFrame, predicate: Partial[Any]) (implicit user: UserPrincipal): Future[DataFrame]
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
-    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]]
+    def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+    def shutdown: Unit
   }
 }
 

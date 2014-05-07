@@ -44,6 +44,8 @@ import scala.util.Success
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
+import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.security.UserPrincipal
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
@@ -51,7 +53,8 @@ import ExecutionContext.Implicits.global
 trait V1DataFrameService extends V1Service {
   this: V1Service
     with MetaStoreComponent
-    with EngineComponent =>
+    with EngineComponent
+    with EventLogging =>
 
   def frameRoutes() = {
     import ViewModelJsonProtocol._
@@ -69,8 +72,8 @@ trait V1DataFrameService extends V1Service {
     //using futures, but they keep the client on the phone the whole time while they're waiting
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
-    std(prefix) {
-      (path(prefix) & pathEnd) {
+    std(prefix) { implicit p: UserPrincipal =>
+       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
             //TODO: cursor
