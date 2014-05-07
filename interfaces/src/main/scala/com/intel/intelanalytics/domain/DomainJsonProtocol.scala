@@ -26,20 +26,8 @@ package com.intel.intelanalytics.domain
 import com.intel.intelanalytics.domain.DataTypes.DataType
 import spray.json._
 import com.intel.intelanalytics.domain.graphconstruction._
-import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.domain.Graph
-import com.intel.intelanalytics.domain.Operation
-import com.intel.intelanalytics.domain.SeparatorArgs
-import com.intel.intelanalytics.domain.User
 import com.intel.intelanalytics.domain.graphconstruction.Value
 import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
-import com.intel.intelanalytics.domain.Definition
-import com.intel.intelanalytics.domain.Error
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Schema
-import com.intel.intelanalytics.domain.GraphTemplate
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
 import com.intel.intelanalytics.domain.graphconstruction.Property
 
