@@ -74,6 +74,7 @@ object ServiceHost {
             with V1GraphService
             with EngineComponent {
 
+
     ///TODO: choose database profile driver class from config
     override lazy val profile = {
       lazy val config = ConfigFactory.load()

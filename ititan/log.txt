@@ -1,0 +1,309 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] Titan: Distributed Graph Database
+[INFO] Titan-Core: Core Library for Titan
+[INFO] Titan-Test: Test Suite for Titan
+[INFO] Titan-ElasticSearch: Distributed Indexing Support
+[INFO] Titan-BerkeleyJE: Distributed Graph Database
+[INFO] Titan-Cassandra: Distributed Graph Database
+[INFO] Titan-HBase: Distributed Graph Database
+[INFO] Titan-Lucene: Indexing Support
+[INFO] Titan-Persistit: Distributed Graph Database
+[INFO] Titan-Rexster: Support for Titan in Rexster
+[INFO] Titan-All: Complete Titan Distribution
+[INFO] Titan-Site: Static Webpages and Docs
+[INFO] Titan-Dist: Supermodule for Tar and Zip Archives
+[INFO] Titan-Dist-All: Archives with Every Backend
+[INFO] Titan-Dist-BerkeleyJE: Archives with BerkeleyDB JE
+[INFO] Titan-Dist-Cassandra: Archives with Cassandra
+[INFO] Titan-Dist-HBase: Archives with HBase
+[INFO] Titan-Dist-Persistit: Archives with Persistit
+[INFO] Titan-Dist-Server: Archives with Rexster
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Titan: Distributed Graph Database 0.4.5-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ titan ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-maven) @ titan ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-dependency-convergence) @ titan ---
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ titan ---
+[INFO] Installing /home/ec2-user/titan-cdh/pom.xml to /home/ec2-user/.m2/com/thinkaurelius/titan/titan/0.4.5-SNAPSHOT/titan-0.4.5-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Titan-Core: Core Library for Titan 0.4.5-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ titan-core ---
+[INFO] Deleting /home/ec2-user/titan-cdh/titan-core/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-maven) @ titan-core ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-dependency-convergence) @ titan-core ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ titan-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 2 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:compile (default-compile) @ titan-core ---
+[INFO] Compiling 338 source files to /home/ec2-user/titan-cdh/titan-core/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ titan-core ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/ec2-user/titan-cdh/titan-core/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:testCompile (default-testCompile) @ titan-core ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.15:test (default-test) @ titan-core ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ titan-core ---
+[INFO] Building jar: /home/ec2-user/titan-cdh/titan-core/target/titan-core-0.4.5-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ titan-core ---
+[INFO] Installing /home/ec2-user/titan-cdh/titan-core/target/titan-core-0.4.5-SNAPSHOT.jar to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-core/0.4.5-SNAPSHOT/titan-core-0.4.5-SNAPSHOT.jar
+[INFO] Installing /home/ec2-user/titan-cdh/titan-core/pom.xml to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-core/0.4.5-SNAPSHOT/titan-core-0.4.5-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Titan-Test: Test Suite for Titan 0.4.5-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ titan-test ---
+[INFO] Deleting /home/ec2-user/titan-cdh/titan-test/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-maven) @ titan-test ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-dependency-convergence) @ titan-test ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ titan-test ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/ec2-user/titan-cdh/titan-test/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:compile (default-compile) @ titan-test ---
+[INFO] Compiling 57 source files to /home/ec2-user/titan-cdh/titan-test/target/classes
+[INFO] 
+[INFO] --- gmaven-plugin:1.5:compile (groovy-compile) @ titan-test ---
+[INFO] Compiled 17 Groovy classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ titan-test ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 2 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:testCompile (default-testCompile) @ titan-test ---
+[INFO] Compiling 34 source files to /home/ec2-user/titan-cdh/titan-test/target/test-classes
+[INFO] 
+[INFO] --- gmaven-plugin:1.5:testCompile (groovy-testCompile) @ titan-test ---
+[INFO] No sources found to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.15:test (default-test) @ titan-test ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ titan-test ---
+[INFO] Building jar: /home/ec2-user/titan-cdh/titan-test/target/titan-test-0.4.5-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ titan-test ---
+[INFO] Installing /home/ec2-user/titan-cdh/titan-test/target/titan-test-0.4.5-SNAPSHOT.jar to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-test/0.4.5-SNAPSHOT/titan-test-0.4.5-SNAPSHOT.jar
+[INFO] Installing /home/ec2-user/titan-cdh/titan-test/pom.xml to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-test/0.4.5-SNAPSHOT/titan-test-0.4.5-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Titan-ElasticSearch: Distributed Indexing Support 0.4.5-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ titan-es ---
+[INFO] Deleting /home/ec2-user/titan-cdh/titan-es/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-maven) @ titan-es ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-dependency-convergence) @ titan-es ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ titan-es ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:compile (default-compile) @ titan-es ---
+[INFO] Compiling 2 source files to /home/ec2-user/titan-cdh/titan-es/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ titan-es ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:testCompile (default-testCompile) @ titan-es ---
+[INFO] Compiling 1 source file to /home/ec2-user/titan-cdh/titan-es/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.15:test (default-test) @ titan-es ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ titan-es ---
+[INFO] Building jar: /home/ec2-user/titan-cdh/titan-es/target/titan-es-0.4.5-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ titan-es ---
+[INFO] Installing /home/ec2-user/titan-cdh/titan-es/target/titan-es-0.4.5-SNAPSHOT.jar to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-es/0.4.5-SNAPSHOT/titan-es-0.4.5-SNAPSHOT.jar
+[INFO] Installing /home/ec2-user/titan-cdh/titan-es/pom.xml to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-es/0.4.5-SNAPSHOT/titan-es-0.4.5-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Titan-BerkeleyJE: Distributed Graph Database 0.4.5-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ titan-berkeleyje ---
+[INFO] Deleting /home/ec2-user/titan-cdh/titan-berkeleyje/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-maven) @ titan-berkeleyje ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-dependency-convergence) @ titan-berkeleyje ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ titan-berkeleyje ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/ec2-user/titan-cdh/titan-berkeleyje/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:compile (default-compile) @ titan-berkeleyje ---
+[INFO] Compiling 3 source files to /home/ec2-user/titan-cdh/titan-berkeleyje/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ titan-berkeleyje ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 2 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:testCompile (default-testCompile) @ titan-berkeleyje ---
+[INFO] Compiling 11 source files to /home/ec2-user/titan-cdh/titan-berkeleyje/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.15:test (default-test) @ titan-berkeleyje ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ titan-berkeleyje ---
+[INFO] Building jar: /home/ec2-user/titan-cdh/titan-berkeleyje/target/titan-berkeleyje-0.4.5-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ titan-berkeleyje ---
+[INFO] Installing /home/ec2-user/titan-cdh/titan-berkeleyje/target/titan-berkeleyje-0.4.5-SNAPSHOT.jar to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-berkeleyje/0.4.5-SNAPSHOT/titan-berkeleyje-0.4.5-SNAPSHOT.jar
+[INFO] Installing /home/ec2-user/titan-cdh/titan-berkeleyje/pom.xml to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-berkeleyje/0.4.5-SNAPSHOT/titan-berkeleyje-0.4.5-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Titan-Cassandra: Distributed Graph Database 0.4.5-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ titan-cassandra ---
+[INFO] Deleting /home/ec2-user/titan-cdh/titan-cassandra/target
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-maven) @ titan-cassandra ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-dependency-convergence) @ titan-cassandra ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ titan-cassandra ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/ec2-user/titan-cdh/titan-cassandra/src/main/resources
+[INFO] 
+[INFO] --- maven-dependency-plugin:2.8:copy (copy) @ titan-cassandra ---
+[INFO] Configured Artifact: com.github.stephenc:jamm:0.2.5:jar
+[INFO] Copying jamm-0.2.5.jar to /home/ec2-user/titan-cdh/titan-cassandra/target/jamm-0.2.5.jar
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:compile (default-compile) @ titan-cassandra ---
+[INFO] Compiling 15 source files to /home/ec2-user/titan-cdh/titan-cassandra/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ titan-cassandra ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 2 resources
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:copy-resources (filter-cassandra-bop-config) @ titan-cassandra ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 6 resources
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:copy-resources (filter-cassandra-rp-config) @ titan-cassandra ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 6 resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:2.5.1:testCompile (default-testCompile) @ titan-cassandra ---
+[INFO] Compiling 33 source files to /home/ec2-user/titan-cdh/titan-cassandra/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.15:test (bop-test) @ titan-cassandra ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.15:test (rp-test) @ titan-cassandra ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.15:test (serial-test) @ titan-cassandra ---
+[INFO] Tests are skipped.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ titan-cassandra ---
+[INFO] Building jar: /home/ec2-user/titan-cdh/titan-cassandra/target/titan-cassandra-0.4.5-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-install-plugin:2.4:install (default-install) @ titan-cassandra ---
+[INFO] Installing /home/ec2-user/titan-cdh/titan-cassandra/target/titan-cassandra-0.4.5-SNAPSHOT.jar to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-cassandra/0.4.5-SNAPSHOT/titan-cassandra-0.4.5-SNAPSHOT.jar
+[INFO] Installing /home/ec2-user/titan-cdh/titan-cassandra/pom.xml to /home/ec2-user/.m2/com/thinkaurelius/titan/titan-cassandra/0.4.5-SNAPSHOT/titan-cassandra-0.4.5-SNAPSHOT.pom
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Titan-HBase: Distributed Graph Database 0.4.5-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ titan-hbase ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-maven) @ titan-hbase ---
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.3.1:enforce (enforce-dependency-convergence) @ titan-hbase ---
+[WARNING] 
+Dependency convergence error for org.mortbay.jetty:jetty-util:6.1.26 paths to dependency are:
++-com.thinkaurelius.titan:titan-hbase:0.4.5-SNAPSHOT
+  +-org.apache.hbase:hbase-client:0.96.1.1-cdh5.0.0
+    +-org.cloudera.htrace:htrace-core:2.01
+      +-org.mortbay.jetty:jetty-util:6.1.26
+and
++-com.thinkaurelius.titan:titan-hbase:0.4.5-SNAPSHOT
+  +-org.apache.hbase:hbase-common:0.96.1.1-cdh5.0.0
+    +-org.apache.hadoop:hadoop-core:2.3.0-mr1-cdh5.0.0
+      +-org.mortbay.jetty:jetty-util:6.1.26.cloudera.2
+
+[WARNING] Rule 0: org.apache.maven.plugins.enforcer.DependencyConvergence failed with message:
+Failed while enforcing releasability the error(s) are [
+Dependency convergence error for org.mortbay.jetty:jetty-util:6.1.26 paths to dependency are:
++-com.thinkaurelius.titan:titan-hbase:0.4.5-SNAPSHOT
+  +-org.apache.hbase:hbase-client:0.96.1.1-cdh5.0.0
+    +-org.cloudera.htrace:htrace-core:2.01
+      +-org.mortbay.jetty:jetty-util:6.1.26
+and
++-com.thinkaurelius.titan:titan-hbase:0.4.5-SNAPSHOT
+  +-org.apache.hbase:hbase-common:0.96.1.1-cdh5.0.0
+    +-org.apache.hadoop:hadoop-core:2.3.0-mr1-cdh5.0.0
+      +-org.mortbay.jetty:jetty-util:6.1.26.cloudera.2
+]
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] Titan: Distributed Graph Database ................. SUCCESS [0.630s]
+[INFO] Titan-Core: Core Library for Titan ................ SUCCESS [7.069s]
+[INFO] Titan-Test: Test Suite for Titan .................. SUCCESS [3.094s]
+[INFO] Titan-ElasticSearch: Distributed Indexing Support . SUCCESS [0.656s]
+[INFO] Titan-BerkeleyJE: Distributed Graph Database ...... SUCCESS [0.582s]
+[INFO] Titan-Cassandra: Distributed Graph Database ....... SUCCESS [1.591s]
+[INFO] Titan-HBase: Distributed Graph Database ........... FAILURE [1.580s]
+[INFO] Titan-Lucene: Indexing Support .................... SKIPPED
+[INFO] Titan-Persistit: Distributed Graph Database ....... SKIPPED
+[INFO] Titan-Rexster: Support for Titan in Rexster ....... SKIPPED
+[INFO] Titan-All: Complete Titan Distribution ............ SKIPPED
+[INFO] Titan-Site: Static Webpages and Docs .............. SKIPPED
+[INFO] Titan-Dist: Supermodule for Tar and Zip Archives .. SKIPPED
+[INFO] Titan-Dist-All: Archives with Every Backend ....... SKIPPED
+[INFO] Titan-Dist-BerkeleyJE: Archives with BerkeleyDB JE  SKIPPED
+[INFO] Titan-Dist-Cassandra: Archives with Cassandra ..... SKIPPED
+[INFO] Titan-Dist-HBase: Archives with HBase ............. SKIPPED
+[INFO] Titan-Dist-Persistit: Archives with Persistit ..... SKIPPED
+[INFO] Titan-Dist-Server: Archives with Rexster .......... SKIPPED
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 16.322s
+[INFO] Finished at: Sun Apr 27 17:43:02 EDT 2014
+[INFO] Final Memory: 54M/1305M
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-enforcer-plugin:1.3.1:enforce (enforce-dependency-convergence) on project titan-hbase: Some Enforcer rules have failed. Look above for specific messages explaining why the rule failed. -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <goals> -rf :titan-hbase
