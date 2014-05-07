@@ -2,10 +2,11 @@
 resolvers ++= Seq(
   Resolver.typesafeRepo("releases"),
   Resolver.sonatypeRepo("releases"),
-  Classpaths.sbtPluginReleases
+  Classpaths.sbtPluginReleases,
+  DefaultMavenRepository
 )
 
-// Generate IntelliJ project files. I didn't have good luck with this --Todd
+// Generate IntelliJ project files.
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.6.0")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")
