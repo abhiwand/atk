@@ -29,6 +29,13 @@ import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.{Graph, DataFrame}
+import com.intel.intelanalytics.service.v1.viewmodels._
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.service.v1.viewmodels.GraphHeader
+import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.service.v1.viewmodels.RelLink
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 
 trait EntityDecorator[Entity, Index, Decorated] {
@@ -67,3 +74,17 @@ object CommandDecorator extends EntityDecorator[Command, CommandHeader, Decorate
   }
 }
 
+object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph] {
+  override def decorateEntity(uri: String,
+                              links: Iterable[RelLink],
+                              entity: Graph): DecoratedGraph = {
+    DecoratedGraph(id = entity.id, name = entity.name, links = links.toList)
+  }
+
+  override def decorateForIndex(uri: String, entities: Seq[Graph]): List[GraphHeader] = {
+    entities.map(graph => new GraphHeader(id = graph.id,
+      name = graph.name,
+      url = uri + "/" + graph.id)).toList
+  }
+
+}

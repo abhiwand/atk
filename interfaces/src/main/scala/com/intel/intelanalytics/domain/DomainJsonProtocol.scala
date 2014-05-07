@@ -25,6 +25,23 @@ package com.intel.intelanalytics.domain
 
 import com.intel.intelanalytics.domain.DataTypes.DataType
 import spray.json._
+import com.intel.intelanalytics.domain.graphconstruction._
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.Operation
+import com.intel.intelanalytics.domain.SeparatorArgs
+import com.intel.intelanalytics.domain.User
+import com.intel.intelanalytics.domain.graphconstruction.Value
+import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
+import com.intel.intelanalytics.domain.Definition
+import com.intel.intelanalytics.domain.Error
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
+import com.intel.intelanalytics.domain.graphconstruction.Property
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
@@ -51,6 +68,19 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject,Long])
   implicit val errorFormat = jsonFormat5(Error)
   implicit val userFormat = jsonFormat2(User)
+
+
+  // graph
+
+  implicit val outputConfigurationFormat = jsonFormat2(OutputConfiguration)
+
+  implicit val valueFormat = jsonFormat2(Value)
+  implicit val propertyFormat = jsonFormat2(Property)
+  implicit val edgeRuleFormat = jsonFormat4(EdgeRule)
+  implicit val vertexRuleFormat = jsonFormat2(VertexRule)
+
+  implicit val graphTemplateFormat = jsonFormat7(GraphTemplate)
+  implicit val graphFormat = jsonFormat2(Graph)
 
   implicit object DataTypeJsonFormat extends JsonFormat[Any] {
     override def write(obj: Any): JsValue = {

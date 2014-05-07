@@ -35,6 +35,8 @@ import com.intel.event.adapter.SLF4JLogAdapter
 import com.intel.intelanalytics.component.{Archive}
 import com.intel.intelanalytics.repository.{MetaStoreComponent, DbProfileComponent, SlickMetaStoreComponent}
 import com.intel.intelanalytics.service.v1.{V1CommandService, V1DataFrameService, ApiV1Service}
+import com.intel.intelanalytics.repository.{DbProfileComponent, SlickMetaStoreComponent}
+import com.intel.intelanalytics.service.v1.{V1GraphService, V1DataFrameService, ApiV1Service}
 import com.intel.intelanalytics.engine.EngineComponent
 import com.typesafe.config.{Config, ConfigFactory}
 import com.intel.intelanalytics.domain.{UserTemplate, User}
@@ -69,6 +71,7 @@ object ServiceHost {
             with DbProfileComponent
             with V1DataFrameService
             with V1CommandService
+            with V1GraphService
             with EngineComponent {
 
     ///TODO: choose database profile driver class from config

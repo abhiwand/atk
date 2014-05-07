@@ -33,6 +33,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.{User, DataFrameTemplate, DataFrame}
+import com.intel.intelanalytics.domain.{GraphTemplate, Graph, DataFrameTemplate, DataFrame}
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.Paths
@@ -170,79 +171,82 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def withCommand[T](command: Command) (block: =>T) = {
-      commands.complete(command.id, Try{block})
-    }
+      def withCommand[T](command: Command)(block: => T) = {
+        commands.complete(command.id, Try {
+          block
+        })
+      }
 
-    def load(arguments: LoadLines[JsObject, Long]) (implicit user: UserPrincipal): (Command, Future[Command]) =
-      withContext("se.load") {
-        require(arguments != null, "arguments are required")
-        import DomainJsonProtocol._
-        val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
-        val result: Future[Command] = future {
-          withMyClassLoader {
-            withContext("se.load.future") {
-              withCommand(command) {
-                val realFrame = frames.lookup(arguments.destination).getOrElse(
-                  throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
-                val frameId = arguments.destination
-                val parserFunction = getLineParser(arguments.lineParser)
-                val location = fsRoot + frames.getFrameDataFile(frameId)
-                val schema = realFrame.schema
-                val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-                val ctx = context(user)
-                SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+      def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+        withContext("se.load") {
+          require(arguments != null, "arguments are required")
+          import DomainJsonProtocol._
+          val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
+          val result: Future[Command] = future {
+            withMyClassLoader {
+              withContext("se.load.future") {
+                withCommand(command) {
+                  val realFrame = frames.lookup(arguments.destination).getOrElse(
+                    throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
+                  val frameId = arguments.destination
+                  val parserFunction = getLineParser(arguments.lineParser)
+                  val location = fsRoot + frames.getFrameDataFile(frameId)
+                  val schema = realFrame.schema
+                  val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+                  val ctx = context(user)
+                  SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+                }
+                commands.lookup(command.id).get
               }
-              commands.lookup(command.id).get
             }
           }
+          (command, result)
         }
-        (command, result)
+
+      def clear(frame: DataFrame): Future[DataFrame] = withContext("se.clear") {
+        ???
       }
 
-    def clear(frame: DataFrame): Future[DataFrame] = withContext("se.clear") {
-      ???
-    }
-
-    def create(frame: DataFrameTemplate): Future[DataFrame] = withContext("se.create") {
-      future {
-        frames.create(frame)
-      }
-    }
-
-    def delete(frame: DataFrame): Future[Unit] = withContext("se.delete") {
-      future {
-        frames.drop(frame)
-      }
-    }
-
-    def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
-      future {
-        frames.getFrames(offset, count)
-      }
-    }
-
-    def filter(frame: DataFrame, predicate: Partial[Any]) (implicit user: UserPrincipal): Future[DataFrame] =
-      withContext("se.filter") {
+      def create(frame: DataFrameTemplate): Future[DataFrame] = withContext("se.create") {
         future {
-          val ctx = context(user).sparkContext //TODO: resource management
-          val rdd = frames.getFrameRdd(ctx, frame.id)
-          val command = getPyCommand(predicate)
-          val pythonExec = "python" //TODO: take from env var or config
-          val environment = System.getenv() //TODO - should be empty instead?
-          //        val pyRdd = new EnginePythonRDD[Array[Byte]](
-          //            rdd, command = command, System.getenv(),
-          //            new JArrayList, preservePartitioning = true,
-          //            pythonExec = pythonExec,
-          //            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-          //            accumulator = new Accumulator[JList[Array[Byte]]](
-          //              initialValue = new JArrayList[Array[Byte]](),
-          //              param = null)
-          //          )
-          //        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
-          frame
+          frames.create(frame)
         }
       }
+
+      def delete(frame: DataFrame): Future[Unit] = withContext("se.delete") {
+        future {
+          frames.drop(frame)
+        }
+      }
+
+      def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
+        future {
+          frames.getFrames(offset, count)
+        }
+      }
+
+      def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame] =
+        withContext("se.filter") {
+          future {
+            val ctx = context(user).sparkContext //TODO: resource management
+            val rdd = frames.getFrameRdd(ctx, frame.id)
+            val command = getPyCommand(predicate)
+            val pythonExec = "python" //TODO: take from env var or config
+            val environment = System.getenv() //TODO - should be empty instead?
+            //        val pyRdd = new EnginePythonRDD[Array[Byte]](
+            //            rdd, command = command, System.getenv(),
+            //            new JArrayList, preservePartitioning = true,
+            //            pythonExec = pythonExec,
+            //            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
+            //            accumulator = new Accumulator[JList[Array[Byte]]](
+            //              initialValue = new JArrayList[Array[Byte]](),
+            //              param = null)
+            //          )
+            //        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
+            frame
+          }
+        }
+
 
     def getRows(id: Identifier, offset: Long, count: Int) (implicit user: UserPrincipal) = withContext("se.getRows") {
       future {
@@ -260,6 +264,29 @@ class SparkComponent extends EngineComponent
       }
 
 
+    def createGraph(graph: GraphTemplate): Future[Graph] = {
+      future {
+        graphs.createGraph(graph)
+      }
+    }
+
+    def getGraph(id: SparkComponent.this.Identifier) : Future[Graph] = {
+      future {
+        graphs.lookup(id).get
+      }
+    }
+
+    def getGraphs(offset: Int, count: Int) : Future[Seq[Graph]] = {
+      future {
+        graphs.getGraphs(offset, count)
+      }
+    }
+
+    def deleteGraph(graph: Graph) : Future[Unit]  = {
+      future {
+        graphs.drop(graph)
+      }
+    }
   }
 
   val files = new HdfsFileStorage {}
@@ -488,20 +515,22 @@ class SparkComponent extends EngineComponent
     val repo = metaStore.commandRepo
 
     override def lookup(id: Long): Option[Command] =
-      metaStore.withSession("se.command.lookup") { implicit session =>
-      repo.lookup(id)
-    }
+      metaStore.withSession("se.command.lookup") {
+        implicit session =>
+          repo.lookup(id)
+      }
 
     override def create(createReq: CommandTemplate): Command =
-      metaStore.withSession("se.command.create") { implicit session =>
+      metaStore.withSession("se.command.create") {
+        implicit session =>
 
-      val created = repo.insert(createReq)
-      repo.lookup(created.get.id).getOrElse(throw new Exception("Command not found immediately after creation"))
-    }
+          val created = repo.insert(createReq)
+          repo.lookup(created.get.id).getOrElse(throw new Exception("Command not found immediately after creation"))
+      }
 
     override def scan(offset: Int, count: Int): Seq[Command] = metaStore.withSession("se.command.getCommands") {
       implicit session =>
-      repo.scan(offset, count)
+        repo.scan(offset, count)
     }
 
     override def start(id: Long): Unit = {
@@ -511,18 +540,53 @@ class SparkComponent extends EngineComponent
     override def complete(id: Long, result: Try[Unit]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
-      metaStore.withSession("se.command.complete") { implicit session =>
-        val command = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Command $id not found"))
-        if (command.complete) {
-          warn(s"Ignoring completion attempt for command $id, already completed")
-        }
-        //TODO: Update dates
-        val changed = result match {
-          case Failure(ex) => command.copy(complete = true, error = Some(ex : Error))
-          case Success(_) => command.copy(complete = true)
-        }
-        repo.update(changed)
+      metaStore.withSession("se.command.complete") {
+        implicit session =>
+          val command = repo.lookup(id).getOrElse(throw new IllegalArgumentException(s"Command $id not found"))
+          if (command.complete) {
+            warn(s"Ignoring completion attempt for command $id, already completed")
+          }
+          //TODO: Update dates
+          val changed = result match {
+            case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
+            case Success(_) => command.copy(complete = true)
+          }
+          repo.update(changed)
       }
+    }
+  }
+
+  val graphs = new SparkGraphStorage {}
+
+  trait SparkGraphStorage extends GraphStorage {
+
+    import spray.json._
+
+    import com.intel.intelanalytics.domain.DomainJsonProtocol._
+    //
+    // we can't actually use graph builder right now without breaking the build
+    // import com.intel.graphbuilder.driver.spark.titan.examples
+
+    override def drop(graph: Graph): Unit = {
+      println("DROPPING GRAPH: " + graph.name)
+      Unit
+    }
+
+
+    override def createGraph(graph: GraphTemplate): Graph = {
+      println("CREATING GRAPH " + graph.name)
+      new Graph(1, graph.name)
+    }
+
+
+    override def lookup(id: Long): Option[Graph] = {
+      println("DELETING GRAPH " + id)
+      None
+    }
+
+    def getGraphs(offset: Int, count: Int): Seq[Graph] = {
+      println("LISTING " + count + " GRAPHS FROM " + offset)
+      List[Graph]()
     }
   }
 }
