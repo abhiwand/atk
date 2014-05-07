@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.schema
 
-import com.intel.graphbuilder.elements.{Property, Vertex, Edge}
+import com.intel.graphbuilder.elements.{ Property, Vertex, Edge }
 import scala.collection.mutable.Map
 
 /**
