@@ -72,8 +72,13 @@ class FrameBackendREST(object):
                 self.append(frame, d)
             return
 
+<<<<<<< HEAD
         payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': 1}}
         r = self.rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
+=======
+        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': data.skip_header_lines}}
+        r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
+>>>>>>> sprint_12
         logger.info("Response from REST server {0}".format(r.text))
 
         if isinstance(data, CsvFile):
