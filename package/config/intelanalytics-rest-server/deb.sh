@@ -13,8 +13,9 @@ log "package name: $packageName, tar file: $tarFile, version: $version, script p
 log "copy tar.gz and rename for packaing"
 expandTarDeb
 
-BUILD_DEPENDS="$BUILD_DEPENS, javahelper (>=0.25)"
-DEPENDS="\${java:Depends}"
+BUILD_DEPENDS="$BUILD_DEPENS"
+#DEPENDS="\${java:Depends}"
+DEPENDS="openjdk-7-jdk"
 RECOMMENDS="\${java:Recommends}"
 SOURCE=$packageName
 SUMMARY="zombies "
@@ -38,8 +39,9 @@ debInstall > $SCRIPTPATH/$debDir/debian/$packageName.install
 log "create copyright file"
 debCopyright >  $SCRIPTPATH/$debDir/debian/copyright
 
-RULESSETUP="JAVA_HOME=/usr/lib/jvm/default-java"
-RULEOPT="--with javahelper"
+RULESSETUP="JAVA_HOME=/usr/lib/jvm/default-java
+JH_DEPENDS_ARGS=-vn"
+#RULEOPT="--with javahelper  "
 log "create rules file"
 debRules > $SCRIPTPATH/$debDir/debian/rules
 chmod +x $SCRIPTPATH/$debDir/debian/rules
