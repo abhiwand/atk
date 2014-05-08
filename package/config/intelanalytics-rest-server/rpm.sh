@@ -13,6 +13,7 @@ version=$3
 log "package name: $packageName, tar file: $tarFile, version: $version, script path: $SCRIPTPATH"
 
 log "copy and rename: $tarFile"
+mkdir -p $SCRIPTPATH/rpm/SOURCES
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
@@ -20,6 +21,7 @@ DESCRIPTION=$SUMMARY
 
 REQUIRES=" java >= 1.7"
 
+mkdir -p $SCRIPTPATH/rpm/SPECS
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
 topDir="$SCRIPTPATH/rpm"
