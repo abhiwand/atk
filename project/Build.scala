@@ -8,7 +8,7 @@ import scalariform.formatter.preferences._
 object IABuild extends Build {
 
   val commonSettings =
-    net.virtualvoid.sbt.graph.Plugin.graphSettings ++
+      net.virtualvoid.sbt.graph.Plugin.graphSettings ++
       org.scalastyle.sbt.ScalastylePlugin.Settings ++
       scalariformSettings ++
       //oneLogSettings

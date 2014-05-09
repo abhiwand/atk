@@ -26,3 +26,4 @@ libraryDependencies := {
   )
 }
 
+ScoverageSbtPlugin.instrumentSettings
