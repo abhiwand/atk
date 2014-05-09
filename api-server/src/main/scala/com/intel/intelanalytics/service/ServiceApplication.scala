@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ ActorSystem, Props }
 import akka.io.IO
 import spray.can.Http
 import akka.pattern.ask
@@ -32,33 +32,32 @@ import scala.concurrent.duration._
 import scala.slick.driver.H2Driver
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{Archive}
-import com.intel.intelanalytics.repository.{MetaStoreComponent, DbProfileComponent, SlickMetaStoreComponent}
-import com.intel.intelanalytics.service.v1.{V1CommandService, V1DataFrameService, ApiV1Service}
-import com.intel.intelanalytics.repository.{DbProfileComponent, SlickMetaStoreComponent}
-import com.intel.intelanalytics.service.v1.{V1GraphService, V1DataFrameService, ApiV1Service}
+import com.intel.intelanalytics.component.{ Archive }
+import com.intel.intelanalytics.repository.{ MetaStoreComponent, DbProfileComponent, SlickMetaStoreComponent }
+import com.intel.intelanalytics.service.v1.{ V1CommandService, V1DataFrameService, ApiV1Service }
+import com.intel.intelanalytics.repository.{ DbProfileComponent, SlickMetaStoreComponent }
+import com.intel.intelanalytics.service.v1.{ V1GraphService, V1DataFrameService, ApiV1Service }
 import com.intel.intelanalytics.engine.EngineComponent
-import com.typesafe.config.{Config, ConfigFactory}
-import com.intel.intelanalytics.domain.{UserTemplate, User}
+import com.typesafe.config.{ Config, ConfigFactory }
+import com.intel.intelanalytics.domain.{ UserTemplate, User }
 import com.intel.intelanalytics.shared.EventLogging
 import scala.concurrent.Await
 
 class ServiceApplication extends Archive {
 
-  def get[T](descriptor: String) : T = {
+  def get[T](descriptor: String): T = {
     throw new IllegalArgumentException("This component provides no services")
   }
 
   def stop() = {}
 
-  def start(configuration: Map[String,String]) = {
+  def start(configuration: Map[String, String]) = {
     val config = ConfigFactory.load()
 
     ServiceHost.start(config)
 
   }
 }
-
 
 object ServiceHost {
   EventLogger.setImplementation(new SLF4JLogAdapter())
@@ -67,13 +66,12 @@ object ServiceHost {
   implicit val system = ActorSystem("intelanalytics-api")
 
   trait V1 extends ApiV1Service
-            with SlickMetaStoreComponent
-            with DbProfileComponent
-            with V1DataFrameService
-            with V1CommandService
-            with V1GraphService
-            with EngineComponent {
-
+      with SlickMetaStoreComponent
+      with DbProfileComponent
+      with V1DataFrameService
+      with V1CommandService
+      with V1GraphService
+      with EngineComponent {
 
     ///TODO: choose database profile driver class from config
     override lazy val profile = {
@@ -94,7 +92,7 @@ object ServiceHost {
     try {
 
       //make sure engine is initialized
-      Await.ready(engine.getCommands(0,1), 30 seconds)
+      Await.ready(engine.getCommands(0, 1), 30 seconds)
 
       //TODO: Remove when connecting to an actual database server
       metaStore.create()
@@ -111,17 +109,16 @@ object ServiceHost {
           }
       }
     }
-    finally{
+    finally {
       source.close()
     }
-
 
   }
 
   // create and start our service actor
   class Service extends ApiServiceActor
-  with ApiService
-  with V1
+    with ApiService
+    with V1
 
   val service = system.actorOf(Props[Service], "api-service")
   implicit val timeout = Timeout(5.seconds)
@@ -133,7 +130,7 @@ object ServiceHost {
     IO(Http) ? Http.Bind(service, interface = interface, port = port)
 
     //cleanup stuff on exit
-    Runtime.getRuntime.addShutdownHook(new Thread(){
+    Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
         com.intel.intelanalytics.component.Boot.getArchive(
           "engine", "com.intel.intelanalytics.engine.EngineApplication").stop()

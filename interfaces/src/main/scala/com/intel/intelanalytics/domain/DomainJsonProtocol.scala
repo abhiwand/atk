@@ -33,7 +33,6 @@ import com.intel.intelanalytics.domain.graphconstruction.Property
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
 
-
   implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
     override def read(json: JsValue): DataType = {
       val raw = json.asInstanceOf[JsString].value
@@ -52,11 +51,10 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val definitionFormat = jsonFormat3(Definition)
   implicit val operationFormat = jsonFormat2(Operation)
   implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
-  implicit val loadLinesFormat = jsonFormat4(LoadLines[JsObject,String])
-  implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject,Long])
+  implicit val loadLinesFormat = jsonFormat4(LoadLines[JsObject, String])
+  implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject, Long])
   implicit val errorFormat = jsonFormat5(Error)
   implicit val userFormat = jsonFormat2(User)
-
 
   // graph
 
@@ -93,6 +91,5 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
       }
     }
   }
-
 
 }

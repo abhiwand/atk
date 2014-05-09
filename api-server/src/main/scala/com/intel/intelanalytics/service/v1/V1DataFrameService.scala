@@ -28,13 +28,13 @@ import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
 import akka.event.Logging
 import spray.json._
-import spray.http.{Uri, StatusCodes, MediaTypes}
+import spray.http.{ Uri, StatusCodes, MediaTypes }
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
+import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{EngineComponent}
+import com.intel.intelanalytics.engine.{ EngineComponent }
 import scala.util._
 import scala.concurrent._
 import spray.util.LoggingContext
@@ -51,10 +51,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import ExecutionContext.Implicits.global
 
 trait V1DataFrameService extends V1Service {
-  this: V1Service
-    with MetaStoreComponent
-    with EngineComponent
-    with EventLogging =>
+  this: V1Service with MetaStoreComponent with EngineComponent with EventLogging =>
 
   def frameRoutes() = {
     import ViewModelJsonProtocol._
@@ -66,14 +63,12 @@ trait V1DataFrameService extends V1Service {
       FrameDecorator.decorateEntity(uri.toString, links, frame)
     }
 
-
-
     //TODO: none of these are yet asynchronous - they communicate with the engine
     //using futures, but they keep the client on the phone the whole time while they're waiting
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
     std(prefix) { implicit p: UserPrincipal =>
-       (path(prefix) & pathEnd) {
+      (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
             //TODO: cursor
@@ -112,7 +107,7 @@ trait V1DataFrameService extends V1Service {
                   onComplete(for {
                     fopt <- engine.getFrame(id)
                     res <- engine.delete(fopt.get) if fopt.isDefined
-                    res <- future {()} if fopt.isEmpty
+                    res <- future { () } if fopt.isEmpty
                   } yield res) {
                     case Success(_) => complete("OK")
                     case Failure(ex) => throw ex
@@ -122,7 +117,7 @@ trait V1DataFrameService extends V1Service {
           } ~
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
-                onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {
+                onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
                   case Success(rows: Iterable[Array[Any]]) => {
                     import DomainJsonProtocol._
                     val strings = rows.map(r => r.map(a => a.toJson).toList).toList
@@ -135,6 +130,5 @@ trait V1DataFrameService extends V1Service {
         }
     }
   }
-
 
 }

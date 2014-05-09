@@ -27,17 +27,13 @@ import spray.routing._
 import com.intel.intelanalytics._
 import spray.http.StatusCodes
 import com.intel.intelanalytics.repository.MetaStoreComponent
-import com.intel.intelanalytics.engine.{EngineComponent}
+import com.intel.intelanalytics.engine.{ EngineComponent }
 import spray.util.LoggingContext
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import scala.util.control.NonFatal
 import scala.util.Success
 
-
-trait ApiV1Service  { this: ApiV1Service
-                      with V1DataFrameService
-                      with V1CommandService
-                      with V1GraphService =>
+trait ApiV1Service { this: ApiV1Service with V1DataFrameService with V1CommandService with V1GraphService =>
   def apiV1Service: Route = {
     frameRoutes() ~ commandRoutes() ~ graphRoutes()
   }

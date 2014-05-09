@@ -28,37 +28,37 @@ import com.intel.intelanalytics.engine.Row
 
 class ParserSpec extends Specification {
   val row = new Row(',')
-   "Parser" should {
+  "Parser" should {
     "parse a String" in {
-      row.apply("a,b") shouldEqual  Array("a","b")      
+      row.apply("a,b") shouldEqual Array("a", "b")
     }
   }
-   "Parser" should{
+  "Parser" should {
     "parse a String with single quotes" in {
-        row.apply("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
-      }
+      row.apply("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
     }
-    "Parser" should{
-     "parse an empty string" in {
-        row.apply("") shouldEqual Array("")
-      }
+  }
+  "Parser" should {
+    "parse an empty string" in {
+      row.apply("") shouldEqual Array("")
     }
-    "Parser" should{
-     "parse a nested double quotes string" in {
-        row.apply("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
-      }
+  }
+  "Parser" should {
+    "parse a nested double quotes string" in {
+      row.apply("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
     }
-    "Parser" should{
-     "parse a string with empty fields" in {
-        row.apply("foo,bar,,,baz") shouldEqual Array("foo","bar","","","baz")
-      }
+  }
+  "Parser" should {
+    "parse a string with empty fields" in {
+      row.apply("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
+    }
   }
   val trow = new Row('\t')
-  "Parser" should{
-     "parse a tab separated string" in {
-        trow.apply("foo\tbar\tbaz") shouldEqual Array("foo","bar","baz")
-      }
+  "Parser" should {
+    "parse a tab separated string" in {
+      trow.apply("foo\tbar\tbaz") shouldEqual Array("foo", "bar", "baz")
+    }
   }
-   
+
 }
 
