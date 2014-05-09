@@ -4,7 +4,7 @@ organization in ThisBuild := "com.intel"
 
 version in ThisBuild      := "0.8"
 
-scalaVersion in ThisBuild := "2.10.4"
+scalaVersion in ThisBuild := "2.10.3"
 
 scalacOptions := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
 
@@ -18,7 +18,7 @@ resolvers in ThisBuild ++= Seq(
 libraryDependencies in ThisBuild ++= {
   Seq(
     "org.scala-lang"      %   "scala-reflect"     % scalaVersion.value,
-    "io.spray"            %%  "spray-json"        % "1.2.5",
+    "io.spray"            %%  "spray-json"        % sprayJsonV,
     "org.specs2"          %%  "specs2-core"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-mock"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-html"       % "2.3.10"  % "test",
@@ -38,3 +38,4 @@ libraryDependencies in ThisBuild ++= {
 seq(Revolver.settings: _*)
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
+
