@@ -9,6 +9,7 @@ object IABuild extends Build {
 
   val commonSettings =
     net.virtualvoid.sbt.graph.Plugin.graphSettings ++
+      org.scalastyle.sbt.ScalastylePlugin.Settings ++
       scalariformSettings ++
       //oneLogSettings
       List(
