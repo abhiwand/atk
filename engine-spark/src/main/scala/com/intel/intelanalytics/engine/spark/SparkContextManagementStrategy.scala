@@ -4,7 +4,7 @@ import org.apache.spark.{ SparkConf, SparkContext }
 import scala.collection.mutable
 import com.typesafe.config.{ ConfigFactory, Config }
 import com.intel.intelanalytics.shared.EventLogging
-import org.apache.spark.engine.{ TestListener, SparkProgressListener }
+import org.apache.spark.engine.{ ProgressPrinter, SparkProgressListener }
 
 /**
  * Base class for different Spark context management strategies
@@ -73,9 +73,9 @@ object SparkContextPerUserStrategy extends SparkContextManagementStrategy with E
         System.setProperty("spark.ui.port", String.valueOf(4041 + contextMap.size)) //need to uniquely set this to get rid of bind problems
         val context = sparkContextFactory.createSparkContext(configuration, "intel-analytics:" + user)
         val listener = new SparkProgressListener()
-        val testListener = new TestListener(listener)
+        val progressPrinter = new ProgressPrinter(listener)
         context.addSparkListener(listener)
-        context.addSparkListener(testListener)
+        context.addSparkListener(progressPrinter)
         Context(context, listener)
         val ctx = Context(context, listener)
         contextMap += (user -> ctx)
