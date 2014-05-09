@@ -55,7 +55,7 @@ def wrap_row_function(frame, row_function):
     return row_func
 
 
-class FrameBackendREST(object):
+class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
 
     def get_frame_names(self):
@@ -64,8 +64,16 @@ class FrameBackendREST(object):
         payload = r.json()
         return [f['name'] for f in payload]
 
+    # def get_frame(name):
+    #     """Retrieves the named BigFrame object"""
+    #     raise NotImplemented
+    #
+    # def delete_frame(name):
+    #     """Deletes the frame from backing store"""
+    #     raise NotImplemented
+
     def create(self, frame):
-        logger.info("REST Backend: create: " + frame.name)
+        logger.info("REST Backend: create frame: " + frame.name)
         # hack, steal schema early if possible...
         columns = [[n, supported_types.get_type_string(t)]
                   for n, t in frame.schema.items()]
@@ -77,7 +85,7 @@ class FrameBackendREST(object):
                 pass
         payload = {'name': frame.name, 'schema': {"columns": columns}}
         r = rest_http.post('dataframes', payload)
-        logger.info("REST Backend: create response: " + r.text)
+        logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
 
@@ -98,10 +106,15 @@ class FrameBackendREST(object):
             # todo - this info should come back from the engine
             for name, data_type in data.fields:
                 if data_type is not ignore:
-                    frame._columns[name] = BigColumn(name, data_type)
+                    self._accept_column(BigColumn(name, data_type))
         else:
             raise TypeError("Unsupported append data type "
                             + data.__class__.__name__)
+
+    @staticmethod
+    def _accept_column(frame, column):
+        frame._columns[column.name] = column
+        column._frame = frame
 
     def filter(self, frame, predicate):
         row_ready_predicate = wrap_row_function(frame, predicate)
@@ -152,7 +165,7 @@ class FrameBackendREST(object):
         # inspect is just a pretty-print of take, we'll do it on the client
         # side until there's a good reason not to
         rows = self.take(frame, n, offset)
-        return FrameBackendREST.InspectionTable(frame.schema, rows)
+        return FrameBackendRest.InspectionTable(frame.schema, rows)
 
     def take(self, frame, n, offset):
         r = rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
