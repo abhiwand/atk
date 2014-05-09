@@ -119,8 +119,9 @@ class SparkProgressListener extends SparkListener {
 
 /**
  * Create for demo purpose. It is used to get progress from SparkProgressListener and print it out
+ * TODO: remove it when progress report is exposed through rest api
  */
-class TestListener(progressListener: SparkProgressListener) extends SparkListener {
+class ProgressPrinter(progressListener: SparkProgressListener) extends SparkListener {
   override def onStageCompleted(stageCompleted: SparkListenerStageCompleted) {
     printJobProgress()
   }
