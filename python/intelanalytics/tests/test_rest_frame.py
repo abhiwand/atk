@@ -27,7 +27,7 @@ iatest.init()
 import unittest
 from collections import OrderedDict
 from intelanalytics.core.types import *
-from intelanalytics.rest.frame import FrameBackendREST
+from intelanalytics.rest.frame import FrameBackendRest
 
 
 class TestInspectionTable(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestInspectionTable(unittest.TestCase):
         rows = [(1, 2.0, 'iii'),
                 (4, 5.0, 'vi'),
                 (7, 8.0, 'ix')]
-        it = FrameBackendREST.InspectionTable(schema, rows)
+        it = FrameBackendRest.InspectionTable(schema, rows)
         expected = """dec:int32   float:float32   roman:str
 -----------------------------------------
           1             2.0   iii
