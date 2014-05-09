@@ -39,5 +39,3 @@ seq(Revolver.settings: _*)
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-org.scalastyle.sbt.ScalastylePlugin.Settings
-
