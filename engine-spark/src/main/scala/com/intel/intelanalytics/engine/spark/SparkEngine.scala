@@ -258,7 +258,12 @@ class SparkComponent extends EngineComponent
                   broadcastVars, accumulator)
 
                 val location = fsRoot + frames.getFrameDataFile(frameId)
-                pyRdd.map(s => new String(s).split(",").map(t => t.getBytes())).saveAsObjectFile(location)
+
+                val realFrame = frames.lookup(arguments.frame).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
+                val schema = realFrame.schema
+                val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+                pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
               }
               commands.lookup(command.id).get
             }
