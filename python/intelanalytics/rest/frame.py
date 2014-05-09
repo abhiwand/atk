@@ -26,32 +26,34 @@ REST backend for frames
 import base64
 import logging
 logger = logging.getLogger(__name__)
-import texttable
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
-from connection import rest_http
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
-import json
+from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.spark import RowWrapper, pickle_function
 
 
 def encode_bytes_for_http(b):
+    """
+    Encodes bytes using base64, so they can travel as a string
+    """
     return base64.urlsafe_b64encode(b)
 
-class MyBatchedSerializer(BatchedSerializer):
-    def __init__(self):
-        super(MyBatchedSerializer,self).__init__(PickleSerializer(), 1)
 
-    def dump_stream(self, iterator, stream):
-        self.dump_stream_as_json(self._batched(iterator), stream)
+def wrap_row_function(frame, row_function):
+    """
+    Wraps a python row function, like one used for a filter predicate, such
+    that it will be evaluated with using the expected 'row' object rather than
+    whatever raw form the engine is using.  Ideally, this belong in the engine
+    """
+    def row_func(row):
+        row_wrapper = RowWrapper(frame.schema)
+        row_wrapper.load_row(row)
+        return row_function(row_wrapper)
+    return row_func
 
-    def dump_stream_as_json(self, iterator, stream):
-        for obj in iterator:
-            serialized = ",".join(obj)
-            write_int(len(serialized), stream)
-            stream.write(serialized)
 
 class FrameBackendREST(object):
     """REST plumbing for BigFrame"""
@@ -102,38 +104,19 @@ class FrameBackendREST(object):
                             + data.__class__.__name__)
 
     def filter(self, frame, predicate):
+        row_ready_predicate = wrap_row_function(frame, predicate)
         from itertools import ifilter
-
-        # serializer = BatchedSerializer(PickleSerializer(), 1)
-        serializer = MyBatchedSerializer()
-        def filter_func(iterator): return ifilter(predicate, iterator)
+        def filter_func(iterator): return ifilter(row_ready_predicate, iterator)
         def func(s, iterator): return filter_func(iterator)
 
-        command = (func, UTF8Deserializer(), serializer)
-
-        pickled_predicate = CloudPickleSerializer().dumps(command)
+        pickled_predicate = pickle_function(func)
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
         payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': http_ready_predicate}}
         r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
-        #logger.info("REST Backend: create response: " + r.text)
-        #payload = r.json()
         return r
 
     class InspectionTable(object):
-
-        _dtypes = defaultdict(lambda: 'a')
-        _dtypes.update([(bool, 't'),
-                        (bytearray, 'a'),
-                        (dict, 'a'),
-                        (float32, 'f'),
-                        (float64, 'f'),
-                        (int32, 'i'),
-                        (int64, 'i'),
-                        (list, 'a'),
-                        (string, 't'),
-                        (str, 't')])
-
         _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
         _align.update([(bool, 'r'),
                        (bytearray, 'l'),
@@ -151,26 +134,19 @@ class FrameBackendREST(object):
             self.rows = rows
 
         def __repr__(self):
-            table = texttable.Texttable()
-            table.set_deco(texttable.Texttable.HEADER)
-            dtypes, alignment = self._get_table_props()
-            table.set_cols_align(alignment)
-            table.set_cols_dtype(dtypes)
-            table.header(self._get_header())
-            table.add_rows(self.rows, header=False)
-            return table.draw()
+            # keep the import localized, as serialization doesn't like prettytable
+            import intelanalytics.rest.prettytable as prettytable
+            table = prettytable.PrettyTable()
+            fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema.items()])
+            table.field_names = fields.keys()
+            table.align.update(fields)
+            table.hrules = prettytable.HEADER
+            table.vrules = prettytable.NONE
+            for r in self.rows:
+                table.add_row(r)
+            return table.get_string()
 
-        def _get_header(self):
-            return ["{0}:{1}".format(n,supported_types.get_type_string(t))
-                    for n, t in self.schema.items()]
-
-        def _get_table_props(self):
-            props = [(FrameBackendREST.InspectionTable._dtypes[t],
-                      FrameBackendREST.InspectionTable._align[t])
-                     for t in self.schema.values()]
-            return zip(*props)
-
-        #def _repr_html_(self): Add this method for ipython notebooks
+         #def _repr_html_(self): Add this method for ipython notebooks
 
     def inspect(self, frame, n, offset):
         # inspect is just a pretty-print of take, we'll do it on the client

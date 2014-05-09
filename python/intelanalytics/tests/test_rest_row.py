@@ -27,25 +27,35 @@ iatest.init()
 import unittest
 from collections import OrderedDict
 from intelanalytics.core.types import *
-from intelanalytics.rest.frame import FrameBackendREST
+from intelanalytics.rest.frame import RowWrapper
 
 
-class TestInspectionTable(unittest.TestCase):
+class TestRestRow(unittest.TestCase):
 
-    def test_inspect(self):
-        schema = OrderedDict([('dec', int32), ('float', float32), ('roman', str)])
-        rows = [(1, 2.0, 'iii'),
-                (4, 5.0, 'vi'),
-                (7, 8.0, 'ix')]
-        it = FrameBackendREST.InspectionTable(schema, rows)
-        expected = """dec:int32   float:float32   roman:str
------------------------------------------
-          1             2.0   iii
-          4             5.0   vi
-          7             8.0   ix""".replace(" ", "")
-        #print repr(it)
-        self.assertEquals(expected, repr(it).replace(" ", ""))
+    def test_basic_access_simple_casting(self):
+        r = RowWrapper(OrderedDict([('a', int32), ('b', float32), ('c', str)]))
+        r.load_row('1,2.0,three')
+        self.assertEqual(1, r['a'])
+        self.assertEqual(1, r.a)
+        self.assertEqual(2.0, r['b'])
+        self.assertEqual(2.0, r.b)
+        self.assertEqual('three', r['c'])
+        self.assertEqual('three', r.c)
+
+    def test_data_types(self):
+        r = RowWrapper(OrderedDict([('a', int32), ('b', float32), ('c', str)]))
+        r.load_row('1,2.0,three')
+        self.assertEqual(int, type(r.a))
+        self.assertEqual(float, type(r.b))
+        self.assertEqual(str, type(r.c))
+
+    def test_subsequent_load(self):
+        r = RowWrapper(OrderedDict([('a', int32), ('b', float32), ('c', str)]))
+        r.load_row('1,2.0,three')
+        self.assertEqual(1, r['a'])
+        r.load_row('4,5.0,six')
+        self.assertEqual('six', r.c)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
