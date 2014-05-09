@@ -35,7 +35,7 @@ log $BUILD_NUMBER
 
 echo "top dir $topDir"
 
-rpmbuild --define "_topdir $topDir"  --define "BUILD_NUMBER $BUILD_NUMBER" --define "VERSION $VERSION" -ba SPECS/$packageName.spec
+rpmbuild --define "_topdir $topDir"  --define "pythonVersion 2.7.5" --define "tarSuffix tgz" -ba SPECS/$packageName.spec
 
 popd $SCRIPTPATH/rpm 
 

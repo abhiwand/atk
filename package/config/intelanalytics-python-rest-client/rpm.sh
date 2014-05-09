@@ -14,8 +14,19 @@ log "copy and rename: $tarFile"
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
-DESCRIPTION=$SUMMARY
-REQUIRES="python27"
+DESCRIPTION=$SUMMARY 
+REQUIRES="python2.7 python2.7-pip"
+POST="
+ #sim link to python sites packages
+ ln -s /usr/lib/intelanalytics/rest-client/python  /usr/lib/python2.7/site-packages/intelanalytics
+ #run requirements file
+ pip install -r /usr/lib/intelanalytics/rest-client/python/requirements.txt
+"
+
+POSTUN="
+ rm /usr/lib/python2.7/site-packages/intelanalytics
+"
+
 rpmSpec > $SCRIPTPATH/rpm/SPECS/$packageName.spec
 
 topDir="$SCRIPTPATH/rpm"
