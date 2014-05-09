@@ -25,7 +25,7 @@ package com.intel.intelanalytics.service.v1
 
 import com.intel.intelanalytics.service.v1.viewmodels.{ DecoratedCommand, Rel, DecoratedDataFrame, JsonTransform }
 import scala.util.{ Failure, Success, Try }
-import com.intel.intelanalytics.domain.{ Command, DataFrame, LoadLines, DomainJsonProtocol }
+import com.intel.intelanalytics.domain._
 import spray.json.JsObject
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.engine.EngineComponent
@@ -38,10 +38,16 @@ import scala.util.Failure
 import scala.Some
 import scala.util.Success
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
-import com.intel.intelanalytics.domain.LoadLines
-import com.intel.intelanalytics.domain.Command
 import com.intel.intelanalytics.security.UserPrincipal
 import spray.routing.Route
+import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
+import scala.util.Failure
+import scala.Some
+import scala.util.Success
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.Command
 
 //TODO: Is this right execution context for us?
 
@@ -138,6 +144,27 @@ trait V1CommandService extends V1Service {
 
   def runAls(uri: Uri, transform: JsonTransform): Route = ???
 
-  def runFilter(uri: Uri, transform: JsonTransform): Route = ???
+  def runFilter(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[FilterPredicate[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+          val args = test.get
+          val id = idOpt.get
+          onComplete(
+            for {
+              frame <- engine.getFrame(id)
+              (c, f) = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
+            } yield c) {
+              case Success(c) => complete(decorate(uri + "/" + c.id, c))
+              case Failure(ex) => throw ex
+            }
+        }
+    }
+  }
 
 }

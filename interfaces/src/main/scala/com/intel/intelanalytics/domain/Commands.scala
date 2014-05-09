@@ -30,4 +30,9 @@ case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef
   require(lineParser != null, "lineParser is required")
 }
 
+case class FilterPredicate[+Arguments, FrameRef](frame: FrameRef, predicate: String) {
+  require(frame != null, "frame is required")
+  require(predicate != null, "predicate is required")
+}
+
 case class SeparatorArgs(separator: Char)
