@@ -41,6 +41,7 @@ import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.domain.LoadLines
 import com.intel.intelanalytics.domain.Command
 import com.intel.intelanalytics.security.UserPrincipal
+import spray.routing.Route
 
 //TODO: Is this right execution context for us?
 
@@ -89,36 +90,54 @@ trait V1CommandService extends V1Service {
               } ~
                 post {
                   entity(as[JsonTransform]) {
-                    xform =>
-                      xform.name match {
-                        //TODO: genericize function resolution and invocation
-                        case ("load") => {
-                          val test = Try {
-                            import DomainJsonProtocol._
-                            xform.arguments.get.convertTo[LoadLines[JsObject, String]]
-                          }
-                          val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
-                          (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-                            & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
-                              val args = test.get
-                              val id = idOpt.get
-                              onComplete(
-                                for {
-                                  frame <- engine.getFrame(id)
-                                  (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
-                                    skipRows = args.skipRows, lineParser = args.lineParser))
-                                } yield c) {
-                                  case Success(c) => complete(decorate(uri + "/" + c.id, c))
-                                  case Failure(ex) => throw ex
-                                }
-                            }
-                        }
-                        case _ => ???
-                      }
+                    xform => runCommand(uri, xform)
                   }
                 }
           }
         }
     }
   }
+
+  //TODO: disentangle the command dispatch from the routing
+  def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
+    xform.name match {
+      //TODO: genericize function resolution and invocation
+      case ("dataframe/load") => runFrameLoad(uri, xform)
+      case ("graph/load") => runGraphLoad(uri, xform)
+      case ("graph/ml/als") => runAls(uri, xform)
+      case ("dataframe/filter") => runFilter(uri, xform)
+      case _ => ???
+    }
+  }
+
+  def runFrameLoad(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[LoadLines[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
+      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+          val args = test.get
+          val id = idOpt.get
+          onComplete(
+            for {
+              frame <- engine.getFrame(id)
+              (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
+                skipRows = args.skipRows, lineParser = args.lineParser))
+            } yield c) {
+              case Success(c) => complete(decorate(uri + "/" + c.id, c))
+              case Failure(ex) => throw ex
+            }
+        }
+    }
+  }
+
+  def runGraphLoad(uri: Uri, transform: JsonTransform): Route = ???
+
+  def runAls(uri: Uri, transform: JsonTransform): Route = ???
+
+  def runFilter(uri: Uri, transform: JsonTransform): Route = ???
+
 }
