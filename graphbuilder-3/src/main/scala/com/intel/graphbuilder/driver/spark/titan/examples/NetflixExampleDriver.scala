@@ -39,8 +39,10 @@ object NetflixExampleDriver {
 
   // Titan Settings
   val titanConfig = new SerializableBaseConfiguration()
-  titanConfig.setProperty("storage.backend", "cassandra")
-  titanConfig.setProperty("storage.keyspace", "netflix")
+  titanConfig.setProperty("storage.backend", "hbase")
+  titanConfig.setProperty("storage.tablename", "netflix")
+  //titanConfig.setProperty("storage.backend", "cassandra")
+  //titanConfig.setProperty("storage.keyspace", "netflix")
   titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
   titanConfig.setProperty("storage.batch-loading", "true")
   titanConfig.setProperty("autotype", "none")

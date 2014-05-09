@@ -67,7 +67,11 @@ object ExamplesUtils {
    * Check for the gb.jar in expected locations
    */
   private def guessGbJar: String = {
-    val possiblePaths = List(System.getProperty("user.dir") + "/target/scala-2.10/gb.jar", System.getProperty("user.dir") + "/gb.jar")
+    val possiblePaths = List(
+      System.getProperty("user.dir") + "/graphbuilder-3/target/scala-2.10/gb.jar",
+      System.getProperty("user.dir") + "/target/scala-2.10/gb.jar",
+      System.getProperty("user.dir") + "/gb.jar"
+    )
     possiblePaths.foreach(path => {
       val jar = new File(path)
       if (jar.exists()) {

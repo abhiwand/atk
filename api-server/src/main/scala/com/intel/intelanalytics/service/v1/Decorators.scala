@@ -22,7 +22,14 @@
 //////////////////////////////////////////////////////////////////////////////
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.domain.{Graph, DataFrame}
+import com.intel.intelanalytics.domain.{ Command, DataFrame }
+import com.intel.intelanalytics.service.v1.viewmodels._
+import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
+import com.intel.intelanalytics.service.v1.viewmodels.DataFrameHeader
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.service.v1.viewmodels.RelLink
+import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.{ Graph, DataFrame }
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.domain.Graph
 import com.intel.intelanalytics.service.v1.viewmodels.GraphHeader
@@ -33,10 +40,10 @@ import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 
 trait EntityDecorator[Entity, Index, Decorated] {
   def decorateForIndex(indexUri: String, entities: Seq[Entity]): List[Index]
-  def decorateEntity(uri: String, links: Iterable[RelLink], entity: Entity) : Decorated
+  def decorateEntity(uri: String, links: Iterable[RelLink], entity: Entity): Decorated
 }
 
-class FrameDecorator extends EntityDecorator[DataFrame, DataFrameHeader, DecoratedDataFrame] {
+object FrameDecorator extends EntityDecorator[DataFrame, DataFrameHeader, DecoratedDataFrame] {
   override def decorateEntity(uri: String,
                               links: Iterable[RelLink],
                               entity: DataFrame): DecoratedDataFrame = {
@@ -51,10 +58,23 @@ class FrameDecorator extends EntityDecorator[DataFrame, DataFrameHeader, Decorat
   }
 }
 
-/**
- * TODO: Byrn, please add comments to these projects. I will make changes as appropriate for graph stuff.
- */
-class GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph] {
+object CommandDecorator extends EntityDecorator[Command, CommandHeader, DecoratedCommand] {
+  override def decorateEntity(uri: String,
+                              links: Iterable[RelLink],
+                              entity: Command): DecoratedCommand = {
+    DecoratedCommand(id = entity.id, name = entity.name,
+      arguments = entity.arguments, error = entity.error, complete = entity.complete,
+      links = links.toList)
+  }
+
+  override def decorateForIndex(uri: String, entities: Seq[Command]): List[CommandHeader] = {
+    entities.map(frame => new CommandHeader(id = frame.id,
+      name = frame.name,
+      url = uri + "/" + frame.id)).toList
+  }
+}
+
+object GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph] {
   override def decorateEntity(uri: String,
                               links: Iterable[RelLink],
                               entity: Graph): DecoratedGraph = {
@@ -67,8 +87,4 @@ class GraphDecorator extends EntityDecorator[Graph, GraphHeader, DecoratedGraph]
       url = uri + "/" + graph.id)).toList
   }
 
-}
-object Decorators {
-  val frames = new FrameDecorator()
-  val graphs = new GraphDecorator()
 }

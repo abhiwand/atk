@@ -28,32 +28,30 @@ import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
 import akka.event.Logging
 import spray.json._
-import spray.http.{Uri, StatusCodes, MediaTypes}
+import spray.http.{ Uri, StatusCodes, MediaTypes }
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
+import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{Builtin, Functional, EngineComponent}
+import com.intel.intelanalytics.engine.{ EngineComponent }
 import scala.util._
-import scala.concurrent.ExecutionContext
+import scala.concurrent._
 import spray.util.LoggingContext
 import scala.util.Failure
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import scala.util.Success
-import com.intel.intelanalytics.service.v1.viewmodels.LoadFile
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.service.v1.viewmodels.JsonTransform
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
-import com.intel.intelanalytics.engine.Builtin
+import com.intel.intelanalytics.shared.EventLogging
+import com.intel.intelanalytics.security.UserPrincipal
 
 //TODO: Is this right execution context for us?
 import ExecutionContext.Implicits.global
 
 trait V1DataFrameService extends V1Service {
-  this: V1Service
-    with MetaStoreComponent
-    with EngineComponent =>
+  this: V1Service with MetaStoreComponent with EngineComponent with EventLogging =>
 
   def frameRoutes() = {
     import ViewModelJsonProtocol._
@@ -62,20 +60,20 @@ trait V1DataFrameService extends V1Service {
     def decorate(uri: Uri, frame: DataFrame): DecoratedDataFrame = {
       //TODO: add other relevant links
       val links = List(Rel.self(uri.toString))
-      Decorators.frames.decorateEntity(uri.toString, links, frame)
+      FrameDecorator.decorateEntity(uri.toString, links, frame)
     }
 
     //TODO: none of these are yet asynchronous - they communicate with the engine
     //using futures, but they keep the client on the phone the whole time while they're waiting
     //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
     //so they can be queried, and b) support the web hooks.
-    std(prefix) {
+    std(prefix) { implicit p: UserPrincipal =>
       (path(prefix) & pathEnd) {
         requestUri { uri =>
           get {
             //TODO: cursor
-            onComplete(engine.getFrames(0, 20)) {
-              case Success(frames) => complete(Decorators.frames.decorateForIndex(uri.toString(), frames))
+            onComplete(engine.getFrames(0, defaultCount)) {
+              case Success(frames) => complete(FrameDecorator.decorateForIndex(uri.toString(), frames))
               case Failure(ex) => throw ex
             }
           } ~
@@ -96,7 +94,7 @@ trait V1DataFrameService extends V1Service {
             requestUri { uri =>
               get {
                 onComplete(engine.getFrame(id)) {
-                  case Success(frame) => {
+                  case Success(Some(frame)) => {
                     val decorated = decorate(uri, frame)
                     complete {
                       decorated
@@ -107,48 +105,22 @@ trait V1DataFrameService extends V1Service {
               } ~
                 delete {
                   onComplete(for {
-                    f <- engine.getFrame(id)
-                    res <- engine.delete(f)
+                    fopt <- engine.getFrame(id)
+                    res <- engine.delete(fopt.get) if fopt.isDefined
+                    res <- future { () } if fopt.isEmpty
                   } yield res) {
-                    case Success(frames) => complete("OK")
+                    case Success(_) => complete("OK")
                     case Failure(ex) => throw ex
                   }
                 }
             }
           } ~
-            path("transforms") {
-              post {
-                requestUri { uri =>
-                  entity(as[JsonTransform]) { xform =>
-                    (xform.language, xform.name) match {
-                      //TODO: improve mapping between rest api and engine arguments
-                      case ("builtin", "load") => {
-                        val args = Try {
-                          xform.arguments.get.convertTo[LoadFile]
-                        }
-                        validate(args.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(args)) {
-                          onComplete(
-                            for {
-                              frame <- engine.getFrame(id)
-                              res <- engine.appendFile(frame, args.get.source, new Builtin("line/csv"))
-                            } yield res) {
-                            case Success(r) => complete(decorate(uri, r))
-                            case Failure(ex) => throw ex
-                          }
-                        }
-                      }
-                      case _ => ???
-                    }
-                  }
-                }
-              }
-            } ~
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
-                onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {
-                  case Success(rows: Iterable[Array[Array[Byte]]]) => {
-                    import DefaultJsonProtocol._
-                    val strings: List[List[String]] = rows.map(r => r.map(bytes => new String(bytes)).toList).toList
+                onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
+                  case Success(rows: Iterable[Array[Any]]) => {
+                    import DomainJsonProtocol._
+                    val strings = rows.map(r => r.map(a => a.toJson).toList).toList
                     complete(strings)
                   }
                   case Failure(ex) => throw ex
@@ -158,6 +130,5 @@ trait V1DataFrameService extends V1Service {
         }
     }
   }
-
 
 }

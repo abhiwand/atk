@@ -1,9 +1,5 @@
 import spray.revolver.RevolverPlugin.Revolver
 
-import com.typesafe.sbt.SbtScalariform._
-
-import scalariform.formatter.preferences._
-
 organization in ThisBuild := "com.intel"
 
 version in ThisBuild      := "0.8"
@@ -22,7 +18,7 @@ resolvers in ThisBuild ++= Seq(
 libraryDependencies in ThisBuild ++= {
   Seq(
     "org.scala-lang"      %   "scala-reflect"     % scalaVersion.value,
-    "io.spray"            %%  "spray-json"        % "1.2.5",
+    "io.spray"            %%  "spray-json"        % sprayJsonV,
     "org.specs2"          %%  "specs2-core"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-mock"       % "2.3.10"  % "test",
     "org.specs2"          %%  "specs2-html"       % "2.3.10"  % "test",
@@ -43,10 +39,3 @@ seq(Revolver.settings: _*)
 
 net.virtualvoid.sbt.graph.Plugin.graphSettings
 
-org.scalastyle.sbt.ScalastylePlugin.Settings
-
-scalariformSettings
-
-ScalariformKeys.preferences := ScalariformKeys.preferences.value
-  .setPreference(AlignParameters, true)
-  .setPreference(CompactControlReadability, true)

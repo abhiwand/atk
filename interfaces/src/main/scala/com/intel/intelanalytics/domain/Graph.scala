@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.domain
 
-import com.intel.intelanalytics.domain.graphconstruction.{EdgeRule, VertexRule, OutputConfiguration}
+import com.intel.intelanalytics.domain.graphconstruction.{ EdgeRule, VertexRule, OutputConfiguration }
 
 /**
  * NLS TODO:   what are the required pieces of data in the graph interfaces?
