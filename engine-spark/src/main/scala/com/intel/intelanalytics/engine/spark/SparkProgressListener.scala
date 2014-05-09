@@ -24,7 +24,7 @@
 package org.apache.spark.engine
 
 import org.apache.spark.scheduler._
-import scala.collection.mutable.{ListBuffer, HashSet, HashMap}
+import scala.collection.mutable.{ ListBuffer, HashSet, HashMap }
 import org.apache.spark.scheduler.SparkListenerTaskEnd
 import org.apache.spark.scheduler.SparkListenerJobEnd
 import org.apache.spark.scheduler.SparkListenerStageSubmitted
@@ -55,7 +55,7 @@ class SparkProgressListener extends SparkListener {
     val parentsIds = parents.map(s => s.id)
     jobIdToStageIds(jobStart.job.jobId) = (parentsIds :+ jobStart.job.finalStage.id).toArray
 
-    if(jobIdPromise != null) {
+    if (jobIdPromise != null) {
       jobIdPromise success jobStart.job.jobId
       jobIdPromise = null
     }
@@ -92,7 +92,7 @@ class SparkProgressListener extends SparkListener {
             /* If two jobs share a stage we could get this failure message twice. So we first
             *  check whether we've already retired this stage. */
             val stageInfo = activeStages.filter(s => s.stageId == stage.id).headOption
-            stageInfo.foreach {s =>
+            stageInfo.foreach { s =>
               activeStages -= s
             }
           case _ =>
@@ -104,11 +104,11 @@ class SparkProgressListener extends SparkListener {
   def getProgress(jobId: Int): Int = {
 
     val stageIds = jobIdToStageIds(jobId)
-    val finishedStages = stageIds.count(i=> completedStages.filter(s => s.stageId == i).length > 0)
+    val finishedStages = stageIds.count(i => completedStages.filter(s => s.stageId == i).length > 0)
     val currentActiveStages = activeStages.filter(s => stageIds.contains(s.stageId))
     var progress = (100 * finishedStages) / stageIds.length
 
-    currentActiveStages.foreach(currentActiveStage=> {
+    currentActiveStages.foreach(currentActiveStage => {
       val totalTaskForStage = currentActiveStage.numTasks
       val successCount = stageIdToTasksComplete.getOrElse(currentActiveStage.stageId, 0)
       progress += (100 * successCount / (totalTaskForStage * stageIds.length))
@@ -136,7 +136,7 @@ class TestListener(progressListener: SparkProgressListener) extends SparkListene
   def printJobProgress() {
     val jobIds = progressListener.jobIdToStageIds.keys.toList.sorted
     println("PRINTING PROGRESS........................................................")
-    for(id <- jobIds) {
+    for (id <- jobIds) {
       println("job: " + id + ", progress: " + progressListener.getProgress(id) + "%")
     }
     println("END.......................................................................")

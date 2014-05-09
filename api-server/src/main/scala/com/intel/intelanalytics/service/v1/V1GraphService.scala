@@ -28,16 +28,16 @@ import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
 import akka.event.Logging
 import spray.json._
-import spray.http.{Uri, StatusCodes, MediaTypes}
+import spray.http.{ Uri, StatusCodes, MediaTypes }
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrame
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.repository.Repository
-import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
+import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
 import com.intel.intelanalytics.engine.EngineComponent
-import com.intel.intelanalytics.engine.{EngineComponent}
+import com.intel.intelanalytics.engine.{ EngineComponent }
 import scala.util._
 import scala.concurrent.ExecutionContext
 import spray.util.LoggingContext
@@ -62,9 +62,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import ExecutionContext.Implicits.global
 
 trait V1GraphService extends V1Service {
-  this: V1Service
-    with MetaStoreComponent
-    with EngineComponent =>
+  this: V1Service with MetaStoreComponent with EngineComponent =>
 
   def graphRoutes() = {
     import ViewModelJsonProtocol._
@@ -129,7 +127,7 @@ trait V1GraphService extends V1Service {
           } ~
             (path("data") & get) {
               parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
-                onComplete(for {r <- engine.getRows(id, offset, count)} yield r) {
+                onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
                   case Success(rows: Iterable[Array[Any]]) => {
                     import DefaultJsonProtocol._
                     val strings: List[List[String]] = rows.map(r => r.map(thing => String.valueOf(r)).toList).toList
@@ -142,6 +140,5 @@ trait V1GraphService extends V1Service {
         }
     }
   }
-
 
 }

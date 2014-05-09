@@ -28,13 +28,13 @@ import com.intel.intelanalytics._
 import com.intel.intelanalytics.domain._
 import akka.event.Logging
 import spray.json._
-import spray.http.{HttpHeader, Uri, StatusCodes, MediaTypes}
+import spray.http.{ HttpHeader, Uri, StatusCodes, MediaTypes }
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.repository.{MetaStoreComponent, Repository}
+import com.intel.intelanalytics.repository.{ MetaStoreComponent, Repository }
 import com.intel.intelanalytics.service.EventLoggingDirectives
 import com.intel.intelanalytics.service.v1.viewmodels._
-import com.intel.intelanalytics.engine.{EngineComponent}
+import com.intel.intelanalytics.engine.{ EngineComponent }
 import scala.util._
 import scala.concurrent._
 import spray.util.LoggingContext
@@ -66,9 +66,7 @@ import com.intel.intelanalytics.service.v1.viewmodels.DecoratedDataFrame
 import scala.concurrent.duration._
 
 trait V1Service extends Directives with EventLoggingDirectives {
-  this: V1Service
-    with MetaStoreComponent
-    with EngineComponent =>
+  this: V1Service with MetaStoreComponent with EngineComponent =>
 
   val config = ConfigFactory.load()
   val defaultCount = config.getInt("intel.analytics.api.defaultCount")
@@ -80,7 +78,6 @@ trait V1Service extends Directives with EventLoggingDirectives {
     case Success(x) => ""
     case Failure(ex) => ex.getMessage
   }
-
 
   def errorHandler = {
     ExceptionHandler {
@@ -100,15 +97,14 @@ trait V1Service extends Directives with EventLoggingDirectives {
       case h if h.is("authorization") => Await.result(getUserPrincipal(h.value), defaultTimeout)
     }
 
-  def authenticateKey : Directive1[UserPrincipal] =
-  //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
+  def authenticateKey: Directive1[UserPrincipal] =
+    //TODO: proper authorization with spray authenticate directive in a manner similar to S3.
     optionalHeaderValue(getUserPrincipalFromHeader).flatMap {
       case Some(p) => provide(p)
       case None => reject(AuthenticationFailedRejection(AuthenticationFailedRejection.CredentialsMissing, List()))
     }
 
-
-  def std(eventCtx: String) : Directive1[UserPrincipal] = {
+  def std(eventCtx: String): Directive1[UserPrincipal] = {
     eventContext(eventCtx) &
       handleExceptions(errorHandler) &
       logResponse(eventCtx, Logging.InfoLevel) &
@@ -116,7 +112,6 @@ trait V1Service extends Directives with EventLoggingDirectives {
   }
 
   import ViewModelJsonProtocol._
-
 
   //TODO: needs to be updated for the distinction between Foos and FooTemplates
   //This code is likely to be useful for CRUD operations that need to work with the
@@ -174,7 +169,7 @@ trait V1Service extends Directives with EventLoggingDirectives {
     id.map(s => s.toLong)
   }
 
-  def getUserPrincipal(apiKey: String) : Future[UserPrincipal] = {
+  def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {
     future {
       metaStore.withSession("Getting user principal") { implicit session =>
         val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)
@@ -186,7 +181,7 @@ trait V1Service extends Directives with EventLoggingDirectives {
           }
           case users if users.length > 1 => throw new SecurityException("Problem accessing user credentials")
           case user => {
-            val userPrincipal:UserPrincipal = new UserPrincipal(users(0), List("user"))//TODO need role definitions
+            val userPrincipal: UserPrincipal = new UserPrincipal(users(0), List("user")) //TODO need role definitions
             info("Authenticated user " + userPrincipal)
             userPrincipal
           }

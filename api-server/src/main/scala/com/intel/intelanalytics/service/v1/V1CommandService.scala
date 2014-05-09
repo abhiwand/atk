@@ -23,16 +23,16 @@
 
 package com.intel.intelanalytics.service.v1
 
-import com.intel.intelanalytics.service.v1.viewmodels.{DecoratedCommand, Rel, DecoratedDataFrame, JsonTransform}
-import scala.util.{Failure, Success, Try}
-import com.intel.intelanalytics.domain.{Command, DataFrame, LoadLines, DomainJsonProtocol}
+import com.intel.intelanalytics.service.v1.viewmodels.{ DecoratedCommand, Rel, DecoratedDataFrame, JsonTransform }
+import scala.util.{ Failure, Success, Try }
+import com.intel.intelanalytics.domain.{ Command, DataFrame, LoadLines, DomainJsonProtocol }
 import spray.json.JsObject
 import com.intel.intelanalytics.repository.MetaStoreComponent
 import com.intel.intelanalytics.engine.EngineComponent
 import com.intel.intelanalytics.service.v1.viewmodels.ViewModelJsonProtocol._
 import scala.concurrent._
 import spray.http.Uri
-import com.typesafe.config.{ConfigFactory, Config}
+import com.typesafe.config.{ ConfigFactory, Config }
 import com.intel.intelanalytics.service.v1.viewmodels.DecoratedCommand
 import scala.util.Failure
 import scala.Some
@@ -47,10 +47,7 @@ import com.intel.intelanalytics.security.UserPrincipal
 import ExecutionContext.Implicits.global
 
 trait V1CommandService extends V1Service {
-  this: V1Service
-    with MetaStoreComponent
-    with EngineComponent =>
-
+  this: V1Service with MetaStoreComponent with EngineComponent =>
 
   def decorate(uri: Uri, command: Command): DecoratedCommand = {
     //TODO: add other relevant links
@@ -60,49 +57,49 @@ trait V1CommandService extends V1Service {
 
   def commandRoutes() = {
     std("commands") { implicit principal: UserPrincipal =>
-        pathPrefix("commands" / LongNumber) {
-          id =>
-            pathEnd {
-              requestUri {
-                uri =>
-                  get {
-                    onComplete(engine.getCommand(id)) {
-                      case Success(Some(command)) => {
-                        val decorated = decorate(uri, command)
-                        complete {
-                          decorated
-                        }
-                      }
-                      case _ => reject()
-                    }
-                  }
-              }
-            }
-        } ~
-          (path("commands") & pathEnd) {
+      pathPrefix("commands" / LongNumber) {
+        id =>
+          pathEnd {
             requestUri {
               uri =>
-
                 get {
-                  //TODO: cursor
-                  onComplete(engine.getCommands(0, defaultCount)) {
-                    case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
-                    case Failure(ex) => throw ex
+                  onComplete(engine.getCommand(id)) {
+                    case Success(Some(command)) => {
+                      val decorated = decorate(uri, command)
+                      complete {
+                        decorated
+                      }
+                    }
+                    case _ => reject()
                   }
-                } ~
-                  post {
-                    entity(as[JsonTransform]) {
-                      xform =>
-                        xform.name match {
-                          //TODO: genericize function resolution and invocation
-                          case ("load") => {
-                            val test = Try {
-                              import DomainJsonProtocol._
-                              xform.arguments.get.convertTo[LoadLines[JsObject, String]]
-                            }
-                            val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
-                            (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
-                              & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+                }
+            }
+          }
+      } ~
+        (path("commands") & pathEnd) {
+          requestUri {
+            uri =>
+
+              get {
+                //TODO: cursor
+                onComplete(engine.getCommands(0, defaultCount)) {
+                  case Success(commands) => complete(CommandDecorator.decorateForIndex(uri.toString(), commands))
+                  case Failure(ex) => throw ex
+                }
+              } ~
+                post {
+                  entity(as[JsonTransform]) {
+                    xform =>
+                      xform.name match {
+                        //TODO: genericize function resolution and invocation
+                        case ("load") => {
+                          val test = Try {
+                            import DomainJsonProtocol._
+                            xform.arguments.get.convertTo[LoadLines[JsObject, String]]
+                          }
+                          val idOpt = test.toOption.flatMap(args => getFrameId(args.destination))
+                          (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+                            & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
                               val args = test.get
                               val id = idOpt.get
                               onComplete(
@@ -111,17 +108,17 @@ trait V1CommandService extends V1Service {
                                   (c, f) = engine.load(LoadLines[JsObject, Long](args.source, id,
                                     skipRows = args.skipRows, lineParser = args.lineParser))
                                 } yield c) {
-                                case Success(c) => complete(decorate(uri + "/" + c.id, c))
-                                case Failure(ex) => throw ex
-                              }
+                                  case Success(c) => complete(decorate(uri + "/" + c.id, c))
+                                  case Failure(ex) => throw ex
+                                }
                             }
-                          }
-                          case _ => ???
                         }
-                    }
+                        case _ => ???
+                      }
                   }
-            }
+                }
           }
+        }
     }
   }
 }

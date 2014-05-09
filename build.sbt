@@ -1,9 +1,5 @@
 import spray.revolver.RevolverPlugin.Revolver
 
-import com.typesafe.sbt.SbtScalariform._
-
-import scalariform.formatter.preferences._
-
 organization in ThisBuild := "com.intel"
 
 version in ThisBuild      := "0.8"
@@ -45,8 +41,3 @@ net.virtualvoid.sbt.graph.Plugin.graphSettings
 
 org.scalastyle.sbt.ScalastylePlugin.Settings
 
-scalariformSettings
-
-ScalariformKeys.preferences := ScalariformKeys.preferences.value
-  .setPreference(AlignParameters, true)
-  .setPreference(CompactControlReadability, true)

@@ -23,49 +23,49 @@
 
 package com.intel.intelanalytics.engine.spark
 
-import org.apache.spark.{ExceptionFailure, SparkContext, SparkConf, Accumulator}
+import org.apache.spark.{ ExceptionFailure, SparkContext, SparkConf, Accumulator }
 import org.apache.spark.api.python._
-import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
+import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 import org.apache.spark.broadcast.Broadcast
-import scala.collection.{mutable, Set}
+import scala.collection.{ mutable, Set }
 import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.intel.intelanalytics.engine._
-import com.intel.intelanalytics.domain.{User, DataFrameTemplate, DataFrame}
-import com.intel.intelanalytics.domain.{GraphTemplate, Graph, DataFrameTemplate, DataFrame}
+import com.intel.intelanalytics.domain.{ User, DataFrameTemplate, DataFrame }
+import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrameTemplate, DataFrame }
 import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.Paths
-import java.io.{IOException, OutputStream, InputStream}
+import java.io.{ IOException, OutputStream, InputStream }
 import com.intel.intelanalytics.engine.Rows.RowSource
 import java.util.concurrent.atomic.AtomicLong
-import org.apache.hadoop.fs.{LocalFileSystem, FileSystem}
+import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
-import spray.json.{JsObject, JsonParser}
-import scala.io.{Codec, Source}
-import scala.collection.mutable.{HashSet, ListBuffer, ArrayBuffer, HashMap}
-import scala.io.{Codec, Source}
-import org.apache.hadoop.fs.{Path => HPath}
+import spray.json.{ JsObject, JsonParser }
+import scala.io.{ Codec, Source }
+import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
+import scala.io.{ Codec, Source }
+import org.apache.hadoop.fs.{ Path => HPath }
 import scala.Some
 import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
-import com.typesafe.config.{ConfigResolveOptions, ConfigFactory}
+import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
 import com.intel.event.EventContext
 import scala.concurrent.duration._
 import com.intel.intelanalytics.domain.Partial
-import com.intel.intelanalytics.repository.{SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent}
+import com.intel.intelanalytics.repository.{ SlickMetaStoreComponent, DbProfileComponent, MetaStoreComponent }
 import scala.slick.driver.H2Driver
-import scala.util.{Success, Failure, Try}
+import scala.util.{ Success, Failure, Try }
 import org.apache.spark.scheduler._
 import org.apache.spark.scheduler.SparkListenerStageCompleted
 import scala.Some
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.engine.{SparkProgressListener, TestListener}
+import org.apache.spark.engine.{ SparkProgressListener, TestListener }
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
@@ -75,12 +75,12 @@ import com.intel.intelanalytics.shared.EventLogging
 //TODO event notification
 //TODO pass current user info
 class SparkComponent extends EngineComponent
-                      with FrameComponent
-                      with CommandComponent
-                      with FileComponent
-                      with DbProfileComponent
-                      with SlickMetaStoreComponent
-                      with EventLogging {
+    with FrameComponent
+    with CommandComponent
+    with FileComponent
+    with DbProfileComponent
+    with SlickMetaStoreComponent
+    with EventLogging {
 
   val engine = new SparkEngine {}
   lazy val conf = ConfigFactory.load()
@@ -107,11 +107,10 @@ class SparkComponent extends EngineComponent
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
   metaStore.create()
 
-
   class SparkEngine extends Engine {
 
-    def context(implicit user: UserPrincipal) : Context = {
-        sparkContextManager.getContext(user.user.api_key)
+    def context(implicit user: UserPrincipal): Context = {
+      sparkContextManager.getContext(user.user.api_key)
     }
 
     def shutdown: Unit = {
@@ -126,7 +125,8 @@ class SparkComponent extends EngineComponent
         EventContext.getCurrent.put("newClassLoader", loader.toString)
         Thread.currentThread setContextClassLoader loader
         f
-      } finally {
+      }
+      finally {
         Thread.currentThread setContextClassLoader prior
       }
     }
@@ -138,7 +138,6 @@ class SparkComponent extends EngineComponent
     def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = withContext("se.alter") {
       ???
     }
-
 
     override def getCommands(offset: Int, count: Int): Future[Seq[Command]] = withContext("se.getCommands") {
       future {
@@ -171,84 +170,83 @@ class SparkComponent extends EngineComponent
       }
     }
 
-      def withCommand[T](command: Command)(block: => T) = {
-        commands.complete(command.id, Try {
-          block
-        })
-      }
+    def withCommand[T](command: Command)(block: => T) = {
+      commands.complete(command.id, Try {
+        block
+      })
+    }
 
-      def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
-        withContext("se.load") {
-          require(arguments != null, "arguments are required")
-          import DomainJsonProtocol._
-          val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
-          val result: Future[Command] = future {
-            withMyClassLoader {
-              withContext("se.load.future") {
-                withCommand(command) {
-                  val realFrame = frames.lookup(arguments.destination).getOrElse(
-                    throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
-                  val frameId = arguments.destination
-                  val parserFunction = getLineParser(arguments.lineParser)
-                  val location = fsRoot + frames.getFrameDataFile(frameId)
-                  val schema = realFrame.schema
-                  val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-                  val ctx = context(user)
-                  SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
-                }
-                commands.lookup(command.id).get
+    def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.load") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("load", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.load.future") {
+              withCommand(command) {
+                val realFrame = frames.lookup(arguments.destination).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.destination}"))
+                val frameId = arguments.destination
+                val parserFunction = getLineParser(arguments.lineParser)
+                val location = fsRoot + frames.getFrameDataFile(frameId)
+                val schema = realFrame.schema
+                val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+                val ctx = context(user)
+                SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
               }
+              commands.lookup(command.id).get
             }
           }
-          (command, result)
         }
-
-      def clear(frame: DataFrame): Future[DataFrame] = withContext("se.clear") {
-        ???
+        (command, result)
       }
 
-      def create(frame: DataFrameTemplate): Future[DataFrame] = withContext("se.create") {
+    def clear(frame: DataFrame): Future[DataFrame] = withContext("se.clear") {
+      ???
+    }
+
+    def create(frame: DataFrameTemplate): Future[DataFrame] = withContext("se.create") {
+      future {
+        frames.create(frame)
+      }
+    }
+
+    def delete(frame: DataFrame): Future[Unit] = withContext("se.delete") {
+      future {
+        frames.drop(frame)
+      }
+    }
+
+    def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
+      future {
+        frames.getFrames(offset, count)
+      }
+    }
+
+    def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame] =
+      withContext("se.filter") {
         future {
-          frames.create(frame)
+          val ctx = context(user).sparkContext //TODO: resource management
+          val rdd = frames.getFrameRdd(ctx, frame.id)
+          val command = getPyCommand(predicate)
+          val pythonExec = "python" //TODO: take from env var or config
+          val environment = System.getenv() //TODO - should be empty instead?
+          //        val pyRdd = new EnginePythonRDD[Array[Byte]](
+          //            rdd, command = command, System.getenv(),
+          //            new JArrayList, preservePartitioning = true,
+          //            pythonExec = pythonExec,
+          //            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
+          //            accumulator = new Accumulator[JList[Array[Byte]]](
+          //              initialValue = new JArrayList[Array[Byte]](),
+          //              param = null)
+          //          )
+          //        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
+          frame
         }
       }
 
-      def delete(frame: DataFrame): Future[Unit] = withContext("se.delete") {
-        future {
-          frames.drop(frame)
-        }
-      }
-
-      def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]] = withContext("se.getFrames") {
-        future {
-          frames.getFrames(offset, count)
-        }
-      }
-
-      def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame] =
-        withContext("se.filter") {
-          future {
-            val ctx = context(user).sparkContext //TODO: resource management
-            val rdd = frames.getFrameRdd(ctx, frame.id)
-            val command = getPyCommand(predicate)
-            val pythonExec = "python" //TODO: take from env var or config
-            val environment = System.getenv() //TODO - should be empty instead?
-            //        val pyRdd = new EnginePythonRDD[Array[Byte]](
-            //            rdd, command = command, System.getenv(),
-            //            new JArrayList, preservePartitioning = true,
-            //            pythonExec = pythonExec,
-            //            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-            //            accumulator = new Accumulator[JList[Array[Byte]]](
-            //              initialValue = new JArrayList[Array[Byte]](),
-            //              param = null)
-            //          )
-            //        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
-            frame
-          }
-        }
-
-
-    def getRows(id: Identifier, offset: Long, count: Int) (implicit user: UserPrincipal) = withContext("se.getRows") {
+    def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal) = withContext("se.getRows") {
       future {
         val frame = frames.lookup(id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
         val rows = frames.getRows(frame, offset, count)
@@ -263,26 +261,25 @@ class SparkComponent extends EngineComponent
         }
       }
 
-
     def createGraph(graph: GraphTemplate): Future[Graph] = {
       future {
         graphs.createGraph(graph)
       }
     }
 
-    def getGraph(id: SparkComponent.this.Identifier) : Future[Graph] = {
+    def getGraph(id: SparkComponent.this.Identifier): Future[Graph] = {
       future {
         graphs.lookup(id).get
       }
     }
 
-    def getGraphs(offset: Int, count: Int) : Future[Seq[Graph]] = {
+    def getGraphs(offset: Int, count: Int): Future[Seq[Graph]] = {
       future {
         graphs.getGraphs(offset, count)
       }
     }
 
-    def deleteGraph(graph: Graph) : Future[Unit]  = {
+    def deleteGraph(graph: Graph): Future[Unit] = {
       future {
         graphs.drop(graph)
       }
@@ -294,7 +291,6 @@ class SparkComponent extends EngineComponent
   val fsRoot = conf.getString("intel.analytics.fs.root")
 
   trait HdfsFileStorage extends FileStorage with EventLogging {
-
 
     val configuration = {
       val hadoopConfig = new Configuration()
@@ -308,15 +304,14 @@ class SparkComponent extends EngineComponent
       hadoopConfig
     }
 
-
     val fs = FileSystem.get(configuration)
-
 
     override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
       if (append) {
         fs.append(path)
-      } else {
+      }
+      else {
         fs.create(path, true)
       }
     }
@@ -329,10 +324,10 @@ class SparkComponent extends EngineComponent
     override def list(source: Directory): Seq[Entry] = withContext("file.list") {
       fs.listStatus(new HPath(fsRoot + frames.frameBase))
         .map {
-        case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
-        case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
-        case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
-      }
+          case s if s.isDirectory => Directory(path = Paths.get(s.getPath.toString))
+          case f if f.isDirectory => File(path = Paths.get(f.getPath.toString), size = f.getLen)
+          case x => throw new IOException("Unknown object type in filesystem at " + x.getPath)
+        }
     }
 
     override def read(source: File): InputStream = withContext("file.read") {
@@ -349,17 +344,18 @@ class SparkComponent extends EngineComponent
       ???
     }
 
-
     override def getMetaData(path: Path): Option[Entry] = withContext("file.getMetaData") {
       val hPath: HPath = new HPath(fsRoot + path.toString)
       val exists = fs.exists(hPath)
       if (!exists) {
         None
-      } else {
+      }
+      else {
         val status = fs.getStatus(hPath)
         if (status == null || fs.isDirectory(hPath)) {
           Some(Directory(path))
-        } else {
+        }
+        else {
           Some(File(path, status.getUsed))
         }
       }
@@ -418,7 +414,7 @@ class SparkComponent extends EngineComponent
         ???
       }
 
-    override def getRows(frame: DataFrame, offset: Long, count: Int) (implicit user: UserPrincipal): Iterable[Row] =
+    override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
       withContext("frame.getRows") {
         require(frame != null, "frame is required")
         require(offset >= 0, "offset must be zero or greater")
@@ -452,7 +448,8 @@ class SparkComponent extends EngineComponent
         val json: String = frame2.toJson.prettyPrint
         debug(json)
         f.write(json.getBytes(Codec.UTF8.name))
-      } finally {
+      }
+      finally {
         f.close()
       }
       frame2
@@ -469,7 +466,8 @@ class SparkComponent extends EngineComponent
         val src = Source.fromInputStream(f)(Codec.UTF8).getLines().mkString("")
         val json = JsonParser(src)
         return Some(json.convertTo[DataFrame])
-      } finally {
+      }
+      finally {
         f.close()
       }
     }
@@ -479,9 +477,9 @@ class SparkComponent extends EngineComponent
     def getFrames(offset: Int, count: Int): Seq[DataFrame] = withContext("frame.getFrames") {
       files.list(getOrCreateDirectory(frameBase))
         .flatMap {
-        case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
-        case _ => None
-      }
+          case Directory(p) => Some(p.getName(p.getNameCount - 1).toString)
+          case _ => None
+        }
         .filter(idRegex.findFirstMatchIn(_).isDefined) //may want to extract a method for this
         .flatMap(sid => frames.lookup(sid.toLong))
     }
@@ -572,12 +570,10 @@ class SparkComponent extends EngineComponent
       Unit
     }
 
-
     override def createGraph(graph: GraphTemplate): Graph = {
       println("CREATING GRAPH " + graph.name)
       new Graph(1, graph.name)
     }
-
 
     override def lookup(id: Long): Option[Graph] = {
       println("DELETING GRAPH " + id)

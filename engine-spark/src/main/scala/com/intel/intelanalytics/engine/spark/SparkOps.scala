@@ -30,10 +30,10 @@ import com.intel.intelanalytics.domain.LoadLines
 import spray.json.JsObject
 
 /**
-   This object exists to avoid having to serialize the entire engine in order to use spark
+ * This object exists to avoid having to serialize the entire engine in order to use spark
  */
-private [spark] object SparkOps extends Serializable {
-  def getRows(rdd: RDD[Row], offset:Long, count: Int): Seq[Row] = {
+private[spark] object SparkOps extends Serializable {
+  def getRows(rdd: RDD[Row], offset: Long, count: Int): Seq[Row] = {
     val counts = rdd.mapPartitionsWithIndex(
       (i: Int, rows: Iterator[Row]) => Iterator.single((i, rows.size)))
       .collect()
@@ -50,7 +50,8 @@ private [spark] object SparkOps extends Serializable {
       val (ct: Int, sum: Int) = sumsAndCounts(i)
       if (sum < offset || sum - ct > offset + count) {
         Iterator.empty
-      } else {
+      }
+      else {
         val start = offset - (sum - ct)
         rows.drop(start.toInt).take(count)
       }
@@ -66,14 +67,15 @@ private [spark] object SparkOps extends Serializable {
                 converter: Array[String] => Array[Any]) = {
     ctx.textFile(fileName)
       .mapPartitionsWithIndex {
-      case (partition, lines) => {
-        if (partition == 0) {
-          lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
-        } else {
-          lines.map(parserFunction)
+        case (partition, lines) => {
+          if (partition == 0) {
+            lines.drop(arguments.skipRows.getOrElse(0)).map(parserFunction)
+          }
+          else {
+            lines.map(parserFunction)
+          }
         }
       }
-    }
       .map(converter)
       .saveAsObjectFile(location)
   }

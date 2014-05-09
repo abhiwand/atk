@@ -7,7 +7,7 @@ import MediaTypes._
 import com.intel.intelanalytics.domain.Schema
 import akka.event.Logging
 import spray.routing.directives.BasicDirectives
-import com.intel.event.{Severity, EventContext}
+import com.intel.event.{ Severity, EventContext }
 import com.intel.intelanalytics.shared.EventLogging
 import com.intel.intelanalytics.service.v1.ApiV1Service
 import com.intel.intelanalytics.service.v1.viewmodels.RelLink
@@ -27,12 +27,12 @@ class ApiServiceActor extends Actor with HttpService { this: ApiService =>
   def receive = runRoute(this.serviceRoute)
 }
 
-
 // this trait defines our service behavior independently from the service actor
 trait ApiService extends Directives
-                        with EventLoggingDirectives { this: ApiService with ApiV1Service =>
+    with EventLoggingDirectives { this: ApiService with ApiV1Service =>
 
-  def homepage = {respondWithMediaType(`text/html`) {
+  def homepage = {
+    respondWithMediaType(`text/html`) {
       complete {
         <html>
           <body>
@@ -60,18 +60,18 @@ trait ApiService extends Directives
     path("") {
       get { homepage }
     } ~
-    pathPrefix("v1") {
-      this.apiV1Service
-    } ~
-    path("info") {
-      respondWithMediaType(`application/json`) {
-        complete(description)
+      pathPrefix("v1") {
+        this.apiV1Service
+      } ~
+      path("info") {
+        respondWithMediaType(`application/json`) {
+          complete(description)
+        }
       }
-    }
   }
 }
 
-case class ServiceDescription(name: String, identifier: String, versions: List[String] )
+case class ServiceDescription(name: String, identifier: String, versions: List[String])
 
 trait EventLoggingDirectives extends EventLogging {
   import BasicDirectives._

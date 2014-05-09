@@ -21,15 +21,13 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-
-
 package com.intel.intelanalytics.service.v1.viewmodels
 
-import com.intel.intelanalytics.domain.{Graph, GraphTemplate, DataFrame, Schema}
-import spray.json.{JsValue, DefaultJsonProtocol}
+import com.intel.intelanalytics.domain.{ Graph, GraphTemplate, DataFrame, Schema }
+import spray.json.{ JsValue, DefaultJsonProtocol }
 import spray.httpx.SprayJsonSupport
 import com.intel.intelanalytics.domain._
-import spray.json.{JsObject, JsValue, DefaultJsonProtocol}
+import spray.json.{ JsObject, JsValue, DefaultJsonProtocol }
 import spray.httpx.SprayJsonSupport
 import com.intel.intelanalytics.domain.Partial
 import com.intel.intelanalytics.domain.Operation
@@ -78,18 +76,17 @@ case class JsonTransform(name: String, arguments: Option[JsObject]) {
   require(name != null, "Name is required")
 }
 
-  case class DecoratedGraph(id: Long, name: String, links: List[RelLink]) {
-    require(id > 0)
-    require(name != null)
-    require(links != null)
-  }
+case class DecoratedGraph(id: Long, name: String, links: List[RelLink]) {
+  require(id > 0)
+  require(name != null)
+  require(links != null)
+}
 
-  case class GraphHeader(id: Long, name: String, url: String) {
-    require(id > 0)
-    require(name != null)
-    require(url != null)
-  }
-
+case class GraphHeader(id: Long, name: String, url: String) {
+  require(id > 0)
+  require(name != null)
+  require(url != null)
+}
 
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits

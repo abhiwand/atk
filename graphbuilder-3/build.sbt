@@ -3,10 +3,6 @@ import sbt.Keys._
 
 import sbtassembly.Plugin.AssemblyKeys._
 
-import com.typesafe.sbt.SbtScalariform._
-
-import scalariform.formatter.preferences._
-
 name := "graphbuilder-3"
 
 version := "3"
@@ -74,9 +70,3 @@ ScoverageSbtPlugin.instrumentSettings
 ScoverageSbtPlugin.ScoverageKeys.excludedPackages in ScoverageSbtPlugin.scoverage := "com.intel.graphbuilder.driver.spark.titan.examples.*;com.intel.graphbuilder.driver.local.examples.*"
 
 org.scalastyle.sbt.ScalastylePlugin.Settings
-
-scalariformSettings
-
-ScalariformKeys.preferences := ScalariformKeys.preferences.value
-  .setPreference(AlignParameters, true)
-  .setPreference(CompactControlReadability, true)
