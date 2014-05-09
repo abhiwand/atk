@@ -9,7 +9,7 @@ resolvers ++= Seq(
 
 addSbtPlugin("com.github.mpeltonen" % "sbt-idea" % "1.5.2")
 
-addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.3.2")
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.4.0")
 
 addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.10.1")
 
@@ -21,4 +21,4 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "0.98.0")
 
 //addSbtPlugin("com.zavakid.sbt" % "sbt-one-log" % "0.1.1")
 
-
+addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")

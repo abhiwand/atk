@@ -27,7 +27,6 @@ import com.intel.graphbuilder.elements.Vertex
 import com.intel.graphbuilder.write.dao.VertexDAO
 import com.tinkerpop.blueprints
 
-
 /**
  * Write vertices to a Blueprints compatible Graph database
  *
