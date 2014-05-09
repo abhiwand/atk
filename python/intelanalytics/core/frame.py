@@ -242,6 +242,36 @@ class BigFrame(object):
         return self._backend._as_json_obj(self)
         #return ['frame', {"name": self.name}]
 
+
+    def add_column(self, func, name=None):
+        """
+        Adds a new column to the frame by evaluating the given func on each row
+
+        Parameters
+        ----------
+        func: row function
+            function which takes a single row and produces a value for the new cell
+
+        names: list or tuple of strings or tuples of string, data type
+            specifies the name and data type of the new columns
+        """
+        pass
+
+    def add_columns(self, func, names=None, ):
+        """
+        Adds new columns to the frame by evaluating the given func on each row
+
+        Parameters
+        ----------
+        func: row function
+            function which takes a single row and produces a tuple of new cell
+            values
+
+        names: list or tuple of strings or tuples of string, data type
+            specifies the name and data type of the new columns
+        """
+        pass
+
     def append(self, *data):
         self._backend.append(self, *data)
 
