@@ -23,21 +23,38 @@
 
 package com.intel.intelanalytics.domain
 
-import spray.json.DefaultJsonProtocol
+import com.intel.intelanalytics.domain.DataTypes.DataType
+import spray.json._
 import com.intel.intelanalytics.domain.graphconstruction._
-import com.intel.intelanalytics.domain.DataFrame
-import com.intel.intelanalytics.domain.Schema
 import com.intel.intelanalytics.domain.graphconstruction.Value
-import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.graphconstruction.OutputConfiguration
 import com.intel.intelanalytics.domain.graphconstruction.EdgeRule
-import com.intel.intelanalytics.domain.graphconstruction.VertexRule
 import com.intel.intelanalytics.domain.graphconstruction.Property
 
 object DomainJsonProtocol extends DefaultJsonProtocol {
+
+  implicit object DataTypeFormat extends JsonFormat[DataTypes.DataType] {
+    override def read(json: JsValue): DataType = {
+      val raw = json.asInstanceOf[JsString].value
+      //val corrected = raw.substring(1, raw.length - 2)
+      DataTypes.toDataType(raw)
+    }
+
+    override def write(obj: DataType): JsValue = new JsString(obj.toString)
+  }
+
   implicit val schemaFormat = jsonFormat1(Schema)
 
   implicit val dataFrameFormat = jsonFormat3(DataFrame)
   implicit val dataFrameTemplateFormat = jsonFormat2(DataFrameTemplate)
+  implicit val separatorArgsJsonFormat = jsonFormat1(SeparatorArgs)
+  implicit val definitionFormat = jsonFormat3(Definition)
+  implicit val operationFormat = jsonFormat2(Operation)
+  implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
+  implicit val loadLinesFormat = jsonFormat4(LoadLines[JsObject, String])
+  implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject, Long])
+  implicit val errorFormat = jsonFormat5(Error)
+  implicit val userFormat = jsonFormat2(User)
 
   // graph
 
@@ -50,4 +67,29 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
 
   implicit val graphTemplateFormat = jsonFormat7(GraphTemplate)
   implicit val graphFormat = jsonFormat2(Graph)
+
+  implicit object DataTypeJsonFormat extends JsonFormat[Any] {
+    override def write(obj: Any): JsValue = {
+      obj match {
+        case n: Int => new JsNumber(n)
+        case n: Long => new JsNumber(n)
+        case n: Float => new JsNumber(n)
+        case n: Double => new JsNumber(n)
+        case s: String => new JsString(s)
+        case unk => serializationError("Cannot serialize " + unk.getClass.getName)
+      }
+    }
+
+    override def read(json: JsValue): Any = {
+      json match {
+        case JsNumber(n) if n.isValidInt => n.intValue()
+        case JsNumber(n) if n.isValidLong => n.longValue()
+        case JsNumber(n) if n.isValidFloat => n.floatValue()
+        case JsNumber(n) => n.doubleValue()
+        case JsString(s) => s
+        case unk => serializationError("Cannot deserialize " + unk.getClass.getName)
+      }
+    }
+  }
+
 }

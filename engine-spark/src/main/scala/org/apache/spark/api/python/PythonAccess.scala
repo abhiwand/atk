@@ -24,7 +24,7 @@
 package org.apache.spark.api.python
 
 import org.apache.spark.rdd.RDD
-import java.util.{List => JList, ArrayList => JArrayList, Map => JMap}
+import java.util.{ List => JList, ArrayList => JArrayList, Map => JMap }
 
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.Accumulator
@@ -34,15 +34,15 @@ import scala.reflect.ClassTag
  * Wrapper to enable access to private Spark class PythonRDD
  */
 class EnginePythonRDD[T: ClassTag](
-                                    parent: RDD[T],
-                                    command: Array[Byte],
-                                    envVars: JMap[String, String],
-                                    pythonIncludes: JList[String],
-                                    preservePartitioning: Boolean,
-                                    pythonExec: String,
-                                    broadcastVars: JList[Broadcast[Array[Byte]]],
-                                    accumulator: Accumulator[JList[Array[Byte]]])
-  extends PythonRDD[T](parent, command, envVars, pythonIncludes,
-    preservePartitioning, pythonExec, broadcastVars, accumulator) {
+  parent: RDD[T],
+  command: Array[Byte],
+  envVars: JMap[String, String],
+  pythonIncludes: JList[String],
+  preservePartitioning: Boolean,
+  pythonExec: String,
+  broadcastVars: JList[Broadcast[Array[Byte]]],
+  accumulator: Accumulator[JList[Array[Byte]]])
+    extends PythonRDD[T](parent, command, envVars, pythonIncludes,
+      preservePartitioning, pythonExec, broadcastVars, accumulator) {
 
 }

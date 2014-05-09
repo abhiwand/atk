@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
-// Copyright 2014 Intel Corporation All Rights Reserved.
+// Copyright 2013 Intel Corporation All Rights Reserved.
 //
 // The source code contained or described herein and all documents related to
 // the source code (Material) are owned by Intel Corporation or its suppliers
@@ -21,8 +21,15 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.domain
+package com.intel.intelanalytics
 
-trait HasId {
-  def id: Long
+package object domain {
+
+  implicit def throwableToError(t: Throwable): Error = {
+    val message = t.getMessage match {
+      case null | "" => t.getClass.getName
+      case s => s
+    }
+    Error(message, code = None, details = None, additional = None, stackTrace = Some(t.getStackTraceString))
+  }
 }
