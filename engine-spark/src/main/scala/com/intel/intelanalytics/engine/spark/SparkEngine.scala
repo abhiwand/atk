@@ -227,35 +227,45 @@ class SparkComponent extends EngineComponent
       new sun.misc.BASE64Decoder().decodeBuffer(corrected)
     }
 
-    def filter(frame: DataFrame, predicate: String)(implicit user: UserPrincipal): Future[DataFrame] = {
-      future {
-        withMyClassLoader {
-          val ctx = context(user).sparkContext
-          val predicateInBytes = decodePythonBase64EncodedStrToBytes(predicate)
+    def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.filter") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("filter", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.filter.future") {
+              withCommand(command) {
 
-          val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frame.id)
-            .map(x => x.map(t => t.toString()).mkString(","))
+                val ctx = context(user).sparkContext
+                val frameId = arguments.frame
+                val predicateInBytes = decodePythonBase64EncodedStrToBytes(arguments.predicate)
 
-          val pythonExec = "python2.7" //TODO: take from env var or config
-          val environment = new java.util.HashMap[String, String]()
+                val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
+                  .map(x => x.map(t => t.toString()).mkString(","))
 
-          val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
+                val pythonExec = "python2.7" //TODO: take from env var or config
+                val environment = new java.util.HashMap[String, String]()
 
-          var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+                val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
 
-          val pyRdd = new EnginePythonRDD[String](
-            baseRdd, predicateInBytes, environment,
-            new JArrayList, preservePartitioning = false,
-            pythonExec = pythonExec,
-            broadcastVars, accumulator)
+                var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
 
-          val location = fsRoot + frames.getFrameDataFile(frame.id)
-          pyRdd.map(s => new String(s).split(",").map(t => t.getBytes())).saveAsObjectFile(location)
+                val pyRdd = new EnginePythonRDD[String](
+                  baseRdd, predicateInBytes, environment,
+                  new JArrayList, preservePartitioning = false,
+                  pythonExec = pythonExec,
+                  broadcastVars, accumulator)
 
-          frame
+                val location = fsRoot + frames.getFrameDataFile(frameId)
+                pyRdd.map(s => new String(s).split(",").map(t => t.getBytes())).saveAsObjectFile(location)
+              }
+              commands.lookup(command.id).get
+            }
+          }
         }
+        (command, result)
       }
-    }
 
     def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal) = withContext("se.getRows") {
       future {

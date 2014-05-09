@@ -149,7 +149,7 @@ trait EngineComponent {
     def create(frame: DataFrameTemplate): Future[DataFrame]
     def clear(frame: DataFrame): Future[DataFrame]
     def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
-    def filter(frame: DataFrame, predicate: String)(implicit user: UserPrincipal): Future[DataFrame]
+    def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     //  Should predicate be Partial[Any]  def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
