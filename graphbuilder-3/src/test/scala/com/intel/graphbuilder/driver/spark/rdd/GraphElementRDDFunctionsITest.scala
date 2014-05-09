@@ -51,4 +51,3 @@ class GraphElementRDDFunctionsITest extends Specification {
   }
 }
 
-

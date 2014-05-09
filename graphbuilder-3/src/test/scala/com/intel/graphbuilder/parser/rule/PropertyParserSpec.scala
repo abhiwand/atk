@@ -28,7 +28,6 @@ import com.intel.graphbuilder.parser.InputRow
 import com.intel.graphbuilder.parser.InputSchema
 import org.specs2.mutable.Specification
 
-
 class PropertyParserSpec extends Specification {
 
   // setup data
