@@ -36,6 +36,7 @@
   <inceptionYear>2013</inceptionYear>
 
   <properties>
+    <pkg.version>0.8.0</pkg.version>
     <top.dir>${project.basedir}</top.dir>
     <buildtype>test</buildtype>
 
@@ -444,10 +445,10 @@
 						<argument>intelanalytics-rest-server</argument>
 						<argument>-b</argument>
 						<argument>${env.BUILD_NUMBER}</argument>
-						<argument>-t</argument>
+						 <argument>-v</argument>
+                                                <argument>${pkg.version}</argument>
+						<argument>--tar</argument>
 						<argument>${basedir}/package/intelanalytics-rest-server-source.tar.gz</argument>
-						<argument>-v</argument>
-						<argument>0.8.0</argument>
 					</arguments>
 				</configuration>
 			</execution>
@@ -482,10 +483,10 @@
                                                 <argument>intelanalytics-python-rest-client</argument>
                                                 <argument>-b</argument>
                                                 <argument>${env.BUILD_NUMBER}</argument>
-                                                <argument>-t</argument>
+						 <argument>-v</argument>
+                                                <argument>${pkg.version}</argument>
+                                                <argument>--tar</argument>
                                                 <argument>${basedir}/package/intelanalytics-python-rest-client-source.tar.gz</argument>
-                                                <argument>-v</argument>
-                                                <argument>0.8.0</argument>
                                         </arguments>
                                 </configuration>
                         </execution>
