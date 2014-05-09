@@ -98,13 +98,13 @@ class TestRestConnection(unittest.TestCase):
 
 class MockRequests(MagicMock):
 
-    def get(self, uri):
+    def get(self, uri, headers=None):
         response = Mock()
         response.uri = uri
         response.text = uri
         return response
 
-    def delete(self, uri):
+    def delete(self, uri, headers=None):
         response = Mock()
         response.uri = uri
         response.text = uri
