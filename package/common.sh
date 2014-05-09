@@ -44,6 +44,10 @@ function tarFiles()
 		fullPath=$path
 		fileName=${path##*/}
 		if [ "$fileName" != "" ]; then
+
+			if [[ ! $fullPath == \/* ]]; then
+				fullPath="/$fullPath"
+			fi
 			echo $fullPath | sed 's/^.\//\//g' >> FILES.LOG
 		fi
 	done
@@ -186,9 +190,13 @@ echo " rm %{buildroot}/files.tar.gz"
 echo "%clean"
 
 echo "%post"
-
+if [ ! -z "$POST" ]; then
+	echo "$POST"
+fi
 echo "%postun"
-
+if [ ! -z "$POSTUN" ]; then
+        echo "$POSTUN"
+fi
 echo "%files"
 cat $TAR_FILES
 
