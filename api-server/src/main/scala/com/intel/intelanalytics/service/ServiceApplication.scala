@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.service
 
-import akka.actor.{ActorSystem, Props}
+import akka.actor.{ ActorSystem, Props }
 import akka.io.IO
 import spray.can.Http
 import akka.pattern.ask
@@ -32,26 +32,32 @@ import scala.concurrent.duration._
 import scala.slick.driver.H2Driver
 import com.intel.event.EventLogger
 import com.intel.event.adapter.SLF4JLogAdapter
-import com.intel.intelanalytics.component.{Archive}
-import com.intel.intelanalytics.repository.{DbProfileComponent, SlickMetaStoreComponent}
-import com.intel.intelanalytics.service.v1.{V1DataFrameService, ApiV1Service}
+import com.intel.intelanalytics.component.{ Archive }
+import com.intel.intelanalytics.repository.{ MetaStoreComponent, DbProfileComponent, SlickMetaStoreComponent }
+import com.intel.intelanalytics.service.v1.{ V1CommandService, V1DataFrameService, ApiV1Service }
+import com.intel.intelanalytics.repository.{ DbProfileComponent, SlickMetaStoreComponent }
+import com.intel.intelanalytics.service.v1.{ V1GraphService, V1DataFrameService, ApiV1Service }
 import com.intel.intelanalytics.engine.EngineComponent
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{ Config, ConfigFactory }
+import com.intel.intelanalytics.domain.{ UserTemplate, User }
+import com.intel.intelanalytics.shared.EventLogging
+import scala.concurrent.Await
 
 class ServiceApplication extends Archive {
 
-
-  def get[T](descriptor: String) : T = {
+  def get[T](descriptor: String): T = {
     throw new IllegalArgumentException("This component provides no services")
   }
 
   def stop() = {}
 
-  def start(configuration: Map[String,String]) = {
-    ServiceHost.start()
+  def start(configuration: Map[String, String]) = {
+    val config = ConfigFactory.load()
+
+    ServiceHost.start(config)
+
   }
 }
-
 
 object ServiceHost {
   EventLogger.setImplementation(new SLF4JLogAdapter())
@@ -60,38 +66,75 @@ object ServiceHost {
   implicit val system = ActorSystem("intelanalytics-api")
 
   trait V1 extends ApiV1Service
-  with SlickMetaStoreComponent
-  with DbProfileComponent
-  with V1DataFrameService
-  with EngineComponent {
-    //TODO: choose database profile from config
-    override lazy val profile = new Profile(H2Driver, connectionString = "jdbc:h2:mem:iatest;DB_CLOSE_DELAY=-1",
-      driver = "org.h2.Driver")
+      with SlickMetaStoreComponent
+      with DbProfileComponent
+      with V1DataFrameService
+      with V1CommandService
+      with V1GraphService
+      with EngineComponent {
 
-    //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
-    //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
-    metaStore.create()
+    ///TODO: choose database profile driver class from config
+    override lazy val profile = {
+      lazy val config = ConfigFactory.load()
 
-    override val engine = com.intel.intelanalytics.component.Boot.getArchive(
+      val connectionString = config.getString("intel.analytics.metastore.connection.url")
+      val driver = config.getString("intel.analytics.metastore.connection.driver")
+      new Profile(H2Driver, connectionString = connectionString, driver = driver)
+    }
+
+    override lazy val engine = com.intel.intelanalytics.component.Boot.getArchive(
       "engine", "com.intel.intelanalytics.engine.EngineApplication").get[Engine]("engine")
+
+    //populate the database with some test users from the specified file (for testing)
+    val usersFile = config.getString("intel.analytics.test.users.file")
+    //read from the resources folder
+    val source = scala.io.Source.fromURL(getClass.getResource("/" + usersFile))
+    try {
+
+      //make sure engine is initialized
+      Await.ready(engine.getCommands(0, 1), 30 seconds)
+
+      //TODO: Remove when connecting to an actual database server
+      metaStore.create()
+
+      metaStore.withSession("Populating test users") {
+        implicit session =>
+          for (line <- source.getLines() if !line.startsWith("#")) {
+            val cols: Array[String] = line.split(",")
+            val apiKey = cols(1).trim
+            info(s"Creating test user with api key $apiKey")
+            metaStore.userRepo.insert(new UserTemplate(apiKey)).get
+            assert(metaStore.userRepo.scan().length > 0, "No user was created")
+            assert(metaStore.userRepo.retrieveByColumnValue("api_key", apiKey).length == 1, "User not found by api key")
+          }
+      }
+    }
+    finally {
+      source.close()
+    }
 
   }
 
   // create and start our service actor
   class Service extends ApiServiceActor
-  with ApiService
-  with V1
+    with ApiService
+    with V1
 
   val service = system.actorOf(Props[Service], "api-service")
   implicit val timeout = Timeout(5.seconds)
 
-  def start() = {
-
-    val config = ConfigFactory.load()
+  def start(config: Config) = {
     val interface = config.getString("intel.analytics.api.host")
     val port = config.getInt("intel.analytics.api.port")
     // start a new HTTP server with our service actor as the handler
     IO(Http) ? Http.Bind(service, interface = interface, port = port)
 
+    //cleanup stuff on exit
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run(): Unit = {
+        com.intel.intelanalytics.component.Boot.getArchive(
+          "engine", "com.intel.intelanalytics.engine.EngineApplication").stop()
+      }
+    })
   }
 }

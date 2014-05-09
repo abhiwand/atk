@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.parser.rule
 
-import com.intel.graphbuilder.parser.{InputRow, ColumnDef, InputSchema}
+import com.intel.graphbuilder.parser.{ InputRow, ColumnDef, InputSchema }
 import java.util.Date
 import org.specs2.mock.Mockito
 import org.specs2.mutable.Specification

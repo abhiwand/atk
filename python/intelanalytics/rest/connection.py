@@ -29,7 +29,7 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
-__all__ = ['rest_connection']
+__all__ = ['Credentials', 'Connection', 'HttpMethods']
 
 # default connection config
 _host = "localhost"
@@ -40,15 +40,27 @@ _headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 
 _default = object()
 
+"""
+Currently credentials only contain the api key, and that will be passed in the Authorization header of every request
+sent to the backend
+"""
+class Credentials:
+    def __init__(self, api_key):
+        self.api_key = api_key
 
 class Connection(object):
 
-    def __init__(self, host=None, port=_default, scheme=None, version=None):
+    def __init__(self, host=None, port=_default, scheme=None, version=None, credentials = None):
         self.host = host or _host
         self.port = port if port is not _default else _port
         self.scheme = scheme or _scheme
         self.version = version or _version
         self.headers = _headers
+        self.credentials = credentials
+        #TODO: currently we put the api key as is in the Authorization header, but it's more secure if we use some sort
+        #of hashing to create a signature out of the key
+        #for an example see http://docs.aws.amazon.com/AmazonS3/latest/dev/RESTAuthentication.html
+        self.headers['Authorization'] = self.credentials
 
     def __repr__(self):
         return '{"host": "%s", "port": "%s", "scheme": "%s", "version": "%s"}' \
@@ -112,7 +124,7 @@ class HttpMethods(object):
         uri = self._get_base_uri() + uri_path
         if logger.level <= logging.INFO:
             logger.info("[HTTP Get] %s", uri)
-        r = requests.get(uri)
+        r = requests.get(uri, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Get Response] %s", r.text)
         self._check_response(r)
@@ -121,7 +133,7 @@ class HttpMethods(object):
     def delete(self, uri_path):
         uri = self._get_base_uri() + uri_path
         logger.info("[HTTP Delete] %s", uri)
-        r = requests.delete(uri)
+        r = requests.delete(uri, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Delete Response] %s", r.text)
         self._check_response(r)

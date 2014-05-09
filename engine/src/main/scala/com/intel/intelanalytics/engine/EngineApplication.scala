@@ -27,26 +27,29 @@ import scala.reflect.io.Directory
 import java.net.URLClassLoader
 import java.lang.String
 import scala.util.control.NonFatal
-import com.intel.intelanalytics.component.{Archive}
-import com.intel.intelanalytics.domain.{DataFrameTemplate, Schema, DataFrame}
+import com.intel.intelanalytics.component.{ Archive }
+import com.intel.intelanalytics.domain.{ DataFrameTemplate, Schema, DataFrame }
 
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.{ Await, ExecutionContext }
 import ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import com.intel.intelanalytics.shared.EventLogging
 
 class EngineApplication extends Archive with EventLogging {
 
-  var engine : EngineComponent with FrameComponent = null
+  var engine: EngineComponent with FrameComponent with CommandComponent = null
 
-  def get[T] (descriptor: String) = {
+  def get[T](descriptor: String) = {
     descriptor match {
       case "engine" => engine.engine.asInstanceOf[T]
       case _ => throw new IllegalArgumentException(s"No suitable implementation for: '$descriptor'")
     }
   }
 
-  def stop() = {}
+  def stop() = {
+    info("Shutting down engine")
+    engine.engine.shutdown
+  }
 
   def start(configuration: Map[String, String]) = {
 
@@ -61,28 +64,11 @@ class EngineApplication extends Archive with EventLogging {
         withLoader(sparkLoader) {
           val class_ = sparkLoader.loadClass("com.intel.intelanalytics.engine.spark.SparkComponent")
           val instance = class_.newInstance()
-          instance.asInstanceOf[EngineComponent with FrameComponent]
+          instance.asInstanceOf[EngineComponent with FrameComponent with CommandComponent]
         }
       }
-
-//      val ng = engine.engine
-//      println("Running test of frame creation and loading")
-//      val create = new DataFrameTemplate(name = "test", schema = new Schema(columns = List(("a", "int"), ("b", "int"), ("c", "int"))))
-//      val f = for {
-//        frame <- ng.create(create)
-//        _ = println("*************Created")
-//        app <- ng.appendFile(frame, "test.csv",new Builtin("line/csv"))
-//        _ = println("*************Loaded")
-//        rows <- ng.getRows(app.id, offset = 0, count = 10)
-//        filt <- ng.filter(app, "sample")
-//        filter_rows <- ng.getRows(app.id, offset = 0, count = 10)
-//      } yield (app,rows, filt, filter_rows)
-//      val (meta, data, fil, fil_rows) = Await.result(f, atMost = 60 seconds)
-//      println(s"metadata: $meta")
-//      data.foreach(row => println(row.map(bytes => new String(bytes)).mkString("|")))
-//      fil_rows.foreach(row => println(row.map(bytes => new String(bytes)).mkString("|")))
-
-    } catch {
+    }
+    catch {
       case NonFatal(e) => {
         error("An error occurred while starting the engine.", exception = e)
         throw e

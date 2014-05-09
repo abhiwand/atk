@@ -28,6 +28,7 @@ import logging
 logger = logging.getLogger(__name__)
 from collections import defaultdict, OrderedDict
 
+from connection import *
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
@@ -58,9 +59,14 @@ def wrap_row_function(frame, row_function):
 class FrameBackendREST(object):
     """REST plumbing for BigFrame"""
 
+    """credentials currently only contain the client's api key"""
+    def __init__(self, credentials = None):
+        self.credentials = credentials
+        self.rest_http = HttpMethods(Connection(credentials = self.credentials))
+
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
-        r = rest_http.get('dataframes')
+        r = self.rest_http.get('dataframes')
         payload = r.json()
         return [f['name'] for f in payload]
 
@@ -76,7 +82,7 @@ class FrameBackendREST(object):
             except:
                 pass
         payload = {'name': frame.name, 'schema': {"columns": columns}}
-        r = rest_http.post('dataframes', payload)
+        r = self.rest_http.post('dataframes', payload)
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
@@ -89,7 +95,7 @@ class FrameBackendREST(object):
                 self.append(frame, d)
             return
 
-        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': 1}}
+        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': data.skip_header_lines}}
         r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
         logger.info("Response from REST server {0}".format(r.text))
 
@@ -155,11 +161,11 @@ class FrameBackendREST(object):
         return FrameBackendREST.InspectionTable(frame.schema, rows)
 
     def take(self, frame, n, offset):
-        r = rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
+        r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
     def delete_frame(self, frame):
         logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
-        r = rest_http.delete("dataframes/" + str(frame._id))
+        r = self.rest_http.delete("dataframes/" + str(frame._id))
         return r
 
