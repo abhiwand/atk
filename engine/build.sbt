@@ -11,3 +11,4 @@ libraryDependencies ++= {
   )
 }
 
+ScoverageSbtPlugin.instrumentSettings
