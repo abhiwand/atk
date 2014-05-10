@@ -34,11 +34,11 @@
 <configuration>
     <property>
         <name>hbase.rootdir</name>
-        <value>file:///home/public/sprint_12/source_code/ititan/titan-hbase/target/hbase-root</value>
+        <value>file:///home/bkeller/src/source_code/ititan/titan-hbase/target/hbase-root</value>
     </property>
     <property>
         <name>hbase.zookeeper.property.dataDir</name>
-        <value>/home/public/sprint_12/source_code/ititan/titan-hbase/target/zk-data</value>
+        <value>/home/bkeller/src/source_code/ititan/titan-hbase/target/zk-data</value>
     </property>
     <property>
         <name>zookeeper.session.timeout</name>

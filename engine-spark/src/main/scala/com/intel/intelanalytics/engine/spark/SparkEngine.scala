@@ -166,7 +166,7 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def withCommand[T](command: Command)(block: => T) = {
+    def withCommand[T](command: Command)(block: => T): Unit = {
       commands.complete(command.id, Try {
         block
       })
@@ -308,6 +308,26 @@ class SparkComponent extends EngineComponent
     def deleteGraph(graph: Graph): Future[Unit] = {
       future {
         graphs.drop(graph)
+      }
+    }
+
+    //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
+    //system soon
+    def runAls(als: Als[Long]): (Command, Future[Command]) = {
+      import spray.json._
+      import DomainJsonProtocol._
+      val command = commands.create(CommandTemplate("graph/ml/als", Some(als.toJson.asJsObject)))
+      withContext("se.runAls") {
+        val result = future {
+          withCommand(command) {
+            val graph = getGraph(als.graph)
+
+            //TODO: invoke the giraph algorithm here.
+
+          }
+          commands.lookup(command.id).get
+        }
+        (command, result)
       }
     }
   }
@@ -587,6 +607,7 @@ class SparkComponent extends EngineComponent
     import spray.json._
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
     //
     // we can't actually use graph builder right now without breaking the build
     // import com.intel.graphbuilder.driver.spark.titan.examples
@@ -611,5 +632,6 @@ class SparkComponent extends EngineComponent
       List[Graph]()
     }
   }
+
 }
 

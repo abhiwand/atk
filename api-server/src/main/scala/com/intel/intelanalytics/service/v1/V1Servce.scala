@@ -162,14 +162,21 @@ trait V1Service extends Directives with EventLoggingDirectives {
   //      }
   //    }
   //  }
-  val frameIdRegex = "/dataframes/(\\d+)".r
+  private val frameIdRegex = "/dataframes/(\\d+)".r
 
-  def getFrameId(url: String): Option[Long] = {
+  protected def getFrameId(url: String): Option[Long] = {
     val id = frameIdRegex.findFirstMatchIn(url).map(m => m.group(1))
     id.map(s => s.toLong)
   }
 
-  def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {
+  private val graphIdRegex = "/graphs/(\\d+)".r
+
+  protected def getGraphId(url: String): Option[Long] = {
+    val id = graphIdRegex.findFirstMatchIn(url).map(m => m.group(1))
+    id.map(s => s.toLong)
+  }
+
+  protected def getUserPrincipal(apiKey: String): Future[UserPrincipal] = {
     future {
       metaStore.withSession("Getting user principal") { implicit session =>
         val users: List[User] = metaStore.userRepo.retrieveByColumnValue("api_key", apiKey)

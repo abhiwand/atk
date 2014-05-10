@@ -23,6 +23,12 @@
 
 package com.intel.intelanalytics.domain
 
+//TODO: Many of these classes will go away in the future, replaced with something more generic.
+
+//TODO: Add more parameters as appropriate
+case class Als[GraphRef](graph: GraphRef, lambda: Double, max_supersteps: Option[Int],
+                         converge_threshold: Option[Int], feature_dimension: Option[Int])
+
 case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], lineParser: Partial[Arguments]) {
   require(source != null, "source is required")
   require(destination != null, "destination is required")

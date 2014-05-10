@@ -159,6 +159,9 @@ trait EngineComponent {
     def getGraphs(offset: Int, count: Int): Future[Seq[Graph]]
     def createGraph(graph: GraphTemplate): Future[Graph]
     def deleteGraph(graph: Graph): Future[Unit]
+    //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
+    //system soon
+    def runAls(als: Als[Long]): (Command, Future[Command])
   }
 }
 
