@@ -163,6 +163,12 @@ for n in `cat ${nodesfile}`; do
         service gmond restart 2>&1 > /dev/null;
         '"
     fi
+    jumpServer=$(hostname -f)
+    ${dryrun} ssh -t -i ${pemfile} ${n} sudo bash -c "'
+        sed -i \"s/^master:.*/master: ${jumpServer}/g\" /etc/salt/minion
+        sed -i \"s/^#master:.*/master: ${jumpServer}/g\" /etc/salt/minion
+        service salt-minion restart
+         '"
 done
 
 rm _gmond.* 2>&1 > /dev/null
@@ -263,10 +269,10 @@ sleep 2;
 popd
 '"
 
-if [ -f s3copier.jar ];
+if [ -f s3copier.sh ];
 then
     echo "copy s3copier and start service"
-    ${dryrun} sh IntelAnalytics_cluster_configure_s3copier.sh -p ${pemfile} -j s3copier.jar -c s3copier.conf -h ${m} -u ${IA_USR}
+    ${dryrun} sh IntelAnalytics_cluster_configure_s3copier.sh -p ${pemfile} -j s3copier.sh -c s3copier.conf -h ${m} -u ${IA_USR}
 fi
 
 
