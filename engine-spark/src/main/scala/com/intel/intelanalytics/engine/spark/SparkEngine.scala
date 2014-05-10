@@ -317,17 +317,47 @@ class SparkComponent extends EngineComponent
       import spray.json._
       import DomainJsonProtocol._
       val command = commands.create(CommandTemplate("graph/ml/als", Some(als.toJson.asJsObject)))
-      withContext("se.runAls") {
-        val result = future {
-          withCommand(command) {
-            val graph = getGraph(als.graph)
+      withMyClassLoader {
+        withContext("se.runAls") {
+          val result = future {
+            withCommand(command) {
+              val graph = graphs.lookup(als.graph).getOrElse(throw new IllegalArgumentException("Graph does not exist"))
+              val eConf = ConfigFactory.load("engine.conf").getConfig("engine.algorithm.als")
+              val hConf = new Configuration()
+              def set[T](hadoopKey: String, arg: Option[T], configKey: String) = {
+                hConf.set(hadoopKey, arg.fold(eConf.getString(configKey))(a => a.toString))
+              }
+              //These parameters are set from engine config values
+              val mapping = Seq(
+                "giraph.split-master-worker" -> "giraph.SplitMasterWorker",
+                "giraph.mapper-memory" -> "mapreduce.map.memory.mb",
+                "giraph.mapper-heap" -> "mapreduce.map.java.opts",
+                "giraph.zookeeper-external" -> "giraph.zkIsExternal",
+                "bias-on" -> "als.biasOn",
+                "learning-curve-output-interval" -> "als.learningCurveOutputInterval",
+                "max-val" -> "als.maxVal",
+                "min-val" -> "als.minVal",
+                "bidirectional-check" -> "als.bidirectionalCheck"
+              )
 
-            //TODO: invoke the giraph algorithm here.
+              for ((k, v) <- mapping) {
+                hConf.set(v, eConf.getString(k))
+              }
 
+              //These parameters are set from the arguments passed in, or defaulted from
+              //the engine configuration if not passed.
+              set("als.lambda", Some(als.lambda), "lambda")
+              set("als.maxSuperSteps", als.max_supersteps, "max-supersteps")
+              set("als.convergenceThreshold", als.converge_threshold, "convergence-threshold")
+              set("als.featureDimension", als.feature_dimension, "feature-dimension")
+
+              //TODO: invoke the giraph algorithm here.
+
+            }
+            commands.lookup(command.id).get
           }
-          commands.lookup(command.id).get
+          (command, result)
         }
-        (command, result)
       }
     }
   }
