@@ -19,4 +19,4 @@ do
 done
 
 #run command to create repo
-ssh -o StrictHostKeyChecking=no -o ProxyCommand="nc -x  proxy-socks.jf.intel.com:1080 %h %p" -i ${BUILD_SERVER_PEM}  ec2-user@${BUILD_SERVER} $BUILD_SERVER_DIR/../update-repo.sh -b 10 -t branch
+ssh -o StrictHostKeyChecking=no -o ProxyCommand="nc -x  proxy-socks.jf.intel.com:1080 %h %p" -i ${BUILD_SERVER_PEM}  ec2-user@${BUILD_SERVER} $BUILD_SERVER_DIR/../update-repo.sh -b $BRANCH -t branch
