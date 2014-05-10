@@ -8,7 +8,7 @@ class Row(object):
         Expects schema to be a OrderedDict
         """
         self.schema = schema
-        self.data = [] if data is None else data
+        self.data = [] if data is None else data  # data is an array of strings right now
 
     def __getattr__(self, name):
         if name != "_schema" and name in self.schema.keys():
@@ -68,6 +68,7 @@ class Row(object):
             raise ValueError("Bad choice; must be any, all, or a column name")
 
     def _get_cell_value(self, key):
+        # converts the string into the proper data type
         index = self.schema.keys().index(key)  # could improve speed here...
         dtype = self.schema[key]
         return supported_types.cast(self.data[index], dtype)

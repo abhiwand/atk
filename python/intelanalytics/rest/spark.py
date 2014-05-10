@@ -20,6 +20,11 @@
 # estoppel or otherwise. Any license under such intellectual property rights
 # must be express and approved by Intel in writing.
 ##############################################################################
+"""
+Spark-specific implementation on the client-side
+"""
+# TODO - remove client knowledge of spark, delete this file
+
 import os
 spark_home = os.getenv('SPARK_HOME')
 if not spark_home:
@@ -44,11 +49,12 @@ class RowWrapper(Row):
     def load_row(self, s):
         # todo - will probably change frequently
         #  specific to String RDD, takes a comma-sep string right now...
-        self.data = s.split(',')
+        self.data = s.split(',')  # data is an array of strings
         #print "row_wrapper.data=" + str(self.data)
 
 
 def pickle_function(func):
+    """Pickle the function the way Pyspark does"""
     command = (func, UTF8Deserializer(), IaBatchedSerializer())
     pickled_function = CloudPickleSerializer().dumps(command)
     return pickled_function

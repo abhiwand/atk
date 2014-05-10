@@ -57,15 +57,15 @@ class TestRestConnection(unittest.TestCase):
         expected = '{"host": "good", "port": "7", "scheme": "http", "version": "v08"}'
         self.assertEquals(expected, repr(c))
 
-    def test_connection_get_url(self):
+    def test_connection_get_scheme_and_authority(self):
         c = create_conn1()
         expected = 'http://good:7'
-        self.assertEquals(expected, c.get_url())
+        self.assertEquals(expected, c._get_scheme_and_authority())
 
-    def test_connection_get_url_2(self):
+    def test_connection_get_scheme_and_authority_2(self):
         c = create_conn2()
         expected = 'http://solo'
-        self.assertEquals(expected, c.get_url())
+        self.assertEquals(expected, c._get_scheme_and_authority())
 
     @patch('intelanalytics.rest.connection.requests')
     def test_valid_ping(self, mock_requests):
@@ -125,7 +125,7 @@ class TestHttpMethods(unittest.TestCase):
     def init_mock_conn_and_return_uri(self, mock_conn):
         base_uri, version, path = "http://good:7", "v08", "bigtime/on/my/way"
         mock_conn.version = version
-        mock_conn.get_url.side_effect = lambda: base_uri
+        mock_conn.get_base_uri.side_effect = lambda: "%s/%s/" % (base_uri, version)
         return path, '/'.join([base_uri, version, path])
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
