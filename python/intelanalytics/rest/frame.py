@@ -28,7 +28,6 @@ import logging
 logger = logging.getLogger(__name__)
 from collections import defaultdict, OrderedDict
 
-from connection import *
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
@@ -59,10 +58,10 @@ def wrap_row_function(frame, row_function):
 class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
 
-    """credentials currently only contain the client's api key"""
-    def __init__(self, credentials = None):
-        self.credentials = credentials
-        self.rest_http = HttpMethods(Connection(credentials = self.credentials))
+    def __init__(self, http_methods=None):
+        self.rest_http = http_methods or rest_http
+        # use global connection, auth, etc.  This client does not support
+        # multiple connection contexts
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
@@ -70,13 +69,14 @@ class FrameBackendRest(object):
         payload = r.json()
         return [f['name'] for f in payload]
 
-    # def get_frame(name):
-    #     """Retrieves the named BigFrame object"""
-    #     raise NotImplemented
-    #
-    # def delete_frame(name):
-    #     """Deletes the frame from backing store"""
-    #     raise NotImplemented
+    def get_frame(self, name):
+        """Retrieves the named BigFrame object"""
+        raise NotImplemented  # TODO - implement get_frame
+
+    def delete_frame(self, frame):
+        logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
+        r = self.rest_http.delete("dataframes/" + str(frame._id))
+        return r
 
     def create(self, frame):
         logger.info("REST Backend: create frame: " + frame.name)
@@ -103,8 +103,17 @@ class FrameBackendRest(object):
                 self.append(frame, d)
             return
 
-        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': data.skip_header_lines}}
-        r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
+        # TODO - put the frame uri in the frame, as received from create response
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        # TODO - abstraction for payload construction
+        payload = {'name': 'dataframe/load',
+                   'arguments': {'source': data.file_name,
+                                 'destination': frame_uri,
+                                 'lineParser': { 'operation': { 'name':'builtin/line/separator' },
+                                                 'arguments': { 'separator': data.delimiter,
+                                                                'skipRows': data.skip_header_lines}}}}
+
+        r = rest_http.post('commands', payload)
         logger.info("Response from REST server {0}".format(r.text))
 
         if isinstance(data, CsvFile):
@@ -112,7 +121,7 @@ class FrameBackendRest(object):
             # todo - this info should come back from the engine
             for name, data_type in data.fields:
                 if data_type is not ignore:
-                    self._accept_column(BigColumn(name, data_type))
+                    self._accept_column(frame, BigColumn(name, data_type))
         else:
             raise TypeError("Unsupported append data type "
                             + data.__class__.__name__)
@@ -131,8 +140,13 @@ class FrameBackendRest(object):
         pickled_predicate = pickle_function(func)
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
-        payload = {'name': 'filter', 'language': 'builtin', 'arguments': {'predicate': http_ready_predicate}}
-        r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
+        # TODO - put the frame uri in the frame, as received from create response
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        # TODO - abstraction for payload construction
+        payload = {'name': 'dataframe/filter',
+                   'arguments': {'frame': frame_uri,
+                                 'predicate': http_ready_predicate}}
+        r = rest_http.post('commands', payload)
         return r
 
     class InspectionTable(object):
@@ -177,8 +191,4 @@ class FrameBackendRest(object):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
-    def delete_frame(self, frame):
-        logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
-        r = self.rest_http.delete("dataframes/" + str(frame._id))
-        return r
 
