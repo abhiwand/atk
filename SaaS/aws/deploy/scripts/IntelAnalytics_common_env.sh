@@ -1,6 +1,6 @@
 # Common global settings for IntelAnalytics AWS
 # This used for both AMI preparation and cluster creation.
-
+nodesFQDN=$()
 # All customer clusters will be prefixed w/ this string
 export IA_NAME=IntelAnalytics
 export IA_VERSION=0.5
