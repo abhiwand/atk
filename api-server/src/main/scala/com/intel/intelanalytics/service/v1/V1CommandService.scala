@@ -142,7 +142,26 @@ trait V1CommandService extends V1Service {
 
   def runGraphLoad(uri: Uri, transform: JsonTransform): Route = ???
 
-  def runAls(uri: Uri, transform: JsonTransform): Route = ???
+  def runAls(uri: Uri, transform: JsonTransform)(implicit user: UserPrincipal): Route = {
+    val test = Try {
+      import DomainJsonProtocol._
+      transform.arguments.get.convertTo[Als[String]]
+    }
+    val idOpt = test.toOption.flatMap(args => getGraphId(args.graph))
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+      & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+        val args = test.get
+        val id = idOpt.get
+        onComplete(
+          for {
+            graph <- engine.getGraph(id)
+            (c, f) = engine.runAls(args.copy[Long](graph = graph.id))
+          } yield c) {
+            case Success(c) => complete(decorate(uri + "/" + c.id, c))
+            case Failure(ex) => throw ex
+          }
+      }
+  }
 
   def runFilter(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
     {
