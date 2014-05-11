@@ -25,6 +25,7 @@ package com.intel.intelanalytics.engine
 
 import scala.reflect.io.Directory
 import java.net.URLClassLoader
+import java.lang.String
 import scala.util.control.NonFatal
 import com.intel.intelanalytics.component.{ Archive }
 import com.intel.intelanalytics.domain.{ DataFrameTemplate, Schema, DataFrame }

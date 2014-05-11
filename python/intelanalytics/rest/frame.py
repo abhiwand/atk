@@ -23,23 +23,45 @@
 """
 REST backend for frames
 """
+import base64
 import logging
 logger = logging.getLogger(__name__)
-from connection import *
+from collections import defaultdict, OrderedDict
+
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-#from intelanalytics.rest.serialize import IAPickle
+from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.spark import RowWrapper, pickle_function
 
 
+def encode_bytes_for_http(b):
+    """
+    Encodes bytes using base64, so they can travel as a string
+    """
+    return base64.urlsafe_b64encode(b)
 
-class FrameBackendREST(object):
+
+def wrap_row_function(frame, row_function):
+    """
+    Wraps a python row function, like one used for a filter predicate, such
+    that it will be evaluated with using the expected 'row' object rather than
+    whatever raw form the engine is using.  Ideally, this belong in the engine
+    """
+    def row_func(row):
+        row_wrapper = RowWrapper(frame.schema)
+        row_wrapper.load_row(row)
+        return row_function(row_wrapper)
+    return row_func
+
+
+class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
 
-    """credentials currently only contain the client's api key"""
-    def __init__(self, credentials = None):
-        self.credentials = credentials
-        self.rest_http = HttpMethods(Connection(credentials = self.credentials))
+    def __init__(self, http_methods=None):
+        self.rest_http = http_methods or rest_http
+        # use global connection, auth, etc.  This client does not support
+        # multiple connection contexts
 
     def get_frame_names(self):
         logger.info("REST Backend: get_frame_names")
@@ -47,8 +69,17 @@ class FrameBackendREST(object):
         payload = r.json()
         return [f['name'] for f in payload]
 
+    def get_frame(self, name):
+        """Retrieves the named BigFrame object"""
+        raise NotImplemented  # TODO - implement get_frame
+
+    def delete_frame(self, frame):
+        logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
+        r = self.rest_http.delete("dataframes/" + str(frame._id))
+        return r
+
     def create(self, frame):
-        logger.info("REST Backend: create: " + frame.name)
+        logger.info("REST Backend: create frame: " + frame.name)
         # hack, steal schema early if possible...
         columns = [[n, supported_types.get_type_string(t)]
                   for n, t in frame.schema.items()]
@@ -60,7 +91,7 @@ class FrameBackendREST(object):
                 pass
         payload = {'name': frame.name, 'schema': {"columns": columns}}
         r = self.rest_http.post('dataframes', payload)
-        logger.info("REST Backend: create response: " + r.text)
+        logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
 
@@ -72,13 +103,17 @@ class FrameBackendREST(object):
                 self.append(frame, d)
             return
 
-<<<<<<< HEAD
-        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': 1}}
-        r = self.rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
-=======
-        payload = {'name': 'load', 'language': 'builtin', 'arguments': {'source': data.file_name, 'separator': data.delimiter, 'skipRows': data.skip_header_lines}}
-        r = rest_http.post('dataframes/{0}/transforms'.format(frame._id), payload=payload)
->>>>>>> sprint_12
+        # TODO - put the frame uri in the frame, as received from create response
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        # TODO - abstraction for payload construction
+        payload = {'name': 'dataframe/load',
+                   'arguments': {'source': data.file_name,
+                                 'destination': frame_uri,
+                                 'lineParser': { 'operation': { 'name':'builtin/line/separator' },
+                                                 'arguments': { 'separator': data.delimiter,
+                                                                'skipRows': data.skip_header_lines}}}}
+
+        r = rest_http.post('commands', payload)
         logger.info("Response from REST server {0}".format(r.text))
 
         if isinstance(data, CsvFile):
@@ -86,28 +121,74 @@ class FrameBackendREST(object):
             # todo - this info should come back from the engine
             for name, data_type in data.fields:
                 if data_type is not ignore:
-                    frame._columns[name] = BigColumn(name, data_type)
+                    self._accept_column(frame, BigColumn(name, data_type))
         else:
             raise TypeError("Unsupported append data type "
                             + data.__class__.__name__)
 
+    @staticmethod
+    def _accept_column(frame, column):
+        frame._columns[column.name] = column
+        column._frame = frame
+
     def filter(self, frame, predicate):
-        # payload = StringIO()
-        # pickler = IAPickle(file)
-        # pickler.dump(predicate)
-        # Does payload have any other header/content apart from the serialized predicate for REST Server to parse?
+        row_ready_predicate = wrap_row_function(frame, predicate)
+        from itertools import ifilter
+        def filter_func(iterator): return ifilter(row_ready_predicate, iterator)
+        def func(s, iterator): return filter_func(iterator)
 
-        # pickle predicate in a payload
-        # requests.post(url, payload)
+        pickled_predicate = pickle_function(func)
+        http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
-        raise NotImplementedError
+        # TODO - put the frame uri in the frame, as received from create response
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        # TODO - abstraction for payload construction
+        payload = {'name': 'dataframe/filter',
+                   'arguments': {'frame': frame_uri,
+                                 'predicate': http_ready_predicate}}
+        r = rest_http.post('commands', payload)
+        return r
+
+    class InspectionTable(object):
+        _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
+        _align.update([(bool, 'r'),
+                       (bytearray, 'l'),
+                       (dict, 'l'),
+                       (float32, 'r'),
+                       (float64, 'r'),
+                       (int32, 'r'),
+                       (int64, 'r'),
+                       (list, 'l'),
+                       (string, 'l'),
+                       (str, 'l')])
+
+        def __init__(self, schema, rows):
+            self.schema = schema
+            self.rows = rows
+
+        def __repr__(self):
+            # keep the import localized, as serialization doesn't like prettytable
+            import intelanalytics.rest.prettytable as prettytable
+            table = prettytable.PrettyTable()
+            fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema.items()])
+            table.field_names = fields.keys()
+            table.align.update(fields)
+            table.hrules = prettytable.HEADER
+            table.vrules = prettytable.NONE
+            for r in self.rows:
+                table.add_row(r)
+            return table.get_string()
+
+         #def _repr_html_(self): Add this method for ipython notebooks
+
+    def inspect(self, frame, n, offset):
+        # inspect is just a pretty-print of take, we'll do it on the client
+        # side until there's a good reason not to
+        rows = self.take(frame, n, offset)
+        return FrameBackendRest.InspectionTable(frame.schema, rows)
 
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
 
-    def delete_frame(self, frame):
-        logger.info("REST Backend: Delete frame {0}".format(repr(frame)))
-        r = self.rest_http.delete("dataframes/" + str(frame._id))
-        return r
 

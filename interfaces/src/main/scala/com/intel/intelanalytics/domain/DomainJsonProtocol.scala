@@ -53,6 +53,11 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val partialJsFormat = jsonFormat2(Partial[JsObject])
   implicit val loadLinesFormat = jsonFormat4(LoadLines[JsObject, String])
   implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject, Long])
+  implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
+  implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
+
+  implicit val alsFormatString = jsonFormat5(Als[String])
+  implicit val alsFormatLong = jsonFormat5(Als[Long])
   implicit val errorFormat = jsonFormat5(Error)
   implicit val userFormat = jsonFormat2(User)
 

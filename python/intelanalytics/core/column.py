@@ -30,9 +30,12 @@ class BigColumn(object):
         if data_type is not unknown:
             supported_types.validate_is_supported_type(data_type)
         self.data_type = data_type
-        self.frame = None  # may want to make a property, help prevent setting this externally
+        self._frame = None  # may want to make a property, help prevent setting this externally
 
-    def as_json_obj(self):
-        frame_id = 1234  # todo - bologna for now
-        return ["column", { "name": self.name, "frame": frame_id}]
+    def _as_json_obj(self):
+        return ["column", { "name": self.name, "frame": None if not self.frame else self.frame._id}]
+
+    @property
+    def frame(self):
+        return self._frame
 

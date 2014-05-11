@@ -1,4 +1,5 @@
 export TIMESTAMP=$(date --utc +%Y%m%d%H%M%SZ)
+
 set -e
 set -u
 ./build_ia.sh

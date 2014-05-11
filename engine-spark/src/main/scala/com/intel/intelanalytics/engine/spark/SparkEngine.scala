@@ -36,8 +36,8 @@ import com.intel.intelanalytics.domain.{ User, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrameTemplate, DataFrame }
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import java.nio.file.Paths
-import java.io.{ IOException, OutputStream, InputStream }
+import java.nio.file.{ Paths, Path, Files }
+import java.io._
 import com.intel.intelanalytics.engine.Rows.RowSource
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
@@ -65,7 +65,7 @@ import scala.Some
 import com.intel.intelanalytics.domain.DataFrameTemplate
 import com.intel.intelanalytics.domain.DataFrame
 import org.apache.spark.scheduler.SparkListenerJobStart
-import org.apache.spark.engine.{ SparkProgressListener, TestListener }
+import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
@@ -131,10 +131,6 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def getPyCommand(function: Partial[Any]): Array[Byte] = {
-      function.operation.definition.get.data.getBytes(Codec.UTF8.name)
-    }
-
     def alter(frame: DataFrame, changes: Seq[Alteration]): Unit = withContext("se.alter") {
       ???
     }
@@ -170,7 +166,7 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def withCommand[T](command: Command)(block: => T) = {
+    def withCommand[T](command: Command)(block: => T): Unit = {
       commands.complete(command.id, Try {
         block
       })
@@ -224,26 +220,56 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame] =
+    def decodePythonBase64EncodedStrToBytes(byteStr: String): Array[Byte] = {
+      // Python uses different RFC than Java, must correct a couple characters
+      // http://stackoverflow.com/questions/21318601/how-to-decode-a-base64-string-in-scala-or-java00
+      val corrected = byteStr.map { case '-' => '+'; case '_' => '/'; case c => c }
+      new sun.misc.BASE64Decoder().decodeBuffer(corrected)
+    }
+
+    def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.filter") {
-        future {
-          val ctx = context(user).sparkContext //TODO: resource management
-          val rdd = frames.getFrameRdd(ctx, frame.id)
-          val command = getPyCommand(predicate)
-          val pythonExec = "python" //TODO: take from env var or config
-          val environment = System.getenv() //TODO - should be empty instead?
-          //        val pyRdd = new EnginePythonRDD[Array[Byte]](
-          //            rdd, command = command, System.getenv(),
-          //            new JArrayList, preservePartitioning = true,
-          //            pythonExec = pythonExec,
-          //            broadcastVars = new JArrayList[Broadcast[Array[Byte]]](),
-          //            accumulator = new Accumulator[JList[Array[Byte]]](
-          //              initialValue = new JArrayList[Array[Byte]](),
-          //              param = null)
-          //          )
-          //        pyRdd.map(bytes => new String(bytes, Codec.UTF8.name)).saveAsTextFile("frame_" + frame.id + "_drop.txt")
-          frame
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("filter", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.filter.future") {
+              withCommand(command) {
+
+                val ctx = context(user).sparkContext
+                val frameId = arguments.frame
+                val predicateInBytes = decodePythonBase64EncodedStrToBytes(arguments.predicate)
+
+                val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
+                  .map(x => x.map(t => t.toString()).mkString(","))
+
+                val pythonExec = "python2.7" //TODO: take from env var or config
+                val environment = new java.util.HashMap[String, String]()
+
+                val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
+
+                var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+
+                val pyRdd = new EnginePythonRDD[String](
+                  baseRdd, predicateInBytes, environment,
+                  new JArrayList, preservePartitioning = false,
+                  pythonExec = pythonExec,
+                  broadcastVars, accumulator)
+
+                val location = fsRoot + frames.getFrameDataFile(frameId)
+
+                val realFrame = frames.lookup(arguments.frame).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
+                val schema = realFrame.schema
+                val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
+                pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
+              }
+              commands.lookup(command.id).get
+            }
+          }
         }
+        (command, result)
       }
 
     def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal) = withContext("se.getRows") {
@@ -282,6 +308,56 @@ class SparkComponent extends EngineComponent
     def deleteGraph(graph: Graph): Future[Unit] = {
       future {
         graphs.drop(graph)
+      }
+    }
+
+    //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
+    //system soon
+    def runAls(als: Als[Long]): (Command, Future[Command]) = {
+      import spray.json._
+      import DomainJsonProtocol._
+      val command = commands.create(CommandTemplate("graph/ml/als", Some(als.toJson.asJsObject)))
+      withMyClassLoader {
+        withContext("se.runAls") {
+          val result = future {
+            withCommand(command) {
+              val graph = graphs.lookup(als.graph).getOrElse(throw new IllegalArgumentException("Graph does not exist"))
+              val eConf = ConfigFactory.load("engine.conf").getConfig("engine.algorithm.als")
+              val hConf = new Configuration()
+              def set[T](hadoopKey: String, arg: Option[T], configKey: String) = {
+                hConf.set(hadoopKey, arg.fold(eConf.getString(configKey))(a => a.toString))
+              }
+              //These parameters are set from engine config values
+              val mapping = Seq(
+                "giraph.split-master-worker" -> "giraph.SplitMasterWorker",
+                "giraph.mapper-memory" -> "mapreduce.map.memory.mb",
+                "giraph.mapper-heap" -> "mapreduce.map.java.opts",
+                "giraph.zookeeper-external" -> "giraph.zkIsExternal",
+                "bias-on" -> "als.biasOn",
+                "learning-curve-output-interval" -> "als.learningCurveOutputInterval",
+                "max-val" -> "als.maxVal",
+                "min-val" -> "als.minVal",
+                "bidirectional-check" -> "als.bidirectionalCheck"
+              )
+
+              for ((k, v) <- mapping) {
+                hConf.set(v, eConf.getString(k))
+              }
+
+              //These parameters are set from the arguments passed in, or defaulted from
+              //the engine configuration if not passed.
+              set("als.lambda", Some(als.lambda), "lambda")
+              set("als.maxSuperSteps", als.max_supersteps, "max-supersteps")
+              set("als.convergenceThreshold", als.converge_threshold, "convergence-threshold")
+              set("als.featureDimension", als.feature_dimension, "feature-dimension")
+
+              //TODO: invoke the giraph algorithm here.
+
+            }
+            commands.lookup(command.id).get
+          }
+          (command, result)
+        }
       }
     }
   }
@@ -561,6 +637,7 @@ class SparkComponent extends EngineComponent
     import spray.json._
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
+
     //
     // we can't actually use graph builder right now without breaking the build
     // import com.intel.graphbuilder.driver.spark.titan.examples
@@ -585,5 +662,6 @@ class SparkComponent extends EngineComponent
       List[Graph]()
     }
   }
+
 }
 

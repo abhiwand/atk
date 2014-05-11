@@ -1,179 +1,187 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2014 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
+f, f2 = {}, {}
+"""
+BigGraph object
 
-# New Graph Builder API proposal
+Examples
+--------
+>>> movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
 
-# Here's a full example that should make more sense after reading the code below
-# (where f and f2 are data frames)
-#
-#
-# >>> movie_vertex = VertexRule('movie', f['movie'], genre=f['genre'])
-#
-# >>> user_vertex = VertexRule('user', f['user'], age=f['age_1'])
-#
-# >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, weight=f['score'])
-#
-# >>> extra_movie_rule = VertexPropertyRule(vertex_movie, f2['movie'], oscars=f2['oscars'])
-#
-# >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
-#
-# >>> extra_rating_rule = EdgePropertyRule(rating_edge, f2['movie'], f2['user'], rotten_tomatoes=f2['rt'])
-#
-# >>> g.add_props([extra_rating_rule])
-#
+>>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
 
+>>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight':f['score'}])
+
+>>> oscars_vertex_prop = VertexRule('movie', f2['film'], {'oscars': f2['oscars']})
+
+>>> g = BigGraph([user_vertex, movie_vertex, rating_edge, oscars_vertex_prop])
+
+"""
+
+import logging
+logger = logging.getLogger(__name__)
+import uuid
+
+from intelanalytics.core.serialize import to_json
+
+
+def _get_backend():
+    from intelanalytics.core.config import get_graph_backend
+    return get_graph_backend()
+
+def get_graph_names():
+    """Gets the names of BigGraph objects available for retrieval"""
+    return _get_backend().get_graph_names()
+
+
+def get_graph(name):
+    """Retrieves the named BigGraph object"""
+    return _get_backend().get_graph(name)
+
+
+def delete_graph(name):
+    """Deletes the graph from backing store"""
+    return _get_backend().delete_graph(name)
 
 
 class Rule(object):
-    """Graph building rule base class"""
+    """Graph rule base class"""
     pass
 
 
 class VertexRule(Rule):
-    def __init__(self, label, value, **props):
+    def __init__(self, id_key, id_value, properties=None):
         """
-        Specifies creation of a vertex
+        Specifies a vertex and vertex properties
 
         Parameters
         ----------
-        label: str or BigColumn
-            vertex label, static string or pulled from BigColumn source
-        value: BigColumn  # more appropriate name here?
-            vertex value
-        **props: dictionary, optional
+        id_key: str
+            static string or pulled from BigColumn source; the key for the
+            uniquely identifying property for the vertex.
+        id_value: BigColumn source
+            vertex value; the unique value to identify this vertex
+        properties: dictionary, optional
             vertex properties of the form property_name:property_value
             property_name is a string, and property_value is a literal value
             or a BigColumn source, which must be from same BigFrame as value arg
 
         Examples
         --------
-        >>> movie_vertex = VertexRule('movie', f['movie'], genre=f['genre'])
-        >>> user_vertex = VertexRule('user', f['user'], age=f['age_1'])
+        >>> movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
+        >>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
         """
-        pass
+        self.id_key = id_key
+        self.id_value = id_value
+        self.properties = properties
 
+    def _as_json_obj(self):
+        return self.__dict__
+
+    def __repr__(self):
+        return to_json(self)
 
 class EdgeRule(Rule):
-    def __init__(self, label, src, dst, is_directed=False, **props):
+    def __init__(self, label, tail, head, properties=None, is_directed=False):
         """
-        Specifies creation of an edge
+        Specifies an edge and edge properties
 
         Parameters
         ----------
-        label: str or BigColumn
-            vertex label, static string or pulled from BigColumn source
-        src: VertexRule
-            source vertex; must be from same BigFrame as dst
-        dst: VertexRule
-            destination vertex; must be from same BigFrame as src
-        is_directed : bool, optional
-            indicates the edge is directed
-        **props: dict, optional
-            vertex properties of the form property_name:property_value
-            property_name is a string, and property_value is a literal value
-            or a BigColumn source, which must be from same BigFrame as src, dst
-
-        Examples
-        --------
-        >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, weight=f['score'])
-        """
-        pass
-
-
-class PropertyRule(Rule):
-    pass
-
-class VertexPropertyRule(PropertyRule):
-    def __init__(self, vertex, match_value, **props):
-        """
-        Specifies attachment of additional properties to a vertex
-
-        Parameters
-        ----------
-        vertex : VertexRule
-            target vertex for property attachment
-        match_value: BigColumn  # more appropriate name?
-            BigColumn source whose value must match against the value of the
-            target vertex
-        **props: dict, optional
-            vertex properties of the form property_name:property_value
-            property_name is a string, and property_value is a literal value
-            or a BigColumn source
-
-        Examples
-        --------
-        >>> extra_movie_rule = VertexPropertyRule(vertex_movie, f2['movie'], oscars=f2['oscars'])
-        """
-        pass
-
-
-class EdgePropertyRule(PropertyRule):
-    def __init__(self, edge, match_src, match_dst, **props):
-        """
-        Specifies attachment of additional properties to an edge
-
-        Parameters
-        ----------
-        edge : EdgeRule
-            target edge for property attachment
-        match_src: BigColumn  # more appropriate name?
-            BigColumn source whose value must match against the value of the
-            target edge's source vertex
-        match_dst: BigColumn  # more appropriate name?
-            BigColumn source whose value must match against the value of the
-            target edge's destination vertex
-        **props: dict, optional
+        label: str or BigColumn source
+            vertex label, can be constant string or pulled from BigColumn
+        tail: VertexRule
+            tail vertex ('from' vertex); must be from same BigFrame as head,
+            label and any properties
+        head: VertexRule
+            head vertex ('to' vertex); must be from same BigFrame as tail,
+            label and any properties
+        properties: dict, optional
             edge properties of the form property_name:property_value
             property_name is a string, and property_value is a literal value
-            or a BigColumn source
+            or a BigColumn source, which must be from same BigFrame as head,
+            tail and label
+        is_directed : bool, optional
+            indicates the edge is directed
 
         Examples
         --------
-        >>> extra_rating_rule = EdgePropertyRule(rating_edge, f2['movie'], f2['user'], rotten_tomatoes=f2['rt'])
+        >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': f['score']})
         """
-        pass
+        self.label = label
+        self.tail = tail
+        self.head = head
+        self.properties = properties
+        self.is_directed = is_directed
 
+    def _as_json_obj(self):
+        d = dict(self.__dict__)
+        d['tail'] = None if not self.tail else  self.tail._as_json_obj()
+        d['head'] = None if not self.head else  self.head._as_json_obj()
+        return d
 
-class GraphRule(Rule):
-    def __init__(self, vid=None):
-        """
-        Specifies graph properties
-
-        Parameters
-        ----------
-        vid : str, optional
-            the name of the vertex id  # ie today's _gb_ID
-        """
-        pass
+    def __repr__(self):
+        return to_json(self)
 
 
 class BigGraph(object):
-    def __init__(self, rules=None):
+    def __init__(self, rules=None, name=""):
         """
         Creates a big graph
 
         Parameters
         ----------
         rules : list of Rule, optional
-             list of rules which specify how the graph will be created
+             list of rules which specify how the graph will be created; if empty
+             an empty graph will be created
+        name : str, optional
+             name for the new graph; if not provided a default name is generated
 
         Examples
         --------
         >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
         """
-        pass
+        if rules and rules is not list or not all([rule is Rule for rule in rules]):
+            raise TypeError("rules must be a list of Rule objects")
+        if not hasattr(self, '_backend'):
+            self._backend = _get_backend()
+        self._name = name or self._get_new_graph_name()
+        self._backend.create(self, rules)
+        logger.info('Created new graph "%s"', self._name)
 
-    def add_props(self, rules):
-        """
-        Adds properties to existing vertices and edges
+    @property
+    def name(self):
+        return self._name
 
-        Parameters
-        ----------
-        rules : list of PropertyRule
-             list of property rules which specify how to add the properties
+    @name.setter
+    def name(self, value):
+        self._backend.set_name(value)
 
-        Examples
-        --------
-        >>> g.add_props([extra_rating_rule])
-        """
-        pass
+    def _get_new_graph_name(self):
+        return "graph_" + uuid.uuid4().hex
 
-
+    # TODO - consider:
+    #def add(self, rules)
+    #def remove(self, rules)
+    #def add_props(self, rules)
+    #def remove_props(self, rules)
