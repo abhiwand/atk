@@ -57,15 +57,15 @@ class TestRestConnection(unittest.TestCase):
         expected = '{"host": "good", "port": "7", "scheme": "http", "version": "v08"}'
         self.assertEquals(expected, repr(c))
 
-    def test_connection_get_url(self):
+    def test_connection_get_scheme_and_authority(self):
         c = create_conn1()
         expected = 'http://good:7'
-        self.assertEquals(expected, c.get_url())
+        self.assertEquals(expected, c._get_scheme_and_authority())
 
-    def test_connection_get_url_2(self):
+    def test_connection_get_scheme_and_authority_2(self):
         c = create_conn2()
         expected = 'http://solo'
-        self.assertEquals(expected, c.get_url())
+        self.assertEquals(expected, c._get_scheme_and_authority())
 
     @patch('intelanalytics.rest.connection.requests')
     def test_valid_ping(self, mock_requests):
@@ -79,7 +79,7 @@ class TestRestConnection(unittest.TestCase):
         try:
             create_conn1().ping()
         except Exception as e:
-            self.assertEquals("Unable to find Intel Analytics server at http://good:7", e.message)
+            self.assertTrue(e.message.startswith("Failed to ping Intel Analytics at http://good:7"))
         else:
             self.fail()
 
@@ -98,14 +98,25 @@ class TestRestConnection(unittest.TestCase):
 
 class MockRequests(MagicMock):
 
-    def get(self, uri):
-        return uri
+    def get(self, uri, headers=None):
+        response = Mock()
+        response.uri = uri
+        response.text = uri
+        return response
 
-    def delete(self, uri):
-        return uri
+    def delete(self, uri, headers=None):
+        response = Mock()
+        response.uri = uri
+        response.text = uri
+        return response
+
 
     def post(self, *args, **kwargs):
-        return (args, kwargs)
+        response = Mock()
+        response.text = ""
+        response.args = args
+        response.kwargs = kwargs
+        return response
 
 
 
@@ -114,7 +125,7 @@ class TestHttpMethods(unittest.TestCase):
     def init_mock_conn_and_return_uri(self, mock_conn):
         base_uri, version, path = "http://good:7", "v08", "bigtime/on/my/way"
         mock_conn.version = version
-        mock_conn.get_url.side_effect = lambda: base_uri
+        mock_conn.get_base_uri.side_effect = lambda: "%s/%s/" % (base_uri, version)
         return path, '/'.join([base_uri, version, path])
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
@@ -122,14 +133,14 @@ class TestHttpMethods(unittest.TestCase):
     def test_get(self, mock_conn):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
         r = rest_http.get(path)
-        self.assertEquals(uri, r)
+        self.assertEquals(uri, r.uri)
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
     @patch('intelanalytics.rest.connection.rest_http.connection')
     def test_delete(self, mock_conn):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
         r = rest_http.delete(path)
-        self.assertEquals(uri, r)
+        self.assertEquals(uri, r.uri)
 
     @patch('intelanalytics.rest.connection.requests', new=MockRequests())
     @patch('intelanalytics.rest.connection.rest_http.connection')
@@ -137,9 +148,9 @@ class TestHttpMethods(unittest.TestCase):
         path, uri = self.init_mock_conn_and_return_uri(mock_conn)
         payload = { 'a': 'aah', 'b': 'boo', 'c': 'caw'}
         r = rest_http.post(path, payload)
-        self.assertEquals(uri, r[0][0])
-        self.assertEquals(json.dumps(payload), r[1]['data'])
-        self.assertTrue(r[1]['headers'])
+        self.assertEquals(uri, r.args[0])
+        self.assertEquals(json.dumps(payload), r.kwargs['data'])
+        self.assertTrue(r.kwargs['headers'])
 
 if __name__ == '__main__':
     unittest.main()

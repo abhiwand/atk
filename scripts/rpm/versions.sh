@@ -1,6 +1,6 @@
 export TRIBECA_VERSION="0.8.0"
+export IAUSER=hadoop
 
-set -u
 set -e
 
 

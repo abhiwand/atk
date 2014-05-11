@@ -149,7 +149,8 @@ trait EngineComponent {
     def create(frame: DataFrameTemplate): Future[DataFrame]
     def clear(frame: DataFrame): Future[DataFrame]
     def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
-    def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
+    def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+    //  Should predicate be Partial[Any]  def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
@@ -158,6 +159,9 @@ trait EngineComponent {
     def getGraphs(offset: Int, count: Int): Future[Seq[Graph]]
     def createGraph(graph: GraphTemplate): Future[Graph]
     def deleteGraph(graph: Graph): Future[Unit]
+    //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
+    //system soon
+    def runAls(als: Als[Long]): (Command, Future[Command])
   }
 }
 
