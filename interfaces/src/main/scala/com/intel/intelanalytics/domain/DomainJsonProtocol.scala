@@ -55,6 +55,8 @@ object DomainJsonProtocol extends DefaultJsonProtocol {
   implicit val loadLinesLongFormat = jsonFormat4(LoadLines[JsObject, Long])
   implicit val filterPredicateFormat = jsonFormat2(FilterPredicate[JsObject, String])
   implicit val filterPredicateLongFormat = jsonFormat2(FilterPredicate[JsObject, Long])
+  implicit val removeColumnFormat = jsonFormat2(FrameRemoveColumn[JsObject, String])
+  implicit val removeColumnLongFormat = jsonFormat2(FrameRemoveColumn[JsObject, Long])
 
   implicit val alsFormatString = jsonFormat5(Als[String])
   implicit val alsFormatLong = jsonFormat5(Als[Long])

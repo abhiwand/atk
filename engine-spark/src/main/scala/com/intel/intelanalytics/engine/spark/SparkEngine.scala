@@ -30,7 +30,7 @@ import org.apache.spark.broadcast.Broadcast
 import scala.collection.{ mutable, Set }
 import com.intel.intelanalytics.domain._
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.{ RDD, EmptyRDD }
 import com.intel.intelanalytics.engine._
 import com.intel.intelanalytics.domain.{ User, DataFrameTemplate, DataFrame }
 import com.intel.intelanalytics.domain.{ GraphTemplate, Graph, DataFrameTemplate, DataFrame }
@@ -272,6 +272,48 @@ class SparkComponent extends EngineComponent
         (command, result)
       }
 
+    def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.removecolumn") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("removecolumn", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.removecolumn.future") {
+              withCommand(command) {
+
+                val ctx = context(user).sparkContext
+                val frameId = arguments.frame
+                val column = arguments.column
+
+                val realFrame = frames.lookup(arguments.frame).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
+                val schema = realFrame.schema
+                val location = fsRoot + frames.getFrameDataFile(frameId)
+
+                val columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == column)
+
+                println(s"ColumnIndex $columnIndex ColumnLength ${realFrame.schema.columns.length}")
+
+                (columnIndex, realFrame.schema.columns.length) match {
+                  case (value, _) if value < 0 => throw new IllegalArgumentException(s"No such column: $column")
+                  case (value, 1) => frames.getFrameRdd(ctx, frameId)
+                    .filter(_ => false)
+                    .saveAsObjectFile(location)
+                  case _ => frames.getFrameRdd(ctx, frameId)
+                    .map(row => row.take(columnIndex) ++ row.drop(columnIndex + 1))
+                    .saveAsObjectFile(location)
+                }
+
+                frames.removeColumn(realFrame, columnIndex)
+              }
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
+
     def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal) = withContext("se.getRows") {
       future {
         val frame = frames.lookup(id).getOrElse(throw new IllegalArgumentException("Requested frame does not exist"))
@@ -475,9 +517,23 @@ class SparkComponent extends EngineComponent
         ???
       }
 
-    override def removeColumn(frame: DataFrame): Unit =
+    override def removeColumn(frame: DataFrame, columnIndex: Int): Unit =
       withContext("frame.removeColumn") {
-        ???
+        val remainingColumns = frame.schema.columns.take(columnIndex) ++ frame.schema.columns.drop(columnIndex + 1)
+        val newSchema = frame.schema.copy(columns = remainingColumns)
+        val newFrame = frame.copy(schema = newSchema)
+
+        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
+        info(s"Saving metadata to $meta")
+        val f = files.write(meta)
+        try {
+          val json: String = newFrame.toJson.prettyPrint
+          debug(json)
+          f.write(json.getBytes(Codec.UTF8.name))
+        }
+        finally {
+          f.close()
+        }
       }
 
     override def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit =

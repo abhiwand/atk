@@ -40,5 +40,9 @@ case class FilterPredicate[+Arguments, FrameRef](frame: FrameRef, predicate: Str
   require(frame != null, "frame is required")
   require(predicate != null, "predicate is required")
 }
+case class FrameRemoveColumn[+Arguments, FrameRef](frame: FrameRef, column: String) {
+  require(frame != null, "frame is required")
+  require(column != null, "column is required")
+}
 
 case class SeparatorArgs(separator: Char)

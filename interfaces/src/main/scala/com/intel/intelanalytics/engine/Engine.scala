@@ -82,7 +82,7 @@ trait FrameComponent {
     def create(frame: DataFrameTemplate): DataFrame
     def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: Row => T): Unit
     def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
-    def removeColumn(frame: DataFrame): Unit
+    def removeColumn(frame: DataFrame, columnIndex: Int): Unit
     def removeRows(frame: DataFrame, predicate: Row => Boolean)
     def appendRows(startWith: DataFrame, append: Iterable[Row])
     def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
@@ -151,6 +151,7 @@ trait EngineComponent {
     def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     //  Should predicate be Partial[Any]  def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
+    def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
     def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
