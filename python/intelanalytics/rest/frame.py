@@ -183,6 +183,10 @@ class FrameBackendRest(object):
                                  'columntype': supported_types.get_type_string(type),
                                  'expression': http_ready_predicate}}
         r = rest_http.post('commands', payload)
+
+        # todo - this info should come back from the engine
+        self._accept_column(frame, BigColumn(name, type))
+
         return r
 
 
