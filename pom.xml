@@ -398,7 +398,7 @@
                                 <executable>sbt</executable>
                                 <arguments>
                                     <argument>-Dconfig.resource=dev</argument>
-                                    <argument>test</argument>
+                                    <argument>scoverage:test</argument>
                                 </arguments>
                             </configuration>
                         </execution>
