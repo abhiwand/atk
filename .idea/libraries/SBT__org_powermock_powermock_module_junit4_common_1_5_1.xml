@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: org.powermock:powermock-module-junit4-common:1.5.1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.powermock/powermock-module-junit4-common/jars/powermock-module-junit4-common-1.5.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.powermock/powermock-module-junit4-common/docs/powermock-module-junit4-common-1.5.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.powermock/powermock-module-junit4-common/srcs/powermock-module-junit4-common-1.5.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
