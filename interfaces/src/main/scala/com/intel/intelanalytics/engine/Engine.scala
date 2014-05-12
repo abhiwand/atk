@@ -91,7 +91,7 @@ trait FrameComponent {
 
   trait GraphStorage {
     def lookup(id: Long): Option[Graph]
-    def createGraph(graph: GraphTemplate): Graph
+    def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
     def drop(graph: Graph)
 
   }
@@ -157,7 +157,7 @@ trait EngineComponent {
     def shutdown: Unit
     def getGraph(id: Identifier): Future[Graph]
     def getGraphs(offset: Int, count: Int): Future[Seq[Graph]]
-    def createGraph(graph: GraphTemplate): Future[Graph]
+    def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph]
     def deleteGraph(graph: Graph): Future[Unit]
     //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
     //system soon
