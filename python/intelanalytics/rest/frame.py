@@ -162,13 +162,8 @@ class FrameBackendRest(object):
     def add_column(self, frame, expression, name, type):
         frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
 
-        print expression
-        print name
-        print type
-
         def addColumnLambda(row):
-            result = expression(row)
-            row.data.append(unicode(result))
+            row.data.append(unicode(supported_types.cast(expression(row),type)))
             return ",".join(row.data)
 
         row_ready_predicate = wrap_row_function(frame, addColumnLambda)
@@ -185,7 +180,7 @@ class FrameBackendRest(object):
         payload = {'name': 'dataframe/addcolumn',
                    'arguments': {'frame': frame_uri,
                                  'columnname': name,
-                                 'columntype': "int",
+                                 'columntype': supported_types.get_type_string(type),
                                  'expression': http_ready_predicate}}
         r = rest_http.post('commands', payload)
         return r
