@@ -159,6 +159,37 @@ class FrameBackendRest(object):
         return r
 
 
+    def add_column(self, frame, expression, name, type):
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+
+        print expression
+        print name
+        print type
+
+        def addColumnLambda(row):
+            result = expression(row)
+            row.data.append(unicode(result))
+            return ",".join(row.data)
+
+        row_ready_predicate = wrap_row_function(frame, addColumnLambda)
+        from itertools import imap
+        def filter_func(iterator): return imap(row_ready_predicate, iterator)
+        def func(s, iterator): return filter_func(iterator)
+
+        pickled_predicate = pickle_function(func)
+        http_ready_predicate = encode_bytes_for_http(pickled_predicate)
+
+        # TODO - put the frame uri in the frame, as received from create response
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        # TODO - abstraction for payload construction
+        payload = {'name': 'dataframe/addcolumn',
+                   'arguments': {'frame': frame_uri,
+                                 'columnname': name,
+                                 'columntype': "int",
+                                 'expression': http_ready_predicate}}
+        r = rest_http.post('commands', payload)
+        return r
+
 
     class InspectionTable(object):
             _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
