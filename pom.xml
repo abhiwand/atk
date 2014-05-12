@@ -590,5 +590,6 @@
     <module>imllib</module>
     -->
     <!--module>IntelAnalytics-web</module-->
+    <module>ititan</module>
   </modules>
 </project>
