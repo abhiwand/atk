@@ -389,6 +389,19 @@
                             </configuration>
                         </execution>
                         <execution>
+                            <id>sbt-scalastyle</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>sbt</executable>
+                                <arguments>
+                                    <argument>scalastyle</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <execution>
                             <id>sbt-test</id>
                             <phase>test</phase>
                             <goals>
