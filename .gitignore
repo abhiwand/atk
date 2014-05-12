@@ -26,9 +26,9 @@ git
 */.idea/tasks.xml
 */.idea/workspace.xml
 *.iml
-/IntelAnalytics/.coverage
-/IntelAnalytics/cover/
-/IntelAnalytics/nosetests.xml
+/python/.coverage
+/python/cover/
+/python/nosetests.xml
 largegit.sh
 make.sh
 .metadata*
