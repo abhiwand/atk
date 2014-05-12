@@ -11,8 +11,8 @@ import com.intel.intelanalytics.domain.graphconstruction.{ EdgeRule, VertexRule,
 case class GraphTemplate(name: String,
                          dataFrameId: Long,
                          outputConfig: OutputConfiguration,
-                         vertexRules: Seq[VertexRule],
-                         edgeRules: Seq[EdgeRule],
+                         vertexRules: List[VertexRule],
+                         edgeRules: List[EdgeRule],
                          retainDanglingEdges: Boolean,
                          bidirectional: Boolean) {
   require(name != null)
