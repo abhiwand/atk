@@ -18,6 +18,7 @@ import com.intel.graphbuilder.parser.ColumnDef
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.intelanalytics.domain.graphconstruction.VertexRule
 import com.intel.intelanalytics.domain.graphconstruction.Property
+import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 
 class GraphBuilderConfigFactory(val schema: Schema, val graphTemplate: GraphTemplate) {
 
@@ -32,9 +33,27 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphTemplate: GraphTemp
     new InputSchema(columns)
   }
 
-  def getTitanConfiguration(outputConfiguration: OutputConfiguration): SerializableBaseConfiguration = {
+  def getTitanConfiguration(graphName: String, outputConfiguration: OutputConfiguration): SerializableBaseConfiguration = {
+
+    // Only use this method when the store is Titan
+    require(outputConfiguration.storeName == "titan")
 
     var titanConfiguration = new SerializableBaseConfiguration
+
+    titanConfiguration.setProperty("storage.backend", "hbase")
+    titanConfiguration.setProperty("storage.tablename", graphName + "_titan_hbase")
+
+    titanConfiguration.setProperty("storage.hostname", ExamplesUtils.storageHostname)
+    titanConfiguration.setProperty("storage.batch-loading", "true")
+    titanConfiguration.setProperty("autotype", "none")
+    titanConfiguration.setProperty("storage.buffer-size", "2048")
+    titanConfiguration.setProperty("storage.attempt-wait", "300")
+    titanConfiguration.setProperty("storage.lock-wait-time", "400")
+    titanConfiguration.setProperty("storage.lock-retries", "15")
+    titanConfiguration.setProperty("storage.idauthority-retries", "30")
+    titanConfiguration.setProperty("storage.read-attempts", "6")
+    titanConfiguration.setProperty("ids.block-size", "300000")
+    titanConfiguration.setProperty("ids.renew-timeout", "150000")
 
     for ((key, value) <- outputConfiguration.configuration) {
       titanConfiguration.addProperty(key, value)
@@ -76,7 +95,8 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphTemplate: GraphTemp
   val graphConfig: GraphBuilderConfig = {
     new GraphBuilderConfig(getInputSchema(schema),
       getGBVertexRules(graphTemplate.vertexRules),
-      getGBEdgeRules(graphTemplate.edgeRules), getTitanConfiguration(graphTemplate.outputConfig),
+      getGBEdgeRules(graphTemplate.edgeRules),
+      getTitanConfiguration(graphTemplate.graphName, graphTemplate.outputConfig),
       biDirectional = graphTemplate.bidirectional,
       append = false,
       retainDanglingEdges = graphTemplate.retainDanglingEdges,
