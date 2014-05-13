@@ -1,0 +1,30 @@
+index
+    introduction
+    adminOverview
+        intelLegal
+        adminRequirements
+        adminInstallation
+        adminConfiguration
+        adminMaintenance
+        adminTroubleshooting
+    dataSciOverview
+        intelLegal
+        dataSciGettingStarted
+        dataSciDatabase
+        dataSciDataFlow
+        dataSciSampling
+        dataSciML
+        dataSciAPI
+            dataSciAPIOverview
+            dataSciAPIClasses
+                files
+                frame
+                graph
+        dataSciMLAlgorithms
+        dataSciSupplemental (future)
+        dataSciBKM (future)
+        dataSciGlossary (future)
+        dataSciResources (future)
+    genindex
+    modindex
+    search
