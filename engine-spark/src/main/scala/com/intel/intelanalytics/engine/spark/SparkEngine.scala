@@ -231,6 +231,36 @@ class SparkComponent extends EngineComponent
       new sun.misc.BASE64Decoder().decodeBuffer(corrected)
     }
 
+    private def createPythonRDD(frameId: Long, py_expression: String)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
+      withMyClassLoader {
+        val ctx = context(user).sparkContext
+        val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
+
+        val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
+          .map(x => x.map(t => t.toString()).mkString(","))
+
+        val pythonExec = "python2.7" //TODO: take from env var or config
+        val environment = new java.util.HashMap[String, String]()
+
+        val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
+
+        var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
+
+        val pyRdd = new EnginePythonRDD[String](
+          baseRdd, predicateInBytes, environment,
+          new JArrayList, preservePartitioning = false,
+          pythonExec = pythonExec,
+          broadcastVars, accumulator)
+        pyRdd
+      }
+    }
+
+    private def persistPythonRDD(pyRdd: EnginePythonRDD[String], converter: Array[String] => Array[Any], location: String): Unit = {
+      withMyClassLoader {
+        pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
+      }
+    }
+
     def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.filter") {
         require(arguments != null, "arguments are required")
@@ -297,8 +327,6 @@ class SparkComponent extends EngineComponent
 
                 val columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == column)
 
-                println(s"ColumnIndex $columnIndex ColumnLength ${realFrame.schema.columns.length}")
-
                 (columnIndex, realFrame.schema.columns.length) match {
                   case (value, _) if value < 0 => throw new IllegalArgumentException(s"No such column: $column")
                   case (value, 1) => frames.getFrameRdd(ctx, frameId)
@@ -310,6 +338,49 @@ class SparkComponent extends EngineComponent
                 }
 
                 frames.removeColumn(realFrame, columnIndex)
+              }
+              commands.lookup(command.id).get
+            }
+          }
+        }
+        (command, result)
+      }
+
+    def addColumn(arguments: FrameAddColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.addcolumn") {
+        require(arguments != null, "arguments are required")
+        import DomainJsonProtocol._
+        val command: Command = commands.create(new CommandTemplate("addcolumn", Some(arguments.toJson.asJsObject)))
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.addcolumn.future") {
+              withCommand(command) {
+
+                val ctx = context(user).sparkContext
+                val frameId = arguments.frame
+                val column_name = arguments.columnname
+                val column_type = arguments.columntype
+                val expression = arguments.expression // Python Wrapper containing lambda expression
+
+                val realFrame = frames.lookup(arguments.frame).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
+                val schema = realFrame.schema
+                val location = fsRoot + frames.getFrameDataFile(frameId)
+
+                case class BigColumn[T](override val name: String) extends Column[T]
+                val columnObject = new BigColumn(column_name)
+
+                if (schema.columns.indexWhere(columnTuple => columnTuple._1 == column_name) >= 0)
+                  throw new IllegalArgumentException(s"Duplicate column name: $column_name")
+
+                // Update the schema
+                val newFrame = frames.addColumn(realFrame, columnObject, DataTypes.toDataType(column_type))
+
+                // Update the data
+                val pyRdd = createPythonRDD(frameId, expression)
+                val converter = DataTypes.parseMany(newFrame.schema.columns.map(_._2).toArray)(_)
+                persistPythonRDD(pyRdd, converter, location)
+
               }
               commands.lookup(command.id).get
             }
@@ -545,9 +616,24 @@ class SparkComponent extends EngineComponent
         ???
       }
 
-    override def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: (Row) => T): Unit =
+    override def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame =
       withContext("frame.addColumn") {
-        ???
+        val newColumns = frame.schema.columns :+ (column.name, columnType)
+        val newSchema = frame.schema.copy(columns = newColumns)
+        val newFrame = frame.copy(schema = newSchema)
+
+        val meta = File(Paths.get(getFrameMetaDataFile(frame.id)))
+        info(s"Saving metadata to $meta")
+        val f = files.write(meta)
+        try {
+          val json: String = newFrame.toJson.prettyPrint
+          debug(json)
+          f.write(json.getBytes(Codec.UTF8.name))
+        }
+        finally {
+          f.close()
+        }
+        newFrame
       }
 
     override def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row] =
