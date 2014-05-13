@@ -36,7 +36,7 @@
   <inceptionYear>2013</inceptionYear>
 
   <properties>
-    <pkg.version>0.8.0</pkg.version>
+    <pkg.version>0.8.${env.BUILD_NUMBER}</pkg.version>
     <top.dir>${project.basedir}</top.dir>
     <buildtype>test</buildtype>
 
