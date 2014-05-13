@@ -38,5 +38,5 @@ delete_apidocs
 sphinx-apidoc --force -o source/ ../../. ../doc/ ../tests/
 
 # We assume we are running from the doc directory.
-make -B html 2>&1 | grep -v 'WARNING: toctree contains reference to nonexisting document' | grep -v 'WARNING: toctree references unknown document' | grep -v "WARNING: document isn't included in any toctree"
-
+#make -B html 2>&1 | grep -v 'WARNING: toctree contains reference to nonexisting document' | grep -v 'WARNING: toctree references unknown document' | grep -v "WARNING: document isn't included in any toctree"
+make -B html 2>&1 | grep -v -f toctreeWarnings
