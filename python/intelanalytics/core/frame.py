@@ -178,7 +178,7 @@ class BigFrame(object):
         #return ['frame', {"name": self.name}]
 
 
-    def add_column(self, func, name=None):
+    def add_column(self, func, name=None, type="str"):
         """
         Adds a new column to the frame by evaluating the given func on each row
 
@@ -190,7 +190,7 @@ class BigFrame(object):
         names: list or tuple of strings or tuples of string, data type
             specifies the name and data type of the new columns
         """
-        self._backend.add_column(self, func, name)
+        self._backend.add_column(self, func, name, type)
 
     def add_columns(self, func, names=None, ):
         """

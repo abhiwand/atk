@@ -389,6 +389,34 @@
                             </configuration>
                         </execution>
                         <execution>
+                            <id>sbt-scalastyle</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>sbt</executable>
+                                <arguments>
+                                    <argument>scalastyle</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>sbt-test-w-coverage</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>exec</goal>
+                            </goals>
+                            <configuration>
+                                <executable>sbt</executable>
+                                <arguments>
+                                    <argument>-Dconfig.resource=dev</argument>
+                                    <argument>scoverage:test</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <!-- for modules without scala -->
                             <id>sbt-test</id>
                             <phase>test</phase>
                             <goals>
@@ -398,7 +426,7 @@
                                 <executable>sbt</executable>
                                 <arguments>
                                     <argument>-Dconfig.resource=dev</argument>
-                                    <argument>test</argument>
+                                    <argument>event/test</argument>
                                 </arguments>
                             </configuration>
                         </execution>
