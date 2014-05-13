@@ -16,6 +16,10 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case PathList("javax", "xml", xs @ _*)             => MergeStrategy.first
     case PathList("org", "apache", xs @ _*)            => MergeStrategy.first
     case PathList(ps @ _*) if ps.last endsWith ".html" => MergeStrategy.first
+    case "com/esotericsoftware/minlog/Log$Logger.class" => MergeStrategy.first
+    case "com/esotericsoftware/minlog/Log.class" => MergeStrategy.first
+    case PathList("log4j.properties") => MergeStrategy.first
+    case PathList("StaticLoggerBinder")  => MergeStrategy.first
     case x => old(x)
   }
 }

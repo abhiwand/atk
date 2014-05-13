@@ -804,7 +804,7 @@ class SparkComponent extends EngineComponent
     }
 
     override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
-      println("CREATING GRAPH " + graph.name)
+      println("CREATING GRAPH " + graph.graphName)
 
       val id = nextGraphId()
 
@@ -819,7 +819,7 @@ class SparkComponent extends EngineComponent
       val inputRdd = inputRows.map(row => row.split(","): Seq[_])
 
       graphBuilder.build(inputRdd)
-      new Graph(id, graph.name)
+      new Graph(id, graph.graphName)
     }
 
     override def lookup(id: Long): Option[Graph] = {
