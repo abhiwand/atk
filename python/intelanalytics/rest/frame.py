@@ -166,7 +166,6 @@ class FrameBackendRest(object):
         r = rest_http.post('commands', payload)
         return r
 
-
     def add_column(self, frame, expression, name, type):
         frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
 
@@ -197,38 +196,37 @@ class FrameBackendRest(object):
 
         return r
 
-
     class InspectionTable(object):
-            _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
-            _align.update([(bool, 'r'),
-                           (bytearray, 'l'),
-                           (dict, 'l'),
-                           (float32, 'r'),
-                           (float64, 'r'),
-                           (int32, 'r'),
-                           (int64, 'r'),
-                           (list, 'l'),
-                           (string, 'l'),
-                           (str, 'l')])
+        _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
+        _align.update([(bool, 'r'),
+                       (bytearray, 'l'),
+                       (dict, 'l'),
+                       (float32, 'r'),
+                       (float64, 'r'),
+                       (int32, 'r'),
+                       (int64, 'r'),
+                       (list, 'l'),
+                       (string, 'l'),
+                       (str, 'l')])
 
-            def __init__(self, schema, rows):
-                self.schema = schema
-                self.rows = rows
+        def __init__(self, schema, rows):
+            self.schema = schema
+            self.rows = rows
 
-            def __repr__(self):
-                # keep the import localized, as serialization doesn't like prettytable
-                import intelanalytics.rest.prettytable as prettytable
-                table = prettytable.PrettyTable()
-                fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema.items()])
-                table.field_names = fields.keys()
-                table.align.update(fields)
-                table.hrules = prettytable.HEADER
-                table.vrules = prettytable.NONE
-                for r in self.rows:
-                    table.add_row(r)
-                return table.get_string()
+        def __repr__(self):
+            # keep the import localized, as serialization doesn't like prettytable
+            import intelanalytics.rest.prettytable as prettytable
+            table = prettytable.PrettyTable()
+            fields = OrderedDict([("{0}:{1}".format(n, supported_types.get_type_string(t)), self._align[t]) for n, t in self.schema.items()])
+            table.field_names = fields.keys()
+            table.align.update(fields)
+            table.hrules = prettytable.HEADER
+            table.vrules = prettytable.NONE
+            for r in self.rows:
+                table.add_row(r)
+            return table.get_string()
 
-             #def _repr_html_(self): Add this method for ipython notebooks
+         #def _repr_html_(self): Add this method for ipython notebooks
 
     def inspect(self, frame, n, offset):
         # inspect is just a pretty-print of take, we'll do it on the client
@@ -239,5 +237,3 @@ class FrameBackendRest(object):
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
-
-
