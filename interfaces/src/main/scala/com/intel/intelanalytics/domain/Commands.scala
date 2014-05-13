@@ -44,5 +44,11 @@ case class FrameRemoveColumn[+Arguments, FrameRef](frame: FrameRef, column: Stri
   require(frame != null, "frame is required")
   require(column != null, "column is required")
 }
+case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: String, columntype: String, expression: String) {
+  require(frame != null, "frame is required")
+  require(columnname != null, "column name is required")
+  require(columntype != null, "column type is required")
+  require(expression != null, "expression is required")
+}
 
 case class SeparatorArgs(separator: Char)
