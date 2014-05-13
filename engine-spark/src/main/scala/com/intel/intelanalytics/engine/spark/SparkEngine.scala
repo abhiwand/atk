@@ -267,33 +267,15 @@ class SparkComponent extends EngineComponent
             withContext("se.filter.future") {
               withCommand(command) {
 
-                val ctx = context(user).sparkContext
-                val frameId = arguments.frame
-                val predicateInBytes = decodePythonBase64EncodedStrToBytes(arguments.predicate)
+                val pyRdd = createPythonRDD(arguments.frame, arguments.predicate)
 
-                val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-                  .map(x => x.map(t => t.toString()).mkString(","))
-
-                val pythonExec = "python2.7" //TODO: take from env var or config
-                val environment = new java.util.HashMap[String, String]()
-
-                val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
-
-                var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
-
-                val pyRdd = new EnginePythonRDD[String](
-                  baseRdd, predicateInBytes, environment,
-                  new JArrayList, preservePartitioning = false,
-                  pythonExec = pythonExec,
-                  broadcastVars, accumulator)
-
-                val location = fsRoot + frames.getFrameDataFile(frameId)
+                val location = fsRoot + frames.getFrameDataFile(arguments.frame)
 
                 val realFrame = frames.lookup(arguments.frame).getOrElse(
                   throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-                pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
+                persistPythonRDD(pyRdd, converter, location)
               }
               commands.lookup(command.id).get
             }
