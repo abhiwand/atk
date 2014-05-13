@@ -22,6 +22,7 @@ PROVIDES=$PACKAGE_NAME
 RELEASE=$BUILD_NUMBER
 SOURCE="$PACKAGE_NAME-$VERSION.tar.gz"
 
+gitLog=$(git log -n 1)
 
 function log()
 {
@@ -92,7 +93,8 @@ function debControl()
 		echo "Recommends: $RECOMMENDS"
 	fi
 	echo "Description: $SUMMARY"
-	echo " $DESCRIPTION"
+	echo -e " $DESCRIPTION"
+	echo  $gitLog
 }
 
 function debCopyright()
@@ -169,7 +171,8 @@ if [ ! -z "$URL" ]; then
 	echo "URL: $URL"
 fi
 echo "%description"
-echo $DESCRIPTION
+echo -e $DESCRIPTION
+echo $gitLog
 echo "%define TIMESTAMP %(echo $TIMESTAMP)"
 echo "%define TAR_FILE %(echo $TAR_FILE)"
 echo "%build"
