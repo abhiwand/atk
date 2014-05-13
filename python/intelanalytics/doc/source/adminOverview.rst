@@ -7,10 +7,9 @@ Administration includes:
     :maxdepth: 2
 
     intelLegal
-
-..  administrationRequirements
-    administrationInstallation
-    administrationConfiguration
-    administrationMaintenance
-    administrationTroubleshooting
+    adminRequirements
+    adminInstallation
+    adminConfiguration
+    adminMaintenance
+    adminTroubleshooting
 

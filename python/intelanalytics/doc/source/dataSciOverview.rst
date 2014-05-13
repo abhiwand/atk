@@ -10,9 +10,9 @@ Contents:
     dataSciGettingStarted
     dataSciDatabase
     dataSciDataFlow
+    dataSciSampling
     dataSciML
-    modules
-    overapi
+    dataSciAPI
     dataSciMLAlgorithms
 
 ..   dataSciSupplemental

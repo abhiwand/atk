@@ -167,10 +167,18 @@ Semi-Supervised Learning
 
 In Semi-Supervised learning algorithms, most the input data are not labeled and a small amount are labeled. The expectation is that the software "learns" to calculate faster than in either supervised or unsupervised algorithms. See Supervised Learning, and Unsupervised Learning.
 
+Simple Random Sampling (SRS)
+----------------------------
+In statistics, a simple random sample is a subset of individuals (a sample) chosen from a larger set (a population). Each individual is chosen randomly and entirely by chance, such that each individual has the same probability of being chosen at any stage during the sampling process, and each subset of *k* individuals has the same probability of being chosen for the sample as any other subset of *k* individuals.[#f1]_ This process and technique is known as simple random sampling. A simple random sample is an unbiased surveying technique. See https://en.wikipedia.org/wiki/Simple_random_sampling.
+
 Smoothing
 ---------
 
-Smoothing means to reduce the “noise” in a data set. “In smoothing, the data points of a signal are modified so individual points (presumably because of noise) are reduced, and points that are lower than the adjacent points are increased leading to a smoother signal.” See http://en.wikipedia.org/wiki/Smoothing and http://en.wikipedia.org/wiki/Relaxation_(iterative_method). 
+Smoothing means to reduce the "noise" in a data set. "In smoothing, the data points of a signal are modified so individual points (presumably because of noise) are reduced, and points that are lower than the adjacent points are increased leading to a smoother signal." See http://en.wikipedia.org/wiki/Smoothing and http://en.wikipedia.org/wiki/Relaxation_(iterative_method). 
+
+Stratified Sampling
+-------------------
+In statistics, stratified sampling is a method of sampling from a population. In statistical surveys, when subpopulations within an overall population vary, it is advantageous to sample each subpopulation (stratum) independently. Stratification is the process of dividing members of the population into homogeneous subgroups before sampling. The strata should be mutually exclusive: every element in the population must be assigned to only one stratum. The strata should also be collectively exhaustive: no population element can be excluded. Then simple random sampling or systematic sampling is applied within each stratum. This often improves the representativeness of the sample by reducing sampling error. It can produce a weighted mean that has less variability than the arithmetic mean of a simple random sample of the population. See https://en.wikipedia.org/wiki/Stratified_sampling.
 
 Supervised Learning
 -------------------
@@ -191,3 +199,7 @@ Vertex (Vertices)
 -----------------
 
 A vertex is a data point in a graph database. Each vertex has an ID and a property map. In Giraph, a long integer is used as ID for each vertex. The property map may contain 0 or more properties. Each vertex is connected to others by edges. See Edge in this glossary, and: https://github.com/tinkerpop/blueprints/wiki/Property-Graph-Model.
+
+.. rubric:: Footnotes
+
+[#f1] Yates, Daniel S.; David S. Moore, Daren S. Starnes (2008). The Practice of Statistics, 3rd Ed. Freeman. ISBN 978-0-7167-7309-2.
