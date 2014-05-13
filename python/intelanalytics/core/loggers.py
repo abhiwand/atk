@@ -31,6 +31,7 @@ class NullHandler(logging.Handler):
     def emit(self, record):
         pass
 
+# this line avoids the 'no handler' warning msg when no logging is set at all
 logging.getLogger('').addHandler(NullHandler())
 
 
@@ -40,52 +41,103 @@ class Loggers(object):
     """
     # todo - WIP, this will get more sophisticated!
 
-    # copy levels from logging for convenience to user
-    CRITICAL = logging.CRITICAL
-    FATAL = logging.FATAL
-    ERROR = logging.ERROR
-    WARNING = logging.WARNING
-    WARN = logging.WARN
-    INFO = logging.INFO
-    DEBUG = logging.DEBUG
-    NOTSET = logging.NOTSET
+    _line_format = '%(asctime)s|%(name)s|%(levelname)-5s|%(message)s'
+
+    # table of aliased loggers for easy reference in REPL
+    _aliased_loggers_map = {
+        'rest_connection': 'intelanalytics.rest.connection',
+        }
+
+    # map first character of level to actual level setting, for convenience
+    _level_map = {'c': logging.CRITICAL,
+                  'f': logging.FATAL,
+                  'e': logging.ERROR,
+                  'w': logging.WARN,
+                  'i': logging.INFO,
+                  'd': logging.DEBUG,
+                  'n': logging.NOTSET}
 
     def __init__(self):
-        self._logger_names = []
+        self._user_logger_names = []
+        self._create_alias_set_functions()
 
     def __repr__(self):
-        if not self._logger_names:
-            return "No loggers set.  (Use loggers.set(level, logger_name))"
-        return "\n".join([self._logger_repr(logging.getLogger(name))
-                          for name in self._logger_names])
+        header = ["{0:<40} {1:<10} {2:<14}".format("Logger", "Level", "# of Handlers"),
+                  "{0:<40} {1:<10} {2:<14}".format("-"*39, "-"*9, "-"*13)]
+        entries = []
+        names = self._aliased_loggers_map.values() + self._user_logger_names
+        for name in names:
+            logger = logging.getLogger(name)
 
-    @staticmethod
-    def _logger_repr(logger):
-        return "{0:9} '{1}'".format(logging.getLevelName(logger.level), logger.name)
+            entries.append("{0:<40} {1:<10} {2:7}".
+                           format(logger.name,
+                                  logging.getLevelName(logger.level),
+                                  len(logger.handlers)))
+        return "\n".join(header + entries)
+
+    def _create_alias_set_functions(self):
+        """
+        Creates set methods for aliased loggers and puts them in self.__dict__
+        """
+        for alias, name in self._aliased_loggers_map.items():
+            def alias_set(level=logging.DEBUG):
+                self.set(level, name)
+            try:
+                doc = Loggers.set.__doc__
+                alias_set.__doc__ = doc[:doc.index("logger_name")] + """
+        Examples
+        --------
+        >>> loggers.%s_set('debug')""" % alias
+            except:
+                pass
+            self.__dict__[alias + "_set"] = alias_set
 
     def set(self, level=logging.DEBUG, logger_name=''):
+        """
+        Set the level of the logger going to stderr
+
+        Parameters
+        ----------
+        level : int, str or logging.*, optional
+            The level to which the logger will be set.  May be 0,10,20,30,40,50
+            or "DEBUG", "INFO", etc.  (only first letter is requirecd)
+            Setting to None disables the logging to stderr
+            See `https://docs.python.org/2/library/logging.html`
+        logger_name: str, optional
+            The name of the logger.  If empty string, then the intelanalytics
+            root logger is set
+
+        Examples
+        --------
+        >>> loggers.set('debug', 'intelanalytics.rest.connection')
+        """
         logger_name = logger_name if logger_name != 'root' else ''
         logger = logging.getLogger(logger_name)
-        if level is None:
+        if level is None or level == '':
             # turn logger OFF
             logger.level = logging.CRITICAL
             for h in logger.handlers:
                 if h.name == 'stderr':
                     logger.removeHandler(h)
             try:
-                self._logger_names.remove(logger_name)
+                self._user_logger_names.remove(logger_name)
             except ValueError:
                 pass
         else:
+            if isinstance(level, basestring):
+                c = str(level)[0].lower()  # only require first letter
+                level = self._level_map[c]
             logger.setLevel(level)
-            if not logger.handlers:
-                if not [h.name for h in logger.handlers if h.name == 'stderr']:
-                    h = logging.StreamHandler()
-                    h.name = 'stderr'
-                    h.setLevel(logging.DEBUG)
-                    logger.addHandler(h)
-            if logger_name not in self._logger_names:
-                self._logger_names.append(logger_name)
+            if not logger.handlers or not [h.name for h in logger.handlers if h.name == 'stderr']:
+                # logger does not have a handler to stderr, so we'll add it
+                h = logging.StreamHandler()
+                h.name = 'stderr'
+                h.setLevel(logging.DEBUG)
+                formatter = logging.Formatter(self._line_format)
+                h.setFormatter(formatter)
+                logger.addHandler(h)
+            if logger_name not in self._user_logger_names + self._aliased_loggers_map.values():
+                self._user_logger_names.append(logger_name)
 
 
 loggers = Loggers()

@@ -94,6 +94,14 @@ class FrameBackendRest(object):
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
+        frame._uri = "%s/%d" % (self._get_uri(payload), frame._id)
+
+    def _get_uri(self, payload):
+        links = payload['links']
+        for link in links:
+            if link['rel'] == 'self':
+               return link['uri']
+        raise Exception('Unable to find uri for frame')
 
     def append(self, frame, data):
         logger.info("REST Backend: Appending data to frame {0}: {1}".format(frame.name, repr(data)))
