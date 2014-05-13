@@ -69,11 +69,15 @@ import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
+import com.intel.intelanalytics.engine.spark.graphbuilder.GraphBuilderConfigFactory
+import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
 
 //TODO documentation
 //TODO progress notification
 //TODO event notification
 //TODO pass current user info
+
 class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
@@ -400,7 +404,7 @@ class SparkComponent extends EngineComponent
         }
       }
 
-    def createGraph(graph: GraphTemplate): Future[Graph] = {
+    def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph] = {
       future {
         graphs.createGraph(graph)
       }
@@ -776,6 +780,16 @@ class SparkComponent extends EngineComponent
 
   trait SparkGraphStorage extends GraphStorage {
 
+    val graphBase = "/intelanalytics/dataframes"
+
+    //temporary
+    var graphId = new AtomicLong(1)
+
+    def nextGraphId() = {
+      //Just a temporary implementation, only appropriate for scaffolding.
+      graphId.getAndIncrement
+    }
+
     import spray.json._
 
     import com.intel.intelanalytics.domain.DomainJsonProtocol._
@@ -789,13 +803,27 @@ class SparkComponent extends EngineComponent
       Unit
     }
 
-    override def createGraph(graph: GraphTemplate): Graph = {
-      println("CREATING GRAPH " + graph.name)
-      new Graph(1, graph.name)
+    override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
+      println("CREATING GRAPH " + graph.graphName)
+
+      val id = nextGraphId()
+
+      val gbConfigFactory = new GraphBuilderConfigFactory(frames.lookup(graph.dataFrameId).get.schema, graph)
+
+      val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
+
+      val ctx = engine.context
+
+      // Setup data in Spark
+      val inputRows = ctx.sparkContext.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
+      val inputRdd = inputRows.map(row => row.split(","): Seq[_])
+
+      graphBuilder.build(inputRdd)
+      new Graph(id, graph.graphName)
     }
 
     override def lookup(id: Long): Option[Graph] = {
-      println("DELETING GRAPH " + id)
+      println("HERE'S YOUR STINKING GRAPH " + id)
       None
     }
 

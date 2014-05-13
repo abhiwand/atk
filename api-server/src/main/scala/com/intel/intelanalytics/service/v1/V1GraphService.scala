@@ -124,19 +124,7 @@ trait V1GraphService extends V1Service {
                   }
                 }
             }
-          } ~
-            (path("data") & get) {
-              parameters('offset.as[Int], 'count.as[Int]) { (offset, count) =>
-                onComplete(for { r <- engine.getRows(id, offset, count) } yield r) {
-                  case Success(rows: Iterable[Array[Any]]) => {
-                    import DefaultJsonProtocol._
-                    val strings: List[List[String]] = rows.map(r => r.map(thing => String.valueOf(r)).toList).toList
-                    complete(strings)
-                  }
-                  case Failure(ex) => throw ex
-                }
-              }
-            }
+          }
         }
     }
   }
