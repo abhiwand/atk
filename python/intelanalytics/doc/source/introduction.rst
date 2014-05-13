@@ -12,15 +12,15 @@ The Analytics Toolkit is built on open source components for ease of use and int
 Support Programs
 ----------------
 
-    Apache Hadoop® and the Hadoop Distributed File System (HDFS)
+    Apache Hadoop and the Hadoop Distributed File System (HDFS)
 
-    Apache Giraph® scalable iterative graph processing system
+    Apache Giraph scalable iterative graph processing system
 
     A Python-based API, using iPython
 
-    Aurelius Titan® Graph Database
+    Aurelius Titan Graph Database
 
-    TinkerPop Gremlin® Graph Query language
+    TinkerPop Gremlin Graph Query language
 
 These tools work well together, and with many other open source tools.
 Note: For the GraphTrial.Intel.com release, no installation is necessary.
