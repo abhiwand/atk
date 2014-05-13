@@ -5,18 +5,18 @@ import com.intel.intelanalytics.domain.graphconstruction.{ EdgeRule, VertexRule,
 /**
  * NLS TODO:   what are the required pieces of data in the graph interfaces?
  * so far, we just know that it has to have a name
- * @param name
+ * @param graphName
  */
 
-case class GraphTemplate(name: String,
+case class GraphTemplate(graphName: String,
                          dataFrameId: Long,
                          outputConfig: OutputConfiguration,
-                         vertexRules: Seq[VertexRule],
-                         edgeRules: Seq[EdgeRule],
+                         vertexRules: List[VertexRule],
+                         edgeRules: List[EdgeRule],
                          retainDanglingEdges: Boolean,
                          bidirectional: Boolean) {
-  require(name != null)
-  require(name.trim.length > 0)
+  require(graphName != null)
+  require(graphName.trim.length > 0)
 
   require(dataFrameId != null)
 
