@@ -21,7 +21,7 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 
-from cloud.serialization.cloudpickle import CloudPickler
+from cloudpickle import CloudPickler
 import pkg_resources
 import types
 

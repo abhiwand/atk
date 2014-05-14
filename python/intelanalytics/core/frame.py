@@ -203,6 +203,14 @@ class BigFrame(object):
         self._backend.append(self, *data)
 
     def filter(self, predicate):
+        """
+        Select all rows which satisfy a predicate
+
+        Parameters
+        ----------
+        predicate: function
+            function definition or lambda which evaluates to a boolean value
+        """
         self._backend.filter(self, predicate)
 
     def count(self):
