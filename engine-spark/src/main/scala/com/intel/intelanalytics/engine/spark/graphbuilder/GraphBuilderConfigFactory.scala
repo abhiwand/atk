@@ -36,7 +36,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphTemplate: GraphTemp
   def getTitanConfiguration(graphName: String, outputConfiguration: OutputConfiguration): SerializableBaseConfiguration = {
 
     // Only use this method when the store is Titan
-    require(outputConfiguration.storeName == "titan")
+    require(outputConfiguration.storeName == "Titan")
 
     var titanConfiguration = new SerializableBaseConfiguration
 

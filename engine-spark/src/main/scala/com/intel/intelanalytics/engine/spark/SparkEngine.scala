@@ -38,7 +38,7 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.{ Paths, Path, Files }
 import java.io._
-import com.intel.intelanalytics.engine.Rows.RowSource
+import com.intel.intelanalytics.engine.Rows._
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
@@ -72,6 +72,24 @@ import com.intel.intelanalytics.shared.EventLogging
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.intelanalytics.engine.spark.graphbuilder.GraphBuilderConfigFactory
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
+import scala.util.Failure
+import scala.Some
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.FrameRemoveColumn
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.FrameAddColumn
+import scala.util.Success
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.SeparatorArgs
+import com.intel.intelanalytics.domain.CommandTemplate
+import com.intel.intelanalytics.domain.Error
+import com.intel.intelanalytics.domain.Als
 
 //TODO documentation
 //TODO progress notification
@@ -808,17 +826,21 @@ class SparkComponent extends EngineComponent
 
       val id = nextGraphId()
 
-      val gbConfigFactory = new GraphBuilderConfigFactory(frames.lookup(graph.dataFrameId).get.schema, graph)
+      val dataFrame = frames.lookup(graph.dataFrameId)
+      val gbConfigFactory = new GraphBuilderConfigFactory(dataFrame.get.schema, graph)
 
       val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
 
       val ctx = engine.context
 
       // Setup data in Spark
-      val inputRows = ctx.sparkContext.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
-      val inputRdd = inputRows.map(row => row.split(","): Seq[_])
+      // val inputRows = ctx.sparkContext.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
+      val inputRowsRdd: RDD[Rows.Row] = frames.getFrameRdd(engine.context.sparkContext, graph.dataFrameId)
+
+      val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
 
       graphBuilder.build(inputRdd)
+
       new Graph(id, graph.graphName)
     }
 
