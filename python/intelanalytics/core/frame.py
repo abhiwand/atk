@@ -217,6 +217,14 @@ class BigFrame(object):
         return self._backend.count(self)
 
     def remove_column(self, name):
+        """
+        Remove columns
+
+        Parameters
+        ----------
+        name: string or list of strings
+            column name or list of column names to be removed from the frame
+        """
         self._backend.remove_column(self, name)
         if isinstance(name, basestring):
             name = [name]
