@@ -29,7 +29,7 @@ from mock import patch, Mock
 from collections import OrderedDict
 import json
 
-from intelanalytics.core.graph import VertexRule, EdgeRule
+from intelanalytics.core.graph import BigGraph, VertexRule, EdgeRule
 from intelanalytics.core.frame import BigFrame
 from intelanalytics.core.column import BigColumn
 from intelanalytics.rest.graph import GraphBackendRest, JsonPayload
@@ -121,14 +121,13 @@ class TestGraphBackendRest(unittest.TestCase):
         frame._uri = uri
         return frame
 
-    def test_get_payload(self):
+    def get_mock_frame_and_rules_1(self):
         frame = self.create_mock_frame([('movie', str),
                                         ('user', str),
                                         ('rating', str),
                                         ('popcorn', str),
                                         ('released', str)],
                                        "hardcoded.com:9999/v1/dataframes/0")
-
         movie_vertex = VertexRule("movie", frame.movie, {"year": frame.released})
         user_vertex = VertexRule("user", frame.user)
         rules = [movie_vertex,
@@ -139,6 +138,10 @@ class TestGraphBackendRest(unittest.TestCase):
                           {"with_popcorn": frame['popcorn']},
                           is_directed=False)]
         #print "\n".join(repr(r) for r in rules)
+        return frame, rules
+
+    def test_get_payload(self):
+        frame, rules = self.get_mock_frame_and_rules_1()
         graph = Mock()
         graph.name = "movies"
         json_obj = JsonPayload(graph, rules)
@@ -147,6 +150,13 @@ class TestGraphBackendRest(unittest.TestCase):
         json_str = get_sorted_json_str(json_obj)
         self.assertEqual(self.expected_json_str, json_str)
 
+    @patch("intelanalytics.rest.graph.rest_http")
+    def test_build_graph(self, mock_http):
+        frame, rules = self.get_mock_frame_and_rules_1()
+        from intelanalytics.core.loggers import loggers
+        loggers.set(10, "intelanalytics.rest.graph")
+        graph = BigGraph(rules)
+        pass
 
 if __name__ == "__main__":
     unittest.main()

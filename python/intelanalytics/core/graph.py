@@ -239,7 +239,7 @@ class BigGraph(object):
     >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
     """
     def __init__(self, rules=None, name=""):
-        if rules and rules is not list or not all([rule is Rule for rule in rules]):
+        if rules and (not isinstance(rules, list) or not all([isinstance(rule, Rule) for rule in rules])):
             raise TypeError("rules must be a list of Rule objects")
         if not hasattr(self, '_backend'):
             self._backend = _get_backend()

@@ -57,6 +57,10 @@ class GraphBackendRest(object):
         logger.info("REST Backend: create graph: " + graph.name)
         #payload = JsonPayload(graph, rules)
         payload = JsonPayloadAdaptor(graph, rules)
+        if logger.level == logging.DEBUG:
+            import json
+            payload_json =  json.dumps(payload, indent=2, sort_keys=True)
+            logger.debug("REST Backend: create graph payload: " + payload_json)
         r = rest_http.post('graphs', payload)
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
