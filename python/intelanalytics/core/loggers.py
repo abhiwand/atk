@@ -44,9 +44,9 @@ class Loggers(object):
     _line_format = '%(asctime)s|%(name)s|%(levelname)-5s|%(message)s'
 
     # table of aliased loggers for easy reference in REPL
-    _aliased_loggers_map = {
-        'rest_connection': 'intelanalytics.rest.connection',
-        }
+    _aliased_loggers_map = {'rest_http': 'intelanalytics.rest.connection',
+                            'rest_graph': 'intelanalytics.rest.graph',
+                            'rest_frame': 'intelanalytics.rest.frame'}
 
     # map first character of level to actual level setting, for convenience
     _level_map = {'c': logging.CRITICAL,
@@ -75,22 +75,25 @@ class Loggers(object):
                                   len(logger.handlers)))
         return "\n".join(header + entries)
 
-    def _create_alias_set_functions(self):
-        """
-        Creates set methods for aliased loggers and puts them in self.__dict__
-        """
-        for alias, name in self._aliased_loggers_map.items():
-            def alias_set(level=logging.DEBUG):
-                self.set(level, name)
+    def _create_alias_set_function(self, alias, name):
+        def alias_set(level=logging.DEBUG):
+            self.set(level, name)
             try:
                 doc = Loggers.set.__doc__
                 alias_set.__doc__ = doc[:doc.index("logger_name")] + """
         Examples
         --------
-        >>> loggers.%s_set('debug')""" % alias
+        >>> loggers.%s('debug')""" % alias
             except:
                 pass
-            self.__dict__[alias + "_set"] = alias_set
+        return alias_set
+
+    def _create_alias_set_functions(self):
+        """
+        Creates set methods for aliased loggers and puts them in self.__dict__
+        """
+        for alias, name in self._aliased_loggers_map.items():
+           self.__dict__[alias] = self._create_alias_set_function(alias, name)
 
     def set(self, level=logging.DEBUG, logger_name=''):
         """
