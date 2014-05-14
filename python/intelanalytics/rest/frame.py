@@ -152,9 +152,10 @@ class FrameBackendRest(object):
     def remove_column(self, frame, name):
         frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
         # TODO - abstraction for payload construction
+        columns = ",".join(name) if isinstance(name, list) else name
         payload = {'name': 'dataframe/removecolumn',
                    'arguments': {'frame': frame_uri,
-                                 'column': name}}
+                                 'column': columns}}
         r = rest_http.post('commands', payload)
         return r
 
