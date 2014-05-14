@@ -31,38 +31,37 @@ class DataFile(object):
 
 
 class CsvFile(DataFile):
-    """Describes a comma-separated file"""
+
+    """
+    Creates object which defines a CSV file
+
+    Parameters
+    ----------
+    file_name : str
+        name of file
+    schema : list of tuples of the form (str, type)
+        schema description of the fields for a given line.  It is a list of
+        tuples which describe each field, (field name, field type), where
+        the field name is a string, and file is a supported type
+        (See supported_types from the types module)
+        The type 'ignore' may also be used if the field should be ignored
+        on loads
+    delimiter : str
+        string indicator the delimiter for the fields, comma char is the default
+    skip_header_lines : int, optional
+        indicates numbers of lines to skip before parsing records
+
+    Examples
+    --------
+    >>> csv1 = CsvFile("my_csv_data.txt", [('A', int32), ('B', string)])
+    >>>
+    >>> csv2 = CsvFile("other_data.txt", [('X', float32), ('', ignore), ('Y', int64)])
+    >>> f = BigFrame(csv2)
+    >>> csv2 = JsonFile("other_data.json", [('X', 'path/to/x', float32), ('', ignore), ('Y', int64)])
+    """
     annotation = "csv_file"
 
     def __init__(self, file_name, schema, delimiter=',', skip_header_lines=0):
-        """
-        Creates object which defines a CSV file
-
-        Parameters
-        ----------
-
-        file_name : str
-            name of file
-        schema : list of tuples of the form (str, type)
-            schema description of the fields for a given line.  It is a list of
-            tuples which describe each field, (field name, field type), where
-            the field name is a string, and file is a supported type
-            (See supported_types from the types module)
-            The type 'ignore' may also be used if the field should be ignored
-            on loads
-        delimiter : str
-            string indicator the delimiter for the fields, comma char is the default
-        skip_header_lines : int, optional
-            indicates numbers of lines to skip before parsing records
-
-        Examples
-        --------
-        >>> csv1 = CsvFile("my_csv_data.txt", [('A', int32), ('B', string)])
-        >>>
-        >>> csv2 = CsvFile("other_data.txt", [('X', float32), ('', ignore), ('Y', int64)])
-        >>> f = BigFrame(csv2)
-        >>> csv2 = JsonFile("other_data.json", [('X', 'path/to/x', float32), ('', ignore), ('Y', int64)])
-        """
         if not file_name  or not isinstance(file_name, basestring):
             raise ValueError("file_name must be a non-empty string")
         if not schema:
@@ -82,10 +81,59 @@ class CsvFile(DataFile):
         return repr(self.fields)
 
     def as_json_obj(self):
+
+        """
+        Breaks up it's information into workable variables
+
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        list
+            str - Type of the file
+            str - File name
+            obj - JSON schema
+            chr - Delimiter
+            int - Number of header lines to skip
+        
+        Notes
+        -----
+        
+
+        Examples
+        --------
+        >>>
+        """
+
+        # another note
+
         return ["csv_file", self.file_name, self._schema_to_json(), self.delimiter, self.skip_header_lines]
 
     @classmethod
     def from_json_obj(cls, obj):
+
+        """
+        description of what this function does
+        
+        Parameters
+        ----------
+        obj : obj
+            description of this parameter
+        
+        Returns
+        -------
+        ?
+        
+        Notes
+        -----
+        ?
+
+        Examples
+        --------
+        >>>
+        """
         assert("csv_file" == obj[0])
         obj = obj[1:]
         obj[1] = CsvFile._schema_from_json(obj[1])
@@ -115,6 +163,7 @@ class CsvFile(DataFile):
         return [x[1] for x in self.fields]
 
     def to_ordered_dict(self):
+
         """creates an ordered dictionary representing the schema fields and types"""
         d = OrderedDict()
         for field in self.fields:
@@ -140,6 +189,27 @@ class CsvFile(DataFile):
 
     @staticmethod
     def parse_legacy_schema_string(schema_string):
+
+        """
+        description of what this function does
+
+        Parameters
+        ----------
+        obj : obj
+            description of this parameter
+        
+        Returns
+        -------
+        ?
+        
+        Notes
+        -----
+        ?
+
+        Examples
+        --------
+        >>>
+        """
         fields = []
         pairs = ("".join(schema_string.split())).split(',')
         for pair in pairs:
@@ -150,39 +220,38 @@ class CsvFile(DataFile):
 
 
 class JsonFile(DataFile):
-    """Describes a JSON file"""
+
+    """
+    Creates object which defines a JSON file
+
+    Parameters
+    ----------
+    file_name : str
+        name of file
+    """
     annotation = "json_file"
 
     def __init__(self, file_name):
-        """
-        Creates object which defines a CSV file
-
-        Parameters
-        ----------
-
-        file_name : str
-            name of file
-        """
         if not file_name or not isinstance(file_name, basestring):
             raise ValueError("file_name must be a non-empty string")
         self.file_name = file_name
 
 
 class XmlFile(DataFile):
-    """Describes a XML file"""
+
+    """
+    Creates object which defines a XML file
+
+    Parameters
+    ----------
+    file_name : str
+        name of file
+    tag_name : str, optional
+        The XML tag name
+    """
     annotation = "xml_file"
 
     def __init__(self, file_name, tag_name=None):
-        """
-        Creates object which defines a XML file
-
-        Parameters
-        ----------
-        file_name : str
-            name of file
-        tag_name : str, optional
-            The XML tag name
-        """
         if not file_name or not isinstance(file_name, basestring):
             raise ValueError("file_name must be a non-empty string")
         self.file_name = file_name
