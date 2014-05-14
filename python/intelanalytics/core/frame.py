@@ -164,6 +164,11 @@ class BigFrame(object):
     def name(self):
         return self._name
 
+    # TODO - add name setter call to backend
+    #@name.setter
+    #def name(self, value):
+    #    self._backend.set_name(value)
+
     @property
     def schema(self):
         return FrameSchema(zip(self._columns.keys(),
