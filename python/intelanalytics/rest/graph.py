@@ -30,6 +30,8 @@ from intelanalytics.core.graph import VertexRule, EdgeRule
 from intelanalytics.core.column import BigColumn
 from intelanalytics.rest.connection import rest_http
 
+# temp adaptor
+from intelanalytics.rest.tmp_gb_json import JsonPayloadAdaptor
 
 
 class GraphBackendRest(object):
@@ -53,7 +55,8 @@ class GraphBackendRest(object):
 
     def create(self, graph, rules):
         logger.info("REST Backend: create graph: " + graph.name)
-        payload = JsonPayload(graph, rules)
+        #payload = JsonPayload(graph, rules)
+        payload = JsonPayloadAdaptor(graph, rules)
         r = rest_http.post('graphs', payload)
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
