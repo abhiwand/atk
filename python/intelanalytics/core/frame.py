@@ -270,70 +270,18 @@ class BigFrame(object):
 
     @property
     def name(self):
-        """
-        To Do
-
-        ============= =========== =========================================================== ==============
-        Parameter     Data Type   Meaning                                                     Default Value
-        ============= =========== =========================================================== ==============
-        ?             ?                                                                       
-        ============= =========== =========================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         return self._name
 
     @property
     def data_type(self):
-        """
-        To Do
-
-        ============= =========== =========================================================== ==============
-        Parameter     Data Type   Meaning                                                     Default Value
-        ============= =========== =========================================================== ==============
-        ?             ?                                                                       
-        ============= =========== =========================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         return type(self)
 
     @property
     def column_names(self):
-        """
-        To Do
-
-        ============= =========== =========================================================== ==============
-        Parameter     Data Type   Meaning                                                     Default Value
-        ============= =========== =========================================================== ==============
-        ?             ?                                                                       
-        ============= =========== =========================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         return self._columns.keys()
 
     @property
     def schema(self):
-        """
-        To Do
-
-        ============= =========== =========================================================== ==============
-        Parameter     Data Type   Meaning                                                     Default Value
-        ============= =========== =========================================================== ==============
-        ?             ?                                                                       
-        ============= =========== =========================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         return FrameSchema(zip(self._columns.keys(),
                                map(lambda c: c.data_type, self._columns.values())))
 
@@ -342,52 +290,31 @@ class BigFrame(object):
         #return ['frame', {"name": self.name}]
 
     def append(self, *data):
-        """
-        To Do
-
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        *data         pointer     data to be appended                                    Not optional
-        ============= =========== ====================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         pass
 
     def filter(self, predicate):
         """
-        To Do
+        Select all rows which satisfy a predicate
 
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        predicate     ?                                                                  Not optional
-        ============= =========== ====================================================== ==============
+        Parameters
+        ----------
+        predicate : function
+            A function which determines which rows are to be included
 
-        **Examples**
-
-        >>> 
+        Returns
+        -------
+        
+        Examples
+        --------
+        >>> myframe.filter(lambda row: row.col1 + row.col2 > row.col3)
+        >>> def custom_filter(row):
+        >>>     return row['a'] * row['a'] > 30
+        >>> myfram.filter(custom_filter)
         """
         self._backend.filter(self, predicate)
 
     def count(self):
-        """
-        To Do
-
-        ============= =========== =========================================================== ==============
-        Parameter     Data Type   Meaning                                                     Default Value
-        ============= =========== =========================================================== ==============
-        ?             ?                                                                       
-        ============= =========== =========================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
-
+        pass
 
     def remove_column(self, name):
         """
@@ -396,10 +323,12 @@ class BigFrame(object):
         Parameters
         ----------
         name : str OR list of str
+            column name OR list of column names to be removed from the frame
 
         Notes
         -----
-        This function will retain a single column
+        This function will retain a single column.
+
         Examples
         --------
         >>> 
@@ -417,40 +346,23 @@ class BigFrame(object):
         """
         Drops all rows which have NA values
 
-        ============= =========== ========================================================== ==============
-        Parameter     Data Type   Meaning                                                    Default Value
-        ============= =========== ========================================================== ==============
-        how           str         any: if any column has an NA value, drop row               any
-                                  
-                                  all: if all the columns have an NA value, drop row
-                                  
-                                  column name: if named column has an NA value, drop row
-        ------------- ----------- ---------------------------------------------------------- --------------
-        column_subset str or      if not "None", only the given columns are considered       None
-                      list of str
-        ============= =========== ========================================================== ==============
+        Parameter
+        ---------
+        how : any (optional), all (optional)
+            any: if any column has an NA value, drop row
+            all: if all the columns have an NA value, drop row
+            column name: if named column has an NA value, drop row
+        column_subset : str OR list of str (optional)
+            if not "None", only the given columns are considered
 
-        **Examples**
-
+        Examples
+        --------
         >>> 
         """
         self._backend.dropna(self, how, column_subset)
 
     def inspect(self, n=10):
-        """
-        To Do
-
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        n             int                                                                10
-        ============= =========== ====================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
-
+        pass
 
     # def join(self,
     #          right=None,
@@ -487,36 +399,42 @@ class BigFrame(object):
 
     def add_column(self, column_name, func):
         """
-        Add a column
+        Add a column to a frame
 
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        column_name   str         The name of the new column                             Not optional
-        func          ?           ?                                                      Not optional
-        ============= =========== ====================================================== ==============
+        Parameters
+        ----------
+        column_name : str
+            The name of the new column. Must not already exist.
+        func : blob
+            A blob defining what type of data the column will hold
 
-        **Examples**
-
-        >>> 
+        Returns
+        -------
+        
+        Examples
+        --------
+        >>>
         """
         return self._backend.add_column(self, column_name, func)
 
 
     def rename_column(self, column_name, new_name):
         """
-        Rename a column
+        Rename a column to a frame
 
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        column_name   str         Existing column name                                   Not optional
-        new_name      str         New name for column                                    Not optional
-        ============= =========== ====================================================== ==============
+        Parameters
+        ----------
+        column_name : str
+            The name of the existing column.
+        new_name : str
+            The new name for the column. Must not already exist.
 
-        **Examples**
-
-        >>> 
+        Returns
+        -------
+        
+        Examples
+        --------
+        >>>
         """
         if isinstance(column_name, basestring) and isinstance(new_name, basestring):
             column_name = [column_name]
@@ -539,34 +457,33 @@ class BigFrame(object):
 
     def save(self, name=None):
         """
-        Save the work
+        Saves all current data in the frame to disk
 
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        name          str         A new name to store the database                       None
-        ============= =========== ====================================================== ==============
+        Parameters
+        ----------
+        name : str (optional)
+            The name of a new file where the frame will be saved
 
-        **Examples**
-
-        >>> 
+        Examples
+        --------
+        >>>
         """
         self._backend.save(self, name)
 
     def take(self, n, offset=0):
         """
-        To Do
+        ?
 
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        n             ?                                                                  Not optional
-        offset        int                                                                0
-        ============= =========== ====================================================== ==============
+        Parameters
+        ----------
+        n : int
+            ?
+        offset : int (optional)
+            ?
 
-        **Examples**
-
-        >>> 
+        Examples
+        --------
+        >>>
         """
         return self._backend.take(self, n, offset)
 
@@ -608,65 +525,25 @@ class FrameSchema(OrderedDict):
         self._init_from_tuples(json.loads(schema_string))
 
     def get_column_names(self):
-        """
-        To do
-
-        ============= =========== =========================================================== ==============
-        Parameter     Data Type   Meaning                                                     Default Value
-        ============= =========== =========================================================== ==============
-        None
-        ============= =========== =========================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         return self.keys()
 
     def get_column_data_types(self):
-        """
-        To do
-
-        ============= =========== =========================================================== ==============
-        Parameter     Data Type   Meaning                                                     Default Value
-        ============= =========== =========================================================== ==============
-        None
-        ============= =========== =========================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         return self.values()
 
     def get_column_data_type_strings(self):
-        """
-        To do
-
-        ============= =========== =========================================================== ==============
-        Parameter     Data Type   Meaning                                                     Default Value
-        ============= =========== =========================================================== ==============
-        None
-        ============= =========== =========================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         return map(lambda v: supported_types.get_type_string(v), self.values())
 
     def drop(self, victim_columns):
         """
         Get rid of particular columns
 
-        ============== =========== ====================================================== ==============
-        Parameter      Data Type   Meaning                                                Default Value
-        ============== =========== ====================================================== ==============
-        victim_columns str or      Name(s) of the columns to drop                         Not optional
-                       list of str
-        ============== =========== ====================================================== ==============
-        **Examples**
+        Parameters
+        ----------
+        victim_columns : str OR list of str
+            Name(s) of the columns to drop
 
+        Examples
+        --------
         >>> 
         """
         if isinstance(victim_columns, basestring):
@@ -700,19 +577,6 @@ class FrameSchema(OrderedDict):
             self[n] = t
 
     def merge(self, schema):
-        """
-        Merge another schema into the current one
-
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        schema        structure                                                          Not optional
-        ============= =========== ====================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
         for k, v in schema.items():
             if k not in self:
                 self[k] = v
