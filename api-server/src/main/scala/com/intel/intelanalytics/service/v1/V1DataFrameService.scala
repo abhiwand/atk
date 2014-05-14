@@ -65,7 +65,12 @@ trait V1DataFrameService extends V1Service {
 
     //TODO: none of these are yet asynchronous - they communicate with the engine
     //using futures, but they keep the client on the phone the whole time while they're waiting
-    //for the engine work to complete. Needs to be updated to a) register running jobs in the metastore
+    //for the engine work to complete. Needs to be updated to a) register running jobs in
+    //
+    //
+    //
+    //
+    // the metastore
     //so they can be queried, and b) support the web hooks.
     std(prefix) { implicit p: UserPrincipal =>
       (path(prefix) & pathEnd) {
@@ -82,7 +87,7 @@ trait V1DataFrameService extends V1Service {
               entity(as[DataFrameTemplate]) {
                 frame =>
                   onComplete(engine.create(frame)) {
-                    case Success(frame) => complete(decorate(uri, frame))
+                    case Success(frame) => complete(decorate(uri + "/" + frame.id, frame))
                     case Failure(ex) => throw ex
                   }
               }
