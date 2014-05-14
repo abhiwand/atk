@@ -38,7 +38,7 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.{ Paths, Path, Files }
 import java.io._
-import com.intel.intelanalytics.engine.Rows.{ Row, RowSource }
+import com.intel.intelanalytics.engine.Rows._
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
@@ -1046,17 +1046,21 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
       val id = nextGraphId()
 
-      val gbConfigFactory = new GraphBuilderConfigFactory(frames.lookup(graph.dataFrameId).get.schema, graph)
+      val dataFrame = frames.lookup(graph.dataFrameId)
+      val gbConfigFactory = new GraphBuilderConfigFactory(dataFrame.get.schema, graph)
 
       val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
 
       val ctx = engine.context
 
       // Setup data in Spark
-      val inputRows = ctx.sparkContext.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
-      val inputRdd = inputRows.map(row => row.split(","): Seq[_])
+      // val inputRows = ctx.sparkContext.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
+      val inputRowsRdd: RDD[Rows.Row] = frames.getFrameRdd(engine.context.sparkContext, graph.dataFrameId)
+
+      val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
 
       graphBuilder.build(inputRdd)
+
       new Graph(id, graph.graphName)
     }
 
