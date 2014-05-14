@@ -178,7 +178,7 @@ class BigFrame(object):
         #return ['frame', {"name": self.name}]
 
 
-    def add_column(self, func, name=None, type="str"):
+    def add_column(self, func, type=str, name=""):
         """
         Adds a new column to the frame by evaluating the given func on each row
 
@@ -187,9 +187,18 @@ class BigFrame(object):
         func: row function
             function which takes a single row and produces a value for the new cell
 
-        names: list or tuple of strings or tuples of string, data type
-            specifies the name and data type of the new columns
+        type: data type
+            specifies the type of the new column
+
+        name: string
+            specifies the name of the new column
         """
+        # Generate a synthetic name
+        if not name:
+            for i in range(0,1000):
+                if self._columns.get('res%d' % i, None) is None:
+                    name = 'res%d' % i
+                    break
         self._backend.add_column(self, func, name, type)
 
     def add_columns(self, func, names=None, ):
@@ -211,12 +220,28 @@ class BigFrame(object):
         self._backend.append(self, *data)
 
     def filter(self, predicate):
+        """
+        Select all rows which satisfy a predicate
+
+        Parameters
+        ----------
+        predicate: function
+            function definition or lambda which evaluates to a boolean value
+        """
         self._backend.filter(self, predicate)
 
     def count(self):
         return self._backend.count(self)
 
     def remove_column(self, name):
+        """
+        Remove columns
+
+        Parameters
+        ----------
+        name: string or list of strings
+            column name or list of column names to be removed from the frame
+        """
         self._backend.remove_column(self, name)
         if isinstance(name, basestring):
             name = [name]
