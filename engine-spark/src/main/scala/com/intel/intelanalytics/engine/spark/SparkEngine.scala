@@ -95,6 +95,7 @@ import org.apache.commons.configuration.BaseConfiguration
 import com.tinkerpop.blueprints.{ Direction, Vertex }
 import com.thinkaurelius.titan.graphdb.query.TitanPredicate
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import org.apache.hadoop.mapreduce.Job
 
 //TODO documentation
 //TODO progress notification
@@ -457,11 +458,11 @@ class SparkComponent extends EngineComponent
       import spray.json._
       import DomainJsonProtocol._
       val command = commands.create(CommandTemplate("graph/ml/als", Some(als.toJson.asJsObject)))
-      withMyClassLoader {
-        withContext("se.runAls") {
+      withContext("se.runAls") {
+        withMyClassLoader {
           val result = future {
             withCommand(command) {
-              val graph = graphs.lookup(als.graph).getOrElse(throw new IllegalArgumentException("Graph does not exist"))
+              //val graph = graphs.lookup(als.graph).getOrElse(throw new IllegalArgumentException("Graph does not exist"))
               val eConf = ConfigFactory.load("engine.conf").getConfig("engine.algorithm.als")
               val hConf = new Configuration()
               def set[T](hadoopKey: String, arg: Option[T], configKey: String) = {
@@ -492,7 +493,48 @@ class SparkComponent extends EngineComponent
               set("als.featureDimension", als.feature_dimension, "feature-dimension")
 
               //TODO: invoke the giraph algorithm here.
+              //TODO: Use hadoop interfaces rather than subprocess call
+              //val job = Job.getInstance(hConf)
+              //job.setOutputKeyClass()
 
+              import scala.sys.process._
+              //
+              //// This uses ! to get the exit code
+              //def fileExists(name: String) = Seq("test", "-f", name).! == 0
+              //
+              //// This uses !! to get the whole result as a string
+              //val dirContents = "ls".!!
+              //
+              //// This "fire-and-forgets" the method, which can be lazily read through
+              //// a Stream[String]
+              //def sourceFilesAt(baseDir: String): Stream[String] = {
+              //  val cmd = Seq("find", baseDir, "-name", "*.scala", "-type", "f")
+              //    cmd.lines
+              //    }
+
+              info("launching process")
+              val cmd = Seq("echo", "hello from sub process!")
+              for (l <- cmd.lines) {
+                info("Received from process: " + l)
+              }
+              info("completed process")
+              //                Seq(
+              //                          "hadoop",
+              //                          "jar",
+              //                          "/home/ec2-user/cdh_tribeca/IntelAnalytics/target/IntelAnalytics-application-0.8-SNAPSHOT.jar",
+              //"org.apache.giraph.GiraphRunner -Dgiraph.zkList=ip-172-31-43-19.us-west-2.compute.internal",
+              //"-Dgiraph.SplitMasterWorker=false -Dmapreduce.jobtracker.address=ip-172-31-43-19.us-west-2.compute.internal",
+              //"-Dgiraph.titan.input.storage.backend=hbase -Dgiraph.titan.input.storage.hostname=ip-172-31-43-19.us-west-2.compute.internal",
+              //"-Dgiraph.titan.input.storage.tablename=netflix -Dgiraph.titan.input.storage.port=2181",
+              //"-Dgiraph.titan.input.storage.read-only=false -Dgiraph.titan.input.autotype=none -Dinput.edge.property.key.list=rating",
+              //"-Dinput.edge.label.list=rates -Doutput.vertex.property.key.list=als_result,bias -Dvertex.type.property.key=vertexType",
+              //"-Dedge.type.property.key=splits -Doutput.vertex.bias=true com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation",
+              //"-mc com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation$AlternatingLeastSquaresMasterCompute",
+              //"-aw com.intel.giraph.algorithms.als.AlternatingLeastSquaresComputation$AlternatingLeastSquaresAggregatorWriter",
+              //"-vif  com.intel.giraph.io.titan.hbase.TitanHBaseVertexInputFormatPropertyGraph4CF",
+              //"-vof com.intel.giraph.io.titan.TitanVertexOutputFormatPropertyGraph4CF -op hdfs:///user/ec2-user/als -w 1",
+              //"-ca als.maxSupersteps=10  -ca als.convergenceThreshold=0  -ca als.lambda=0.065  -ca als.featureDimension=3 -ca als.biasOn=true",
+              //)
             }
             commands.lookup(command.id).get
           }
