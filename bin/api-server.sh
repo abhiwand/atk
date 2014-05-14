@@ -8,7 +8,7 @@ echo $DIR
 if [[ -f $DIR/../launcher/target/scala-2.10/launcher.jar ]]
 then
     LAUNCHER=$DIR/../launcher/target/scala-2.10/launcher.jar
-    CONFDIR=$DIR/../api-server/src/main/resources
+    CONFDIR=$DIR/../api-server/src/main/resources:$DIR/../engine/src/main/resources:
 else
     LAUNCHER=$DIR/launcher.jar
     CONFDIR=$DIR/conf
