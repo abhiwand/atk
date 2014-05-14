@@ -156,7 +156,15 @@ class TestGraphBackendRest(unittest.TestCase):
         from intelanalytics.core.loggers import loggers
         loggers.set(10, "intelanalytics.rest.graph")
         graph = BigGraph(rules)
-        pass
+
+    @patch("intelanalytics.rest.graph.rest_http")
+    def test_als(self, mock_http):
+        frame, rules = self.get_mock_frame_and_rules_1()
+        graph = BigGraph(rules)
+        from intelanalytics.core.loggers import loggers
+        loggers.set(10, "intelanalytics.rest.graph")
+        graph.ml.als(['input_edge_property_list'], "input_edge_label", ["output_vertex_property_list"], "vertex_type", "edge_type")
+        print graph.ml.recommend('movie')
 
 if __name__ == "__main__":
     unittest.main()
