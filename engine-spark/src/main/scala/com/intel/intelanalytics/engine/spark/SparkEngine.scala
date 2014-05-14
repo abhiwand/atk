@@ -424,7 +424,9 @@ class SparkComponent extends EngineComponent
 
     def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Future[Graph] = {
       future {
-        graphs.createGraph(graph)
+        withMyClassLoader {
+          graphs.createGraph(graph)
+        }
       }
     }
 
@@ -822,6 +824,7 @@ class SparkComponent extends EngineComponent
     }
 
     override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
+
       println("CREATING GRAPH " + graph.graphName)
 
       val id = nextGraphId()
