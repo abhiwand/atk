@@ -142,6 +142,9 @@ trait EngineComponent {
   //TODO: distinguish between DataFrame and DataFrameSpec,
   // where the latter has no ID, and is the argument passed to create?
   trait Engine {
+    //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
+    def getVertices(graph: Identifier, offset: Int, count: Int, queryName: String, parameters: Map[String, String]): Future[Iterable[Row]]
+
     def getCommands(offset: Int, count: Int): Future[Seq[Command]]
     def getCommand(id: Identifier): Future[Option[Command]]
     def getFrame(id: Identifier): Future[Option[DataFrame]]

@@ -37,7 +37,7 @@ import util.parsing.combinator.RegexParsers
  * Row Class to split a string based on delimiter
  * @param separator : delimiter character
  */
-class Row(separator: Char) extends RegexParsers with Serializable {
+class RowParser(separator: Char) extends RegexParsers with Serializable {
 
   override def skipWhitespace = false
   /**

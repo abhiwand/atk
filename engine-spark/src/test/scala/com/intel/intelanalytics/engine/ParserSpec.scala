@@ -24,10 +24,10 @@
 * Unit test specs for Parser
 */
 import org.specs2.mutable.Specification
-import com.intel.intelanalytics.engine.Row
+import com.intel.intelanalytics.engine.RowParser
 
 class ParserSpec extends Specification {
-  val row = new Row(',')
+  val row = new RowParser(',')
   "Parser" should {
     "parse a String" in {
       row.apply("a,b") shouldEqual Array("a", "b")
@@ -53,7 +53,7 @@ class ParserSpec extends Specification {
       row.apply("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
     }
   }
-  val trow = new Row('\t')
+  val trow = new RowParser('\t')
   "Parser" should {
     "parse a tab separated string" in {
       trow.apply("foo\tbar\tbaz") shouldEqual Array("foo", "bar", "baz")
