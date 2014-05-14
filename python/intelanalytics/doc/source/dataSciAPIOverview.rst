@@ -1,3 +1,7 @@
+..  role:: strikeraw
+    
+..  role:: strike
+        
 Python API Overview
 ===================
 

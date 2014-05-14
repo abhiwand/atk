@@ -17,9 +17,9 @@ index
         dataSciAPI
             dataSciAPIOverview
             dataSciAPIClasses
-                files
-                frame
-                graph
+                intelanalytics.core.files
+                intelanalytics.core.frame
+                intelanalytics.core.graph
         dataSciMLAlgorithms
         dataSciSupplemental (future)
         dataSciBKM (future)
