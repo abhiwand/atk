@@ -38,7 +38,7 @@ import scala.concurrent._
 import ExecutionContext.Implicits.global
 import java.nio.file.{ Paths, Path, Files }
 import java.io._
-import com.intel.intelanalytics.engine.Rows.RowSource
+import com.intel.intelanalytics.engine.Rows.{ Row, RowSource }
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
@@ -50,7 +50,6 @@ import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
 import scala.Some
-import com.intel.intelanalytics.engine.Row
 import scala.util.matching.Regex
 import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
 import com.intel.event.EventContext
@@ -72,6 +71,30 @@ import com.intel.intelanalytics.shared.EventLogging
 import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.intelanalytics.engine.spark.graphbuilder.GraphBuilderConfigFactory
 import com.intel.graphbuilder.driver.spark.titan.examples.ExamplesUtils
+import scala.util.Failure
+import scala.Some
+import scala.collection.JavaConverters._
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.FrameRemoveColumn
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.FrameAddColumn
+import scala.util.Success
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.SeparatorArgs
+import com.intel.intelanalytics.domain.CommandTemplate
+import com.intel.intelanalytics.domain.Error
+import com.intel.intelanalytics.domain.Als
+import com.thinkaurelius.titan.core.{ TitanGraph, TitanFactory }
+import org.apache.commons.configuration.BaseConfiguration
+import com.tinkerpop.blueprints.{ Direction, Vertex }
+import com.thinkaurelius.titan.graphdb.query.TitanPredicate
+import com.intel.graphbuilder.util.SerializableBaseConfiguration
 
 //TODO documentation
 //TODO progress notification
@@ -163,7 +186,7 @@ class SparkComponent extends EngineComponent
             case x => throw new IllegalArgumentException(
               "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
           }
-          val row = new Row(args.separator)
+          val row = new RowParser(args.separator)
           s => row(s)
         }
         case x => throw new Exception("Unsupported parser: " + x)
@@ -477,6 +500,220 @@ class SparkComponent extends EngineComponent
         }
       }
     }
+
+    private var titanConnections: Map[Identifier, TitanGraph] = Map.empty
+
+    //TODO: Cleanup these connections at some point.
+    protected def connect(graphId: Identifier): TitanGraph = {
+      titanConnections.get(graphId) match {
+        case Some(g) => g
+        case None =>
+          //TODO: get these settings from engine.conf or another config
+          // Titan Settings
+          val titanConfig = new SerializableBaseConfiguration()
+          titanConfig.setProperty("storage.backend", "hbase")
+          titanConfig.setProperty("storage.tablename", "iagraph-" + graphId)
+          //titanConfig.setProperty("storage.backend", "cassandra")
+          //titanConfig.setProperty("storage.keyspace", "netflix")
+          titanConfig.setProperty("storage.hostname", ExamplesUtils.storageHostname)
+          //titanConfig.setProperty("storage.batch-loading", "true")
+          titanConfig.setProperty("autotype", "none")
+          titanConfig.setProperty("storage.buffer-size", "2048")
+          titanConfig.setProperty("storage.attempt-wait", "300")
+          titanConfig.setProperty("storage.lock-wait-time", "400")
+          titanConfig.setProperty("storage.lock-retries", "15")
+          titanConfig.setProperty("storage.idauthority-retries", "30")
+          titanConfig.setProperty("storage.write-attempts", "10")
+          titanConfig.setProperty("storage.read-attempts", "6")
+          titanConfig.setProperty("ids.block-size", "300000")
+          titanConfig.setProperty("ids.renew-timeout", "150000")
+          val g = TitanFactory.open(titanConfig)
+          synchronized {
+            titanConnections += (graphId -> g)
+          }
+          g
+      }
+    }
+
+    def alsQuery(graphId: Identifier, offset: Int, count: Int, map: Map[String, String]): Iterable[Row] = {
+
+      //TODO: Needs cleanup and verification.
+
+      val queryConf = ConfigFactory.load("engine.conf").getConfig("engine.query.ALSQuery")
+      def get(mapName: String, defaultName: String) = {
+        map.getOrElse(mapName, queryConf.getString(defaultName))
+      }
+      val g = connect(graphId)
+      val id = map("vertex_id")
+      val idProp = get("key_name", "key-name")
+      val vertexTypeProp = get("vtype_name", "vertex-type-name")
+      val vertexType = get("vtype", "vertex-type")
+      val biasOn = get("bias_on", "bias-on").toBoolean
+      val propertyList = get("props", "result-property-list").split(";")
+      val edgeTypeProp = get("etype_name", "edge-type-name")
+      val edgeType = get("edge_type", "edge")
+      val featureDimensions = get("feat_dims", "feature-dimensions")
+      val leftType = get("left_type", "left-type").toUpperCase
+      val rightType = get("right_type", "right-type").toUpperCase
+      val leftName = get("left_name", "left-name")
+      val rightName = get("right_name", "right-name")
+      val vectorValue = get("vector", "vector-value").toBoolean
+      val train = get("train", "train")
+
+      val start = g.query().has(idProp, id).has(vertexTypeProp, vertexType).vertices().iterator().next()
+
+      //      val entities = List((leftTypeStr):leftName + '  ', (rightTypeStr):rightName + '  ')
+      //    commonStr = 'Top 10 recommendations to '
+      //    comments = [(leftTypeStr):commonStr + leftName + ': ', (rightTypeStr):commonStr + rightName + ': ']
+      //    //vertexType = v.getProperty(key4VertexType)
+
+      val recommendType = if (vertexType == rightType) { leftType } else { rightType }
+
+      //    recommendType = rightTypeStr
+      //    if (vertexType == rightTypeStr) {
+      //        recommendType = leftTypeStr
+      //    }
+      /*
+
+    println "================" + comments[vertexType] + vertexID + "================"
+    list1 = getResults(v, propertyList, vectorValue, biasOn)
+    println list1
+    */
+      val commasAndWhiteSpace = "[\\s,\\t]+".r
+      def results(v: Vertex): List[Double] = {
+        val length = propertyList.length
+        if (length == 0) {
+          throw new IllegalArgumentException("no property provided for ML result!")
+        }
+        else if (vectorValue && biasOn && length != 2) {
+          throw new IllegalArgumentException("wrong property length provided for ML result!")
+        }
+
+        val bias = if (biasOn) { Some(v.getProperty[Double](propertyList.last)) } else { None }
+        val properties = if (vectorValue) {
+          commasAndWhiteSpace.split(v.getProperty(propertyList.head)).map(_.toDouble)
+        }
+        else {
+          val valueLength = if (biasOn) { length - 1 } else { length }
+          propertyList.take(valueLength).map(p => v.getProperty[Double](p))
+        }
+        (bias ++ properties).toList
+      }
+
+      val list1 = results(start)
+
+      def calculateScore(list2: Seq[Double]) {
+        if (biasOn) {
+          list1(0) + list2(0) + (list1.drop(1), list2.drop(1)).zipped.map(_ * _).sum
+        }
+        else {
+          (list1, list2).zipped.map(_ * _).sum
+        }
+      }
+
+      val res = g.query().has(vertexTypeProp).vertices().asScala
+        .filter(_.getProperty(vertexTypeProp).toString.toUpperCase() == recommendType)
+        .filter(_.getEdges(Direction.OUT).asScala.filter(
+          _.getProperty(edgeTypeProp).toString.toUpperCase() == train).isEmpty)
+        .map(v2 => {
+          val list2 = results(v2)
+          val score = calculateScore(list2)
+          Array(v2.getProperty(idProp).toString, score)
+        })
+
+      res
+
+      /*
+
+    def list = []
+    for(Vertex v2 : g.V.filter{(it.getProperty(key4VertexType)).toUpperCase() == recommendType}) {
+        list2 = getResults(v2, propertyList, vectorValue, biasOn)
+        score = calculateScore(list1, list2, biasOn, featureDimension)
+        if (v2.outE.filter{it.getProperty(key4EdgeType).toUpperCase() != trainStr}){
+            list.add new recommendation(id:v2.getProperty(key4VertexID), rec:score)
+        }
+    }
+    listSize = list.size()
+    if (listSize > 0){
+        size = listSize >= 10? 10 : listSize
+        sortedlist = list.sort{a,b -> b.rec<=>a.rec}[0..<size]
+        (0..<size).each{
+            println entities[recommendType] + sortedlist[it].id + "  score " + sortedlist[it].rec
+        }
+    }
+    println 'complete execution'
+}
+
+
+class recommendation {
+   def id
+   def rec
+}
+
+def getResults(Vertex v, String[] propertyList, String vectorValue, String biasOn) {
+    def list = []
+    length = propertyList.length
+    valueLength = length
+    if(length == 0){
+      println "ERROR: no property provided for ML result!"
+    } else if (vectorValue == "true"  &&
+            biasOn == "true"  &&
+            length != 2){
+      println "ERROR: wrong property length provided for ML result!"
+    }
+
+    //firstly add bias
+    if(biasOn == "true"){
+      list.add v.getProperty(propertyList[length-1]).toDouble()
+      valueLength = length - 1
+    }
+
+    //then add the results
+    if(vectorValue == "true"){
+      values = v.getProperty(propertyList[0]).split("[\\s,\\t]+")
+        for(i in 0..<values.size()){
+            list.add values[i].toDouble()
+        }
+    } else {
+        for(i in 0..<valueLength){
+            list.add v.getProperty(propertyList[i]).toDouble()
+        }
+    }
+
+    return list
+}
+
+def calculateScore(list1, list2, biasOn, featureDimension) {
+    if(biasOn == "true"){
+        sum = list1[0] + list2[0]
+        (1..featureDimension).each {
+            sum += list1[it] * list2[it]
+        }
+    } else {
+        (0..<featureDimension).each {
+            sum = list1[it] * list2[it]
+        }
+    }
+
+    return sum
+}
+       */
+    }
+
+    //TODO: We'll probably return an Iterable[Vertex] instead of rows at some point.
+    override def getVertices(graph: Identifier,
+                             offset: Int,
+                             count: Int,
+                             queryName: String,
+                             parameters: Map[String, String]): Future[Iterable[Row]] = {
+      //TODO: these will come from a dynamically configured map rather than a match expression
+      future {
+        queryName match {
+          case "ALSQuery" => alsQuery(graph, offset, count, parameters)
+          case _ => throw new IllegalArgumentException("Unknown query: " + queryName)
+        }
+      }
+    }
   }
 
   val files = new HdfsFileStorage {}
@@ -774,6 +1011,7 @@ class SparkComponent extends EngineComponent
           repo.update(changed)
       }
     }
+
   }
 
   val graphs = new SparkGraphStorage {}
@@ -831,6 +1069,7 @@ class SparkComponent extends EngineComponent
       println("LISTING " + count + " GRAPHS FROM " + offset)
       List[Graph]()
     }
+
   }
 
 }
