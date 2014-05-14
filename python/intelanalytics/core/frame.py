@@ -61,6 +61,7 @@ class BigFrame(object):
     def __init__(self, source=None, name=None):
         self._columns = OrderedDict()  # self._columns must be the first attribute to be assigned (see __setattr__)
         self._id = 0
+        self._uri = ""
         if not hasattr(self, '_backend'):  # if a subclass has not already set the _backend
             self._backend = _get_backend()
         self._name = name or self._get_new_frame_name(source)
@@ -139,29 +140,45 @@ class BigFrame(object):
     def __iter__(self):
         return BigFrame._FrameIter(self)
 
-    @property
-    def name(self):
-        return self._name
+    def __eq__(self, other):
+        if not isinstance(other, BigFrame):
+            return False
+        return self._id == other._id
 
-    @property
-    def data_type(self):
-        return type(self)
+    def __hash__(self):
+        return hash(self._id)
 
     @property
     def column_names(self):
         return self._columns.keys()
 
     @property
+    def data_type(self):
+        return type(self)
+
+    #@property
+    #def frame_id(self):
+    #    return self._id
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
     def schema(self):
         return FrameSchema(zip(self._columns.keys(),
                                map(lambda c: c.data_type, self._columns.values())))
+
+    @property
+    def uri(self):
+        return self._uri
 
     def _as_json_obj(self):
         return self._backend._as_json_obj(self)
         #return ['frame', {"name": self.name}]
 
 
-    def add_column(self, func, name=None):
+    def add_column(self, func, name=None, type="str"):
         """
         Adds a new column to the frame by evaluating the given func on each row
 
@@ -173,7 +190,7 @@ class BigFrame(object):
         names: list or tuple of strings or tuples of string, data type
             specifies the name and data type of the new columns
         """
-        self._backend.add_column(self, func, name)
+        self._backend.add_column(self, func, name, type)
 
     def add_columns(self, func, names=None, ):
         """
