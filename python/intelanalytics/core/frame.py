@@ -42,15 +42,18 @@ def get_frame_names():
     """
     Gets the names of BigFrame objects available for retrieval
 
-    ============= =========== =========================================================== ==============
-    Parameter     Data Type   Meaning                                                     Default Value
-    ============= =========== =========================================================== ==============
-    None
-    ============= =========== =========================================================== ==============
+    Parameters
+    ----------
 
-    **Examples**
+    Returns
+    -------
+    String : Name
+        Name of the active BigFrame object
 
-    >>> 
+    Examples
+    --------
+    >>>
+
     """
     return _get_backend().get_frame_names()
 
@@ -59,15 +62,20 @@ def get_frame(name):
     """
     Retrieves the named BigFrame object
     
-    ============= =========== =========================================================== ==============
-    Parameter     Data Type   Meaning                                                     Default Value
-    ============= =========== =========================================================== ==============
-    Name          ?           ?                                                           Not optional
-    ============= =========== =========================================================== ==============
+    Parameter
+    ---------
+    name : str
+        String containing the name of the BigFrame object
 
-    **Examples**
+    Returns
+    -------
+    Frame : BigFrame
+        Named object
 
+    Examples
+    --------
     >>> 
+
     """
     return _get_backend().get_frame(name)
 
@@ -76,14 +84,17 @@ def delete_frame(name):
     """
     Deletes the frame from backing store
     
-    ============= =========== =========================================================== ==============
-    Parameter     Data Type   Meaning                                                     Default Value
-    ============= =========== =========================================================== ==============
-    Name          ?           ?                                                           Not optional
-    ============= =========== =========================================================== ==============
+    Parameters
+    ----------
+    name
+    
+    Returns
+    -------
+    String : str
+        The name of the deleted frame
 
-    **Examples**
-
+    Examples
+    --------
     >>> 
     """
     return _get_backend().delete_frame(name)
@@ -343,7 +354,8 @@ class BigFrame(object):
         **Examples**
 
         >>> 
-	"""
+        """
+        pass
 
     def filter(self, predicate):
         """
@@ -381,15 +393,15 @@ class BigFrame(object):
         """
         Remove columns of data
 
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        name          str or      The column name(s)                                     Not optional
-                      list of str
-        ============= =========== ====================================================== ==============
+        Parameters
+        ----------
+        name : str OR list of str
 
-        **Examples**
-
+        Notes
+        -----
+        This function will retain a single column
+        Examples
+        --------
         >>> 
         """
         self._backend.remove_column(self, name)
@@ -399,26 +411,13 @@ class BigFrame(object):
             del self._columns[victim]
 
     def drop(self, predicate):
-        """
-        To Do
-
-        ============= =========== ====================================================== ==============
-        Parameter     Data Type   Meaning                                                Default Value
-        ============= =========== ====================================================== ==============
-        predicate     ?                                                                  Not optional
-        ============= =========== ====================================================== ==============
-
-        **Examples**
-
-        >>> 
-        """
-
+        pass
 
     def dropna(self, how=any, column_subset=None):
         """
         Drops all rows which have NA values
 
-	============= =========== ========================================================== ==============
+        ============= =========== ========================================================== ==============
         Parameter     Data Type   Meaning                                                    Default Value
         ============= =========== ========================================================== ==============
         how           str         any: if any column has an NA value, drop row               any
@@ -679,21 +678,20 @@ class FrameSchema(OrderedDict):
         """
         Add new columns
 
-        ============= ================== ================================= ==============
-        Parameter     Data Type          Meaning                           Default Value
-        ============= ================== ================================= ==============
-        new_columns   structure          The column(s) to add              Not optional
-        \             .keys = str       
-        \             .items = structure
-        \             == int             The new column number
-        \             == value           The new column value
-        ============= ================== ================================= ==============
+        Parameters
+        ----------
+        new_columns : structure
+            The column(s) to add              Not optional
+            .keys = str       
+            .items = structure
+            == int             The new column number
+            == value           The new column value
 
-        **Examples**
-
+        Examples
+        --------
         >>> 
 
-	Should the new column be named?
+        Should the new column be named?
         """
         for f in new_columns.keys():
             if f in self:
