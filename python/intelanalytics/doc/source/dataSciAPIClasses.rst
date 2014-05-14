@@ -1,8 +1,17 @@
-..  toctree::
-    :maxdepth: 2
+Python API in Detail
+====================
 
-    files
-    frame
-    graph
+Files
+-----
+.. automodule:: intelanalytics.core.files
+    :members:
 
+Frame
+-----
+.. automodule:: intelanalytics.core.frame
+    :members:
 
+Graph
+-----
+.. automodule:: intelanalytics.core.graph
+    :members:
