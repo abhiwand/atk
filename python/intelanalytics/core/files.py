@@ -85,7 +85,6 @@ class CsvFile(DataFile):
         """
         Breaks up it's information into workable variables
 
-        
         Parameters
         ----------
         
@@ -116,7 +115,7 @@ class CsvFile(DataFile):
 
         """
         description of what this function does
-        
+
         Parameters
         ----------
         obj : obj
@@ -163,8 +162,19 @@ class CsvFile(DataFile):
         return [x[1] for x in self.fields]
 
     def to_ordered_dict(self):
-
-        """creates an ordered dictionary representing the schema fields and types"""
+        """
+        Creates an ordered dictionary representing the schema fields and types
+        
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        
+        Examples
+        --------
+        >>>
+        """
         d = OrderedDict()
         for field in self.fields:
             d[field[0]] = field[1]
