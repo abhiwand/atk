@@ -267,33 +267,15 @@ class SparkComponent extends EngineComponent
             withContext("se.filter.future") {
               withCommand(command) {
 
-                val ctx = context(user).sparkContext
-                val frameId = arguments.frame
-                val predicateInBytes = decodePythonBase64EncodedStrToBytes(arguments.predicate)
+                val pyRdd = createPythonRDD(arguments.frame, arguments.predicate)
 
-                val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-                  .map(x => x.map(t => t.toString()).mkString(","))
-
-                val pythonExec = "python2.7" //TODO: take from env var or config
-                val environment = new java.util.HashMap[String, String]()
-
-                val accumulator = ctx.accumulator[JList[Array[Byte]]](new JArrayList[Array[Byte]]())(new EnginePythonAccumulatorParam())
-
-                var broadcastVars = new JArrayList[Broadcast[Array[Byte]]]()
-
-                val pyRdd = new EnginePythonRDD[String](
-                  baseRdd, predicateInBytes, environment,
-                  new JArrayList, preservePartitioning = false,
-                  pythonExec = pythonExec,
-                  broadcastVars, accumulator)
-
-                val location = fsRoot + frames.getFrameDataFile(frameId)
+                val location = fsRoot + frames.getFrameDataFile(arguments.frame)
 
                 val realFrame = frames.lookup(arguments.frame).getOrElse(
                   throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
-                pyRdd.map(s => new String(s).split(",")).map(converter).saveAsObjectFile(location)
+                persistPythonRDD(pyRdd, converter, location)
               }
               commands.lookup(command.id).get
             }
@@ -314,26 +296,34 @@ class SparkComponent extends EngineComponent
 
                 val ctx = context(user).sparkContext
                 val frameId = arguments.frame
-                val column = arguments.column
+                val columns = arguments.column.split(",")
 
                 val realFrame = frames.lookup(arguments.frame).getOrElse(
                   throw new IllegalArgumentException(s"No such data frame: ${arguments.frame}"))
                 val schema = realFrame.schema
                 val location = fsRoot + frames.getFrameDataFile(frameId)
 
-                val columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == column)
+                val columnIndices = {
+                  for {
+                    col <- columns
+                    columnIndex = schema.columns.indexWhere(columnTuple => columnTuple._1 == col)
+                  } yield columnIndex
+                }.sorted.distinct
 
-                (columnIndex, realFrame.schema.columns.length) match {
-                  case (value, _) if value < 0 => throw new IllegalArgumentException(s"No such column: $column")
-                  case (value, 1) => frames.getFrameRdd(ctx, frameId)
-                    .filter(_ => false)
+                columnIndices match {
+                  case invalidColumns if invalidColumns.contains(-1) =>
+                    throw new IllegalArgumentException(s"Invalid list of columns: ${arguments.column}")
+                  case allColumns if allColumns.length == schema.columns.length =>
+                    frames.getFrameRdd(ctx, frameId).filter(_ => false).saveAsObjectFile(location)
+                  case singleColumn if singleColumn.length == 1 => frames.getFrameRdd(ctx, frameId)
+                    .map(row => row.take(singleColumn(0)) ++ row.drop(singleColumn(0) + 1))
                     .saveAsObjectFile(location)
-                  case _ => frames.getFrameRdd(ctx, frameId)
-                    .map(row => row.take(columnIndex) ++ row.drop(columnIndex + 1))
+                  case multiColumn => frames.getFrameRdd(ctx, frameId)
+                    .map(row => row.zipWithIndex.filter(elem => multiColumn.contains(elem._2) == false).map(_._1))
                     .saveAsObjectFile(location)
                 }
 
-                frames.removeColumn(realFrame, columnIndex)
+                frames.removeColumn(realFrame, columnIndices)
               }
               commands.lookup(command.id).get
             }
@@ -588,9 +578,17 @@ class SparkComponent extends EngineComponent
         ???
       }
 
-    override def removeColumn(frame: DataFrame, columnIndex: Int): Unit =
+    override def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit =
       withContext("frame.removeColumn") {
-        val remainingColumns = frame.schema.columns.take(columnIndex) ++ frame.schema.columns.drop(columnIndex + 1)
+
+        val remainingColumns = {
+          columnIndex match {
+            case singleColumn if singleColumn.length == 1 =>
+              frame.schema.columns.take(singleColumn(0)) ++ frame.schema.columns.drop(singleColumn(0) + 1)
+            case _ =>
+              frame.schema.columns.zipWithIndex.filter(elem => columnIndex.contains(elem._2) == false).map(_._1)
+          }
+        }
         val newSchema = frame.schema.copy(columns = remainingColumns)
         val newFrame = frame.copy(schema = newSchema)
 
