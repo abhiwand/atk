@@ -29,7 +29,8 @@ package com.intel.intelanalytics.domain
 case class Als[GraphRef](graph: GraphRef, lambda: Double, max_supersteps: Option[Int],
                          converge_threshold: Option[Int], feature_dimension: Option[Int])
 
-case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int], lineParser: Partial[Arguments]) {
+case class LoadLines[+Arguments, FrameRef](source: String, destination: FrameRef, skipRows: Option[Int],
+                                           overwrite: Option[Boolean], lineParser: Partial[Arguments]) {
   require(source != null, "source is required")
   require(destination != null, "destination is required")
   require(skipRows.isEmpty || skipRows.get >= 0, "cannot skip negative number of rows")
