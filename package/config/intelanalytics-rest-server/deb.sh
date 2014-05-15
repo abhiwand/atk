@@ -20,7 +20,11 @@ RECOMMENDS="\${java:Recommends}"
 SOURCE=$packageName
 SUMMARY="zombies "
 DESCRIPTION=$SUMMARY
-SUBJECT=$DESCRIPTION
+SUBJECT="$DESCRIPTION
+start the server with 'service intelanalytics-rest-server status'
+config files are in /etc/intelanalytics/rest-server
+log files live in /var/log/intelanalytics/rest-server
+"
 
 debDir=${packageName}-${version}
 
