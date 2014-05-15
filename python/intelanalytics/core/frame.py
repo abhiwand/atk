@@ -272,7 +272,6 @@ class BigFrame(object):
 
         Parameters
         ----------
-<<<<<<< HEAD
         predicate : function
             A function which determines which rows are to be included
 
@@ -285,10 +284,6 @@ class BigFrame(object):
         >>> def custom_filter(row):
         >>>     return row['a'] * row['a'] > 30
         >>> myfram.filter(custom_filter)
-=======
-        predicate: function
-            function definition or lambda which evaluates to a boolean value
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
         """
         self._backend.filter(self, predicate)
 
@@ -297,7 +292,6 @@ class BigFrame(object):
 
     def remove_column(self, name):
         """
-<<<<<<< HEAD
         Remove columns of data
 
         Parameters
@@ -312,14 +306,6 @@ class BigFrame(object):
         Examples
         --------
         >>> 
-=======
-        Remove columns
-
-        Parameters
-        ----------
-        name: string or list of strings
-            column name or list of column names to be removed from the frame
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
         """
         self._backend.remove_column(self, name)
         if isinstance(name, basestring):
@@ -349,13 +335,8 @@ class BigFrame(object):
         """
         self._backend.dropna(self, how, column_subset)
 
-<<<<<<< HEAD
-    def inspect(self, n=10):
-        pass
-=======
     def inspect(self, n=10, offset=0):
         return self._backend.inspect(self, n, offset)
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
 
     # def join(self,
     #          right=None,
@@ -390,7 +371,6 @@ class BigFrame(object):
     #         raise ValueError("A value for right must be specified")
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
 
-<<<<<<< HEAD
     def add_column(self, column_name, func):
         """
         Add a column to a frame
@@ -412,8 +392,6 @@ class BigFrame(object):
         return self._backend.add_column(self, column_name, func)
 
 
-=======
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
     def rename_column(self, column_name, new_name):
         """
         Rename a column to a frame
@@ -524,7 +502,6 @@ class FrameSchema(OrderedDict):
     def get_column_data_type_strings(self):
         return map(lambda v: supported_types.get_type_string(v), self.values())
 
-<<<<<<< HEAD
     def drop(self, victim_columns):
         """
         Get rid of particular columns
@@ -541,12 +518,6 @@ class FrameSchema(OrderedDict):
         if isinstance(victim_columns, basestring):
             victim_columns = [victim_columns]
         for v in victim_columns:
-=======
-    def drop(self, victim_column_names):
-        if isinstance(victim_column_names, basestring):
-            victim_column_names = [victim_column_names]
-        for v in victim_column_names:
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
             del self[v]
 
     def append(self, new_columns):
