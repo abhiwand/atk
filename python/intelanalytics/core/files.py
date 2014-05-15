@@ -33,7 +33,7 @@ class DataFile(object):
 class CsvFile(DataFile):
 
     """
-    Creates object which defines a CSV file
+    Creates object which defines a CSV file.
 
     Parameters
     ----------
@@ -83,7 +83,7 @@ class CsvFile(DataFile):
     def as_json_obj(self):
 
         """
-        Breaks up it's information into workable variables
+        Breaks up it's information into workable variables.
 
         Parameters
         ----------
@@ -114,7 +114,7 @@ class CsvFile(DataFile):
     def from_json_obj(cls, obj):
 
         """
-        description of what this function does
+        description of what this function does.
 
         Parameters
         ----------
@@ -163,7 +163,7 @@ class CsvFile(DataFile):
 
     def to_ordered_dict(self):
         """
-        Creates an ordered dictionary representing the schema fields and types
+        Creates an ordered dictionary representing the schema fields and types.
         
         Parameters
         ----------
@@ -201,7 +201,7 @@ class CsvFile(DataFile):
     def parse_legacy_schema_string(schema_string):
 
         """
-        description of what this function does
+        description of what this function does.
 
         Parameters
         ----------
@@ -232,7 +232,7 @@ class CsvFile(DataFile):
 class JsonFile(DataFile):
 
     """
-    Creates object which defines a JSON file
+    Creates object which defines a JSON file.
 
     Parameters
     ----------
@@ -250,7 +250,7 @@ class JsonFile(DataFile):
 class XmlFile(DataFile):
 
     """
-    Creates object which defines a XML file
+    Creates object which defines a XML file.
 
     Parameters
     ----------
