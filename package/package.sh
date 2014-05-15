@@ -19,7 +19,7 @@ eval set -- "$TEMP"
 
 config="config"
 packages="deb rpm"
-version="0.8.0"
+#version="0.8.0"
 build="1"
 while true; do
         case "$1" in
