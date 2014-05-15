@@ -94,6 +94,14 @@ class FrameBackendRest(object):
         logger.info("REST Backend: create frame response: " + r.text)
         payload = r.json()
         frame._id = payload['id']
+        frame._uri = "%s/%d" % (self._get_uri(payload), frame._id)
+
+    def _get_uri(self, payload):
+        links = payload['links']
+        for link in links:
+            if link['rel'] == 'self':
+               return link['uri']
+        raise Exception('Unable to find uri for frame')
 
     def append(self, frame, data):
         logger.info("REST Backend: Appending data to frame {0}: {1}".format(frame.name, repr(data)))
@@ -149,6 +157,45 @@ class FrameBackendRest(object):
         r = rest_http.post('commands', payload)
         return r
 
+    def remove_column(self, frame, name):
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        # TODO - abstraction for payload construction
+        payload = {'name': 'dataframe/removecolumn',
+                   'arguments': {'frame': frame_uri,
+                                 'column': name}}
+        r = rest_http.post('commands', payload)
+        return r
+
+    def add_column(self, frame, expression, name, type):
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+
+        def addColumnLambda(row):
+            row.data.append(unicode(supported_types.cast(expression(row),type)))
+            return ",".join(row.data)
+
+        row_ready_predicate = wrap_row_function(frame, addColumnLambda)
+        from itertools import imap
+        def filter_func(iterator): return imap(row_ready_predicate, iterator)
+        def func(s, iterator): return filter_func(iterator)
+
+        pickled_predicate = pickle_function(func)
+        http_ready_predicate = encode_bytes_for_http(pickled_predicate)
+
+        # TODO - put the frame uri in the frame, as received from create response
+        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        # TODO - abstraction for payload construction
+        payload = {'name': 'dataframe/addcolumn',
+                   'arguments': {'frame': frame_uri,
+                                 'columnname': name,
+                                 'columntype': supported_types.get_type_string(type),
+                                 'expression': http_ready_predicate}}
+        r = rest_http.post('commands', payload)
+
+        # todo - this info should come back from the engine
+        self._accept_column(frame, BigColumn(name, type))
+
+        return r
+
     class InspectionTable(object):
         _align = defaultdict(lambda: 'c')  # 'l', 'c', 'r'
         _align.update([(bool, 'r'),
@@ -190,5 +237,3 @@ class FrameBackendRest(object):
     def take(self, frame, n, offset):
         r = self.rest_http.get('dataframes/{0}/data?offset={2}&count={1}'.format(frame._id,n, offset))
         return r.json()
-
-

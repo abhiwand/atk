@@ -112,6 +112,8 @@ trait V1CommandService extends V1Service {
       case ("graph/load") => runGraphLoad(uri, xform)
       case ("graph/ml/als") => runAls(uri, xform)
       case ("dataframe/filter") => runFilter(uri, xform)
+      case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
+      case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
       case _ => ???
     }
   }
@@ -178,6 +180,52 @@ trait V1CommandService extends V1Service {
             for {
               frame <- engine.getFrame(id)
               (c, f) = engine.filter(FilterPredicate[JsObject, Long](id, args.predicate))
+            } yield c) {
+              case Success(c) => complete(decorate(uri + "/" + c.id, c))
+              case Failure(ex) => throw ex
+            }
+        }
+    }
+  }
+
+  def runFrameAddColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[FrameAddColumn[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+          val args = test.get
+          val id = idOpt.get
+          onComplete(
+            for {
+              frame <- engine.getFrame(id)
+              (c, f) = engine.addColumn(FrameAddColumn[JsObject, Long](id, args.columnname, args.columntype, args.expression))
+            } yield c) {
+              case Success(c) => complete(decorate(uri + "/" + c.id, c))
+              case Failure(ex) => throw ex
+            }
+        }
+    }
+  }
+
+  def runFrameRemoveColumn(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal) = {
+    {
+      val test = Try {
+        import DomainJsonProtocol._
+        xform.arguments.get.convertTo[FrameRemoveColumn[JsObject, String]]
+      }
+      val idOpt = test.toOption.flatMap(args => getFrameId(args.frame))
+      (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))
+        & validate(idOpt.isDefined, "Destination is not a valid data frame URL")) {
+          val args = test.get
+          val id = idOpt.get
+          onComplete(
+            for {
+              frame <- engine.getFrame(id)
+              (c, f) = engine.removeColumn(FrameRemoveColumn[JsObject, Long](id, args.column))
             } yield c) {
               case Success(c) => complete(decorate(uri + "/" + c.id, c))
               case Failure(ex) => throw ex
