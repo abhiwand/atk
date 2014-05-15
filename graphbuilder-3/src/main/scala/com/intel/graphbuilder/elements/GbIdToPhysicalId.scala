@@ -35,4 +35,7 @@ package com.intel.graphbuilder.elements
  */
 case class GbIdToPhysicalId(gbId: Property, physicalId: AnyRef) {
 
+  def toTuple: (Property, AnyRef) = {
+    (gbId, physicalId)
+  }
 }

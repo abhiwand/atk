@@ -2,6 +2,7 @@
     
 ..  role:: strike
         
+===================
 Python API Overview
 ===================
 
@@ -29,11 +30,22 @@ Data Schemas
 
 >>> from intelanalytics import *
 
+Data Types
+==========
+
+The following data types are supported:
+
+>>> supported_types
+bool, bytearray, dict, float32, float64, int32, int64, list, str, string
+
+where ``str`` is ASCII per Python, ``string`` is UTF-8
+
+
 Data Sources
-------------
+============
 
 1. CSV Files - Comma separated values
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 
 Describe a CSV file with its name and schema at minimum:
 
@@ -43,8 +55,11 @@ Describe a CSV file with its name and schema at minimum:
 >>> csv3 = CsvFile("different_data.txt", [('x', float32), ('', ignore), ('y', int64)])
 
 The schema is the structure of a single line in the CSV File.  It is built from
-tuples, each representing a field --its name and type.  (See link:todo-DataTypes for
-supported Data Types)
+tuples, each representing a field --its name and type.  (See supported Data Types)
+
+For File schemas, the ``ignore`` type may be specified if the parser should ignore
+the field.  When used as a BigFrame data source, the CSV file's schema becomes
+the schema of the BigFrame, where the name and type become column descriptions
 
 Optionally choose a delimiter other than ',' and skip the first n lines
 of the file, which may be header:
@@ -56,25 +71,25 @@ of the file, which may be header:
 
 
 2. JSON Files
-~~~~~~~~~~~~~
+-------------
 
 >>> json1 = JsonFile("json_records.json") # schema TBD
 
 
 
 BigFrame
---------
+========
 
 A BigFrame is a table structure of rows and columns, capable of holding many,
 many, ..., many rows.
 
 1. Create
-~~~~~~~~~
+---------
 
 >>> f = BigFrame()            # empty frame
 >>> g = BigFrame(csv1, csv2)  # initialize from a couple CSV File data sources
 >>> h = BigFrame(json1)       # initialize from a JSON File data source
->>> i = BigFrame(f)           # copy another frame
+>>> f2 = BigFrame(f)          # copy another frame
 
 ``append`` will add more rows to a frame from given data sources.  The frame schema
 will merge with those of the new data sources.
@@ -84,18 +99,19 @@ will merge with those of the new data sources.
 >>> f.append(CsvFile("bonus_abc_data.txt", [('a', int32), ('b', string), ('c', string)]))
 
 2. Inspect
-~~~~~~~~~~
+----------
 
 >>> f.count()               # row count
 >>> len(f)                  # column count
->>> f.inspect(5)            # print 5 rows chosen randomly
+>>> f.inspect(5)            # pretty-print first 5 rows
 >>> f.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
 
 
 3. Clean
-~~~~~~~~
+--------
 
-**Drop Rows**
+Drop Rows
+~~~~~~~~~
 
 >>> # drop all rows where column 'a' is empty
 >>> f.drop(lambda row: row.is_empty('a'))
@@ -105,75 +121,90 @@ evaluates True.  It operates in place, so it is destructive to the frame.  Be
 advised to make a copy of the frame before cleaning.
 
 >>> # drop all rows where any column is empty
->>> j = BigFrame(f)
->>> j.drop(lambda row: row.is_empty(any))
+>>> f2 = BigFrame(f)
+>>> f2.drop(lambda row: row.is_empty(any))
 
 >>> # Other examples of row.is_empty
->>> j.drop(lambda row: row.is_empty('a'))              # single column
->>> j.drop(lambda row: row.is_empty(all))              # multi-column
->>> j.drop(lambda row: row.is_empty(all, ('a', 'b')))  # multi-column
->>> j.drop(lambda row: row.is_empty(any, ('a', 'b')))  # multi-column
+>>> f2.drop(lambda row: row.is_empty('a'))              # single column
+>>> f2.drop(lambda row: row.is_empty(all))              # multi-column
+>>> f2.drop(lambda row: row.is_empty(all, ('a', 'b')))  # multi-column
+>>> f2.drop(lambda row: row.is_empty(any, ('a', 'b')))  # multi-column
 
 ``filter`` is like drop except it removes all the rows for which the predicate
 evaluates False.
 
 >>> # drop all rows where field 'b' is out of range 0 to 10
->>> j.filter(lambda row: 0 >= row['b'] >= 10)
+>>> f2.filter(lambda row: 0 >= row['b'] >= 10)
 
 If we want to hang on to the dropped rows, we can pass in a BigFrame to collect
 them.  All of the dropped rows will be appended to that frame.
 
 >>> r = BigFrame()
->>> j.filter(lambda row: 0 >= row['b'] >= 10, rejected_store=r)
+>>> f.filter(lambda row: 0 >= row['b'] >= 10, rejected_store=r)
 
-That effectively splits frame ``j`` in two.
+That effectively splits frame ``f`` in two.
 
 See :doc:`rowfunc`
 
-**Drop Duplicates**
+``drop_duplicates`` performs row uniqueness comparisons across the whole table.
 
-(Probably solve with aggregation, add this only for sugar)
+>>> f.drop_duplicates(['a', 'b'])  # only columns 'a' and 'b' considered for uniqueness
+>>> f.drop_duplicates()            # all columns considered for uniqueness
 
-:strike:`Drop all rows which are duplicates.`
+Fill Cells
+~~~~~~~~~~
 
-..  container:: strikeraw
+>>> f['a'].fillna(800001)
+>>> f['a'].fill(lambda cell: 800001 if cell is None else 800002 if cell < 0 else cell)
+>>> def filler(cell):
+...     if cell is None:
+...         return 800001
+...     if cell < 0:
+...         return 800002
+...     if cell > 255:
+...         return 800003
+...     return cell
+>>> f['a'].fill(filler)
 
-    # >>> j.drop_duplicates(['a', 'b'])  # only columns 'a' and 'b' considered for uniqueness
-    # >>> j.drop_duplicates()            # all columns considered for uniqueness
 
-**Fill Cells**
+Copy Columns
+~~~~~~~~~~~~
 
->>> j['a'].fillna(800001)
+>>> f2 = BigFrame(f[['a', 'c']])  # projects columns 'a' and 'c' to new frame f2
 
-**Copy Columns**
+A list of columns can be specified using a list to index the frame.
 
->>> k = BigFrame(j[['a', 'c']])  # projects columns 'a' and 'b' to new frame k
+Remove Columns
+~~~~~~~~~~~~~~
 
-**Delete Columns**
+>>> f2.remove_column('b')
+>>> f2.remove_column(['a', 'c'])
 
->>> g.delete_column('b')  # in place
+Rename Columns
+~~~~~~~~~~~~~~
 
-**Rename Columns**
+>>> f.rename_column(a='id')
+>>> f.rename_column(b='author', c='publisher')
+>>> f.rename_column({'col-with-dashes': 'no_dashes'})
 
->>> j.rename_column(a='id')
->>> j.rename_column(b='author', c='publisher')
+Cast Columns
+~~~~~~~~~~~~
 
-**Cast Columns**
+***WIP*** Thinking something explicit like this instead of allowing schema to be edited directly
 
-***TBD...*** Do we need something like this?
-
->>> j.cast_column(ia=int32)
+>>> f['a'].cast(int32)
 
 
 4. Engineer
-~~~~~~~~~~~
+-----------
 
-**Add Column**
+Add Column
+~~~~~~~~~~
 
 Map a function to each row in the frame, producing a new column
 
->>> j.add_column('all_ones', lambda row: 1) # add new column of all ones
->>> j.add_column('a_plus_b', lambda row: row.a + row.b)
+>>> f.add_column(lambda row: 1, 'all_ones') # add new column of all ones
+>>> f.add_column(lambda row: row.a + row.b, 'a_plus_b', int32)
 
 
 >>> # Piecewise Linear Transformation
@@ -191,82 +222,101 @@ Map a function to each row in the frame, producing a new column
 ...         return None
 ...     return m * x + c
 
->>> j.map(transform_a, out='prior')
+>>> f.add_column(transform_a, 'a_lpt')
 
-Creating multiple columns at once requires a function that returns a tuple
+Create multiple columns at once with ``add_columns``, which requires the function
+to return a tuple of cell values for the new frame columns
 
->>> j.add_column(('a_abs', 'b_abs'), lambda row: (abs(row.a), abs(row.b)))
-
-
-**Map**
-
-***TBD...***  ideas include:
-
->>> j.map().assign()
->>> j.map().reduce()
->>> j.map().map().reduce()
-
->>> # Fill NA with 0 (rather than sugared j.fillna('a', 0))
->>> j.map(lambda row: 0 if row.is_empty('a') else row.a, out='a')
-
->>> j.map(lambda row:  (row['a'], row['b'], abs(row['a']), abs(row['b']))
->>> k = BigFrame(MapSource(j, func, schema))
->>> k = BigFrame(MapSource(j, lambda row: (row['a'], row['b'], abs(row['a']), abs(row['b'])), out=('a', 'b', 'a_abs', 'b_abs'))
-
->>> j.add_column(j.map())
-
-**Reduce**
-
-***TBD...***  ideas include:
-
-Apply a reduce function to each row in a Frame, or each cell in a column.  The
-reducer has two parameters, the **accumulator** value and the **update** value.
-
->>> j.reduce(lambda acc, row_upd: acc + row_upd['a'] - row_upd['b'])
-
->>> j['a'].reduce(lambda acc, cell_upd: acc + cell_upd)
+>>> f.add_columns(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))  # adds 2 columns
 
 
-**Groupby** and **Aggregate**
 
-***TBD...***  ideas include:
+Map
+~~~
+
+``map()`` produces a new BigFrame by applying a function to each row of
+a frame or each cell of a column.  It is the functionality as ``add_column`` but
+the results go to a new frame instead of being added to the current frame.
+
+>>> f2 = f1['a'].map(lambda cell: abs(cell))
+>>> f3 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))
+>>> f4 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), (('a_abs', float32), ('b_abs', float32)))
+
+*Better name than ``map_many``?
+
+Reduce
+~~~~~~
+
+Apply a reducer function to each row in a Frame, or each cell in a column.  The
+reducer has two parameters, the *accumulator* value and the row or cell *update* value.
+
+>>> f.reduce(lambda acc, row_upd: acc + row_upd['a'] - row_upd['b'])
+
+>>> f['a'].reduce(lambda acc, cell_upd: acc + cell_upd)
+
+There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
+
+Groupby (and Aggregate)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+***WIP***  current idea:  (follows GraphLab's SFrame)
 
 Group rows together based on matching column values and then apply aggregation
-functions on each group, producing a new Frame object
+functions on each group, producing a new BigFrame object.  Two parameters:
+(1) the column(s) to group on and (2) aggregation function(s)
 
->>> j['a'].avg()
+Aggregation on individual columns:
+>>> f.groupby(['a', 'b'], { 'c': [avg, sum, stdev], 'd': [avg, sum]})
 
->>> j.groupby('a', 'b').reduce(lambda acc, row_upd: row_a)
->>> j.groupby('a', 'b').c.avg()
->>> j.groupby('a', 'b').map(func1).reduce(func2, out="custom_m1r2")
->>> # j.groupby('a', 'b').aggregate(c_avg=row.c.avg)
->>> j.groupby('a', 'b').aggregate([('c', avg),
-                                   ('c', min),
-                                   ('c', max, out='c_maximum'),
-                                   (reduce, lambda row_accum, row: row_accum + (1 if row.c > 10 else 0)), 'c_over_10')  # custom reducer
-                                   ('c', sum)],
-                                   exclude_groupby_columns=True),
->>> j.groupby(...).map(...).map().reduce(  )
->>> j.groupby('a', 'b').stats('c')
+The name of the new columns are implied.  The previous example would a new
+BigFrame with 7 columns:
+  ``"a", "b", "c_avg", "c_sum", "c_stdev", "d_avg", "d_sum"``
 
 
->>> j.groupby('a', 'b').map(func1).reduce(func2, out="custom_m1r2")
+Aggregation based on full row:
+>>> f.groupby(['a', 'b'], count)
 
->>> j.groupby('a', 'b').aggregate([('c', avg),
-                                   ('c', min),
-                                   ('c', max, 'c_maximum'),
-                                   ('', (map, func1, reduce, func2), 'c_specialA'),
-                                   ('', (reduce, func3), 'c_specialB'),
-                                   ('c', sum)],
-                                   exclude_groupby_columns=True)
-
->>> j.groupby('a', 'b').aggregate([( ('c', 'd'), (avg, min, max)),
-                                   ('c', min),
-                                   ('d', min),
-                                   ('c', max, 'c_maximum'),
-
-def my_agg(frame):
-    return frame[c].avg(), frame[d].avg(), frame[e].avg()
+Both by column and row together:
+>>> f.groupby(['a', 'b'], count, { 'c': [avg, sum, stdev], 'd': [avg, sum]})
 
 
-    j.groupby('a', 'b').reduce(my_agg_reduce, out=('c_avg', 'd_avg', 'e'.avg))
+Use 'stats' to get all the basic statistical calculations:
+>>> f.groupby(['a', 'b'], { 'c': stats, 'd': stats })
+>>> f.groupby(['a', 'b'], stats)  # on all columns besides the groupby columns
+
+Custom reducers:
+>>> f.groupby(['a', 'b'], ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
+
+Produces a frame with 3 columns: ``"a", "b", "my_row_lambda_col"``
+
+Mixed-combo:   (a little much? this is pretty much exactly what GraphLab is supporting,
+except I'm adding custom reducers)
+>>> f.groupby(['a', 'b'],
+              stats,
+              ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
+              { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
+                'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
+
+Produces a frame with several columns:
+``"a", "b", "c_avg", "c_stdev", "c_ ..., "d_avg", "d_stdev", "d_ ..., "my_row_lambda_col", "c_fuzz", "d_fuzz"``
+
+
+Join
+~~~~
+
+***WIP***
+
+``join`` produces a new BigFrame
+
+Legacy Tribeca does this:
+>> f4 = f1.join([f2, f3], left_on='a', right_on=['a', 'x'], how='left')
+
+Pandas does this (only difference is ``on`` vs. ``left_on``, ``right_on``)
+>> f5 = f1.join(f2, on='a', how='left')
+>> f6 = f1.join(f2, on=['a', 'b'], how='left')
+
+Or could try something like this, making the join implicit with the "on" tuples, and adding "select"
+>> f7 = f1.join([f2, f3], on=(f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
+>> f8 = join((f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
+map or whatever will catch this, log it, add to a count in the report, and fill
+the entry with a None

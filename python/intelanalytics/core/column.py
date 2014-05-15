@@ -23,6 +23,7 @@
 
 from intelanalytics.core.types import unknown, supported_types
 
+
 class BigColumn(object):
     """Column in a BigFrame"""
     def __init__(self, name, data_type=unknown):
@@ -30,9 +31,14 @@ class BigColumn(object):
         if data_type is not unknown:
             supported_types.validate_is_supported_type(data_type)
         self.data_type = data_type
-        self.frame = None  # may want to make a property, help prevent setting this externally
+        self._frame = None
 
-    def as_json_obj(self):
-        frame_id = 1234  # todo - bologna for now
-        return ["column", { "name": self.name, "frame": frame_id}]
+    def _as_json_obj(self):
+        return { "name": self.name,
+                 "data_type": supported_types.get_type_string(self.data_type),
+                 "frame": None if not self.frame else self.frame._id}
+
+    @property
+    def frame(self):
+        return self._frame
 

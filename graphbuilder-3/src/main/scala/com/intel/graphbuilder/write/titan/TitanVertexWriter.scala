@@ -23,7 +23,7 @@
 
 package com.intel.graphbuilder.write.titan
 
-import com.intel.graphbuilder.elements.{GbIdToPhysicalId, Vertex}
+import com.intel.graphbuilder.elements.{ GbIdToPhysicalId, Vertex }
 import com.intel.graphbuilder.write.VertexWriter
 import com.intel.graphbuilder.write.titan.TitanIdUtils.titanId
 

@@ -26,7 +26,6 @@ package com.intel.graphbuilder.parser.rule
 import com.intel.graphbuilder.elements.Property
 import com.intel.graphbuilder.parser._
 
-
 /**
  * Parse zero or more properties using a list of rules
  */
@@ -52,7 +51,7 @@ case class PropertyRuleParser(propertyRules: Seq[PropertyRule]) extends Serializ
  *
  * This parser should be used for GbId's.
  */
-private[rule] case class SinglePropertyRuleParser(rule: PropertyRule) extends Serializable {
+private[graphbuilder] case class SinglePropertyRuleParser(rule: PropertyRule) extends Serializable {
 
   /**
    * Always parse a singe property from the supplied input using the configured rule.

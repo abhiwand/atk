@@ -26,10 +26,11 @@ package com.intel.graphbuilder.driver.spark.rdd
 import com.intel.graphbuilder.elements._
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.write.EdgeWriter
-import com.intel.graphbuilder.write.dao.{VertexDAO, EdgeDAO}
+import com.intel.graphbuilder.write.dao.{ VertexDAO, EdgeDAO }
 import org.apache.spark.SparkContext._
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
+import org.apache.spark.broadcast.Broadcast
 
 /**
  * Functions that are applicable to Edge RDD's
@@ -37,8 +38,13 @@ import org.apache.spark.rdd.RDD
  * This is best used by importing GraphBuilderRDDImplicits._
  *
  * @param self input that these functions are applicable to
+ * @param maxEdgesPerCommit Titan performs poorly if you try to commit edges in too
+ *                          large of batches.  With Vertices the limit is much lower (10k).
+ *                          The limit for Edges is much higher but there is still a limit.
+ *                          It is hard to tell what the right number is for this one.
+ *                          I think somewhere larger than 400k is getting too big.
  */
-class EdgeRDDFunctions(self: RDD[Edge]) extends Serializable {
+class EdgeRDDFunctions(self: RDD[Edge], val maxEdgesPerCommit: Long = 50000L) extends Serializable {
 
   /**
    * Merge duplicate Edges, creating a new Edge that has a combined set of properties.
@@ -78,7 +84,6 @@ class EdgeRDDFunctions(self: RDD[Edge]) extends Serializable {
    * This is an inner join.  Edges that can't be joined are dropped.
    */
   def joinWithPhysicalIds(ids: RDD[GbIdToPhysicalId]): RDD[Edge] = {
-    //TODO: can this be simplified?
 
     val idsByGbId = ids.groupBy(idMap => idMap.gbId)
 
@@ -129,6 +134,44 @@ class EdgeRDDFunctions(self: RDD[Edge]) extends Serializable {
         while (iterator.hasNext) {
           writer.write(iterator.next())
           count += 1
+          if (count % maxEdgesPerCommit == 0) {
+            graph.commit()
+          }
+        }
+
+        println("wrote edges: " + count + " for split: " + context.partitionId)
+
+        graph.commit()
+      }
+      finally {
+        graph.shutdown()
+      }
+    })
+  }
+
+  /**
+   * Write the Edges to Titan using the supplied connector
+   * @param append true to append to an existing graph
+   * @param gbIdToPhysicalIdMap see GraphBuilderConfig.broadcastVertexIds
+   */
+  def write(titanConnector: TitanGraphConnector, gbIdToPhysicalIdMap: Broadcast[Map[Property, AnyRef]], append: Boolean): Unit = {
+
+    self.context.runJob(self, (context: TaskContext, iterator: Iterator[Edge]) => {
+      val graph = titanConnector.connect()
+      val edgeDAO = new EdgeDAO(graph, new VertexDAO(graph))
+      val writer = new EdgeWriter(edgeDAO, append)
+
+      try {
+        var count = 0L
+        while (iterator.hasNext) {
+          val edge = iterator.next()
+          edge.tailPhysicalId = gbIdToPhysicalIdMap.value(edge.tailVertexGbId)
+          edge.headPhysicalId = gbIdToPhysicalIdMap.value(edge.headVertexGbId)
+          writer.write(edge)
+          count += 1
+          if (count % maxEdgesPerCommit == 0) {
+            graph.commit()
+          }
         }
 
         println("wrote edges: " + count + " for split: " + context.partitionId)

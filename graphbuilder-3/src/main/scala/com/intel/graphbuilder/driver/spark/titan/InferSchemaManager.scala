@@ -23,10 +23,10 @@
 
 package com.intel.graphbuilder.driver.spark.titan
 
-import com.intel.graphbuilder.elements.{Vertex, Edge}
+import com.intel.graphbuilder.elements.{ Vertex, Edge }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.rule.DataTypeResolver
-import com.intel.graphbuilder.schema.{InferSchemaFromData, GraphSchema, InferSchemaFromRules}
+import com.intel.graphbuilder.schema.{ InferSchemaFromData, GraphSchema, InferSchemaFromRules }
 import com.intel.graphbuilder.write.titan.TitanSchemaWriter
 import org.apache.spark.rdd.RDD
 
