@@ -40,7 +40,7 @@ def _get_backend():
 
 def get_frame_names():
     """
-    Gets the names of BigFrame objects available for retrieval
+    Gets the names of BigFrame objects available for retrieval.
 
     Parameters
     ----------
@@ -60,10 +60,10 @@ def get_frame_names():
 
 def get_frame(name):
     """
-    Retrieves the named BigFrame object
+    Retrieves the named BigFrame object.
     
-    Parameter
-    ---------
+    Parameters
+    ----------
     name : str
         String containing the name of the BigFrame object
 
@@ -82,7 +82,7 @@ def get_frame(name):
 
 def delete_frame(name):
     """
-    Deletes the frame from backing store
+    Deletes the frame from backing store.
     
     Parameters
     ----------
@@ -227,7 +227,7 @@ class BigFrame(object):
 
     def add_column(self, func, type=str, name=""):
         """
-        Adds a new column to the frame by evaluating the given func on each row
+        Adds a new column to the frame by evaluating the given func on each row.
 
         Parameters
         ----------
@@ -250,7 +250,7 @@ class BigFrame(object):
 
     def add_columns(self, func, names=None, ):
         """
-        Adds new columns to the frame by evaluating the given func on each row
+        Adds new columns to the frame by evaluating the given func on each row.
 
         Parameters
         ----------
@@ -268,7 +268,7 @@ class BigFrame(object):
 
     def filter(self, predicate):
         """
-        Select all rows which satisfy a predicate
+        Select all rows which satisfy a predicate.
 
         Parameters
         ----------
@@ -292,7 +292,7 @@ class BigFrame(object):
 
     def remove_column(self, name):
         """
-        Remove columns of data
+        Remove columns of data.
 
         Parameters
         ----------
@@ -318,10 +318,10 @@ class BigFrame(object):
 
     def dropna(self, how=any, column_subset=None):
         """
-        Drops all rows which have NA values
+        Drops all rows which have NA values.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         how : any (optional), all (optional)
             any: if any column has an NA value, drop row
             all: if all the columns have an NA value, drop row
@@ -373,7 +373,7 @@ class BigFrame(object):
 
     def add_column(self, column_name, func):
         """
-        Add a column to a frame
+        Add a column to a frame.
 
         Parameters
         ----------
@@ -394,7 +394,7 @@ class BigFrame(object):
 
     def rename_column(self, column_name, new_name):
         """
-        Rename a column to a frame
+        Rename a column to a frame.
 
         Parameters
         ----------
@@ -430,7 +430,7 @@ class BigFrame(object):
 
     def save(self, name=None):
         """
-        Saves all current data in the frame to disk
+        Saves all current data in the frame to disk.
 
         Parameters
         ----------
@@ -463,7 +463,7 @@ class BigFrame(object):
 
 class FrameSchema(OrderedDict):
     """
-    Ordered key-value pairs of column name -> data type
+    Ordered key-value pairs of column name -> data type.
     """
 
     def __init__(self, source=None):
@@ -504,7 +504,7 @@ class FrameSchema(OrderedDict):
 
     def drop(self, victim_columns):
         """
-        Get rid of particular columns
+        Get rid of particular columns.
 
         Parameters
         ----------
@@ -522,7 +522,7 @@ class FrameSchema(OrderedDict):
 
     def append(self, new_columns):
         """
-        Add new columns
+        Add new columns.
 
         Parameters
         ----------

@@ -30,7 +30,7 @@ from intelanalytics.core.column import BigColumn
 
 class BigGraph(object):
     """
-    Creates a big graph
+    Creates a big graph.
 
     Parameters
     ----------
@@ -46,13 +46,13 @@ class BigGraph(object):
 
 class Rule(object):
     """
-    Graph building rule base class
+    Graph building rule base class.
     """
     pass
 
 class VertexRule(Rule):
     """
-    Specifies creation of a vertex
+    Specifies creation of a vertex.
 
     Parameters
     ----------
@@ -78,7 +78,7 @@ class VertexRule(Rule):
 
 class EdgeRule(Rule):
     """
-    Specifies creation of an edge
+    Specifies creation of an edge.
 
     Parameters
     ----------
@@ -107,13 +107,13 @@ class EdgeRule(Rule):
 
 class PropertyRule(Rule):
     """
-    To do
+    To do.
     """
     pass
 
 class VertexPropertyRule(PropertyRule):
     """
-    Specifies attachment of additional properties to a vertex
+    Specifies attachment of additional properties to a vertex.
 
     Parameters
     ----------
@@ -124,20 +124,21 @@ class VertexPropertyRule(PropertyRule):
         BigColumn source whose value must match against the value of the target vertex
     props : Dictionary
         vertex properties of the form property_name:property_value
-\        property_name is a string, and property_value is a literal
+        property_name is a string, and property_value is a literal
         value or a BigColumn source
 
     Examples
     --------
     >>> extra_movie_rule = VertexPropertyRule(vertex_movie, f2['movie'], oscars=f2['oscars'])
     """
+
     def __init__(self, vertex, match_value, **props):
         pass
 
 
 class EdgePropertyRule(PropertyRule):
     """
-    Specifies attachment of additional properties to an edge
+    Specifies attachment of additional properties to an edge.
 
     Parameters
     ----------
@@ -166,7 +167,7 @@ class EdgePropertyRule(PropertyRule):
 
 class GraphRule(Rule):
     """
-    Specifies graph properties
+    Specifies graph properties.
 
     Parameters
     ----------
@@ -258,7 +259,7 @@ class Rule(object):
 
 class VertexRule(Rule):
     """
-    Specifies a vertex and vertex properties
+    Specifies a vertex and vertex properties.
 
     Parameters
     ----------
@@ -300,7 +301,7 @@ class VertexRule(Rule):
 
 class EdgeRule(Rule):
     """
-    Specifies an edge and edge properties
+    Specifies an edge and edge properties.
 
     Parameters
     ----------
@@ -357,7 +358,7 @@ class EdgeRule(Rule):
 
 class BigGraph(object):
     """
-    Creates a big graph
+    Creates a big graph.
 
     Parameters
     ----------
