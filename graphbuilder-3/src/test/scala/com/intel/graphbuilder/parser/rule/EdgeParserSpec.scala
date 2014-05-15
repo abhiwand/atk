@@ -24,9 +24,8 @@
 package com.intel.graphbuilder.parser.rule
 
 import RuleParserDSL._
-import com.intel.graphbuilder.parser.{InputSchema, InputRow}
+import com.intel.graphbuilder.parser.{ InputSchema, InputRow }
 import org.specs2.mutable.Specification
-
 
 class EdgeParserSpec extends Specification {
 

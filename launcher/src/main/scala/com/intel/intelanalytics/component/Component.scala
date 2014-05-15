@@ -29,7 +29,8 @@ trait Archive {
     try {
       Thread.currentThread().setContextClassLoader(loader)
       expr
-    } finally {
+    }
+    finally {
       Thread.currentThread().setContextClassLoader(prior)
     }
   }

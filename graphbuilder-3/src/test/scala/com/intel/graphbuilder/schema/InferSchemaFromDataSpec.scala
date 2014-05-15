@@ -24,7 +24,7 @@
 package com.intel.graphbuilder.schema
 
 import org.specs2.mutable.Specification
-import com.intel.graphbuilder.elements.{Vertex, Property, Edge}
+import com.intel.graphbuilder.elements.{ Vertex, Property, Edge }
 import java.util.Date
 
 class InferSchemaFromDataSpec extends Specification {

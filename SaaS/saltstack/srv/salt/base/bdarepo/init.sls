@@ -10,4 +10,6 @@
       secretKey: {{ pillar['bdaRepo']['secretKey'] }}
     - require: 
       - pkg: yum-s3-plugin
-  
+
+#rm /etc/yum.repos.d/gao.repo:
+#  cmd.run 

@@ -1,9 +1,3 @@
-package com.intel.intelanalytics.service.v1.viewmodels
-
-import com.intel.intelanalytics.domain.{DataFrame, Schema}
-import spray.json.{JsValue, DefaultJsonProtocol}
-import spray.httpx.SprayJsonSupport
-
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -26,6 +20,18 @@ import spray.httpx.SprayJsonSupport
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
+
+package com.intel.intelanalytics.service.v1.viewmodels
+
+import com.intel.intelanalytics.domain.{ Graph, GraphTemplate, DataFrame, Schema }
+import spray.json.{ JsValue, DefaultJsonProtocol }
+import spray.httpx.SprayJsonSupport
+import com.intel.intelanalytics.domain._
+import spray.json.{ JsObject, JsValue, DefaultJsonProtocol }
+import spray.httpx.SprayJsonSupport
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.Operation
+import com.intel.intelanalytics.domain.Schema
 
 case class RelLink(rel: String, uri: String, method: String) {
   require(rel != null)
@@ -51,25 +57,45 @@ case class DataFrameHeader(id: Long, name: String, url: String) {
   require(url != null)
 }
 
-case class JsonTransform(name: String, language: String,
-                         definition: Option[String], arguments: Option[JsValue]) {
-  require(name != null, "Name is required")
-  require(language == "python-cloudpickle" || language == "builtin",
-    "Only python-cloudpickle and builtin are supported")
-  if (language == "builtin") {
-    require(definition.isEmpty && arguments.isDefined, "For builtins, only arguments should be provided, not definition")
-  } else {
-    require(definition.isDefined && arguments.isEmpty, "For user functions, only definition should be provided, not arguments")
-  }
+case class CommandHeader(id: Long, name: String, url: String) {
+  require(id > 0)
+  require(name != null)
+  require(url != null)
 }
 
-case class LoadFile(source: String, separator: String, skipRows: Int = 0)
+case class DecoratedCommand(id: Long, name: String, arguments: Option[JsObject], error: Option[Error],
+                            complete: Boolean, links: List[RelLink]) {
+  require(id > 0)
+  require(name != null)
+  require(arguments != null)
+  require(links != null)
+  require(error != null)
+}
+
+case class JsonTransform(name: String, arguments: Option[JsObject]) {
+  require(name != null, "Name is required")
+}
+
+case class DecoratedGraph(id: Long, name: String, links: List[RelLink]) {
+  require(id > 0)
+  require(name != null)
+  require(links != null)
+}
+
+case class GraphHeader(id: Long, name: String, url: String) {
+  require(id > 0)
+  require(name != null)
+  require(url != null)
+}
 
 object ViewModelJsonProtocol extends DefaultJsonProtocol with SprayJsonSupport {
   import com.intel.intelanalytics.domain.DomainJsonProtocol._ //this is needed for implicits
   implicit val relLinkFormat = jsonFormat3(RelLink)
   implicit val dataFrameHeaderFormat = jsonFormat3(DataFrameHeader)
   implicit val decoratedDataFrameFormat = jsonFormat4(DecoratedDataFrame)
-  implicit val jsonTransformFormat = jsonFormat4(JsonTransform)
-  implicit val loadFileFormat = jsonFormat3(LoadFile)
+  implicit val jsonTransformFormat = jsonFormat2(JsonTransform)
+  implicit val commandHeaderFormat = jsonFormat3(CommandHeader)
+  implicit val decoratedCommandFormat = jsonFormat6(DecoratedCommand)
+  implicit val graphHeaderFormat = jsonFormat3(GraphHeader)
+  implicit val decoratedGraphHeaderFormat = jsonFormat3(DecoratedGraph)
 }

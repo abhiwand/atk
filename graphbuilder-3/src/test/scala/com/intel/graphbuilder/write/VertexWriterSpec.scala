@@ -30,7 +30,6 @@ import com.intel.graphbuilder.elements.Vertex
 
 class VertexWriterSpec extends Specification with Mockito {
 
-
   "VertexWriter" should {
 
     "support append true" in {
