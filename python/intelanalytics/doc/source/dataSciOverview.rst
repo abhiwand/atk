@@ -12,8 +12,9 @@ Contents:
     dataSciDataFlow
     dataSciSampling
     dataSciML
-    dataSciAPI
     dataSciMLAlgorithms
+    dataSciAPI
+    dataSciMiscNotes
 
 ..   dataSciSupplemental
      dataSciBKM

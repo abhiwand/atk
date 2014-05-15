@@ -14,13 +14,13 @@ index
         dataSciDataFlow
         dataSciSampling
         dataSciML
+        dataSciMLAlgorithms
         dataSciAPI
             dataSciAPIOverview
             dataSciAPIClasses
                 intelanalytics.core.files
                 intelanalytics.core.frame
                 intelanalytics.core.graph
-        dataSciMLAlgorithms
         dataSciSupplemental (future)
         dataSciBKM (future)
         dataSciGlossary (future)
