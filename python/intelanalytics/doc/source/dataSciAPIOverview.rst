@@ -5,6 +5,28 @@
 Python API Overview
 ===================
 
+The 0.8 release provides data ingestion capabilities for several data sources and formats.
+It provides basic schema support.
+
+Data Schemas
+------------
+
++-----------------------------------------------------------------------------------------------+
+| ID    | Class         | Description                                                 | Release |
++===============================================================================================+
+| DC100 | Schema        | The user can specify the schema for a dataset to be loaded. | 0.8     |
+|       | Specification | This can be accomplished by creating and configuring a      |         |
+|       |               | schema object, defining the schema inline within the data   |         |
+|       |               | load, or by specifying a text file containing the schema    |         |
+|       |               | definition.                                                 |         |
++-----------------------------------------------------------------------------------------------+
+| DC110 |               | The user can specify delimiters and overwrite behavior at   | 0.8     |
+|       |               | dataload.                                                   |         |
++-----------------------------------------------------------------------------------------------+
+| DC200 | Schema        | At the time of data load, the system will verify the schema | 0.8     |
+|       | Verification  | against the data being loaded.                              |         |
++-----------------------------------------------------------------------------------------------+
+
 >>> from intelanalytics import *
 
 Data Sources
@@ -248,9 +270,3 @@ def my_agg(frame):
 
 
     j.groupby('a', 'b').reduce(my_agg_reduce, out=('c_avg', 'd_avg', 'e'.avg))
-
-
-Misc Notes
-==========
-
-. uh, this was a thought once --something about not cancelling the job on an error, but just marking row/cell as None and reporting ``raise FillNone("col value out of range")`` map or whatever will catch this, log it, add to a count in the report, and fill the entry with a None

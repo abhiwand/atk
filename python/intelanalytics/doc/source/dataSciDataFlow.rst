@@ -92,3 +92,11 @@ To build a graph, we need only one line of code:
 >>> graph = gb.build("mygraph", overwrite=True)
 
 We name the graph mygraph, and we set overwrite to True, as above, to overwrite any existing graph with this name.
+
+Graph Analytics
+---------------
+
+Graph analytics are the broad category of useful calculations you use to examine a graph. Examples of graph analytics may include traversals -- algorithmic walk throughs of the graph to determine optimal paths and relationship between vertices, and statistics -- that determine important attributes of the graph  such as degrees of separation, number of triangular counts, centralities (highly influential nodes), and so on. Some are user guided interactions, where the user navigates through the data connections, others are algorithmic, where a result is calculated by the software.
+    
+Graph learning is a class of graph analytics applying machine learning and data mining algorithms to graph data such that calculations are iterated across the nodes of the graph to uncover patterns and relationships, such as finding similarities based on relationships, or recursively optimizing some parameter across nodes.
+
