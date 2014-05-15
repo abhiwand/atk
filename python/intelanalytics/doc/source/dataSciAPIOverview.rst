@@ -110,8 +110,7 @@ will merge with those of the new data sources.
 3. Clean
 --------
 
-Drop Rows
-~~~~~~~~~
+**Drop Rows**
 
 >>> # drop all rows where column 'a' is empty
 >>> f.drop(lambda row: row.is_empty('a'))
@@ -151,8 +150,8 @@ See :doc:`rowfunc`
 >>> f.drop_duplicates(['a', 'b'])  # only columns 'a' and 'b' considered for uniqueness
 >>> f.drop_duplicates()            # all columns considered for uniqueness
 
-Fill Cells
-~~~~~~~~~~
+**Fill Cells**
+
 
 >>> f['a'].fillna(800001)
 >>> f['a'].fill(lambda cell: 800001 if cell is None else 800002 if cell < 0 else cell)
@@ -167,28 +166,25 @@ Fill Cells
 >>> f['a'].fill(filler)
 
 
-Copy Columns
-~~~~~~~~~~~~
+**Copy Columns**
 
 >>> f2 = BigFrame(f[['a', 'c']])  # projects columns 'a' and 'c' to new frame f2
 
 A list of columns can be specified using a list to index the frame.
 
-Remove Columns
-~~~~~~~~~~~~~~
+**Remove Columns**
 
 >>> f2.remove_column('b')
 >>> f2.remove_column(['a', 'c'])
 
-Rename Columns
-~~~~~~~~~~~~~~
+**Rename Columns**
+
 
 >>> f.rename_column(a='id')
 >>> f.rename_column(b='author', c='publisher')
 >>> f.rename_column({'col-with-dashes': 'no_dashes'})
 
-Cast Columns
-~~~~~~~~~~~~
+**Cast Columns**
 
 ***WIP*** Thinking something explicit like this instead of allowing schema to be edited directly
 
@@ -198,8 +194,8 @@ Cast Columns
 4. Engineer
 -----------
 
-Add Column
-~~~~~~~~~~
+**Add Column**
+
 
 Map a function to each row in the frame, producing a new column
 
@@ -231,8 +227,8 @@ to return a tuple of cell values for the new frame columns
 
 
 
-Map
-~~~
+**Map**
+
 
 ``map()`` produces a new BigFrame by applying a function to each row of
 a frame or each cell of a column.  It is the functionality as ``add_column`` but
@@ -242,10 +238,10 @@ the results go to a new frame instead of being added to the current frame.
 >>> f3 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))
 >>> f4 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), (('a_abs', float32), ('b_abs', float32)))
 
-*Better name than ``map_many``?
+Note: Better name than ``map_many``?
 
-Reduce
-~~~~~~
+**Reduce**
+
 
 Apply a reducer function to each row in a Frame, or each cell in a column.  The
 reducer has two parameters, the *accumulator* value and the row or cell *update* value.
@@ -256,8 +252,7 @@ reducer has two parameters, the *accumulator* value and the row or cell *update*
 
 There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
 
-Groupby (and Aggregate)
-~~~~~~~~~~~~~~~~~~~~~~~
+**Groupby (and Aggregate)**
 
 ***WIP***  current idea:  (follows GraphLab's SFrame)
 
@@ -270,7 +265,8 @@ Aggregation on individual columns:
 
 The name of the new columns are implied.  The previous example would a new
 BigFrame with 7 columns:
-  ``"a", "b", "c_avg", "c_sum", "c_stdev", "d_avg", "d_sum"``
+
+\   ``"a", "b", "c_avg", "c_sum", "c_stdev", "d_avg", "d_sum"``
 
 
 Aggregation based on full row:
@@ -292,17 +288,16 @@ Produces a frame with 3 columns: ``"a", "b", "my_row_lambda_col"``
 Mixed-combo:   (a little much? this is pretty much exactly what GraphLab is supporting,
 except I'm adding custom reducers)
 >>> f.groupby(['a', 'b'],
-              stats,
-              ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
-              { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
-                'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
+>>>           stats,
+>>>           ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
+>>>           { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
+>>>             'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
 
 Produces a frame with several columns:
 ``"a", "b", "c_avg", "c_stdev", "c_ ..., "d_avg", "d_stdev", "d_ ..., "my_row_lambda_col", "c_fuzz", "d_fuzz"``
 
 
-Join
-~~~~
+**Join**
 
 ***WIP***
 
