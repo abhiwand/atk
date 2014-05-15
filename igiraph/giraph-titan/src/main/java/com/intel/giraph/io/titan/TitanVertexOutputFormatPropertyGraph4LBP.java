@@ -134,7 +134,7 @@ public class TitanVertexOutputFormatPropertyGraph4LBP<I extends LongWritable,
                             vertexValue = vertexValue + ",";
                         }
                     }
-                    LOG.info("LBP vertexValue:" + vertexValue);
+                    //LOG.info("LBP vertexValue:" + vertexValue);
                     bluePrintVertex.setProperty(vertexValuePropertyKeyList[0], vertexValue);
                 } else {
                     generateErrorMsg(1, vertex.getId().get());
