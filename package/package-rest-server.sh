@@ -31,7 +31,7 @@ cp config/intelanalytics-rest-server/intelanalytics-rest-server tarballs/$packag
 
 cp -Rv  ../api-server/src/main/resources/* tarballs/$package/etc/intelanalytics/rest-server
 
-jars="engine-spark.jar api-server.jar engine.jar interfaces.jar "
+jars="engine-spark.jar launcher.jar api-server.jar engine.jar interfaces.jar "
 
 popd
 
