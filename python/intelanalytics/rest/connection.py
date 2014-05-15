@@ -23,12 +23,13 @@
 """
 Connection to the Intel Analytics REST Server
 """
+import sys
 import json
 import requests
 import logging
 logger = logging.getLogger(__name__)
 
-__all__ = ['rest_connection']
+__all__ = ['Connection', 'HttpMethods']
 
 # default connection config
 _host = "localhost"
@@ -49,33 +50,46 @@ class Connection(object):
         self.version = version or _version
         self.headers = _headers
 
+        # Currently credentials only contain the api key, and that will be
+        # passed in the Authorization header of every request sent to the backend
+        # TODO: switch to real credentials
+        self.headers['Authorization'] = "test_api_key_1"
+
     def __repr__(self):
         return '{"host": "%s", "port": "%s", "scheme": "%s", "version": "%s"}' \
                % (self.host, self.port, self.scheme, self.version)
 
-    def get_url(self):
-        url = "%s://%s" % (self.scheme, self.host)
+    def __str__(self):
+        return """host:    %s
+port:    %s
+scheme:  %s
+version: %s""" % (self.host, self.port, self.scheme, self.version)
+
+    def _get_scheme_and_authority(self):
+        uri = "%s://%s" % (self.scheme, self.host)
         if self.port:
-            url += ":%s" % self.port
-        return url
+            uri += ":%s" % self.port
+        return uri
+
+    def get_base_uri(self):
+        return "%s/%s/" % (self._get_scheme_and_authority(), self.version)
 
     def ping(self):
         """
         Ping the server, throw exception if not there
         """
-        url = ""
+        uri = ""
         try:
-            url = self.get_url()
-            uri = url + "/info"
+            uri = self._get_scheme_and_authority() + "/info"
             logger.info("[HTTP Get] %s", uri)
             r = requests.get(uri)
             logger.debug("[HTTP Get Response] %s", r.text)
             r.raise_for_status()
             if "Intel Analytics" != r.json()['name']:
                 raise Exception("Invalid response payload: " + r.text)
-            print "Successful ping to Intel Analytics at " + url
+            print "Successful ping to Intel Analytics at " + uri
         except Exception as e:
-            message = "Failed to ping Intel Analytics at " + url + "\n" + str(e)
+            message = "Failed to ping Intel Analytics at " + uri + "\n" + str(e)
             #print (message)
             logger.error(message)
             raise IOError(message)
@@ -88,40 +102,58 @@ class HttpMethods(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def _get_base_uri(self):
-        return "%s/%s/" % (self.connection.get_url(), self.connection.version)
+    def _get_uri(self, path):
+        return self.connection.get_base_uri() + path
+
+    @staticmethod
+    def _check_response(response, ignore=None):
+        if not ignore or response.status_code not in ignore:
+            response.raise_for_status()
+        else:
+            try:
+                response.raise_for_status()
+            except Exception as e:
+                m = "Ignoring HTTP Response ERROR probably due to {0}:\n\t{1}".\
+                    format(ignore[response.status_code], e)
+                logger.warn(m)
+                sys.stderr.write(m)
+                sys.stderr.flush()
+
+    @property
+    def base_uri(self):
+        return self.connection.get_base_uri()
 
    # HTTP commands
 
     def get(self, uri_path):
-        uri = self._get_base_uri() + uri_path
+        uri = self._get_uri(uri_path)
         if logger.level <= logging.INFO:
             logger.info("[HTTP Get] %s", uri)
-        r = requests.get(uri)
+        r = requests.get(uri, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Get Response] %s", r.text)
-        r.raise_for_status()
+        self._check_response(r)
         return r
 
     def delete(self, uri_path):
-        uri = self._get_base_uri() + uri_path
+        uri = self._get_uri(uri_path)
         logger.info("[HTTP Delete] %s", uri)
-        r = requests.delete(uri)
+        r = requests.delete(uri, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Delete Response] %s", r.text)
-        r.raise_for_status()
+        self._check_response(r)
         return r
 
     def post(self, uri_path, payload):
         data = json.dumps(payload)
-        uri = self._get_base_uri() + uri_path
+        uri = self._get_uri(uri_path)
         if logger.level <= logging.INFO:
             pretty_data = json.dumps(payload, indent=2)
             logger.info("[HTTP Post] %s\n%s", uri, pretty_data)
         r = requests.post(uri, data=data, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Post Response] %s", r.text)
-        r.raise_for_status()
+        self._check_response(r, {406: 'long initialization time'})
         return r
 
 

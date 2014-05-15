@@ -1,3 +1,14 @@
+dependency-reduced-pom.xml
+/ititan/bin
+/ititan/conf
+/ititan/ext
+/ititan/log
+*.LOG
+*.build
+repack
+rpm
+etc
+tarballs
 dev.conf
 application.home_IS_UNDEFINED
 /bin
@@ -15,9 +26,9 @@ git
 */.idea/tasks.xml
 */.idea/workspace.xml
 *.iml
-/IntelAnalytics/.coverage
-/IntelAnalytics/cover/
-/IntelAnalytics/nosetests.xml
+/python/.coverage
+/python/cover/
+/python/nosetests.xml
 largegit.sh
 make.sh
 .metadata*

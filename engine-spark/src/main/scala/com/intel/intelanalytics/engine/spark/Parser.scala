@@ -23,41 +23,41 @@
 
 package com.intel.intelanalytics.engine
 
-/** This object parses comma delimited strings into List[String]
-  * Usage:
-  * scala> import com.intelanalytics.engine.Row
-  * scala> val out = Row.apply("foo,bar")
-  * scala> val out = Row.apply("a,b,\"foo,is this ,bar\",foobar ")
-  * scala> val out = Row.apply(" a,b,'',\"\"  ")
-  */
-import util.parsing.combinator.RegexParsers 
- 
- 
-class Row(separator: Char) extends RegexParsers {
-  /**Row Class to split a string based on delimiter
-    * @param seperator : delimiter character 
-  */
+/**
+ * This object parses comma delimited strings into List[String]
+ * Usage:
+ * scala> import com.intelanalytics.engine.Row
+ * scala> val out = Row.apply("foo,bar")
+ * scala> val out = Row.apply("a,b,\"foo,is this ,bar\",foobar ")
+ * scala> val out = Row.apply(" a,b,'',\"\"  ")
+ */
+import util.parsing.combinator.RegexParsers
+
+/**
+ * Row Class to split a string based on delimiter
+ * @param separator : delimiter character
+ */
+class Row(separator: Char) extends RegexParsers with Serializable {
 
   override def skipWhitespace = false
-  /** Apply method parses the string and returns a list of String tokens
-    * @param line to be parsed
-    */
+  /**
+   * Apply method parses the string and returns a list of String tokens
+   * @param line to be parsed
+   */
   def apply(line: String): Array[String] = parseAll(record, line) match {
     case Success(result, _) => result.toArray
-    case failure: NoSuccess => {throw new Exception("Parse Failed")}
+    case failure: NoSuccess => { throw new Exception("Parse Failed") }
   }
-  
-  
+
   def record = repsep(mainToken, separator.toString)
   def mainToken = doubleQuotes | singleQuotes | unquotes | empty
   /** function to evaluate empty fields*/
-  lazy val empty = success ("")
+  lazy val empty = success("")
   /** function to evaluate single quotes*/
-  lazy val singleQuotes = "'" ~> "[^']+".r <~ "'" 
+  lazy val singleQuotes = "'" ~> "[^']+".r <~ "'"
   /** function to evaluate double quotes*/
-  lazy val doubleQuotes: Parser[String] = "\"" ~> "[^\"]+".r <~ "\"" 
+  lazy val doubleQuotes: Parser[String] = "\"" ~> "[^\"]+".r <~ "\""
   /** function to evaluate normal tokens*/
   lazy val unquotes = ("[^" + separator + "]+").r
 
- 
 }

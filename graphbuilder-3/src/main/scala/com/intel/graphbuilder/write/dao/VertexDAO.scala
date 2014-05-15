@@ -23,10 +23,9 @@
 
 package com.intel.graphbuilder.write.dao
 
-import com.intel.graphbuilder.elements.{Property, Vertex}
+import com.intel.graphbuilder.elements.{ Property, Vertex }
 import com.tinkerpop.blueprints
 import com.tinkerpop.blueprints.Graph
-
 
 /**
  * Data access for Vertices using Blueprints API
@@ -68,7 +67,8 @@ class VertexDAO(graph: Graph) extends Serializable {
       val i = vertices.iterator()
       if (i.hasNext) {
         Some(i.next())
-      } else {
+      }
+      else {
         None
       }
     }
@@ -104,7 +104,8 @@ class VertexDAO(graph: Graph) extends Serializable {
     val blueprintsVertex = findByGbId(vertex.gbId)
     if (blueprintsVertex.isEmpty) {
       create(vertex)
-    } else {
+    }
+    else {
       update(vertex, blueprintsVertex.get)
     }
   }

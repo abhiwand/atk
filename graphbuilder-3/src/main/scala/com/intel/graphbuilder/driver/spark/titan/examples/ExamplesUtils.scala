@@ -67,8 +67,12 @@ object ExamplesUtils {
    * Check for the gb.jar in expected locations
    */
   private def guessGbJar: String = {
-    val possiblePaths = List( System.getProperty("user.dir") + "/target/scala-2.10/gb.jar", System.getProperty("user.dir") + "/gb.jar")
-    possiblePaths.foreach( path => {
+    val possiblePaths = List(
+      System.getProperty("user.dir") + "/graphbuilder-3/target/scala-2.10/gb.jar",
+      System.getProperty("user.dir") + "/target/scala-2.10/gb.jar",
+      System.getProperty("user.dir") + "/gb.jar"
+    )
+    possiblePaths.foreach(path => {
       val jar = new File(path)
       if (jar.exists()) {
         return jar.getAbsolutePath
@@ -82,7 +86,7 @@ object ExamplesUtils {
    */
   def sparkHome: String = {
     val sparkHome = System.getProperty("SPARK_HOME", guessSparkHome)
-    println("SPARK_HOME: "  + sparkHome)
+    println("SPARK_HOME: " + sparkHome)
     require(new File(sparkHome).exists(), "SPARK_HOME does not exist")
     sparkHome
   }
@@ -92,7 +96,7 @@ object ExamplesUtils {
    */
   private def guessSparkHome: String = {
     val possibleSparkHomes = List("/opt/cloudera/parcels/CDH/lib/spark/", "/usr/lib/spark")
-    possibleSparkHomes.foreach( dir => {
+    possibleSparkHomes.foreach(dir => {
       val path = new File(dir)
       if (path.exists()) {
         return path.getAbsolutePath

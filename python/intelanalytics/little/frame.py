@@ -153,7 +153,9 @@ class LittleFramePandasBackend(object):
         def _repr_html_(self):
             return self._df._repr_html_()
 
-    def inspect(self, frame, n):
+    def inspect(self, frame, n, offset):
+        if offset:
+            raise NotImplemented("LittleFrame doesn't support offset yet")
         df = frame._df[:n]
         # rewrite the column names to "include" the data type
         df.columns = ["{0}:{1}".format(n, supported_types.get_type_string(t))

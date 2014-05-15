@@ -26,13 +26,24 @@ package com.intel.intelanalytics.engine
 import scala.xml.persistent.CachedFileStorage
 import java.nio.file.Path
 import PartialFunction._
-import com.intel.intelanalytics.domain.{DataFrameTemplate, Schema, DataFrame}
+import com.intel.intelanalytics.domain._
 import scala.concurrent.Future
-import java.io.{OutputStream, InputStream}
+import java.io.{ OutputStream, InputStream }
 import com.intel.intelanalytics.engine.Rows.Row
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import spray.json.JsObject
+import scala.util.Try
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Schema
+import com.intel.intelanalytics.domain.DataFrameTemplate
 
 object Rows {
-  type Row = Array[Array[Byte]] //TODO: Can we constrain this better?
+  type Row = Array[Any] //TODO: Can we constrain this better?
   trait RowSource {
     def schema: Schema
     def rows: Iterable[Row]
@@ -40,22 +51,14 @@ object Rows {
 
 }
 
-trait Functional {
-  def language: String
-  def definition: String
-}
+//object EngineMessages {
+//  case class AppendFile(id: Long, fileName: String, rowGenerator: Functional)
+//  case class DropColumn(id: Long, name: String)
+//  case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
+//  case class DropRows(id: Long, filter: RowFunction[Boolean])
+//}
 
-object EngineMessages {
-  case class AppendFile(id: Long, fileName: String, rowGenerator: Functional)
-  case class DropColumn(id: Long, name: String)
-  case class AddColumn(id: Long, name: String, map: Option[RowFunction[Any]])
-  case class DropRows(id: Long, filter: RowFunction[Boolean])
-}
-
-case class RowFunction[T](language: String, definition: String) extends Functional
-case class Builtin(name: String) extends Functional { def language = "builtin"; def definition = name }
-
-sealed abstract class Alteration { }
+sealed abstract class Alteration {}
 
 case class AddColumn[T](name: String, value: Option[T], generator: Row => T) extends Alteration
 case class RemoveColumn[T](name: String) extends Alteration
@@ -67,44 +70,48 @@ trait FrameComponent {
   type View <: DataView
 
   trait Column[T] {
-    def name : String
+    def name: String
   }
 
   trait DataView {
 
   }
 
-
-
   trait FrameStorage {
-    def compile[T](func: RowFunction[T]): Row => T
     def lookup(id: Long): Option[DataFrame]
     def create(frame: DataFrameTemplate): DataFrame
-    def addColumn[T](frame: DataFrame, column: Column[T], generatedBy: Row => T): Unit
+    def addColumn[T](frame: DataFrame, column: Column[T], columnType: DataTypes.DataType): DataFrame
     def addColumnWithValue[T](frame: DataFrame, column: Column[T], default: T): Unit
-    def removeColumn(frame: DataFrame): Unit
+    def removeColumn(frame: DataFrame, columnIndex: Seq[Int]): Unit
     def removeRows(frame: DataFrame, predicate: Row => Boolean)
     def appendRows(startWith: DataFrame, append: Iterable[Row])
-    def getRows(frame: DataFrame, offset: Long, count: Int) : Iterable[Row]
+    def getRows(frame: DataFrame, offset: Long, count: Int)(implicit user: UserPrincipal): Iterable[Row]
     def drop(frame: DataFrame)
   }
 
-//  trait ViewStorage {
-//    def viewOfFrame(frame: Frame): View
-//    def create(view: View): Unit
-//    def scan(view: View): Iterable[Row]
-//    def addColumn[T](view: View, column: Column[T], generatedBy: Row => T): View
-//    def addColumnWithValue[T](view: View, column: Column[T], default: T): View
-//    def removeColumn(view: View): View
-//    def removeRows(view: View, predicate: Row => Boolean): View
-//    def appendRows(startWith: View, append: View) : View
-//  }
+  trait GraphStorage {
+    def lookup(id: Long): Option[Graph]
+    def createGraph(graph: GraphTemplate): Graph
+    def drop(graph: Graph)
+
+  }
+
+  //  trait ViewStorage {
+  //    def viewOfFrame(frame: Frame): View
+  //    def create(view: View): Unit
+  //    def scan(view: View): Iterable[Row]
+  //    def addColumn[T](view: View, column: Column[T], generatedBy: Row => T): View
+  //    def addColumnWithValue[T](view: View, column: Column[T], default: T): View
+  //    def removeColumn(view: View): View
+  //    def removeRows(view: View, predicate: Row => Boolean): View
+  //    def appendRows(startWith: View, append: View) : View
+  //  }
 }
 
 trait FileComponent {
   def files: FileStorage
 
-  sealed abstract class Entry(path: Path) {  }
+  sealed abstract class Entry(path: Path) {}
 
   case class File(path: Path, size: Long = 0) extends Entry(path)
 
@@ -117,7 +124,7 @@ trait FileComponent {
     def getMetaData(path: Path): Option[Entry]
     def move(source: Path, destination: Path)
     def copy(source: Path, destination: Path)
-    def read(source: File) : InputStream
+    def read(source: File): InputStream
     def list(source: Directory): Seq[Entry]
     def readRows(source: File, rowGenerator: InputStream => Rows.RowSource, offsetBytes: Long = 0, readBytes: Long = -1)
     def write(sink: File, append: Boolean = false): OutputStream
@@ -135,15 +142,40 @@ trait EngineComponent {
   //TODO: distinguish between DataFrame and DataFrameSpec,
   // where the latter has no ID, and is the argument passed to create?
   trait Engine {
-    def getFrame(id: Identifier) : Future[DataFrame]
-    def getRows(id: Identifier, offset: Long, count: Int) : Future[Iterable[Row]]
+    def getCommands(offset: Int, count: Int): Future[Seq[Command]]
+    def getCommand(id: Identifier): Future[Option[Command]]
+    def getFrame(id: Identifier): Future[Option[DataFrame]]
+    def getRows(id: Identifier, offset: Long, count: Int)(implicit user: UserPrincipal): Future[Iterable[Row]]
     def create(frame: DataFrameTemplate): Future[DataFrame]
-    def clear(frame: DataFrame) : Future[DataFrame]
-    def appendFile(frame: DataFrame, file: String, parser: Functional) : Future[DataFrame]
-    //def append(frame: DataFrame, rowSource: Rows.RowSource): Future[DataFrame]
-    def filter(frame: DataFrame, predicate: RowFunction[Boolean]): Future[DataFrame]
+    def clear(frame: DataFrame): Future[DataFrame]
+    def load(arguments: LoadLines[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+    def filter(arguments: FilterPredicate[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+    //  Should predicate be Partial[Any]  def filter(frame: DataFrame, predicate: Partial[Any])(implicit user: UserPrincipal): Future[DataFrame]
+    def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
+    def addColumn(arguments: FrameAddColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command])
     def alter(frame: DataFrame, changes: Seq[Alteration])
     def delete(frame: DataFrame): Future[Unit]
-    def getFrames(offset: Int, count: Int): Future[Seq[DataFrame]]
+    def getFrames(offset: Int, count: Int)(implicit p: UserPrincipal): Future[Seq[DataFrame]]
+    def shutdown: Unit
+    def getGraph(id: Identifier): Future[Graph]
+    def getGraphs(offset: Int, count: Int): Future[Seq[Graph]]
+    def createGraph(graph: GraphTemplate): Future[Graph]
+    def deleteGraph(graph: Graph): Future[Unit]
+    //NOTE: we do /not/ expect to have a separate method for every single algorithm, this will move to a plugin
+    //system soon
+    def runAls(als: Als[Long]): (Command, Future[Command])
   }
+}
+
+trait CommandComponent {
+  def commands: CommandStorage
+
+  trait CommandStorage {
+    def lookup(id: Long): Option[Command]
+    def create(frame: CommandTemplate): Command
+    def scan(offset: Int, count: Int): Seq[Command]
+    def start(id: Long): Unit
+    def complete(id: Long, result: Try[Unit]): Unit
+  }
+
 }
