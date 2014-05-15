@@ -23,17 +23,20 @@
 """
 REST backend for graphs
 """
-import base64
 import logging
 logger = logging.getLogger(__name__)
-from collections import defaultdict, OrderedDict
 
+from intelanalytics.core.graph import VertexRule, EdgeRule
 from intelanalytics.core.column import BigColumn
-from intelanalytics.core.types import *
 from intelanalytics.rest.connection import rest_http
 
 
+
 class GraphBackendRest(object):
+
+    #def __init__(self):
+    #    pass
+
     def get_graph_names(self):
         logger.info("REST Backend: get_graph_names")
         r = rest_http.get('graphs')
@@ -48,20 +51,83 @@ class GraphBackendRest(object):
     #     """Deletes the graph from backing store"""
     #     raise NotImplemented
 
-    def create(self, graph):
-        logger.info("REST Backend: create graph: " + frame.name)
-        # hack, steal schema early if possible...
-        columns = [[n, supported_types.get_type_string(t)]
-                  for n, t in frame.schema.items()]
-        if not len(columns):
-            try:
-                if isinstance(frame._original_source,CsvFile):
-                    columns = frame._original_source._schema_to_json()
-            except:
-                pass
-        payload = {'name': frame.name, 'schema': {"columns": columns}}
-        r = rest_http.post('dataframes', payload)
+    def create(self, graph, rules):
+        logger.info("REST Backend: create graph: " + graph.name)
+        payload = JsonPayload(graph, rules)
+        r = rest_http.post('graphs', payload)
         logger.info("REST Backend: create response: " + r.text)
         payload = r.json()
-        frame._id = payload['id']
+        graph._id = payload['id']
+
+
+# JSON Payload objects:
+
+class JsonValue(object):
+    def __new__(cls, value):
+        if isinstance(value, basestring):
+            t, v = "static", value
+        elif isinstance(value, BigColumn):
+            t, v = "column", value.name
+        else:
+            raise TypeError("Bad graph element source type")
+        return {"type": t, "value": v}
+
+
+class JsonProperty(object):
+    def __new__(cls, key, value):
+        return {'key': key, 'value': value}
+
+
+class JsonVertexRule(object):
+    def __new__(cls, rule):
+        return {'id': JsonProperty(JsonValue(rule.id_key), JsonValue(rule.id_value)),
+                'properties': [JsonProperty(JsonValue(k), JsonValue(v))
+                               for k, v in rule.properties.items()]}
+
+
+class JsonEdgeRule(object):
+    def __new__(cls, rule):
+        return {'label': JsonValue(rule.label),
+                'tail': JsonProperty(JsonValue(rule.tail.id_key), JsonValue(rule.tail.id_value)),
+                'head': JsonProperty(JsonValue(rule.head.id_key), JsonValue(rule.head.id_value)),
+                'properties': [JsonProperty(JsonValue(k), JsonValue(v))
+                               for k, v in rule.properties.items()],
+                'is_directed': rule.is_directed}
+
+
+class JsonFrame(object):
+    def __new__(cls, frame_uri):
+        return {'frame_uri': frame_uri,
+                'vertex_rules': [],
+                'edge_rules': []}
+
+
+class JsonPayload(object):
+    def __new__(cls, graph, rules):
+        return {'name': graph.name,
+                'frames': JsonPayload._get_frames(rules)}
+
+    @staticmethod
+    def _get_frames(rules):
+        frames_dict = {}
+        for rule in rules:
+            frame = JsonPayload._get_frame(rule, frames_dict)
+            # TODO - capture rule.__repr__ is a creation history for the graph
+            if isinstance(rule, VertexRule):
+                frame['vertex_rules'].append(JsonVertexRule(rule))
+            elif isinstance(rule, EdgeRule):
+                frame['edge_rules'].append(JsonEdgeRule(rule))
+            else:
+                raise TypeError("Non-Rule found in graph create arguments")
+        return frames_dict.values()
+
+    @staticmethod
+    def _get_frame(rule, frames_dict):
+        uri = rule.source_frame.uri
+        try:
+            frame = frames_dict[uri]
+        except KeyError:
+            frame = JsonFrame(uri)
+            frames_dict[uri] = frame
+        return frame
 
