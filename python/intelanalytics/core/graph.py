@@ -21,28 +21,35 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 f, f2 = {}, {}
-"""
-BigGraph object
+import logging
+logger = logging.getLogger(__name__)
+import uuid
 
-Examples
---------
->>> movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
+from intelanalytics.core.serialize import to_json
+from intelanalytics.core.column import BigColumn
 
->>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
+class BigGraph(object):
+    """
+    Creates a big graph
 
-<<<<<<< HEAD
+    Parameters
+    ----------
+    rules : list of rules
+        list of rules which specify how the graph will be created
+
+    Examples
+    --------
+    >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
+    """
+    def __init__(self, rules=None):
+        pass
+
 class Rule(object):
     """
     Graph building rule base class
     """
     pass
-=======
->>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight':f['score'}])
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
 
->>> oscars_vertex_prop = VertexRule('movie', f2['film'], {'oscars': f2['oscars']})
-
-<<<<<<< HEAD
 class VertexRule(Rule):
     """
     Specifies creation of a vertex
@@ -55,7 +62,7 @@ class VertexRule(Rule):
         vertex value
     props : Dictionary
         vertex properties of the form property_name:property_value
-\                              property_name is a string, and property_value is a literal
+                              property_name is a string, and property_value is a literal
                               value or a BigColumn source, which must be from same
                               BigFrame as value arg
 
@@ -63,16 +70,12 @@ class VertexRule(Rule):
     --------
     >>> movie_vertex = VertexRule('movie', f['movie'], genre=f['genre'])
     >>> user_vertex = VertexRule('user', f['user'], age=f['age_1'])
+    >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, oscars_vertex_prop])
     """
+
     def __init__(self, label, value, **props):
         pass
-=======
->>> g = BigGraph([user_vertex, movie_vertex, rating_edge, oscars_vertex_prop])
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
 
-"""
-
-<<<<<<< HEAD
 class EdgeRule(Rule):
     """
     Specifies creation of an edge
@@ -89,7 +92,7 @@ class EdgeRule(Rule):
         indicates the edge is directed
     props : Dictionary
         vertex properties of the form property_name:property_value
-\                              property_name is a string, and property_value is a literal
+                              property_name is a string, and property_value is a literal
                               value or a BigColumn source, which must be from same
                               BigFrame as value src, dst
 
@@ -97,6 +100,7 @@ class EdgeRule(Rule):
     --------
     >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, weight=f['score'])
     """
+
     def __init__(self, label, src, dst, is_directed=False, **props):
         pass
 
@@ -149,7 +153,7 @@ class EdgePropertyRule(PropertyRule):
         of the target edge's destination vertex
     props : Dictionary (optional)
         edge properties of the form property_name:property_value
-\        property_name is a string, and property_value is a literal
+        property_name is a string, and property_value is a literal
         value or a BigColumn source
 
     Examples
@@ -175,32 +179,6 @@ class GraphRule(Rule):
     """
     def __init__(self, vid=None):
         pass
-=======
-import logging
-logger = logging.getLogger(__name__)
-import uuid
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
-
-from intelanalytics.core.serialize import to_json
-from intelanalytics.core.column import BigColumn
-
-<<<<<<< HEAD
-class BigGraph(object):
-    """
-    Creates a big graph
-
-    Parameters
-    ----------
-    rules : list of rules
-        list of rules which specify how the graph will be created
-
-    Examples
-    --------
-    >>> g = BigGraph([user_vertex, movie_vertex, rating_edge, extra_movie_rule])
-    """
-    def __init__(self, rules=None):
-        pass
-=======
 
 def _get_backend():
     from intelanalytics.core.config import get_graph_backend
@@ -210,19 +188,10 @@ def _get_backend():
 def get_graph_names():
     """Gets the names of BigGraph objects available for retrieval"""
     return _get_backend().get_graph_names()
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
 
-
-<<<<<<< HEAD
-        Parameters
-        ----------
-        rules : list of PropertyRule
-            list of property rules which specify how to add the PropertyRule properties
-=======
 def get_graph(name):
     """Retrieves the named BigGraph object"""
     return _get_backend().get_graph(name)
->>>>>>> 168d4e4e1012d24ee74648fc1b4c746b64be111f
 
 
 def delete_graph(name):
