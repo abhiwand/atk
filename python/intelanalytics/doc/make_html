@@ -16,26 +16,31 @@ fi
 
 source $ACTIVATE_FILE
 
+# if the individual running this script is a techwriter and has started the script with 
+# the key word 'packages', check that the packages have been installed.
 if [ -f techwriters ]
 then
     HUMAN=$( pwd | grep -c --file=techwriters)
     if [ $HUMAN -gt 0 ]
     then
-        # We need to check the installed packages and insure they are complete.
-        # The packages need superuser rights to install properly.
-        echo "Press Ctrl-C if you are sure the support packages have been installed"
-        sudo ./install_packages
+        COMPILE=$( echo $1 | grep -ic "packages" )
+        if [ $COMPILE -gt 0 ]; then
+            clear
+            # We need to check the installed packages and insure they are complete.
+            # The packages need superuser rights to install properly.
+            sudo ./install_packages
+        fi
     fi
 fi
 
 # Delete previously automatically built files
-#if [[ -d build ]]; then
-#    rm -R build
-#fi
-#delete_apidocs
+if [[ -d build ]]; then
+    rm -R build
+fi
 
-# Build the API docs
+# Build fresh API docs
+#delete_apidocs
 #sphinx-apidoc --force -o source/ ../../. ../doc/ ../tests/
 
-# We assume we are running from the doc directory.
+# We assume we are running from the doc directory. Ignore all toctree warnings.
 make -B html 2>&1 | grep -v -f toctreeWarnings
