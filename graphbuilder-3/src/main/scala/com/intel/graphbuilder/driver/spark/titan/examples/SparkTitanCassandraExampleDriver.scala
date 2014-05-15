@@ -23,16 +23,16 @@
 
 package com.intel.graphbuilder.driver.spark.titan.examples
 
-import com.intel.graphbuilder.driver.spark.titan.{GraphBuilderConfig, GraphBuilder}
+import com.intel.graphbuilder.driver.spark.titan.{ GraphBuilderConfig, GraphBuilder }
 import com.intel.graphbuilder.graph.titan.TitanGraphConnector
 import com.intel.graphbuilder.parser.ColumnDef
 import com.intel.graphbuilder.parser.InputSchema
 import com.intel.graphbuilder.parser.rule.RuleParserDSL._
 import com.intel.graphbuilder.parser.rule._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
-import java.util.{Calendar, Date}
+import java.util.{ Calendar, Date }
 import org.apache.spark.rdd.RDD
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.{ SparkConf, SparkContext }
 import java.util
 
 /**
@@ -72,7 +72,6 @@ object SparkTitanCassandraExampleDriver {
     VertexRule(gbId("reverse")))
   val edgeRules = List(EdgeRule(gbId("cf:number"), gbId("reverse"), constant("reverseOf")))
 
-
   /**
    * This is an example of building a graph on Titan with a Cassandra backend using Spark.
    */
@@ -111,5 +110,4 @@ object SparkTitanCassandraExampleDriver {
   }
 
 }
-
 

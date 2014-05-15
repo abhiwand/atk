@@ -64,10 +64,24 @@ class _Types(frozenset):
                      long: int64,
                      float: float64}
 
+    _cast_methods = {bool: bool,
+                     bytearray: bytearray,
+                     dict: dict,
+                     float: float,
+                     float32: float,
+                     float64: float,
+                     int: int,
+                     int32: int,
+                     int64: int,
+                     list: list,
+                     str: str,
+                     string: string}
+
     def validate_is_supported_type(self, data_type):
         self.get_type_string(data_type)
 
-    def get_type_string(self, t):
+    @staticmethod
+    def get_type_string(t):
         for k, v in _Types._ia_types.items():
             if v is t:
                 return k
@@ -79,7 +93,8 @@ class _Types(frozenset):
         except TypeError:
             return type(t).__name__
 
-    def get_type(self, obj):
+    @staticmethod
+    def get_type(obj):
         t = type(obj)
         if t in _Types._ia_types.values():
             return t
@@ -91,7 +106,8 @@ class _Types(frozenset):
         except KeyError:
             return unknown
 
-    def get_type_from_string(self, type_string):
+    @staticmethod
+    def get_type_from_string(type_string):
         return _Types._ia_types[type_string]
 
     def try_get_type_from_string(self, type_string):
@@ -101,11 +117,26 @@ class _Types(frozenset):
             return unknown
 
     def __repr__(self):
-        return ",".join(_Types._ia_types.keys())
+        return ", ".join(sorted(_Types._ia_types.keys()))
 
     @staticmethod
     def _get_list():
         return _Types._ia_types.values()
+
+    cast_methods = {
+        int32: int,
+        int64: int,
+
+    }
+
+    @staticmethod
+    def cast(value, t):
+        if value is None:
+            return value
+        v_type = _Types.get_type(value)
+        if v_type is t:
+            return value
+        return _Types._cast_methods[t](value)
 
 
 supported_types = _Types(_Types._get_list())
