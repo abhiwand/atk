@@ -91,31 +91,28 @@ will merge with those of the new data sources.
 Drop Rows
 ~~~~~~~~~
 
->>> # drop all rows where column 'a' is empty
->>> f.drop(lambda row: row.is_empty('a'))
+>>> # drop all rows where column 'b' contains a negative number
+>>> f.drop(lambda row: row['b'] < 0)
 
-``drop`` takes a predicate function and removes all rows for which the predicate
-evaluates True.  It operates in place, so it is destructive to the frame.  Be
-advised to make a copy of the frame before cleaning.
+>>> # drop all rows where column 'a' is empty
+>>> f.drop(lambda row: row['a'] is None)
 
 >>> # drop all rows where any column is empty
->>> f2 = BigFrame(f)
->>> f2.drop(lambda row: row.is_empty(any))
+>>> f.drop(lambda row: any([cell is None for cell in row]))
 
->>> # Other examples of row.is_empty
->>> f2.drop(lambda row: row.is_empty('a'))              # single column
->>> f2.drop(lambda row: row.is_empty(all))              # multi-column
->>> f2.drop(lambda row: row.is_empty(all, ('a', 'b')))  # multi-column
->>> f2.drop(lambda row: row.is_empty(any, ('a', 'b')))  # multi-column
+``drop`` takes a predicate function and removes all rows for which the predicate
+evaluates True.  It operates in place on the given frame, so it mutates the
+frame's content.
 
-``filter`` is like drop except it removes all the rows for which the predicate
-evaluates False.
+``filter`` is like ``drop`` except it removes all the rows for which the
+predicate evaluates False.
 
->>> # drop all rows where field 'b' is out of range 0 to 10
+>>> # keep only those rows where field 'b' is in the range 0 to 10
 >>> f2.filter(lambda row: 0 >= row['b'] >= 10)
 
 If we want to hang on to the dropped rows, we can pass in a BigFrame to collect
-them.  All of the dropped rows will be appended to that frame.
+them.  All of the dropped rows will be appended to that frame. **Not implemented
+for 0.8**
 
 >>> r = BigFrame()
 >>> f.filter(lambda row: 0 >= row['b'] >= 10, rejected_store=r)
