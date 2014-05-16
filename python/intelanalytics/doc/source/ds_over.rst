@@ -13,7 +13,7 @@ Contents:
     ds_samp
     ds_ml
     ds_mlal
-    ds_api
+    ds_apim
     ds_misc
 
 ..   ds_supp # Supplemental
