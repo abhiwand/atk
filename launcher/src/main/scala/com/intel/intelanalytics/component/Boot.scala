@@ -23,7 +23,7 @@
 
 package com.intel.intelanalytics.component
 
-import java.net.URLClassLoader
+import java.net.{ URL, URLClassLoader }
 import scala.reflect.io.{ File, Path, Directory }
 import scala.util.control.NonFatal
 import scala.collection.mutable
@@ -65,9 +65,7 @@ object Boot extends App {
     loaders.getOrElse(archive, buildClassLoader(archive, interfaces))
   }
 
-  def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
-    //TODO: Allow directory to be passed in, or otherwise abstracted?
-    //TODO: Make sensitive to actual scala version rather than hard coding.
+  def getCodePathUrls(archive: String): Array[URL] = {
     val classDirectory: Path = Directory.Current.get / archive / "target" / "scala-2.10" / "classes"
     val developmentJar: Path = Directory.Current.get / archive / "target" / "scala-2.10" / (archive + ".jar")
     val deployedJar: Path = Directory.Current.get / "lib" / (archive + ".jar")
@@ -84,6 +82,14 @@ object Boot extends App {
         println(s"Found jar at $deployedJar")
         deployedJar.toURL
       }).flatten
+
+    urls
+  }
+
+  def buildClassLoader(archive: String, parent: ClassLoader): ClassLoader = {
+    //TODO: Allow directory to be passed in, or otherwise abstracted?
+    //TODO: Make sensitive to actual scala version rather than hard coding.
+    val urls = getCodePathUrls(archive)
     urls match {
       case u if u.length > 0 => new URLClassLoader(u, parent)
       case _ => throw new Exception(s"Could not locate archive $archive")
