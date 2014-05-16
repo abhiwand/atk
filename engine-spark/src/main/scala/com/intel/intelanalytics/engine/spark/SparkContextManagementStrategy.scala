@@ -42,6 +42,7 @@ class SparkContextFactory {
       .setMaster(sparkMaster)
       .setSparkHome(sparkHome)
       .setAppName(appName)
+      .setJars(List("/home/schen55/IdeaProjects/IntelAnalytics/source_code/engine-spark/target/scala-2.10/engine-spark.jar"))
     new SparkContext(sparkConf)
   }
 }
