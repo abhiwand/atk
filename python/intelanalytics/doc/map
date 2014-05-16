@@ -4,6 +4,8 @@ index
         intel_legal: Legal
         ad_reqs: Requirements
         ad_inst: Installation
+            ad_yum: Procedures for systems using yum
+            ad_apt: Procedures for systems using apt-get (future)
         ad_conf: Configuration
         ad_mntc: Maintenance
         ad_trbl: Troubleshooting
