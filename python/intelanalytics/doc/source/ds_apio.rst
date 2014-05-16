@@ -6,41 +6,22 @@
 Python API Overview
 ===================
 
-The 0.8 release provides data ingestion capabilities for several data sources and formats.
-It provides basic schema support.
-
-Data Schemas
-------------
-
-+-----------------------------------------------------------------------------------------------+
-| ID    | Class         | Description                                                 | Release |
-+===============================================================================================+
-| DC100 | Schema        | The user can specify the schema for a dataset to be loaded. | 0.8     |
-|       | Specification | This can be accomplished by creating and configuring a      |         |
-|       |               | schema object, defining the schema inline within the data   |         |
-|       |               | load, or by specifying a text file containing the schema    |         |
-|       |               | definition.                                                 |         |
-+-----------------------------------------------------------------------------------------------+
-| DC110 |               | The user can specify delimiters and overwrite behavior at   | 0.8     |
-|       |               | dataload.                                                   |         |
-+-----------------------------------------------------------------------------------------------+
-| DC200 | Schema        | At the time of data load, the system will verify the schema | 0.8     |
-|       | Verification  | against the data being loaded.                              |         |
-+-----------------------------------------------------------------------------------------------+
-
 >>> from intelanalytics import *
 
+\ 
+\ 
 Data Types
 ==========
 
 The following data types are supported:
 
->>> supported_types
-bool, bytearray, dict, float32, float64, int32, int64, list, str, string
+>>> supported_types:
+    bool, bytearray, dict, float32, float64, int32, int64, list, str, string
 
 where ``str`` is ASCII per Python, ``string`` is UTF-8
 
-
+ 
+ 
 Data Sources
 ============
 
@@ -69,20 +50,22 @@ of the file, which may be header:
                    delimiter='|',
                    skip_header_lines==2)
 
-
 2. JSON Files
 -------------
 
 >>> json1 = JsonFile("json_records.json") # schema TBD
-
-
-
+ 
+ 
+ 
+ 
 BigFrame
 ========
 
 A BigFrame is a table structure of rows and columns, capable of holding many,
 many, ..., many rows.
 
+ 
+ 
 1. Create
 ---------
 
@@ -98,6 +81,8 @@ will merge with those of the new data sources.
 >>> # frame f will get more rows and a new column 'c'
 >>> f.append(CsvFile("bonus_abc_data.txt", [('a', int32), ('b', string), ('c', string)]))
 
+ 
+ 
 2. Inspect
 ----------
 
@@ -106,11 +91,13 @@ will merge with those of the new data sources.
 >>> f.inspect(5)            # pretty-print first 5 rows
 >>> f.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
 
-
+ 
+ 
 3. Clean
 --------
 
-**Drop Rows**
+Drop Rows
+~~~~~~~~~
 
 >>> # drop all rows where column 'a' is empty
 >>> f.drop(lambda row: row.is_empty('a'))
@@ -121,7 +108,7 @@ advised to make a copy of the frame before cleaning.
 
 >>> # drop all rows where any column is empty
 >>> f2 = BigFrame(f)
->>> f2.drop(lambda row: row.is_empty(any))
+>>> f2.drop(lambda row: row.is_emptyany))
 
 >>> # Other examples of row.is_empty
 >>> f2.drop(lambda row: row.is_empty('a'))              # single column
@@ -150,8 +137,10 @@ See :doc:`rowfunc`
 >>> f.drop_duplicates(['a', 'b'])  # only columns 'a' and 'b' considered for uniqueness
 >>> f.drop_duplicates()            # all columns considered for uniqueness
 
-**Fill Cells**
-
+ 
+ 
+Fill Cells
+~~~~~~~~~~
 
 >>> f['a'].fillna(800001)
 >>> f['a'].fill(lambda cell: 800001 if cell is None else 800002 if cell < 0 else cell)
@@ -165,37 +154,48 @@ See :doc:`rowfunc`
 ...     return cell
 >>> f['a'].fill(filler)
 
-
-**Copy Columns**
+ 
+ 
+Copy Columns
+~~~~~~~~~~~~
 
 >>> f2 = BigFrame(f[['a', 'c']])  # projects columns 'a' and 'c' to new frame f2
 
 A list of columns can be specified using a list to index the frame.
 
-**Remove Columns**
+ 
+ 
+Remove Columns
+~~~~~~~~~~~~~~
 
 >>> f2.remove_column('b')
 >>> f2.remove_column(['a', 'c'])
 
-**Rename Columns**
-
+ 
+ 
+Rename Columns
+~~~~~~~~~~~~~~
 
 >>> f.rename_column(a='id')
 >>> f.rename_column(b='author', c='publisher')
 >>> f.rename_column({'col-with-dashes': 'no_dashes'})
 
-**Cast Columns**
+ 
+ 
+Cast Columns
+~~~~~~~~~~~~
 
 ***WIP*** Thinking something explicit like this instead of allowing schema to be edited directly
 
 >>> f['a'].cast(int32)
 
-
+ 
+ 
 4. Engineer
 -----------
 
-**Add Column**
-
+Add Column
+~~~~~~~~~~
 
 Map a function to each row in the frame, producing a new column
 
@@ -225,10 +225,10 @@ to return a tuple of cell values for the new frame columns
 
 >>> f.add_columns(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))  # adds 2 columns
 
-
-
-**Map**
-
+ 
+ 
+Map
+~~~
 
 ``map()`` produces a new BigFrame by applying a function to each row of
 a frame or each cell of a column.  It is the functionality as ``add_column`` but
@@ -239,9 +239,10 @@ the results go to a new frame instead of being added to the current frame.
 >>> f4 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), (('a_abs', float32), ('b_abs', float32)))
 
 Note: Better name than ``map_many``?
-
-**Reduce**
-
+ 
+ 
+Reduce
+~~~~~~
 
 Apply a reducer function to each row in a Frame, or each cell in a column.  The
 reducer has two parameters, the *accumulator* value and the row or cell *update* value.
@@ -251,8 +252,10 @@ reducer has two parameters, the *accumulator* value and the row or cell *update*
 >>> f['a'].reduce(lambda acc, cell_upd: acc + cell_upd)
 
 There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
-
-**Groupby (and Aggregate)**
+ 
+ 
+Groupby (and Aggregate)
+~~~~~~~~~~~~~~~~~~~~~~~
 
 ***WIP***  current idea:  (follows GraphLab's SFrame)
 
@@ -296,8 +299,10 @@ except I'm adding custom reducers)
 Produces a frame with several columns:
 ``"a", "b", "c_avg", "c_stdev", "c_ ..., "d_avg", "d_stdev", "d_ ..., "my_row_lambda_col", "c_fuzz", "d_fuzz"``
 
-
-**Join**
+ 
+ 
+Join
+~~~~
 
 ***WIP***
 
