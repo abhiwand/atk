@@ -51,6 +51,10 @@ class CsvFile(DataFile):
     skip_header_lines : int, optional
         indicates numbers of lines to skip before parsing records
 
+    Raises
+    ------
+    # TODO - Add errors
+
     Examples
     --------
     >>> csv1 = CsvFile("my_csv_data.txt", [('A', int32), ('B', string)])
@@ -85,9 +89,6 @@ class CsvFile(DataFile):
         """
         Breaks up it's information into workable variables.
 
-        Parameters
-        ----------
-        
         Returns
         -------
         list
@@ -103,10 +104,9 @@ class CsvFile(DataFile):
 
         Examples
         --------
+        # TODO - Need examples
         >>>
         """
-
-        # another note
 
         return ["csv_file", self.file_name, self._schema_to_json(), self.delimiter, self.skip_header_lines]
 
@@ -114,23 +114,21 @@ class CsvFile(DataFile):
     def from_json_obj(cls, obj):
 
         """
-        description of what this function does.
+        Converts this object to a CSV file per a JSON schema.
 
         Parameters
         ----------
-        obj : obj
-            description of this parameter
+        obj : list
+            First item in the list should be a string "csv_file"
+            The third item in the list should be the JSON schema
         
         Returns
         -------
-        ?
-        
-        Notes
-        -----
-        ?
+        CSV file
 
         Examples
         --------
+        # TODO - Verify/correct above info and add examples
         >>>
         """
         assert("csv_file" == obj[0])
@@ -153,26 +151,49 @@ class CsvFile(DataFile):
 
     @property
     def field_names(self):
-        """list of field names of the CSV file"""
+        """
+        List of field names of the CSV file.
+        
+        Returns
+        -------
+        list of str
+            Field names
+        
+        Examples
+        --------
+        # TODO - Add examples
+        >>>
+        """
         return [x[0] for x in self.fields]
 
     @property
     def field_types(self):
-        """list of field types of the CSV file"""
+        """
+        List of field types of the CSV file.
+        
+        Returns
+        -------
+        list of field types
+            Field types
+        
+        Examples
+        --------
+        # TODO - Add examples
+        >>>
+        """
         return [x[1] for x in self.fields]
 
     def to_ordered_dict(self):
         """
         Creates an ordered dictionary representing the schema fields and types.
-        
-        Parameters
-        ----------
-        
-        Returns
-        -------
-        
+
+        Raises
+        ------
+        # TODO Add raises descriptions
+
         Examples
         --------
+        # TODO - Add examples
         >>>
         """
         d = OrderedDict()
@@ -201,23 +222,25 @@ class CsvFile(DataFile):
     def parse_legacy_schema_string(schema_string):
 
         """
-        description of what this function does.
+        # TODO - description of what this function does.
 
         Parameters
         ----------
-        obj : obj
-            description of this parameter
-        
+        schema_string : str
+            # TODO - description of parameter
+
         Returns
+        -------
+        list
+            # TODO - describe return
+
+        Raises
         -------
         ?
         
-        Notes
-        -----
-        ?
-
         Examples
         --------
+        # TODO - add examples
         >>>
         """
         fields = []
@@ -238,6 +261,14 @@ class JsonFile(DataFile):
     ----------
     file_name : str
         name of file
+    
+    Raises
+    ------
+    
+    Examples
+    --------
+    >>>
+    # TODO - Errors and Examples
     """
     annotation = "json_file"
 
@@ -258,6 +289,15 @@ class XmlFile(DataFile):
         name of file
     tag_name : str, optional
         The XML tag name
+
+    Raises
+    ------
+
+    Examples
+    --------
+    >>>
+    # TODO - Errors and Examples
+
     """
     annotation = "xml_file"
 

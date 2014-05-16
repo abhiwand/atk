@@ -42,17 +42,15 @@ def get_frame_names():
     """
     Gets the names of BigFrame objects available for retrieval.
 
-    Parameters
-    ----------
-
     Returns
     -------
-    String : Name
+    str
         Name of the active BigFrame object
 
     Examples
     --------
     >>>
+    # TODO - Add examples
 
     """
     return _get_backend().get_frame_names()
@@ -69,12 +67,13 @@ def get_frame(name):
 
     Returns
     -------
-    Frame : BigFrame
+    BigFrame
         Named object
 
     Examples
     --------
     >>> 
+    # TODO - Add examples
 
     """
     return _get_backend().get_frame(name)
@@ -95,7 +94,9 @@ def delete_frame(name):
 
     Examples
     --------
-    >>> 
+    >>>
+
+    # TODO - Add examples and describe parameter
     """
     return _get_backend().delete_frame(name)
 
@@ -103,6 +104,7 @@ def delete_frame(name):
 class BigFrame(object):
     """
     Proxy for a large 2D container to work with table data at scale.
+    # TODO - Add Parameters, Returns (if any), Raises (if any), Examples
     """
 
     def __init__(self, source=None, name=None):
@@ -197,10 +199,12 @@ class BigFrame(object):
 
     @property
     def column_names(self):
+        # TODO - Add Docstring
         return self._columns.keys()
 
     @property
     def data_type(self):
+        # TODO - Add Docstring
         return type(self)
 
     #@property
@@ -209,18 +213,22 @@ class BigFrame(object):
 
     @property
     def name(self):
+        # TODO - Add Docstring
         return self._name
 
     @property
     def schema(self):
+        # TODO - Add Docstring
         return FrameSchema(zip(self._columns.keys(),
                                map(lambda c: c.data_type, self._columns.values())))
 
     @property
     def uri(self):
+        # TODO - Add Docstring
         return self._uri
 
     def _as_json_obj(self):
+        # TODO - Add Docstring
         return self._backend._as_json_obj(self)
         #return ['frame', {"name": self.name}]
 
@@ -239,6 +247,12 @@ class BigFrame(object):
 
         name: string
             specifies the name of the new column
+
+        Examples
+        --------
+        >>>
+
+        # TODO - Add examples
         """
         # Generate a synthetic name
         if not name:
@@ -260,10 +274,17 @@ class BigFrame(object):
 
         names: list or tuple of strings or tuples of string, data type
             specifies the name and data type of the new columns
+
+        Examples
+        --------
+        >>>
+        
+        # TODO - Add examples
         """
         self._backend.add_columns(self, func, names)
 
     def append(self, *data):
+        # TODO - Add Docstring
         self._backend.append(self, *data)
 
     def filter(self, predicate):
@@ -274,28 +295,33 @@ class BigFrame(object):
         ----------
         predicate: function
             function definition or lambda which evaluates to a boolean value
+        Examples
+        --------
+        >>>
+        
+        # TODO - Add examples
+
         """
         self._backend.filter(self, predicate)
 
     def count(self):
+        # TODO - Add docstring
         return self._backend.count(self)
 
     def remove_column(self, name):
         """
-        Remove columns
+        Remove columns.
 
         Parameters
         ----------
         name : str OR list of str
             column name OR list of column names to be removed from the frame
 
-        Notes
-        -----
-        This function will retain a single column.
-
         Examples
         --------
         >>> 
+
+        # TODO - Add examples
         """
         self._backend.remove_column(self, name)
         if isinstance(name, basestring):
@@ -304,6 +330,7 @@ class BigFrame(object):
             del self._columns[victim]
 
     def drop(self, predicate):
+        # TODO - Add docstring
         self._backend.drop(self, predicate)
 
     def dropna(self, how=any, column_subset=None):
@@ -322,10 +349,13 @@ class BigFrame(object):
         Examples
         --------
         >>> 
+
+        # TODO - Add examples
         """
         self._backend.dropna(self, how, column_subset)
 
     def inspect(self, n=10, offset=0):
+        # TODO - Add docstring
         return self._backend.inspect(self, n, offset)
 
     # def join(self,
@@ -362,6 +392,7 @@ class BigFrame(object):
     #     return operations.BigOperationBinary("join", {BigFrame: {bool: None}}, self, predicate)
 
     def add_column(self, column_name, func):
+        # TODO - Function add_column has 2 definitions
         """
         Add a column to a frame.
 
@@ -378,6 +409,8 @@ class BigFrame(object):
         Examples
         --------
         >>>
+
+        #TODO - Add returns and examples
         """
         return self._backend.add_column(self, column_name, func)
 
@@ -393,12 +426,14 @@ class BigFrame(object):
         new_name : str
             The new name for the column. Must not already exist.
 
-        Returns
-        -------
+        Raises
+        ------
         
         Examples
         --------
         >>>
+
+        #TODO - Add raises and examples
         """
         if isinstance(column_name, basestring) and isinstance(new_name, basestring):
             column_name = [column_name]
@@ -430,12 +465,14 @@ class BigFrame(object):
         Examples
         --------
         >>>
+
+        # TODO - Add examples
         """
         self._backend.save(self, name)
 
     def take(self, n, offset=0):
         """
-        ?
+        # TODO - Add Docstring
 
         Parameters
         ----------
@@ -484,12 +521,15 @@ class FrameSchema(OrderedDict):
         self._init_from_tuples(json.loads(schema_string))
 
     def get_column_names(self):
+        # TODO - Add docstring
         return self.keys()
 
     def get_column_data_types(self):
+        # TODO - Add docstring
         return self.values()
 
     def get_column_data_type_strings(self):
+        # TODO - Add docstring
         return map(lambda v: supported_types.get_type_string(v), self.values())
 
     def drop(self, victim_column_names):
@@ -504,6 +544,8 @@ class FrameSchema(OrderedDict):
         Examples
         --------
         >>> 
+
+        # TODO - Add examples
         """
         if isinstance(victim_column_names, basestring):
             victim_column_names = [victim_column_names]
@@ -517,7 +559,7 @@ class FrameSchema(OrderedDict):
         Parameters
         ----------
         new_columns : structure
-            The column(s) to add              Not optional
+            The column(s) to add
             .keys = str       
             .items = structure
             == int             The new column number
@@ -527,6 +569,7 @@ class FrameSchema(OrderedDict):
         --------
         >>> 
 
+        # TODO - Add examples and clean up docstring
         Should the new column be named?
         """
         for f in new_columns.keys():
@@ -536,6 +579,7 @@ class FrameSchema(OrderedDict):
             self[name] = dtype
 
     def merge(self, schema):
+        # TODO - Add docstring
         for name, dtype in schema.items():
             if name not in self:
                 self[name] = dtype

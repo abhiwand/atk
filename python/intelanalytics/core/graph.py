@@ -53,20 +53,24 @@ def _get_backend():
 
 def get_graph_names():
     """Gets the names of BigGraph objects available for retrieval"""
+    # TODO - Add docstring
     return _get_backend().get_graph_names()
 
 
 def get_graph(name):
     """Retrieves the named BigGraph object"""
+    # TODO - Add docstring
     return _get_backend().get_graph(name)
 
 
 def delete_graph(name):
     """Deletes the graph from backing store"""
+    # TODO - Add docstring
     return _get_backend().delete_graph(name)
 
 
 class RuleWithDifferentFramesError(ValueError):
+    # TODO - Add docstring
     def __init__(self):
         ValueError.__init__(self, "Rule contains columns from different frames")
 
@@ -74,6 +78,7 @@ class RuleWithDifferentFramesError(ValueError):
 # TODO - make an Abstract Class
 class Rule(object):
     """Graph rule base class"""
+    # TODO - Add docstring
     def __init__(self):
         self.source_frame = self.validate()
 
@@ -83,10 +88,12 @@ class Rule(object):
 
     # Must be overridden:
     def validate(self):
+        # TODO - Add docstring
         raise NotImplementedError
 
     @staticmethod
     def validate_source(source, frame):
+        # TODO - Add docstring
         if isinstance(source, BigColumn):
             if frame is None:
                 frame = source.frame
@@ -98,12 +105,14 @@ class Rule(object):
 
     @staticmethod
     def validate_property(key, value, frame):
+        # TODO - Add docstring
         frame = Rule.validate_source(key, frame)
         frame = Rule.validate_source(value, frame)
         return frame
 
     @staticmethod
     def validate_properties(properties):
+        # TODO - Add docstring
         frame = None
         if properties:
             for k, v in properties.items():
@@ -113,6 +122,7 @@ class Rule(object):
     @staticmethod
     def validate_same_frame(*frames):
         """Assures all non-None frames provided are in fact the same frame"""
+        # TODO - Add docstring
         same = None
         for f in frames:
             if f:
@@ -160,6 +170,7 @@ class VertexRule(Rule):
         return to_json(self)
 
     def validate(self):
+        # TODO - Add docstring
         id_frame = self.validate_property(self.id_key, self.id_value, None)
         properties_frame = self.validate_properties(self.properties)
         return self.validate_same_frame(id_frame, properties_frame)
@@ -211,6 +222,7 @@ class EdgeRule(Rule):
         return to_json(self)
 
     def validate(self):
+        # TODO - Add docstring
         label_frame = None
         if isinstance(self.label, BigColumn):
             label_frame = VertexRule('label', self.label).validate()
@@ -249,10 +261,12 @@ class BigGraph(object):
 
     @property
     def name(self):
+        # TODO - Add docstring
         return self._name
 
     @name.setter
     def name(self, value):
+        # TODO - Add docstring
         self._backend.set_name(value)
 
     def _get_new_graph_name(self):
