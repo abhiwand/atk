@@ -480,10 +480,7 @@ class SparkComponent extends EngineComponent
       hadoopConfig.set("fs.file.impl",
         classOf[LocalFileSystem].getName)
       require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
-
-      if (conf.getString("intel.analytics.fs.mode") equals "distributed") {
-        hadoopConfig.set("fs.defaultFS", conf.getString("intel.analytics.fs.root"))
-      }
+      hadoopConfig.set("fs.defaultFS", conf.getString("intel.analytics.fs.root"))
 
       hadoopConfig
     }
