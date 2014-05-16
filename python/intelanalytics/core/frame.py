@@ -264,7 +264,7 @@ class BigFrame(object):
         self._backend.add_columns(self, func, names)
 
     def append(self, *data):
-        pass
+        self._backend.append(self, *data)
 
     def filter(self, predicate):
         """
@@ -272,27 +272,17 @@ class BigFrame(object):
 
         Parameters
         ----------
-        predicate : function
-            A function which determines which rows are to be included
-
-        Returns
-        -------
-        
-        Examples
-        --------
-        >>> myframe.filter(lambda row: row.col1 + row.col2 > row.col3)
-        >>> def custom_filter(row):
-        >>>     return row['a'] * row['a'] > 30
-        >>> myfram.filter(custom_filter)
+        predicate: function
+            function definition or lambda which evaluates to a boolean value
         """
         self._backend.filter(self, predicate)
 
     def count(self):
-        pass
+        return self._backend.count(self)
 
     def remove_column(self, name):
         """
-        Remove columns of data.
+        Remove columns
 
         Parameters
         ----------
@@ -314,7 +304,7 @@ class BigFrame(object):
             del self._columns[victim]
 
     def drop(self, predicate):
-        pass
+        self._backend.drop(self, predicate)
 
     def dropna(self, how=any, column_subset=None):
         """
@@ -322,7 +312,7 @@ class BigFrame(object):
 
         Parameters
         ----------
-        how : any (optional), all (optional)
+        how : any, all, or column name, optional
             any: if any column has an NA value, drop row
             all: if all the columns have an NA value, drop row
             column name: if named column has an NA value, drop row
@@ -502,22 +492,22 @@ class FrameSchema(OrderedDict):
     def get_column_data_type_strings(self):
         return map(lambda v: supported_types.get_type_string(v), self.values())
 
-    def drop(self, victim_columns):
+    def drop(self, victim_column_names):
         """
-        Get rid of particular columns.
+        Remove particular columns.
 
         Parameters
         ----------
-        victim_columns : str OR list of str
+        victim_column_names : str OR list of str
             Name(s) of the columns to drop
 
         Examples
         --------
         >>> 
         """
-        if isinstance(victim_columns, basestring):
-            victim_columns = [victim_columns]
-        for v in victim_columns:
+        if isinstance(victim_column_names, basestring):
+            victim_column_names = [victim_column_names]
+        for v in victim_column_names:
             del self[v]
 
     def append(self, new_columns):

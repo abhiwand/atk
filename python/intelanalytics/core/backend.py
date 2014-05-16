@@ -30,33 +30,13 @@ from files import CsvFile
 
 
 class FrameBackendSimplePrint(object):
-    """ Simple backend stub that just prints expected backend activity """
+    """Simple backend stub that just prints expected backend activity"""
 
     def get_frame_names(self):
-	"""
-	Log the fact that it is being called
-
-	parameters: None
-
-	returns: empty string
-	 """
         logger.info("Backend: get_frame_names")
         return ""
 
     def append(self, frame, data):
-	""" 
-	Append data to frame
-
-	parameters:
-
-		frame: a container of data
-
-		data:  a list, CsvFile, or BigColumn, to be added to the frame
-
-	returns: nothing
-
-	Errors: if data is not an approved type, generates error message that data's type is wrong
-	"""
         logger.info("Backend: Appending data to frame {0}: {1}".format(repr(frame), repr(data)))
         # hack back end to create columns
         if isinstance(data, list):
@@ -74,9 +54,6 @@ class FrameBackendSimplePrint(object):
                             + data.__class__.__name__)
 
     def assign(self, dst, value):
-	"""
-	This assigns the value to the column name?????
-	"""
         logger.info("Backend: Assignment {0} = {1}".format(repr(dst), repr(value)))
         if hasattr(dst, 'frame'):
             if dst not in dst.frame._columns:
