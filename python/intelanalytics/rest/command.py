@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(object):
-:memoryview
+
     def __init__(self, name, arguments):
         # this should match the first-level REST API command payload
         # this class should have a natively JSON object structure
