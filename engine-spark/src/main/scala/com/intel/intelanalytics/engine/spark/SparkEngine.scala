@@ -480,7 +480,10 @@ class SparkComponent extends EngineComponent
       hadoopConfig.set("fs.file.impl",
         classOf[LocalFileSystem].getName)
       require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
-      hadoopConfig.set("fs.defaultFS", conf.getString("intel.analytics.fs.root"))
+
+      val root: String = conf.getString("intel.analytics.fs.root")
+      if (root.startsWith("hdfs"))
+        hadoopConfig.set("fs.defaultFS", root)
 
       hadoopConfig
     }
