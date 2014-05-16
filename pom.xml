@@ -79,10 +79,22 @@
     <dep.pig.version>0.12.0</dep.pig.version>
     <forHadoop>for-hadoop-${hadoop.version}</forHadoop>
   </properties>
-
+<profiles>
+    <profile>
+        <id>package</id>
+        <activation>
+            <property><name>${env.BUILD_NUMBER}</name></property>
+        </activation>
+    </profile>
+</profiles>
 <build>
     <pluginManagement>
       <plugins>
+          <plugin>
+              <groupId>net.alchim31.maven</groupId>
+              <artifactId>scala-maven-plugin</artifactId>
+              <version>3.1.6</version>
+          </plugin>
         <plugin>
           <groupId>com.github.koraktor</groupId>
           <artifactId>mavanagaiata</artifactId>
@@ -361,21 +373,35 @@
       </plugins>
     </pluginManagement>
     <plugins>
-      <plugin>
-        <groupId>com.github.koraktor</groupId>
-        <artifactId>mavanagaiata</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-      </plugin>
-
+        <plugin>
+            <groupId>net.alchim31.maven</groupId>
+            <artifactId>scala-maven-plugin</artifactId>
+            <version>3.1.6</version>
+            <executions>
+                <execution>
+                    <id>scala-compile-first</id>
+                    <phase>process-resources</phase>
+                    <goals>
+                        <goal>add-source</goal>
+                        <goal>compile</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>com.github.koraktor</groupId>
+            <artifactId>mavanagaiata</artifactId>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-checkstyle-plugin</artifactId>
+        </plugin>
                 <plugin>
                     <artifactId>exec-maven-plugin</artifactId>
                     <groupId>org.codehaus.mojo</groupId>
                     <version>1.2.1</version>
                     <executions>
-                        <execution>
+  <!--                      &lt;!&ndash;<execution>
                             <id>sbt-compile</id>
                             <phase>compile</phase>
                             <goals>
@@ -416,7 +442,7 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <!-- for modules without scala -->
+                            &lt;!&ndash; for modules without scala &ndash;&gt;
                             <id>sbt-test</id>
                             <phase>test</phase>
                             <goals>
@@ -442,11 +468,12 @@
                                     <argument>assembly</argument>
                                 </arguments>
                             </configuration>
-                        </execution>
+                        </execution>&ndash;&gt;
 			
 			<execution>
 				<id>zip-rest-server</id>
 				<phase>package</phase>
+
 				<goals>
 					<goal>exec</goal>
 				</goals>
@@ -475,7 +502,7 @@
 						<argument>${env.BUILD_NUMBER}</argument>
 						 <argument>-v</argument>
                                                 <argument>${pkg.version}</argument>
-						<argument>--tar</argument>
+						<argument>-tar</argument>
 						<argument>${basedir}/package/intelanalytics-rest-server-source.tar.gz</argument>
 					</arguments>
 				</configuration>
@@ -513,11 +540,11 @@
                                                 <argument>${env.BUILD_NUMBER}</argument>
 						 <argument>-v</argument>
                                                 <argument>${pkg.version}</argument>
-                                                <argument>--tar</argument>
+                                                <argument>-tar</argument>
                                                 <argument>${basedir}/package/intelanalytics-python-rest-client-source.tar.gz</argument>
                                         </arguments>
                                 </configuration>
-                        </execution>
+                        </execution>-->
 			
 
                     </executions>
@@ -611,13 +638,14 @@
     </dependency>
     </dependencies>
   </dependencyManagement>
-  <modules>
+    <modules>
       <!-- commented until we can figure out how to run without invoking sbt on them
     <module>imahout</module>
-    <module>igiraph</module> 
+    <module>igiraph</module>
     <module>imllib</module>
     -->
     <!--module>IntelAnalytics-web</module-->
-    <module>ititan</module>
-  </modules>
+        <module>ititan</module>
+        <module>package</module>
+</modules>
 </project>
