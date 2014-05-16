@@ -64,7 +64,14 @@ class EventData {
         this.data = data == null ? new HashMap<String, String>() : data;
         this.markers = markers == null ? new String[0] : markers;
         this.messageCode = messageCode;
-        this.message = MessageFormat.format(message, substitutions);
+        String formatted;
+        try {
+            formatted = MessageFormat.format(message, substitutions);
+        } catch (Exception e) {
+            formatted = message;
+            this.data.put("eventdata_formatting_exception", e.getMessage());
+        }
+        this.message = formatted;
         this.substitutions = substitutions;
     }
 

@@ -66,7 +66,7 @@ public class TitanVertexFormatLongLongInLongLongOutTest
         giraphConf.setAggregatorWriterClass(ConnectedComponentsComputation.
             ConnectedComponentsAggregatorWriter.class);
         giraphConf.setOutEdgesClass(ByteArrayEdges.class);
-        giraphConf.setCombinerClass(MinimumLongCombiner.class);
+        giraphConf.setMessageCombinerClass(MinimumLongCombiner.class);
         giraphConf.setVertexInputFormatClass(TitanHBaseVertexInputFormatLongLongNull.class);
         giraphConf.setVertexOutputFormatClass(TitanVertexOutputFormatLongIDLongValue.class);
 
