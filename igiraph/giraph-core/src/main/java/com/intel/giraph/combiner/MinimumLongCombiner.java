@@ -23,13 +23,13 @@
 
 package com.intel.giraph.combiner;
 
-import org.apache.giraph.combiner.Combiner;
+import org.apache.giraph.combiner.MessageCombiner;
 import org.apache.hadoop.io.LongWritable;
 
 /**
  * Combiner which finds the minimum of {@link LongWritable}.
  */
-public class MinimumLongCombiner extends Combiner<LongWritable, LongWritable> {
+public class MinimumLongCombiner extends MessageCombiner<LongWritable, LongWritable> {
     @Override
     public void combine(LongWritable vertexIndex, LongWritable originalMessage,
         LongWritable messageToCombine) {

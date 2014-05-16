@@ -43,7 +43,7 @@ class ParserRDDFunctions(self: RDD[Seq[_]]) {
    * @param vertexParser the parser to use
    */
   def parseVertices(vertexParser: Parser[Vertex]): RDD[Vertex] = {
-    self.flatMap(row => vertexParser.parse(row))
+    new VertexParserRDD(self, vertexParser)
   }
 
   /**

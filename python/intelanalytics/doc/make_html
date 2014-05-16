@@ -1,0 +1,46 @@
+# The primary purpose of this script file is to allow the Sphinx-Build program
+# to build in python 2.7 on a RedHat distribution of Linux. RedHat needs
+# version 2.6 to run properly, so we create a virtual environment with
+# python 2.7 in the PYTHONPATH when we create the documents.
+
+if [[ -f /usr/lib/IntelAnalytics/virtpy/bin/activate ]]; then
+    ACTIVATE_FILE=/usr/lib/IntelAnalytics/virtpy/bin/activate
+else
+    ACTIVATE_FILE=/usr/local/virtpy/bin/activate
+fi
+
+if [[ ! -f $ACTIVATE_FILE ]]; then
+    echo "Virtual Environment is not installed please execute install_pyenv.sh to install."
+    exit 1
+fi
+
+source $ACTIVATE_FILE
+
+# if the individual running this script is a techwriter and has started the script with 
+# the key word 'packages', check that the packages have been installed.
+if [ -f techwriters ]
+then
+    HUMAN=$( pwd | grep -c --file=techwriters)
+    if [ $HUMAN -gt 0 ]
+    then
+        COMPILE=$( echo $1 | grep -ic "packages" )
+        if [ $COMPILE -gt 0 ]; then
+            clear
+            # We need to check the installed packages and insure they are complete.
+            # The packages need superuser rights to install properly.
+            sudo ./install_packages
+        fi
+    fi
+fi
+
+# Delete previously automatically built files
+if [[ -d build ]]; then
+    rm -R build
+fi
+
+# Build fresh API docs
+#delete_apidocs
+#sphinx-apidoc --force -o source/ ../../. ../doc/ ../tests/
+
+# We assume we are running from the doc directory. Ignore all toctree warnings.
+make -B html 2>&1 | grep -v -f toctreeWarnings
