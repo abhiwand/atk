@@ -189,7 +189,7 @@ class SparkComponent extends EngineComponent
                 val schema = realFrame.schema
                 val converter = DataTypes.parseMany(schema.columns.map(_._2).toArray)(_)
                 val ctx = context(user)
-                SparkOps.loadLines(ctx.sparkContext, fsRoot + "/" + arguments.source, location, arguments, parserFunction, converter)
+                SparkOps.loadLines(ctx.sparkContext, arguments.source, location, arguments, parserFunction, converter)
               }
               commands.lookup(command.id).get
             }
@@ -480,10 +480,17 @@ class SparkComponent extends EngineComponent
       hadoopConfig.set("fs.file.impl",
         classOf[LocalFileSystem].getName)
       require(hadoopConfig.getClassByNameOrNull(classOf[LocalFileSystem].getName) != null)
+
+      if (conf.getString("intel.analytics.fs.mode") equals "distributed") {
+        hadoopConfig.set("fs.defaultFS", conf.getString("intel.analytics.fs.root"))
+      }
+
       hadoopConfig
     }
 
     val fs = FileSystem.get(configuration)
+
+    println("file system class:" + fs.getClass.toString)
 
     override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
