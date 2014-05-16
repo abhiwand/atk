@@ -11,9 +11,9 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   introduction
-   adminOverview
-   dataSciOverview
+   intro
+   ad_over
+   ds_over
 
 References
 ----------

@@ -4,5 +4,5 @@ Python API
 ..  toctree::
     :maxdepth: 1
 
-    dataSciAPIOverview
-    dataSciAPIClasses
+    ds_apio
+    ds_apic
