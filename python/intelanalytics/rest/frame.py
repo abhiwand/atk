@@ -111,18 +111,18 @@ class FrameBackendRest(object):
                 self.append(frame, d)
             return
 
-        # TODO - put the frame uri in the frame, as received from create response
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
-        # TODO - abstraction for payload construction
-        payload = {'name': 'dataframe/load',
-                   'arguments': {'source': data.file_name,
-                                 'destination': frame_uri,
-                                 'lineParser': { 'operation': { 'name':'builtin/line/separator' },
-                                                 'arguments': { 'separator': data.delimiter,
-                                                                'skipRows': data.skip_header_lines}}}}
+        # TODO - base the lineParser arguments on the data source, hardcoded to builtin CSV
+        line_parser = {'operation': {'name': 'builtin/line/separator'},
+                       'arguments': {'separator': data.delimiter,
+                                     'skipRows': data.skip_header_lines}}
+        from intelanalytics.rest.command import Command, executor
+        command = Command(name="dataframe/load",
+                          arguments={'source': data.file_name,
+                                     'destination': frame.uri,
+                                     'lineParser': line_parser})
 
-        r = rest_http.post('commands', payload)
-        logger.info("Response from REST server {0}".format(r.text))
+        response = executor.issue_command(command)
+        logger.info("Response from REST server {0}".format(response.text))
 
         if isinstance(data, CsvFile):
             # update the Python object (set the columns)
