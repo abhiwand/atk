@@ -442,7 +442,7 @@
                             </configuration>
                         </execution>
                         <execution>
-                            &lt;!&ndash; for modules without scala &ndash;&gt;
+
                             <id>sbt-test</id>
                             <phase>test</phase>
                             <goals>
@@ -468,7 +468,7 @@
                                     <argument>assembly</argument>
                                 </arguments>
                             </configuration>
-                        </execution>&ndash;&gt;
+                        </execution>
 			
 			<execution>
 				<id>zip-rest-server</id>
