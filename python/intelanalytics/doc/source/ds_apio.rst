@@ -1,24 +1,27 @@
 ..  role:: strikeraw
-
+    
 ..  role:: strike
-
+        
 ===================
 Python API Overview
 ===================
 
 >>> from intelanalytics import *
 
+\ 
+\ 
 Data Types
 ==========
 
 The following data types are supported:
 
->>> supported_types
-bool, bytearray, dict, float32, float64, int32, int64, list, str, string
+>>> supported_types:
+    bool, bytearray, dict, float32, float64, int32, int64, list, str, string
 
 where ``str`` is ASCII per Python, ``string`` is UTF-8
 
-
+ 
+ 
 Data Sources
 ============
 
@@ -47,20 +50,22 @@ of the file, which may be header:
                    delimiter='|',
                    skip_header_lines==2)
 
-
 2. JSON Files
 -------------
 
 >>> json1 = JsonFile("json_records.json") # schema TBD
-
-
-
+ 
+ 
+ 
+ 
 BigFrame
 ========
 
 A BigFrame is a table structure of rows and columns, capable of holding many,
 many, ..., many rows.
 
+ 
+ 
 1. Create
 ---------
 
@@ -76,6 +81,8 @@ will merge with those of the new data sources.
 >>> # frame f will get more rows and a new column 'c'
 >>> f.append(CsvFile("bonus_abc_data.txt", [('a', int32), ('b', string), ('c', string)]))
 
+ 
+ 
 2. Inspect
 ----------
 
@@ -84,7 +91,8 @@ will merge with those of the new data sources.
 >>> f.inspect(5)            # pretty-print first 5 rows
 >>> f.take(10, offset=200)  # retrieve a list of 10 rows, starting at row 200
 
-
+ 
+ 
 3. Clean
 --------
 
@@ -100,7 +108,7 @@ advised to make a copy of the frame before cleaning.
 
 >>> # drop all rows where any column is empty
 >>> f2 = BigFrame(f)
->>> f2.drop(lambda row: row.is_empty(any))
+>>> f2.drop(lambda row: row.is_emptyany))
 
 >>> # Other examples of row.is_empty
 >>> f2.drop(lambda row: row.is_empty('a'))              # single column
@@ -129,6 +137,8 @@ See :doc:`rowfunc`
 >>> f.drop_duplicates(['a', 'b'])  # only columns 'a' and 'b' considered for uniqueness
 >>> f.drop_duplicates()            # all columns considered for uniqueness
 
+ 
+ 
 Fill Cells
 ~~~~~~~~~~
 
@@ -144,7 +154,8 @@ Fill Cells
 ...     return cell
 >>> f['a'].fill(filler)
 
-
+ 
+ 
 Copy Columns
 ~~~~~~~~~~~~
 
@@ -152,12 +163,16 @@ Copy Columns
 
 A list of columns can be specified using a list to index the frame.
 
+ 
+ 
 Remove Columns
 ~~~~~~~~~~~~~~
 
 >>> f2.remove_column('b')
 >>> f2.remove_column(['a', 'c'])
 
+ 
+ 
 Rename Columns
 ~~~~~~~~~~~~~~
 
@@ -165,6 +180,8 @@ Rename Columns
 >>> f.rename_column(b='author', c='publisher')
 >>> f.rename_column({'col-with-dashes': 'no_dashes'})
 
+ 
+ 
 Cast Columns
 ~~~~~~~~~~~~
 
@@ -172,7 +189,8 @@ Cast Columns
 
 >>> f['a'].cast(int32)
 
-
+ 
+ 
 4. Engineer
 -----------
 
@@ -207,8 +225,8 @@ to return a tuple of cell values for the new frame columns
 
 >>> f.add_columns(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))  # adds 2 columns
 
-
-
+ 
+ 
 Map
 ~~~
 
@@ -220,8 +238,9 @@ the results go to a new frame instead of being added to the current frame.
 >>> f3 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), ('a_abs', 'b_abs'))
 >>> f4 = f1.map_many(lambda row: (abs(row.a), abs(row.b)), (('a_abs', float32), ('b_abs', float32)))
 
-*Better name than ``map_many``?
-
+Note: Better name than ``map_many``?
+ 
+ 
 Reduce
 ~~~~~~
 
@@ -233,7 +252,8 @@ reducer has two parameters, the *accumulator* value and the row or cell *update*
 >>> f['a'].reduce(lambda acc, cell_upd: acc + cell_upd)
 
 There are also a bunch of built-in reducers:  count, sum, avg, stdev, etc.
-
+ 
+ 
 Groupby (and Aggregate)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -248,7 +268,8 @@ Aggregation on individual columns:
 
 The name of the new columns are implied.  The previous example would a new
 BigFrame with 7 columns:
-  ``"a", "b", "c_avg", "c_sum", "c_stdev", "d_avg", "d_sum"``
+
+\   ``"a", "b", "c_avg", "c_sum", "c_stdev", "d_avg", "d_sum"``
 
 
 Aggregation based on full row:
@@ -270,15 +291,16 @@ Produces a frame with 3 columns: ``"a", "b", "my_row_lambda_col"``
 Mixed-combo:   (a little much? this is pretty much exactly what GraphLab is supporting,
 except I'm adding custom reducers)
 >>> f.groupby(['a', 'b'],
-              stats,
-              ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
-              { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
-                'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
+>>>           stats,
+>>>           ReducerByRow('my_row_lambda_col', lambda acc, row_upd: acc + row_upd.c - row_upd.d))
+>>>           { 'c': ReducerByCell('c_fuzz', lambda acc, cell_upd: acc * cell_upd / 2),
+>>>             'd': ReducerByCell('d_fuzz', lambda acc, cell_upd: acc * cell_upd / 3.14)})
 
 Produces a frame with several columns:
 ``"a", "b", "c_avg", "c_stdev", "c_ ..., "d_avg", "d_stdev", "d_ ..., "my_row_lambda_col", "c_fuzz", "d_fuzz"``
 
-
+ 
+ 
 Join
 ~~~~
 
@@ -296,13 +318,5 @@ Pandas does this (only difference is ``on`` vs. ``left_on``, ``right_on``)
 Or could try something like this, making the join implicit with the "on" tuples, and adding "select"
 >> f7 = f1.join([f2, f3], on=(f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
 >> f8 = join((f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
-
-
-Misc Notes
-==========
-
-. uh, this was a thought once --something about not cancelling the job on an
-error, but just marking row/cell as None and reporting
-``raise FillNone("col value out of range")``
 map or whatever will catch this, log it, add to a count in the report, and fill
 the entry with a None

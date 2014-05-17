@@ -34,10 +34,10 @@ import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.util.Base64;
+import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
+import org.apache.hadoop.hbase.protobuf.generated.ClientProtos;
 import org.apache.log4j.Logger;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.concurrent.locks.Lock;
@@ -104,7 +104,7 @@ public class GiraphTitanUtils {
         if (tableName.equals("")) {
             throw new IllegalArgumentException(CONFIG_TITAN + "table name" + CONFIG_PREFIX +
                 GIRAPH_TITAN_STORAGE_TABLENAME.getKey() + NO_VERTEX_READ);
-        } else {
+        }/* else {
             try {
                 HBaseConfiguration config = new HBaseConfiguration();
                 HBaseAdmin hbaseAdmin = new HBaseAdmin(config);
@@ -120,7 +120,7 @@ public class GiraphTitanUtils {
             } catch (IOException e) {
                 throw new IllegalArgumentException(FAILED_CONNECT_HBASE_TABLE + tableName);
             }
-        }
+        }*/
 
 
         if (GIRAPH_TITAN_STORAGE_PORT.isDefaultValue(conf)) {
@@ -204,10 +204,8 @@ public class GiraphTitanUtils {
      * @throws IOException When writing the scan fails.
      */
     public static String convertScanToString(Scan scan) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        DataOutputStream dos = new DataOutputStream(out);
-        scan.write(dos);
-        return Base64.encodeBytes(out.toByteArray());
+        ClientProtos.Scan proto = ProtobufUtil.toScan(scan);
+        return Base64.encodeBytes(proto.toByteArray());
     }
 
 
