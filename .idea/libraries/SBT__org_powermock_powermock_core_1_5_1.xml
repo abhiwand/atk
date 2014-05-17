@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="SBT: org.powermock:powermock-core:1.5.1">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.powermock/powermock-core/jars/powermock-core-1.5.1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.powermock/powermock-core/docs/powermock-core-1.5.1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.powermock/powermock-core/srcs/powermock-core-1.5.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

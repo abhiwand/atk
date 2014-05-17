@@ -23,6 +23,7 @@
 
 package com.intel.event;
 
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -162,6 +163,10 @@ public class Event {
     private JSONArray toJsonArray(Object[] array) {
         JSONArray jsonArray = new JSONArray();
         for (Object anArray : array) {
+            if (anArray instanceof Throwable){
+                jsonArray.add(ExceptionUtils.getStackTrace((Throwable) anArray));
+
+            }
             //noinspection unchecked
             jsonArray.add(String.valueOf(anArray));
         }
