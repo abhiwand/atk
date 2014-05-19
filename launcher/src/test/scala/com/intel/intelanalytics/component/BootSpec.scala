@@ -8,7 +8,8 @@ class BootSpec extends FlatSpec with Matchers {
 
     val url: URL = new URL("http://localhost/path/engine-spark.jar")
     val f = (s: String) => {
-      Array(new URL("http://localhost/path/classes"), url)}
+      Array(new URL("http://localhost/path/classes"), url)
+    }
 
     Boot.getJar("engine-spark", f) shouldEqual url
   }
