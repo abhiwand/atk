@@ -49,7 +49,6 @@ class SparkContextFactory {
       .setAppName(appName)
       .setJars(Seq(jarPath.get.getPath))
 
-    println("path:" + jarPath.get.getPath)
     new SparkContext(sparkConf)
   }
 }
