@@ -65,6 +65,11 @@ object Boot extends App {
     loaders.getOrElse(archive, buildClassLoader(archive, interfaces))
   }
 
+  /**
+   * Return the jar file location for the specified archive
+   * @param archive archive to search
+   * @param f function for searching code paths that contain the archive
+   */
   def getJar(archive: String, f: String => Array[URL] = getCodePathUrls): URL = {
     val codePaths = f(archive)
     val jarPath = codePaths.filter(u => u.getPath.endsWith(".jar")).headOption
@@ -74,6 +79,11 @@ object Boot extends App {
     }
   }
 
+  /**
+   * Search the paths to class folder or jar files for the specified archive
+   * @param archive archive to search
+   * @return Array of URLs to the found class folder and jar files
+   */
   def getCodePathUrls(archive: String): Array[URL] = {
     val classDirectory: Path = Directory.Current.get / archive / "target" / "scala-2.10" / "classes"
     val developmentJar: Path = Directory.Current.get / archive / "target" / "scala-2.10" / (archive + ".jar")
