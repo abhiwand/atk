@@ -65,6 +65,15 @@ object Boot extends App {
     loaders.getOrElse(archive, buildClassLoader(archive, interfaces))
   }
 
+  def getJar(archive: String, f: String => Array[URL] = getCodePathUrls): URL = {
+    val codePaths = f(archive)
+    val jarPath = codePaths.filter(u => u.getPath.endsWith(".jar")).headOption
+    jarPath match {
+      case None => throw new Exception(s"Could not find jar file for $archive")
+      case _ => jarPath.get
+    }
+  }
+
   def getCodePathUrls(archive: String): Array[URL] = {
     val classDirectory: Path = Directory.Current.get / archive / "target" / "scala-2.10" / "classes"
     val developmentJar: Path = Directory.Current.get / archive / "target" / "scala-2.10" / (archive + ".jar")
