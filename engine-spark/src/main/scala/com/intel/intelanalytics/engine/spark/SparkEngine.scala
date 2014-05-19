@@ -490,8 +490,6 @@ class SparkComponent extends EngineComponent
 
     val fs = FileSystem.get(configuration)
 
-    println("file system class:" + fs.getClass.toString)
-
     override def write(sink: File, append: Boolean): OutputStream = withContext("file.write") {
       val path: HPath = new HPath(fsRoot + sink.path.toString)
       if (append) {
