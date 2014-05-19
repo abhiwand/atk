@@ -6,6 +6,9 @@ from intelanalytics.rest.connection import rest_http
 import logging
 logger = logging.getLogger(__name__)
 
+import time
+import json
+
 
 class Command(object):
 
@@ -18,6 +21,16 @@ class Command(object):
         self.complete = False
         self.links = []
 
+    def __repr__(self):
+        json.dumps(self.get_payload)
+
+    def __str__(self):
+        return 'commands/%s "%s"' % (self.id, self.name)
+
+    @property
+    def uri(self):
+        return self.links[0]['uri']
+
     def get_payload(self):
         return dict(self.__dict__)
 
@@ -26,10 +39,19 @@ class Command(object):
             self.id = payload['id']
         elif self.id != payload['id']:
             raise ValueError("Received a different command id from server?")
+        self.links = payload['links']
         self.complete = payload['complete']
 
 
-import time
+class BlockingCommand(Command):
+
+    def __init__(self, name, arguments):
+        super(BlockingCommand, self).__init__(name, arguments)
+
+    def update(self, payload):
+        super(BlockingCommand, self).update(payload)
+        if not self.complete:
+            self.complete = Polling().poll(self)
 
 
 class Polling(object):
@@ -49,15 +71,16 @@ class Polling(object):
             if self._get_completion_status(command):
                 return True
             if wait_time > timeout_secs:
-                msg = "Polling timeout for command %s after ~%d seconds" \
-                      % (command.name, wait_time)
+                msg = "Polling timeout for %s after ~%d seconds" \
+                      % (str(command), wait_time)
                 logger.error(msg)
                 raise RuntimeError(msg)
             interval_secs *= backoff_factor
 
     @staticmethod
     def _get_completion_status(command):
-        response = rest_http.get(command.uri)
+        logger.info("Polling completion status for " + str(command))
+        response = rest_http.get_full_uri(command.uri)
         return response.json()['complete']
 
 
@@ -79,9 +102,11 @@ class Executor(object):
             self.cancel_command(command)
 
     def _enqueue_command(self, command):
+        logger.debug("Executor enqueueing " + str(command))
         self.queue.append(command)
 
     def _dequeue_command(self, command):
+        logger.debug("Executor dequeueing " + str(command))
         self.queue.remove(command)
 
     def cancel_command(self, command):

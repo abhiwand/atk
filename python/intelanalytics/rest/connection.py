@@ -127,6 +127,9 @@ class HttpMethods(object):
 
     def get(self, uri_path):
         uri = self._get_uri(uri_path)
+        return self.get_full_uri(uri)
+
+    def get_full_uri(self, uri):
         if logger.level <= logging.INFO:
             logger.info("[HTTP Get] %s", uri)
         r = requests.get(uri, headers=self.connection.headers)
@@ -137,6 +140,9 @@ class HttpMethods(object):
 
     def delete(self, uri_path):
         uri = self._get_uri(uri_path)
+        self.delete_full_uri(uri)
+
+    def delete_full_uri(self, uri):
         logger.info("[HTTP Delete] %s", uri)
         r = requests.delete(uri, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
@@ -145,8 +151,11 @@ class HttpMethods(object):
         return r
 
     def post(self, uri_path, payload):
-        data = json.dumps(payload)
         uri = self._get_uri(uri_path)
+        return self.post_full_uri(uri, payload)
+
+    def post_full_uri(self, uri, payload):
+        data = json.dumps(payload)
         if logger.level <= logging.INFO:
             pretty_data = json.dumps(payload, indent=2)
             logger.info("[HTTP Post] %s\n%s", uri, pretty_data)
