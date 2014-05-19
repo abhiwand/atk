@@ -40,14 +40,13 @@ class SparkContextFactory {
     val sparkHome = configuration.getString("intel.analytics.spark.home")
     val sparkMaster = configuration.getString("intel.analytics.spark.master")
 
-    val codePaths = Boot.getCodePathUrls("engine-spark")
-    val jarPath = codePaths.filter(u => u.getPath.endsWith(".jar")).headOption
+    val jarPath = Boot.getJar("engine-spark")
 
     val sparkConf = new SparkConf()
       .setMaster(sparkMaster)
       .setSparkHome(sparkHome)
       .setAppName(appName)
-      .setJars(Seq(jarPath.get.getPath))
+      .setJars(Seq(jarPath.getPath))
 
     new SparkContext(sparkConf)
   }
