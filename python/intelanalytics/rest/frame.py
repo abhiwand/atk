@@ -115,11 +115,11 @@ class FrameBackendRest(object):
         line_parser = {'operation': {'name': 'builtin/line/separator'},
                        'arguments': {'separator': data.delimiter,
                                      'skipRows': data.skip_header_lines}}
-        from intelanalytics.rest.command import Command, executor
-        command = Command(name="dataframe/load",
-                          arguments={'source': data.file_name,
-                                     'destination': frame.uri,
-                                     'lineParser': line_parser})
+        from intelanalytics.rest.command import BlockingCommand, executor
+        command = BlockingCommand(name="dataframe/load",
+                                  arguments={'source': data.file_name,
+                                             'destination': frame.uri,
+                                             'lineParser': line_parser})
 
         response = executor.issue_command(command)
         logger.info("Response from REST server {0}".format(response.text))
