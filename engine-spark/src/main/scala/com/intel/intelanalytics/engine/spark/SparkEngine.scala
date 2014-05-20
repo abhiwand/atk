@@ -95,6 +95,9 @@ import org.apache.commons.configuration.BaseConfiguration
 import com.tinkerpop.blueprints.{ Direction, Vertex }
 import com.thinkaurelius.titan.graphdb.query.TitanPredicate
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
+import org.apache.hadoop.hbase.HBaseConfiguration
+import org.apache.hadoop.hbase.client.HBaseAdmin
+import com.intel.intelanalytics.engine.spark.graph.{SparkGraphStorage, SparkGraphHBaseBackend}
 
 //TODO documentation
 //TODO progress notification
@@ -105,6 +108,7 @@ class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
     with FileComponent
+    with GraphComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
@@ -1016,68 +1020,8 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
 
   }
 
-  val graphs = new SparkGraphStorage {}
 
-  trait SparkGraphStorage extends GraphStorage {
-
-    val graphBase = "/intelanalytics/dataframes"
-
-    //temporary
-    var graphId = new AtomicLong(1)
-
-    def nextGraphId() = {
-      //Just a temporary implementation, only appropriate for scaffolding.
-      graphId.getAndIncrement
-    }
-
-    import spray.json._
-
-    import com.intel.intelanalytics.domain.DomainJsonProtocol._
-
-    //
-    // we can't actually use graph builder right now without breaking the build
-    // import com.intel.graphbuilder.driver.spark.titan.examples
-
-    override def drop(graph: Graph): Unit = {
-      println("DROPPING GRAPH: " + graph.name)
-      Unit
-    }
-
-    override def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph = {
-
-      println("CREATING GRAPH " + graph.graphName)
-
-      val id = nextGraphId()
-
-      val dataFrame = frames.lookup(graph.dataFrameId)
-      val gbConfigFactory = new GraphBuilderConfigFactory(dataFrame.get.schema, graph)
-
-      val graphBuilder = new GraphBuilder(gbConfigFactory.graphConfig)
-
-      val ctx = engine.context
-
-      // Setup data in Spark
-      // val inputRows = ctx.sparkContext.textFile(ExamplesUtils.movieDataset, System.getProperty("PARTITIONS", "120").toInt)
-      val inputRowsRdd: RDD[Rows.Row] = frames.getFrameRdd(engine.context.sparkContext, graph.dataFrameId)
-
-      val inputRdd: RDD[Seq[_]] = inputRowsRdd.map(x => x.toSeq)
-
-      graphBuilder.build(inputRdd)
-
-      new Graph(id, graph.graphName)
-    }
-
-    override def lookup(id: Long): Option[Graph] = {
-      println("HERE'S YOUR STINKING GRAPH " + id)
-      None
-    }
-
-    def getGraphs(offset: Int, count: Int): Seq[Graph] = {
-      println("LISTING " + count + " GRAPHS FROM " + offset)
-      List[Graph]()
-    }
-
-  }
+  val graphs = new SparkGraphStorage(engine.context, new SparkGraphHBaseBackend(), frames)
 
 }
 

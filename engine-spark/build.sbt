@@ -10,6 +10,7 @@ resolvers ++= Seq(
   //"gao-mirror" at "http://gaomaven.jf.intel.com:8081/nexus/content/groups/public"
 )
 
+
 //Set the dependencies with := instead of appending with ++= since we don't want the
 //default ones from the parent for this module.
 libraryDependencies := {
