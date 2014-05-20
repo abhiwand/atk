@@ -20,21 +20,3 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-
-package com.intel.intelanalytics.repository
-
-import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, DataFrame, User, UserTemplate, Command }
-
-trait MetaStoreComponent {
-  val metaStore: MetaStore
-
-  trait MetaStore {
-    type Session
-    def withSession[T](name: String)(f: Session => T): T
-    def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-    def commandRepo: Repository[Session, CommandTemplate, Command]
-    def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-    def create(): Unit
-  }
-}
-

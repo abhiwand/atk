@@ -29,12 +29,12 @@
     <artifactId>package</artifactId>
     <name>package</name>
 
-    <parent>
+<!--    <parent>
         <groupId>com.intel.hadoop</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>0.8-SNAPSHOT</version>
-    </parent>
+    </parent>-->
     <profiles>
         <profile>
             <id>package</id>

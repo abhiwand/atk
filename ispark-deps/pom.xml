@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>ispark-deps</artifactId>
+    <version>0.1</version>
+    <groupId>com.intel</groupId>
+
+    <parent>
+        <groupId>com.intel</groupId>
+        <artifactId>IntelAnalytics</artifactId>
+        <relativePath>../pom.xml</relativePath>
+        <version>0.8.0-SNAPSHOT</version>
+    </parent>
+
+
+    <build>
+
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-library</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.hbase</groupId>
+            <artifactId>hbase-protocol</artifactId>
+            <version>0.96.1.1-cdh5.0.0</version>
+        </dependency>
+    </dependencies>
+</project>
