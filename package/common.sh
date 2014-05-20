@@ -94,7 +94,11 @@ function debControl()
 	fi
 	echo "Description: $SUMMARY"
 	echo -e " $DESCRIPTION"
-	echo  $gitLog
+	#IFS="\n"
+	#for $line in $gitLog
+	#do
+ 	#echo  " $line"
+	#done
 }
 
 function debCopyright()
@@ -112,7 +116,7 @@ function debCopyright()
 
 function debChangeLog()
 {
-	dch --create -M -v $version --package $packageName "Initial release. (Closes: #XXXXXX)"
+	dch --create -M -v $version --package $packageName "Initial release. Closes: #XXXXXX"
 }
 
 #not much explanation is given for this file with a magical number for the time being it's  defaulted to 9
