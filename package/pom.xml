@@ -40,7 +40,7 @@
             <id>package</id>
             <activation>
                 <property>
-                    <name>${env.BUILD_NUMBER}</name>
+                    <name>env.BUILD_NUMBER</name>
                 </property>
             </activation>
             <build>
@@ -61,7 +61,7 @@
                                     <arguments>
                                         <argument>-R</argument>
                                         <argument>+x</argument>
-                                        <argument>${basedir}/../package</argument>
+                                        <argument>${basedir}</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -75,7 +75,7 @@
                                     <executable>bash</executable>
                                     <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
-                                        <argument>package/package-rest-server.sh</argument>
+                                        <argument>package-rest-server.sh</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -87,7 +87,7 @@
                                 </goals>
                                 <configuration>
                                     <executable>bash</executable>
-                                    <workingDirectory>${basedir}/package</workingDirectory>
+                                    <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
                                         <argument>package.sh</argument>
                                         <argument>-p</argument>
@@ -97,7 +97,7 @@
                                         <argument>-v</argument>
                                         <argument>${pkg.version}</argument>
                                         <argument>--tar</argument>
-                                        <argument>${basedir}/package/intelanalytics-rest-server-source.tar.gz</argument>
+                                        <argument>${basedir}/intelanalytics-rest-server-source.tar.gz</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -112,7 +112,7 @@
                                     <executable>bash</executable>
                                     <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
-                                        <argument>package/package-python-rest-client.sh</argument>
+                                        <argument>package-python-rest-client.sh</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -125,7 +125,7 @@
                                 </goals>
                                 <configuration>
                                     <executable>bash</executable>
-                                    <workingDirectory>${basedir}/package</workingDirectory>
+                                    <workingDirectory>${basedir}</workingDirectory>
                                     <arguments>
                                         <argument>package.sh</argument>
                                         <argument>-p</argument>
@@ -135,7 +135,7 @@
                                         <argument>-v</argument>
                                         <argument>${pkg.version}</argument>
                                         <argument>--tar</argument>
-                                        <argument>${basedir}/package/intelanalytics-python-rest-client-source.tar.gz</argument>
+                                        <argument>${basedir}/intelanalytics-python-rest-client-source.tar.gz</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
