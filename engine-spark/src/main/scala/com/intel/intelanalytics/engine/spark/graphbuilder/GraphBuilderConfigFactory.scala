@@ -1,6 +1,6 @@
 package com.intel.intelanalytics.engine.spark.graphbuilder
 
-import com.intel.intelanalytics.domain.{ Schema, GraphTemplate }
+import com.intel.intelanalytics.domain.{ Schema, GraphTemplate, DataTypes }
 import com.intel.graphbuilder.driver.spark.titan.GraphBuilderConfig
 import com.intel.intelanalytics.domain.graphconstruction._
 import com.intel.graphbuilder.util.SerializableBaseConfiguration
@@ -26,7 +26,7 @@ class GraphBuilderConfigFactory(val schema: Schema, val graphTemplate: GraphTemp
     val columns = new ListBuffer[ColumnDef]()
 
     for ((string, dataType) <- schema.columns) {
-      val column = new ColumnDef(string, dataType.getClass)
+      val column = new ColumnDef(string, dataType.scalaType)
       columns += column
     }
 

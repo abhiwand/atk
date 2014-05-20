@@ -89,13 +89,6 @@ trait FrameComponent {
     def drop(frame: DataFrame)
   }
 
-  trait GraphStorage {
-    def lookup(id: Long): Option[Graph]
-    def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
-    def drop(graph: Graph)
-
-  }
-
   //  trait ViewStorage {
   //    def viewOfFrame(frame: Frame): View
   //    def create(view: View): Unit
@@ -130,6 +123,9 @@ trait FileComponent {
     def write(sink: File, append: Boolean = false): OutputStream
   }
 }
+
+
+
 
 trait EngineComponent {
 
@@ -180,5 +176,30 @@ trait CommandComponent {
     def start(id: Long): Unit
     def complete(id: Long, result: Try[Unit]): Unit
   }
+
+}
+
+
+// THE CAKE IS A LIE!!!
+
+abstract class GraphBackendStorage () {
+
+  def deleteTable(name : String)
+  def listTables(): Seq[String]
+
+}
+
+abstract class GraphStorage(val backendStorage : GraphBackendStorage, val frameStorage : FrameComponent#FrameStorage) {
+
+  def lookup(id: Long): Option[Graph]
+  def createGraph(graph: GraphTemplate)(implicit user: UserPrincipal): Graph
+  def drop(graph: Graph)
+  def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal) : Seq[Graph]
+
+}
+
+trait GraphComponent {
+
+  val graphStorage : GraphStorage
 
 }
