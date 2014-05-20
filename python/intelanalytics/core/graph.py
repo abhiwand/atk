@@ -21,22 +21,6 @@
 # must be express and approved by Intel in writing.
 ##############################################################################
 f, f2 = {}, {}
-"""
-BigGraph object
-
-Examples
---------
->>> movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
-
->>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
-
->>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight':f['score'}])
-
->>> oscars_vertex_prop = VertexRule('movie', f2['film'], {'oscars': f2['oscars']})
-
->>> g = BigGraph([user_vertex, movie_vertex, rating_edge, oscars_vertex_prop])
-
-"""
 
 import logging
 logger = logging.getLogger(__name__)
@@ -52,25 +36,76 @@ def _get_backend():
 
 
 def get_graph_names():
-    """Gets the names of BigGraph objects available for retrieval"""
-    # TODO - Add docstring
+    """
+    Gets the names of BigGraph objects available for retrieval
+    
+    Returns
+    -------
+    list of string
+        A list comprised of the graph names
+        
+    Examples
+    --------
+    >>> If we have these BigGraph objects defined: movies, incomes, virus
+    >>> Georgina = get_graph_names()
+    >>> Georgina is now ["incomes", "movies", "virus"]
+    
+    """
+    # TODO - Review docstring
     return _get_backend().get_graph_names()
 
 
 def get_graph(name):
-    """Retrieves the named BigGraph object"""
-    # TODO - Add docstring
+    """
+    Retrieves the named BigGraph object
+    
+    Parameters
+    ----------
+    name : string
+        The name of the BigGraph object you are obtaining
+        
+    Returns
+    -------
+    BigGraph object
+    
+    Examples
+    --------
+    >>> If we have these BigGraph objects defined: movies, incomes, virus
+    >>> Vicki = get_graph("virus")
+    >>> Vicki is now a BigGraph object
+        
+    """
+    # TODO - Review docstring
     return _get_backend().get_graph(name)
 
 
 def delete_graph(name):
-    """Deletes the graph from backing store"""
-    # TODO - Add docstring
+    """
+    Deletes the graph from backing store
+    
+    Parameters
+    ----------
+    name : string
+        The name of the BigGraph object you are erasing
+        
+    Returns
+    -------
+    string
+        The name of the BigGraph object you erased
+    
+    Examples
+    --------
+    >>> If we have these BigGraph objects defined: movies, incomes, virus
+    >>> David = delete_graph("incomes")
+    >>> David is now a string with the value "incomes"
+    
+    """
+    # TODO - Review docstring
     return _get_backend().delete_graph(name)
 
 
 class RuleWithDifferentFramesError(ValueError):
-    # TODO - Add docstring
+    # TODO - Add docstring if this is really a user-desired function
     def __init__(self):
         ValueError.__init__(self, "Rule contains columns from different frames")
 
@@ -88,12 +123,41 @@ class Rule(object):
 
     # Must be overridden:
     def validate(self):
-        # TODO - Add docstring
         raise NotImplementedError
 
     @staticmethod
     def validate_source(source, frame):
-        # TODO - Add docstring
+        """
+        Checks that source is a BigColumn or a string. If it is neither, it raises an error.
+        If the frame is None, it is assigned the frame from the source.
+        If the frame is named and it differs from the source.frame, it raises an error.
+        
+        Parameters
+        ----------
+        source :
+            D
+        frame : string
+            D
+        
+        Returns
+        -------
+        
+        Raises
+        ------
+        RuleWithDifferentFramesError()
+        TypeError
+        
+        Returns
+        -------
+        string
+            The name of the frame
+            
+        Examples
+        --------
+        >>>
+        
+        """
+        # TODO - Add examples
         if isinstance(source, BigColumn):
             if frame is None:
                 frame = source.frame
@@ -139,7 +203,7 @@ class VertexRule(Rule):
 
     Parameters
     ----------
-    id_key: str
+    id_key: string
         static string or pulled from BigColumn source; the key for the
         uniquely identifying property for the vertex.
     id_value: BigColumn source
@@ -153,6 +217,7 @@ class VertexRule(Rule):
     --------
     >>> movie_vertex = VertexRule('movie', f['movie'], {'genre': f['genre']})
     >>> user_vertex = VertexRule('user', f['user'], {'age': f['age_1']})
+    
     """
     def __init__(self, id_key, id_value, properties=None):
         self.id_key = id_key
@@ -201,6 +266,7 @@ class EdgeRule(Rule):
     Examples
     --------
     >>> rating_edge = EdgeRule('rating', movie_vertex, user_vertex, {'weight': f['score']})
+    
     """
     def __init__(self, label, tail, head, properties=None, is_directed=False):
         self.label = label
@@ -261,12 +327,42 @@ class BigGraph(object):
 
     @property
     def name(self):
-        # TODO - Add docstring
+        """
+        Get the name of the current ojbect.
+        
+        Returns
+        -------
+        string
+            The name of the current object.
+            
+        Examples
+        --------
+        >>> Barney = BigGraph( , "Barney")
+        >>> Betty = Barney.name
+        >>> Betty is now a string with the value "Barney"
+        
+        """
+        # TODO - Review Docstring
         return self._name
 
     @name.setter
     def name(self, value):
-        # TODO - Add docstring
+        """
+        Set the name of the current ojbect.
+        
+        Parameters
+        ----------
+        value : string
+            The name for the current object.
+            
+        Examples
+        --------
+        >>> Wilma = BigGraph()
+        >>> Wilma.name("Wilma")
+        >>> Wilma.name() now returns a string with the value "Wilma"
+        
+        """
+        # TODO - Review Docstring
         self._backend.set_name(value)
 
     def _get_new_graph_name(self):
