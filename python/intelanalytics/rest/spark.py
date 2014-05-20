@@ -36,7 +36,7 @@ import sys
 if spark_python not in sys.path:
     sys.path.append(spark_python)
 
-from pyspark.serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
+from serializers import PickleSerializer, BatchedSerializer, UTF8Deserializer, CloudPickleSerializer, write_int
 
 from intelanalytics.core.row import Row
 
