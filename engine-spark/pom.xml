@@ -59,7 +59,16 @@
         </dependency>
         <!--END BDA dependencies to our modules-->
 
-
+	<dependency>
+	    <groupId>org.apache.hadoop</groupId>
+	    <artifactId>hadoop-common</artifactId>
+	    <version>2.3.0-cdh5.0.0</version>
+        </dependency>
+	<dependency>
+		<groupId>org.apache.hadoop</groupId>
+		<artifactId>hadoop-core</artifactId>
+		<version>2.3.0-mr1-cdh5.0.0</version>
+	</dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
@@ -91,7 +100,7 @@
                 </exclusion>
             </exclusions>-->
         </dependency>
-        <dependency>
+<!--        <dependency>
             <groupId>com.jsuereth</groupId>
             <artifactId>scala-arm_2.10</artifactId>
             <version>1.3</version>
@@ -102,12 +111,12 @@
             <version>2.3.10</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
+-->
+        <!--<dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
             <version>2.3.0-cdh5.0.0</version>
-            <!--<exclusions>
+           <exclusions>
                 <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
@@ -116,13 +125,14 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
-            </exclusions>-->
+            </exclusions>
         </dependency>
-        <dependency>
+-->
+        <!--<dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>2.3.0-cdh5.0.0</version>
-            <!--<exclusions>
+            <exclusions>
                 <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
@@ -131,13 +141,13 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
-            </exclusions>-->
-        </dependency>
+            </exclusions>
+        </dependency>-->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
             <version>2.3.0-cdh5.0.0</version>
-            <!--<exclusions>
+            <exclusions>
                 <exclusion>
                     <groupId>asm</groupId>
                     <artifactId>asm</artifactId>
@@ -146,7 +156,7 @@
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
-            </exclusions>-->
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
