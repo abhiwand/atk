@@ -16,6 +16,12 @@
 
     <build>
         <plugins>
+            <!--<plugin>
+                &lt;!&ndash;run specs test from maven&ndash;&gt;
+                <inherited>false</inherited>
+                <groupId>com.mmakowski</groupId>
+                <artifactId>maven-specs2-plugin</artifactId>
+            </plugin>-->
         </plugins>
     </build>
     <dependencies>

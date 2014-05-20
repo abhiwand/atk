@@ -27,14 +27,15 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>igiraph-core</artifactId>
-  <packaging>jar</packaging>
+  <groupId>com.intel.hadoop</groupId>
   <name>IntelAnalytics iGiraph Core</name>
+  <packaging>jar</packaging>
 
   <parent>
   	<groupId>com.intel.hadoop</groupId>
   	<artifactId>IntelAnalytics-igiraph</artifactId>
   	<relativePath>../pom.xml</relativePath>  
-  	<version>0.8-SNAPSHOT</version>
+  	<version>0.8.0-SNAPSHOT</version>
   </parent>
   <dependencies>
       <dependency>
@@ -63,12 +64,11 @@
             <version>${dep.hadoop2.version}</version>
         </dependency>
 
-
-    <dependency>
-        <groupId>${project.groupId}</groupId>
-        <artifactId>imahout</artifactId>
-        <version>${project.version}</version>
-    </dependency>
+      <dependency>
+          <groupId>com.intel</groupId>
+          <artifactId>imahout</artifactId>
+          <version>${project.version}</version>
+      </dependency>
     <dependency>
         <groupId>org.apache.hbase</groupId>
         <artifactId>hbase-common</artifactId>
