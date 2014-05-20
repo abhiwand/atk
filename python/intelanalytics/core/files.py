@@ -31,29 +31,28 @@ class DataFile(object):
 
 
 class CsvFile(DataFile):
-
     """
     Creates object which defines a CSV file.
 
     Parameters
     ----------
-    file_name : str
+    file_name : string
         name of file
-    schema : list of tuples of the form (str, type)
+    schema : list of tuples of the form (string, type)
         schema description of the fields for a given line.  It is a list of
         tuples which describe each field, (field name, field type), where
         the field name is a string, and file is a supported type
         (See supported_types from the types module)
         The type 'ignore' may also be used if the field should be ignored
         on loads
-    delimiter : str
-        string indicator the delimiter for the fields, comma char is the default
-    skip_header_lines : int, optional
+    delimiter : string
+        string indicator of the delimiter for the fields, the comma character is the default
+    skip_header_lines : int32, optional
         indicates numbers of lines to skip before parsing records
 
     Raises
     ------
-    # TODO - Add errors
+    ValueError
 
     Examples
     --------
@@ -62,7 +61,9 @@ class CsvFile(DataFile):
     >>> csv2 = CsvFile("other_data.txt", [('X', float32), ('', ignore), ('Y', int64)])
     >>> f = BigFrame(csv2)
     >>> csv2 = JsonFile("other_data.json", [('X', 'path/to/x', float32), ('', ignore), ('Y', int64)])
+    
     """
+    # TODO - Review docstring
     annotation = "csv_file"
 
     def __init__(self, file_name, schema, delimiter=',', skip_header_lines=0):
@@ -85,42 +86,38 @@ class CsvFile(DataFile):
         return repr(self.fields)
 
     def as_json_obj(self):
-
         """
         Breaks up it's information into workable variables.
 
         Returns
         -------
         list
-            str - Type of the file
-            str - File name
-            obj - JSON schema
-            chr - Delimiter
-            int - Number of header lines to skip
+            string - Type of the file
+            string - File name
+            dictionary - JSON schema
+            string - Delimiter
+            int32 - Number of header lines to skip
         
-        Notes
-        -----
-        
-
         Examples
         --------
-        # TODO - Need examples
-        >>>
+        >>> Chester = CsvFile("my.dat", my_schema, ",", 10)
+        >>> Dorothy = Chester.as_json_obj()
+        >>> Dorothy is now ["csv_file", "Chester", "my_schema", ",", 10]
+        
         """
-
+        # TODO - Review Docstring
+ 
         return ["csv_file", self.file_name, self._schema_to_json(), self.delimiter, self.skip_header_lines]
 
     @classmethod
     def from_json_obj(cls, obj):
-
         """
         Converts this object to a CSV file per a JSON schema.
 
         Parameters
         ----------
         obj : list
-            First item in the list should be a string "csv_file"
-            The third item in the list should be the JSON schema
+            This should match the return value from as_json_obj() function
         
         Returns
         -------
@@ -128,9 +125,12 @@ class CsvFile(DataFile):
 
         Examples
         --------
-        # TODO - Verify/correct above info and add examples
-        >>>
+        >>> raw data file is raw.data, json_schema file is schema.json
+        >>> April = CsvFile.from_json_obj(["csv_file", raw.data, schema.json])
+        >>> April is now data in the csv format
+        
         """
+        # TODO - Review docstring
         assert("csv_file" == obj[0])
         obj = obj[1:]
         obj[1] = CsvFile._schema_from_json(obj[1])
@@ -156,14 +156,17 @@ class CsvFile(DataFile):
         
         Returns
         -------
-        list of str
+        list of string
             Field names
         
         Examples
         --------
-        # TODO - Add examples
-        >>>
+        >>> Jesse = CsvFile.from_json_obj(["csv_file", raw.data, schema.json])
+        >>> James = Jesse.field_names()
+        >>> James now is a list of strings like [ "Column_1", "Column_2", "This_column"]
+        
         """
+        # TODO - Review docstring
         return [x[0] for x in self.fields]
 
     @property
@@ -178,24 +181,35 @@ class CsvFile(DataFile):
         
         Examples
         --------
-        # TODO - Add examples
-        >>>
+        >>> Morgana = CsvFile.from_json_obj(["csv_file", raw.data, schema.json])
+        >>> Merlin = Morgana.field_types()
+        >>> Merlin now is a list of data types like [ string, int32, float64]
+        
         """
+        # TODO - Review docstring
         return [x[1] for x in self.fields]
 
     def to_ordered_dict(self):
         """
         Creates an ordered dictionary representing the schema fields and types.
 
+        Returns
+        -------
+        Dictionary
+            Ordered pairs of field names and field types
+            
         Raises
         ------
-        # TODO Add raises descriptions
+        ValueError
 
         Examples
         --------
-        # TODO - Add examples
-        >>>
+        >>> for this example Charlie is a csv file with the fields "col1" and "col2" of types int64 and string respectively
+        >>> Webster = Charlie.to_ordered_dict
+        >>> Webster is [("col1" : int64), ("col2" : string)]
+        
         """
+        # TODO - Review docstring
         d = OrderedDict()
         for field in self.fields:
             d[field[0]] = field[1]
@@ -220,29 +234,31 @@ class CsvFile(DataFile):
 
     @staticmethod
     def parse_legacy_schema_string(schema_string):
-
         """
-        # TODO - description of what this function does.
+        Converts the deprecated schema string format to the new dictionary format
 
         Parameters
         ----------
-        schema_string : str
-            # TODO - description of parameter
+        schema_string : string
+            Old string format
 
         Returns
         -------
-        list
-            # TODO - describe return
+        dictionary
+            The new schema format
 
         Raises
         -------
-        ?
+        DeprecationWarning
         
         Examples
         --------
-        # TODO - add examples
-        >>>
+        >>> Sandy is an old format string equal to "dog:string,cat:string,frog:int32"
+        >>> Patsy = CsvFiles.parse_legacy_schema_string( Sandy )
+        >>> Patsy is now [("dog" : string), ("cat" : string), ("frog" : int32)]
+        
         """
+        # TODO - Review docstring
         fields = []
         pairs = ("".join(schema_string.split())).split(',')
         for pair in pairs:
@@ -253,23 +269,25 @@ class CsvFile(DataFile):
 
 
 class JsonFile(DataFile):
-
     """
     Creates object which defines a JSON file.
 
     Parameters
     ----------
-    file_name : str
+    file_name : string
         name of file
     
     Raises
     ------
+    ValueError
     
     Examples
     --------
-    >>>
-    # TODO - Errors and Examples
+    >>> Jason = JsonFile( data.json )
+    >>> Jason is now a JsonFile object
+    
     """
+    # TODO - Review docstring
     annotation = "json_file"
 
     def __init__(self, file_name):
@@ -279,7 +297,6 @@ class JsonFile(DataFile):
 
 
 class XmlFile(DataFile):
-
     """
     Creates object which defines a XML file.
 
@@ -292,13 +309,15 @@ class XmlFile(DataFile):
 
     Raises
     ------
+    ValueError
 
     Examples
     --------
-    >>>
-    # TODO - Errors and Examples
-
+    >>> Xavier = XmlFile( data.xml, tags_names.dat )
+    >>> Xavier is now an XmlFile object
+    
     """
+    # TODO - Review docstring
     annotation = "xml_file"
 
     def __init__(self, file_name, tag_name=None):
