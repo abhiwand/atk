@@ -73,8 +73,7 @@ import com.intel.intelanalytics.shared.EventLogging
 //TODO documentation
 //TODO progress notification
 //TODO event notification
-//TODO pass current user info
-class SparkComponent extends EngineComponent
+class SparkComponent(configuration: SparkEngineConfiguration = new SparkEngineConfiguration()) extends EngineComponent
     with FrameComponent
     with CommandComponent
     with FileComponent
@@ -83,25 +82,15 @@ class SparkComponent extends EngineComponent
     with EventLogging {
 
   val engine = new SparkEngine {}
-  lazy val conf = ConfigFactory.load()
-  lazy val sparkHome = conf.getString("intel.analytics.spark.home")
-  lazy val sparkMaster = conf.getString("intel.analytics.spark.master")
-  lazy val defaultTimeout = conf.getInt("intel.analytics.engine.defaultTimeout").seconds
-  lazy val connectionString = conf.getString("intel.analytics.metastore.connection.url") match {
-    case "" | null => throw new Exception("No metastore connection url specified in configuration")
-    case u => u
-  }
-  lazy val driver = conf.getString("intel.analytics.metastore.connection.driver") match {
-    case "" | null => throw new Exception("No metastore driver specified in configuration")
-    case d => d
-  }
 
   //TODO: choose database profile driver class from config
   override lazy val profile = withContext("engine connecting to metastore") {
-    new Profile(H2Driver, connectionString = connectionString, driver = driver)
+    new Profile(H2Driver, connectionString = configuration.connectionString, driver = configuration.driver)
   }
 
-  val sparkContextManager = new SparkContextManager(conf, new SparkContextFactory)
+  lazy val fsRoot = configuration.fsRoot
+
+  val sparkContextManager = new SparkContextManager(configuration.config, new SparkContextFactory)
 
   //TODO: only create if the datatabase doesn't already exist. So far this is in-memory only,
   //but when we want to use postgresql or mysql or something, we won't usually be creating tables here.
@@ -466,8 +455,6 @@ class SparkComponent extends EngineComponent
   }
 
   val files = new HdfsFileStorage {}
-
-  val fsRoot = conf.getString("intel.analytics.fs.root")
 
   trait HdfsFileStorage extends FileStorage with EventLogging {
 
