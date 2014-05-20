@@ -5,6 +5,7 @@
 //import spray.http._
 //import StatusCodes._
 //import com.intel.intelanalytics.v1.viewmodels.DataFrameHeader
+//import com.intel.intelanalytics.service.ApiService
 //
 //class ApiServiceSpec extends Specification with Specs2RouteTest with ApiService {
 //  def actorRefFactory = system

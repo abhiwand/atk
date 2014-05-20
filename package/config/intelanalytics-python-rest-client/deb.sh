@@ -38,17 +38,22 @@ log "create reles file"
 debRules > $SCRIPTPATH/$debDir/debian/rules
 chmod +x $SCRIPTPATH/$debDir/debian/rules
 
+echo "$SCRIPTPATH/$debDir"
 pushd $SCRIPTPATH/$debDir
 
 rm -rf debian/intelanalytics
+
+log "create change log "
+rm debian/changelog
+debChangeLog
 
 log "clean debian/source dir"
 rm -rf debian/source
 mkdir debian/source ; echo '3.0 (quilt)' > debian/source/format ; dch 'Switch to dpkg-source 3.0 (quilt) format'
 
-log "create change log "
-rm debian/changelog
-debChangeLog
+#log "create change log "
+#rm debian/changelog
+#debChangeLog
 
 log "build deb package"
 debuild -us -uc --source-option=--include-binaries --source-option=-isession
