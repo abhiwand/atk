@@ -18,17 +18,12 @@
     <build>
 
     </build>
-    <dependencies>
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-library</artifactId>
-            <version>${scala.version}</version>
-        </dependency>
 
+    <dependencies>
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-protocol</artifactId>
-            <version>0.96.1.1-cdh5.0.0</version>
+            <version>${dep.hbase.version}</version>
         </dependency>
     </dependencies>
 </project>

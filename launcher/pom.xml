@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-protocol</artifactId>
-            <version>0.96.1.1-cdh5.0.0</version>
+            <version>${dep.hbase.version}</version>
         </dependency>
     </dependencies>
 </project>

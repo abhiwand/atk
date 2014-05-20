@@ -15,11 +15,10 @@
     </parent>
 
     <dependencies>
-
         <dependency>
             <groupId>io.spray</groupId>
             <artifactId>spray-json_2.10</artifactId>
-            <version>1.2.5</version>
+            <version>${dep.spray-json_2.10}</version>
         </dependency>
     </dependencies>
 
