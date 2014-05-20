@@ -7,39 +7,19 @@
     <version>0.8.0-SNAPSHOT</version>
     <groupId>com.intel</groupId>
 
-  <parent>
+    <parent>
         <groupId>com.intel</groupId>
         <artifactId>IntelAnalytics</artifactId>
         <relativePath>../pom.xml</relativePath>
         <version>0.8.0-SNAPSHOT</version>
-  </parent>
+    </parent>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>3.1.6</version>
-                <executions>
-                    <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
 
-                </executions>
-                <configuration>
-                    <sourceDir>src/main/scala</sourceDir>
-                    <scalaVersion>2.10.3</scalaVersion>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <dependencies>
-
 
         <!--START BDA dependencies to our modules-->
         <dependency>
@@ -59,21 +39,11 @@
         </dependency>
         <!--END BDA dependencies to our modules-->
 
-	<dependency>
-	    <groupId>org.apache.hadoop</groupId>
-	    <artifactId>hadoop-common</artifactId>
-	    <version>2.3.0-cdh5.0.0</version>
-        </dependency>
-	<dependency>
-		<groupId>org.apache.hadoop</groupId>
-		<artifactId>hadoop-core</artifactId>
-		<version>2.3.0-mr1-cdh5.0.0</version>
-	</dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
             <version>0.9.1</version>
-            <!--<exclusions>
+            <exclusions>
                 <exclusion>
                     <groupId>org.mortbay.jetty</groupId>
                     <artifactId>servlet-api</artifactId>
@@ -98,9 +68,9 @@
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
-            </exclusions>-->
+            </exclusions>
         </dependency>
-<!--        <dependency>
+        <dependency>
             <groupId>com.jsuereth</groupId>
             <artifactId>scala-arm_2.10</artifactId>
             <version>1.3</version>
@@ -111,27 +81,10 @@
             <version>2.3.10</version>
             <scope>test</scope>
         </dependency>
--->
-        <!--<dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>2.3.0-cdh5.0.0</version>
-           <exclusions>
-                <exclusion>
-                    <groupId>asm</groupId>
-                    <artifactId>asm</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
--->
-        <!--<dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-            <version>2.3.0-cdh5.0.0</version>
+            <version>${dep.hadoop2.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>asm</groupId>
@@ -142,11 +95,16 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>-->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>${dep.hadoop.core.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
-            <version>2.3.0-cdh5.0.0</version>
+            <version>${dep.hadoop2.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>asm</groupId>
