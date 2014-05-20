@@ -39,11 +39,11 @@
   </parent>
 
   <dependencies>
-      <dependency>
+      <!--<dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
           <version>${dep.hadoop2.version}</version>
-      </dependency>
+      </dependency>-->
       <dependency>
           <groupId>commons-net</groupId>
           <artifactId>commons-net</artifactId>
