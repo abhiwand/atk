@@ -22,6 +22,7 @@ PROVIDES=$PACKAGE_NAME
 RELEASE=$BUILD_NUMBER
 SOURCE="$PACKAGE_NAME-$VERSION.tar.gz"
 
+gitLog=$(git log -n 1)
 
 function log()
 {
@@ -92,7 +93,12 @@ function debControl()
 		echo "Recommends: $RECOMMENDS"
 	fi
 	echo "Description: $SUMMARY"
-	echo " $DESCRIPTION"
+	echo -e " $DESCRIPTION"
+	#IFS="\n"
+	#for $line in $gitLog
+	#do
+ 	#echo  " $line"
+	#done
 }
 
 function debCopyright()
@@ -110,7 +116,7 @@ function debCopyright()
 
 function debChangeLog()
 {
-	dch --create -M -v $version --package $packageName "Initial release. (Closes: #XXXXXX)"
+	dch --create -M -v $version --package $packageName "Initial release. Closes: #XXXXXX"
 }
 
 #not much explanation is given for this file with a magical number for the time being it's  defaulted to 9
@@ -169,7 +175,8 @@ if [ ! -z "$URL" ]; then
 	echo "URL: $URL"
 fi
 echo "%description"
-echo $DESCRIPTION
+echo -e $DESCRIPTION
+echo $gitLog
 echo "%define TIMESTAMP %(echo $TIMESTAMP)"
 echo "%define TAR_FILE %(echo $TAR_FILE)"
 echo "%build"

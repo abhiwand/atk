@@ -101,7 +101,7 @@ public class ConnectedComponentsComputationTest {
         giraphConf.setAggregatorWriterClass(ConnectedComponentsComputation.
             ConnectedComponentsAggregatorWriter.class);
         giraphConf.setOutEdgesClass(ByteArrayEdges.class);
-        giraphConf.setCombinerClass(MinimumLongCombiner.class);
+        giraphConf.setMessageCombinerClass(MinimumLongCombiner.class);
         giraphConf.setVertexInputFormatClass(LongLongNullTextInputFormat.class);
         giraphConf.setVertexOutputFormatClass(IdWithValueTextOutputFormat.class);
     }

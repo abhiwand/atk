@@ -16,8 +16,12 @@ log "copy and rename: $tarFile"
 mkdir -p $SCRIPTPATH/rpm/SOURCES
 cp $tarFile $SCRIPTPATH/rpm/SOURCES/${packageName}-${version}.tar.gz
 
+LICENSE="Confidential"
 SUMMARY="$packageName-$version Build number: $BUILD_NUMBER. TimeStamp $TIMESTAMP"
-DESCRIPTION=$SUMMARY
+DESCRIPTION="$SUMMARY 
+start the server with 'service intelanalytics-rest-server status' 
+config files are in /etc/intelanalytics/rest-server
+log files live in /var/log/intelanalytics/rest-server"
 
 REQUIRES=" java >= 1.7"
 
