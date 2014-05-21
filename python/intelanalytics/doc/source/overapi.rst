@@ -283,16 +283,115 @@ Join
 
 ``join`` produces a new BigFrame
 
-Legacy Tribeca does this:
->> f4 = f1.join([f2, f3], left_on='a', right_on=['a', 'x'], how='left')
+Legacy Tribeca does this:  (which is pretty much the way pandas does it.  NB: GraphLab's website says "Coming soon" for SFrame joins):
+>>> joined_frame = frame1.join(frame2, left_on='a', right_on='a', how='left')
 
-Pandas does this (only difference is ``on`` vs. ``left_on``, ``right_on``)
->> f5 = f1.join(f2, on='a', how='left')
->> f6 = f1.join(f2, on=['a', 'b'], how='left')
+It also supports lists for the "right" side to join several tables in one "shot".  In legacy this amounted to multiple calls to JOIN in the same PIG job.
+>>> joined_frame = frame1.join([frame2, frame3], left_on='a', right_on=['a', 'b'], how=['left', 'left'])
+
+
+We could add...
+
+1. Custom join conditions
+>>> joined_frame = frame1.join(frame2, on=lambda f1_row, f2_row: f1_row['rating'] >= f2['rating'] and f1_row['movie'] == f2_row['film'], how='left')
+
+2. Explicit select
+>>> joined_frame = frame1.join(frame2, on=lambda f1_row, f2_row: f1_row['rating'] >= f2['rating'] and f1_row['movie'] == f2_row['film'], how='left', select=[frame1['movie'], frame1['rating'], frame2['oscars']])
+
+3. Other?
+
+
+
+BTW, Legacy reference:  (NB: last 2 parameters not needed)
+
+def join(self,
+         right=None,
+         how='left',
+         left_on=None,
+         right_on=None,
+         suffixes=None,
+         join_frame_name='',
+         overwrite=False):
+
+        """
+        Perform SQL JOIN on BigDataFrame
+
+        Syntax is similar to pandas DataFrame.join.
+
+        Parameters
+        ----------
+        right   : BigDataFrame or list/tuple of BigDataFrame
+            Frames to be joined with
+        how     : Str
+            {'left', 'right', 'outer', 'inner'}, default 'inner'
+        left_on : Str
+            Columns selected to bed joined on from left frame
+        right_on : Str or list/tuple of Str
+            Columns selected to bed joined on from right frame(s)
+        suffixes : tuple of Str
+            Suffixes to apply to columns on the output frame
+        join_frame_name : Str
+            The name of the BigDataFrame that holds the result of join
+        overwrite : Boolean
+            True will overwrite the output table if it already exists
+
+        Returns
+        -------
+        joined : BigDataFrame
+        """
+
+
+>>> f4 = f1.join([f2, f3], left_on='a', right_on=['a', 'x'], how=['left', 'left'])
+
+
+#Pandas does this (only difference is ``on`` vs. ``left_on``, ``right_on``)
+#>>> f5 = f1.join(f2, on='a', how='left')
+#>>> f6 = f1.join(f2, on=['a', 'b'], how='left')
 
 Or could try something like this, making the join implicit with the "on" tuples, and adding "select"
 >> f7 = f1.join([f2, f3], on=(f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
->> f8 = join((f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
+#>>> f8 = join((f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
+
+
+f1.join([f2, f3], on=lambda f1, f2, f3: f1['a'] == f2['b'] and f1['a'] > f3[x],
+
+
+   def join(self,
+             right=None,
+             how='left',
+             left_on=None,
+             right_on=None,
+             suffixes=None,
+             join_frame_name='',
+             overwrite=False):
+
+        """
+        Perform SQL JOIN on BigDataFrame
+
+        Syntax is similar to pandas DataFrame.join.
+
+        Parameters
+        ----------
+        right   : BigDataFrame or list/tuple of BigDataFrame
+            Frames to be joined with
+        how     : Str
+            {'left', 'right', 'outer', 'inner'}, default 'inner'
+        left_on : Str
+            Columns selected to bed joined on from left frame
+        right_on : Str or list/tuple of Str
+            Columns selected to bed joined on from right frame(s)
+        suffixes : tuple of Str
+            Suffixes to apply to columns on the output frame
+        join_frame_name : Str
+            The name of the BigDataFrame that holds the result of join
+        overwrite : Boolean
+            True will overwrite the output table if it already exists
+
+        Returns
+        -------
+        joined : BigDataFrame
+        """
+
 
 
 Flatten

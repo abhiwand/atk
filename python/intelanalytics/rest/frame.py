@@ -106,9 +106,9 @@ class FrameBackendRest(object):
         raise Exception('Unable to find uri for frame')
 
     def append(self, frame, data):
-        logger.info("REST Backend: Appending data to frame {0}: {1}".format(frame.name, repr(data)))
+        logger.info("REST Backend: append data to frame {0}: {1}".format(frame.name, repr(data)))
         # for now, many data sources requires many calls to append
-        if isinstance(data, list):
+        if isinstance(data, list) or isinstance(data, tuple):
             for d in data:
                 self.append(frame, d)
             return
@@ -116,7 +116,6 @@ class FrameBackendRest(object):
         arguments = self._get_load_arguments(frame, data)
         command = CommandRequest(name="dataframe/load", arguments=arguments)
         command_info = executor.issue(command)
-        logger.info("Response from REST server {0}".format(repr(command_info)))
 
         if isinstance(data, CsvFile):
             # update the Python object (set the columns)
