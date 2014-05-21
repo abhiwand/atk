@@ -112,8 +112,11 @@ html_use_modindex = False
 #        return False
 #    return skip
 #
-#def setup(app):
+def setup(app):
 #    app.connect("autodoc-skip-member", skip)
+    app.add_config_value('internal_docs', '', True)
+
+internal_docs = False
 
 # -- Options for HTML output ----------------------------------------------
 
