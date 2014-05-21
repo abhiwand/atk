@@ -508,7 +508,7 @@
                                 </arguments>
                             </configuration>
                         </execution>
-			
+			<!--
 			<execution>
 				<id>zip-rest-server</id>
 				<phase>package</phase>
@@ -584,7 +584,7 @@
                                         </arguments>
                                 </configuration>
                         </execution>
-			
+			-->
 
                     </executions>
                 </plugin>
@@ -827,6 +827,6 @@
     -->
     <!--module>IntelAnalytics-web</module-->
         <module>ititan</module>
-        <!--<module>package</module>-->
+        <module>package</module>
 </modules>
 </project>
