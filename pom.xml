@@ -85,8 +85,6 @@
 
         <dep.hadoop2.version>2.3.0-cdh5.0.0</dep.hadoop2.version>
         <dep.hadoop.core.version>2.3.0-mr1-cdh5.0.0</dep.hadoop.core.version>
-        <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
-        <dep.giraph-hbase.version>1.1.0-SNAPSHOT-20140317</dep.giraph-hbase.version>
         <dep.guava.version>12.0</dep.guava.version>
         <dep.hcatalog.version>0.5.0-incubating</dep.hcatalog.version>
         <dep.hive.version>0.11.0</dep.hive.version>
@@ -104,6 +102,12 @@
         <dep.zookeeper.version>3.3.3</dep.zookeeper.version>
         <dep.pig.version>0.12.0-cdh5.0.0</dep.pig.version>
         <dep.org.apache.spark>0.9.0-cdh5.0.0</dep.org.apache.spark>
+
+        <!--START GAO MAVEN -->
+        <!-- these dependencies are from gaomaven.jf.intel.com -->
+        <dep.giraph-core.version>1.1.0-20131121.141951-1</dep.giraph-core.version>
+        <dep.giraph-hbase.version>1.1.0-20131121.142121-1</dep.giraph-hbase.version>
+        <!--END GAO MAVEN -->
 
         <dep.scala.version>2.10.3</dep.scala.version>
         <dep.akka.version>2.3.2</dep.akka.version>
@@ -293,7 +297,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <!--<plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>2.9</version>
@@ -332,8 +336,8 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>-->
-                <!--<plugin>
+                </plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.3</version>
@@ -399,9 +403,9 @@
                             </plugin>
                         </reportPlugins>
                     </configuration>
-                </plugin>-->
+                </plugin>
 
-                <!--<plugin>
+                <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>findbugs-maven-plugin</artifactId>
                     <version>2.5.2</version>
@@ -418,8 +422,8 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>-->
-                <!--<plugin>
+                </plugin>
+                <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>munge-maven-plugin</artifactId>
                     <version>1.0</version>
@@ -435,7 +439,7 @@
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>-->
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -460,15 +464,14 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
             </plugin>
-            <!--<plugin>
+            <plugin>
                 <groupId>com.github.koraktor</groupId>
                 <artifactId>mavanagaiata</artifactId>
-            </plugin>-->
-            <!--
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>-->
+            </plugin>
             <!--<plugin>
                 <artifactId>exec-maven-plugin</artifactId>
                 <groupId>org.codehaus.mojo</groupId>
@@ -828,6 +831,16 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
+        </repository>
+        <repository>
+            <id>gaomaven</id>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 </project>
