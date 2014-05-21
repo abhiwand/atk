@@ -31,7 +31,8 @@ from collections import defaultdict, OrderedDict
 from intelanalytics.core.column import BigColumn
 from intelanalytics.core.files import CsvFile
 from intelanalytics.core.types import *
-from intelanalytics.rest.connection import rest_http
+from intelanalytics.rest.connection import http
+from intelanalytics.rest.command import CommandRequest, executor
 from intelanalytics.rest.spark import RowWrapper, pickle_function
 
 
@@ -59,7 +60,7 @@ class FrameBackendRest(object):
     """REST plumbing for BigFrame"""
 
     def __init__(self, http_methods=None):
-        self.rest_http = http_methods or rest_http
+        self.rest_http = http_methods or http
         # use global connection, auth, etc.  This client does not support
         # multiple connection contexts
 
@@ -82,10 +83,10 @@ class FrameBackendRest(object):
         logger.info("REST Backend: create frame: " + frame.name)
         # hack, steal schema early if possible...
         columns = [[n, supported_types.get_type_string(t)]
-                  for n, t in frame.schema.items()]
+                   for n, t in frame.schema.items()]
         if not len(columns):
             try:
-                if isinstance(frame._original_source,CsvFile):
+                if isinstance(frame._original_source, CsvFile):
                     columns = frame._original_source._schema_to_json()
             except:
                 pass
@@ -96,7 +97,8 @@ class FrameBackendRest(object):
         frame._id = payload['id']
         frame._uri = "%s/%d" % (self._get_uri(payload), frame._id)
 
-    def _get_uri(self, payload):
+    @staticmethod
+    def _get_uri(payload):
         links = payload['links']
         for link in links:
             if link['rel'] == 'self':
@@ -111,18 +113,10 @@ class FrameBackendRest(object):
                 self.append(frame, d)
             return
 
-        # TODO - base the lineParser arguments on the data source, hardcoded to builtin CSV
-        line_parser = {'operation': {'name': 'builtin/line/separator'},
-                       'arguments': {'separator': data.delimiter,
-                                     'skipRows': data.skip_header_lines}}
-        from intelanalytics.rest.command import BlockingCommand, executor
-        command = BlockingCommand(name="dataframe/load",
-                                  arguments={'source': data.file_name,
-                                             'destination': frame.uri,
-                                             'lineParser': line_parser})
-
-        response = executor.issue_command(command)
-        logger.info("Response from REST server {0}".format(response.text))
+        arguments = self._get_load_arguments(frame, data)
+        command = CommandRequest(name="dataframe/load", arguments=arguments)
+        command_info = executor.issue(command)
+        logger.info("Response from REST server {0}".format(repr(command_info)))
 
         if isinstance(data, CsvFile):
             # update the Python object (set the columns)
@@ -133,6 +127,16 @@ class FrameBackendRest(object):
         else:
             raise TypeError("Unsupported append data type "
                             + data.__class__.__name__)
+
+    @staticmethod
+    def _get_load_arguments(frame, data):
+        if isinstance(data, CsvFile):
+            return {'source': data.file_name,
+                    'destination': frame.uri,
+                    'lineParser': {'operation': {'name': 'builtin/line/separator'},
+                                   'arguments': {'separator': data.delimiter,
+                                                 'skipRows': data.skip_header_lines}}}
+        raise TypeError("Unsupported data source " + type(data).__name__)
 
     @staticmethod
     def _accept_column(frame, column):
@@ -149,26 +153,26 @@ class FrameBackendRest(object):
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
         # TODO - put the frame uri in the frame, as received from create response
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
         # TODO - abstraction for payload construction
         payload = {'name': 'dataframe/filter',
                    'arguments': {'frame': frame_uri,
                                  'predicate': http_ready_predicate}}
-        r = rest_http.post('commands', payload)
+        r = http.post('commands', payload)
         return r
 
     def remove_column(self, frame, name):
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
         # TODO - abstraction for payload construction
         columns = ",".join(name) if isinstance(name, list) else name
         payload = {'name': 'dataframe/removecolumn',
                    'arguments': {'frame': frame_uri,
                                  'column': columns}}
-        r = rest_http.post('commands', payload)
+        r = http.post('commands', payload)
         return r
 
     def add_column(self, frame, expression, name, type):
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
 
         def addColumnLambda(row):
             row.data.append(unicode(supported_types.cast(expression(row),type)))
@@ -183,14 +187,14 @@ class FrameBackendRest(object):
         http_ready_predicate = encode_bytes_for_http(pickled_predicate)
 
         # TODO - put the frame uri in the frame, as received from create response
-        frame_uri = "%sdataframes/%d" % (rest_http.base_uri, frame._id)
+        frame_uri = "%sdataframes/%d" % (http.base_uri, frame._id)
         # TODO - abstraction for payload construction
         payload = {'name': 'dataframe/addcolumn',
                    'arguments': {'frame': frame_uri,
                                  'columnname': name,
                                  'columntype': supported_types.get_type_string(type),
                                  'expression': http_ready_predicate}}
-        r = rest_http.post('commands', payload)
+        r = http.post('commands', payload)
 
         # todo - this info should come back from the engine
         self._accept_column(frame, BigColumn(name, type))
