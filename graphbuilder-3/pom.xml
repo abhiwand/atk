@@ -17,19 +17,47 @@
 
 
     <build>
+
+        <!--<sourceDirectory>src/main</sourceDirectory>-->
+        <!--<sourceDirectory>src/main/scala</sourceDirectory>-->
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
-            <plugin>
-                <!--run specs test from maven-->
+            <!--<plugin>
+                &lt;!&ndash;&lt;!&ndash;run specs test from maven&ndash;&gt;&ndash;&gt;
                 <inherited>false</inherited>
                 <groupId>com.mmakowski</groupId>
                 <artifactId>maven-specs2-plugin</artifactId>
-            </plugin>
-
-
+                <version>0.4.2</version>
+            </plugin>-->
+            <!--<plugin>
+                <groupId>org.scoverage</groupId>
+                <artifactId>maven-scoverage-plugin</artifactId>
+                <version>${scoverage-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>install</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
+            <!--<plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>-->
         </plugins>
     </build>
     <dependencies>
-
+        <!--<dependency>
+            <groupId>org.scoverage</groupId>
+            <artifactId>scalac-scoverage-plugin_${scala.short}</artifactId>
+            <version>${scoverage-plugin.version}</version>
+        </dependency>-->
 
         <!--START BDA dependencies to our modules-->
         <dependency>
