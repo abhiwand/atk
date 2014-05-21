@@ -380,31 +380,7 @@ class BigFrame(object):
         self._backend.add_column(self, func, name, type)
 
     def add_columns(self, func, names=None, ):
-        """
-        Adds new columns to the frame by evaluating the given func on each row.
-
-        Parameters
-        ----------
-        func : row function
-            function which takes a single row and produces a tuple of new cell
-            values
-
-        names: list or tuple of strings or tuples of string, data type (optional)
-            specifies the name and data type of the new columns
-
-        Notes
-        -----
-        
-        Examples
-        --------
-        >>> Louise = BigFrame( , "Louise")
-        >>> Louise is now a minimalist BigFrame object
-        >>> Louise.add_columns( magic_function, [("James", str), [("John", int32)]
-        >>> Louise now has two columns, named James and John
-        
-        """
-        # TODO - Review examples
-        
+        # Not implemented yet
         self._backend.add_columns(self, func, names)
 
     def append(self, *data):
