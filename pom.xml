@@ -111,15 +111,15 @@
         <dep.giraph-hbase.version>1.1.0-20131121.142121-1</dep.giraph-hbase.version>
         <!--END GAO MAVEN -->
 
-        <dep.scala.version>2.10.3</dep.scala.version>
-        <dep.akka.version>2.3.2</dep.akka.version>
-        <dep.spray-json_2.10 groupId="io.spray">1.2.5</dep.spray-json_2.10>
-        <dep.slick_2.10 groupId="com.typesafe.slick">2.0.1</dep.slick_2.10>
+        <scala.long.version>2.10.3</scala.long.version>
+        <scala.short.version>2.10</scala.short.version>
+        <akka.version>2.3.2</akka.version>
+        <spray-json.version>1.2.5</spray-json.version>
+        <slick.version>2.0.1</slick.version>
 
         <scoverage-plugin.version>0.98.2</scoverage-plugin.version>
         <scoverage.version>0.98.2</scoverage.version>
         <maven.plugin.scoverage.version>0.98.2</maven.plugin.scoverage.version>
-        <scala.short>2.10</scala.short>
     </properties>
     <profiles>
         <profile>
@@ -151,31 +151,31 @@
                                     <jvmArg>-Xmx1024m</jvmArg>
                                 </jvmArgs>
                                 <compilerPlugins>
-                                    <!--<compilerPlugin>
+                                    <compilerPlugin>
                                         <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short}</artifactId>
+                                        <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
                                         <version>${scoverage-plugin.version}</version>
-                                    </compilerPlugin>-->
-                                    <!--<compilerPlugin>
+                                    </compilerPlugin>
+                                    <compilerPlugin>
                                             <groupId>com.mmakowski</groupId>
                                             <artifactId>maven-specs2-plugin</artifactId>
                                             <version>0.4.2</version>
-                                    </compilerPlugin>-->
+                                    </compilerPlugin>
                                 </compilerPlugins>
-                                <!--<args>
+                                <args>
                                     <arg>-g:vars</arg>
                                     <arg>-Yrangepos</arg>
                                     <arg>-P:scoverage:dataDir:${project.build.outputDirectory}</arg>
-                                </args>-->
+                                </args>
                             </configuration>
                         </execution>
-                        <!--<execution>
+                        <execution>
                             <id>test</id>
                             <goals>
                                 <goal>add-source</goal>
                                 <goal>testCompile</goal>
                             </goals>
-                            <configuration>
+                            <!--<configuration>
                                 <compilerPlugins>
                                     <compilerPlugin>
                                         <groupId>org.scoverage</groupId>
@@ -188,13 +188,42 @@
                                         <version>0.4.2</version>
                                     </compilerPlugin>
                                 </compilerPlugins>
-                            </configuration>
-                        </execution>-->
+                            </configuration>-->
+                        </execution>
                     </executions>
                     <configuration>
-                        <scalaVersion>${dep.scala.version}</scalaVersion>
+                        <scalaVersion>${scala.long.version}</scalaVersion>
                         <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.scalatest</groupId>
+                    <artifactId>scalatest-maven-plugin</artifactId>
+                    <version>1.0-RC2</version>
+                    <executions>
+                        <execution>
+                            <id>scalaTest</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <!--run specs test from maven-->
+                    <groupId>com.mmakowski</groupId>
+                    <artifactId>maven-specs2-plugin</artifactId>
+                    <version>0.4.2</version>
+                    <executions>
+                        <execution>
+                            <id>specs2test</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>run-specs</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.scoverage</groupId>
@@ -211,40 +240,12 @@
                     </executions>
                 </plugin>
 
-                <!--<plugin>
-                    <groupId>org.scalatest</groupId>
-                    <artifactId>scalatest-maven-plugin</artifactId>
-                    <version>1.0-RC2</version>
-                    <executions>
-                        <execution>
-                            <id>test</id>
-                            <phase>test</phase>
-                            <goals>
-                                <goal>test</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <argLine>-XX:MaxPermSize=512m -Xmx1024m</argLine>
-                    </configuration>
-                </plugin>-->
-                <!--<plugin>
-                    &lt;!&ndash;run specs test from maven&ndash;&gt;
-                    <groupId>com.mmakowski</groupId>
-                    <artifactId>maven-specs2-plugin</artifactId>
-                    <version>0.4.2</version>
-                    <executions>
-                        <execution>
-                            <id>test</id>
-                            <phase>test</phase>
-                            <goals>
-                                <goal>run-specs</goal>
-                            </goals>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.12.4</version>
+                </plugin>
 
-                        </execution>
-
-                    </executions>
-                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -526,22 +527,31 @@
                 </plugin>-->
             </plugins>
         </pluginManagement>
-        <plugins>
 
+        <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
             </plugin>
-            <!--<plugin>
+
+            <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0-RC2</version>
-            </plugin>-->
-            <!--<plugin>
+            </plugin>
+            <plugin>
+                <!--run specs test from maven-->
+                <groupId>com.mmakowski</groupId>
+                <artifactId>maven-specs2-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
-                <version>${scoverage.version}</version>
-            </plugin>-->
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
 
            <!-- <plugin>
                 <groupId>org.apache.rat</groupId>
@@ -647,8 +657,23 @@
 
     <dependencyManagement>
         <dependencies>
-
-
+            <dependency>
+                <groupId>org.scoverage</groupId>
+                <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+                <version>${scoverage-plugin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_${scala.short.version}</artifactId>
+                <version>2.1.6</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.specs2</groupId>
+                <artifactId>specs2_${scala.short.version}</artifactId>
+                <version>2.3.10</version>
+                <scope>test</scope>
+            </dependency>
             <!--<dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
@@ -881,7 +906,18 @@
     </dependencyManagement>
 
     <dependencies>
-
+        <dependency>
+            <groupId>org.scoverage</groupId>
+            <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+        </dependency>
+        <dependency>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest_2.10</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.specs2</groupId>
+            <artifactId>specs2_${scala.short.version}</artifactId>
+        </dependency>
     </dependencies>
 
     <repositories>

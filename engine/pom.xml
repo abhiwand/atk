@@ -17,14 +17,21 @@
 
     <build>
         <plugins>
-            <!--<plugin>
-                &lt;!&ndash;run specs test from maven&ndash;&gt;
-                <inherited>false</inherited>
-                <groupId>com.mmakowski</groupId>
-                <artifactId>maven-specs2-plugin</artifactId>
-            </plugin>-->
+            <plugin>
+                <!--add if you don't have any test to run-->
+                <groupId>org.scoverage</groupId>
+                <artifactId>maven-scoverage-plugin</artifactId>
+                <version>${scoverage.version}</version>
+                <executions>
+                    <execution>
+                        <id>scales-report</id>
+                        <phase/>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
     <dependencies>
 
         <!--START BDA dependencies to our modules-->
@@ -42,8 +49,8 @@
 
         <dependency>
             <groupId>com.typesafe.akka</groupId>
-            <artifactId>akka-actor_2.10</artifactId>
-            <version>${dep.akka.version}</version>
+            <artifactId>akka-actor_${scala.short.version}</artifactId>
+            <version>${akka.version}</version>
         </dependency>
     </dependencies>
 </project>

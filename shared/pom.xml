@@ -19,7 +19,7 @@
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
-            <plugin>
+            <!--<plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
                 <version>3.1.6</version>
@@ -41,11 +41,11 @@
                                     <artifactId>scalac-scoverage-plugin_${scala.short}</artifactId>
                                     <version>${scoverage-plugin.version}</version>
                                 </compilerPlugin>
-                                <!--<compilerPlugin>
+                                &lt;!&ndash;<compilerPlugin>
                                         <groupId>com.mmakowski</groupId>
                                         <artifactId>maven-specs2-plugin</artifactId>
                                         <version>0.4.2</version>
-                                </compilerPlugin>-->
+                                </compilerPlugin>&ndash;&gt;
                             </compilerPlugins>
                             <args>
                                 <arg>-g:vars</arg>
@@ -61,7 +61,7 @@
                             <goal>testCompile</goal>
                         </goals>
                     </execution>
-                    <!--<execution>
+                    &lt;!&ndash;<execution>
                         <id>test</id>
                         <goals>
                             <goal>add-source</goal>
@@ -81,7 +81,7 @@
                                 </compilerPlugin>
                             </compilerPlugins>
                         </configuration>
-                    </execution>-->
+                    </execution>&ndash;&gt;
                 </executions>
                 <configuration>
                     <scalaVersion>${dep.scala.version}</scalaVersion>
@@ -92,17 +92,45 @@
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
                 <version>1.0-RC2</version>
+                <executions>
+                    <execution>
+                        <id>scalaTest</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
                 <version>${scoverage.version}</version>
+                <executions>
+                    <execution>
+                        <phase>test</phase>
+                        <id>install</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>-->
+
+            <plugin>
+                <!--disable sure fire test-->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12.4</version>
+                <!--disable specs2 test because the plugin will barf it doesn't have any specs2 test to run-->
+                <groupId>com.mmakowski</groupId>
+                <artifactId>maven-specs2-plugin</artifactId>
                 <configuration>
                     <skipTests>true</skipTests>
                 </configuration>
@@ -111,13 +139,10 @@
     </build>
 
     <dependencies>
-
-        <dependency>
+        <!--<dependency>
             <groupId>org.scoverage</groupId>
-            <artifactId>scalac-scoverage-plugin_${scala.short}</artifactId>
-            <version>${scoverage-plugin.version}</version>
-        </dependency>
-
+            <artifactId>scalac-scoverage-plugin_${scala.short.version}</artifactId>
+        </dependency>-->
         <!--START BDA dependencies to our modules-->
         <dependency>
             <groupId>com.intel</groupId>
@@ -132,15 +157,9 @@
         <!--END BDA dependencies to our modules-->
 
         <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.10</artifactId>
-            <version>2.1.6</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.typesafe.slick</groupId>
-            <artifactId>slick_2.10</artifactId>
-            <version>${dep.slick_2.10}</version>
+            <artifactId>slick_${scala.short.version}</artifactId>
+            <version>${slick.version}</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
