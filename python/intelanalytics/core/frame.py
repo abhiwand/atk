@@ -48,7 +48,7 @@ def get_frame_names():
     Examples
     --------
     >>> mac = get_frame_names
-    >>> mac is now ["Tom", "Dick", "Harry"] where Tom, Dick, and Harry are BigFrame objects
+    >>> mac is now ["Moe", "Larry", "Curly"] where Moe, Larry, and Curly are BigFrame objects
     
     """
     # TODO - Review docstring
@@ -247,8 +247,9 @@ class BigFrame(object):
         Examples
         --------
         >>> John = BigFrame(Dan)
+        >>> John is now a BigFrame object with three columns named col01, col02, and col03
         >>> Mary = John.column_names()
-        >>> Mary is now ["col01", "col02", "col03"] because John is a BigFrame object with three columns named col01, col02, and col03
+        >>> Mary is now ["col01", "col02", "col03"] 
         
         """
         # TODO - Review Docstring
@@ -315,7 +316,7 @@ class BigFrame(object):
         >>> Erica is now a FrameSchema matching Sarah's structure
         
         """
-        # TODO - Revise Docstring
+        # TODO - Review Docstring
         return FrameSchema(zip(self._columns.keys(),
                                map(lambda c: c.data_type, self._columns.values())))
 
@@ -366,7 +367,7 @@ class BigFrame(object):
         >>> Henry.add_column(Tom-Dick, int, "Harry")
         >>> Henry now has three columns, name "Tom", "Dick" and "Harry" and Harry's value is the value in Tom minus the value in Dick
         >>>
-        >>> if the name is left blank, the column name will be a unique name "res%d#" where # is a number from 0 through 1000
+        >>> if the name is left blank, the column name will be given a unique name "res#" where # is the lowest number from 0 through 1000 such that there is not already a column with that name.
 
         """
         # TODO - Review examples
@@ -388,9 +389,12 @@ class BigFrame(object):
             function which takes a single row and produces a tuple of new cell
             values
 
-        names: list or tuple of strings or tuples of string, data type
+        names: list or tuple of strings or tuples of string, data type (optional)
             specifies the name and data type of the new columns
 
+        Notes
+        -----
+        
         Examples
         --------
         >>> Louise = BigFrame( , "Louise")
@@ -470,6 +474,11 @@ class BigFrame(object):
         ----------
         name : str OR list of str
             column name OR list of column names to be removed from the frame
+
+        Notes
+        -----
+        Deleting a non-existant column raises a KeyError.
+        Deleting the last column in a frame leaves the frame empty.
 
         Examples
         --------
