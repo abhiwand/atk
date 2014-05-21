@@ -652,8 +652,14 @@ class SparkComponent extends EngineComponent
         rows
       }
 
-    def getFrameRdd(ctx: SparkContext, id: Long): RDD[Row] = {
-      ctx.objectFile[Row](fsRoot + getFrameDataFile(id))
+    /**
+     * Create an RDD from a frame data file.
+     * @param ctx spark context
+     * @param frameId primary key of the frame record
+     * @return the newly created RDD
+     */
+    def getFrameRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
+      ctx.objectFile[Row](fsRoot + getFrameDataFile(frameId))
     }
 
     def getOrCreateDirectory(name: String): Directory = {
