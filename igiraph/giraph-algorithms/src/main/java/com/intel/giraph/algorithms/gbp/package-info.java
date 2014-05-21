@@ -21,32 +21,7 @@
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
 
-package com.intel.intelanalytics.repository
-
-import com.intel.intelanalytics.domain.{ DataFrameTemplate, CommandTemplate, Command, DataFrame, User, UserTemplate }
-
-trait MetaStoreComponent {
-  val metaStore: MetaStore
-
-  /**
-   * The MetaStore gives access to Repositories. Repositories are how you
-   * modify and query underlying tables (frames, graphs, users, etc).
-   */
-  trait MetaStore {
-    type Session
-    def withSession[T](name: String)(f: Session => T): T
-
-    /** Repository for CRUD on 'frame' table */
-    def frameRepo: Repository[Session, DataFrameTemplate, DataFrame]
-
-    /** Repository for CRUD on 'command' table */
-    def commandRepo: Repository[Session, CommandTemplate, Command]
-
-    /** Repository for CRUD on 'user' table */
-    def userRepo: Repository[Session, UserTemplate, User] with Queryable[Session, User]
-
-    /** Create the underlying tables */
-    def create(): Unit
-  }
-}
-
+/**
+ * Package of igiraph algorithms.
+ */
+package com.intel.giraph.algorithms.gbp;
