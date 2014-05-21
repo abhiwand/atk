@@ -117,6 +117,10 @@ class SparkComponent extends EngineComponent
       sparkContextManager.cleanup()
     }
 
+    /**
+     * Execute a code block using the ClassLoader of 'this' SparkEngine
+     * rather than the ClassLoader of the currentThread()
+     */
     def withMyClassLoader[T](f: => T): T = {
       val prior = Thread.currentThread().getContextClassLoader
       EventContext.getCurrent.put("priorClassLoader", prior.toString)
