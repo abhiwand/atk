@@ -295,6 +295,42 @@ Or could try something like this, making the join implicit with the "on" tuples,
 >> f8 = join((f1['a'], f2['a'], f3['x']), how='left', select=(f1[['a', 'b', 'c']], f2[['a', 'd'], f3['y']))
 
 
+Flatten
+~~~~~~~
+
+``flatten_column`` creates a new BigFrame by copying all the rows of a given
+Frame and flattening a particular cell to produce possibly many new rows.
+
+Example:
+
+>>> frame1.inspect()
+
+a:int32    b:str
+-------   --------
+  1        "solo", "mono", "single"
+  2        "duo", "double"
+
+>>> frame2 = frame1.flatten_column('b')
+>>> frame2.inspect()
+
+ a:int32    b:str
+-------   --------
+  1        "solo"
+  1        "mono"
+  1        "single"
+  2        "duo"
+  2        "double"
+
+
+``flatten_column`` requires a single column name as its first parameter.  There
+is a second optional function parameter which defines how the splitting should
+be done.
+
+>>> frame2 = frame1.flatten('b')  # if column 'a' is natively a list (we don't really support that data type yet)
+
+>>> frame2 = frame1.flatten('b', lambda cell: [item.strip() for item in cell.split(',')])  # could make this the default behavior for string data type
+
+
 Misc Notes
 ==========
 

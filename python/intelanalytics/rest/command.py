@@ -1,117 +1,192 @@
+##############################################################################
+# INTEL CONFIDENTIAL
+#
+# Copyright 2014 Intel Corporation All Rights Reserved.
+#
+# The source code contained or described herein and all documents related to
+# the source code (Material) are owned by Intel Corporation or its suppliers
+# or licensors. Title to the Material remains with Intel Corporation or its
+# suppliers and licensors. The Material may contain trade secrets and
+# proprietary and confidential information of Intel Corporation and its
+# suppliers and licensors, and is protected by worldwide copyright and trade
+# secret laws and treaty provisions. No part of the Material may be used,
+# copied, reproduced, modified, published, uploaded, posted, transmitted,
+# distributed, or disclosed in any way without Intel's prior express written
+# permission.
+#
+# No license under any patent, copyright, trade secret or other intellectual
+# property right is granted to or conferred upon you by disclosure or
+# delivery of the Materials, either expressly, by implication, inducement,
+# estoppel or otherwise. Any license under such intellectual property rights
+# must be express and approved by Intel in writing.
+##############################################################################
 """
-Command object
+Command objects
 """
-
-from intelanalytics.rest.connection import rest_http
-import logging
-logger = logging.getLogger(__name__)
 
 import time
 import json
+import logging
+logger = logging.getLogger(__name__)
+
+from intelanalytics.rest.connection import http
 
 
-class Command(object):
-
+class CommandRequest(object):
     def __init__(self, name, arguments):
-        # this should match the first-level REST API command payload
-        # this class should have a natively JSON object structure
         self.name = name
-        self.arguments = arguments or {}
-        self.id = 0
-        self.complete = False
-        self.links = []
+        self.arguments = arguments
+
+    def to_json_obj(self):
+        """
+        returns json for REST payload
+        """
+        return self.__dict__
+
+
+class CommandInfo(object):
+    def __init__(self, response_payload):
+        self._payload = response_payload
 
     def __repr__(self):
-        json.dumps(self.get_payload)
+        return json.dumps(self._payload, indent=2, sort_keys=True)
 
     def __str__(self):
-        return 'commands/%s "%s"' % (self.id, self.name)
+        return 'commands/%s "%s"' % (self.id_number, self.name)
+
+    @property
+    def id_number(self):
+        return self._payload['id']
+
+    @property
+    def name(self):
+        return self._payload['name']
 
     @property
     def uri(self):
-        return self.links[0]['uri']
+        try:
+            return self._payload['links'][0]['uri']
+        except KeyError:
+            return ""
 
-    def get_payload(self):
-        return dict(self.__dict__)
+    @property
+    def error(self):
+        try:
+            return self._payload['error']
+        except KeyError:
+            return None
 
-    def update(self, payload):    # command issue response provides info
-        if self.id == 0:
-            self.id = payload['id']
-        elif self.id != payload['id']:
-            raise ValueError("Received a different command id from server?")
-        self.links = payload['links']
-        self.complete = payload['complete']
-
-
-class BlockingCommand(Command):
-
-    def __init__(self, name, arguments):
-        super(BlockingCommand, self).__init__(name, arguments)
+    @property
+    def complete(self):
+        try:
+            return self._payload['complete']
+        except KeyError:
+            return False
 
     def update(self, payload):
-        super(BlockingCommand, self).update(payload)
-        if not self.complete:
-            self.complete = Polling().poll(self)
+        if self._payload and self.id_number != payload['id']:
+            msg = "Invalid payload, command ID mismatch %d when expecting %d"\
+                  % (payload['id'], self.id_number)
+            logger.error(msg)
+            raise RuntimeError(msg)
+        self._payload = payload
 
 
 class Polling(object):
 
-    def poll(self,
-             command,
-             interval_secs=0.5,
-             backoff_factor=2,
-             timeout_secs=10):  # TODO - timeout appropriateness at scale :^)
+    @staticmethod
+    def poll(uri, predicate=None, interval_secs=0.5, backoff_factor=2, timeout_secs=10):
+        """
+        Issues GET methods on the given command uri until the response
+        command_info cause the predicate to evalute True.  Exponential retry
+        backoff
 
+        Parameters
+        ----------
+        uri : str
+            The uri of the command
+        predicate : function
+            Function with a single CommandInfo parameter which evaluates to True
+            when the polling should stop.
+        interval_secs : float
+            Initial sleep interval for the polling, in seconds
+        backoff_factor : float
+            Factor to increase the interval_secs on subsequent retries
+        timeout_secs : float
+            Maximum wall clock time to roughly spend in this function
+        """
+        # TODO - timeout appropriateness at scale
+        if predicate is None:
+            predicate = Polling._get_completion_status
         start_time = time.time()
-        if self._get_completion_status(command):
-            return True
+        command_info = Polling._get_command_info(uri)
+        if predicate(command_info):
+            return command_info
         while True:
             time.sleep(interval_secs)
             wait_time = time.time() - start_time
-            if self._get_completion_status(command):
-                return True
+            command_info = Polling._get_command_info(command_info.uri)
+            if predicate(command_info):
+                return command_info
             if wait_time > timeout_secs:
                 msg = "Polling timeout for %s after ~%d seconds" \
-                      % (str(command), wait_time)
+                      % (str(command_info), wait_time)
                 logger.error(msg)
                 raise RuntimeError(msg)
             interval_secs *= backoff_factor
 
     @staticmethod
-    def _get_completion_status(command):
-        logger.info("Polling completion status for " + str(command))
-        response = rest_http.get_full_uri(command.uri)
-        return response.json()['complete']
+    def _get_command_info(uri):
+        response = http.get_full_uri(uri)
+        return CommandInfo(response.json())
+
+    @staticmethod
+    def _get_completion_status(command_info):
+        return command_info.complete
+
+
+class CommandServerError(Exception):
+    """
+    Error for errors reported by the server when issuing a command
+    """
+    def __init__(self, command_info):
+        self.command_info = command_info
+        try:
+            message = command_info.error['message']
+        except KeyError:
+            message = "(Server response insufficient to provide details)"
+        Exception.__init__(self, message)
 
 
 class Executor(object):
+    """
+    Executes commands
+    """
 
-    def __init__(self):
-        self.queue = []
-
-    def issue_command(self, command):
-        logger.info("Issuing command " + command.name)
-        self._enqueue_command(command)
+    def issue(self, command_request):
+        """
+        Issues the command_request to the server
+        """
+        logger.info("Issuing command " + command_request.name)
+        response = http.post("commands", command_request.to_json_obj())
+        command_info = CommandInfo(response.json())
+        # For now, we just poll until the command completes
         try:
-            response = rest_http.post("commands", command.get_payload())
-            command.update(response.json())
-            if command.complete:
-                self._dequeue_command(command)
-            return response
+            if not command_info.complete:
+                command_info = Polling.poll(command_info.uri)
         except KeyboardInterrupt:
-            self.cancel_command(command)
+            self.cancel(command_info.id_number)
 
-    def _enqueue_command(self, command):
-        logger.debug("Executor enqueueing " + str(command))
-        self.queue.append(command)
+        if command_info.error:
+            raise CommandServerError(command_info)
+        return command_info
 
-    def _dequeue_command(self, command):
-        logger.debug("Executor dequeueing " + str(command))
-        self.queue.remove(command)
-
-    def cancel_command(self, command):
-        # TODO - implement command cancellation
-        self._dequeue_command(command)
+    def cancel(self, command_id):
+        """
+        Tries to cancel the given command
+        """
+        logger.info("Executor cancelling command " + str(command_id))
+        # TODO - implement command cancellation (like a DELETE to commands/id?)
 
 
 executor = Executor()

@@ -29,7 +29,7 @@ import requests
 import logging
 logger = logging.getLogger(__name__)
 
-__all__ = ['Connection', 'HttpMethods']
+__all__ = ['Server', 'HttpMethods']
 
 # default connection config
 _host = "localhost"
@@ -41,7 +41,7 @@ _headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
 _default = object()
 
 
-class Connection(object):
+class Server(object):
 
     def __init__(self, host=None, port=_default, scheme=None, version=None):
         self.host = host or _host
@@ -99,11 +99,11 @@ class HttpMethods(object):
     """
     HTTP methods to the REST server
     """
-    def __init__(self, connection):
-        self.connection = connection
+    def __init__(self, server):
+        self.server = server
 
     def _get_uri(self, path):
-        return self.connection.get_base_uri() + path
+        return self.server.get_base_uri() + path
 
     @staticmethod
     def _check_response(response, ignore=None):
@@ -121,7 +121,7 @@ class HttpMethods(object):
 
     @property
     def base_uri(self):
-        return self.connection.get_base_uri()
+        return self.server.get_base_uri()
 
    # HTTP commands
 
@@ -132,7 +132,7 @@ class HttpMethods(object):
     def get_full_uri(self, uri):
         if logger.level <= logging.INFO:
             logger.info("[HTTP Get] %s", uri)
-        r = requests.get(uri, headers=self.connection.headers)
+        r = requests.get(uri, headers=self.server.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Get Response] %s", r.text)
         self._check_response(r)
@@ -140,11 +140,11 @@ class HttpMethods(object):
 
     def delete(self, uri_path):
         uri = self._get_uri(uri_path)
-        self.delete_full_uri(uri)
+        return self.delete_full_uri(uri)
 
     def delete_full_uri(self, uri):
         logger.info("[HTTP Delete] %s", uri)
-        r = requests.delete(uri, headers=self.connection.headers)
+        r = requests.delete(uri, headers=self.server.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Delete Response] %s", r.text)
         self._check_response(r)
@@ -159,12 +159,12 @@ class HttpMethods(object):
         if logger.level <= logging.INFO:
             pretty_data = json.dumps(payload, indent=2)
             logger.info("[HTTP Post] %s\n%s", uri, pretty_data)
-        r = requests.post(uri, data=data, headers=self.connection.headers)
+        r = requests.post(uri, data=data, headers=self.server.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Post Response] %s", r.text)
         self._check_response(r, {406: 'long initialization time'})
         return r
 
 
-rest_connection = Connection()
-rest_http = HttpMethods(rest_connection)
+server = Server()
+http = HttpMethods(server)
