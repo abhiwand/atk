@@ -6,6 +6,7 @@
     <artifactId>ispark-deps</artifactId>
     <version>0.1</version>
     <groupId>com.intel</groupId>
+    <packaging>jar</packaging>
 
     <parent>
         <groupId>com.intel</groupId>
