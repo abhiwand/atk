@@ -231,13 +231,20 @@ class SparkComponent extends EngineComponent
       new sun.misc.BASE64Decoder().decodeBuffer(corrected)
     }
 
+    /**
+     * Create a Python RDD
+     * @param frameId source frame for the parent RDD
+     * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
+     * @param user current user
+     * @return the RDD
+     */
     private def createPythonRDD(frameId: Long, py_expression: String)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
       withMyClassLoader {
         val ctx = context(user).sparkContext
         val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
         val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-          .map(x => x.map(t => t.toString()).mkString(","))
+          .map(x => x.map(t => t.toString()).mkString(",")) // TODO: we're assuming no commas in the values, isn't this going to cause issues?
 
         val pythonExec = "python2.7" //TODO: take from env var or config
         val environment = new java.util.HashMap[String, String]()
