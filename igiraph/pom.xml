@@ -47,6 +47,51 @@
         <relativePath>../pom.xml</relativePath>
         <version>0.8.0-SNAPSHOT</version>
     </parent>
+
+    <build>
+        <plugins>
+            <!--<plugin>
+                &lt;!&ndash;disable specs2 test because the plugin will barf the test are not specs2&ndash;&gt;
+                <groupId>com.mmakowski</groupId>
+                <artifactId>maven-specs2-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>-->
+            <plugin>
+                <!--add if you don't have any test to run-->
+                <groupId>org.scoverage</groupId>
+                <artifactId>maven-scoverage-plugin</artifactId>
+                <version>${scoverage.version}</version>
+                <executions>
+                    <execution>
+                        <id>scales-report</id>
+                        <phase/>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--START GAO MAVEN -->
+            <!-- these dependencies are from gaomaven.jf.intel.com -->
+            <dependency>
+                <groupId>org.apache.giraph</groupId>
+                <artifactId>giraph-core</artifactId>
+                <version>${dep.giraph-core.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.giraph</groupId>
+                <artifactId>giraph-hbase</artifactId>
+                <version>${dep.giraph-hbase.version}</version>
+                <type>test-jar</type>
+            </dependency>
+            <!--END GAO MAVEN -->
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <!-- compile dependencies. sorted lexicographically. -->
 
@@ -165,18 +210,17 @@
             <artifactId>mahout-core</artifactId>
             <version>${dep.mahout.version}</version>
         </dependency>
-        <dependency>
+
+        <!--<dependency>
             <groupId>org.apache.giraph</groupId>
             <artifactId>giraph-core</artifactId>
-            <version>${dep.giraph-core.version}</version>
-            <type>test-jar</type>
+
         </dependency>
         <dependency>
             <groupId>org.apache.giraph</groupId>
             <artifactId>giraph-hbase</artifactId>
-            <version>${dep.giraph-hbase.version}</version>
-            <type>test-jar</type>
-        </dependency>
+        </dependency>-->
+
 
         <!-- test dependencies. sorted lexicographically. -->
         <dependency>

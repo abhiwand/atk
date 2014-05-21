@@ -38,7 +38,30 @@
         <relativePath>../pom.xml</relativePath>
         <version>0.8.0-SNAPSHOT</version>
     </parent>
-
+    <build>
+        <plugins>
+            <plugin>
+                <!--disable specs2 test because the plugin will barf the test are not specs2-->
+                <groupId>com.mmakowski</groupId>
+                <artifactId>maven-specs2-plugin</artifactId>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <!--add if you don't have any test to run-->
+                <groupId>org.scoverage</groupId>
+                <artifactId>maven-scoverage-plugin</artifactId>
+                <version>${scoverage.version}</version>
+                <executions>
+                    <execution>
+                        <id>scales-report</id>
+                        <phase/>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <!--<dependency>
             <groupId>org.apache.hadoop</groupId>

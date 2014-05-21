@@ -17,46 +17,23 @@
 
 
     <build>
-
-        <!--<sourceDirectory>src/main</sourceDirectory>-->
-        <!--<sourceDirectory>src/main/scala</sourceDirectory>-->
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
-            <!--<plugin>
-                &lt;!&ndash;&lt;!&ndash;run specs test from maven&ndash;&gt;&ndash;&gt;
-                <inherited>false</inherited>
-                <groupId>com.mmakowski</groupId>
-                <artifactId>maven-specs2-plugin</artifactId>
-                <version>0.4.2</version>
-            </plugin>-->
-            <!--<plugin>
-                <groupId>org.scoverage</groupId>
-                <artifactId>maven-scoverage-plugin</artifactId>
-                <version>${scoverage-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>install</id>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
-            <!--<plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.12.4</version>
                 <configuration>
                     <skipTests>true</skipTests>
                 </configuration>
-            </plugin>-->
+            </plugin>
+
         </plugins>
     </build>
     <dependencies>
-        <!--<dependency>
-            <groupId>org.scoverage</groupId>
-            <artifactId>scalac-scoverage-plugin_${scala.short}</artifactId>
-            <version>${scoverage-plugin.version}</version>
+       <!-- <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.10</artifactId>
         </dependency>-->
 
         <!--START BDA dependencies to our modules-->
@@ -94,15 +71,15 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.10</artifactId>
+            <artifactId>spark-core_${scala.short.version}</artifactId>
             <version>${dep.org.apache.spark}</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.specs2</groupId>
             <artifactId>specs2_2.10</artifactId>
             <version>2.3.10</version>
             <scope>test</scope>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.tinkerpop.blueprints</groupId>
             <artifactId>blueprints-core</artifactId>
@@ -173,11 +150,11 @@
             <artifactId>high-scale-lib</artifactId>
             <version>1.1.4</version>
         </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>org.scalatest</groupId>
             <artifactId>scalatest_2.11</artifactId>
             <version>2.1.6</version>
             <scope>test</scope>
-        </dependency>
+        </dependency>-->
     </dependencies>
 </project>

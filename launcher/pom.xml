@@ -17,7 +17,16 @@
 
 
     <build>
-
+    <plugins>
+        <plugin>
+            <!--disable specs2 test because the plugin will barf it doesn't have any specs2 test to run-->
+            <groupId>com.mmakowski</groupId>
+            <artifactId>maven-specs2-plugin</artifactId>
+            <configuration>
+                <skipTests>true</skipTests>
+            </configuration>
+        </plugin>
+    </plugins>
     </build>
     <dependencies>
         <dependency>
