@@ -44,7 +44,7 @@ import org.apache.hadoop.fs.{ LocalFileSystem, FileSystem }
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.hdfs.DistributedFileSystem
 import java.nio.file.Path
-import spray.json.{ JsObject, JsonParser }
+import spray.json.{ JsonWriter, JsObject, JsonParser }
 import scala.io.{ Codec, Source }
 import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
 import scala.io.{ Codec, Source }
@@ -69,6 +69,7 @@ import org.apache.spark.engine.{ SparkProgressListener, ProgressPrinter }
 import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
+import spray.json._
 
 //TODO documentation
 //TODO progress notification
@@ -284,9 +285,35 @@ class SparkComponent extends EngineComponent
         (command, result)
       }
 
+    override def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+      withContext("se.join") {
+
+        import DomainJsonProtocol._
+
+
+        val command: Command = commands.create(new CommandTemplate("join", Some(argument.toJson.asJsObject)))
+
+        val result: Future[Command] = future {
+          withMyClassLoader {
+            withContext("se.join.future") {
+              withCommand(command) {
+
+
+              }
+              commands.lookup(command.id).get
+            }
+          }
+        }
+
+
+        (command, result)
+      }
+
     def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.removecolumn") {
+
         require(arguments != null, "arguments are required")
+
         import DomainJsonProtocol._
         val command: Command = commands.create(new CommandTemplate("removecolumn", Some(arguments.toJson.asJsObject)))
         val result: Future[Command] = future {
@@ -463,6 +490,7 @@ class SparkComponent extends EngineComponent
         }
       }
     }
+
   }
 
   val files = new HdfsFileStorage {}
