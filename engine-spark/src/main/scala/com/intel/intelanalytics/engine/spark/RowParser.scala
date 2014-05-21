@@ -23,21 +23,21 @@
 
 package com.intel.intelanalytics.engine
 
-/**
- * This object parses comma delimited strings into List[String]
- * Usage:
- * scala> import com.intelanalytics.engine.Row
- * scala> val out = Row.apply("foo,bar")
- * scala> val out = Row.apply("a,b,\"foo,is this ,bar\",foobar ")
- * scala> val out = Row.apply(" a,b,'',\"\"  ")
- */
 import util.parsing.combinator.RegexParsers
 
 /**
- * Row Class to split a string based on delimiter
- * @param separator : delimiter character
+ * Split a string based on delimiter into List[String]
+ * <p>
+ * Usage:
+ * scala> import com.intelanalytics.engine.Row
+ * scala> val out = RowParser.apply("foo,bar")
+ * scala> val out = RowParser.apply("a,b,\"foo,is this ,bar\",foobar ")
+ * scala> val out = RowParser.apply(" a,b,'',\"\"  ")
+ * </p>
+ *
+ * @param separator delimiter character
  */
-class Row(separator: Char) extends RegexParsers with Serializable {
+class RowParser(separator: Char) extends RegexParsers with Serializable {
 
   override def skipWhitespace = false
   /**

@@ -1,3 +1,5 @@
+package com.intel.intelanalytics.engine.spark
+
 //////////////////////////////////////////////////////////////////////////////
 // INTEL CONFIDENTIAL
 //
@@ -20,41 +22,39 @@
 // estoppel or otherwise. Any license under such intellectual property rights
 // must be express and approved by Intel in writing.
 //////////////////////////////////////////////////////////////////////////////
-/*
-* Unit test specs for Parser
-*/
-import org.specs2.mutable.Specification
-import com.intel.intelanalytics.engine.Row
 
-class ParserSpec extends Specification {
-  val row = new Row(',')
-  "Parser" should {
+import org.specs2.mutable.Specification
+import com.intel.intelanalytics.engine.RowParser
+
+class RowParserSpec extends Specification {
+  val csvRowParser = new RowParser(',')
+  "RowParser" should {
     "parse a String" in {
-      row.apply("a,b") shouldEqual Array("a", "b")
+      csvRowParser.apply("a,b") shouldEqual Array("a", "b")
     }
   }
-  "Parser" should {
+  "RowParser" should {
     "parse a String with single quotes" in {
-      row.apply("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
+      csvRowParser.apply("foo and bar,bar and foo,'foo, is bar'") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
     }
   }
-  "Parser" should {
+  "RowParser" should {
     "parse an empty string" in {
-      row.apply("") shouldEqual Array("")
+      csvRowParser.apply("") shouldEqual Array("")
     }
   }
-  "Parser" should {
+  "RowParser" should {
     "parse a nested double quotes string" in {
-      row.apply("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
+      csvRowParser.apply("foo and bar,bar and foo,\"foo, is bar\"") shouldEqual Array("foo and bar", "bar and foo", "foo, is bar")
     }
   }
-  "Parser" should {
+  "RowParser" should {
     "parse a string with empty fields" in {
-      row.apply("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
+      csvRowParser.apply("foo,bar,,,baz") shouldEqual Array("foo", "bar", "", "", "baz")
     }
   }
-  val trow = new Row('\t')
-  "Parser" should {
+  val trow = new RowParser('\t')
+  "RowParser" should {
     "parse a tab separated string" in {
       trow.apply("foo\tbar\tbaz") shouldEqual Array("foo", "bar", "baz")
     }

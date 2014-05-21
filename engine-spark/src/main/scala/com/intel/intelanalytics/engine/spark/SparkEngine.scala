@@ -50,7 +50,7 @@ import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
 import scala.Some
-import com.intel.intelanalytics.engine.Row
+import com.intel.intelanalytics.engine.RowParser
 import scala.util.matching.Regex
 import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
 import com.intel.event.EventContext
@@ -163,8 +163,8 @@ class SparkComponent extends EngineComponent
             case x => throw new IllegalArgumentException(
               "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
           }
-          val row = new Row(args.separator)
-          s => row(s)
+          val rowParser = new RowParser(args.separator)
+          s => rowParser(s)
         }
         case x => throw new Exception("Unsupported parser: " + x)
       }
