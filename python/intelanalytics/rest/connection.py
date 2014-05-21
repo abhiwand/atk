@@ -129,8 +129,6 @@ class HttpMethods(object):
         uri = self._get_uri(uri_path)
         if logger.level <= logging.INFO:
             logger.info("[HTTP Get] %s", uri)
-        print "In Get"
-        print uri
         r = requests.get(uri, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Get Response] %s", r.text)
@@ -152,9 +150,6 @@ class HttpMethods(object):
         if logger.level <= logging.INFO:
             pretty_data = json.dumps(payload, indent=2)
             logger.info("[HTTP Post] %s\n%s", uri, pretty_data)
-        print "In Post"
-        print uri
-        print data
         r = requests.post(uri, data=data, headers=self.connection.headers)
         if logger.level <= logging.DEBUG:
             logger.debug("[HTTP Post Response] %s", r.text)
