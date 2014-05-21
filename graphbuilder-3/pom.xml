@@ -6,6 +6,7 @@
     <artifactId>graphbuilder-3</artifactId>
     <version>3</version>
     <groupId>com.intel</groupId>
+    <packaging>jar</packaging>
 
     <parent>
         <groupId>com.intel</groupId>
