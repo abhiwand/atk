@@ -20,8 +20,7 @@ References
 .. toctree::
    :maxdepth: 1
 
-   glossary
-
+* :ref:`glossary`
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
