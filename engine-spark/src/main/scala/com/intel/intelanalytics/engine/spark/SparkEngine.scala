@@ -294,12 +294,23 @@ class SparkComponent extends EngineComponent
         val result: Future[DataFrame] = future {
           withMyClassLoader {
             withContext("se.join.future") {
-              var dataFrame: DataFrame = null
+
+              /* create a new dataframe */
+              val allColumns = argument.joinFrames.flatMap {
+                frame => {
+                  val realFrame = frames.lookup(frame._1).getOrElse(
+                    throw new IllegalArgumentException(s"No such data frame"))
+
+                  realFrame.schema.columns
+                }
+              }
+
+              /* create a dataframe should take very little time, much less than 10 minutes */
+              val newJoinFrame = Await.result(create(DataFrameTemplate("joinOperation", Schema(allColumns))), 10 minutes)
+
               withCommand(command) {
                 val ctx = context(user).sparkContext
-                val joinFrames = argument.joinFrames
-
-                val rddIndexTuple = joinFrames.map {
+                val rddColIndexTuple = argument.joinFrames.map {
                   frame => {
                     val realFrame = frames.lookup(frame._1).getOrElse(
                       throw new IllegalArgumentException(s"No such data frame"))
@@ -311,32 +322,17 @@ class SparkComponent extends EngineComponent
                   }
                 }
 
-                val preJoinRdds = rddIndexTuple.map {
+                val pairRdds = rddColIndexTuple.map {
                   t =>
                     val rdd = t._1
                     val columnIndex = t._2
                     rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
                 }
 
-                val joined = SparkOps.joinRDDs(preJoinRdds(0), preJoinRdds(1))
-
-                /* create a new dataframe */
-                val allColumns = joinFrames.flatMap {
-                  frame => {
-                    val realFrame = frames.lookup(frame._1).getOrElse(
-                      throw new IllegalArgumentException(s"No such data frame"))
-
-                    realFrame.schema.columns
-                  }
-                }
-
-                /* create a dataframe should take very little time, much less than 10 minutes */
-                val newJoinFrame = Await.result(create(DataFrameTemplate("joinOperation", Schema(allColumns))), 10 minutes)
-                val location = fsRoot + frames.getFrameDataFile(newJoinFrame.id)
-                joined.saveAsObjectFile(location)
-                dataFrame = newJoinFrame
+                val joinResultRDD = SparkOps.joinRDDs(pairRdds(0), pairRdds(1))
+                joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
               }
-              dataFrame
+              newJoinFrame
             }
           }
         }
