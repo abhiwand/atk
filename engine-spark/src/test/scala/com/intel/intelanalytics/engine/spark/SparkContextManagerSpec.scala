@@ -1,11 +1,9 @@
-package com.intel.intelanalytics.engine
+package com.intel.intelanalytics.engine.spark
 
 import org.specs2.mutable.Specification
 import org.specs2.mock.Mockito
 import org.apache.spark.SparkContext
-import com.intel.intelanalytics.engine.spark.{ SparkContextFactory, SparkContextManager }
 import com.typesafe.config.Config
-import org.specs2.specification.BeforeExample
 
 class SparkContextManagerSpec extends Specification with Mockito {
 

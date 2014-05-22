@@ -34,6 +34,11 @@ import scala.Some
 import org.apache.spark.scheduler.SparkListenerJobStart
 import scala.concurrent._
 
+/**
+ * Listens to progress on Spark Jobs.
+ *
+ * Requires access to classes private to org.apache.spark.engine
+ */
 class SparkProgressListener extends SparkListener {
 
   val jobIdToStageIds = new HashMap[Int, Array[Int]]
