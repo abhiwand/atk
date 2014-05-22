@@ -290,21 +290,38 @@ class SparkComponent extends EngineComponent
 
         import DomainJsonProtocol._
 
-
         val command: Command = commands.create(new CommandTemplate("join", Some(argument.toJson.asJsObject)))
 
         val result: Future[Command] = future {
           withMyClassLoader {
             withContext("se.join.future") {
               withCommand(command) {
+                val ctx = context(user).sparkContext
+                val joinFrames = argument.joinFrames
 
+                val rddIndexTuple = joinFrames.map { frame =>
+                  {
+                    val realFrame = frames.lookup(frame._1).getOrElse(
+                      throw new IllegalArgumentException(s"No such data frame"))
+
+                    val frameSchema = realFrame.schema
+                    val rdd = frames.getFrameRdd(ctx, frame._1)
+                    val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+                    (rdd, columnIndex)
+                  }
+                }
+
+                val preJoinRdds = rddIndexTuple.map { t =>
+                  val rdd = t._1
+                  val columnIndex = t._2
+                  rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
+                }
 
               }
               commands.lookup(command.id).get
             }
           }
         }
-
 
         (command, result)
       }

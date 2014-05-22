@@ -22,7 +22,8 @@ libraryDependencies := {
       .exclude("org.slf4j", "slf4j-log4j12"),
     ("org.apache.hadoop" % "hadoop-common" % "2.2.0")
       .exclude("asm", "asm")
-      .exclude("org.slf4j", "slf4j-log4j12")
+      .exclude("org.slf4j", "slf4j-log4j12") ,
+    "org.scalatest"       %   "scalatest_2.10"     % "2.1.6" % "test"
   )
 }
 

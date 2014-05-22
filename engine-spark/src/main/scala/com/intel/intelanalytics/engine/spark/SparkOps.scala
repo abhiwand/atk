@@ -26,6 +26,7 @@ package com.intel.intelanalytics.engine.spark
 import com.intel.intelanalytics.engine.Rows._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import com.intel.intelanalytics.domain.LoadLines
 import spray.json.JsObject
 
@@ -78,5 +79,13 @@ private[spark] object SparkOps extends Serializable {
       }
       .map(converter)
       .saveAsObjectFile(location)
+  }
+
+  def create2TupleForJoin(data: Array[Any], joinIndex: Int): (Any, Array[Any]) = {
+    (data(joinIndex), data.take(joinIndex) ++ data.drop(joinIndex + 1))
+  }
+
+  def joinRDDs(left: RDD[(Any, Array[Any])], right: RDD[(Any, Array[Any])]): RDD[(Any, Array[Any])] = {
+    left.join(right).map(t => (t._1, t._2._1 ++ t._2._2))
   }
 }
