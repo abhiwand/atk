@@ -285,7 +285,7 @@ class SparkComponent extends EngineComponent
         (command, result)
       }
 
-    override def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[DataFrame]) =
+    override def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.join") {
 
         def createPairRddForJoin(argument: FrameJoin[Long], ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
@@ -312,7 +312,7 @@ class SparkComponent extends EngineComponent
         import DomainJsonProtocol._
         val command: Command = commands.create(new CommandTemplate("join", Some(argument.toJson.asJsObject)))
 
-        val result: Future[DataFrame] = future {
+        val result: Future[Command] = future {
           withMyClassLoader {
             withContext("se.join.future") {
 
@@ -335,8 +335,10 @@ class SparkComponent extends EngineComponent
 
                 val joinResultRDD = SparkOps.joinRDDs(pairRdds(0), pairRdds(1))
                 joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
+                newJoinFrame.toJson.asJsObject
               }
-              newJoinFrame
+
+              commands.lookup(command.id).get
             }
           }
         }
@@ -816,7 +818,7 @@ class SparkComponent extends EngineComponent
       //TODO: set start date
     }
 
-    override def complete(id: Long, result: Try[Unit]): Unit = {
+    override def complete(id: Long, result: Try[Any]): Unit = {
       require(id > 0, "invalid ID")
       require(result != null)
       metaStore.withSession("se.command.complete") {
@@ -828,7 +830,7 @@ class SparkComponent extends EngineComponent
           //TODO: Update dates
           val changed = result match {
             case Failure(ex) => command.copy(complete = true, error = Some(ex: Error))
-            case Success(_) => command.copy(complete = true)
+            case Success(r) => command.copy(complete = true, result = Some(r.asInstanceOf[JsObject]))
           }
           repo.update(changed)
       }
