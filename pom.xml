@@ -191,6 +191,11 @@
                     <groupId>org.scalatest</groupId>
                     <artifactId>scalatest-maven-plugin</artifactId>
                     <version>1.0-RC2</version>
+                    <configuration>
+                        <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                        <junitxml>.</junitxml>
+                        <filereports>WDF TestSuite.txt</filereports>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>scalaTest</id>
@@ -207,6 +212,9 @@
                     <groupId>com.mmakowski</groupId>
                     <artifactId>maven-specs2-plugin</artifactId>
                     <version>0.4.2</version>
+                    <configuration>
+
+                    </configuration>
                     <executions>
                         <execution>
                             <id>specs2test</id>
