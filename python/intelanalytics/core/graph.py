@@ -248,7 +248,7 @@ class EdgeRule(Rule):
     Parameters
     ----------
     label: str or BigColumn source
-        vertex label, can be constant string or pulled from BigColumn
+        edge label, can be constant string or pulled from BigColumn
     tail: VertexRule
         tail vertex ('from' vertex); must be from same BigFrame as head,
         label and any properties
