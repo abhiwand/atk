@@ -288,6 +288,27 @@ class SparkComponent extends EngineComponent
     override def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[DataFrame]) =
       withContext("se.join") {
 
+        def createPairRddForJoin(argument: FrameJoin[Long], ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
+          val pairRdds = argument.joinFrames.map {
+            frame => {
+              val realFrame = frames.lookup(frame._1).getOrElse(
+                throw new IllegalArgumentException(s"No such data frame"))
+
+              val frameSchema = realFrame.schema
+              val rdd = frames.getFrameRdd(ctx, frame._1)
+              val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+              (rdd, columnIndex)
+            }
+          }.map {
+            t =>
+              val rdd = t._1
+              val columnIndex = t._2
+              rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
+          }
+
+          pairRdds
+        }
+
         import DomainJsonProtocol._
         val command: Command = commands.create(new CommandTemplate("join", Some(argument.toJson.asJsObject)))
 
@@ -306,28 +327,11 @@ class SparkComponent extends EngineComponent
               }
 
               /* create a dataframe should take very little time, much less than 10 minutes */
-              val newJoinFrame = Await.result(create(DataFrameTemplate("joinOperation", Schema(allColumns))), 10 minutes)
+              val newJoinFrame = Await.result(create(DataFrameTemplate(argument.name, Schema(allColumns))), 10 minutes)
 
               withCommand(command) {
                 val ctx = context(user).sparkContext
-                val rddColIndexTuple = argument.joinFrames.map {
-                  frame => {
-                    val realFrame = frames.lookup(frame._1).getOrElse(
-                      throw new IllegalArgumentException(s"No such data frame"))
-
-                    val frameSchema = realFrame.schema
-                    val rdd = frames.getFrameRdd(ctx, frame._1)
-                    val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
-                    (rdd, columnIndex)
-                  }
-                }
-
-                val pairRdds = rddColIndexTuple.map {
-                  t =>
-                    val rdd = t._1
-                    val columnIndex = t._2
-                    rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
-                }
+                val pairRdds = createPairRddForJoin(argument, ctx)
 
                 val joinResultRDD = SparkOps.joinRDDs(pairRdds(0), pairRdds(1))
                 joinResultRDD.saveAsObjectFile(fsRoot + frames.getFrameDataFile(newJoinFrame.id))
@@ -339,6 +343,8 @@ class SparkComponent extends EngineComponent
 
         (command, result)
       }
+
+
 
     def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.removecolumn") {
