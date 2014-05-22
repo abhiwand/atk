@@ -290,15 +290,16 @@ class SparkComponent extends EngineComponent
 
         def createPairRddForJoin(argument: FrameJoin[Long], ctx: SparkContext): List[RDD[(Any, Array[Any])]] = {
           val pairRdds = argument.joinFrames.map {
-            frame => {
-              val realFrame = frames.lookup(frame._1).getOrElse(
-                throw new IllegalArgumentException(s"No such data frame"))
+            frame =>
+              {
+                val realFrame = frames.lookup(frame._1).getOrElse(
+                  throw new IllegalArgumentException(s"No such data frame"))
 
-              val frameSchema = realFrame.schema
-              val rdd = frames.getFrameRdd(ctx, frame._1)
-              val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
-              (rdd, columnIndex)
-            }
+                val frameSchema = realFrame.schema
+                val rdd = frames.getFrameRdd(ctx, frame._1)
+                val columnIndex = frameSchema.columns.indexWhere(columnTuple => columnTuple._1 == frame._2)
+                (rdd, columnIndex)
+              }
           }.map {
             t =>
               val rdd = t._1
@@ -318,12 +319,13 @@ class SparkComponent extends EngineComponent
 
               /* create a new dataframe */
               val allColumns = argument.joinFrames.flatMap {
-                frame => {
-                  val realFrame = frames.lookup(frame._1).getOrElse(
-                    throw new IllegalArgumentException(s"No such data frame"))
+                frame =>
+                  {
+                    val realFrame = frames.lookup(frame._1).getOrElse(
+                      throw new IllegalArgumentException(s"No such data frame"))
 
-                  realFrame.schema.columns
-                }
+                    realFrame.schema.columns
+                  }
               }
 
               /* create a dataframe should take very little time, much less than 10 minutes */
@@ -345,8 +347,6 @@ class SparkComponent extends EngineComponent
 
         (command, result)
       }
-
-
 
     def removeColumn(arguments: FrameRemoveColumn[JsObject, Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
       withContext("se.removecolumn") {
