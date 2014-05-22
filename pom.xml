@@ -51,7 +51,7 @@
         <module>engine</module>
         <module>engine-spark</module><!-- scoverage -->
         <module>imahout</module>
-
+        <module>igiraph</module>
         <module>package</module>
     </modules>
     <prerequisites>
