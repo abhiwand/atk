@@ -104,6 +104,8 @@ trait V1CommandService extends V1Service {
     }
   }
 
+
+
   //TODO: disentangle the command dispatch from the routing
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     xform.name match {
@@ -114,6 +116,7 @@ trait V1CommandService extends V1Service {
       case ("dataframe/filter") => runFilter(uri, xform)
       case ("dataframe/removecolumn") => runFrameRemoveColumn(uri, xform)
       case ("dataframe/addcolumn") => runFrameAddColumn(uri, xform)
+      case ("dataframe/join") => runJoinFrames(uri, xform)
       case _ => ???
     }
   }
@@ -232,6 +235,20 @@ trait V1CommandService extends V1Service {
             }
         }
     }
+  }
+
+  def runJoinFrames(uri: Uri, xform: JsonTransform): Route = {
+    val test = Try {
+      import DomainJsonProtocol._
+      xform.arguments.get.convertTo[FrameJoin[Long]]
+    }
+
+    (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
+      val args = test.get
+      val result = engine.join(args)
+      complete(decorate(uri + "/" + result._1.id, result._1))
+    }
+
   }
 
 }
