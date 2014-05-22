@@ -19,103 +19,7 @@
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
-            <!--<plugin>
-                <groupId>net.alchim31.maven</groupId>
-                <artifactId>scala-maven-plugin</artifactId>
-                <version>3.1.6</version>
-                <executions>
-                    <execution>
-                        <id>compile</id>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
-                        </goals>
-                        <configuration>
-                            <jvmArgs>
-                                <jvmArg>-Xms64m</jvmArg>
-                                <jvmArg>-Xmx1024m</jvmArg>
-                            </jvmArgs>
-                            <compilerPlugins>
-                                <compilerPlugin>
-                                    <groupId>org.scoverage</groupId>
-                                    <artifactId>scalac-scoverage-plugin_${scala.short}</artifactId>
-                                    <version>${scoverage-plugin.version}</version>
-                                </compilerPlugin>
-                                &lt;!&ndash;<compilerPlugin>
-                                        <groupId>com.mmakowski</groupId>
-                                        <artifactId>maven-specs2-plugin</artifactId>
-                                        <version>0.4.2</version>
-                                </compilerPlugin>&ndash;&gt;
-                            </compilerPlugins>
-                            <args>
-                                <arg>-g:vars</arg>
-                                <arg>-Yrangepos</arg>
-                                <arg>-P:scoverage:dataDir:${project.build.outputDirectory}</arg>
-                            </args>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>test</id>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                    &lt;!&ndash;<execution>
-                        <id>test</id>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>testCompile</goal>
-                        </goals>
-                        <configuration>
-                            <compilerPlugins>
-                                <compilerPlugin>
-                                    <groupId>org.scoverage</groupId>
-                                    <artifactId>scalac-scoverage-plugin_${scala.short}</artifactId>
-                                    <version>${scoverage-plugin.version}</version>
-                                </compilerPlugin>
-                                <compilerPlugin>
-                                    <groupId>com.mmakowski</groupId>
-                                    <artifactId>maven-specs2-plugin</artifactId>
-                                    <version>0.4.2</version>
-                                </compilerPlugin>
-                            </compilerPlugins>
-                        </configuration>
-                    </execution>&ndash;&gt;
-                </executions>
-                <configuration>
-                    <scalaVersion>${dep.scala.version}</scalaVersion>
-                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0-RC2</version>
-                <executions>
-                    <execution>
-                        <id>scalaTest</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.scoverage</groupId>
-                <artifactId>maven-scoverage-plugin</artifactId>
-                <version>${scoverage.version}</version>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <id>install</id>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
+
 
             <plugin>
                 <!--disable sure fire test-->
@@ -134,6 +38,12 @@
                 <configuration>
                     <skipTests>true</skipTests>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <!--add to Create covergage results-->
+                <groupId>org.scoverage</groupId>
+                <artifactId>maven-scoverage-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
@@ -169,4 +79,4 @@
     </dependencies>
 
 
-    </project>
+</project>

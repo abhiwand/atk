@@ -37,12 +37,9 @@
 
     <modules>
         <!-- commented until we can figure out how to run without invoking sbt on them
-      <module>imahout</module>
-      <module>igiraph</module>
-      <module>imllib</module>
-      -->
+        <module>igiraph</module>
+        <module>imllib</module>-->
         <!--module>IntelAnalytics-web</module-->
-
         <module>ititan</module>
         <module>event</module>
         <module>ispark-deps</module>
@@ -107,8 +104,8 @@
 
         <!--START GAO MAVEN -->
         <!-- these dependencies are from gaomaven.jf.intel.com -->
-        <dep.giraph-core.version>1.1.0-20131121.141951-1</dep.giraph-core.version>
-        <dep.giraph-hbase.version>1.1.0-20131121.142121-1</dep.giraph-hbase.version>
+        <dep.giraph-core.version>1.1.0-SNAPSHOT-20140317</dep.giraph-core.version>
+        <dep.giraph-hbase.version>1.1.0-SNAPSHOT-20140317</dep.giraph-hbase.version>
         <!--END GAO MAVEN -->
 
         <scala.long.version>2.10.3</scala.long.version>
@@ -134,6 +131,7 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!--START DO NOT TOUCH-->
                 <plugin>
                     <groupId>net.alchim31.maven</groupId>
                     <artifactId>scala-maven-plugin</artifactId>
@@ -175,20 +173,6 @@
                                 <goal>add-source</goal>
                                 <goal>testCompile</goal>
                             </goals>
-                            <!--<configuration>
-                                <compilerPlugins>
-                                    <compilerPlugin>
-                                        <groupId>org.scoverage</groupId>
-                                        <artifactId>scalac-scoverage-plugin_${scala.short}</artifactId>
-                                        <version>${scoverage-plugin.version}</version>
-                                    </compilerPlugin>
-                                    <compilerPlugin>
-                                        <groupId>com.mmakowski</groupId>
-                                        <artifactId>maven-specs2-plugin</artifactId>
-                                        <version>0.4.2</version>
-                                    </compilerPlugin>
-                                </compilerPlugins>
-                            </configuration>-->
                         </execution>
                     </executions>
                     <configuration>
@@ -226,19 +210,22 @@
                     </executions>
                 </plugin>
                 <plugin>
+                    <inherited>true</inherited>
                     <groupId>org.scoverage</groupId>
                     <artifactId>maven-scoverage-plugin</artifactId>
                     <version>${scoverage.version}</version>
                     <executions>
                         <execution>
-                            <id>scales-report</id>
+                            <id>scala-scoverage-report</id>
                             <phase>test</phase>
                             <goals>
                                 <goal>report</goal>
                             </goals>
                         </execution>
+
                     </executions>
                 </plugin>
+                <!--END DO NOT TOUCH-->
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -528,12 +515,12 @@
             </plugins>
         </pluginManagement>
 
+
         <plugins>
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
                 <artifactId>scala-maven-plugin</artifactId>
             </plugin>
-
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
@@ -543,10 +530,11 @@
                 <groupId>com.mmakowski</groupId>
                 <artifactId>maven-specs2-plugin</artifactId>
             </plugin>
-            <plugin>
+
+            <!--<plugin>
                 <groupId>org.scoverage</groupId>
                 <artifactId>maven-scoverage-plugin</artifactId>
-            </plugin>
+            </plugin>-->
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -960,7 +948,7 @@
         </repository>
         <repository>
             <id>gaomaven</id>
-            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/snapshots</url>
+            <url>http://gaomaven.jf.intel.com:8081/nexus/content/repositories/releases</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
