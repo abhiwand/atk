@@ -146,7 +146,7 @@
                             </goals>
                             <configuration>
                                 <jvmArgs>
-                                    <jvmArg>-Xms4096m</jvmArg>
+                                    <jvmArg>-Xms5096m</jvmArg>
                                     <jvmArg>-Xmx8096m</jvmArg>
                                     <jvmArg>-XX:MaxPermSize=5120m</jvmArg>
                                     <jvmArg>-XX:PermSize=4096m</jvmArg>
