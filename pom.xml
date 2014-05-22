@@ -146,13 +146,13 @@
                             </goals>
                             <configuration>
                                 <jvmArgs>
-                                    <jvmArg>-Xms5096m</jvmArg>
-                                    <jvmArg>-Xmx8096m</jvmArg>
-                                    <jvmArg>-XX:MaxPermSize=5120m</jvmArg>
+                                    <jvmArg>-Xms1024m</jvmArg>
+                                    <jvmArg>-Xmx2048m</jvmArg>
+                                    <!--<jvmArg>-XX:MaxPermSize=5120m</jvmArg>
                                     <jvmArg>-XX:PermSize=4096m</jvmArg>
                                     <jvmArg>-XX:+UseConcMarkSweepGC</jvmArg>
                                     <jvmArg>-XX:+CMSPermGenSweepingEnabled</jvmArg>
-                                    <jvmArg>-XX:+CMSClassUnloadingEnabled</jvmArg>
+                                    <jvmArg>-XX:+CMSClassUnloadingEnabled</jvmArg>-->
                                 </jvmArgs>
                                 <compilerPlugins>
                                     <compilerPlugin>
