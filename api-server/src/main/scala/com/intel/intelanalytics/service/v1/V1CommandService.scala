@@ -104,8 +104,6 @@ trait V1CommandService extends V1Service {
     }
   }
 
-
-
   //TODO: disentangle the command dispatch from the routing
   def runCommand(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     xform.name match {
@@ -237,7 +235,7 @@ trait V1CommandService extends V1Service {
     }
   }
 
-  def runJoinFrames(uri: Uri, xform: JsonTransform): Route = {
+  def runJoinFrames(uri: Uri, xform: JsonTransform)(implicit user: UserPrincipal): Route = {
     val test = Try {
       import DomainJsonProtocol._
       xform.arguments.get.convertTo[FrameJoin[Long]]

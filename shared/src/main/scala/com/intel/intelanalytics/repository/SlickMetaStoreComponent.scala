@@ -192,16 +192,17 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
       def arguments = column[String]("arguments")
       def error = column[Option[String]]("error")
       def complete = column[Boolean]("complete")
+      def result = column[String]("result")
 
-      def * = (id, name, arguments, error, complete) <>
-        ((t: (Long, String, String, Option[String], Boolean)) => t match {
-          case (i: Long, n: String, s: String, e: Option[String], c: Boolean) =>
+      def * = (id, name, arguments, error, complete, result) <>
+        ((t: (Long, String, String, Option[String], Boolean, String)) => t match {
+          case (i: Long, n: String, s: String, e: Option[String], c: Boolean, r: String) =>
             Command.tupled((i, n, JsonParser(s).convertTo[Option[JsObject]],
-              e.map(err => JsonParser(err).convertTo[Error]), c))
+              e.map(err => JsonParser(err).convertTo[Error]), c, JsonParser(r).convertTo[Option[JsObject]]))
         },
           (f: Command) => Command.unapply(f) map {
-            case (i, n, s, e, c) =>
-              (i, n, s.toJson.prettyPrint, e.map(_.toJson.prettyPrint), c)
+            case (i, n, s, e, c, r) =>
+              (i, n, s.toJson.prettyPrint, e.map(_.toJson.prettyPrint), c, r.toJson.prettyPrint)
           })
     }
 
