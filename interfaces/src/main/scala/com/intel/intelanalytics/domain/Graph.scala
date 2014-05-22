@@ -19,7 +19,6 @@ case class GraphTemplate(graphName: String,
   require(graphName.trim.length > 0)
 
   require(dataFrameId != null)
-
   require(outputConfig != null)
 }
 

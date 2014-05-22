@@ -50,6 +50,8 @@ import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
 import scala.Some
+import com.intel.intelanalytics.engine.RowParser
+
 import scala.util.matching.Regex
 import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
 import com.intel.event.EventContext
@@ -99,6 +101,29 @@ import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.client.HBaseAdmin
 import com.intel.intelanalytics.engine.spark.graph.{SparkGraphStorage, SparkGraphHBaseBackend}
 
+s
+import scala.util.Failure
+import scala.Some
+import scala.collection.JavaConverters._
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.FrameRemoveColumn
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.FrameAddColumn
+import scala.util.Success
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.SeparatorArgs
+import com.intel.intelanalytics.domain.CommandTemplate
+import com.intel.intelanalytics.domain.Error
+import com.intel.intelanalytics.domain.Als
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
+
+
 //TODO documentation
 //TODO progress notification
 //TODO event notification
@@ -108,7 +133,6 @@ class SparkComponent extends EngineComponent
     with FrameComponent
     with CommandComponent
     with FileComponent
-    with GraphComponent
     with DbProfileComponent
     with SlickMetaStoreComponent
     with EventLogging {
@@ -148,6 +172,10 @@ class SparkComponent extends EngineComponent
       sparkContextManager.cleanup()
     }
 
+    /**
+     * Execute a code block using the ClassLoader of 'this' SparkEngine
+     * rather than the ClassLoader of the currentThread()
+     */
     def withMyClassLoader[T](f: => T): T = {
       val prior = Thread.currentThread().getContextClassLoader
       EventContext.getCurrent.put("priorClassLoader", prior.toString)
@@ -190,8 +218,10 @@ class SparkComponent extends EngineComponent
             case x => throw new IllegalArgumentException(
               "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
           }
-          val row = new RowParser(args.separator)
-          s => row(s)
+
+          val rowParser = new RowParser(args.separator)
+          s => rowParser(s)
+
         }
         case x => throw new Exception("Unsupported parser: " + x)
       }
@@ -258,13 +288,20 @@ class SparkComponent extends EngineComponent
       new sun.misc.BASE64Decoder().decodeBuffer(corrected)
     }
 
+    /**
+     * Create a Python RDD
+     * @param frameId source frame for the parent RDD
+     * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
+     * @param user current user
+     * @return the RDD
+     */
     private def createPythonRDD(frameId: Long, py_expression: String)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
       withMyClassLoader {
         val ctx = context(user).sparkContext
         val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
         val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-          .map(x => x.map(t => t.toString()).mkString(","))
+          .map(x => x.map(t => t.toString()).mkString(",")) // TODO: we're assuming no commas in the values, isn't this going to cause issues?
 
         val pythonExec = "python2.7" //TODO: take from env var or config
         val environment = new java.util.HashMap[String, String]()
@@ -435,11 +472,12 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def getGraphs(offset: Int, count: Int): Future[Seq[Graph]] = {
-      future {
-        graphs.getGraphs(offset, count)
+    def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
+      withContext("se.getGraphs") {
+        future {
+          graphs.getGraphs(offset, count)
+        }
       }
-    }
 
     def deleteGraph(graph: Graph): Future[Unit] = {
       future {
@@ -888,8 +926,14 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
         rows
       }
 
-    def getFrameRdd(ctx: SparkContext, id: Long): RDD[Row] = {
-      ctx.objectFile[Row](fsRoot + getFrameDataFile(id))
+    /**
+     * Create an RDD from a frame data file.
+     * @param ctx spark context
+     * @param frameId primary key of the frame record
+     * @return the newly created RDD
+     */
+    def getFrameRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
+      ctx.objectFile[Row](fsRoot + getFrameDataFile(frameId))
     }
 
     def getOrCreateDirectory(name: String): Directory = {
@@ -1019,7 +1063,9 @@ def calculateScore(list1, list2, biasOn, featureDimension) {
   }
 
 
-  val graphs = new SparkGraphStorage(engine.context, new SparkGraphHBaseBackend(), frames)
+
+
+  val graphs = new SparkGraphStorage(engine.context(_), metaStore, new SparkGraphHBaseBackend(), frames)
 
 }
 
