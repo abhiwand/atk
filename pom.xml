@@ -148,6 +148,7 @@
                                 <jvmArgs>
                                     <jvmArg>-Xms64m</jvmArg>
                                     <jvmArg>-Xmx4096m</jvmArg>
+                                    <jvmArg>-XX:MaxPermSize=1024m</jvmArg>
                                 </jvmArgs>
                                 <compilerPlugins>
                                     <compilerPlugin>
