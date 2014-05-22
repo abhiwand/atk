@@ -16,8 +16,7 @@ class SparkJoinITest extends FlatSpec with Matchers with BeforeAndAfterEach with
     val result = SparkOps.joinRDDs(countryCode, countryNames)
     val data = result.take(4)
     val first = data(0)
-    first._1 shouldBe 4
-    first._2 shouldBe Array(968, "Oman")
+    first shouldBe Array(4, 968, 4, "Oman")
   }
 
 }
