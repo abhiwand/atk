@@ -82,10 +82,10 @@ private[spark] object SparkOps extends Serializable {
   }
 
   def create2TupleForJoin(data: Array[Any], joinIndex: Int): (Any, Array[Any]) = {
-    (data(joinIndex), data.take(joinIndex) ++ data.drop(joinIndex + 1))
+    (data(joinIndex), data)
   }
 
-  def joinRDDs(left: RDD[(Any, Array[Any])], right: RDD[(Any, Array[Any])]): RDD[(Any, Array[Any])] = {
-    left.join(right).map(t => (t._1, t._2._1 ++ t._2._2))
+  def joinRDDs(left: RDD[(Any, Array[Any])], right: RDD[(Any, Array[Any])]): RDD[Array[Any]] = {
+    left.join(right).map(t => t._2._1 ++ t._2._2)
   }
 }
