@@ -17,18 +17,7 @@
 
     <build>
         <plugins>
-            <plugin>
-                <!--add if you don't have any test to run-->
-                <groupId>org.scoverage</groupId>
-                <artifactId>maven-scoverage-plugin</artifactId>
-                <version>${scoverage.version}</version>
-                <executions>
-                    <execution>
-                        <id>scales-report</id>
-                        <phase/>
-                    </execution>
-                </executions>
-            </plugin>
+
         </plugins>
     </build>
 

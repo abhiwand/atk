@@ -17,7 +17,11 @@
 
     <build>
         <plugins>
-
+            <plugin>
+                <!--add to Create covergage results-->
+                <groupId>org.scoverage</groupId>
+                <artifactId>maven-scoverage-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
