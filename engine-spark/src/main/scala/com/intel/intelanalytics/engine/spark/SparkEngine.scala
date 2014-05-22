@@ -70,6 +70,29 @@ import com.typesafe.config.ConfigFactory
 import com.intel.intelanalytics.security.UserPrincipal
 import com.intel.intelanalytics.shared.EventLogging
 
+s
+import scala.util.Failure
+import scala.Some
+import scala.collection.JavaConverters._
+import com.intel.intelanalytics.domain.LoadLines
+import com.intel.intelanalytics.domain.Graph
+import com.intel.intelanalytics.domain.FilterPredicate
+import com.intel.intelanalytics.security.UserPrincipal
+import com.intel.intelanalytics.domain.FrameRemoveColumn
+import com.intel.intelanalytics.domain.GraphTemplate
+import com.intel.intelanalytics.domain.DataFrameTemplate
+import com.intel.intelanalytics.domain.FrameAddColumn
+import scala.util.Success
+import com.intel.intelanalytics.domain.DataFrame
+import com.intel.intelanalytics.domain.Command
+import com.intel.intelanalytics.domain.Partial
+import com.intel.intelanalytics.domain.SeparatorArgs
+import com.intel.intelanalytics.domain.CommandTemplate
+import com.intel.intelanalytics.domain.Error
+import com.intel.intelanalytics.domain.Als
+import com.intel.intelanalytics.engine.spark.graph.{ SparkGraphStorage, SparkGraphHBaseBackend }
+
+
 //TODO documentation
 //TODO progress notification
 //TODO event notification
@@ -413,11 +436,12 @@ class SparkComponent extends EngineComponent
       }
     }
 
-    def getGraphs(offset: Int, count: Int): Future[Seq[Graph]] = {
-      future {
-        graphs.getGraphs(offset, count)
+    def getGraphs(offset: Int, count: Int)(implicit user: UserPrincipal): Future[Seq[Graph]] =
+      withContext("se.getGraphs") {
+        future {
+          graphs.getGraphs(offset, count)
+        }
       }
-    }
 
     def deleteGraph(graph: Graph): Future[Unit] = {
       future {
@@ -787,6 +811,7 @@ class SparkComponent extends EngineComponent
     }
   }
 
+
   val graphs = new SparkGraphStorage {}
 
   trait SparkGraphStorage extends GraphStorage {
@@ -819,6 +844,8 @@ class SparkComponent extends EngineComponent
       List[Graph]()
     }
   }
+
+  val graphs = new SparkGraphStorage(engine.context(_), metaStore, new SparkGraphHBaseBackend(), frames)
 
 }
 
