@@ -246,7 +246,8 @@ trait V1CommandService extends V1Service {
     (validate(test.isSuccess, "Failed to parse file load descriptor: " + getErrorMessage(test))) {
       val args = test.get
       val result = engine.join(args)
-      complete(decorate(uri + "/" + result._1.id, result._1))
+      val command: Command = result._1
+      complete(decorate(uri + "/" + command.id, command))
     }
 
   }
