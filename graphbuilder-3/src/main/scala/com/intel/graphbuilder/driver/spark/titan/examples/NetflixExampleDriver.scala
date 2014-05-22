@@ -82,8 +82,8 @@ object NetflixExampleDriver {
       .setAppName(this.getClass.getSimpleName + " " + new Date())
       .setSparkHome(ExamplesUtils.sparkHome)
       .setJars(List(ExamplesUtils.gbJar))
-    conf.set("spark.executor.memory", "32g")
-    conf.set("spark.cores.max", "32")
+    conf.set("spark.executor.memory", "6g")
+    conf.set("spark.cores.max", "8")
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     conf.set("spark.kryo.registrator", "com.intel.graphbuilder.driver.spark.titan.GraphBuilderKryoRegistrator")
 
