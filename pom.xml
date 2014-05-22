@@ -347,11 +347,13 @@
 
 
 
-                <plugin>
+               <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.3.2</version>
                     <configuration>
+
+
                         <archive>
                             <manifest>
                                 <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -417,7 +419,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <!--<plugin>
+                <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.3</version>
@@ -483,7 +485,7 @@
                             </plugin>
                         </reportPlugins>
                     </configuration>
-                </plugin>-->
+                </plugin>
 
                 <!--<plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -503,7 +505,7 @@
                         </execution>
                     </executions>
                 </plugin>-->
-                <!--<plugin>
+                <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>munge-maven-plugin</artifactId>
                     <version>1.0</version>
@@ -519,16 +521,17 @@
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>-->
+                </plugin>
             </plugins>
         </pluginManagement>
 
 
         <plugins>
-            <!--<plugin>
+            <plugin>
             <groupId>net.alchim31.maven</groupId>
             <artifactId>scala-maven-plugin</artifactId>
         </plugin>
+            <!--
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
@@ -561,10 +564,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
             </plugin>-->
-            <plugin>
+            <!--<plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>com.github.koraktor</groupId>
                 <artifactId>mavanagaiata</artifactId>
@@ -670,11 +673,11 @@
                 <version>2.3.10</version>
                 <scope>test</scope>
             </dependency>
-            <!--<dependency>
+            <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
-                <version>${scala.version}</version>
-            </dependency>-->
+                <version>${scala.long.version}</version>
+            </dependency>
             <!-- <dependency>
                  <groupId>org.apache.hadoop</groupId>
                  <artifactId>hadoop-common</artifactId>
@@ -916,6 +919,12 @@
         </dependency>
     </dependencies>
 
+    <pluginRepositories>
+        	                <pluginRepository>
+        	                        <id>onejar-maven-plugin.googlecode.com</id>
+        	                        <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo-snapshot</url>
+        	                </pluginRepository>
+               </pluginRepositories>
     <repositories>
         <repository>
             <id>central</id>
