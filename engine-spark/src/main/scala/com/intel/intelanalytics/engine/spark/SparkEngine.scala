@@ -285,22 +285,22 @@ class SparkComponent extends EngineComponent
         (command, result)
       }
 
-    override def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[Command]) =
+    override def join(argument: FrameJoin[Long])(implicit user: UserPrincipal): (Command, Future[DataFrame]) =
       withContext("se.join") {
 
         import DomainJsonProtocol._
-
         val command: Command = commands.create(new CommandTemplate("join", Some(argument.toJson.asJsObject)))
 
-        val result: Future[Command] = future {
+        val result: Future[DataFrame] = future {
           withMyClassLoader {
             withContext("se.join.future") {
+              var dataFrame: DataFrame = null
               withCommand(command) {
                 val ctx = context(user).sparkContext
                 val joinFrames = argument.joinFrames
 
-                val rddIndexTuple = joinFrames.map { frame =>
-                  {
+                val rddIndexTuple = joinFrames.map {
+                  frame => {
                     val realFrame = frames.lookup(frame._1).getOrElse(
                       throw new IllegalArgumentException(s"No such data frame"))
 
@@ -311,14 +311,32 @@ class SparkComponent extends EngineComponent
                   }
                 }
 
-                val preJoinRdds = rddIndexTuple.map { t =>
-                  val rdd = t._1
-                  val columnIndex = t._2
-                  rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
+                val preJoinRdds = rddIndexTuple.map {
+                  t =>
+                    val rdd = t._1
+                    val columnIndex = t._2
+                    rdd.map(p => SparkOps.create2TupleForJoin(p, columnIndex))
                 }
 
+                val joined = SparkOps.joinRDDs(preJoinRdds(0), preJoinRdds(1))
+
+                /* create a new dataframe */
+                val allColumns = joinFrames.flatMap {
+                  frame => {
+                    val realFrame = frames.lookup(frame._1).getOrElse(
+                      throw new IllegalArgumentException(s"No such data frame"))
+
+                    realFrame.schema.columns
+                  }
+                }
+
+                /* create a dataframe should take very little time, much less than 10 minutes */
+                val newJoinFrame = Await.result(create(DataFrameTemplate("joinOperation", Schema(allColumns))), 10 minutes)
+                val location = fsRoot + frames.getFrameDataFile(newJoinFrame.id)
+                joined.saveAsObjectFile(location)
+                dataFrame = newJoinFrame
               }
-              commands.lookup(command.id).get
+              dataFrame
             }
           }
         }
