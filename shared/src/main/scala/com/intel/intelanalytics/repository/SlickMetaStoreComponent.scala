@@ -50,7 +50,7 @@ trait SlickMetaStoreComponent extends MetaStoreComponent with EventLogging {
   import profile.profile.simple._
   import com.intel.intelanalytics.domain.DomainJsonProtocol._
 
-  protected val database = withContext("Connecting to database") {
+  private[repository] val database = withContext("Connecting to database") {
     Database.forURL(profile.connectionString, driver = profile.driver)
   }
 
