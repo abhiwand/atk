@@ -48,5 +48,10 @@
             <artifactId>hbase-protocol</artifactId>
             <version>${dep.hbase.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+            <version>${scala.long.version}</version>
+        </dependency>
     </dependencies>
 </project>
