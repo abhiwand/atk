@@ -53,7 +53,7 @@ case class FrameAddColumn[+Arguments, FrameRef](frame: FrameRef, columnname: Str
 
 case class FrameJoin[FrameRef](name: String, joinFrames: List[(FrameRef, String)]) {
   require(joinFrames != null, "frame is required")
-  require(joinFrames.length > 2, "at least 2 frames for the join operation")
+  require(joinFrames.length == 2, "Two frames are required for the join operation")
 }
 
 case class SeparatorArgs(separator: Char)
