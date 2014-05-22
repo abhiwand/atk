@@ -50,7 +50,7 @@ import scala.collection.mutable.{ HashSet, ListBuffer, ArrayBuffer, HashMap }
 import scala.io.{ Codec, Source }
 import org.apache.hadoop.fs.{ Path => HPath }
 import scala.Some
-import com.intel.intelanalytics.engine.Row
+import com.intel.intelanalytics.engine.RowParser
 import scala.util.matching.Regex
 import com.typesafe.config.{ ConfigResolveOptions, ConfigFactory }
 import com.intel.event.EventContext
@@ -117,6 +117,10 @@ class SparkComponent extends EngineComponent
       sparkContextManager.cleanup()
     }
 
+    /**
+     * Execute a code block using the ClassLoader of 'this' SparkEngine
+     * rather than the ClassLoader of the currentThread()
+     */
     def withMyClassLoader[T](f: => T): T = {
       val prior = Thread.currentThread().getContextClassLoader
       EventContext.getCurrent.put("priorClassLoader", prior.toString)
@@ -159,8 +163,8 @@ class SparkComponent extends EngineComponent
             case x => throw new IllegalArgumentException(
               "Could not convert instance of " + x.getClass.getName + " to  arguments for builtin/line/separator")
           }
-          val row = new Row(args.separator)
-          s => row(s)
+          val rowParser = new RowParser(args.separator)
+          s => rowParser(s)
         }
         case x => throw new Exception("Unsupported parser: " + x)
       }
@@ -227,13 +231,20 @@ class SparkComponent extends EngineComponent
       new sun.misc.BASE64Decoder().decodeBuffer(corrected)
     }
 
+    /**
+     * Create a Python RDD
+     * @param frameId source frame for the parent RDD
+     * @param py_expression Python expression encoded in Python's Base64 encoding (different than Java's)
+     * @param user current user
+     * @return the RDD
+     */
     private def createPythonRDD(frameId: Long, py_expression: String)(implicit user: UserPrincipal): EnginePythonRDD[String] = {
       withMyClassLoader {
         val ctx = context(user).sparkContext
         val predicateInBytes = decodePythonBase64EncodedStrToBytes(py_expression)
 
         val baseRdd: RDD[String] = frames.getFrameRdd(ctx, frameId)
-          .map(x => x.map(t => t.toString()).mkString(","))
+          .map(x => x.map(t => t.toString()).mkString(",")) // TODO: we're assuming no commas in the values, isn't this going to cause issues?
 
         val pythonExec = "python2.7" //TODO: take from env var or config
         val environment = new java.util.HashMap[String, String]()
@@ -642,8 +653,14 @@ class SparkComponent extends EngineComponent
         rows
       }
 
-    def getFrameRdd(ctx: SparkContext, id: Long): RDD[Row] = {
-      ctx.objectFile[Row](fsRoot + getFrameDataFile(id))
+    /**
+     * Create an RDD from a frame data file.
+     * @param ctx spark context
+     * @param frameId primary key of the frame record
+     * @return the newly created RDD
+     */
+    def getFrameRdd(ctx: SparkContext, frameId: Long): RDD[Row] = {
+      ctx.objectFile[Row](fsRoot + getFrameDataFile(frameId))
     }
 
     def getOrCreateDirectory(name: String): Directory = {
